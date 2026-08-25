@@ -1,0 +1,36 @@
+{
+ "obligation": "Honest verdict on the shared/grouped-operator MLP density lever, on diverse data with correct methodology.",
+ "q3_bar": {
+  "cross_family": 0.3373,
+  "by_prompt": 0.3448,
+  "note": "q3 = the deployed HGRAVU01 group-64, verified real (not strawman) by audit D1. This is the function-quality bar."
+ },
+ "operator_results_honest": {
+  "single_m6144_lr2e-3": "DIVERGES (mse explodes to 2221) -- Adam instability at high lr, not real capacity.",
+  "single_m6144_lr5e-4_8layer_code": "plateaus rel 0.59 (best-conditioned in-family) = 1.75x worse than q3.",
+  "single_m6144_lr5e-4_64layer_crossfam": "0.9528 cross-family = near-total failure (rel ~1); confounded by 82%-code training data.",
+  "grouped_K8_r64_balanced": "DIVERGES (by-prompt 6.84 at it600) even with grad clip + balanced family sampling; also catastrophically slow (27min/600 iters on MPS)."
+ },
+ "rate_distortion_conclusion": "A shared operator with intermediate width m<17408 is a narrow bottleneck of a 17408-wide MLP shared across layers. Its function quality degrades smoothly with narrowness: m=6144 -> ~0.59-0.95, and matching q3's 0.337 requires m~10000-12000, at which point the operator's active bytes approach q3's own -- NO Pareto win. There is no m giving BOTH q3-quality AND a materially smaller active-byte footprint. The earlier 'beats q3 at 0.37' was a degenerate-corpus + methodology artifact (audit-refuted).",
+ "definitive_test": "MLX assembled-Doctor swap (all 64 MLPs -> the trained operator, real forward, France->Paris / 17x19=323 probes) running now on the best stable single-op checkpoint. This is the Doctor-level (contract) verdict, not a function-error proxy.",
+ "levers_status": "DENSITY (shared/grouped operator): failing on honest data. EXECUTION (geo_tpr64): already the default (EXEC_LEVER_MAP.json), no leftover win. Both quick TPS levers spent.",
+ "physics_context": "Token active ~11.7 GB, bandwidth ~471 GB/s -> ~40 TPS bandwidth ceiling; measured ~30 TPS. 100 TPS needs <=~4.7 GB active. MLP is ~7 GB (68% of GEMV). Only cutting the MLP to near-zero active hits 100 TPS, and that requires a coherent ~40MB MLP operator, which the evidence says does not exist. Matches prior campaign memory: '100 TPS unreachable by density at all' on this model class.",
+ "still_untested": [
+  "G8 structured-nonlinear (full-width Monarch/butterfly, not a narrow bottleneck) -- the one structurally-different density family",
+  "conditional-sparse activation (G5/G6) -- but the MLP is DENSE (audit D2), and distilling dense->sparse likely hits the same wall",
+  "attention/DeltaNet active-byte reduction (untested; MLP was the focus and is the 68% GEMV cost)"
+ ],
+ "ASSEMBLED_DOCTOR_single_op": {
+  "operator_function_err": 0.6483,
+  "q3": 0.343,
+  "assembled_coherence": "0/4 probes -- GIBBERISH ('ppePACE!\u79cd\u79cdRU-contact' etc.) while TRUE patient answers Paris/323/cold/oxygen correctly",
+  "verdict": "DEFINITIVE Doctor-level refutation: the best honest single shared operator, swapped into all 64 MLPs, makes the patient incoherent. Density via single shared operator is dead.",
+  "binding_confirmed": "the single-layer zero-op sanity was too weak (one zeroed MLP didn't flip early greedy tokens), but the full swap clearly bound -- TRUE coherent vs SWAP gibberish differ ONLY by the MLP swap."
+ },
+ "ASSEMBLED_DOCTOR_grouped_K4": {
+  "function_err": 0.6493,
+  "q3": 0.343,
+  "assembled": "0/4 GIBBERISH (\uc871\uc871\uc871\uc871ukas...)",
+  "key_insight": "Grouped K=4 (4 operators, less layer-sharing) gives IDENTICAL function (0.649) to single-op (0.648) and identical assembled gibberish. Grouping does NOT help -> the binding limit is the m=6144 WIDTH bottleneck of the 17408 MLP, not layer-sharing. Matching q3 requires full width = no byte win. Operator density family refuted from every angle."
+ }
+}

@@ -1,0 +1,93 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T12:51:13Z",
+ "experiment_class": "ACCEL-LAYOUT",
+ "knowledge_level": "INSTANCE",
+ "git_head": "82bc25dea3513c349efa6d5d8329d1e0af1e57eb",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_A_AIR_MATMUL",
+   "obligation": "G043 + G047",
+   "steer": "S015 \u00a77/\u00a715"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model; a math primitive"
+  },
+  "representation": {
+   "name": "dense_f32",
+   "size": 1024
+  },
+  "kernel": {
+   "produced_by": "air.lower_matmul_to_msl",
+   "tile": "an AIR specialization"
+  },
+  "runtime": {
+   "mlx": "0.32.1",
+   "python": "3.12.13"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "closes_the_gap_the_gemm_receipt_named": "That receipt said AIR could not express the tiled kernel -- no tiling, no threadgroup allocation, only barrier REPRESENTATION not lowering -- so the working GEMM was hand-written MSL beside AIR. AirMatmul now OWNS the tile size, declares the threadgroup allocation, and EMITS its own barriers.",
+  "barriers_are_load_bearing": {
+   "max_abs_err_with_barriers_stripped": 45.12,
+   "meaning": "stripping the barriers AIR emits breaks the answer, so they are doing work rather than decorating the output"
+  },
+  "why_threadgroup_is_now_executable": "an elementwise program carrying an AirBarrier is still REFUSED, because nothing lowers it. A matmul is accepted because its lowering emits the barriers itself. Refusal tracks what the backend can EMIT, not what AIR can NAME.",
+  "forge_tuned_an_air_specialization": {
+   "sweep": [
+    {
+     "tile": 8,
+     "correct": true,
+     "max_abs_err": 0.0,
+     "median_ms": 1.0243750002700835,
+     "iqr_pct": 2.85,
+     "reliable": true,
+     "gflops": 2096.384280594315
+    },
+    {
+     "tile": 16,
+     "correct": true,
+     "max_abs_err": 0.0,
+     "median_ms": 1.0268340120092034,
+     "iqr_pct": 5.34,
+     "reliable": true,
+     "gflops": 2091.363962319503
+    },
+    {
+     "tile": 32,
+     "correct": true,
+     "max_abs_err": 0.0,
+     "median_ms": 0.9510000236332417,
+     "iqr_pct": 4.96,
+     "reliable": true,
+     "gflops": 2258.1320658601676
+    }
+   ],
+   "champion_tile": 32,
+   "champion_gflops": 2258.1,
+   "margin_over_tile16_pct": 7.97,
+   "note": "tile 32 wins by ~8% against ~5% arm noise, so the margin is real but modest; tiles 8 and 16 are indistinguishable from each other"
+  },
+  "vs_mlx": {
+   "mlx_gflops": 5705.7,
+   "air_gflops": 2258.1,
+   "fraction_of_mlx": 0.396,
+   "verdict": "MLX still wins by 2.5x and remains the qualified winner"
+  }
+ },
+ "claim_boundary": "AIR now PRODUCES a correct tiled matmul and the forge can tune its tile at the IR level rather than by editing MSL. It reaches 39.6% of MLX and MLX is still retained. Nothing here adds simdgroup matrix ops, double buffering, register blocking or vectorised loads, which is where the remaining 2.5x lives. AIR still has no attention and no reduction, and SIMDGROUP and DEVICE barrier scopes remain unlowerable and therefore refused.",
+ "pass": true
+}

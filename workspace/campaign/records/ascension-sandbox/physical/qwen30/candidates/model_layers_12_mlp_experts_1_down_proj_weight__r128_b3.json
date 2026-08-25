@@ -1,0 +1,62 @@
+{
+  "candidate_id": "model_layers_12_mlp_experts_1_down_proj_weight__r128_b3",
+  "claim_boundary": {
+    "component_measurement_only": true,
+    "not_a_complete_model_bpw_result": true,
+    "not_a_full_model_artifact": true,
+    "not_a_native_direct_execution_plan": true,
+    "not_a_protected_manager_receipt": true,
+    "not_a_tg3_or_hcli_result": true
+  },
+  "elapsed_seconds": 0.26216708299762104,
+  "measurement": {
+    "cosine": 0.5190069675445557,
+    "relative_l2": 0.8565917611122131,
+    "rmse": 0.017763497307896614
+  },
+  "metal_component_probe": {
+    "claim_boundary": "component-only Metal smoke; not a complete-token TG measurement",
+    "device": "mps",
+    "elapsed_seconds": 0.004839458997594193,
+    "iterations": 20,
+    "matmul_per_second": 4132.69334649647,
+    "shape": [
+      2048,
+      768
+    ],
+    "status": "RAN"
+  },
+  "recorded_at": "2026-08-08T05:20:29.642102Z",
+  "representation": {
+    "artifact_bytes": 147159,
+    "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/artifacts/model_layers_12_mlp_experts_1_down_proj_weight__r128_b3.gravity",
+    "component_complete_bpw": 0.7484893798828125,
+    "factor_bits": 3,
+    "group_size": 64,
+    "kind": "randomized_low_rank_plus_group_quantized_factors",
+    "rank": 128
+  },
+  "schema": "hawking.ascension.qwen30_low_rank_gravity_candidate.v1",
+  "seal_sha256": "79a8c3c33d422396af715af9e75490a64bc1458620845cc7f465e11ec15f8711",
+  "source": {
+    "repository": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+    "revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+    "shape": [
+      2048,
+      768
+    ],
+    "source_body_audit_seal_sha256": "4a3294f2818e89686ffe4744410687c43a2ed496003560142e3b745ac8bb18ba",
+    "tensor_name": "model.layers.12.mlp.experts.1.down_proj.weight"
+  },
+  "status": "CANDIDATE_RESEARCH_ONLY",
+  "teacher_training": {
+    "claim_boundary": "component-only teacher distillation; not full-model QAT or capability training",
+    "device": "mps",
+    "elapsed_seconds": 0.11858349999238271,
+    "final_mse": 0.00029900402296334505,
+    "initial_mse": 0.0003169194969814271,
+    "kind": "teacher_distilled_low_rank_doctor",
+    "status": "RAN",
+    "steps": 16
+  }
+}

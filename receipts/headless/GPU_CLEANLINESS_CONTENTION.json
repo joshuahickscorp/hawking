@@ -1,0 +1,42 @@
+{
+ "schema": "hawking.headless.gpu_cleanliness_override.v1",
+ "generated_at": "2026-08-25T06:34:03Z",
+ "generated_by": "tools/odyssey/performance_qualification.py",
+ "obligation": "G013 \u2014 GPU_CLEANLINESS contention demonstration (directive \u00a725)",
+ "mechanism_receipt": "receipts/headless/GPU_CLEANLINESS_OVERRIDE.json",
+ "hand_authored": false,
+ "body_measured": "sealed-3.14",
+ "paired_measurement": {
+  "uncontended_TPOT_ns_median": 29273916,
+  "contended_TPOT_ns_median": 29267166,
+  "contention": "a 256 MiB dd write loop to the external HDD",
+  "design": "ALTERNATING paired reps: quiet, noisy, quiet, noisy ... so both arms sit at the same thermal and page-cache state",
+  "why_alternating": "sequential blocks measured warm-up rather than contention and reported the contended runs 6.72% FASTER",
+  "n_pairs": 5,
+  "per_pair_relative_slowdown": [
+   0.00769,
+   -0.001,
+   -0.00126,
+   -4e-05,
+   -0.00082
+  ],
+  "relative_slowdown": -0.000231,
+  "sign_is_consistent": false,
+  "contamination_demonstrated": false
+ },
+ "guard": {
+  "engaged": true,
+  "io_transfers_suspended": 6,
+  "io_resumed_after": true,
+  "declined_queues": [
+   "CPU_READY",
+   "NETWORK_READY",
+   "HDD_READY",
+   "SSD_READY"
+  ],
+  "reason_example": "CPU_READY declined: a protected window is open (QWEN_PERFORMANCE_QUALIFICATION (G005)). CPU_READY moves bytes through the same fabric the measurement is reading, so filling this slot would forge the number.",
+  "mechanism": "tools/headless/maxx_scheduler.py ProtectedWindow + admit()"
+ },
+ "no_forged_speedups": "the uncontended figures in QWEN_PERFORMANCE_QUALIFICATION.json were taken inside the protected window, with the contaminating queues declined; the contended figures here were taken deliberately outside it to size the effect.",
+ "pass": true
+}

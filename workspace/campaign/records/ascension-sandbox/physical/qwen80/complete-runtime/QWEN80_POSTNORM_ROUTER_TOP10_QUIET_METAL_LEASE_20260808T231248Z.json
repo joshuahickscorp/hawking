@@ -1,0 +1,38 @@
+{
+  "artifact_binding": {
+    "admission_receipt_seal_sha256": "939b41322363da3db774a2530b207bf380ed641d23cae671fc6438c0eecbf628",
+    "manifest_document_sha256": "a0fcac0401a7962402bb8cb87d5055c83667b39575f9e0f4c7470d080758aa10",
+    "manifest_seal_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+    "post_attention_norm_artifact_sha256": "a00ba60c88bd0d5dcf77e4c1fad05d83ddb6feec844ee3bbc65480fffd5a1fa7",
+    "router_gate_artifact_sha256": "582725c1fa47c62b0f109216e8c2c40533b2931a583f4a41dfa34477deda45f4"
+  },
+  "authorization_seal_sha256": "91854a8d8b3ac9344377063f9c49a3f8d5f17180e4c39e771c581a9be71f6e41",
+  "claim_boundary": {
+    "component_only": true,
+    "not_a_complete_layer_token_decoder_generation_hcli_tps_tg_or_tournament_receipt": true
+  },
+  "coordination": {
+    "automatic_retry_prohibited": true,
+    "one_shot_outer_capture_required": true,
+    "qwen80_watcher": "retained in existing coordination hold; it must not spawn state/direct work during this manual component lease"
+  },
+  "execution_policy": {
+    "complete_layer_or_token_allowed": false,
+    "component": "qwen80_direct_packed_postnorm_router_top10",
+    "quiet_qwen80_device_lease": true,
+    "strict_math": true,
+    "timing_or_benchmarking_allowed": false,
+    "tps_or_tg_claim_allowed": false
+  },
+  "lease_id": "6c3b841a2f63f92f1c66d8df5ae327c41dae385fa4213847af70637ec635ef21",
+  "model": {
+    "id": "Qwen3-Coder-Next-80B",
+    "key": "qwen80",
+    "repository": "Qwen/Qwen3-Coder-Next",
+    "revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb"
+  },
+  "recorded_at": "2026-08-08T23:12:48.990995Z",
+  "schema": "hawking.ascension.qwen80_quiet_metal_lease.v1",
+  "seal_sha256": "f9c3e406b29daaf9532649a0ddb1830360cac640fb20393058ad2dc8f533af0d",
+  "status": "GRANTED_QWEN80_POSTNORM_ROUTER_TOP10_NON_TIMED_DEVICE_PARITY_LEASE"
+}

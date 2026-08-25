@@ -1,0 +1,80 @@
+{
+  "child": {
+    "command": [
+      "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/debug/examples/ascension_qwen80_direct_packed_attention_stage",
+      "--manifest",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+      "--expected-manifest-seal-sha256",
+      "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+      "--expected-source-audit-seal-sha256",
+      "c572b2270b623b8677c374b43c89ddd729de135c25721488bb874b184ff8c3d4",
+      "--expected-source-revision",
+      "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+      "--capture-dir",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/layer3-gqa-captures/QWEN80_DIRECT_PACKED_LAYER3_GQA_ATTEMPT_20260808T191704Z/inner",
+      "--mode",
+      "metal"
+    ],
+    "finished_at": "2026-08-08T19:20:00.384440Z",
+    "pid": 43973,
+    "probe_binary_sha256": "dd9da8eeefbb97f3cce0e94020cead3f2a44528872efe55f17dc8466cecd5a2e",
+    "started_at": "2026-08-08T19:17:30.650174Z",
+    "terminal": {
+      "exit_code": 0,
+      "reaped": true,
+      "returncode": 0,
+      "signal": null,
+      "timed_out": false
+    }
+  },
+  "claim_boundary": {
+    "does_not_claim_tg10_tg3_or_tournament_qualification": true,
+    "does_not_execute_a_complete_layer_or_decoder": true,
+    "does_not_generate_tokens_expose_hcli_or_measure_tps": true,
+    "does_not_validate_or_promote_inner_parity": true,
+    "outer_terminal_capture_only": true
+  },
+  "inner_probe_capture": {
+    "bytes": 4053,
+    "capture_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/layer3-gqa-captures/QWEN80_DIRECT_PACKED_LAYER3_GQA_ATTEMPT_20260808T191704Z/inner",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/layer3-gqa-captures/QWEN80_DIRECT_PACKED_LAYER3_GQA_ATTEMPT_20260808T191704Z/inner/receipt.json",
+    "present": true,
+    "receipt_unsigned_json_sha256": "5b2f7b4a80ad11cf3225491a99c52e745a19b0615354c6d72ce5aa4ade16fd7c",
+    "schema": "hawking.ascension.qwen80_direct_packed_layer3_gqa_attention_stage.v1",
+    "sha256": "62595af13f5dcf5686eb3c576359753279795e1ae6e8b99c57599073b514d3f0",
+    "status": "EARNED_QWEN80_ADMITTED_DIRECT_PACKED_LAYER3_GQA_TWO_TOKEN_COMPONENT_STAGE_NOT_COMPLETE_LAYER_OR_TOKEN"
+  },
+  "launch_identity_sha256": "d7c38adf9c98ce6c92aadd2dd069f054d2aded328b1f3a7477779980cd9cf7f4",
+  "one_shot": {
+    "automatic_retry_disabled": true,
+    "replay_of_same_capture_dir_never_launches_a_second_child": true,
+    "terminal_receipt_is_written_last": true
+  },
+  "outer_capture": {
+    "active_receipt": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/layer3-gqa-captures/QWEN80_DIRECT_PACKED_LAYER3_GQA_ATTEMPT_20260808T191704Z/active.json",
+    "directory": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/layer3-gqa-captures/QWEN80_DIRECT_PACKED_LAYER3_GQA_ATTEMPT_20260808T191704Z",
+    "stderr": {
+      "bytes": 51,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/layer3-gqa-captures/QWEN80_DIRECT_PACKED_LAYER3_GQA_ATTEMPT_20260808T191704Z/outer.stderr.log",
+      "present": true,
+      "sha256": "bc5a4a11c5471559317c7543695c9f0651fff769d3390ca572168b9f81cedcbb"
+    },
+    "stdout": {
+      "bytes": 3327,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/layer3-gqa-captures/QWEN80_DIRECT_PACKED_LAYER3_GQA_ATTEMPT_20260808T191704Z/outer.stdout.log",
+      "present": true,
+      "sha256": "5b1899b25ededde22ff18200dcc098ecc5ca8ac408e8470726575b82a093eebc"
+    }
+  },
+  "recorded_at": "2026-08-08T19:20:00.384440Z",
+  "schema": "hawking.ascension.qwen80_direct_packed_layer3_gqa_outer_launcher.v1",
+  "seal_sha256": "b0b16468df4b42ae8b02de076de72850bdd244f9dd488be9432f8e61bbe0a44e",
+  "source_binding": {
+    "expected_manifest_seal_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+    "expected_source_audit_seal_sha256": "c572b2270b623b8677c374b43c89ddd729de135c25721488bb874b184ff8c3d4",
+    "expected_source_revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+    "manifest": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+    "mode": "metal"
+  },
+  "status": "CAPTURED_QWEN80_LAYER3_GQA_OUTER_TERMINAL_CHILD_ZERO_INNER_RECEIPT_PRESENT_NOT_A_PARITY_OR_RUNTIME_CLAIM"
+}

@@ -1,0 +1,109 @@
+{
+  "schema": "hawking.nos.tabula_drift.v1",
+  "obligation": "G123 -- Tabula drift instrument, reproducible for any candidate",
+  "manifest": {
+    "target_kinds": [
+      "full_attention_out",
+      "linear_attention_out",
+      "mlp_down"
+    ],
+    "scale": 1.0,
+    "norm_preserve": true,
+    "modified_tensor_count": 80
+  },
+  "method": "W' = (I - v v^T) W means v^T W' = 0, so the removed direction is a LEFT NULL VECTOR of every abliterated tensor and is recoverable from the artifact alone, with no access to the base model.",
+  "per_layer": [
+    {
+      "layer": 27,
+      "shape": [
+        5120,
+        6144
+      ],
+      "smallest_eig": 2.6485167937006998e-05,
+      "largest_eig": 47.01660989591894,
+      "eig_ratio": 5.633151347074456e-07,
+      "residual_v_dot_W": 0.005583559162914753,
+      "frobenius": 87.38265228271484
+    },
+    {
+      "layer": 43,
+      "shape": [
+        5120,
+        6144
+      ],
+      "smallest_eig": 2.5215389258838357e-05,
+      "largest_eig": 32.88497663360674,
+      "eig_ratio": 7.667753436403399e-07,
+      "residual_v_dot_W": 0.00548615213483572,
+      "frobenius": 88.32525634765625
+    },
+    {
+      "layer": 55,
+      "shape": [
+        5120,
+        6144
+      ],
+      "smallest_eig": 3.499929076137427e-05,
+      "largest_eig": 32.53829230803798,
+      "eig_ratio": 1.0756339155736315e-06,
+      "residual_v_dot_W": 0.0063669574446976185,
+      "frobenius": 100.3954086303711
+    }
+  ],
+  "agreement": [
+    {
+      "a": 27,
+      "b": 43,
+      "abs_cos": 0.9982690811157227,
+      "null_abs_cos": 0.0049047889187932014
+    },
+    {
+      "a": 27,
+      "b": 55,
+      "abs_cos": 0.9985495209693909,
+      "null_abs_cos": 0.0049047889187932014
+    },
+    {
+      "a": 43,
+      "b": 55,
+      "abs_cos": 0.9987409710884094,
+      "null_abs_cos": 0.0036237258464097977
+    }
+  ],
+  "null_control": {
+    "kind": "random unit direction",
+    "seed": 123
+  },
+  "drift_ladder": [
+    {
+      "codec": "q4_group64",
+      "drift_x": 24.624779213512245,
+      "recorded_range": [
+        11,
+        12
+      ],
+      "reproduces_recorded": false
+    },
+    {
+      "codec": "q3_group64",
+      "drift_x": 56.805140787104904,
+      "recorded_range": [
+        25,
+        27
+      ],
+      "reproduces_recorded": false
+    },
+    {
+      "codec": "q2_group64",
+      "drift_x": 151.15614133584577,
+      "recorded_range": [
+        64,
+        67
+      ],
+      "reproduces_recorded": false
+    }
+  ],
+  "drift_layer": 55,
+  "drift_kind": "full_attention_out",
+  "commit": "3a526bc8e755876e7a9ce44f5c132e66472abc18"
+}

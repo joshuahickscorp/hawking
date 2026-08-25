@@ -1,0 +1,93 @@
+{
+  "claim_boundary": "evidence ingestion only; no SIMD candidate is applied, no pack is changed, and this is not a coherence, HCLI, capability, clean TPS, TG, or tournament receipt",
+  "direct_packed_gate_up_pair_component": {
+    "bytes": 4435,
+    "document_sha256": "3d5cc437662d33ea8bcc7ad8bb0d5c6a0dd46e5c30e905eab274dd5d1923d398",
+    "integration_state": "UNINTEGRATED_COMPONENT_ONLY",
+    "p50_component_host_wall_speedup_ratio": 1.5930579613110443,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-token-profiler/QWEN30_DIRECT_PACKED_GATE_UP_PAIR_COMPONENT_RECEIPT.json",
+    "phase": null,
+    "present": true,
+    "recorded_at": "2026-08-08T17:34:19.842874Z",
+    "schema": "hawking.ascension.qwen30_direct_packed_gate_up_pair_component_receipt.v1",
+    "seal_sha256": "f7c680f2d4631f7947a78e3675951e7cb216533d4f6cd1819f5b0fd53b92122f",
+    "sealed": true,
+    "state": "SEALED",
+    "status": "EARNED_SOURCE_BOUND_DIRECT_PACKED_GATE_UP_PAIR_COMPONENT_NOT_MODEL_TPS"
+  },
+  "direct_packed_gate_up_swiglu_raw_observation": {
+    "bytes": 7044,
+    "document_sha256": "84934a6f4dd9d2524241b4084e94ac0a2fd2f63cf3cf785f13946300a3844b2a",
+    "error": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-token-profiler/QWEN30_DIRECT_PACKED_GATE_UP_SWIGLU_FUSED_COMPONENT_RAW_RESULT.json seal mismatch: recorded=None expected=84934a6f4dd9d2524241b4084e94ac0a2fd2f63cf3cf785f13946300a3844b2a",
+    "observation_state": "UNSEALED_SUPPORTING_OBSERVATION_NOT_FRONTIER_AUTHORITY",
+    "p50_component_host_wall_speedup_ratio": 1.6600408072177766,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-token-profiler/QWEN30_DIRECT_PACKED_GATE_UP_SWIGLU_FUSED_COMPONENT_RAW_RESULT.json",
+    "phase": null,
+    "present": true,
+    "recorded_at": null,
+    "schema": "hawking.ascension.qwen30_direct_packed_gate_up_swiglu_fused_component.v1",
+    "sealed": false,
+    "state": "OBSERVED_UNSEALED",
+    "status": "PASS_DIRECT_PACKED_QWEN30_GATE_UP_SWIGLU_FUSED_COMPONENT_BENCHMARK_NOT_MODEL_TPS"
+  },
+  "evidence_fingerprint_sha256": "70d80a5bce8430060225938ceb8005fd35497732914dce59a2fe99743236091d",
+  "evidence_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen-family/scientific-optimizer/evidence-frontier/QWEN30_CANONICAL_TEMPLATE_KERNEL_EVIDENCE_70d80a5bce8430060225938c.json",
+  "exact_native_runtime": {
+    "bytes": 3829,
+    "document_sha256": "8b68735cae8f5279b35672eda5910fd278b972d42321a8e46943a52f7ca9d0ea",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_EXACT_FULL_TOKEN_RUNTIME_RECEIPT.json",
+    "phase": null,
+    "present": true,
+    "recorded_at": "2026-08-08T17:34:16.580898Z",
+    "schema": "hawking.ascension.physical_exact_full_token_runtime.v1",
+    "seal_sha256": "8cbb803dd963a6f05927606b06a36c0f6ff41e8427fdb59923fa60a00df8cd00",
+    "sealed": true,
+    "state": "SEALED",
+    "status": "PASS_EXACT_NATIVE_FULL_TOKEN_RUNTIME"
+  },
+  "interpretation": {
+    "gate_up": "one-dispatch gate/up component parity and timing are a kernel frontier prior only until runtime integration and fresh complete-token profiling",
+    "runtime": "canonical template/full-token native execution is earned only as a runtime gate",
+    "simd": "all-layer SIMDgroup candidate is rejected for template-token divergence; BOS parity alone is insufficient",
+    "transport": "SSE framing is observed, but coherence is unscored and the transport is not an HCLI pass"
+  },
+  "qwen80_transfer_rule": "Qwen80 may reuse the direct-packed gated-MLP fusion test method for routed/shared experts after direct parity. Do not transfer the Qwen30 template-SIMD result to DeltaNet/recurrent state or call it a Qwen80 pass.",
+  "record_id": "qwen30-canonical-template-kernel-evidence:70d80a5bce8430060225938ceb8005fd35497732914dce59a2fe99743236091d",
+  "recorded_at": "2026-08-08T17:51:48.443363Z",
+  "rejected_template_simdgroup_candidate": {
+    "bytes": 6689,
+    "document_sha256": "4455470a32fbb30be5451d04cfdfc0ad2158cb775d3b9c1caf9d6de7869ecbe6",
+    "failures": [
+      "prompt B exact token/template parity differs from scalar control"
+    ],
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_PACKED_BINARY_SIMDGROUP_TEMPLATE_PARITY_RECEIPT.json",
+    "phase": null,
+    "present": true,
+    "recorded_at": "2026-08-08T17:51:39.277160Z",
+    "schema": "hawking.ascension.qwen30_packed_binary_simdgroup_template_parity.v1",
+    "seal_sha256": "7803bb793be9c7d43f19f38d08cbd9dd113917dcd88a4d857024a863247e9830",
+    "sealed": true,
+    "state": "SEALED",
+    "status": "REJECTED_QWEN30_PACKED_BINARY_SIMDGROUP_TEMPLATE_PARITY"
+  },
+  "schema": "hawking.ascension.qwen30_canonical_template_kernel_evidence.v1",
+  "seal_sha256": "ac6d871f6fa19027eb06e7d9dff754a4030faddb6c2f364890dbd269a06856c2",
+  "status": "INGESTED_RUNTIME_TRANSPORT_REJECTION_AND_COMPONENT_KERNEL_EVIDENCE",
+  "unqualified_chat_sse_transport": {
+    "bytes": 8717,
+    "clean_tps": "NOT_MEASURED",
+    "coherence": "UNSCORED_NOT_A_CAPABILITY_EVALUATION",
+    "document_sha256": "84532e5fd22120f7d46b7d7b0bd45ecf28729ff3add9645f6663a71d708ae439",
+    "openai_chat_sse_framing_verified": true,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_HCLI_UNQUALIFIED_CHAT_SSE_TRANSPORT_RECEIPT.json",
+    "phase": null,
+    "present": true,
+    "recorded_at": "2026-08-08T16:30:50.658117Z",
+    "schema": "hawking.ascension.qwen30_direct_packed_hcli_transport_smoke.v1",
+    "seal_sha256": "b27de6f0a0bb42c509542fd2d946426b9dffb5ff752fb0d67106d1f0bf7feb56",
+    "sealed": true,
+    "state": "SEALED",
+    "status": "EARNED_DIRECT_PACKED_NATIVE_CHAT_SSE_TRANSPORT_HCLI_UNQUALIFIED",
+    "uses_exact_native_runtime": true
+  }
+}

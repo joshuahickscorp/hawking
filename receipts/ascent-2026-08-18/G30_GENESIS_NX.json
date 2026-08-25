@@ -1,0 +1,11 @@
+{
+  "schema": "hawking.nos.genesis_nx.v1", "session": "f5169750", "date": "2026-08-18",
+  "obligation": "G30 -- lower Genesis.nr to Genesis.m3ultra.nx, machine-bound, content-bound to the NR (S012 §19)",
+  "artifact": "workspace/campaign/records/runs/qwen38-27b/mixed-q3mlp-q3attn-v1/Genesis.m3ultra.nx",
+  "tool_change": "tools/nx_genome.py: added --nr binding (lowers_nr_section) so an NX references the exact NR it lowers by content sha256 + the requirement families it satisfies",
+  "machine_genome": {"chipset": "Apple M3 Ultra", "gpu_cores": 60, "unified_memory_gb": 103.1, "metal": "Metal 4", "genome_digest": "c61afb5cce7ba294..."},
+  "kernel_binding": {"dispatched": 38, "declared_in_tree": 555, "note": "555 (not 554) because the kept scale-hoist q3 kernel added one kernel void this session"},
+  "lowers_nr": {"nr_path": ".../mixed-q3mlp-q3attn-v1/Genesis.nr", "nr_content_sha256": "206127e259ede65c...", "nr_bpw": 3.3447723, "requirement_families": ["grouped_absmax bits3 g64", "grouped_absmax bits4 g64", "gated_delta_recurrence"]},
+  "checks": {"seal_exit": 0, "dump_exit": 0, "loadable_here": "YES", "refusal_test_exit": 1, "refusal_reason": "NX for 40-core GPU refused on this 60-core machine (gpu_cores 40 vs 60)"},
+  "verdict": "PASS. Genesis.m3ultra.nx lowers the patient's Genesis.nr (content-hash bound: change the NR and the hash no longer matches, forcing a rebind), names the exact 38 kernels dispatched + M3 Ultra genome + geometry/residency/scheduling, loads here, and is REFUSED on a different machine genome. The NR/NX pair is real for the patient: NR is machine-independent and stable; NX evolves as kernels improve. G6/G7 proved the schemas; G29/G30 are the real patient artifacts."
+}

@@ -1,0 +1,21 @@
+{
+ "schema": "hawking.nos.shared_operator.v1",
+ "session": "f5169750",
+ "date": "2026-08-18",
+ "obligation": "G3 shared-program MLP (S027 \u00a711) -- the executable-synthesis breakthrough",
+ "setup": "torch+MPS. 15 layers (L4,8,..,60) pooled: teacher F_L(h)=down(silu(gate.h)*up.h) from each layer's bf16, 3000 tokens/layer, 80/20 token split -> 36000 train / 9000 held-out. Shared SwiGLU operator (gate/up/down shared across ALL layers) + per-layer FiLM code (gamma,beta on the intermediate). 1500 Adam iters. workspace/campaign/phaseB/shared_op.py.",
+ "control_q3_mean_per_layer_held_out": 0.4001,
+ "shared_operator": {
+  "m": 4096,
+  "held_out_err": 0.3712,
+  "train_err": 0.3448,
+  "gap": 0.026,
+  "shared_bytes_q3": "25.6 MB",
+  "per_layer_code_bytes": "0.25 MB total (16 KB/layer)",
+  "active_bytes_per_layer_vs_q3": "25.6 MB vs 108.6 MB = 24% (reused across layers; if cache-resident, effective active DRAM ~25.6 MB for ALL 15 layers vs 1629 MB = ~64x)"
+ },
+ "verdict": "BREAKTHROUGH -- the q3 wall is broken in principle. A SINGLE shared operator (25.6 MB) reproduces 15 layers' MLP function HELD-OUT (0.371) BETTER than q3 (0.401), with a tiny generalization gap (0.026, no overfit -- pooling 15 layers' data fixed the catastrophic per-layer overfit of gap 0.6-1.26), at 24% of q3's per-layer active bytes (much less if cache-resident). This is the S027 \u00a711 shared-program lever realized: 64 matrices -> one program + per-layer codes. The MLP is 67% of active bytes; replacing it with a shared reused operator cuts DRAM traffic/token dramatically -> the TPS wall breaks.",
+ "rigor_caveats": "This proves the PER-LAYER FUNCTION (held-out tokens, 15 layers) beats q3 at fewer bytes. OWES: (1) assembled-patient Doctor validation -- replacing MLPs with the shared op and checking the whole patient stays coherent (error may compound over layers) = G11/G12; (2) the all-64-layer version; (3) Metal-native execution realizing the cache-resident active-byte win = G10. The gap 0.026 and held-out<q3 rule out the fit-set false-win trap that killed the per-layer operator.",
+ "next": "scale to all 64 layers; then G10 Metal-native shared-operator kernel + G12 one-layer swap in the real decode + Doctor. This is the successor path to 40/60/100 TPS.",
+ "_REFUTED_2026-08-18": "The 'beats q3 held-out' headline in this receipt does NOT survive the adversarial methodology audit (see METHODOLOGY_AUDIT.json): held-set leakage (D3a), operator-vs-q3 aggregation mismatch (D5), and wrong MLP input (post_input_norm vs post_attn_norm) each swing more than the margin, all favoring the operator; and the eval never left the prose family (D3b). Re-testing honestly (cross-family, correct input, consistent aggregation) via honest_eval.py/honest_grouped.py on capture_diverse2. What survives: the active-byte accounting (operator 38.3MB vs q3 108.6MB/layer). Do NOT cite the beats-q3 numbers here."
+}

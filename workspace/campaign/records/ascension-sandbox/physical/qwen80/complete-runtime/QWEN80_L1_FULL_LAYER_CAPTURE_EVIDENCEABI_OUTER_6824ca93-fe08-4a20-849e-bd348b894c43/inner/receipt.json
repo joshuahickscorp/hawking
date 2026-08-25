@@ -1,0 +1,178 @@
+{
+  "artifact_binding": {
+    "admission_receipt": {
+      "bytes": 4749,
+      "document_seal_sha256": "939b41322363da3db774a2530b207bf380ed641d23cae671fc6438c0eecbf628",
+      "document_sha256": "939b41322363da3db774a2530b207bf380ed641d23cae671fc6438c0eecbf628",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/complete-admission/receipts/QWEN80_COMPLETE_BINARY_GRAVITY_ADMISSION_RECEIPT_14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b.json",
+      "present": true,
+      "sha256": "0b601b57ef459bbfba69c4adba8c9fd2b069b3cbbf6ad7beaf3cee26556e9e53"
+    },
+    "manifest": {
+      "bytes": 77842421,
+      "document_seal_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+      "document_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+      "present": true,
+      "sha256": "a0fcac0401a7962402bb8cb87d5055c83667b39575f9e0f4c7470d080758aa10"
+    }
+  },
+  "capture_body_wired": true,
+  "claim_boundary": {
+    "component_only": true,
+    "decoder_started": false,
+    "next_layer_executed": false,
+    "server_or_watcher_started": false,
+    "token_generated": false,
+    "tournament_started": false,
+    "tps_or_tg_measured": false
+  },
+  "durable_capture": {
+    "capture_directory": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L1_FULL_LAYER_CAPTURE_EVIDENCEABI_OUTER_6824ca93-fe08-4a20-849e-bd348b894c43/inner",
+    "outer_reaped_capture_required": true,
+    "receipt_written_last_is_completion_marker": true,
+    "replay_guarded": true
+  },
+  "execution_phase": {
+    "command_commit_may_have_been_attempted": true,
+    "command_fence_succeeded": false,
+    "device_dispatch_may_have_occurred": null,
+    "dispatches_encoded": 46,
+    "encoded_kernel_names": [
+      "qwen_next_direct_packed_input_rmsnorm",
+      "qwen_binary_sign_scale_matvec",
+      "qwen_binary_sign_scale_matvec",
+      "qwen_next_qkvz_rearrange_conv_l2",
+      "qwen_next_ba_to_decay_beta",
+      "qwen_next_gated_delta_decode_single",
+      "qwen_next_deltanet_gated_rmsnorm",
+      "qwen_binary_sign_scale_matvec",
+      "qwen_next_add_residual",
+      "qwen80_postnorm_router_top10_rmsnorm",
+      "qwen80_postnorm_router_top10_matvec",
+      "qwen80_postnorm_router_top10_select",
+      "qwen80_all_ten_routed_wave_route_guard",
+      "qwen80_all_ten_routed_wave_gate_up",
+      "qwen80_all_ten_routed_wave_swiglu",
+      "qwen80_all_ten_routed_wave_down_weighted",
+      "qwen80_shared_expert_wave_gate_up",
+      "qwen80_shared_expert_wave_swiglu",
+      "qwen80_shared_expert_wave_down",
+      "qwen80_shared_expert_wave_scalar_gate",
+      "qwen80_shared_expert_wave_apply_sigmoid_gate",
+      "qwen80_moe_wave_aggregate_second_residual_route_sum",
+      "qwen80_moe_wave_aggregate_second_residual_add_shared_residual",
+      "qwen_next_direct_packed_input_rmsnorm",
+      "qwen_binary_sign_scale_matvec",
+      "qwen_binary_sign_scale_matvec",
+      "qwen_next_qkvz_rearrange_conv_l2",
+      "qwen_next_ba_to_decay_beta",
+      "qwen_next_gated_delta_decode_single",
+      "qwen_next_deltanet_gated_rmsnorm",
+      "qwen_binary_sign_scale_matvec",
+      "qwen_next_add_residual",
+      "qwen80_postnorm_router_top10_rmsnorm",
+      "qwen80_postnorm_router_top10_matvec",
+      "qwen80_postnorm_router_top10_select",
+      "qwen80_all_ten_routed_wave_route_guard",
+      "qwen80_all_ten_routed_wave_gate_up",
+      "qwen80_all_ten_routed_wave_swiglu",
+      "qwen80_all_ten_routed_wave_down_weighted",
+      "qwen80_shared_expert_wave_gate_up",
+      "qwen80_shared_expert_wave_swiglu",
+      "qwen80_shared_expert_wave_down",
+      "qwen80_shared_expert_wave_scalar_gate",
+      "qwen80_shared_expert_wave_apply_sigmoid_gate",
+      "qwen80_moe_wave_aggregate_second_residual_route_sum",
+      "qwen80_moe_wave_aggregate_second_residual_add_shared_residual"
+    ],
+    "metal_context_constructed": true,
+    "metal_context_construction_attempted": true,
+    "readback_started": false,
+    "strict_artifact_admission_started": true,
+    "strict_artifact_admission_succeeded": true,
+    "structural_kernel_trace_enabled": true
+  },
+  "fixture_or_synthetic": false,
+  "full_l1_lease_binding": {
+    "lease_id": "895cd0bdbfd3b2801ae546113310a4f4f116688e85f1c9ec63379acedf7c30e1",
+    "receipt": {
+      "bytes": 3598,
+      "document_seal_sha256": "131480117db180d3e6c145536260c26d78d385bc3517dded3d152992056d246e",
+      "document_sha256": "131480117db180d3e6c145536260c26d78d385bc3517dded3d152992056d246e",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L1_FULL_LAYER_CAPTURE_EVIDENCEABI_LAUNCH_6824ca93-fe08-4a20-849e-bd348b894c43/full-l1-quiet-metal-lease.json",
+      "present": true,
+      "sha256": "b387adc8dfd70912fb3d714310b7e11e6a156e9927ab1003fcf45a6d8037a646"
+    }
+  },
+  "historical_provenance_only": true,
+  "host_binary": {
+    "bytes": 13477232,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/debug/examples/ascension_qwen80_source_token_l0_l1_full_layer_same_runtime_device",
+    "present": true,
+    "sha256": "53ca6faa9dde8dadfb7dcf440532a1244838ab190a81542bbb85490928f52574"
+  },
+  "host_preflight_binding": {
+    "bytes": 51257,
+    "document_seal_sha256": "09674dff49e250f7b7ed8c589b59e03a95165ff4fb1b4f29e99f8ae9a0ae56ee",
+    "document_sha256": "09674dff49e250f7b7ed8c589b59e03a95165ff4fb1b4f29e99f8ae9a0ae56ee",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L1_FULL_LAYER_HOST_CPU_PREFLIGHT_EVIDENCEABI_tfwIY5/l1-full-layer-host-preflight.json",
+    "present": true,
+    "sha256": "abe99b3e7e9e34a1fa438ea0fffd7ca6873cfadc6dd554a75407aae26f797671"
+  },
+  "outer_launch_authority_binding": {
+    "bytes": 5197,
+    "document_seal_sha256": "59b02c45c3557d1e03841183210c5a99459edc850a07f0a89f0b683fd23af481",
+    "document_sha256": "59b02c45c3557d1e03841183210c5a99459edc850a07f0a89f0b683fd23af481",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L1_FULL_LAYER_CAPTURE_EVIDENCEABI_LAUNCH_6824ca93-fe08-4a20-849e-bd348b894c43/outer-launch-authority.json",
+    "present": true,
+    "sha256": "1a76de3172b534fd4a7c204ddbc85caa18b4d6b0cee16b778510b41210793678"
+  },
+  "outer_preflight_binding": {
+    "bytes": 8721,
+    "document_seal_sha256": "ccc9483b34b58f0d359d622f4119b90a342729a989942f28ab1bddb3a29496fd",
+    "document_sha256": "ccc9483b34b58f0d359d622f4119b90a342729a989942f28ab1bddb3a29496fd",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L1_FULL_LAYER_OUTER_GATE_CPU_PREFLIGHT_EVIDENCEABI_TUWW0F/l1-full-layer-outer-preflight.json",
+    "present": true,
+    "sha256": "98f498b41c8e08291dbc18eb06d40980412d797ac61f755568f7c57844a555ca"
+  },
+  "prior_process_or_buffer_reuse_accepted": false,
+  "schema": "hawking.ascension.qwen80_source_token_l0_l1_full_layer_same_runtime_capture.v1",
+  "seal_sha256": "590a5d62ad477c78f10e15473bf37db9b2f0a84b1abab9396b985ee44c7410fe",
+  "self_asserted": false,
+  "status": "REFUSED_QWEN80_SOURCE_TOKEN_L0_REENCODE_AND_L1_COMPLETE_MOE_LAYER_SAME_RUNTIME_PHASE_ACCURATE_TERMINAL_FAILURE",
+  "terminal_error": "same-runtime full-L1 exact finalizer refused: model: qwen80 complete native runtime: same-runtime full-L1 finalizer refuses a runtime other than the opaque continuation owner",
+  "upstream_authorities": {
+    "completion_preflight": {
+      "bytes": 19039,
+      "document_seal_sha256": "1e486c1b4f35f6c246073169a65d2b6144df70e5080d369b7c97963b65767f45",
+      "document_sha256": "1e486c1b4f35f6c246073169a65d2b6144df70e5080d369b7c97963b65767f45",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L1_FULL_LAYER_HOST_CPU_PREFLIGHT_1MIndj9u/l1-moe-completion-preflight.json",
+      "present": true,
+      "sha256": "269490c3819756f0b59ec884e39aca244a95a3fbe232efe2aac81a7351de2d83"
+    },
+    "joint_assessment": {
+      "bytes": 3163,
+      "document_seal_sha256": "d1b2893135287e282987e7d35609db3d44cd6c42846f79518f58f7ed5684829d",
+      "document_sha256": "d1b2893135287e282987e7d35609db3d44cd6c42846f79518f58f7ed5684829d",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_JOINT_POST_CAPTURE_ASSESSMENT_20260809T115059Z.json",
+      "present": true,
+      "sha256": "deb9c613041dd7b44e5a65d1ead19429249499192f86baa6a471aafa657476c6"
+    },
+    "l0_source_outer_preflight": {
+      "bytes": 5541,
+      "document_seal_sha256": "129fb3c123b8b1c6c5a2232ed6cdb62d1b3bc2067e306259035e6374b1e8f671",
+      "document_sha256": "129fb3c123b8b1c6c5a2232ed6cdb62d1b3bc2067e306259035e6374b1e8f671",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SOURCE_TOKEN_TRUE_INPUT_ALL_TEN_CPU_PREFLIGHT_20260809T060500Z/outer-preflight.json",
+      "present": true,
+      "sha256": "2953d41eb6b7a44a0cbd1c0f0a0eed2d79c363d82620737047f7428ee0b7b3eb"
+    },
+    "original_l1_route_authority": {
+      "document_seal_sha256": "1be012d736659b4c0d761c6643be590e43dde495a2d05a3ad715928bac642722",
+      "document_sha256": "1be012d736659b4c0d761c6643be590e43dde495a2d05a3ad715928bac642722",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SOURCE_TOKEN_L1_ROUTE_AUTHORITY_CPU_SCAN_20260809T130548Z/inner/l1-source-token-route-authority.json",
+      "present": true,
+      "sha256": "6dda93d40d1379bfaf5d728cc4b30434e8c61193c55e9ff632809885d90e7d22"
+    }
+  }
+}

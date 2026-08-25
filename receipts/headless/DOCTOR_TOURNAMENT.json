@@ -1,0 +1,454 @@
+{
+ "schema": "hawking.odyssey.doctor_tournament.v1",
+ "generated_at": "2026-08-25T09:01:40Z",
+ "generated_by": "tools/odyssey/doctor_tournament.py",
+ "obligation": "G035 \u2014 DOCTOR_GRAND_TOURNAMENT",
+ "hand_authored": false,
+ "git_head": "b678ec7f8ba5e068f41d17fb3dee9726c8428615",
+ "canonical_order": [
+  "ELIMINATE",
+  "COORDINATES",
+  "SHARE",
+  "FACTOR",
+  "GENERATE",
+  "CODEBOOK",
+  "ROUTE",
+  "SENSITIVITY",
+  "HEAL",
+  "QUANTIZE",
+  "NATIVE",
+  "STATE",
+  "CONDITIONAL",
+  "DECODING"
+ ],
+ "library_size": 39,
+ "techniques_routed_to_a_stage": 39,
+ "unrouted": [],
+ "diagnosis": {
+  "mlp": {
+   "measurements": [
+    {
+     "tensor": "model.language_model.layers.2.mlp.gate_proj.weight",
+     "shape": [
+      2048,
+      5120
+     ],
+     "excess_kurtosis": 0.105,
+     "outlier_frac_beyond_4sigma": 0.000113,
+     "rank_for_50pct_energy": 466,
+     "rank_for_90pct_energy": 1356,
+     "full_rank": 2048,
+     "r90_over_full_rank": 0.6621,
+     "near_zero_row_frac": 0.0
+    },
+    {
+     "tensor": "model.language_model.layers.30.mlp.gate_proj.weight",
+     "shape": [
+      2048,
+      5120
+     ],
+     "excess_kurtosis": 0.241,
+     "outlier_frac_beyond_4sigma": 0.000234,
+     "rank_for_50pct_energy": 453,
+     "rank_for_90pct_energy": 1350,
+     "full_rank": 2048,
+     "r90_over_full_rank": 0.6592,
+     "near_zero_row_frac": 0.0
+    },
+    {
+     "tensor": "model.language_model.layers.58.mlp.gate_proj.weight",
+     "shape": [
+      2048,
+      5120
+     ],
+     "excess_kurtosis": 0.28,
+     "outlier_frac_beyond_4sigma": 0.000237,
+     "rank_for_50pct_energy": 490,
+     "rank_for_90pct_energy": 1384,
+     "full_rank": 2048,
+     "r90_over_full_rank": 0.6758,
+     "near_zero_row_frac": 0.0
+    },
+    {
+     "tensor": "model.language_model.layers.2.mlp.down_proj.weight",
+     "shape": [
+      2048,
+      17408
+     ],
+     "excess_kurtosis": 0.154,
+     "outlier_frac_beyond_4sigma": 0.000157,
+     "rank_for_50pct_energy": 687,
+     "rank_for_90pct_energy": 1642,
+     "full_rank": 2048,
+     "r90_over_full_rank": 0.8018,
+     "near_zero_row_frac": 0.0
+    },
+    {
+     "tensor": "model.language_model.layers.30.mlp.down_proj.weight",
+     "shape": [
+      2048,
+      17408
+     ],
+     "excess_kurtosis": 0.266,
+     "outlier_frac_beyond_4sigma": 0.000238,
+     "rank_for_50pct_energy": 578,
+     "rank_for_90pct_energy": 1544,
+     "full_rank": 2048,
+     "r90_over_full_rank": 0.7539,
+     "near_zero_row_frac": 0.0
+    },
+    {
+     "tensor": "model.language_model.layers.58.mlp.down_proj.weight",
+     "shape": [
+      2048,
+      17408
+     ],
+     "excess_kurtosis": 0.189,
+     "outlier_frac_beyond_4sigma": 0.000154,
+     "rank_for_50pct_energy": 631,
+     "rank_for_90pct_energy": 1573,
+     "full_rank": 2048,
+     "r90_over_full_rank": 0.7681,
+     "near_zero_row_frac": 0.0
+    }
+   ],
+   "mean_excess_kurtosis": 0.205833,
+   "mean_outlier_frac": 0.000189,
+   "mean_r90_over_full_rank": 0.72015,
+   "mean_near_zero_row_frac": 0.0,
+   "max_cross_layer_cosine": 0.00329
+  },
+  "attention_gqa": {
+   "measurements": [
+    {
+     "tensor": "model.language_model.layers.3.self_attn.q_proj.weight",
+     "shape": [
+      2048,
+      5120
+     ],
+     "excess_kurtosis": 0.393,
+     "outlier_frac_beyond_4sigma": 0.000376,
+     "rank_for_50pct_energy": 358,
+     "rank_for_90pct_energy": 1205,
+     "full_rank": 2048,
+     "r90_over_full_rank": 0.5884,
+     "near_zero_row_frac": 0.0
+    },
+    {
+     "tensor": "model.language_model.layers.31.self_attn.q_proj.weight",
+     "shape": [
+      2048,
+      5120
+     ],
+     "excess_kurtosis": 0.795,
+     "outlier_frac_beyond_4sigma": 0.000803,
+     "rank_for_50pct_energy": 239,
+     "rank_for_90pct_energy": 1087,
+     "full_rank": 2048,
+     "r90_over_full_rank": 0.5308,
+     "near_zero_row_frac": 0.0
+    },
+    {
+     "tensor": "model.language_model.layers.59.self_attn.q_proj.weight",
+     "shape": [
+      2048,
+      5120
+     ],
+     "excess_kurtosis": 0.981,
+     "outlier_frac_beyond_4sigma": 0.000942,
+     "rank_for_50pct_energy": 288,
+     "rank_for_90pct_energy": 1117,
+     "full_rank": 2048,
+     "r90_over_full_rank": 0.5454,
+     "near_zero_row_frac": 0.0
+    }
+   ],
+   "mean_excess_kurtosis": 0.723,
+   "mean_outlier_frac": 0.000707,
+   "mean_r90_over_full_rank": 0.554867,
+   "mean_near_zero_row_frac": 0.0,
+   "max_cross_layer_cosine": 0.00631
+  },
+  "deltanet": {
+   "measurements": [
+    {
+     "tensor": "model.language_model.layers.2.linear_attn.out_proj.weight",
+     "shape": [
+      2048,
+      6144
+     ],
+     "excess_kurtosis": 2.173,
+     "outlier_frac_beyond_4sigma": 0.000411,
+     "rank_for_50pct_energy": 529,
+     "rank_for_90pct_energy": 1449,
+     "full_rank": 2048,
+     "r90_over_full_rank": 0.7075,
+     "near_zero_row_frac": 0.0
+    },
+    {
+     "tensor": "model.language_model.layers.30.linear_attn.out_proj.weight",
+     "shape": [
+      2048,
+      6144
+     ],
+     "excess_kurtosis": 1.077,
+     "outlier_frac_beyond_4sigma": 0.000572,
+     "rank_for_50pct_energy": 397,
+     "rank_for_90pct_energy": 1298,
+     "full_rank": 2048,
+     "r90_over_full_rank": 0.6338,
+     "near_zero_row_frac": 0.0
+    },
+    {
+     "tensor": "model.language_model.layers.58.linear_attn.out_proj.weight",
+     "shape": [
+      2048,
+      6144
+     ],
+     "excess_kurtosis": 0.825,
+     "outlier_frac_beyond_4sigma": 0.000217,
+     "rank_for_50pct_energy": 526,
+     "rank_for_90pct_energy": 1445,
+     "full_rank": 2048,
+     "r90_over_full_rank": 0.7056,
+     "near_zero_row_frac": 0.0
+    }
+   ],
+   "mean_excess_kurtosis": 1.358333,
+   "mean_outlier_frac": 0.0004,
+   "mean_r90_over_full_rank": 0.6823,
+   "mean_near_zero_row_frac": 0.0,
+   "max_cross_layer_cosine": 0.00134
+  }
+ },
+ "probe_method": {
+  "what": "weights-only preconditions on real parent tensors, 3 layers (early/mid/late) across mlp, attention and deltanet",
+  "why": "S011 \u00a79 asks for cheap discriminating tests before expansion. A technique whose precondition fails on the weights cannot be rescued by tuning, so it closes without a GPU run.",
+  "cost": "CPU only, no GPU, no model load into the runtime",
+  "limit": "a precondition failing is strong evidence against a family, not a proof. It bounds where search is worth spending, which is what a tournament is for."
+ },
+ "thresholds": {
+  "COORDINATES_excess_kurtosis": 1.0,
+  "COORDINATES_outlier_frac": 0.001,
+  "FACTOR_r90_over_full_rank": 0.5,
+  "SHARE_max_abs_cosine": 0.3,
+  "ELIMINATE_near_zero_row_frac": 0.01
+ },
+ "threshold_honesty": "these cut-offs are judgment calls, not derived constants. The COORDINATES verdict is the sensitive one: it rests entirely on deltanet's excess kurtosis of 1.358333 against a threshold of 1.0, and would flip if the threshold moved to 1.4.",
+ "coordinates_per_organ": {
+  "mlp": {
+   "excess_kurtosis": 0.205833,
+   "outlier_frac": 0.000189,
+   "holds": false
+  },
+  "attention_gqa": {
+   "excess_kurtosis": 0.723,
+   "outlier_frac": 0.000707,
+   "holds": false
+  },
+  "deltanet": {
+   "excess_kurtosis": 1.358333,
+   "outlier_frac": 0.0004,
+   "holds": true
+  }
+ },
+ "coordinates_s011_16_routing": {
+  "prior": "Qwen's earlier whole-model rotation result was NEGATIVE, and S011 \u00a716 forbids relaunching it blindly -- only changed-condition probes are allowed.",
+  "changed_condition_found": "the tail structure is NOT uniform across organs. deltanet carries excess kurtosis 1.358333 against 0.205833 for mlp -- roughly 6x. A whole-model rotation test averages that away.",
+  "the_only_sanctioned_probe": "rotation applied to DELTANET ALONE, which is a different condition from the whole-model test that already failed. mlp and attention_gqa are near-Gaussian and stay closed.",
+  "not_a_prediction": "mild excess kurtosis means there is something to redistribute, not that redistributing it will pay."
+ },
+ "stages": {
+  "ELIMINATE": {
+   "n_techniques": 1,
+   "techniques": [
+    "superbpe"
+   ],
+   "precondition_holds": false,
+   "precondition_evidence": "largest near-zero output-row fraction = 0.0. Structural pruning needs structure that is already doing nothing.",
+   "campaign_verdict": "vocabulary elimination measured and REFUSED: 10.98% payload saved costs 2.205x mean token inflation on held-out language",
+   "campaign_receipt": "receipts/headless/TOKENIZER_GRAVITY.json",
+   "verdict": "ADJUDICATED_BY_CAMPAIGN_MEASUREMENT"
+  },
+  "COORDINATES": {
+   "n_techniques": 7,
+   "techniques": [
+    "spinquant",
+    "twla",
+    "higgs",
+    "butterflyquant",
+    "paroquant",
+    "ostquant",
+    "flatquant"
+   ],
+   "precondition_holds": true,
+   "precondition_evidence": "max outlier fraction beyond 4 sigma = 0.000707, max excess kurtosis = 1.358333. Rotation redistributes outliers; with a heavy tail there is something to redistribute.",
+   "campaign_verdict": null,
+   "campaign_receipt": null,
+   "verdict": "PROBE_SUPPORTS_EXPAND"
+  },
+  "SHARE": {
+   "n_techniques": 1,
+   "techniques": [
+    "shared_basis"
+   ],
+   "precondition_holds": false,
+   "precondition_evidence": "max |cosine| between the same tensor in different layers = 0.00631. A shared basis needs layers to actually resemble each other.",
+   "campaign_verdict": null,
+   "campaign_receipt": null,
+   "verdict": "PROBE_REFUTES_CLOSE_CHEAPLY"
+  },
+  "FACTOR": {
+   "n_techniques": 0,
+   "techniques": [],
+   "precondition_holds": false,
+   "precondition_evidence": "the best organ needs 55.5% of full rank to hold 90% of spectral energy. Low-rank pays only if that is well below 100%.",
+   "campaign_verdict": null,
+   "campaign_receipt": null,
+   "verdict": "NO_TECHNIQUE_IN_LIBRARY"
+  },
+  "GENERATE": {
+   "n_techniques": 0,
+   "techniques": [],
+   "precondition_holds": null,
+   "precondition_evidence": "no weights-only precondition; adjudicated by campaign evidence",
+   "campaign_verdict": null,
+   "campaign_receipt": null,
+   "verdict": "NO_TECHNIQUE_IN_LIBRARY"
+  },
+  "CODEBOOK": {
+   "n_techniques": 1,
+   "techniques": [
+    "qtip"
+   ],
+   "precondition_holds": null,
+   "precondition_evidence": "no weights-only precondition; adjudicated by campaign evidence",
+   "campaign_verdict": null,
+   "campaign_receipt": null,
+   "verdict": "UNTESTED_NEEDS_EXPANSION"
+  },
+  "ROUTE": {
+   "n_techniques": 0,
+   "techniques": [],
+   "precondition_holds": null,
+   "precondition_evidence": "no weights-only precondition; adjudicated by campaign evidence",
+   "campaign_verdict": null,
+   "campaign_receipt": null,
+   "verdict": "NO_TECHNIQUE_IN_LIBRARY"
+  },
+  "SENSITIVITY": {
+   "n_techniques": 0,
+   "techniques": [],
+   "precondition_holds": null,
+   "precondition_evidence": "no weights-only precondition; adjudicated by campaign evidence",
+   "campaign_verdict": null,
+   "campaign_receipt": null,
+   "verdict": "NO_TECHNIQUE_IN_LIBRARY"
+  },
+  "HEAL": {
+   "n_techniques": 2,
+   "techniques": [
+    "cat_q",
+    "caldera"
+   ],
+   "precondition_holds": null,
+   "precondition_evidence": "no weights-only precondition; adjudicated by campaign evidence",
+   "campaign_verdict": null,
+   "campaign_receipt": null,
+   "verdict": "UNTESTED_NEEDS_EXPANSION"
+  },
+  "QUANTIZE": {
+   "n_techniques": 7,
+   "techniques": [
+    "ptqtp",
+    "onebit",
+    "aqlm",
+    "vptq",
+    "squeezellm",
+    "resq",
+    "hyperquant"
+   ],
+   "precondition_holds": null,
+   "precondition_evidence": "no weights-only precondition; adjudicated by campaign evidence",
+   "campaign_verdict": "the MLP per-group bias is load-bearing (variantA 0/43 without it); q2f 2.25 bpw is the floor under the tested conditions",
+   "campaign_receipt": "receipts/headless/VARIANT_LOCALIZATION.json",
+   "verdict": "ADJUDICATED_BY_CAMPAIGN_MEASUREMENT"
+  },
+  "NATIVE": {
+   "n_techniques": 0,
+   "techniques": [],
+   "precondition_holds": null,
+   "precondition_evidence": "no weights-only precondition; adjudicated by campaign evidence",
+   "campaign_verdict": null,
+   "campaign_receipt": null,
+   "verdict": "NO_TECHNIQUE_IN_LIBRARY"
+  },
+  "STATE": {
+   "n_techniques": 11,
+   "techniques": [
+    "kivi",
+    "minicache",
+    "h2o",
+    "quamba2",
+    "octopus",
+    "oscar",
+    "turboquant",
+    "sparse_delta_memory",
+    "palu",
+    "polarquant",
+    "transmla"
+   ],
+   "precondition_holds": null,
+   "precondition_evidence": "no weights-only precondition; adjudicated by campaign evidence",
+   "campaign_verdict": "KV precision ranked LAST: only 16 of 64 layers hold KV and the flat 72 MiB recurrent state dominates below 1,152 tokens. Prefill, not state precision, is the lever",
+   "campaign_receipt": "receipts/headless/STATE_GRAVITY.json",
+   "verdict": "ADJUDICATED_BY_CAMPAIGN_MEASUREMENT"
+  },
+  "CONDITIONAL": {
+   "n_techniques": 4,
+   "techniques": [
+    "mixture_of_depths",
+    "prosparse",
+    "teal",
+    "mixture_of_recursions"
+   ],
+   "precondition_holds": null,
+   "precondition_evidence": "no weights-only precondition; adjudicated by campaign evidence",
+   "campaign_verdict": null,
+   "campaign_receipt": null,
+   "verdict": "UNTESTED_NEEDS_EXPANSION"
+  },
+  "DECODING": {
+   "n_techniques": 5,
+   "techniques": [
+    "medusa_mtp",
+    "layerskip",
+    "dflash",
+    "eagle3",
+    "magicdec"
+   ],
+   "precondition_holds": null,
+   "precondition_evidence": "no weights-only precondition; adjudicated by campaign evidence",
+   "campaign_verdict": "MTP machinery found on disk (1.579% of the model, never packed); full-size drafts measured at 0.50-0.75 acceptance but 0.741-0.876x speedup because draft cost equals verify cost",
+   "campaign_receipt": "receipts/headless/DECODING_GRAVITY.json",
+   "verdict": "ADJUDICATED_BY_CAMPAIGN_MEASUREMENT"
+  }
+ },
+ "survivors_to_expand": [
+  "COORDINATES"
+ ],
+ "closed_cheaply": [
+  "SHARE"
+ ],
+ "techniques_closed_by_probe": 1,
+ "remaining_frontier": [
+  "CODEBOOK",
+  "HEAL",
+  "CONDITIONAL"
+ ],
+ "techniques_on_the_frontier": 7,
+ "frontier_note": "these stages have techniques in the library and NO cheap weights-only precondition, so they are where search is still worth spending. They are untested, not endorsed.",
+ "missing_probe_tensors": [],
+ "no_blind_sweep": "no stage is ranked by bit width; every verdict cites either a measured precondition or a campaign receipt",
+ "pass": true
+}

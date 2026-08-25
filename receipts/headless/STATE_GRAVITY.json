@@ -1,0 +1,175 @@
+{
+ "schema": "hawking.odyssey.state_gravity.v1",
+ "generated_at": "2026-08-25T08:56:29Z",
+ "generated_by": "tools/odyssey/state_gravity.py",
+ "obligation": "G037 \u2014 STATE_GRAVITY + PREFIX_SHARING",
+ "hand_authored": false,
+ "git_head": "edc6d330166a1d781418d551a80229eeafe575c2",
+ "state_census": {
+  "layers": 64,
+  "full_attention_interval": 4,
+  "full_attention_layers": 16,
+  "linear_attention_layers": 48,
+  "kv": {
+   "kv_heads": 4,
+   "head_dim": 256,
+   "elements_per_token": 32768,
+   "bytes_per_token_bf16": 65536,
+   "kib_per_token": 64.0,
+   "gib_at_max_context": 16.0,
+   "max_context": 262144,
+   "grows_with_context": true
+  },
+  "recurrent": {
+   "value_heads": 48,
+   "value_head_dim": 128,
+   "key_head_dim": 128,
+   "elements": 37748736,
+   "bytes_bf16": 75497472,
+   "mib": 72.0,
+   "grows_with_context": false
+  },
+  "crossover_tokens": 1152,
+  "reading": "only 16 of 64 layers keep a KV cache, so this architecture already carries 4x less KV than a pure-attention model of the same depth. The recurrent state is a flat 72 MiB whatever the context. KV overtakes it at about 1152 tokens."
+ },
+ "kv_precision_ladder": [
+  {
+   "scheme": "bf16 / bf16 (current)",
+   "k_bits": 16,
+   "v_bits": 16,
+   "bytes_per_token": 65536,
+   "gib_at": {
+    "4096": 0.25,
+    "32768": 2.0,
+    "131072": 8.0,
+    "262144": 16.0
+   },
+   "reduction_x": 1.0
+  },
+  {
+   "scheme": "q8 / q8",
+   "k_bits": 8,
+   "v_bits": 8,
+   "bytes_per_token": 32768,
+   "gib_at": {
+    "4096": 0.125,
+    "32768": 1.0,
+    "131072": 4.0,
+    "262144": 8.0
+   },
+   "reduction_x": 2.0
+  },
+  {
+   "scheme": "q8 K / q4 V (asymmetric)",
+   "k_bits": 8,
+   "v_bits": 4,
+   "bytes_per_token": 24576,
+   "gib_at": {
+    "4096": 0.094,
+    "32768": 0.75,
+    "131072": 3.0,
+    "262144": 6.0
+   },
+   "reduction_x": 2.667
+  },
+  {
+   "scheme": "q4 / q4",
+   "k_bits": 4,
+   "v_bits": 4,
+   "bytes_per_token": 16384,
+   "gib_at": {
+    "4096": 0.062,
+    "32768": 0.5,
+    "131072": 2.0,
+    "262144": 4.0
+   },
+   "reduction_x": 4.0
+  }
+ ],
+ "kv_ladder_caveat": "bytes only. The runtime has no KV quantization path, so these are the sizes a scheme WOULD have, not measured latency or measured long-context capability. Quoting them as a result would be exactly the design-constant-under-a-physical-label error G033 exists to prevent.",
+ "prefill": {
+  "measured_points": [
+   {
+    "prompt_tokens": 25,
+    "prefill_ns": 871295542,
+    "first_step_ns": 120506083,
+    "ttft_ns": 991801625
+   },
+   {
+    "prompt_tokens": 193,
+    "prefill_ns": 6247808292,
+    "first_step_ns": 131342750,
+    "ttft_ns": 6379151042
+   },
+   {
+    "prompt_tokens": 577,
+    "prefill_ns": 19169161125,
+    "first_step_ns": 139245958,
+    "ttft_ns": 19308407083
+   },
+   {
+    "prompt_tokens": 1153,
+    "prefill_ns": 40419560125,
+    "first_step_ns": 132295041,
+    "ttft_ns": 40551855166
+   },
+   {
+    "prompt_tokens": 2305,
+    "prefill_ns": 90106332916,
+    "first_step_ns": 152333958,
+    "ttft_ns": 90258666874
+   }
+  ],
+  "marginal_cost": [
+   {
+    "from_tokens": 25,
+    "to_tokens": 193,
+    "marginal_ms_per_prompt_token": 32.003
+   },
+   {
+    "from_tokens": 193,
+    "to_tokens": 577,
+    "marginal_ms_per_prompt_token": 33.649
+   },
+   {
+    "from_tokens": 577,
+    "to_tokens": 1153,
+    "marginal_ms_per_prompt_token": 36.893
+   },
+   {
+    "from_tokens": 1153,
+    "to_tokens": 2305,
+    "marginal_ms_per_prompt_token": 43.131
+   }
+  ],
+  "median_marginal_ms_per_prompt_token": 35.271,
+  "decode_ms_per_token": 30.198,
+  "prompt_token_vs_decode_token_ratio": 1.168,
+  "FINDING": "a prompt token costs 35.3 ms against 30.2 ms for a generated token. Prefill is being paid at decode price, so there is no batched prefill on this hybrid path. Marginal cost also rises with length (32.0 to 43.1 ms/token), which is the O(n^2) term from the 16 full-attention layers sitting on top of a large constant.",
+  "measured_vs_inferred": {
+   "MEASURED": "marginal cost per prompt token is 32.0-43.1 ms while a decode token costs 30.198 ms; prompt tokens are NOT cheaper than generated ones",
+   "INFERRED": "that signature is what an unbatched prefill looks like. A batched prefill amortizes the weight read across the whole prompt and should make a prompt token far cheaper than a decode token. The inference is strong but it is an inference: no kernel trace was taken.",
+   "how_to_settle_it": "count dispatches during prefill. Unbatched prefill issues ~964 per prompt token, the same as decode."
+  },
+  "consequence": "a 2,305-token prompt takes 90 seconds to prefill. For HCLI this dominates everything: each turn of a multi-turn mission re-prefills the whole transcript from scratch."
+ },
+ "prefix_sharing": {
+  "shared_prefix": {
+   "what": "the agent system prompt and tool schemas, identical on every mission",
+   "shared_tokens": 120,
+   "example_mission_tokens": 159,
+   "shared_fraction": 0.7547
+  },
+  "measured_marginal_ms_per_token": 35.271,
+  "ttft_saving_ms_if_prefix_reused": 4232.5,
+  "ttft_saving_pct_of_mission_prefill": 75.5,
+  "why_it_compounds": "the HCLI system prompt and tool schemas are byte-identical on every mission and every turn, so the same prefix is re-prefilled once per turn per mission.",
+  "IS_A_PROJECTION": "the saving is computed from the MEASURED marginal prefill cost and the MEASURED shared-prefix length, but no prefix cache exists in this runtime, so nothing was reused and no TTFT was observed to fall. This is the size of the prize, not a delivered win."
+ },
+ "ranking": {
+  "1_batched_prefill": "largest by far. Prompt tokens cost ~1.1-1.4x a decode token, so the headroom is the whole gap to a properly batched prefill.",
+  "2_prefix_reuse": "4233 ms per mission turn on the measured marginal cost, and it stacks with every turn.",
+  "3_kv_precision": "smallest here, and structurally so: only 16 of 64 layers hold KV at all, and below ~1,152 tokens the flat 72 MiB recurrent state dominates the KV cache entirely."
+ },
+ "pass": true
+}

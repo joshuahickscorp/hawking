@@ -1,0 +1,488 @@
+{
+  "artifact": {
+    "bytes": 426255,
+    "codec": "hawking.gravity.uniform_group.v1",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/evolution/artifacts/qwen80-e1f80757c169c7cd7c5b9cacb1d80a1c.gravity",
+    "physical_bpw": 3.2520675659179688,
+    "sha256": "0211a712e509bdd9eb7ea0e93d3131dc412825273b26db468448552830d2e822"
+  },
+  "candidate_id": "qwen80-e1f80757c169c7cd7c5b9cacb1d80a1c",
+  "claim_boundary": {
+    "candidate_cannot_select_tournament_winner": true,
+    "candidate_is_not_100_tps_or_tg3": true,
+    "candidate_is_not_complete_model_artifact": true,
+    "candidate_is_not_hcli_or_capability_qualified": true,
+    "candidate_is_not_native_runtime": true,
+    "raw_bf16_body_is_teacher_only": true
+  },
+  "genome": {
+    "configuration": {
+      "bits": 3,
+      "group_size": 64
+    },
+    "deterministic_genome_sha256": "51ebed77f0e369c740b1a2c6833a2ec5a5336ff3cf95b5174ab476c318f051d3",
+    "generation": 0,
+    "parent_ids": [],
+    "representation": "uniform_q3_group64",
+    "sequence": 44,
+    "worker_code_sha256": "0bf989e47badc0055489e411c67e48ea5fc1f80f73d3497ae272179e988b1875"
+  },
+  "kernel_snapshot": {
+    "available_component_evidence": [
+      {
+        "device": "Apple M3 Ultra",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/kernel/QWEN_DUAL_ROUTE_METAL_COMPONENT_PROBE.json",
+        "schema": "hawking.ascension.qwen_router_metal_component_probe.v1",
+        "sha256": "786851a11eb2da87431bdd886d3690ec97e9d52cb076244c759695812d48a21b",
+        "status": "PASS_DIRECT_METAL_ROUTER_COMPONENT_NOT_FULL_MODEL_NOT_TPS_GATE"
+      },
+      {
+        "device": "Apple M3 Ultra",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/kernel/QWEN30_GQA_METAL_COMPONENT_PROBE.json",
+        "schema": "hawking.ascension.qwen30_gqa_metal_component_probe.v1",
+        "sha256": "9d042b5b8b81cd8706172991fa1fb588bc771184d28cd97edde5d11c509cc4b1",
+        "status": "PASS_DIRECT_METAL_QWEN30_GQA_ATTENTION_COMPONENT_NOT_FULL_MODEL_NOT_TPS_GATE"
+      },
+      {
+        "device": "Apple M3 Ultra",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/kernel/QWEN_NEXT_GATED_DELTANET_METAL_COMPONENT_PROBE.json",
+        "schema": "hawking.ascension.qwen_next_deltanet_metal_component_probe.v1",
+        "sha256": "4312b1f3126a9a8f383b24a93f3a42e0b554e87efae4b0908aa42a5aa8ad7884",
+        "status": "PASS_DIRECT_METAL_QWEN_NEXT_GATED_DELTANET_RECURRENCE_COMPONENT_NOT_FULL_MODEL_NOT_TPS_GATE"
+      },
+      {
+        "device": "Apple M3 Ultra",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/kernel/QWEN_BINARY_SIGN_SCALE_MATVEC_METAL_COMPONENT_PROBE.json",
+        "schema": "hawking.ascension.qwen_binary_sign_scale_metal_component_probe.v1",
+        "sha256": "6057cc0fbcd6333897afb26dbe73a13cd101d7a736976a331734c180c033b302",
+        "status": "PASS_SOURCE_BOUND_PACKED_BINARY_SIGN_SCALE_MATVEC_COMPONENT_NOT_FULL_MODEL_NOT_TPS_GATE"
+      }
+    ],
+    "claim_boundary": "component probes and library MPS measurements are never model TPS",
+    "required_before_operational": {
+      "current_full_token_result": null,
+      "custom_kernel_base_true_tps_minimum": 100.0,
+      "full_token_tg3_base_true_tps_minimum": 333.0,
+      "status": "BLOCKED_UNTIL_EXACT_COMPLETE_NATIVE_RUNTIME_EXISTS"
+    }
+  },
+  "knowledge_preflight": {
+    "active_matching_burial": false,
+    "claim_boundary": "transfer priors tune scheduling only; exact model evidence is still required",
+    "cross_family_prior_count": 3,
+    "cross_family_priors": [
+      {
+        "candidate_id": "qwen30-50eaec0b3fa66fb2eec762b5b90d6fe5",
+        "capability_delta": "NOT_MEASURED_NO_COMPLETE_NATIVE_MODEL",
+        "claim_boundary": "knowledge transfer prior only; not cross-model qualification",
+        "codebook_or_basis": {
+          "bits": 3,
+          "group_size": 64
+        },
+        "complete_bpw_delta": {
+          "component_physical_bpw": 3.258148193359375,
+          "full_model_bpw": null
+        },
+        "doctor_qat": {
+          "status": "NOT_APPLICABLE"
+        },
+        "evidence_binding": {
+          "artifact_sha256": "bfa9a54ea3bf8f62ae4fc6b78dddb844b805bcce97f82264e63e49bd971530fa",
+          "candidate_seal_sha256": "305680022c1591281c78677bfa5362b4bf549688fc20a2709c08f0938d8d4067"
+        },
+        "failure_modes": [
+          "component_sensitive_organ_gate_failed"
+        ],
+        "geometry": {
+          "elements": 262144,
+          "kind": "complete_tensor",
+          "shape": [
+            128,
+            2048
+          ]
+        },
+        "kernel_requirements": {
+          "available_component_evidence": [
+            {
+              "device": "Apple M3 Ultra",
+              "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/kernel/QWEN_DUAL_ROUTE_METAL_COMPONENT_PROBE.json",
+              "schema": "hawking.ascension.qwen_router_metal_component_probe.v1",
+              "sha256": "786851a11eb2da87431bdd886d3690ec97e9d52cb076244c759695812d48a21b",
+              "status": "PASS_DIRECT_METAL_ROUTER_COMPONENT_NOT_FULL_MODEL_NOT_TPS_GATE"
+            },
+            {
+              "device": "Apple M3 Ultra",
+              "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/kernel/QWEN30_GQA_METAL_COMPONENT_PROBE.json",
+              "schema": "hawking.ascension.qwen30_gqa_metal_component_probe.v1",
+              "sha256": "9d042b5b8b81cd8706172991fa1fb588bc771184d28cd97edde5d11c509cc4b1",
+              "status": "PASS_DIRECT_METAL_QWEN30_GQA_ATTENTION_COMPONENT_NOT_FULL_MODEL_NOT_TPS_GATE"
+            },
+            {
+              "device": "Apple M3 Ultra",
+              "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/kernel/QWEN_NEXT_GATED_DELTANET_METAL_COMPONENT_PROBE.json",
+              "schema": "hawking.ascension.qwen_next_deltanet_metal_component_probe.v1",
+              "sha256": "4312b1f3126a9a8f383b24a93f3a42e0b554e87efae4b0908aa42a5aa8ad7884",
+              "status": "PASS_DIRECT_METAL_QWEN_NEXT_GATED_DELTANET_RECURRENCE_COMPONENT_NOT_FULL_MODEL_NOT_TPS_GATE"
+            },
+            {
+              "device": "Apple M3 Ultra",
+              "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/kernel/QWEN_BINARY_SIGN_SCALE_MATVEC_METAL_COMPONENT_PROBE.json",
+              "schema": "hawking.ascension.qwen_binary_sign_scale_metal_component_probe.v1",
+              "sha256": "6057cc0fbcd6333897afb26dbe73a13cd101d7a736976a331734c180c033b302",
+              "status": "PASS_SOURCE_BOUND_PACKED_BINARY_SIGN_SCALE_MATVEC_COMPONENT_NOT_FULL_MODEL_NOT_TPS_GATE"
+            }
+          ],
+          "claim_boundary": "component probes and library MPS measurements are never model TPS",
+          "required_before_operational": {
+            "current_full_token_result": null,
+            "custom_kernel_base_true_tps_minimum": 100.0,
+            "full_token_tg3_base_true_tps_minimum": 333.0,
+            "status": "BLOCKED_UNTIL_EXACT_COMPLETE_NATIVE_RUNTIME_EXISTS"
+          }
+        },
+        "measurement": {
+          "functional": {
+            "claim_boundary": "teacher tensor matvec only; not full-model parity, mini-generation, HCLI, or capability",
+            "cosine": 0.9688751101493835,
+            "input_width": 2048,
+            "max_abs": 2.2562856674194336,
+            "output_width": 128,
+            "relative_l2": 0.24864095449447632,
+            "rmse": 1.1078734397888184,
+            "status": "RAN_TENSOR_TEACHER_MATVEC"
+          },
+          "weight": {
+            "cosine": 0.9438276290893555,
+            "max_abs": 0.1630859375,
+            "relative_l2": 0.345744252204895,
+            "rmse": 0.02239704504609108
+          }
+        },
+        "mechanism_key": "uniform_q3_group64:moe_router:qwen3_moe:58838462231bef2e",
+        "model_family": "qwen3_moe",
+        "precision": "hawking.gravity.uniform_group.v1",
+        "record_id": "representation:qwen30-50eaec0b3fa66fb2eec762b5b90d6fe5",
+        "recorded_at": "2026-08-08T07:03:20.535401Z",
+        "reopen_conditions": "new representation/configuration or full-model parity evidence",
+        "representation": "uniform_q3_group64",
+        "residual": false,
+        "runtime_delta": "NOT_MEASURED_NO_COMPLETE_NATIVE_MODEL",
+        "schema": "hawking.ascension.knowledge_representation_genome.v1",
+        "seal_sha256": "7f8f9b507c3748a57873649b4b1d271ccfaa5cb07ef81defc1feade93d9220d3",
+        "tensor_or_organ": "model.layers.0.mlp.gate.weight"
+      },
+      {
+        "candidate_id": "qwen30-83012b2a10842529e3d61bb78a396c96",
+        "capability_delta": "NOT_MEASURED_NO_COMPLETE_NATIVE_MODEL",
+        "claim_boundary": "knowledge transfer prior only; not cross-model qualification",
+        "codebook_or_basis": {
+          "bits": 3,
+          "group_size": 64
+        },
+        "complete_bpw_delta": {
+          "component_physical_bpw": 3.251378377278646,
+          "full_model_bpw": null
+        },
+        "doctor_qat": {
+          "status": "NOT_APPLICABLE"
+        },
+        "evidence_binding": {
+          "artifact_sha256": "cbaad3cd5fef715f4bd021fd7b4a8f7149308903a5d01c07aa300fa95a27d546",
+          "candidate_seal_sha256": "ee0259c3c7f50bb0053552326d15ee2310b6c6916e0a39440b556ee9466f502b"
+        },
+        "failure_modes": [],
+        "geometry": {
+          "elements": 1572864,
+          "kind": "complete_tensor",
+          "shape": [
+            768,
+            2048
+          ]
+        },
+        "kernel_requirements": {
+          "available_component_evidence": [
+            {
+              "device": "Apple M3 Ultra",
+              "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/kernel/QWEN_DUAL_ROUTE_METAL_COMPONENT_PROBE.json",
+              "schema": "hawking.ascension.qwen_router_metal_component_probe.v1",
+              "sha256": "786851a11eb2da87431bdd886d3690ec97e9d52cb076244c759695812d48a21b",
+              "status": "PASS_DIRECT_METAL_ROUTER_COMPONENT_NOT_FULL_MODEL_NOT_TPS_GATE"
+            },
+            {
+              "device": "Apple M3 Ultra",
+              "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/kernel/QWEN30_GQA_METAL_COMPONENT_PROBE.json",
+              "schema": "hawking.ascension.qwen30_gqa_metal_component_probe.v1",
+              "sha256": "9d042b5b8b81cd8706172991fa1fb588bc771184d28cd97edde5d11c509cc4b1",
+              "status": "PASS_DIRECT_METAL_QWEN30_GQA_ATTENTION_COMPONENT_NOT_FULL_MODEL_NOT_TPS_GATE"
+            },
+            {
+              "device": "Apple M3 Ultra",
+              "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/kernel/QWEN_NEXT_GATED_DELTANET_METAL_COMPONENT_PROBE.json",
+              "schema": "hawking.ascension.qwen_next_deltanet_metal_component_probe.v1",
+              "sha256": "4312b1f3126a9a8f383b24a93f3a42e0b554e87efae4b0908aa42a5aa8ad7884",
+              "status": "PASS_DIRECT_METAL_QWEN_NEXT_GATED_DELTANET_RECURRENCE_COMPONENT_NOT_FULL_MODEL_NOT_TPS_GATE"
+            },
+            {
+              "device": "Apple M3 Ultra",
+              "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/kernel/QWEN_BINARY_SIGN_SCALE_MATVEC_METAL_COMPONENT_PROBE.json",
+              "schema": "hawking.ascension.qwen_binary_sign_scale_metal_component_probe.v1",
+              "sha256": "6057cc0fbcd6333897afb26dbe73a13cd101d7a736976a331734c180c033b302",
+              "status": "PASS_SOURCE_BOUND_PACKED_BINARY_SIGN_SCALE_MATVEC_COMPONENT_NOT_FULL_MODEL_NOT_TPS_GATE"
+            }
+          ],
+          "claim_boundary": "component probes and library MPS measurements are never model TPS",
+          "required_before_operational": {
+            "current_full_token_result": null,
+            "custom_kernel_base_true_tps_minimum": 100.0,
+            "full_token_tg3_base_true_tps_minimum": 333.0,
+            "status": "BLOCKED_UNTIL_EXACT_COMPLETE_NATIVE_RUNTIME_EXISTS"
+          }
+        },
+        "measurement": {
+          "functional": {
+            "claim_boundary": "teacher tensor matvec only; not full-model parity, mini-generation, HCLI, or capability",
+            "cosine": 0.9717520475387573,
+            "input_width": 2048,
+            "max_abs": 0.9740864038467407,
+            "output_width": 768,
+            "relative_l2": 0.2477465569972992,
+            "rmse": 0.23896999657154083,
+            "status": "RAN_TENSOR_TEACHER_MATVEC"
+          },
+          "weight": {
+            "cosine": 0.9683288335800171,
+            "max_abs": 0.029693603515625,
+            "relative_l2": 0.2584805190563202,
+            "rmse": 0.005321882199496031
+          }
+        },
+        "mechanism_key": "uniform_q3_group64:routed_expert_gate:qwen3_moe:58838462231bef2e",
+        "model_family": "qwen3_moe",
+        "precision": "hawking.gravity.uniform_group.v1",
+        "record_id": "representation:qwen30-83012b2a10842529e3d61bb78a396c96",
+        "recorded_at": "2026-08-08T07:15:11.110396Z",
+        "reopen_conditions": "new representation/configuration or full-model parity evidence",
+        "representation": "uniform_q3_group64",
+        "residual": false,
+        "runtime_delta": "NOT_MEASURED_NO_COMPLETE_NATIVE_MODEL",
+        "schema": "hawking.ascension.knowledge_representation_genome.v1",
+        "seal_sha256": "8d0b7fc564639f99d74a694fa04d43502aa3fbd1f66ce96a29aa0e2292ef9a45",
+        "tensor_or_organ": "model.layers.0.mlp.experts.0.gate_proj.weight"
+      },
+      {
+        "candidate_id": "qwen30-4de3dfa5b6a8f11b23fa99bc0c148b3b",
+        "capability_delta": "NOT_MEASURED_NO_COMPLETE_NATIVE_MODEL",
+        "claim_boundary": "knowledge transfer prior only; not cross-model qualification",
+        "codebook_or_basis": {
+          "bits": 3,
+          "group_size": 64
+        },
+        "complete_bpw_delta": {
+          "component_physical_bpw": 3.251378377278646,
+          "full_model_bpw": null
+        },
+        "doctor_qat": {
+          "status": "NOT_APPLICABLE"
+        },
+        "evidence_binding": {
+          "artifact_sha256": "ac20e90dd82181c30d2a1b26e7f82bb6ab4d880291a58e00ffbf3035fbe4fa28",
+          "candidate_seal_sha256": "bd155ba1badf3063cac50e6c82df8103b35f467e956a54262947e2624c809287"
+        },
+        "failure_modes": [],
+        "geometry": {
+          "elements": 1572864,
+          "kind": "complete_tensor",
+          "shape": [
+            768,
+            2048
+          ]
+        },
+        "kernel_requirements": {
+          "available_component_evidence": [
+            {
+              "device": "Apple M3 Ultra",
+              "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/kernel/QWEN_DUAL_ROUTE_METAL_COMPONENT_PROBE.json",
+              "schema": "hawking.ascension.qwen_router_metal_component_probe.v1",
+              "sha256": "786851a11eb2da87431bdd886d3690ec97e9d52cb076244c759695812d48a21b",
+              "status": "PASS_DIRECT_METAL_ROUTER_COMPONENT_NOT_FULL_MODEL_NOT_TPS_GATE"
+            },
+            {
+              "device": "Apple M3 Ultra",
+              "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/kernel/QWEN30_GQA_METAL_COMPONENT_PROBE.json",
+              "schema": "hawking.ascension.qwen30_gqa_metal_component_probe.v1",
+              "sha256": "9d042b5b8b81cd8706172991fa1fb588bc771184d28cd97edde5d11c509cc4b1",
+              "status": "PASS_DIRECT_METAL_QWEN30_GQA_ATTENTION_COMPONENT_NOT_FULL_MODEL_NOT_TPS_GATE"
+            },
+            {
+              "device": "Apple M3 Ultra",
+              "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/kernel/QWEN_NEXT_GATED_DELTANET_METAL_COMPONENT_PROBE.json",
+              "schema": "hawking.ascension.qwen_next_deltanet_metal_component_probe.v1",
+              "sha256": "4312b1f3126a9a8f383b24a93f3a42e0b554e87efae4b0908aa42a5aa8ad7884",
+              "status": "PASS_DIRECT_METAL_QWEN_NEXT_GATED_DELTANET_RECURRENCE_COMPONENT_NOT_FULL_MODEL_NOT_TPS_GATE"
+            },
+            {
+              "device": "Apple M3 Ultra",
+              "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/kernel/QWEN_BINARY_SIGN_SCALE_MATVEC_METAL_COMPONENT_PROBE.json",
+              "schema": "hawking.ascension.qwen_binary_sign_scale_metal_component_probe.v1",
+              "sha256": "6057cc0fbcd6333897afb26dbe73a13cd101d7a736976a331734c180c033b302",
+              "status": "PASS_SOURCE_BOUND_PACKED_BINARY_SIGN_SCALE_MATVEC_COMPONENT_NOT_FULL_MODEL_NOT_TPS_GATE"
+            }
+          ],
+          "claim_boundary": "component probes and library MPS measurements are never model TPS",
+          "required_before_operational": {
+            "current_full_token_result": null,
+            "custom_kernel_base_true_tps_minimum": 100.0,
+            "full_token_tg3_base_true_tps_minimum": 333.0,
+            "status": "BLOCKED_UNTIL_EXACT_COMPLETE_NATIVE_RUNTIME_EXISTS"
+          }
+        },
+        "measurement": {
+          "functional": {
+            "claim_boundary": "teacher tensor matvec only; not full-model parity, mini-generation, HCLI, or capability",
+            "cosine": 0.9657448530197144,
+            "input_width": 2048,
+            "max_abs": 0.6876821517944336,
+            "output_width": 768,
+            "relative_l2": 0.2680937349796295,
+            "rmse": 0.1890658438205719,
+            "status": "RAN_TENSOR_TEACHER_MATVEC"
+          },
+          "weight": {
+            "cosine": 0.9667182564735413,
+            "max_abs": 0.021240234375,
+            "relative_l2": 0.26534411311149597,
+            "rmse": 0.004066163673996925
+          }
+        },
+        "mechanism_key": "uniform_q3_group64:routed_expert_up:qwen3_moe:58838462231bef2e",
+        "model_family": "qwen3_moe",
+        "precision": "hawking.gravity.uniform_group.v1",
+        "record_id": "representation:qwen30-4de3dfa5b6a8f11b23fa99bc0c148b3b",
+        "recorded_at": "2026-08-08T07:17:34.098422Z",
+        "reopen_conditions": "new representation/configuration or full-model parity evidence",
+        "representation": "uniform_q3_group64",
+        "residual": false,
+        "runtime_delta": "NOT_MEASURED_NO_COMPLETE_NATIVE_MODEL",
+        "schema": "hawking.ascension.knowledge_representation_genome.v1",
+        "seal_sha256": "8f5191a10e822b8de8205be0e3d771ff0ea1addde203e40fe71199c610bbdad5",
+        "tensor_or_organ": "model.layers.0.mlp.experts.63.up_proj.weight"
+      }
+    ],
+    "may_proceed": true,
+    "mechanism_key": "uniform_q3_group64:routed_expert_gate:qwen3_next_hybrid:58838462231bef2e",
+    "negative_science_checked": true
+  },
+  "measurement": {
+    "elapsed_seconds": 0.1766464999964228,
+    "functional_probe": {
+      "claim_boundary": "teacher tensor matvec only; not full-model parity, mini-generation, HCLI, or capability",
+      "cosine": 0.9731649160385132,
+      "input_width": 2048,
+      "max_abs": 0.646645188331604,
+      "output_width": 512,
+      "relative_l2": 0.2430654764175415,
+      "rmse": 0.09400857985019684,
+      "status": "RAN_TENSOR_TEACHER_MATVEC"
+    },
+    "mps_component_probe": {
+      "claim_boundary": "library matvec component only; not custom packed decode and not model tokens-per-second",
+      "device": "mps",
+      "elapsed_seconds": 0.0019694590009748936,
+      "iterations": 16,
+      "matvecs_per_second": 8124.058430299848,
+      "shape": [
+        512,
+        2048
+      ],
+      "status": "RAN_MPS_LIBRARY_COMPONENT_SMOKE"
+    },
+    "weight_reconstruction": {
+      "cosine": 0.9663881659507751,
+      "max_abs": 0.024658203125,
+      "relative_l2": 0.2667301297187805,
+      "rmse": 0.0020382481161504984
+    }
+  },
+  "recorded_at": "2026-08-08T07:17:59.969462Z",
+  "representation": {
+    "claim_boundary": "artifact represents only the declared source tensor region",
+    "codec_metadata": {
+      "bits": 3,
+      "code_bytes": 393216,
+      "elements": 1048576,
+      "group_size": 64,
+      "groups": 16384,
+      "representation": "uniform_q3_group_scale",
+      "retained_padding_elements": 0,
+      "scale_bytes": 32768,
+      "scale_dtype": "float16",
+      "schema": "hawking.gravity.uniform_group.v1",
+      "shape": [
+        512,
+        2048
+      ]
+    },
+    "family": "uniform_q3_group64"
+  },
+  "schema": "hawking.ascension.gravity_physical_candidate.v1",
+  "seal_sha256": "ddd52f847cc70736874e4800d9e067d8530610e6f4580b4e2cd5fc0e96a400f6",
+  "sensitive_organ_gate": {
+    "claim_boundary": "component organ gate only; it cannot establish full-model capability",
+    "functional_relative_l2": 0.2430654764175415,
+    "organ": "routed_expert_gate",
+    "passes": true,
+    "sensitive": true,
+    "status": "RAN_COMPONENT_SENSITIVE_ORGAN_GATE",
+    "threshold": 0.28
+  },
+  "source": {
+    "organ": "routed_expert_gate",
+    "region": {
+      "elements": 1048576,
+      "kind": "complete_tensor",
+      "shape": [
+        512,
+        2048
+      ]
+    },
+    "region_value_sha256": "bf92aab90e5984ac77ee49966010cc8ab903f8d4ddf5fb7b139a824d71e86f17",
+    "repository": "Qwen/Qwen3-Coder-Next",
+    "revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+    "sensitive_organ": true,
+    "source_shard": "model-00001-of-00040.safetensors",
+    "source_shard_sha256_from_identity": "8e9a517133bfbdc6806cf8b61793055a260efeb68e6e019fd90e4bbb1b665d0a",
+    "tensor_name": "model.layers.0.mlp.experts.0.gate_proj.weight"
+  },
+  "source_content_identity_sha256": "3a6c4816e885023cc6eaaf0521adb0be1a9a008ee5021116c1305b78a2745acc",
+  "state_machine": {
+    "capability": "BLOCKED_NO_COMPLETE_MODEL",
+    "complete_generation": "BLOCKED_NATIVE_COMPLETE_DECODER_UNIMPLEMENTED",
+    "complete_pack": {
+      "claim_boundary": "fixed full-pack baseline is separate from this component population until a complete all-tensor genome is compiled",
+      "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+      "manifest_present": false,
+      "phase": "PACKING_COMPLETE_BINARY_GRAVITY",
+      "progress": {
+        "artifact_bytes": 1350097082,
+        "batch_limit": 16,
+        "completed_tensors": 8728,
+        "new_tensors_this_cycle": 1,
+        "planned_tensors": 74391
+      },
+      "status_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_GRAVITY_STATUS.json"
+    },
+    "complete_token_profile": "BLOCKED_NATIVE_COMPLETE_DECODER_UNIMPLEMENTED",
+    "deterministic_genome_proposal": "COMMITTED",
+    "immutable_source_content_identity": "VERIFIED",
+    "mini_generation": "BLOCKED_NATIVE_COMPLETE_DECODER_UNIMPLEMENTED",
+    "native_metal": "COMPONENT_EVIDENCE_ONLY",
+    "physical_byte_account": "COMMITTED",
+    "representative_tensor_parity": "RAN",
+    "runtime_tg": "BLOCKED_100_TPS_AND_TG3_REQUIRE_COMPLETE_TOKEN_RUNTIME",
+    "sensitive_organ_gate": "PASSED"
+  },
+  "status": "PHYSICAL_COMPONENT_CANDIDATE_MEASURED_NOT_FULL_MODEL",
+  "training": {
+    "status": "NOT_APPLICABLE"
+  }
+}

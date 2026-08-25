@@ -1,0 +1,19 @@
+{
+  "dedupe_key": "dc963cc234920669f72117becc4108ac99c8d571d6a90e0fabd879deb6c97277",
+  "delivery": {
+    "bot_api_http_status": 200,
+    "message_date": 1786228170,
+    "message_id": 7361
+  },
+  "event_fingerprint": "55e371383533b4d827ebd0a2dcce7f0b891a82eeefb803f287e1b3b7e22cf834",
+  "event_id": "qwen_complete_native_runtime",
+  "evidence_path": "physical/qwen30/complete-runtime/QWEN30_EXACT_FULL_TOKEN_RUNTIME_RECEIPT.json",
+  "message_sha256": "3a2f366adebcb8dfa4973a978ace315defff75a7a12634c2be0f553b7fb60e51",
+  "model": "qwen30",
+  "reason": null,
+  "recorded_at": "2026-08-08T22:29:30.187616Z",
+  "schema": "hawking.ascension.physical_telegram_delivery_receipt.v1",
+  "seal_sha256": "a79d7332c147886f05ec3433f063224ca9b6688daaf18088c931a74045b68955",
+  "secret_boundary": "no token or chat identifier is persisted",
+  "status": "DELIVERED"
+}

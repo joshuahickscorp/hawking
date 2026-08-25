@@ -1,0 +1,14 @@
+{
+  "admission_current": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_ADMISSION_CURRENT.json",
+  "claim_boundary": {
+    "deterministic_materialized_fixture_only": true,
+    "metal_requires_explicit_root_and_rawls_quiet_lease": true,
+    "not_a_complete_moe_wave_layer_token_generation_hcli_or_tps_result": true
+  },
+  "manifest": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+  "mode": "cpu-oracle",
+  "router_receipt": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_POSTNORM_ROUTER_TOP10_CPU_CAPTURE_20260808T000002Z/receipt.json",
+  "schema": "hawking.ascension.qwen80_moe_wave_aggregate_second_residual_capture.v1",
+  "started_unix_millis": 1786226163068,
+  "status": "STARTED_QWEN80_MOE_AGGREGATE_SECOND_RESIDUAL_COMPONENT_ATTEMPT"
+}

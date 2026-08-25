@@ -1,0 +1,18 @@
+{
+  "schema": "hawking.genesis.agentos_dispatch.v1",
+  "status": "running",
+  "pid": 4162,
+  "worker_id": "kernel",
+  "started_at": 1787033091.62083,
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/tools/genesis_agentos.py",
+    "tick",
+    "--repo",
+    "/Users/scammermike/Downloads/hawking",
+    "--worker",
+    "kernel",
+    "--max-rounds",
+    "1"
+  ]
+}

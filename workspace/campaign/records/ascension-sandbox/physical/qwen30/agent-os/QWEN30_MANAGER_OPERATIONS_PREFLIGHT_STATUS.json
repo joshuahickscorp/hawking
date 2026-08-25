@@ -1,0 +1,81 @@
+{
+  "attempt_fingerprint": null,
+  "claim_boundary": {
+    "does_not_write_final_manager_operations_receipt": true,
+    "not_a_runtime_hcli_tps_tg_capability_or_tournament_result": true,
+    "only_actual_loopback_endpoint_requests_can_create_a_preflight_result": true,
+    "raw_prompt_or_completion_text_is_not_persisted": true
+  },
+  "details": {
+    "hcli_gate": {
+      "details": {
+        "expected_schema": "hawking.ascension.physical_hcli_measurement.v1",
+        "expected_status": "PASS_MEASURED_HCLI",
+        "model_id": "Qwen3-Coder-30B-A3B-Instruct",
+        "source_bound": true
+      },
+      "document_sha256": null,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_MEASURED_HCLI_RECEIPT.json",
+      "reasons": [
+        "receipt is absent"
+      ],
+      "requirement": "measured_hcli",
+      "seal_sha256": null,
+      "state": "BLOCKED"
+    },
+    "model": "qwen30",
+    "runtime_gate": {
+      "details": {
+        "expected_schema": "hawking.ascension.physical_exact_full_token_runtime.v1",
+        "expected_status": "PASS_EXACT_NATIVE_FULL_TOKEN_RUNTIME",
+        "measured_token_count": 38,
+        "model_id": "Qwen3-Coder-30B-A3B-Instruct",
+        "runtime_supersession": {
+          "canonical_runtime_executable_sha256": "884b1d5052fa4387fd14a28600604e4e07ca280592f4a5182b2fc6598176f797",
+          "canonical_runtime_is_pass": true,
+          "canonical_runtime_receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_EXACT_FULL_TOKEN_RUNTIME_RECEIPT.json",
+          "canonical_runtime_receipt_seal_sha256": "48f065627739877bbafae141fa6a4a37bbd8b24037921b996ca0881ca7828ced",
+          "canonical_runtime_status": "PASS_EXACT_NATIVE_FULL_TOKEN_RUNTIME",
+          "current_runtime_eligible": true,
+          "current_runtime_revoked": false,
+          "defective_runtime_executable_sha256": "98920efa7a391e61b8fe5a1bbf267caf26649e15d812a8de36428d441b75858b",
+          "historical_pass_archive_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/runtime-receipt-history/QWEN30_EXACT_FULL_TOKEN_RUNTIME_RECEIPT_ea667d7f689cac50b236a5c89c35d35f0f8b50fbb9240f1d850f13f2df92bddd.json",
+          "model_id": "Qwen3-Coder-30B-A3B-Instruct",
+          "reasons": [],
+          "schema": "hawking.ascension.physical_exact_full_token_runtime_authority.v1",
+          "state": "SUPERSESSION_PRESERVES_HISTORICAL_REVOCATION_CURRENT_RUNTIME_ELIGIBLE",
+          "superseded_runtime_receipt_seal_sha256": "ea667d7f689cac50b236a5c89c35d35f0f8b50fbb9240f1d850f13f2df92bddd",
+          "supersession_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_EXACT_FULL_TOKEN_RUNTIME_SUPERSESSION.json",
+          "supersession_present": true,
+          "supersession_seal_sha256": "a9cb1013b89ed9d33e45b308bfda74bf81885f6323a614c52123d0c706b48314"
+        },
+        "source_bound": true,
+        "timing_scope": "complete_model_token_loop"
+      },
+      "document_sha256": "7e791e537d07b9580bc894a79af1a1825b26c05c3ee8d44636ff9e2f209eca56",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_EXACT_FULL_TOKEN_RUNTIME_RECEIPT.json",
+      "reasons": [],
+      "requirement": "native_exact_full_token_runtime",
+      "seal_sha256": "48f065627739877bbafae141fa6a4a37bbd8b24037921b996ca0881ca7828ced",
+      "state": "PASS"
+    },
+    "suite": {
+      "passed": true,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/tournament/ASCENSION_PHYSICAL_TOURNAMENT_SUITE_PREFLIGHT.json",
+      "reasons": [],
+      "seal_sha256": "d2816445e3a34d6875712a8f16cb4804b6d59707900d371fbc55c04cd996f21e"
+    }
+  },
+  "gravity_artifact_id": "Qwen30-Gravity-Manager-Artifact",
+  "heartbeat": 2408,
+  "model": "qwen30",
+  "phase": "WAITING_FOR_CANONICAL_RUNTIME_HCLI_SUITE_AND_MANAGER_OPERATIONS_ENDPOINT",
+  "pid": 10487,
+  "ppid": 1,
+  "reasons": [
+    "canonical measured-HCLI gate has not passed",
+    "canonical HCLI receipt seal is unavailable"
+  ],
+  "recorded_at": "2026-08-10T17:23:22.099643Z",
+  "schema": "hawking.ascension.manager_operations_preflight_status.v1"
+}

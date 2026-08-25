@@ -1,0 +1,375 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T13:18:43Z",
+ "experiment_class": "ACCEL-SUSTAINED",
+ "knowledge_level": "INSTANCE",
+ "git_head": "71dc81ac1d44affbce64e6912fabc298a74f5262",
+ "identities": {
+  "experiment": {
+   "id": "INSTRUMENT_AUDIT_IQR_STABILITY",
+   "obligation": "G047 + every timed claim",
+   "steer": "S015 \u00a773 performance claim gates"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model; this audits the measuring instrument itself"
+  },
+  "representation": {
+   "name": "dense_f32",
+   "elements": 16777216
+  },
+  "kernel": {
+   "probed": "tg256_ept2, tg512_ept1, tg1024_ept4 -- three forge variants"
+  },
+  "runtime": {
+   "mlx": "0.32.1",
+   "python": "3.12.13"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "why_this_was_run": "the bandit receipt noticed the same candidate failed the reliability gate at 13.56% IQR in one run and passed at 3.19% in another. Every performance claim in this program rests on that gate, so the gate's own input being noisy is worth measuring rather than noting.",
+  "method": "8 INDEPENDENT IQR estimates per candidate per rep count, at 20/40/100/200 reps",
+  "measurements": {
+   "tg256_ept2": {
+    "20": {
+     "iqr_samples": [
+      4.9,
+      13.38,
+      4.91,
+      4.63,
+      4.21,
+      1.84,
+      10.1,
+      2.13
+     ],
+     "median_iqr": 4.76,
+     "min": 1.84,
+     "max": 13.38,
+     "gate_verdicts": [
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      false,
+      true
+     ],
+     "verdict_stable": false
+    },
+    "40": {
+     "iqr_samples": [
+      14.29,
+      4.57,
+      3.93,
+      3.41,
+      3.99,
+      13.59,
+      12.04,
+      5.34
+     ],
+     "median_iqr": 4.96,
+     "min": 3.41,
+     "max": 14.29,
+     "gate_verdicts": [
+      false,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+      true
+     ],
+     "verdict_stable": false
+    },
+    "100": {
+     "iqr_samples": [
+      5.61,
+      4.94,
+      5.67,
+      5.82,
+      4.51,
+      6.75,
+      4.53,
+      4.36
+     ],
+     "median_iqr": 5.27,
+     "min": 4.36,
+     "max": 6.75,
+     "gate_verdicts": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "verdict_stable": true
+    },
+    "200": {
+     "iqr_samples": [
+      6.3,
+      3.97,
+      5.09,
+      4.85,
+      4.66,
+      5.35,
+      5.51,
+      5.11
+     ],
+     "median_iqr": 5.1,
+     "min": 3.97,
+     "max": 6.3,
+     "gate_verdicts": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "verdict_stable": true
+    }
+   },
+   "tg512_ept1": {
+    "20": {
+     "iqr_samples": [
+      2.32,
+      5.96,
+      14.63,
+      11.78,
+      6.63,
+      2.58,
+      7.35,
+      8.73
+     ],
+     "median_iqr": 6.99,
+     "min": 2.32,
+     "max": 14.63,
+     "gate_verdicts": [
+      true,
+      true,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true
+     ],
+     "verdict_stable": false
+    },
+    "40": {
+     "iqr_samples": [
+      9.93,
+      9.21,
+      2.27,
+      5.77,
+      1.73,
+      4.96,
+      5.73,
+      12.59
+     ],
+     "median_iqr": 5.75,
+     "min": 1.73,
+     "max": 12.59,
+     "gate_verdicts": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false
+     ],
+     "verdict_stable": false
+    },
+    "100": {
+     "iqr_samples": [
+      5.99,
+      4.93,
+      3.37,
+      5.39,
+      5.14,
+      12.06,
+      5.69,
+      3.51
+     ],
+     "median_iqr": 5.27,
+     "min": 3.37,
+     "max": 12.06,
+     "gate_verdicts": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      true,
+      true
+     ],
+     "verdict_stable": false
+    },
+    "200": {
+     "iqr_samples": [
+      4.83,
+      6.75,
+      5.66,
+      5.82,
+      5.33,
+      4.8,
+      6.52,
+      4.79
+     ],
+     "median_iqr": 5.49,
+     "min": 4.79,
+     "max": 6.75,
+     "gate_verdicts": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "verdict_stable": true
+    }
+   },
+   "tg1024_ept4": {
+    "20": {
+     "iqr_samples": [
+      7.61,
+      3.45,
+      5.97,
+      2.96,
+      13.75,
+      6.12,
+      3.46,
+      1.95
+     ],
+     "median_iqr": 4.72,
+     "min": 1.95,
+     "max": 13.75,
+     "gate_verdicts": [
+      true,
+      true,
+      true,
+      true,
+      false,
+      true,
+      true,
+      true
+     ],
+     "verdict_stable": false
+    },
+    "40": {
+     "iqr_samples": [
+      3.95,
+      14.29,
+      5.34,
+      5.16,
+      7.2,
+      6.2,
+      2.6,
+      4.88
+     ],
+     "median_iqr": 5.25,
+     "min": 2.6,
+     "max": 14.29,
+     "gate_verdicts": [
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "verdict_stable": false
+    },
+    "100": {
+     "iqr_samples": [
+      4.2,
+      5.51,
+      5.3,
+      4.27,
+      4.0,
+      4.09,
+      10.43,
+      4.36
+     ],
+     "median_iqr": 4.31,
+     "min": 4.0,
+     "max": 10.43,
+     "gate_verdicts": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      true
+     ],
+     "verdict_stable": false
+    },
+    "200": {
+     "iqr_samples": [
+      5.53,
+      5.22,
+      6.81,
+      3.72,
+      4.23,
+      6.5,
+      3.96,
+      4.13
+     ],
+     "median_iqr": 4.72,
+     "min": 3.72,
+     "max": 6.81,
+     "gate_verdicts": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+     ],
+     "verdict_stable": true
+    }
+   }
+  },
+  "the_finding": "AT 20 AND 40 REPS THE GATE VERDICT FLIPS FOR EVERY CANDIDATE PROBED. tg256_ept2's IQR estimate ranged 1.84%-13.38% across eight 20-rep runs and 3.41%-14.29% across eight 40-rep runs -- the same kernel judged reliable or unreliable depending on which run you happened to do. At 100 reps two of three still flip. At 200 reps all three hold inside a 3-point band and no verdict flips.",
+  "what_it_means_for_earlier_work": {
+   "large_margin_conclusions_stand": "P5 fusion 1.71x, P6 unified memory 7.4x, P7 native 2.08x, atomics 3.05x and the GEMM results all rest on MARGINS far larger than any plausible IQR error. Those do not move.",
+   "reliability_verdicts_at_low_reps_are_suspect": "the original forge run BARRED three candidates for failing the gate at ~25 reps -- tg128_ept2, tg512_ept1 and tg1024_ept4. Two of those three are probed here and their TRUE IQR sits near 5%, comfortably inside the gate. They were most likely barred BY NOISE IN THE MEASUREMENT OF NOISE, not by being unrepeatable.",
+   "borderline_no_claims_are_suspect": "any NO_CLAIM driven by an arm sitting near the 10% line at low reps could have gone either way. The verdicts driven by large margins are unaffected."
+  },
+  "the_fix": "time_arm now reports reliability_verdict_is_stable and attaches a caveat below 200 reps, so a `reliable` flag taken from too few samples cannot be cited as a property of the kernel. A test pins both branches.",
+  "what_it_costs": "a stable reliability verdict needs 200 reps where the program has typically used 20-60. That is 3-10x the measurement budget for any claim whose admission depends on the gate rather than on a large margin."
+ },
+ "claim_boundary": "Three kernels, one shape, one machine, eight estimates per cell. This establishes that MY OWN GATE is unstable below roughly 200 reps on THIS workload; it does not establish a universal threshold, and a different kernel with genuinely bimodal timing could be unstable at any rep count. It does NOT overturn any large-margin result. It DOES mean the forge's three barred candidates were probably barred wrongly, and that is recorded against the forge rather than quietly fixed.",
+ "pass": true
+}

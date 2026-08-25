@@ -1,0 +1,344 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T13:38:43Z",
+ "experiment_class": "ACCEL-DISPATCH",
+ "knowledge_level": "INSTANCE",
+ "git_head": "7f836e65f3d17ae70a4df29e68698b6cf34a421d",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_D_GRAPH",
+   "obligation": "G046 + G045",
+   "steer": "S015 \u00a712 RUNTIME.graphs and RUNTIME.streams_and_events; \u00a73 required corpus 'graph execution', 'stream/event semantics'"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model; a dispatch-cost experiment"
+  },
+  "representation": {
+   "name": "dense_f32"
+  },
+  "kernel": {
+   "produced_by": "air.AirGraph / air.execute_graph",
+   "shape": "k identical elementwise dispatches, wired as a chain (depth k, width 1) or a fan (depth 1, width k)"
+  },
+  "runtime": {
+   "mlx": "0.32.1",
+   "python": "3.12.6"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "correctness": {
+   "chain_of_4_max_abs_err": 9.5367431640625e-07,
+   "fan_of_4_max_abs_err": 2.384185791015625e-07,
+   "note": "the chain applies 1.5x+0.25 four times, so a dropped or reordered node changes the answer; the fan applies it once from a shared input"
+  },
+  "sweep": {
+   "4096": {
+    "1": {
+     "ms": {
+      "fan_batched": 0.18653,
+      "chain_batched": 0.17421,
+      "chain_eager": 0.17137
+     },
+     "iqr": {
+      "fan_batched": 22.46,
+      "chain_batched": 16.56,
+      "chain_eager": 18.71
+     },
+     "fan_vs_chain": {
+      "verdict": "NO_CLAIM",
+      "reason": "an arm failed the 10.0% IQR gate (chain_batched 16.56%, fan_batched 22.46%) and the margin 7.07% does not overwhelm that noise",
+      "speedup": null
+     },
+     "batched_vs_eager": {
+      "verdict": "NO_CLAIM",
+      "reason": "an arm failed the 10.0% IQR gate (chain_eager 18.71%, chain_batched 16.56%) and the margin 1.65% does not overwhelm that noise",
+      "speedup": null
+     }
+    },
+    "2": {
+     "ms": {
+      "fan_batched": 0.18396,
+      "chain_batched": 0.1871,
+      "chain_eager": 0.34454
+     },
+     "iqr": {
+      "fan_batched": 25.15,
+      "chain_batched": 18.0,
+      "chain_eager": 12.96
+     },
+     "fan_vs_chain": {
+      "verdict": "NO_CLAIM",
+      "reason": "an arm failed the 10.0% IQR gate (chain_batched 18.0%, fan_batched 25.15%) and the margin 1.71% does not overwhelm that noise",
+      "speedup": null
+     },
+     "batched_vs_eager": {
+      "verdict": "NO_CLAIM",
+      "reason": "an arm failed the 10.0% IQR gate (chain_eager 12.96%, chain_batched 18.0%) and the margin 84.15% does not overwhelm that noise",
+      "speedup": null
+     }
+    },
+    "4": {
+     "ms": {
+      "fan_batched": 0.2074,
+      "chain_batched": 0.2318,
+      "chain_eager": 0.6755
+     },
+     "iqr": {
+      "fan_batched": 19.08,
+      "chain_batched": 14.44,
+      "chain_eager": 9.1
+     },
+     "fan_vs_chain": {
+      "verdict": "NO_CLAIM",
+      "reason": "an arm failed the 10.0% IQR gate (chain_batched 14.44%, fan_batched 19.08%) and the margin 11.76% does not overwhelm that noise",
+      "speedup": null
+     },
+     "batched_vs_eager": {
+      "verdict": "CANDIDATE_WINS_DESPITE_NOISE",
+      "speedup": 2.9141,
+      "margin_pct": 191.41,
+      "arm_noise_pct": 14.44,
+      "margin_over_noise_ratio": 13.3,
+      "caveat": "an arm exceeded the 10.0% IQR gate, but the margin is 13x the worst arm noise, so the direction of the result is not in doubt; the MAGNITUDE carries more uncertainty than a clean measurement would"
+     }
+    },
+    "8": {
+     "ms": {
+      "fan_batched": 0.24077,
+      "chain_batched": 0.27938,
+      "chain_eager": 1.35346
+     },
+     "iqr": {
+      "fan_batched": 14.3,
+      "chain_batched": 11.16,
+      "chain_eager": 5.78
+     },
+     "fan_vs_chain": {
+      "verdict": "NO_CLAIM",
+      "reason": "an arm failed the 10.0% IQR gate (chain_batched 11.16%, fan_batched 14.3%) and the margin 16.03% does not overwhelm that noise",
+      "speedup": null
+     },
+     "batched_vs_eager": {
+      "verdict": "CANDIDATE_WINS_DESPITE_NOISE",
+      "speedup": 4.8445,
+      "margin_pct": 384.45,
+      "arm_noise_pct": 11.16,
+      "margin_over_noise_ratio": 34.4,
+      "caveat": "an arm exceeded the 10.0% IQR gate, but the margin is 34x the worst arm noise, so the direction of the result is not in doubt; the MAGNITUDE carries more uncertainty than a clean measurement would"
+     }
+    },
+    "16": {
+     "ms": {
+      "fan_batched": 0.29021,
+      "chain_batched": 0.33796,
+      "chain_eager": 2.68985
+     },
+     "iqr": {
+      "fan_batched": 10.03,
+      "chain_batched": 8.88,
+      "chain_eager": 3.42
+     },
+     "fan_vs_chain": {
+      "verdict": "NO_CLAIM",
+      "reason": "an arm failed the 10.0% IQR gate (chain_batched 8.88%, fan_batched 10.03%) and the margin 16.45% does not overwhelm that noise",
+      "speedup": null
+     },
+     "batched_vs_eager": {
+      "verdict": "CANDIDATE_WINS",
+      "speedup": 7.9591,
+      "margin_pct": 695.91,
+      "arm_noise_pct": 8.88
+     }
+    }
+   },
+   "1048576": {
+    "1": {
+     "ms": {
+      "fan_batched": 0.28287,
+      "chain_batched": 0.2836,
+      "chain_eager": 0.2859
+     },
+     "iqr": {
+      "fan_batched": 5.44,
+      "chain_batched": 6.86,
+      "chain_eager": 5.58
+     },
+     "fan_vs_chain": {
+      "verdict": "INDISTINGUISHABLE",
+      "speedup": 1.0026,
+      "reason": "margin 0.26% does not clear arm noise 6.86%"
+     },
+     "batched_vs_eager": {
+      "verdict": "INDISTINGUISHABLE",
+      "speedup": 1.0081,
+      "reason": "margin 0.81% does not clear arm noise 6.86%"
+     }
+    },
+    "2": {
+     "ms": {
+      "fan_batched": 0.31094,
+      "chain_batched": 0.31208,
+      "chain_eager": 0.50882
+     },
+     "iqr": {
+      "fan_batched": 12.17,
+      "chain_batched": 12.42,
+      "chain_eager": 3.87
+     },
+     "fan_vs_chain": {
+      "verdict": "NO_CLAIM",
+      "reason": "an arm failed the 10.0% IQR gate (chain_batched 12.42%, fan_batched 12.17%) and the margin 0.37% does not overwhelm that noise",
+      "speedup": null
+     },
+     "batched_vs_eager": {
+      "verdict": "CANDIDATE_WINS_DESPITE_NOISE",
+      "speedup": 1.6304,
+      "margin_pct": 63.04,
+      "arm_noise_pct": 12.42,
+      "margin_over_noise_ratio": 5.1,
+      "caveat": "an arm exceeded the 10.0% IQR gate, but the margin is 5x the worst arm noise, so the direction of the result is not in doubt; the MAGNITUDE carries more uncertainty than a clean measurement would"
+     }
+    },
+    "4": {
+     "ms": {
+      "fan_batched": 0.33106,
+      "chain_batched": 0.34674,
+      "chain_eager": 0.95078
+     },
+     "iqr": {
+      "fan_batched": 6.83,
+      "chain_batched": 4.53,
+      "chain_eager": 4.25
+     },
+     "fan_vs_chain": {
+      "verdict": "INDISTINGUISHABLE",
+      "speedup": 1.0474,
+      "reason": "margin 4.74% does not clear arm noise 6.83%"
+     },
+     "batched_vs_eager": {
+      "verdict": "CANDIDATE_WINS",
+      "speedup": 2.742,
+      "margin_pct": 174.2,
+      "arm_noise_pct": 4.53
+     }
+    },
+    "8": {
+     "ms": {
+      "fan_batched": 0.38941,
+      "chain_batched": 0.4244,
+      "chain_eager": 1.82829
+     },
+     "iqr": {
+      "fan_batched": 6.93,
+      "chain_batched": 4.61,
+      "chain_eager": 2.07
+     },
+     "fan_vs_chain": {
+      "verdict": "CANDIDATE_WINS",
+      "speedup": 1.0898,
+      "margin_pct": 8.98,
+      "arm_noise_pct": 6.93
+     },
+     "batched_vs_eager": {
+      "verdict": "CANDIDATE_WINS",
+      "speedup": 4.308,
+      "margin_pct": 330.8,
+      "arm_noise_pct": 4.61
+     }
+    },
+    "16": {
+     "ms": {
+      "fan_batched": 0.51827,
+      "chain_batched": 0.59887,
+      "chain_eager": 3.62133
+     },
+     "iqr": {
+      "fan_batched": 5.17,
+      "chain_batched": 4.29,
+      "chain_eager": 1.12
+     },
+     "fan_vs_chain": {
+      "verdict": "CANDIDATE_WINS",
+      "speedup": 1.1555,
+      "margin_pct": 15.55,
+      "arm_noise_pct": 5.17
+     },
+     "batched_vs_eager": {
+      "verdict": "CANDIDATE_WINS",
+      "speedup": 6.0469,
+      "margin_pct": 504.69,
+      "arm_noise_pct": 4.29
+     }
+    }
+   }
+  },
+  "linear_fits": {
+   "4096": {
+    "chain_eager": {
+     "ms_per_node": 0.16783,
+     "intercept_ms": 0.00642,
+     "r2": 0.99999
+    },
+    "chain_batched": {
+     "ms_per_node": 0.01084,
+     "intercept_ms": 0.17487,
+     "r2": 0.95473
+    },
+    "fan_batched": {
+     "ms_per_node": 0.00725,
+     "intercept_ms": 0.17683,
+     "r2": 0.98676
+    },
+    "derived": {
+     "within_buffer_dispatch_ms": 0.01084,
+     "cross_buffer_submission_ms": 0.15699,
+     "submission_over_dispatch_ratio": 14.5,
+     "independent_branch_saving_on_marginal_node": 1.495
+    }
+   },
+   "1048576": {
+    "chain_eager": {
+     "ms_per_node": 0.22221,
+     "intercept_ms": 0.06134,
+     "r2": 0.99998
+    },
+    "chain_batched": {
+     "ms_per_node": 0.02073,
+     "intercept_ms": 0.26461,
+     "r2": 0.9987
+    },
+    "fan_batched": {
+     "ms_per_node": 0.01529,
+     "intercept_ms": 0.27173,
+     "r2": 0.99656
+    },
+    "derived": {
+     "within_buffer_dispatch_ms": 0.02073,
+     "cross_buffer_submission_ms": 0.20148,
+     "submission_over_dispatch_ratio": 9.7,
+     "independent_branch_saving_on_marginal_node": 1.356
+    }
+   }
+  },
+  "headline_THE_MACHINE_CONSTANT": "Eager submission cost is LINEAR in dispatch count with R2 = 0.99999 at 0.16783 ms per node. Batched, the marginal cost of an added node falls to 0.01084 ms. So on this machine and runtime a WITHIN-COMMAND-BUFFER DISPATCH costs about 11 microseconds while a CROSS-COMMAND-BUFFER SUBMISSION costs about 157 microseconds -- a ratio of 14.5x. That is an actionable threshold: any kernel doing less than ~0.16 ms of GPU work is dominated by its own submission if it is submitted alone.",
+  "this_quantifies_the_earlier_refutation": "ACCELERATOR_SYNC_CORRECTION.json refuted 'launch count' and named host round trips instead, but only as a ratio. The constant explains the magnitudes: collapsing 3 dispatches to 1 saves 2 x 11 us = 22 us, which is nothing against a 500 us operation, while collapsing 3 submissions to 1 saves 2 x 157 us = 314 us, which is the 2.3x that was observed. The two experiments used different work and agree.",
+  "cross_check_one_agrees_one_does_not": "The reduction at 2^20 went 0.555 ms eager to 0.241 ms batched over 2 removed submissions = 0.157 ms each, which matches this constant exactly from entirely different work. At 2^24 the same arithmetic gives 0.073 ms, which does NOT match. The constant is therefore NOT universal -- at 2^24 there is enough real GPU work to overlap part of the host round trip. Recorded because a constant that fails one of its two cross-checks is a constant with a stated domain, not a law.",
+  "concurrency_is_the_SMALLER_half": "Independent branches DO overlap, and it is worth much less than batching. Fan beats chain by 1.09x at k=8 and 1.16x at k=16 at 2^20 with clean arms, and on the MARGINAL node the saving is 1.356x at 2^20 and 1.495x at 4096. So of the two things CUDA graphs and streams offer, this runtime gives most of the ORDERING/BATCHING value and only a little of the CONCURRENCY value. A graph here is worth building for submission batching, not for parallelism, and the two are kept as separate fields.",
+  "what_the_gate_refused": "Every fan-vs-chain comparison at n=4096 returned NO_CLAIM: the arms carry 10-25% IQR because the whole measurement is a fraction of a millisecond. The 4096 fan/chain ratio LOOKS the same as the 2^20 one (1.16x at k=16) but is not claimed, because a ratio that agrees with a claimed result is still not a measurement. Only the linear fit is quoted at that size, and it is quoted because R2 = 0.99999 across 5 points is evidence the per-point noise is not."
+ },
+ "claim_boundary": "One elementwise kernel shape, f32, two sizes, k up to 16, MLX 0.32.1 on one machine. AirGraph records a DAG and executes it in ONE submission -- it does NOT implement CUDA stream or event SEMANTICS (no independent ordered queues, no cross-stream events, no host callbacks, no graph update or instantiation reuse), so RUNTIME.streams_and_events stays PARTIAL and nothing here may be called CUDA graph support. The concurrency measured is whatever the runtime does with independent work in one buffer, not a scheduler we control.",
+ "pass": true
+}

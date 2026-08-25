@@ -1,0 +1,25 @@
+PROTO_FRANKENSTEIN_V0 — MANUAL CLOUD UPLOAD
+============================================
+
+This package does NOT upload itself. A human must:
+
+  1. Upload the directory (or a tar of it):
+       workspace/campaign/evidence/models/frankenstein/proto-v0-seal-refresh/cloud-package
+
+  2. Record the remote content hash / etag of the uploaded object.
+
+  3. Confirm with the local hook (so reclaim can read PROTO_CLOUD_SEALED):
+
+       python3.12 -m lab.operators.frankenstein_v0_seal confirm-cloud \
+         --package workspace/campaign/evidence/models/frankenstein/proto-v0-seal-refresh/cloud-package \
+         --remote-hash <REMOTE_SHA256_OR_ETAG> \
+         --remote-uri <OPTIONAL_URI>
+
+  4. Only after PROTO_CLOUD_SEALED.json shows confirmed=true may reclaim
+     evict superseded local checkpoints / raw GLM windows.
+
+Bundle content id (local): b019e7366fdb8d2390950616b3728a0e66af6a331d521224312a97fdaf0bae14
+Restore command:
+  python3.12 -m lab.operators.frankenstein_v0_seal restore --package workspace/campaign/evidence/models/frankenstein/proto-v0-seal-refresh/cloud-package --out ~/Desktop/hawking-frankenstein/proto-frankenstein
+
+Suggested remote URI hint: (none — fill at confirm time)

@@ -1,0 +1,86 @@
+{
+  "schema": "hawking.ascension.qwen80_final_head_component_contract_cpu.v1",
+  "status": "EARNED_SOURCE_SHAPED_FINAL_HEAD_COMPONENT_CONTRACT_NOT_LIVE_ARTIFACT_OR_TOKEN",
+  "fixture_only": true,
+  "live_artifact_scan_performed": false,
+  "metal_device_or_dispatch_performed": false,
+  "artifact_binding_contract": {
+    "model_id": "Qwen3-Coder-Next-80B",
+    "source_repository": "Qwen/Qwen3-Coder-Next",
+    "source_revision": "0123456789abcdef0123456789abcdef01234567",
+    "manifest_schema": "hawking.ascension.qwen80_complete_binary_gravity.v1",
+    "manifest_seal_sha256": "a3f1c5d7e9b24680a3f1c5d7e9b24680a3f1c5d7e9b24680a3f1c5d7e9b24680",
+    "final_norm": {
+      "name": "model.norm.weight",
+      "shape": [
+        2048
+      ],
+      "group_size": 128
+    },
+    "lm_head": {
+      "name": "lm_head.weight",
+      "shape": [
+        151936,
+        2048
+      ],
+      "group_size": 128
+    },
+    "tokenizer_vocab_size": 151669,
+    "reserved_lm_head_tail_rows": 267,
+    "rms_epsilon_bits": 897988541
+  },
+  "fixture_rows": [
+    42,
+    151668,
+    151669,
+    151935
+  ],
+  "fixture_execution": {
+    "raw_fixture_argmax_before_mask": 151669,
+    "expected_reserved_raw_argmax": 151669,
+    "masked_fixture_argmax": 42,
+    "sampled_token_id": 42,
+    "expected_sampled_token_id": 42,
+    "reserved_fixture_rows_are_negative_infinity_after_mask": true,
+    "final_norm_max_abs_f32_vs_fp64_reference": 6.945316393114354e-7,
+    "final_norm_all_finite": true,
+    "deterministic_repeat_matches": true
+  },
+  "rejection_tests": {
+    "malformed_final_norm_shape_rejected": true,
+    "malformed_lm_head_shape_rejected": true,
+    "wrong_group_size_rejected": true,
+    "bad_reserved_tail_count_rejected": true,
+    "bad_mask_cutoff_rejected": true,
+    "sample_before_tail_mask_rejected": true,
+    "fixture_row_outside_declared_domain_rejected": true
+  },
+  "existing_hybrid_scheduler_integration_contract": {
+    "existing_scheduler_terminal_order": [
+      "After all 48 hybrid layers and both state domains have completed: final_rms_norm(model.norm.weight).",
+      "Then direct-packed lm_head(lm_head.weight) over all 151936 rows, with no BF16/MPS shadow path.",
+      "Then mask_reserved_lm_head_tail(first_reserved_id=151669) on the complete logit domain.",
+      "Only then sample_token(tokenizer_vocab_size=151669), validate sampled_id < 151669, and feed that ID to the next native token step."
+    ],
+    "artifact_binding_requirements": [
+      "The executor must reject unless its final norm and lm-head tensor bindings exactly match the admitted hybrid plan's names, shapes, group size, manifest seal, source revision, epsilon, tokenizer namespace, and 267-row tail.",
+      "A later integration must retain the direct-packed payload authority. This fixture contract cannot authorize decoded BF16, CPU shadow, or MPS production weights.",
+      "The full lm-head result must cover every declared row; four fixture rows are intentionally insufficient for a model token."
+    ],
+    "device_component_requirements": [
+      "GPU parity must compare final RMSNorm and selected direct-packed lm-head rows against a source-bound CPU reference under an exclusive Qwen80 lease.",
+      "The device implementation must prove that every logits index 151669..151935 is masked before sampling, including when an unmasked reserved row would otherwise win argmax.",
+      "The device sampler must use deterministic documented tie-breaking and reject non-finite/no-valid-token states."
+    ],
+    "promotion_boundary": [
+      "This fixture validates only a terminal component contract. It is not a complete Qwen80 layer/token, generation, HCLI, BASE_TRUE_TPS, TG, capability, Agent OS, or tournament receipt.",
+      "Integration requires the existing hybrid scheduler's all-layer state/routing work plus fresh component, full-token, multi-token, HCLI, capability, and clean-performance evidence."
+    ]
+  },
+  "claim_boundary": [
+    "The binding uses a synthetic fixture seal/revision and selected synthetic packed rows; it does not open, hash, admit, or scan the live Qwen80 artifact.",
+    "No Metal context/device/command buffer was created and no Qwen80 runtime, watcher, gatekeeper, registry, or tournament file was changed.",
+    "The result proves only CPU fixture behavior for final RMSNorm, selected lm-head rows, reserved-tail masking, and greedy sampling order."
+  ],
+  "unsealed_preimage_sha256": "246092ab7df128f2d7d18325461b3729e3c4920b347d5c4d0c1bf8e6fecbcaec"
+}

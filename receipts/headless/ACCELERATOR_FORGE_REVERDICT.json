@@ -1,0 +1,144 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T13:20:16Z",
+ "experiment_class": "ACCEL-KERNEL",
+ "knowledge_level": "INSTANCE",
+ "git_head": "18e8f05db31bdd16b69792bfc7a783370a217ab9",
+ "identities": {
+  "experiment": {
+   "id": "FORGE_REVERDICT_200REPS",
+   "obligation": "G047",
+   "steer": "S015 \u00a773",
+   "corrects": "receipts/headless/ACCELERATOR_FRONT_E_FORGE.json"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model"
+  },
+  "representation": {
+   "name": "dense_f32",
+   "elements": 16777216
+  },
+  "kernel": {
+   "variants": 15,
+   "reps": 200,
+   "warmup": 50
+  },
+  "runtime": {
+   "mlx": "0.32.1",
+   "python": "3.12.13"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "why": "the IQR stability audit found the gate's verdict flips below 200 reps and predicted the forge's three barred candidates were barred by noise. Predicting that is not the same as checking it, so all 15 were re-measured at 200 reps.",
+  "correction_1_all_three_barrings_were_wrong": {
+   "originally_barred": [
+    "tg1024_ept4",
+    "tg128_ept2",
+    "tg512_ept1"
+   ],
+   "unreliable_at_200_reps": "NONE",
+   "their_iqr_at_200": {
+    "tg1024_ept4": 5.67,
+    "tg128_ept2": 4.79,
+    "tg512_ept1": 4.65
+   },
+   "verdict": "ALL FIFTEEN candidates are reliable at 200 reps, IQR 3.52% to 7.27%, every one inside the 10% gate. The forge's 'three variants were not merely slower but LESS REPEATABLE' was an artifact of measuring noise with too few samples. That was reported as a finding and it was not one."
+  },
+  "correction_2_the_landscape_claim_was_overstated": {
+   "originally_said": "the full landscape spans 20.19%, so a BAD config does cost real time",
+   "at_200_reps": {
+    "full_spread_pct": 16.88,
+    "spread_excluding_one_outlier_pct": 2.42,
+    "the_outlier": "tg64_ept1",
+    "outlier_ms": 0.595458026509732
+   },
+   "verdict": "the spread is driven almost entirely by ONE configuration. Excluding tg64_ept1 the remaining fourteen span 2.42%, not 20%. So 'autotuning buys avoidance of bad configurations' is really 'autotuning buys avoidance of ONE bad configuration' -- the smallest threadgroup at one element per thread, which is the lowest-occupancy point in the space and the one a prior would have skipped anyway."
+  },
+  "what_survives_unchanged": {
+   "flat_top_cluster": "CONFIRMED and stronger. The top nine candidates span 0.65% against ~4.5% noise, so the champion is arbitrary within noise exactly as the original receipt said.",
+   "champion_changes": {
+    "original": "tg256_ept2",
+    "at_200_reps": "tg1024_ept1",
+    "difference_pct": 0.34,
+    "meaning": "a different name, a 0.33% difference, and neither is distinguishable from the other -- which is the point"
+   }
+  },
+  "table": {
+   "tg1024_ept1": {
+    "ms": 0.5095,
+    "iqr": 4.83
+   },
+   "tg512_ept1": {
+    "ms": 0.5109,
+    "iqr": 4.65
+   },
+   "tg128_ept1": {
+    "ms": 0.5112,
+    "iqr": 4.59
+   },
+   "tg1024_ept2": {
+    "ms": 0.5112,
+    "iqr": 4.88
+   },
+   "tg256_ept2": {
+    "ms": 0.5112,
+    "iqr": 4.5
+   },
+   "tg256_ept1": {
+    "ms": 0.5117,
+    "iqr": 3.52
+   },
+   "tg64_ept2": {
+    "ms": 0.5121,
+    "iqr": 3.88
+   },
+   "tg512_ept2": {
+    "ms": 0.5122,
+    "iqr": 5.12
+   },
+   "tg128_ept2": {
+    "ms": 0.5128,
+    "iqr": 4.79
+   },
+   "tg512_ept4": {
+    "ms": 0.5193,
+    "iqr": 6.19
+   },
+   "tg1024_ept4": {
+    "ms": 0.5211,
+    "iqr": 5.67
+   },
+   "tg64_ept4": {
+    "ms": 0.5211,
+    "iqr": 5.03
+   },
+   "tg256_ept4": {
+    "ms": 0.5214,
+    "iqr": 4.38
+   },
+   "tg128_ept4": {
+    "ms": 0.5218,
+    "iqr": 4.79
+   },
+   "tg64_ept1": {
+    "ms": 0.5955,
+    "iqr": 7.27
+   }
+  }
+ },
+ "claim_boundary": "This corrects two claims in the forge receipt and confirms a third. It does NOT change any large-margin result anywhere in the program. One primitive, one shape, one machine. The 200-rep threshold comes from the audit on this same workload and is not a universal constant.",
+ "pass": true
+}

@@ -1,0 +1,214 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T15:29:11Z",
+ "experiment_class": "ACCEL-THROUGHPUT",
+ "knowledge_level": "INSTANCE",
+ "git_head": "ba1a28e0b3a79bccbc55289a70e89c41b88635d1",
+ "identities": {
+  "experiment": {
+   "id": "DEVICE_RESIDENT_WORKUNIT",
+   "obligation": "G046 + G049",
+   "steer": "S015 \u00a79 delete the CUDA-era copy; \u00a7125 unified memory as a weapon; \u00a777 the metric that counts"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "storage": "TIER 1 ~/noetic/stage"
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal via MLX 0.32.1"
+  },
+  "model": {
+   "specimen": "Qwen3-30B-A3B",
+   "tensors": "64 expert gate_proj, 768x2048, bf16 on disk"
+  },
+  "representation": {
+   "name": "ws_rtn_q4_g64",
+   "bpw": 4.25
+  },
+  "kernel": {
+   "status": "UNCHANGED",
+   "note": "native matvec and pack MSL byte-identical to two blocks ago; what moved is WHERE THE OPERANDS LIVE"
+  },
+  "runtime": {
+   "python": "3.12.6",
+   "reference": "MLX primitives, not hand-written MSL"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "headline": "THE BYTES STOPPED COMING HOME. Three arms separate two changes: the GATE moving to the device (+58.31%) and the OPERANDS staying there (+113.86% on top). 635,422 -> 1,005,946 -> 2,151,304 WorkUnits/hour, 3.39x end to end, every arm inside the 10% IQR gate and both steps completely separated.",
+ "three_arms_because_two_things_changed": {
+  "A": "host gate -- the float64 CPU gate from the previous block",
+  "B": "device gate -- both matvecs in MLX primitives, true tensor copied to device per tensor",
+  "C": "B plus residency -- pack outputs stay on device, bf16 decoded there too",
+  "why_not_one_arm": "collapsing them would have reported 3.39x as 'the gate moved to the GPU', which is false: the gate move is 1.58x of it and residency is 2.14x."
+ },
+ "result": {
+  "A": {
+   "median_wu_h": 635421.95,
+   "min": 628743.0,
+   "max": 644607.8,
+   "spread_pct": 2.52,
+   "accepted": [
+    64,
+    64,
+    64,
+    64,
+    64,
+    64
+   ],
+   "verify_s_median": 0.157275
+  },
+  "B": {
+   "median_wu_h": 1005945.6000000001,
+   "min": 981972.5,
+   "max": 1039557.0,
+   "spread_pct": 5.86,
+   "accepted": [
+    64,
+    64,
+    64,
+    64,
+    64,
+    64
+   ],
+   "verify_s_median": 0.04664
+  },
+  "C": {
+   "median_wu_h": 2151303.7,
+   "min": 2121025.3,
+   "max": 2206676.4,
+   "spread_pct": 4.04,
+   "accepted": [
+    64,
+    64,
+    64,
+    64,
+    64,
+    64
+   ],
+   "verify_s_median": 0.02903
+  },
+  "B_vs_A_pct": 58.31,
+  "C_vs_A_pct": 238.56,
+  "C_vs_B_pct": 113.86,
+  "separation_B_over_A": true,
+  "separation_C_over_B": true
+ },
+ "phase_medians_s": {
+  "A": {
+   "read_s": 0.03453,
+   "decode_s": 0.07637,
+   "pack_s": 0.05549,
+   "gpu_s": 0.03707,
+   "verify_s": 0.15727
+  },
+  "B": {
+   "read_s": 0.03456,
+   "decode_s": 0.07599,
+   "pack_s": 0.03878,
+   "gpu_s": 0.03336,
+   "verify_s": 0.04664
+  },
+  "C": {
+   "read_s": 0.03163,
+   "decode_s": 0.00558,
+   "pack_s": 0.01691,
+   "gpu_s": 0.02362,
+   "verify_s": 0.02903
+  }
+ },
+ "phase_ratios_A_over_C": {
+  "read_s": 1.09,
+  "decode_s": 13.69,
+  "pack_s": 3.28,
+  "gpu_s": 1.57,
+  "verify_s": 5.42
+ },
+ "the_untouched_kernels_got_faster_and_that_is_the_residency_finding": {
+  "pack_s": "0.05549 -> 0.01691 = 3.28x running THE SAME MSL. Two thirds of the pack column was the device->host->device round trip the GPU-pack receipt explicitly listed as NOT DONE.",
+  "gpu_s": "0.03707 -> 0.02362 = 1.57x running THE SAME MSL, because mx.array(packed) was being charged to that column.",
+  "decode_s": "0.07637 -> 0.00558 = 13.68x. This column DID NOT EXIST before -- it was most of the ~19% the previous receipt reported as unaccounted, and it was the CPU bf16 upcast. On device it is a VIEW, not a conversion.",
+  "read_s": "0.03453 -> 0.03163 = 1.09x, untouched code again slightly faster, the same cross-phase effect the previous receipt measured."
+ },
+ "prediction_written_before_the_run": {
+  "B": {
+   "wu_h": [
+    745000,
+    855000
+   ],
+   "gain_pct": [
+    17,
+    35
+   ]
+  },
+  "C": {
+   "wu_h": [
+    920000,
+    1150000
+   ],
+   "gain_pct": [
+    45,
+    80
+   ]
+  },
+  "falsifier": "if C is not clearly better than B, residency is not the lever"
+ },
+ "prediction_verdict": {
+  "B": {
+   "band_wu_h": [
+    745000,
+    855000
+   ],
+   "actual": 1005945.6000000001,
+   "verdict": "MISSED HIGH by 17.7%"
+  },
+  "C": {
+   "band_wu_h": [
+    920000,
+    1150000
+   ],
+   "actual": 2151303.7,
+   "verdict": "MISSED HIGH by 87.1%"
+  },
+  "falsifier_survived": "C had to be clearly better than B or residency was not the lever; it is 2.14x better with complete separation",
+  "five_in_a_row": "FIVE CONSECUTIVE PREDICTIONS IN THIS PIPELINE HAVE COME IN ABOVE THEIR BAND (Tier 1, GPU pack, honest gate, and now both arms here). The previous receipt named cross-phase interference and that is real but small (~6.5%). THE LARGER MECHANISM IS VISIBLE HERE: I predict by subtracting the cost of the thing I am removing, and a host round trip is not charged to one column -- it was spread across decode, pack and gpu, three columns I was holding fixed. Removing a COPY removes cost from every phase that was paying for it.",
+  "what_would_fix_the_method": "predict from a phase decomposition that has NO unaccounted remainder. A's remainder was 19% before decode_s was split out, and the miss was roughly that size."
+ },
+ "correctness_is_the_precondition_and_it_is_measured": {
+  "resident_path_bit_identity": {
+   "tensors": 64,
+   "decode_mismatches": 0,
+   "packed_byte_mismatches": 0,
+   "scale_mismatches": 0,
+   "means": "device bf16 decode + device pack are BIT-IDENTICAL to the host path"
+  },
+  "device_gate_equivalence": {
+   "tensors": 64,
+   "controls_checked": 32,
+   "controls_rejected_by_device_gate": 32,
+   "verdict_mismatches": [],
+   "worst_relative_disagreement_vs_float64_host": {
+    "cosine": 2.853964171649169e-06,
+    "magnitude_ratio": 7.615517556976464e-07,
+    "kernel_rel": 0.0006219994075654908
+   },
+   "min_headroom_on_an_honest_pack": 0.002891648527059032,
+   "headroom_over_disagreement": 1013.204214609354
+  },
+  "what_the_device_gate_cannot_claim": "the numbers are NOT identical -- float32 accumulation disagrees with the float64 host gate by up to 2.85e-06 on cosine and 7.62e-07 on the magnitude ratio, an ORDER ABOVE the 1e-7 a single rounding would suggest because error accumulates through a 32-term inner product and a per-group sum. What IS claimed is the verdicts: 96 calls, 32 negative controls, zero mismatches, and the tightest honest verdict sits 0.00289 from its threshold = 1013x the worst disagreement. near_threshold_headroom() reports that distance with EVERY verdict, and a test pins that it says NO when the margin is thin.",
+  "the_independence_question_answered_precisely": "moving the reference onto the same device does NOT make gate 1 vacuous, but the reason matters: gate 1 compares the hand-written MSL against MLX PRIMITIVES -- different code, different compiled kernels, different arithmetic structure. What gate 1 never checked, in ANY version including the numpy one, is the NIBBLE CONVENTION, which both sides always shared. A convention error is caught by GATE 2 against the true tensor, which is exactly what the `nibbles swapped` control demonstrates. Stating that is the difference between a defensible move and a quiet weakening."
+ },
+ "claim_boundary": {
+  "clean": "A 2.52%, B 5.86%, C 4.04% spread, all inside the 10% gate; B over A and C over B both COMPLETELY SEPARATED; 6 rounds of 3 arms, warmed twice.",
+  "reps": "6 samples per arm, still below the 200-rep bar the program's own stability audit sets for a RELIABILITY VERDICT.",
+  "baseline_reproduced": "arm A measures 635,422 WU/h against 634,259 recorded in a different process last block -- 0.18% apart.",
+  "not_shown": "no kernel changed, so no Metal performance claim moves. The gate is now float32 and must not be used on a pack whose verdict sits within ~3e-04 of a threshold; the host float64 gate remains the reference and both are kept. Nothing here says ws_rtn_q4_g64 is adequate for a MODEL -- local adequacy does not compose.",
+  "what_is_left": "with the remainder gone the phases are verify 27.1%, read 29.5%, pack 15.8%, gpu 22.1%, decode 5.2%. READ IS NOW THE LARGEST SINGLE PHASE AGAIN at 0.0316 s, and it is a page-cached read of 192 MB, so the next honest lever is either a bigger working set that does not fit the cache or accepting that this pipeline is now storage-bound at Tier 1 speeds."
+ },
+ "pass": true
+}

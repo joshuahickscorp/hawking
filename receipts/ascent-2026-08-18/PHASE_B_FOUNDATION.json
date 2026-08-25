@@ -1,0 +1,16 @@
+{
+  "schema": "hawking.nos.phase_b_foundation.v1", "session": "f5169750", "date": "2026-08-18",
+  "obligation": "G1 (benchmark) + G2 (teacher dataset) foundation for executable-operator synthesis (S027)",
+  "setup": "torch 2.13 + MPS. Teacher function F(h) = down(silu(gate.h) * up.h) computed from bf16 gate/up/down (layer 31) on REAL MLP-input activations h = post_input_norm L31 [6827 tokens x 5120] (activations are IEEE fp16, weights bf16 -- a loader correction: fp16 read as bf16 gives NaN). Train = first 3413 tokens, HELD-OUT = last 3414. Quality = held-out relative-Frobenius output error; memorization guard = train-vs-held-out gap. RATE = active bytes/token (operator params x precision) vs q3 MLP (267M params x 0.40625 = 108.6 MB).",
+  "baselines": {
+    "q3_mlp_held_out_err": 0.3857,
+    "q3_active_mb": 108.6,
+    "teacher_intermediate": 17408
+  },
+  "first_candidate_naive_gelu_bottleneck": {
+    "d2048": {"held_out": 0.4452, "active_mb": 41.9}, "d4096": {"held_out": 0.4472, "active_mb": 83.9}, "d8192": {"held_out": 0.5419, "active_mb": 167.8},
+    "note": "naive 5120->d->5120 GELU, 800 Adam iters: ~0.44 held-out (vs q3 0.39), does NOT beat q3. Larger d got WORSE (0.44->0.54) => UNDERTRAINED / optimization-limited, NOT capacity-limited. This is a training-quality signal, not a refutation."
+  },
+  "verdict": "FOUNDATION VALIDATED (G1/G2 pipeline works): teacher F(h), q3 baseline, held-out benchmark, memorization guard, MPS training all functional. The naive first candidate is in the ballpark of q3 (0.44 vs 0.39) but undertrained. The real search -- narrower SwiGLU op, mixture-of-small-operators, structured nonlinear, recurrent-depth, with PROPER training -- is the Grok operator superwave. q3's 0.386 held-out is the bar every operator must beat at fewer active bytes.",
+  "next": "SwiGLU-op probe (narrower intermediate, 3000-iter cosine) in flight; then fan out the Grok operator-family superwave (G3-G8) against this benchmark."
+}

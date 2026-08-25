@@ -1,0 +1,86 @@
+{
+  "attempt_fingerprint": null,
+  "claim_boundary": {
+    "does_not_write_final_manager_operations_receipt": true,
+    "not_a_runtime_hcli_tps_tg_capability_or_tournament_result": true,
+    "only_actual_loopback_endpoint_requests_can_create_a_preflight_result": true,
+    "raw_prompt_or_completion_text_is_not_persisted": true
+  },
+  "details": {
+    "hcli_gate": {
+      "details": {
+        "expected_schema": "hawking.ascension.physical_hcli_measurement.v1",
+        "expected_status": "PASS_MEASURED_HCLI",
+        "model_id": "Qwen3-Coder-Next-80B",
+        "source_bound": true
+      },
+      "document_sha256": null,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_MEASURED_HCLI_RECEIPT.json",
+      "reasons": [
+        "receipt is absent",
+        "complete admitted artifact gate has not passed",
+        "native exact full-token runtime gate has not passed"
+      ],
+      "requirement": "measured_hcli",
+      "seal_sha256": null,
+      "state": "BLOCKED"
+    },
+    "model": "qwen80",
+    "runtime_gate": {
+      "details": {
+        "expected_schema": "hawking.ascension.physical_exact_full_token_runtime.v1",
+        "expected_status": "PASS_EXACT_NATIVE_FULL_TOKEN_RUNTIME",
+        "model_id": "Qwen3-Coder-Next-80B",
+        "runtime_supersession": {
+          "canonical_runtime_executable_sha256": null,
+          "canonical_runtime_is_pass": false,
+          "canonical_runtime_receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_EXACT_FULL_TOKEN_RUNTIME_RECEIPT.json",
+          "canonical_runtime_receipt_seal_sha256": null,
+          "canonical_runtime_status": null,
+          "current_runtime_eligible": false,
+          "defective_runtime_executable_sha256": null,
+          "historical_pass_archive_path": null,
+          "model_id": "Qwen3-Coder-Next-80B",
+          "reasons": [],
+          "schema": "hawking.ascension.physical_exact_full_token_runtime_authority.v1",
+          "state": "CANONICAL_RUNTIME_NOT_PASS",
+          "superseded_runtime_receipt_seal_sha256": null,
+          "supersession_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_EXACT_FULL_TOKEN_RUNTIME_SUPERSESSION.json",
+          "supersession_present": false,
+          "supersession_seal_sha256": null
+        },
+        "source_bound": true
+      },
+      "document_sha256": null,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_EXACT_FULL_TOKEN_RUNTIME_RECEIPT.json",
+      "reasons": [
+        "receipt is absent",
+        "runtime supersession state is CANONICAL_RUNTIME_NOT_PASS",
+        "complete admitted artifact gate has not passed"
+      ],
+      "requirement": "native_exact_full_token_runtime",
+      "seal_sha256": null,
+      "state": "BLOCKED"
+    },
+    "suite": {
+      "passed": true,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/tournament/ASCENSION_PHYSICAL_TOURNAMENT_SUITE_PREFLIGHT.json",
+      "reasons": [],
+      "seal_sha256": "d2816445e3a34d6875712a8f16cb4804b6d59707900d371fbc55c04cd996f21e"
+    }
+  },
+  "gravity_artifact_id": "Qwen80-Gravity-Manager-Artifact",
+  "heartbeat": 2408,
+  "model": "qwen80",
+  "phase": "WAITING_FOR_CANONICAL_RUNTIME_HCLI_SUITE_AND_MANAGER_OPERATIONS_ENDPOINT",
+  "pid": 10487,
+  "ppid": 1,
+  "reasons": [
+    "canonical exact native full-token runtime gate has not passed",
+    "canonical measured-HCLI gate has not passed",
+    "canonical runtime receipt seal is unavailable",
+    "canonical HCLI receipt seal is unavailable"
+  ],
+  "recorded_at": "2026-08-10T17:23:36.296236Z",
+  "schema": "hawking.ascension.manager_operations_preflight_status.v1"
+}

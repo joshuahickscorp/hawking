@@ -1,0 +1,523 @@
+{
+  "claim_boundary": {
+    "active": true,
+    "does_not_claim_option_c_live": true,
+    "does_not_claim_production_sandbox_active": true,
+    "does_not_delete_or_evict": true,
+    "does_not_download_model_bodies": true,
+    "does_not_load_models": true,
+    "does_not_merge_or_promote": true,
+    "research_control_plane_only": true
+  },
+  "evidence_inventory": {
+    "artifact": {
+      "endpoint": "PROTO_FRANKENSTEIN_V0_FULL_LATENT_SEALED",
+      "exists": true,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/proto-v0-seal-refresh/PROTO_FRANKENSTEIN_V0_ARTIFACT.json",
+      "schema": "hawking.frankenstein.v0_loadable_artifact.v1",
+      "seal_sha256": "2198cce3aa1d8c72bb0c4cd8afd5bd458c9a7d572917ff35e50f4aa75f22ec9f",
+      "seal_valid": true,
+      "status": "LOADABLE_TRAINED_COMPOSITION"
+    },
+    "cloud_manifest": {
+      "endpoint": null,
+      "exists": true,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/proto-v0-seal-refresh/cloud-package/PROTO_V0_CLOUD_MANIFEST.json",
+      "schema": "hawking.frankenstein.v0_cloud_package.v1",
+      "seal_sha256": "e43c689c8206931390ac82cf0038b38144e304725b6f2aee5ee856478d5f9a26",
+      "seal_valid": true,
+      "status": "PACKAGE_READY_AWAITING_MANUAL_UPLOAD"
+    },
+    "cloud_sealed": {
+      "endpoint": null,
+      "exists": true,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/proto-v0-seal-refresh/cloud-package/PROTO_CLOUD_SEALED.json",
+      "schema": "hawking.frankenstein.v0_proto_cloud_sealed.v1",
+      "seal_sha256": "57cd1f77588b13ab5ac71f2dde971c0207446c6b61fab2797308d588e92454bf",
+      "seal_valid": true,
+      "status": "CLOUD_SEALED_CONFIRMED"
+    },
+    "independent_verify": {
+      "endpoint": null,
+      "exists": true,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/proto-v0-seal-refresh/PROTO_FRANKENSTEIN_V0_INDEPENDENT_VERIFY.json",
+      "schema": "hawking.frankenstein.v0_independent_verify.v1",
+      "seal_sha256": "58b454cdd6164cb770805e8412952cfe9629f51223ce210ff533d06b4cf01f03",
+      "seal_valid": true,
+      "status": "EVALUATED"
+    },
+    "retractions": [
+      {
+        "must_not_gate": true,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/proto-v0-seal-refresh/RETRACTED.json",
+        "schema": "hawking.frankenstein.proto_v0_seal_retraction.v1",
+        "seal_sha256": "506bbca67750bd3cce454de578976931651af7e693f5fa5e2503f1656bbb2ce5",
+        "seal_valid": true,
+        "status": "RETRACTED",
+        "summary": "The proto-v0-seal-refresh ACCEPT/TERMINALIZED receipts were produced from synthetic/fixture-substituted capability scores and a hand-set complete_beats_linear=True that contradicts the real measured False from BRIDGE_TRAIN_REAL_FIRST_RUN / REAL_AG_TRAIN. They are INVALID and must not be used to gate any further admission (30B/80B or otherwise) until superseded by a real receipt recomputed entirely from real checkpoint/loss data."
+      },
+      {
+        "must_not_gate": true,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/proto-v0-real-fix/RETRACTED.json",
+        "schema": "hawking.frankenstein.proto_v0_seal_retraction.v1",
+        "seal_sha256": "506bbca67750bd3cce454de578976931651af7e693f5fa5e2503f1656bbb2ce5",
+        "seal_valid": true,
+        "status": "RETRACTED",
+        "summary": "The proto-v0-seal-refresh ACCEPT/TERMINALIZED receipts were produced from synthetic/fixture-substituted capability scores and a hand-set complete_beats_linear=True that contradicts the real measured False from BRIDGE_TRAIN_REAL_FIRST_RUN / REAL_AG_TRAIN. They are INVALID and must not be used to gate any further admission (30B/80B or otherwise) until superseded by a real receipt recomputed entirely from real checkpoint/loss data."
+      }
+    ],
+    "terminal": {
+      "endpoint": "PROTO_FRANKENSTEIN_V0_FULL_LATENT_SEALED",
+      "exists": true,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/proto-v0-seal-refresh/PROTO_FRANKENSTEIN_V0_TERMINAL_RECEIPT.json",
+      "schema": "hawking.frankenstein.proto_terminal.v1",
+      "seal_sha256": "ad4653641ad212b816f6b1af877408ef45bb58351b9c5c80c749ccf66655acb5",
+      "seal_valid": true,
+      "status": "TERMINALIZED"
+    }
+  },
+  "foundation_tests": {
+    "command": [
+      "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "-p",
+      "no:cacheprovider",
+      "lab/tests/test_execution_sandbox.py",
+      "lab/tests/test_option_c.py",
+      "lab/tests/test_sandbox_ready_preflight.py",
+      "lab/tests/test_qwen_ascension_preflight.py",
+      "lab/tests/test_ascension_contracts.py",
+      "lab/tests/test_ascension_parity_ladder_scaffold.py",
+      "lab/tests/test_ascension_lifecycle.py",
+      "lab/tests/test_ascension_source_admission.py",
+      "lab/tests/test_ascension_campaign.py"
+    ],
+    "elapsed_seconds": 2.145,
+    "exit_code": 0,
+    "output_tail": "........................................................................ [ 51%]\n....................................................................     [100%]\n140 passed in 1.35s\n",
+    "policy": {
+      "action": "run_allowed_tests",
+      "allowed": true,
+      "path_class": "owned_worktree",
+      "principal": "sandbox_model",
+      "reason": "sandbox model may perform run_allowed_tests",
+      "schema": "hawking.lab.execution_sandbox_policy.v1",
+      "target": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/executor-worktree"
+    },
+    "recorded_at": "2026-08-08T04:48:39.741040Z",
+    "status": "PASS"
+  },
+  "heartbeat": 7075,
+  "mode": "PRE_SANDBOX_RESEARCH",
+  "paths": {
+    "config": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/sandbox-ready-config.json",
+    "events": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/logs/events.jsonl",
+    "preflight_receipt": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/receipts/sandbox-ready-preflight.json",
+    "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox",
+    "status": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/state/status.json"
+  },
+  "preflight": {
+    "blockers": [
+      "proto_removed_from_active_envelope: configured Proto donor/body paths still exist in active storage",
+      "resource_reservation: free disk cannot preserve floor after 30B body + pack reservation",
+      "retracted Proto evidence must not gate admission: /Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/proto-v0-seal-refresh/RETRACTED.json",
+      "retracted Proto evidence must not gate admission: /Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/proto-v0-real-fix/RETRACTED.json"
+    ],
+    "claim_boundary": {
+      "no_deletions": true,
+      "no_model_loads": true,
+      "no_network_calls": true,
+      "option_c_live_still_requires_promoted_30b_and_80b": true,
+      "preflight_not_qwen_download_authorization": true,
+      "preflight_not_terminal_certification": true,
+      "retracted_evidence_is_not_admission_authority": true,
+      "sandbox_models_have_report_only_authority": true
+    },
+    "evidence_retractions": [
+      {
+        "must_not_gate": true,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/proto-v0-seal-refresh/RETRACTED.json",
+        "schema": "hawking.frankenstein.proto_v0_seal_retraction.v1",
+        "seal_sha256": "506bbca67750bd3cce454de578976931651af7e693f5fa5e2503f1656bbb2ce5",
+        "seal_valid": true,
+        "status": "RETRACTED",
+        "summary": "The proto-v0-seal-refresh ACCEPT/TERMINALIZED receipts were produced from synthetic/fixture-substituted capability scores and a hand-set complete_beats_linear=True that contradicts the real measured False from BRIDGE_TRAIN_REAL_FIRST_RUN / REAL_AG_TRAIN. They are INVALID and must not be used to gate any further admission (30B/80B or otherwise) until superseded by a real receipt recomputed entirely from real checkpoint/loss data."
+      },
+      {
+        "must_not_gate": true,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/proto-v0-real-fix/RETRACTED.json",
+        "schema": "hawking.frankenstein.proto_v0_seal_retraction.v1",
+        "seal_sha256": "506bbca67750bd3cce454de578976931651af7e693f5fa5e2503f1656bbb2ce5",
+        "seal_valid": true,
+        "status": "RETRACTED",
+        "summary": "The proto-v0-seal-refresh ACCEPT/TERMINALIZED receipts were produced from synthetic/fixture-substituted capability scores and a hand-set complete_beats_linear=True that contradicts the real measured False from BRIDGE_TRAIN_REAL_FIRST_RUN / REAL_AG_TRAIN. They are INVALID and must not be used to gate any further admission (30B/80B or otherwise) until superseded by a real receipt recomputed entirely from real checkpoint/loss data."
+      }
+    ],
+    "gates": {
+      "protected_authority": {
+        "evidence": {
+          "checked_files": [
+            "/Users/scammermike/Downloads/bible.md",
+            "/Users/scammermike/Downloads/hawking/lab/execution_sandbox.py",
+            "/Users/scammermike/Downloads/hawking/lab/hcli/option_c.py",
+            "/Users/scammermike/Downloads/hawking/lab/operators/sandbox_ready_preflight.py"
+          ]
+        },
+        "name": "protected_authority",
+        "passed": true,
+        "reasons": [],
+        "status": "PASS"
+      },
+      "proto_artifact": {
+        "evidence": {
+          "module_count": 10,
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/proto-v0-seal-refresh/PROTO_FRANKENSTEIN_V0_ARTIFACT.json",
+          "seal_sha256": "2198cce3aa1d8c72bb0c4cd8afd5bd458c9a7d572917ff35e50f4aa75f22ec9f"
+        },
+        "name": "proto_artifact",
+        "passed": true,
+        "reasons": [],
+        "status": "PASS"
+      },
+      "proto_cloud_offload": {
+        "evidence": {
+          "bundle_sha256": "b019e7366fdb8d2390950616b3728a0e66af6a331d521224312a97fdaf0bae14",
+          "cloud_manifest": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/proto-v0-seal-refresh/cloud-package/PROTO_V0_CLOUD_MANIFEST.json",
+          "cloud_sealed": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/proto-v0-seal-refresh/cloud-package/PROTO_CLOUD_SEALED.json",
+          "remote_hash": "b019e7366fdb8d2390950616b3728a0e66af6a331d521224312a97fdaf0bae14",
+          "restore_script": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/proto-v0-seal-refresh/cloud-package/restore_proto_frankenstein_v0.sh"
+        },
+        "name": "proto_cloud_offload",
+        "passed": true,
+        "reasons": [],
+        "status": "PASS"
+      },
+      "proto_independent_verify": {
+        "evidence": {
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/proto-v0-seal-refresh/PROTO_FRANKENSTEIN_V0_INDEPENDENT_VERIFY.json",
+          "seal_sha256": "58b454cdd6164cb770805e8412952cfe9629f51223ce210ff533d06b4cf01f03"
+        },
+        "name": "proto_independent_verify",
+        "passed": true,
+        "reasons": [],
+        "status": "PASS"
+      },
+      "proto_removed_from_active_envelope": {
+        "evidence": {
+          "checked_paths": [
+            "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/latent_v0_checkpoints",
+            "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints"
+          ],
+          "present_paths": [
+            "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/latent_v0_checkpoints",
+            "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/bridge_train_real/checkpoints"
+          ]
+        },
+        "name": "proto_removed_from_active_envelope",
+        "passed": false,
+        "reasons": [
+          "configured Proto donor/body paths still exist in active storage"
+        ],
+        "status": "BLOCKED"
+      },
+      "proto_terminal": {
+        "evidence": {
+          "endpoint": "PROTO_FRANKENSTEIN_V0_FULL_LATENT_SEALED",
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/proto-v0-seal-refresh/PROTO_FRANKENSTEIN_V0_TERMINAL_RECEIPT.json",
+          "seal_sha256": "ad4653641ad212b816f6b1af877408ef45bb58351b9c5c80c749ccf66655acb5"
+        },
+        "name": "proto_terminal",
+        "passed": true,
+        "reasons": [],
+        "status": "PASS"
+      },
+      "resource_reservation": {
+        "evidence": {
+          "disk_path": "/Users/scammermike/Downloads/hawking",
+          "free_bytes": 52960325632,
+          "minimum_free_disk_bytes": 26843545600,
+          "post_reservation_free_bytes": -69306655867,
+          "process_tree_rss_cap_bytes": 5368709120,
+          "qwen30_body_reservation_bytes": 61063697531,
+          "qwen30_pack_working_reservation_bytes": 34359738368,
+          "required_free_bytes": 122266981499,
+          "swap_growth_allowed": false
+        },
+        "name": "resource_reservation",
+        "passed": false,
+        "reasons": [
+          "free disk cannot preserve floor after 30B body + pack reservation"
+        ],
+        "status": "BLOCKED"
+      },
+      "sandbox_isolation_policy": {
+        "evidence": {
+          "allowed_test_selectors": [
+            "foundation"
+          ],
+          "approved_download_ids": [],
+          "executor_worktree_root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/executor-worktree",
+          "reviewer_enforcement": "filesystem_readonly",
+          "reviewer_filesystem_readonly": true,
+          "reviewer_readonly_root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/reviewer-readonly",
+          "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox"
+        },
+        "name": "sandbox_isolation_policy",
+        "passed": true,
+        "reasons": [],
+        "status": "PASS"
+      }
+    },
+    "option_c_live_claim": false,
+    "proto_terminal_claimed": false,
+    "qwen30_body_admission_candidate": false,
+    "qwen30_body_download_started": false,
+    "qwen30_code_only_overlap_permitted": false,
+    "recorded_at": "2026-08-10T17:24:01.166396Z",
+    "sandbox_foundation_preflight_ready": false,
+    "schema": "hawking.ascension.sandbox_ready_preflight.v1",
+    "seal_sha256": "f28ddbb8cefb37643ed2c955759269d4b427751020d85b29e2aa724579394036",
+    "status": "BLOCKED"
+  },
+  "process": {
+    "parent_pid": 1,
+    "pid": 96984,
+    "process_group": 96984,
+    "python_executable": "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python"
+  },
+  "production_gate_report": {
+    "blockers": [
+      "proto_removed_from_active_envelope: configured Proto donor/body paths still exist in active storage",
+      "resource_reservation: free disk cannot preserve floor after 30B body + pack reservation",
+      "retracted Proto evidence must not gate admission: /Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/proto-v0-seal-refresh/RETRACTED.json",
+      "retracted Proto evidence must not gate admission: /Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/proto-v0-real-fix/RETRACTED.json",
+      "Qwen3-Coder-30B executor has no source-bound, measured, controller-certified qualification",
+      "Qwen3-Coder-Next reviewer has no source-bound, measured, controller-certified qualification",
+      "manager tournament and alternate-manager offload have no independent evidence",
+      "Option-C protected parity, held-out capability, and CLEAN benchmark adapters remain unearned",
+      "V3 lifecycle first unmet state: V3_SEED_ARCHIVE",
+      "protected tournament controller: ARMED_BLOCKED_UNQUALIFIED_CANDIDATES"
+    ],
+    "claim_boundary": {
+      "no_body_downloads": true,
+      "no_deletions": true,
+      "no_model_loads": true,
+      "no_promotions": true,
+      "running_control_plane_is_not_option_c_live": true,
+      "running_control_plane_is_not_production_sandbox_activation": true
+    },
+    "foundation_preflight_ready": false,
+    "option_c_live": false,
+    "production_sandbox_active": false,
+    "qwen_metadata_preflight_admitted": false,
+    "research_sandbox_active": true,
+    "status": "BLOCKED_UNQUALIFIED_MANAGERS"
+  },
+  "qwen_metadata_preflight": {
+    "all_gates_green": false,
+    "claim_boundary": {
+      "cache_files_created": false,
+      "download_launched": false,
+      "hub_or_xet_invoked": false,
+      "invented_public_model_details": false,
+      "metadata_only": true,
+      "model_loaded": false,
+      "network_calls": false,
+      "permission_to_fetch_model_bodies": false,
+      "scaffold_not_live_acquisition": true
+    },
+    "claimed_download_permitted": null,
+    "claimed_download_permitted_rejected": false,
+    "download_permitted": false,
+    "family_supported_by_runtime": false,
+    "gates": {
+      "actual_artifact_receipt": {
+        "detail": "gate receipt not supplied",
+        "green": false,
+        "status": "ABSENT"
+      },
+      "controller_approval": {
+        "detail": "gate receipt not supplied",
+        "green": false,
+        "status": "ABSENT"
+      },
+      "pinned_identity": {
+        "detail": "gate receipt not supplied",
+        "green": false,
+        "status": "ABSENT"
+      },
+      "profiler_parity_capability": {
+        "detail": "gate receipt not supplied",
+        "green": false,
+        "status": "ABSENT"
+      },
+      "resource_supervisor_green": {
+        "detail": "gate receipt not supplied",
+        "green": false,
+        "status": "ABSENT"
+      },
+      "runtime_loader_forward_support": {
+        "detail": "gate receipt not supplied",
+        "green": false,
+        "status": "ABSENT"
+      },
+      "source_admission": {
+        "detail": "gate receipt not supplied",
+        "green": false,
+        "status": "ABSENT"
+      }
+    },
+    "honesty": {
+      "default_decision": "BLOCKED",
+      "download_permitted_requires_every_gate": true,
+      "fail_closed": true,
+      "lanes_distinguished": [
+        "30B",
+        "80B"
+      ]
+    },
+    "identity": {
+      "architecture_identity": {
+        "architectures": null,
+        "model_type": null
+      },
+      "config_digest": null,
+      "license": null,
+      "revision": null,
+      "source": null
+    },
+    "identity_complete": false,
+    "lane": {
+      "family_key": null,
+      "lane_id": null,
+      "record": null,
+      "resolved": false,
+      "role": null,
+      "scale_label": null
+    },
+    "reasons": [
+      "manifest mapping is required; defaulting to blocked",
+      "evidence mapping is required; defaulting to blocked",
+      "manifest mapping is required",
+      "identity.source is missing (must be supplied; never invented here)",
+      "identity.revision is missing",
+      "identity.config_digest is missing",
+      "identity.license is missing",
+      "identity.architecture_identity.model_type is missing",
+      "required gate 'source_admission' is absent",
+      "required gate 'pinned_identity' is absent",
+      "required gate 'runtime_loader_forward_support' is absent",
+      "required gate 'resource_supervisor_green' is absent",
+      "required gate 'actual_artifact_receipt' is absent",
+      "required gate 'profiler_parity_capability' is absent",
+      "required gate 'controller_approval' is absent",
+      "runtime-capability evidence mapping is required and must explicitly list supported model families"
+    ],
+    "required_gates": [
+      "source_admission",
+      "pinned_identity",
+      "runtime_loader_forward_support",
+      "resource_supervisor_green",
+      "actual_artifact_receipt",
+      "profiler_parity_capability",
+      "controller_approval"
+    ],
+    "runtime_capability": {
+      "family_supported": false,
+      "present": false,
+      "supported_families": []
+    },
+    "schema": "hawking.ascension.qwen_metadata_preflight.v1",
+    "seal_sha256": "58bb934c2c2e12658aaf68200d303f1023cc2e92afb0cfda0a642f7fc47afcb3",
+    "status": "BLOCKED"
+  },
+  "recorded_at": "2026-08-10T17:24:02.684200Z",
+  "resource_snapshot": {
+    "disk_path": "/Users/scammermike/Downloads/hawking",
+    "free_disk_bytes": 47676977152,
+    "minimum_free_disk_bytes": 26843545600
+  },
+  "schema": "hawking.ascension.research_sandbox.v1",
+  "seal_sha256": "cebe6e1f0c5529330df3920aeb3014feb3f11d7f7b5846452eb9892016d862d4",
+  "state": "RUNNING",
+  "v3_campaign": {
+    "documents": {
+      "campaign_supervisor": {
+        "first_unmet_state": null,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_V3_CAMPAIGN_SUPERVISOR.json",
+        "recorded_at": "2026-08-10T17:22:46.398047Z",
+        "seal_sha256": "106659ca4360c6ae38a2a71e371dac037d41167d679ab5f523f187cc825643f3",
+        "seal_valid": true,
+        "status": "RUNNING"
+      },
+      "execution_manifest": {
+        "first_unmet_state": null,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_V3_EXECUTION_MANIFEST.json",
+        "recorded_at": "2026-08-10T17:22:46.320927Z",
+        "seal_sha256": "79780c9b77d09ed8751fa92053126ec8aa0aacf70f0504b75c663e5b0c836e1a",
+        "seal_valid": true,
+        "status": "PRESENT"
+      },
+      "lifecycle_state": {
+        "first_unmet_state": "V3_SEED_ARCHIVE",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_V3_STATE.json",
+        "recorded_at": "2026-08-10T17:23:59.236485Z",
+        "seal_sha256": "b19bfaa3b7c14f5a6ba90b0071bf5fe889773d7af0162afcd28d465972c71624",
+        "seal_valid": true,
+        "status": "PRESENT"
+      }
+    },
+    "first_unmet_state": "V3_SEED_ARCHIVE",
+    "root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle",
+    "supervisor_heartbeat": 3119,
+    "tournament": {
+      "armed_at": "2026-08-09T06:16:03.096010Z",
+      "blockers": [
+        "requires certified MANAGER_30B_AGENT",
+        "requires certified MANAGER_80B_AGENT"
+      ],
+      "candidate_order": [
+        "Qwen30-Gravity-Manager-Artifact",
+        "Qwen80-Gravity-Manager-Artifact"
+      ],
+      "claim_boundary": {
+        "does_not_activate_sandbox": true,
+        "does_not_run_candidate_models": true,
+        "does_not_select_a_winner": true
+      },
+      "dimensions": [
+        "hard_gate_compliance",
+        "manager_capability",
+        "solo_manager_capability",
+        "manager_as_orchestrator_capability",
+        "verified_tasks_per_hour",
+        "architecture_kernel_research",
+        "gravity_research_quality",
+        "long_horizon_reliability",
+        "tool_recovery",
+        "search_retrieval",
+        "memory_context",
+        "hcli_latency",
+        "multi_agent_throughput",
+        "resident_memory",
+        "active_bytes_per_token",
+        "energy_per_verified_task",
+        "thermal_stability",
+        "error_rate",
+        "receipt_quality",
+        "adversarial_review_quality",
+        "failure_recovery",
+        "benchmark_honesty",
+        "security_effect_discipline",
+        "release_integration"
+      ],
+      "final_manager_protocol_identity_sha256": "8e3684af0b7de53690a9c88ce0d52b0cae019e0d798bc2748b5b1556211facf8",
+      "final_manager_protocol_schema": "hawking.ascension.final_manager_tournament_protocol.v1",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/lifecycle/ASCENSION_MANAGER_TOURNAMENT_CONTROLLER.json",
+      "seal_sha256": "25f01e232818948b536c20c24b6d36529af62b148f6c389cf39b16ddf9c4508f",
+      "status": "ARMED_BLOCKED_UNQUALIFIED_CANDIDATES"
+    }
+  }
+}

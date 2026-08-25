@@ -1,0 +1,181 @@
+{
+ "schema": "hawking.odyssey.pareto_archive.v1",
+ "generated_at": "2026-08-25T09:43:09Z",
+ "generated_by": "tools/odyssey/pareto_archive.py",
+ "obligation": "G040 \u2014 PARETO_ARCHIVE + FINAL_RESIDENT_SELECTION",
+ "hand_authored": false,
+ "git_head": "b474b06d0864a9f27e741e0a8a30195ed1b9e52d",
+ "candidates": {
+  "sealed-3.14": {
+   "complete_ebpw": 3.139301,
+   "active_ebpw_per_token": null,
+   "resident_bytes": 10557370368,
+   "TPOT_ns_p50": 29283625,
+   "TTFT_ns": 1443770125,
+   "single_stream_tps": 34.1488,
+   "model_reachable_gb_s": null,
+   "capability_passed": 30,
+   "capability_total": 43,
+   "hcli_wus_per_hour": 56.922,
+   "hcli_measured": true,
+   "hcli_n_reps": 3,
+   "hcli_rate_reps": [
+    56.923,
+    56.922,
+    56.576
+   ],
+   "hcli_rate_spread_pct": 0.61,
+   "hcli_accepted_reps": [
+    5,
+    5,
+    5
+   ],
+   "composite_wus_per_hour_per_GB": 5.3917
+  },
+  "variantA-2.98": {
+   "complete_ebpw": 2.980254,
+   "active_ebpw_per_token": 2.779352,
+   "resident_bytes": 10022612992,
+   "TPOT_ns_p50": 29202999,
+   "TTFT_ns": 1310097334,
+   "single_stream_tps": 34.2431,
+   "model_reachable_gb_s": 319.97,
+   "capability_passed": 0,
+   "capability_total": 43,
+   "hcli_wus_per_hour": 0.0,
+   "hcli_measured": false,
+   "hcli_n_reps": null,
+   "hcli_rate_reps": null,
+   "hcli_rate_spread_pct": null,
+   "hcli_accepted_reps": null,
+   "composite_wus_per_hour_per_GB": 0.0
+  },
+  "clean-2.60": {
+   "complete_ebpw": 2.596994,
+   "active_ebpw_per_token": 2.449272,
+   "resident_bytes": 8757137408,
+   "TPOT_ns_p50": 30017749,
+   "TTFT_ns": 1269662667,
+   "single_stream_tps": 33.3136,
+   "model_reachable_gb_s": 274.32,
+   "capability_passed": 0,
+   "capability_total": 43,
+   "hcli_wus_per_hour": 0.0,
+   "hcli_measured": false,
+   "hcli_n_reps": null,
+   "hcli_rate_reps": null,
+   "hcli_rate_spread_pct": null,
+   "hcli_accepted_reps": null,
+   "composite_wus_per_hour_per_GB": 0.0
+  },
+  "variantB-2.76": {
+   "complete_ebpw": 2.756021,
+   "active_ebpw_per_token": 2.608331,
+   "resident_bytes": 9265849388,
+   "TPOT_ns_p50": 30198416.5,
+   "TTFT_ns": 1275605542,
+   "single_stream_tps": 33.1143,
+   "model_reachable_gb_s": 290.39,
+   "capability_passed": 24,
+   "capability_total": 43,
+   "hcli_wus_per_hour": 48.836,
+   "hcli_measured": true,
+   "hcli_n_reps": 3,
+   "hcli_rate_reps": [
+    48.856,
+    48.681,
+    48.836
+   ],
+   "hcli_rate_spread_pct": 0.358,
+   "hcli_accepted_reps": [
+    5,
+    5,
+    5
+   ],
+   "composite_wus_per_hour_per_GB": 5.2705
+  }
+ },
+ "archive": {
+  "LOWEST_DENSITY": "clean-2.60",
+  "FASTEST_TPOT": "variantA-2.98",
+  "LOWEST_TTFT": "clean-2.60",
+  "BEST_CAPABILITY": "sealed-3.14",
+  "BEST_HCLI_WUS_HOUR": "sealed-3.14",
+  "BEST_LONG_CONTEXT": null,
+  "BEST_MULTISESSION": null
+ },
+ "unmeasured_categories": {
+  "BEST_LONG_CONTEXT": "the only long-context receipt on disk (LONG_CONTEXT_RUNTIME_CAPABILITY.json) measures the llama.cpp Q5_K reference at 29,982 prompt tokens, not any noetic body. No noetic body has a long-context measurement, so this category is UNMEASURED rather than assigned.",
+  "BEST_MULTISESSION": "concurrency equilibrium was measured on clean-2.60 only (c4, 1.844x). It is not known to transfer to the other bodies, and clean-2.60 is capability-dead, so no eligible candidate has a multisession number."
+ },
+ "selection": {
+  "rule": "CAPABILITY FLOOR FIRST, then Pareto, then the S011 \u00a70 composite",
+  "floor": "at least 1 verified capability item AND a nonzero verified HCLI WUs/hour",
+  "why_floor_first": "LOWEST_DENSITY and FASTEST_TPOT are both held by capability-dead bodies. A density-first rule would elect a resident that cannot do any work.",
+  "rejected_by_floor": {
+   "variantA-2.98": {
+    "capability_passed": 0,
+    "hcli_wus_per_hour": 0.0,
+    "why": "below the capability floor: produces no verified work"
+   },
+   "clean-2.60": {
+    "capability_passed": 0,
+    "hcli_wus_per_hour": 0.0,
+    "why": "below the capability floor: produces no verified work"
+   }
+  },
+  "eligible": [
+   "sealed-3.14",
+   "variantB-2.76"
+  ],
+  "pareto_front": [
+   "sealed-3.14",
+   "variantB-2.76"
+  ],
+  "front_is_not_a_singleton": true,
+  "composite_metric": "verified HCLI WUs/hour per GB resident (S011 \u00a70: work / wall time / physical resource)",
+  "ranked": [
+   {
+    "body": "sealed-3.14",
+    "composite_wus_per_hour_per_GB": 5.3917
+   },
+   {
+    "body": "variantB-2.76",
+    "composite_wus_per_hour_per_GB": 5.2705
+   }
+  ],
+  "provisional_resident": "sealed-3.14",
+  "margin_over_runner_up_pct": 2.3,
+  "CONFIDENCE": {
+   "margin_pct": 2.3,
+   "worst_rate_spread_pct": 0.61,
+   "margin_exceeds_spread": true,
+   "reps_per_body": {
+    "sealed-3.14": 3,
+    "variantB-2.76": 3
+   },
+   "accepted_stable_across_reps": {
+    "sealed-3.14": true,
+    "variantB-2.76": true
+   },
+   "reading": "MEASUREMENT-STABLE, BENCH-LIMITED. Three alternated reps per body give a rate spread of 0.36% and 0.61%, and the accepted count is identical in every rep, so the composite margin is several times the measurement noise and is not an artifact. What it cannot settle is bench composition: both bodies accept 5 of 6 WorkUnits and the whole gap is wall-clock on a 6-unit suite. A different WorkUnit mix could reorder them, and no number of reps fixes that."
+  }
+ },
+ "CAPABILITY_COLUMN_IS_REGIME_CONDITIONAL": {
+  "attacked_by": "G042 adversary A5 (receipts/headless/GRAND_CANDIDATE.json)",
+  "no_system_prompt": {
+   "sealed": 30,
+   "variantB": 24,
+   "gap": 6
+  },
+  "with_default_system_prompt": {
+   "sealed": 27,
+   "variantB": 27,
+   "gap": 0
+  },
+  "finding": "re-scoring the full suite with a neutral system prompt on the 15 items that define none moves sealed 30->27 and variantB 24->27. They TIE. sealed loses the knowledge axis outright; variantB gains coding 0.000->1.000.",
+  "consequence": "the capability_passed column above no longer separates the two frontier bodies. The SELECTION still stands because the composite is measured under one consistent regime and does not use capability as a tiebreak, but capability must not be quoted as a reason to prefer sealed.",
+  "what_still_separates_them": "verified HCLI WUs/hour (56.92 vs 48.84, three reps each, spreads 0.61% and 0.36%) and TPOT; variantB still wins EBPW and TTFT."
+ },
+ "pass": true
+}

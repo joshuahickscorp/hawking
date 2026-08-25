@@ -1,0 +1,40 @@
+{
+ "schema": "hawking.odyssey.model2_source_audit.v1",
+ "generated_at": "2026-08-25T11:37:27Z",
+ "generated_by": "lab/operators/ascension_qwen30_physical_campaign.py, run for model #2",
+ "obligation": "G023 chain step 1 \u2014 a sealed source-body audit for model #2",
+ "hand_authored": false,
+ "git_head": "10538ce42cadd2ce7dda0afcf4ccd26a3918f455",
+ "audit": {
+  "path": "/Users/scammermike/noetic/MODEL2_AUDIT/QWEN30BASE_SOURCE_BODY_AUDIT_CANDIDATE.json",
+  "schema": "hawking.ascension.qwen30_source_body_audit_candidate.v1",
+  "status": "CANDIDATE_SOURCE_BODY_VERIFIED",
+  "seal_sha256": "5bcea5aec56473bdc8242c7f6b5cd37a838eaf8588190ec06bcc1180e8a82fcf",
+  "repository": "Qwen/Qwen3-30B-A3B",
+  "revision": "ad44e777bcd18fa416d9da3bd8f70d33ebb85d39",
+  "shard_count": 16,
+  "shards_hashed": 16,
+  "total_bytes": 61066575648,
+  "every_shard_has_a_sha256": true
+ },
+ "verified_by": {
+  "function": "lab.receipts.verify",
+  "result": "PASS",
+  "note": "verify() returns the verified DOCUMENT, not the seal string; a first reading compared its repr to the hash and reported a false mismatch"
+ },
+ "how_it_was_run": {
+  "why_incrementally": "the drive reads at 0.9 MiB/s while the lake fill runs, so a contended hash of 57 GiB would have taken 17 hours and starved the user's stated priority",
+  "method": "one bounded pass inside a ProtectedWindow: fill paused, hash, fill resumed",
+  "window_seconds": 1501,
+  "fill_resumed_cleanly": true
+ },
+ "a_measurement_i_got_wrong": {
+  "predicted": "5.9 MiB/s uncontended, so 163 minutes for 57 GiB",
+  "actual": "16 shards, 56.9 GiB, inside a single 25-minute window (~38 MiB/s)",
+  "why": "the 512 MiB probe read the first shard's opening region and generalised from it; sustained sequential reads on this drive are several times faster than that sample suggested",
+  "lesson": "a single short probe is not a throughput measurement, which is the same error the concurrency sweep made earlier in this campaign"
+ },
+ "what_this_unblocks": "chain step 2, CompleteBinaryGravity, which requires exactly this sealed audit and its seal as an input",
+ "what_it_does_not_do": "produce an artifact. The audit records shard hashes; no tensor has been packed.",
+ "pass": true
+}

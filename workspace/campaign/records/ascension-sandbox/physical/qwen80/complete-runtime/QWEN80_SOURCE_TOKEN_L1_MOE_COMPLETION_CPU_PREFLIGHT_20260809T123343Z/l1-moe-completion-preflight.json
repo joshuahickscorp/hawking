@@ -1,0 +1,568 @@
+{
+  "antecedent_l0_l1_component": {
+    "bytes": 3163,
+    "document_seal_sha256": "d1b2893135287e282987e7d35609db3d44cd6c42846f79518f58f7ed5684829d",
+    "document_sha256": "d1b2893135287e282987e7d35609db3d44cd6c42846f79518f58f7ed5684829d",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_JOINT_POST_CAPTURE_ASSESSMENT_20260809T115059Z.json",
+    "present": true,
+    "raw_sha256": "deb9c613041dd7b44e5a65d1ead19429249499192f86baa6a471aafa657476c6"
+  },
+  "antecedent_scope": {
+    "antecedent_total_dispatches": 32,
+    "fresh_l0_dispatches": 23,
+    "fresh_l1_prefix_dispatches": 9,
+    "opaque_same_runtime_continuation_required": true,
+    "prior_capture_is_provenance_only_not_transferable_execution_input": true,
+    "source_token_id": 1
+  },
+  "claim_boundary": {
+    "artifact_scan_or_payload_open_performed": false,
+    "cpu_file_only_preflight": true,
+    "future_l1_moe_component_is_not_a_complete_token_or_decoder": true,
+    "lease_issued_or_consumed": false,
+    "metal_context_or_dispatch_performed": false,
+    "tps_tg_or_tournament_claim_earned": false,
+    "watcher_server_hcli_or_runtime_changed": false
+  },
+  "future_joint_command_graph": {
+    "exact_kernel_trace": [
+      {
+        "kernel": "qwen_next_direct_packed_input_rmsnorm",
+        "ordinal": 0,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen_binary_sign_scale_matvec",
+        "ordinal": 1,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen_binary_sign_scale_matvec",
+        "ordinal": 2,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen_next_qkvz_rearrange_conv_l2",
+        "ordinal": 3,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen_next_ba_to_decay_beta",
+        "ordinal": 4,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen_next_gated_delta_decode_single",
+        "ordinal": 5,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen_next_deltanet_gated_rmsnorm",
+        "ordinal": 6,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen_binary_sign_scale_matvec",
+        "ordinal": 7,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen_next_add_residual",
+        "ordinal": 8,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_postnorm_router_top10_rmsnorm",
+        "ordinal": 9,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_postnorm_router_top10_matvec",
+        "ordinal": 10,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_postnorm_router_top10_select",
+        "ordinal": 11,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_all_ten_routed_wave_route_guard",
+        "ordinal": 12,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_all_ten_routed_wave_gate_up",
+        "ordinal": 13,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_all_ten_routed_wave_swiglu",
+        "ordinal": 14,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_all_ten_routed_wave_down_weighted",
+        "ordinal": 15,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_shared_expert_wave_gate_up",
+        "ordinal": 16,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_shared_expert_wave_swiglu",
+        "ordinal": 17,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_shared_expert_wave_down",
+        "ordinal": 18,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_shared_expert_wave_scalar_gate",
+        "ordinal": 19,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_shared_expert_wave_apply_sigmoid_gate",
+        "ordinal": 20,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_moe_wave_aggregate_second_residual_route_sum",
+        "ordinal": 21,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_moe_wave_aggregate_second_residual_add_shared_residual",
+        "ordinal": 22,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen_next_direct_packed_input_rmsnorm",
+        "ordinal": 23,
+        "phase": "fresh_l1_deltanet_prefix"
+      },
+      {
+        "kernel": "qwen_binary_sign_scale_matvec",
+        "ordinal": 24,
+        "phase": "fresh_l1_deltanet_prefix"
+      },
+      {
+        "kernel": "qwen_binary_sign_scale_matvec",
+        "ordinal": 25,
+        "phase": "fresh_l1_deltanet_prefix"
+      },
+      {
+        "kernel": "qwen_next_qkvz_rearrange_conv_l2",
+        "ordinal": 26,
+        "phase": "fresh_l1_deltanet_prefix"
+      },
+      {
+        "kernel": "qwen_next_ba_to_decay_beta",
+        "ordinal": 27,
+        "phase": "fresh_l1_deltanet_prefix"
+      },
+      {
+        "kernel": "qwen_next_gated_delta_decode_single",
+        "ordinal": 28,
+        "phase": "fresh_l1_deltanet_prefix"
+      },
+      {
+        "kernel": "qwen_next_deltanet_gated_rmsnorm",
+        "ordinal": 29,
+        "phase": "fresh_l1_deltanet_prefix"
+      },
+      {
+        "kernel": "qwen_binary_sign_scale_matvec",
+        "ordinal": 30,
+        "phase": "fresh_l1_deltanet_prefix"
+      },
+      {
+        "kernel": "qwen_next_add_residual",
+        "ordinal": 31,
+        "phase": "fresh_l1_deltanet_prefix"
+      },
+      {
+        "kernel": "qwen80_postnorm_router_top10_rmsnorm",
+        "ordinal": 32,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_postnorm_router_top10_matvec",
+        "ordinal": 33,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_postnorm_router_top10_select",
+        "ordinal": 34,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_all_ten_routed_wave_route_guard",
+        "ordinal": 35,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_all_ten_routed_wave_gate_up",
+        "ordinal": 36,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_all_ten_routed_wave_swiglu",
+        "ordinal": 37,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_all_ten_routed_wave_down_weighted",
+        "ordinal": 38,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_shared_expert_wave_gate_up",
+        "ordinal": 39,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_shared_expert_wave_swiglu",
+        "ordinal": 40,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_shared_expert_wave_down",
+        "ordinal": 41,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_shared_expert_wave_scalar_gate",
+        "ordinal": 42,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_shared_expert_wave_apply_sigmoid_gate",
+        "ordinal": 43,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_moe_wave_aggregate_second_residual_route_sum",
+        "ordinal": 44,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_moe_wave_aggregate_second_residual_add_shared_residual",
+        "ordinal": 45,
+        "phase": "fresh_l1_moe_suffix"
+      }
+    ],
+    "l0_layer": 0,
+    "l0_reencode_dispatches": 23,
+    "l1_layer": 1,
+    "l1_linear_state_slot": 1,
+    "l1_moe_suffix_dispatches": 14,
+    "l1_prefix_dispatches": 9,
+    "non_timed_trace_required": true,
+    "single_fence_after_all_dispatches_required": true,
+    "single_runtime_required": true,
+    "single_token_command_buffer_required": true,
+    "source_token_id": 1,
+    "total_dispatches": 46
+  },
+  "future_receipt_contract": {
+    "claim_boundary": {
+      "automatic_retry": false,
+      "complete_token_decoder_server_hcli_tps_tg_tournament": false,
+      "component_only": true,
+      "l1_moe_operator_chain_completed_if_capture_passes": true
+    },
+    "fresh_execution_required": {
+      "l0_reencode_dispatches": 23,
+      "l1_moe_suffix_dispatches": 14,
+      "l1_prefix_dispatches": 9,
+      "no_cross_process_buffer_or_state_import": true,
+      "no_l1_suffix_beyond_moe_completion": true,
+      "non_timed_trace_required": true,
+      "same_runtime_required": true,
+      "same_token_command_buffer_required": true,
+      "single_fence_after_all_dispatches_required": true,
+      "source_token_id": 1,
+      "total_dispatches": 46
+    },
+    "inner_schema": "hawking.ascension.qwen80_source_token_l1_same_runtime_moe_completion_capture.v1",
+    "inner_status": "CAPTURED_QWEN80_SOURCE_TOKEN_L1_POSTNORM_ROUTER_TOP10_ALL_TEN_SHARED_SECOND_RESIDUAL_SAME_RUNTIME_COMPONENT_ONLY",
+    "outer_schema": "hawking.ascension.qwen80_source_token_l1_same_runtime_moe_completion_outer_capture.v1",
+    "outer_status": "CAPTURED_QWEN80_SOURCE_TOKEN_L1_MOE_COMPLETION_OUTER_TERMINAL_COMPONENT_ONLY",
+    "release_schema": "hawking.ascension.qwen80_source_token_l1_same_runtime_moe_completion_quiet_metal_lease_release.v1",
+    "release_status": "RELEASED_QWEN80_SOURCE_TOKEN_L1_MOE_COMPLETION_COMPONENT_QUIET_METAL_LEASE_AFTER_TERMINAL_CAPTURE",
+    "required_readbacks": {
+      "cpu_device_parity": {
+        "max_abs_error_tolerance": 0.001,
+        "required_outputs": [
+          "l1_post_attention_normalized_hidden",
+          "l1_router_logits",
+          "all_ten_weighted_route_outputs",
+          "l1_shared_gated_output",
+          "l1_routed_sum",
+          "l1_second_residual",
+          "l1_active_conv_state",
+          "l1_active_recurrent_state",
+          "l1_rollback_conv_state",
+          "l1_rollback_recurrent_state"
+        ],
+        "retain_distinct_cpu_and_device_hashes": true
+      },
+      "retained_l1_second_residual": {
+        "bytes": 8192,
+        "cross_process_transfer_authorized": false,
+        "elements": 2048,
+        "same_runtime_next_layer_input_candidate_only": true
+      },
+      "route_guard": {
+        "ordered_ids_exact": true,
+        "required_value": 1,
+        "weights_max_abs_error_tolerance": 0.00002
+      }
+    }
+  },
+  "l1_source_token_route_authority": {
+    "binding": null,
+    "present_and_valid": false,
+    "requirements": {
+      "all_ten_waves_required": {
+        "all_thirty_payload_artifact_sha256s_unique": true,
+        "count": 10,
+        "each_wave_required_fields": [
+          "wave_index",
+          "layer",
+          "expert_id",
+          "normalized_weight",
+          "normalized_weight_bits_hex",
+          "gate",
+          "up",
+          "down"
+        ],
+        "ordered_wave_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "route_order_must_match_source_stable_route_ids": true,
+        "route_reorder_substitution_or_duplication_allowed": false,
+        "route_weights_must_match_source_stable_normalized_weights": true
+      },
+      "execution_boundary": {
+        "cpu_route_authority_may_not_claim_metal_or_device_execution": true,
+        "full_layer_or_token_or_decoder_claim_earned": false,
+        "route_execution_performed": false,
+        "second_residual_performed": false,
+        "shared_expert_performed": false
+      },
+      "fixed_l1_payloads_required": [
+        {
+          "group_size": 128,
+          "required_descriptor_fields": [
+            "artifact_sha256",
+            "direct_packed_payload_sha256",
+            "header_sha256",
+            "payload_bytes",
+            "layout"
+          ],
+          "required_layout": {
+            "group_size": 128,
+            "magic": "HQ30G1B1",
+            "scale_dtype": "float16",
+            "sign_bit_order": "little",
+            "version": 1
+          },
+          "role": "post_attention_layernorm",
+          "shape": [
+            2048
+          ],
+          "tensor_name": "model.layers.1.post_attention_layernorm.weight"
+        },
+        {
+          "group_size": 128,
+          "required_descriptor_fields": [
+            "artifact_sha256",
+            "direct_packed_payload_sha256",
+            "header_sha256",
+            "payload_bytes",
+            "layout"
+          ],
+          "required_layout": {
+            "group_size": 128,
+            "magic": "HQ30G1B1",
+            "scale_dtype": "float16",
+            "sign_bit_order": "little",
+            "version": 1
+          },
+          "role": "router",
+          "shape": [
+            512,
+            2048
+          ],
+          "tensor_name": "model.layers.1.mlp.gate.weight"
+        },
+        {
+          "group_size": 128,
+          "required_descriptor_fields": [
+            "artifact_sha256",
+            "direct_packed_payload_sha256",
+            "header_sha256",
+            "payload_bytes",
+            "layout"
+          ],
+          "required_layout": {
+            "group_size": 128,
+            "magic": "HQ30G1B1",
+            "scale_dtype": "float16",
+            "sign_bit_order": "little",
+            "version": 1
+          },
+          "role": "shared_gate_proj",
+          "shape": [
+            512,
+            2048
+          ],
+          "tensor_name": "model.layers.1.mlp.shared_expert.gate_proj.weight"
+        },
+        {
+          "group_size": 128,
+          "required_descriptor_fields": [
+            "artifact_sha256",
+            "direct_packed_payload_sha256",
+            "header_sha256",
+            "payload_bytes",
+            "layout"
+          ],
+          "required_layout": {
+            "group_size": 128,
+            "magic": "HQ30G1B1",
+            "scale_dtype": "float16",
+            "sign_bit_order": "little",
+            "version": 1
+          },
+          "role": "shared_up_proj",
+          "shape": [
+            512,
+            2048
+          ],
+          "tensor_name": "model.layers.1.mlp.shared_expert.up_proj.weight"
+        },
+        {
+          "group_size": 128,
+          "required_descriptor_fields": [
+            "artifact_sha256",
+            "direct_packed_payload_sha256",
+            "header_sha256",
+            "payload_bytes",
+            "layout"
+          ],
+          "required_layout": {
+            "group_size": 128,
+            "magic": "HQ30G1B1",
+            "scale_dtype": "float16",
+            "sign_bit_order": "little",
+            "version": 1
+          },
+          "role": "shared_down_proj",
+          "shape": [
+            2048,
+            512
+          ],
+          "tensor_name": "model.layers.1.mlp.shared_expert.down_proj.weight"
+        },
+        {
+          "group_size": 128,
+          "required_descriptor_fields": [
+            "artifact_sha256",
+            "direct_packed_payload_sha256",
+            "header_sha256",
+            "payload_bytes",
+            "layout"
+          ],
+          "required_layout": {
+            "group_size": 128,
+            "magic": "HQ30G1B1",
+            "scale_dtype": "float16",
+            "sign_bit_order": "little",
+            "version": 1
+          },
+          "role": "shared_expert_gate",
+          "shape": [
+            1,
+            2048
+          ],
+          "tensor_name": "model.layers.1.mlp.shared_expert_gate.weight"
+        }
+      ],
+      "router_policy_required": {
+        "device_weight_parity_tolerance": 0.00002,
+        "logit_count": 512,
+        "ordered_unique_route_ids_required": true,
+        "route_tie_epsilon_f32_bits_hex_required": true,
+        "route_tie_epsilon_source": "HAWKING_DS_ROUTE_TIE_EPS",
+        "route_weight_sum_target": 1.0,
+        "route_weight_sum_tolerance": 2e-6,
+        "selected_probabilities_renormalized": true,
+        "selection": "source_qwen80_topk_router",
+        "softmax": "subtract_max_exp_f32",
+        "tie_break": "lowest_expert_id_within_route_tie_epsilon",
+        "top_k": 10
+      },
+      "same_source_token_cpu_oracle_required": {
+        "cpu_oracle_reencodes_l0_then_l1_prefix": true,
+        "fresh_l0_reencode_dispatches": 23,
+        "fresh_l1_prefix_dispatches": 9,
+        "layer": 1,
+        "linear_state_slot": 1,
+        "required_hash_fields": [
+          "source_input_f32le_sha256",
+          "l0_second_residual_cpu_f32le_sha256",
+          "l1_prefix_input_cpu_f32le_sha256",
+          "l1_first_residual_cpu_f32le_sha256",
+          "l1_post_attention_normalized_hidden_cpu_f32le_sha256",
+          "l1_router_logits_cpu_f32le_sha256",
+          "l1_post_conv_state_cpu_f32le_sha256",
+          "l1_post_recurrent_state_cpu_f32le_sha256"
+        ],
+        "source_token_id": 1,
+        "zero_initial_l0_state_required": true,
+        "zero_initial_l1_slot1_state_required": true
+      },
+      "schema": "hawking.ascension.qwen80_source_token_l1_all_ten_route_authority.v1",
+      "sealed_document_required": true,
+      "source_binding_required": {
+        "admission_receipt_seal_sha256": "939b41322363da3db774a2530b207bf380ed641d23cae671fc6438c0eecbf628",
+        "cross_process_pinned_buffer_import_allowed": false,
+        "joint_l0_l1_assessment_binding_required": true,
+        "manifest_document_sha256": "a0fcac0401a7962402bb8cb87d5055c83667b39575f9e0f4c7470d080758aa10",
+        "manifest_seal_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+        "model_id": "Qwen3-Coder-Next-80B",
+        "model_key": "qwen80",
+        "prior_joint_assessment_is_provenance_only": true,
+        "source_repository": "Qwen/Qwen3-Coder-Next",
+        "source_revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb"
+      },
+      "status": "SEALED_CURRENT_ADMITTED_QWEN80_SOURCE_TOKEN_L1_ALL_TEN_ROUTE_AUTHORITY_READY_FOR_SAME_RUNTIME_MOE_SUFFIX"
+    }
+  },
+  "preflight_ready_for_future_outer_authority_only": false,
+  "remaining_prerequisites": [
+    "create and seal a current-admitted source-token L1 CPU router/all-ten authority with the required 36 direct-packed descriptors",
+    "build a same-runtime L1 suffix host that consumes the opaque fresh L0-L1 continuation",
+    "independent outer preflight/replay/lease/reaper lifecycle for the 46-dispatch component"
+  ],
+  "schema": "hawking.ascension.qwen80_source_token_l1_moe_completion_preflight.v1",
+  "seal_sha256": "3d2ad7afcf2ecc8a9a6004ba814619aae1a98279493e1a553cc9100ac9d6de99",
+  "status": "PREPARED_QWEN80_SOURCE_TOKEN_L1_MOE_COMPLETION_ROUTE_AUTHORITY_REQUIRED_NOT_LEASED_OR_EXECUTED"
+}

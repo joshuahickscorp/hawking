@@ -1,0 +1,341 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 295,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Write a Python function `word_count(text)` that returns a dict mapping each whitespace-separated word to its count. Return only the function in a code block.\n\nTests (must pass):\n```\nassert word_count('a b a') == {'a': 2, 'b': 1}\nassert word_count('') == {}\nassert word_count('x') == {'x': 1}\n```",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:thesis:t15_word_count",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "train",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Write a Python function `word_count(text)` that returns a dict mapping each whitespace-separated word to its count. Return only the function in a code block.\n\nTests (must pass):\n```\nassert word_count('a b a') == {'a': 2, 'b': 1}\nassert word_count('') == {}\nassert word_count('x') == {'x': 1}\n```",
+  "proof_plan": null,
+  "recorded_at": "2026-08-06T17:05:03.676796Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "afb4700a2ea0d3dbcd68ece52a8b67e3bb4368e39de8c77504f41989b6301c7d",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 5.343263149261475,
+          "rank": 0,
+          "token_id": 63
+        },
+        {
+          "logit": 3.768685817718506,
+          "rank": 1,
+          "token_id": 4
+        },
+        {
+          "logit": 3.6009247303009033,
+          "rank": 2,
+          "token_id": 18
+        },
+        {
+          "logit": 3.5830841064453125,
+          "rank": 3,
+          "token_id": 17
+        },
+        {
+          "logit": 3.3652918338775635,
+          "rank": 4,
+          "token_id": 0
+        },
+        {
+          "logit": 3.1646931171417236,
+          "rank": 5,
+          "token_id": 30
+        },
+        {
+          "logit": 3.0084354877471924,
+          "rank": 6,
+          "token_id": 24
+        },
+        {
+          "logit": 2.948526620864868,
+          "rank": 7,
+          "token_id": 16
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.1962476521730423,
+          "l2": 3.66560435295105,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "8fe968a477f690a0855d8a01bd8783fe0edd4cb267ef93e0574e9b0aa1446579",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.25400957465171814,
+          "l2": 3.408447265625,
+          "layer": 1,
+          "mlp_type": "dense",
+          "sample_sha256": "18d2aaa591e8339dd9dae4d425a672f7f34856bc9da04a6b502e63b2f64ec1f6",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.2861531674861908,
+          "l2": 3.323474884033203,
+          "layer": 2,
+          "mlp_type": "dense",
+          "sample_sha256": "f8b268a649ac09ca9817f07e62ed341339e0674cc4bc0bddd2b07f579f455397",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.2949363887310028,
+          "l2": 3.4200711250305176,
+          "layer": 3,
+          "mlp_type": "sparse",
+          "sample_sha256": "ff2f323ae552136d4b240069ae4769835ffb1b3e89d611cbfb110e818ea4c757",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.27369967103004456,
+          "l2": 3.6459882259368896,
+          "layer": 4,
+          "mlp_type": "sparse",
+          "sample_sha256": "c094ff5c1c8ad424388c299198139eed0897a8b4a42cc89a4fcdf8c090dc7c88",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": {
+        "expert_counts": {
+          "0": 1,
+          "1": 1,
+          "10": 2,
+          "100": 2,
+          "101": 3,
+          "108": 4,
+          "110": 1,
+          "111": 1,
+          "112": 1,
+          "114": 1,
+          "115": 1,
+          "116": 3,
+          "123": 1,
+          "126": 1,
+          "128": 1,
+          "129": 2,
+          "13": 1,
+          "130": 7,
+          "131": 2,
+          "135": 1,
+          "136": 1,
+          "137": 1,
+          "138": 2,
+          "14": 4,
+          "140": 5,
+          "141": 1,
+          "144": 1,
+          "145": 1,
+          "146": 1,
+          "148": 7,
+          "150": 1,
+          "153": 1,
+          "154": 1,
+          "159": 1,
+          "163": 2,
+          "166": 1,
+          "167": 2,
+          "168": 1,
+          "169": 1,
+          "17": 5,
+          "175": 1,
+          "177": 1,
+          "18": 1,
+          "181": 1,
+          "183": 1,
+          "184": 1,
+          "185": 1,
+          "19": 1,
+          "190": 2,
+          "191": 2,
+          "193": 1,
+          "195": 3,
+          "197": 1,
+          "198": 2,
+          "199": 2,
+          "2": 1,
+          "200": 1,
+          "201": 1,
+          "203": 1,
+          "204": 1,
+          "205": 1,
+          "206": 3,
+          "207": 1,
+          "208": 1,
+          "210": 1,
+          "211": 2,
+          "213": 5,
+          "214": 1,
+          "217": 2,
+          "218": 2,
+          "219": 2,
+          "22": 1,
+          "221": 2,
+          "222": 1,
+          "224": 1,
+          "227": 3,
+          "229": 3,
+          "230": 1,
+          "231": 1,
+          "236": 1,
+          "237": 5,
+          "238": 4,
+          "240": 4,
+          "242": 2,
+          "243": 4,
+          "244": 1,
+          "245": 1,
+          "247": 1,
+          "248": 2,
+          "249": 1,
+          "250": 3,
+          "26": 2,
+          "27": 4,
+          "28": 5,
+          "3": 1,
+          "30": 1,
+          "31": 1,
+          "34": 1,
+          "37": 3,
+          "4": 3,
+          "41": 4,
+          "42": 3,
+          "44": 2,
+          "5": 2,
+          "50": 3,
+          "52": 3,
+          "55": 1,
+          "56": 1,
+          "57": 1,
+          "60": 4,
+          "61": 11,
+          "62": 3,
+          "63": 3,
+          "64": 1,
+          "7": 1,
+          "70": 5,
+          "72": 1,
+          "74": 1,
+          "76": 1,
+          "78": 2,
+          "8": 3,
+          "80": 1,
+          "82": 1,
+          "83": 4,
+          "84": 1,
+          "87": 1,
+          "90": 1,
+          "95": 1,
+          "98": 2,
+          "99": 1
+        },
+        "load_balance_cv": null,
+        "note": "route stats are student-native; never copy GLM router weights",
+        "source_layer": 3,
+        "top_k": 8
+      },
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

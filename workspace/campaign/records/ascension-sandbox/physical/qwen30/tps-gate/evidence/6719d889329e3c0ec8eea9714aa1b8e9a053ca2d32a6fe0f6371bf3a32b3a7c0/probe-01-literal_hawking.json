@@ -1,0 +1,25 @@
+{
+  "claim_boundary": "raw HCLI command evidence; not a TPS receipt by itself",
+  "command": [
+    "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/debug/hcli",
+    "run",
+    "--prompt",
+    "Reply with exactly the single word HAWKING.",
+    "--session",
+    "base-true-tps-qwen30-6719d889329e-probe-1",
+    "--model-url",
+    "http://127.0.0.1:18430",
+    "--max-output-tokens",
+    "8",
+    "--workspace",
+    "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/hcli-workspace",
+    "--json"
+  ],
+  "elapsed_seconds": 14.087344625004334,
+  "fingerprint": "6719d889329e3c0ec8eea9714aa1b8e9a053ca2d32a6fe0f6371bf3a32b3a7c0",
+  "recorded_at": "2026-08-08T19:50:24.704351Z",
+  "returncode": 0,
+  "schema": "hawking.ascension.physical_base_true_tps_hcli_command_evidence.v1",
+  "stderr": "",
+  "stdout": "{\"command\":\"run\",\"result\":{\"model_url\":\"http://127.0.0.1:18430\",\"tps_note\":\"complete_forward_tps is null unless the runtime exposed both completed_decode_forwards and decode_ms\",\"turn\":{\"assistant_event_id\":\"evt_01KZHETDNDJ78K6T2TWT87C10H\",\"complete_forward_tps\":2.640318924122845,\"completion\":\"Ọlinks分行(avVERSIONlinks分行VERSION\",\"generation_stats\":{\"completed_decode_forwards\":8,\"decode_ms\":3029.937,\"decode_tokens_per_second\":2.6403188705444336,\"input_tokens\":29,\"output_tokens\":8},\"intent_event_id\":\"evt_01KZHET02YXSMK88WSMVTYPCFB\",\"intent_event_seq\":1,\"session_id\":\"ses_01KZHET02R6KTTHDFBMFVFF69A\",\"stream_id\":\"3\"},\"workspace\":\"/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/hcli-workspace\"},\"schema\":\"hcli.command.v1\"}\n"
+}

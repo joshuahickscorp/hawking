@@ -1,0 +1,695 @@
+{
+ "schema": "hawking.headless.transfer_rehearsal.v1",
+ "generated_at": "2026-08-25T10:09:44Z",
+ "generated_by": "tools/odyssey/transfer_rehearsal.py",
+ "obligation": "G008 \u2014 QWEN_TRANSFER_REHEARSAL (directive \u00a715)",
+ "git_head": "961239f2426e9add9db78f6163784eb708b0defa",
+ "hand_authored": false,
+ "law": "the rehearsal may read only the canonical libraries, the transfer report and the specimen's own architecture metadata. Everything else is smuggling.",
+ "input_audit": {
+  "n_opens_recorded": 54,
+  "n_repo_reads_outside_allowlist": 0,
+  "reads_outside_allowlist": [],
+  "n_forbidden_reads": 0,
+  "forbidden_reads": [],
+  "allowlist_receipts": [
+   "ORGAN_FRONTIER_MATRIX.json",
+   "ORGAN_LIBRARY.json",
+   "REPRESENTATION_LIBRARY.json",
+   "KERNEL_LIBRARY.json",
+   "SUPEROPERATOR_LIBRARY.json",
+   "NOETIC_NEGATIVE_SCIENCE.json",
+   "QWEN_TRANSFER_REPORT.json",
+   "MACHINE_GENOME.json",
+   "RUNTIME_GENOME.json",
+   "ARCHITECTURE_RECOGNIZER_FIXTURES.json"
+  ],
+  "forbidden_prefixes": [
+   "/Users/scammermike/noetic",
+   "/Users/scammermike/models",
+   "/Users/scammermike/Downloads/hawking/workspace",
+   "/Users/scammermike/Downloads/hawking/artifacts",
+   "/Users/scammermike/Downloads/hawking/crates"
+  ],
+  "clean": true
+ },
+ "plan": {
+  "specimen": {
+   "oxx": "O005",
+   "repo": "Qwen/Qwen3-30B-A3B",
+   "revision": "ad44e777bcd18fa416d9da3bd8f70d33ebb85d39"
+  },
+  "architecture_metadata_source": "cached architecture metadata",
+  "architecture_class": "qwen3_moe",
+  "architectures": [
+   "Qwen3MoeForCausalLM"
+  ],
+  "recognition_wall_s": 0.039,
+  "n_organs_recognized": 6,
+  "n_organs_known": 2,
+  "n_organs_declared_unmeasured": 4,
+  "n_organs_novel": 0,
+  "n_unrecognized_clusters": 0,
+  "organ_plan": [
+   {
+    "organ": "embed",
+    "status": "KNOWN",
+    "confidence": 0.32,
+    "n_tensors": 1,
+    "library_row": "MEASURED on qwen3.8-27b-abliterated",
+    "organ_mass_share": 0.010191,
+    "organ_params": 311164928,
+    "mass_aware_seed_added": false,
+    "mass_aware_seed_reason": null,
+    "seeded_representations": [
+     {
+      "family": "conventional_low_bit",
+      "score": 2.5,
+      "why": "measured coherent on embed for qwen3.8-27b-abliterated"
+     },
+     {
+      "family": "q2_affine",
+      "score": 1.07,
+      "why": "measured density frontier 2.25 bpw; unknown organ: conservative prior favours the higher-precision family (2.25 bpw)"
+     },
+     {
+      "family": "binary_sparse_residual",
+      "score": 1.069,
+      "why": "measured density frontier 2.216250359030331 bpw; unknown organ: conservative prior favours the higher-precision family (2.216250359030331 bpw)"
+     }
+    ],
+    "reusable_kernels": [
+     "affine2_group32_matvec_geo_tpr64_tg128",
+     "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+     "affine2_group64_matvec_geo_tpr64_tg128",
+     "binary_sparse_fused_geo_c5120_tpr64_tg128",
+     "q2f_g64_matvec_geo_c5120_tpr64_tg128",
+     "q2f_group64_matvec"
+    ],
+    "excluded_families": []
+   },
+   {
+    "organ": "gqa_attention",
+    "status": "KNOWN",
+    "confidence": 0.98,
+    "n_tensors": 192,
+    "library_row": "MEASURED on qwen3.8-27b-abliterated",
+    "organ_mass_share": 0.029673,
+    "organ_params": 905969664,
+    "mass_aware_seed_added": false,
+    "mass_aware_seed_reason": null,
+    "seeded_representations": [
+     {
+      "family": "conventional_low_bit",
+      "score": 2.5,
+      "why": "measured coherent on gqa_attention for qwen3.8-27b-abliterated"
+     },
+     {
+      "family": "q2_affine",
+      "score": 1.07,
+      "why": "measured density frontier 2.25 bpw; unknown organ: conservative prior favours the higher-precision family (2.25 bpw)"
+     },
+     {
+      "family": "binary_sparse_residual",
+      "score": 1.069,
+      "why": "measured density frontier 2.216250359030331 bpw; unknown organ: conservative prior favours the higher-precision family (2.216250359030331 bpw)"
+     }
+    ],
+    "reusable_kernels": [
+     "affine2_group32_matvec_geo_tpr64_tg128",
+     "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+     "affine2_group64_matvec_geo_tpr64_tg128",
+     "binary_sparse_fused_geo_c5120_tpr64_tg128",
+     "q2f_g64_matvec_geo_c5120_tpr64_tg128",
+     "q2f_group64_matvec"
+    ],
+    "excluded_families": []
+   },
+   {
+    "organ": "lm_head",
+    "status": "DECLARED_UNMEASURED",
+    "confidence": 0.32,
+    "n_tensors": 1,
+    "library_row": "no measured row",
+    "organ_mass_share": 0.010191,
+    "organ_params": 311164928,
+    "mass_aware_seed_added": false,
+    "mass_aware_seed_reason": null,
+    "seeded_representations": [
+     {
+      "family": "conventional_low_bit",
+      "score": 2.5,
+      "why": "measured coherent on lm_head for qwen3.8-27b-abliterated"
+     },
+     {
+      "family": "q2_affine",
+      "score": 1.07,
+      "why": "measured density frontier 2.25 bpw; unknown organ: conservative prior favours the higher-precision family (2.25 bpw)"
+     },
+     {
+      "family": "binary_sparse_residual",
+      "score": 1.069,
+      "why": "measured density frontier 2.216250359030331 bpw; unknown organ: conservative prior favours the higher-precision family (2.216250359030331 bpw)"
+     }
+    ],
+    "reusable_kernels": [
+     "affine2_group32_matvec_geo_tpr64_tg128",
+     "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+     "affine2_group64_matvec_geo_tpr64_tg128",
+     "binary_sparse_fused_geo_c5120_tpr64_tg128",
+     "q2f_g64_matvec_geo_c5120_tpr64_tg128",
+     "q2f_group64_matvec"
+    ],
+    "excluded_families": []
+   },
+   {
+    "organ": "moe_expert",
+    "status": "DECLARED_UNMEASURED",
+    "confidence": 0.98,
+    "n_tensors": 18432,
+    "library_row": "no measured row",
+    "organ_mass_share": 0.949526,
+    "organ_params": 28991029248,
+    "mass_aware_seed_added": false,
+    "mass_aware_seed_reason": null,
+    "seeded_representations": [
+     {
+      "family": "q2_affine",
+      "score": 2.5,
+      "why": "measured coherent on kin organ(s) ['mlp_gate_up', 'mlp_down'] for qwen3.8-27b-abliterated; moe_expert shares their operator shape; measured density frontier 2.25 bpw"
+     },
+     {
+      "family": "leftover_f32",
+      "score": 0.785,
+      "why": "measured density frontier 32.0 bpw; unknown organ: conservative prior favours the higher-precision family (32.0 bpw)"
+     },
+     {
+      "family": "conventional_low_bit",
+      "score": 0.5,
+      "why": "status MEASURED"
+     }
+    ],
+    "reusable_kernels": [
+     "affine2_group32_matvec_geo_tpr64_tg128",
+     "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+     "affine2_group64_matvec_geo_tpr64_tg128",
+     "q2f_g64_matvec_geo_c5120_tpr64_tg128",
+     "q2f_group64_matvec",
+     "q2f_group64_matvec_gate_up_swiglu_geo_tpr64_tg128"
+    ],
+    "excluded_families": []
+   },
+   {
+    "organ": "moe_router",
+    "status": "DECLARED_UNMEASURED",
+    "confidence": 0.98,
+    "n_tensors": 48,
+    "library_row": "no measured row",
+    "organ_mass_share": 0.000412,
+    "organ_params": 12582912,
+    "mass_aware_seed_added": true,
+    "mass_aware_seed_reason": "organ is 0.0412% of model mass, at or under the 0.5% ceiling, so an f32 passthrough is a legitimate candidate and score-only ranking would never surface it",
+    "seeded_representations": [
+     {
+      "family": "q2_affine",
+      "score": 1.07,
+      "why": "measured density frontier 2.25 bpw; unknown organ: conservative prior favours the higher-precision family (2.25 bpw)"
+     },
+     {
+      "family": "binary_sparse_residual",
+      "score": 1.069,
+      "why": "measured density frontier 2.216250359030331 bpw; unknown organ: conservative prior favours the higher-precision family (2.216250359030331 bpw)"
+     },
+     {
+      "family": "ternary",
+      "score": 1.058,
+      "why": "measured density frontier 1.85 bpw; unknown organ: conservative prior favours the higher-precision family (1.85 bpw)"
+     },
+     {
+      "family": "leftover_f32",
+      "score": 0.785,
+      "why": "measured density frontier 32.0 bpw; unknown organ: conservative prior favours the higher-precision family (32.0 bpw)"
+     }
+    ],
+    "reusable_kernels": [
+     "affine2_group32_matvec_geo_tpr64_tg128",
+     "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+     "affine2_group64_matvec_geo_tpr64_tg128",
+     "binary_sparse_fused_geo_c5120_tpr64_tg128",
+     "q2f_g64_matvec_geo_c5120_tpr64_tg128",
+     "q2f_group64_matvec"
+    ],
+    "excluded_families": []
+   },
+   {
+    "organ": "rmsnorm",
+    "status": "DECLARED_UNMEASURED",
+    "confidence": 0.98,
+    "n_tensors": 193,
+    "library_row": "no measured row",
+    "organ_mass_share": 6e-06,
+    "organ_params": 196608,
+    "mass_aware_seed_added": false,
+    "mass_aware_seed_reason": null,
+    "seeded_representations": [
+     {
+      "family": "leftover_f32",
+      "score": 2.535,
+      "why": "measured coherent on normalization for qwen3.8-27b-abliterated; measured density frontier 32.0 bpw"
+     },
+     {
+      "family": "q2_affine",
+      "score": 1.07,
+      "why": "measured density frontier 2.25 bpw; unknown organ: conservative prior favours the higher-precision family (2.25 bpw)"
+     },
+     {
+      "family": "binary_sparse_residual",
+      "score": 1.069,
+      "why": "measured density frontier 2.216250359030331 bpw; unknown organ: conservative prior favours the higher-precision family (2.216250359030331 bpw)"
+     }
+    ],
+    "reusable_kernels": [
+     "affine2_group32_matvec_geo_tpr64_tg128",
+     "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+     "affine2_group64_matvec_geo_tpr64_tg128",
+     "binary_sparse_fused_geo_c5120_tpr64_tg128",
+     "q2f_g64_matvec_geo_c5120_tpr64_tg128",
+     "q2f_group64_matvec"
+    ],
+    "excluded_families": []
+   }
+  ],
+  "methods_inherited": [
+   {
+    "id": "TR-METHOD-PER-ORGAN-FLOOR",
+    "inherit": "Measure the information floor PER ORGAN, never per model."
+   },
+   {
+    "id": "TR-METHOD-HELDOUT-ACTIVATIONS",
+    "inherit": "Judge a candidate on held-out REAL activations, never on weight-space error and never on synthetic or Gaussian activations."
+   },
+   {
+    "id": "TR-METHOD-COMPETENT-KERNEL-FIRST",
+    "inherit": "Never evaluate a representation with an incompetent kernel. Fewer stored bits is not fewer nanoseconds."
+   },
+   {
+    "id": "TR-METHOD-MEASURE-BEFORE-ELIMINATING",
+    "inherit": "Compute head cosine (and channel deadness, and layer near-identity) BEFORE proposing structural elimination."
+   },
+   {
+    "id": "TR-METHOD-BROAD-INJURY-TEST",
+    "inherit": "When a body is fast and injured, measure how BROAD the injury is before spending on healing."
+   }
+  ],
+  "n_methods_inherited": 5,
+  "prior_failures_that_shape_the_search": [
+   {
+    "organ": "embed",
+    "family": "binary",
+    "warning": "QN-BINARY-INJURY",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a healing scheme that restores coherent generation while the healed body stays faster than q2f_g64 at 27.55 ms COMPLETE_TOKEN_NS",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "embed",
+    "family": "shared_basis",
+    "warning": "QN-SHARED-BASIS-DENSITY",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a shared-basis point that is coherent at held-out activation AND beats q2f on both density and COMPLETE_TOKEN_NS",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "embed",
+    "family": "shared_basis",
+    "warning": "QN-SHARED-K-HYBRID",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a shared-K variant that is coherent on held-out X at a total body bpw below 2.25",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "embed",
+    "family": "low_rank",
+    "warning": "QN-LOWRANK-HEALING",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a correction whose extra bpw keeps the body under 2.25 while rel_fro on real held-out X drops below the q2f baseline",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "embed",
+    "family": "structural_elimination",
+    "warning": "QN-HEAD-REDUNDANCY",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "an organ or model where head cosine similarity is high enough that sharing costs less capability than the bits it saves",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "embed",
+    "family": "protected_islands",
+    "warning": "QN-BINARY-HEALING",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a sensitivity map that localizes the injury to a region small enough that protecting it costs less than the 2.25-bpw q2f body",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "gqa_attention",
+    "family": "binary",
+    "warning": "QN-BINARY-INJURY",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a healing scheme that restores coherent generation while the healed body stays faster than q2f_g64 at 27.55 ms COMPLETE_TOKEN_NS",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "gqa_attention",
+    "family": "shared_basis",
+    "warning": "QN-SHARED-BASIS-DENSITY",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a shared-basis point that is coherent at held-out activation AND beats q2f on both density and COMPLETE_TOKEN_NS",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "gqa_attention",
+    "family": "shared_basis",
+    "warning": "QN-SHARED-K-HYBRID",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a shared-K variant that is coherent on held-out X at a total body bpw below 2.25",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "gqa_attention",
+    "family": "low_rank",
+    "warning": "QN-LOWRANK-HEALING",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a correction whose extra bpw keeps the body under 2.25 while rel_fro on real held-out X drops below the q2f baseline",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "gqa_attention",
+    "family": "structural_elimination",
+    "warning": "QN-HEAD-REDUNDANCY",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "an organ or model where head cosine similarity is high enough that sharing costs less capability than the bits it saves",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "gqa_attention",
+    "family": "protected_islands",
+    "warning": "QN-BINARY-HEALING",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a sensitivity map that localizes the injury to a region small enough that protecting it costs less than the 2.25-bpw q2f body",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "lm_head",
+    "family": "binary",
+    "warning": "QN-BINARY-INJURY",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a healing scheme that restores coherent generation while the healed body stays faster than q2f_g64 at 27.55 ms COMPLETE_TOKEN_NS",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "lm_head",
+    "family": "shared_basis",
+    "warning": "QN-SHARED-BASIS-DENSITY",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a shared-basis point that is coherent at held-out activation AND beats q2f on both density and COMPLETE_TOKEN_NS",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "lm_head",
+    "family": "shared_basis",
+    "warning": "QN-SHARED-K-HYBRID",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a shared-K variant that is coherent on held-out X at a total body bpw below 2.25",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "lm_head",
+    "family": "low_rank",
+    "warning": "QN-LOWRANK-HEALING",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a correction whose extra bpw keeps the body under 2.25 while rel_fro on real held-out X drops below the q2f baseline",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "lm_head",
+    "family": "structural_elimination",
+    "warning": "QN-HEAD-REDUNDANCY",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "an organ or model where head cosine similarity is high enough that sharing costs less capability than the bits it saves",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "lm_head",
+    "family": "protected_islands",
+    "warning": "QN-BINARY-HEALING",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a sensitivity map that localizes the injury to a region small enough that protecting it costs less than the 2.25-bpw q2f body",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "moe_expert",
+    "family": "low_rank",
+    "warning": "QN-LOWRANK-HEALING",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a correction whose extra bpw keeps the body under 2.25 while rel_fro on real held-out X drops below the q2f baseline",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "moe_expert",
+    "family": "structural_elimination",
+    "warning": "QN-HEAD-REDUNDANCY",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "an organ or model where head cosine similarity is high enough that sharing costs less capability than the bits it saves",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "moe_expert",
+    "family": "binary_sparse_residual",
+    "warning": "KIN_ORGAN_FAILURE",
+    "kin_organs": [
+     "mlp_gate_up",
+     "mlp_down"
+    ],
+    "in_top3": false,
+    "effect": "demoted: this family failed on an organ of the same operator shape"
+   },
+   {
+    "organ": "moe_expert",
+    "family": "ternary",
+    "warning": "KIN_ORGAN_FAILURE",
+    "kin_organs": [
+     "mlp_gate_up",
+     "mlp_down"
+    ],
+    "in_top3": false,
+    "effect": "demoted: this family failed on an organ of the same operator shape"
+   },
+   {
+    "organ": "moe_expert",
+    "family": "protected_islands",
+    "warning": "QN-BINARY-HEALING",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a sensitivity map that localizes the injury to a region small enough that protecting it costs less than the 2.25-bpw q2f body",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "moe_expert",
+    "family": "binary",
+    "warning": "QN-BINARY-INJURY",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a healing scheme that restores coherent generation while the healed body stays faster than q2f_g64 at 27.55 ms COMPLETE_TOKEN_NS",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "moe_expert",
+    "family": "binary",
+    "warning": "KIN_ORGAN_FAILURE",
+    "kin_organs": [
+     "mlp_gate_up",
+     "mlp_down"
+    ],
+    "in_top3": false,
+    "effect": "demoted: this family failed on an organ of the same operator shape"
+   },
+   {
+    "organ": "moe_expert",
+    "family": "shared_basis",
+    "warning": "QN-SHARED-BASIS-DENSITY",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a shared-basis point that is coherent at held-out activation AND beats q2f on both density and COMPLETE_TOKEN_NS",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "moe_expert",
+    "family": "shared_basis",
+    "warning": "QN-SHARED-K-HYBRID",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a shared-K variant that is coherent on held-out X at a total body bpw below 2.25",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "moe_expert",
+    "family": "shared_basis",
+    "warning": "KIN_ORGAN_FAILURE",
+    "kin_organs": [
+     "mlp_gate_up",
+     "mlp_down"
+    ],
+    "in_top3": false,
+    "effect": "demoted: this family failed on an organ of the same operator shape"
+   },
+   {
+    "organ": "moe_expert",
+    "family": "low_rank_plus_sparse",
+    "warning": "KIN_ORGAN_FAILURE",
+    "kin_organs": [
+     "mlp_gate_up",
+     "mlp_down"
+    ],
+    "in_top3": false,
+    "effect": "demoted: this family failed on an organ of the same operator shape"
+   },
+   {
+    "organ": "moe_router",
+    "family": "binary",
+    "warning": "QN-BINARY-INJURY",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a healing scheme that restores coherent generation while the healed body stays faster than q2f_g64 at 27.55 ms COMPLETE_TOKEN_NS",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "moe_router",
+    "family": "shared_basis",
+    "warning": "QN-SHARED-BASIS-DENSITY",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a shared-basis point that is coherent at held-out activation AND beats q2f on both density and COMPLETE_TOKEN_NS",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "moe_router",
+    "family": "shared_basis",
+    "warning": "QN-SHARED-K-HYBRID",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a shared-K variant that is coherent on held-out X at a total body bpw below 2.25",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "moe_router",
+    "family": "low_rank",
+    "warning": "QN-LOWRANK-HEALING",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a correction whose extra bpw keeps the body under 2.25 while rel_fro on real held-out X drops below the q2f baseline",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "moe_router",
+    "family": "structural_elimination",
+    "warning": "QN-HEAD-REDUNDANCY",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "an organ or model where head cosine similarity is high enough that sharing costs less capability than the bits it saves",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "moe_router",
+    "family": "protected_islands",
+    "warning": "QN-BINARY-HEALING",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a sensitivity map that localizes the injury to a region small enough that protecting it costs less than the 2.25-bpw q2f body",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "rmsnorm",
+    "family": "binary",
+    "warning": "QN-BINARY-INJURY",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a healing scheme that restores coherent generation while the healed body stays faster than q2f_g64 at 27.55 ms COMPLETE_TOKEN_NS",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "rmsnorm",
+    "family": "shared_basis",
+    "warning": "QN-SHARED-BASIS-DENSITY",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a shared-basis point that is coherent at held-out activation AND beats q2f on both density and COMPLETE_TOKEN_NS",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "rmsnorm",
+    "family": "shared_basis",
+    "warning": "QN-SHARED-K-HYBRID",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a shared-K variant that is coherent on held-out X at a total body bpw below 2.25",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "rmsnorm",
+    "family": "low_rank",
+    "warning": "QN-LOWRANK-HEALING",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a correction whose extra bpw keeps the body under 2.25 while rel_fro on real held-out X drops below the q2f baseline",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "rmsnorm",
+    "family": "structural_elimination",
+    "warning": "QN-HEAD-REDUNDANCY",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "an organ or model where head cosine similarity is high enough that sharing costs less capability than the bits it saves",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   },
+   {
+    "organ": "rmsnorm",
+    "family": "protected_islands",
+    "warning": "QN-BINARY-HEALING",
+    "model_it_failed_on": "qwen3.8-27b-abliterated",
+    "reopen_condition": "a sensitivity map that localizes the injury to a region small enough that protecting it costs less than the 2.25-bpw q2f body",
+    "in_top3": false,
+    "effect": "demoted out of the seed"
+   }
+  ],
+  "n_prior_failures_applied": 41,
+  "device_genome_init": {
+   "machine": {},
+   "runtime": {},
+   "seeded_from": "MACHINE_GENOME.json + RUNTIME_GENOME.json; roofs are NOT copied -- the model-reachable roof is per-executable and must be remeasured for this specimen"
+  },
+  "total_wall_s": 8.603
+ },
+ "pass": true
+}

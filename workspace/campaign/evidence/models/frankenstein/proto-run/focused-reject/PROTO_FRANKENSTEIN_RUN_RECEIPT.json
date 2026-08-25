@@ -1,0 +1,393 @@
+{
+  "activations_captured": false,
+  "additive_not_subtractive": false,
+  "arms": {
+    "A": "A_BASE_DSV4F",
+    "B": "B_PROTO_DSV4F_GLM"
+  },
+  "capability_claim": false,
+  "capability_validated": false,
+  "claim_boundary": {
+    "capability_claim_requires_sealed_shard_scores": true,
+    "direct_weight_transplant": false,
+    "dry_run_does_not_validate_capability": true,
+    "forward_capability_measurement_requires_callable": true,
+    "full_model_bench_permitted": false,
+    "gradient_or_optimizer": false,
+    "gravity_compression_performed": false,
+    "is_inheritance": false,
+    "kimi_consumed": false,
+    "kimi_simulated": false,
+    "kimi_strategic_bridge_preserved": true,
+    "lane_does_not_own": [
+      "C_FINAL_PROTO_KIMI",
+      "D_RAMANUJAN"
+    ],
+    "lane_owns": [
+      "A_BASE_DSV4F",
+      "B_PROTO_DSV4F_GLM"
+    ],
+    "linear_mapping_role": "LINEAR_SUBSPACE_INITIALIZATION",
+    "odyssey_or_ramanujan": false,
+    "proto_frankenstein": "DeepSeek-V4-Flash + GLM math inheritance",
+    "proto_frankenstein_complete_from_projection": false,
+    "proto_output_raw_not_gravity": true,
+    "stage": 1,
+    "training_performed": false,
+    "weight_average_performed": false
+  },
+  "disk": {
+    "free_bytes_end": 178284453888,
+    "free_bytes_start": 178284511232
+  },
+  "dry_run": false,
+  "forward_gate": "DEEPSEEK_FORWARD_PENDING",
+  "forward_status": "DEEPSEEK_FORWARD_PENDING",
+  "gravity_compressed": false,
+  "honest_status": "PROTO pipeline stages executed as far as the forward gate allows. Capability is NOT validated without a real student forward. Ablation on sealed fixtures is governance evidence only.",
+  "kimi_handoff": {
+    "binding": {
+      "bytes": 23258,
+      "file_sha256": "c52dfae2837e9cdaa246ebbd4a13bfae6aeabc87489d6fdfe2498dcf63057e84",
+      "label": "PROTO_TO_KIMI_HANDOFF_CONTRACT",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/PROTO_TO_KIMI_HANDOFF_CONTRACT.json",
+      "present": true
+    },
+    "bridge_preserved": "KIMI_STRATEGIC_BRIDGE",
+    "contract_name": "PROTO_TO_KIMI_HANDOFF_CONTRACT.json",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/PROTO_TO_KIMI_HANDOFF_CONTRACT.json",
+    "pointer": "stage-2 Kimi strategic graft uses PROTO_TO_KIMI_HANDOFF_CONTRACT",
+    "stage1_must_not_mutate": true
+  },
+  "math_domain_gain": {
+    "domains": [
+      {
+        "advisory": "OK",
+        "base": 0.7,
+        "delta": 0.20000000000000007,
+        "domain": "method_selection",
+        "gain": true,
+        "proto": 0.9
+      },
+      {
+        "advisory": "OK",
+        "base": 0.7,
+        "delta": 0.20000000000000007,
+        "domain": "mathematical_decomposition",
+        "gain": true,
+        "proto": 0.9
+      },
+      {
+        "advisory": "OK",
+        "base": 0.7,
+        "delta": 0.20000000000000007,
+        "domain": "formalization",
+        "gain": true,
+        "proto": 0.9
+      },
+      {
+        "advisory": "OK",
+        "base": 0.7,
+        "delta": 0.20000000000000007,
+        "domain": "proof_repair",
+        "gain": true,
+        "proto": 0.9
+      },
+      {
+        "advisory": "OK",
+        "base": 0.7,
+        "delta": 0.20000000000000007,
+        "domain": "value_ranking",
+        "gain": true,
+        "proto": 0.9
+      }
+    ],
+    "live_forward_measured": false,
+    "mean_gain": 0.2000000000000001,
+    "source": "sealed_shard_fixture"
+  },
+  "math_domains": [
+    "method_selection",
+    "mathematical_decomposition",
+    "formalization",
+    "proof_repair",
+    "value_ranking"
+  ],
+  "name": "PROTO_FRANKENSTEIN_RUN_RECEIPT.json",
+  "provenance": {
+    "body": {
+      "kind": "directory",
+      "label": "deepseek_body",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/full-43-layer-stream.gravity",
+      "present": true
+    },
+    "glm_subspace": {
+      "kind": "directory",
+      "label": "glm_math_subspace",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/frankenstein/glm-subspace",
+      "present": true
+    },
+    "latent_bridge_contract": {
+      "bytes": 23943,
+      "file_sha256": "d28f1dc7ec2667e55cc6752d67fa6d04b10bb20ee9899122df8165afb8217eac",
+      "label": "DSV4F_LATENT_BRIDGE_CONTRACT",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/child-baseline-v3/DSV4F_LATENT_BRIDGE_CONTRACT.json",
+      "present": true
+    },
+    "math_donor": {
+      "repository": "zai-org/GLM-5.2",
+      "revision": "b4734de4facf877f85769a911abafc5283eab3d9"
+    },
+    "scores_fixture": {
+      "bytes": 2190,
+      "file_sha256": "23ebbb4111fbc862bd81f1d7216f70d4aa20e1773887b190c3071abb06e6c523",
+      "label": "capability_scores_fixture",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/receipts/STAGE1_CAPABILITY_FIXTURE__math_up_coding_down_REJECT.json",
+      "present": true
+    },
+    "student": {
+      "repository": "deepseek-ai/DeepSeek-V4-Flash",
+      "revision": "60d8d70770c6776ff598c94bb586a859a38244f1"
+    },
+    "transfer_module_meta": {
+      "bytes": 11929,
+      "file_sha256": "35021bee94e7ace46d9f5ed345ff0ca9ff58d6d53b5d607c8d2602cb460f92d7",
+      "label": "transfer_module_meta",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/transfer-module/FRANKENSTEIN_TRAINING_FREE_MODULE.json",
+      "present": true
+    },
+    "transplant_points": {
+      "bytes": 25936,
+      "file_sha256": "084c6bff563203482fde29bfe7e5807066954a3cbe58d49bf1782f5a42d2a410",
+      "label": "DSV4F_TRANSPLANT_POINTS",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/child-baseline-v3/DSV4F_TRANSPLANT_POINTS.json",
+      "present": true
+    }
+  },
+  "reason": "secondary capability regression beyond sealed tolerance on shard/fixture scores (math gain cannot override)",
+  "recorded_at": "2026-08-06T18:53:24.364540Z",
+  "reject_rule_fired": true,
+  "runtime_storage": {
+    "claim_boundary": {
+      "capability_claim_requires_sealed_shard_scores": true,
+      "direct_weight_transplant": false,
+      "full_model_bench_permitted": false,
+      "gradient_or_optimizer": false,
+      "gravity_compression_performed": false,
+      "kimi_consumed": false,
+      "kimi_simulated": false,
+      "lane_does_not_own": [
+        "C_FINAL_PROTO_KIMI",
+        "D_RAMANUJAN"
+      ],
+      "lane_owns": [
+        "A_BASE_DSV4F",
+        "B_PROTO_DSV4F_GLM"
+      ],
+      "odyssey_or_ramanujan": false,
+      "proto_frankenstein": "DeepSeek-V4-Flash + GLM math inheritance",
+      "stage": 1,
+      "training_performed": false,
+      "weight_average_performed": false
+    },
+    "notes": "PROTO run accounting.  Full-model TPS unmeasured until forward lane lands.  Adapter archive is the sealed raw transfer module.",
+    "recorded_at": "2026-08-06T18:53:24.364433Z",
+    "runtime": {
+      "full_model_runtime_available": false,
+      "measurement_scope": "shard_or_unmeasured",
+      "tps_base": null,
+      "tps_delta": null,
+      "tps_non_regression_within_2pct": null,
+      "tps_proto": null
+    },
+    "schema": "hawking.frankenstein.stage1_runtime_storage.v1",
+    "seal_sha256": "90092d697372275c390855f4b94caa307f0bbe8731fba1e291cad5b5ca968c95",
+    "storage": {
+      "adapter_archive_bytes": 1349391,
+      "donor_weights_retained": false,
+      "floor_bytes": 16106127360,
+      "free_bytes_at_seal": 178284453888,
+      "gravity_compressed": false,
+      "student_body_resident_read_only": true,
+      "working_set_bytes": 0
+    }
+  },
+  "schema": "hawking.frankenstein.proto_frankenstein_run.v1",
+  "seal_sha256": "ef120fd13820e9beb26aa282aaeb6520b30e453f2df6feffad9409e71e08c1c1",
+  "secondary_capabilities": [
+    "coding_and_repository_work",
+    "tool_use",
+    "agentic_planning",
+    "long_context_reasoning",
+    "repair_and_critique",
+    "hcli_protocols",
+    "general_knowledge_conversation",
+    "runtime_tps",
+    "bridge_compatibility",
+    "routing_stability",
+    "context_behavior"
+  ],
+  "secondary_non_regression": {
+    "domains": [
+      {
+        "base": 0.7,
+        "delta": -0.09999999999999998,
+        "domain": "coding_and_repository_work",
+        "floor": 0.6799999999999999,
+        "gate": "FAIL",
+        "hard": true,
+        "proto": 0.6,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "tool_use",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "agentic_planning",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "long_context_reasoning",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "repair_and_critique",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "hcli_protocols",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "general_knowledge_conversation",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "runtime_tps",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "bridge_compatibility",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "routing_stability",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "context_behavior",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      }
+    ],
+    "reject_rule_fired": true,
+    "source": "sealed_shard_fixture",
+    "verdict": "REJECT"
+  },
+  "stage": 1,
+  "stages": {
+    "ablation_avb": {
+      "ablation_seal_sha256": "90b816f69b2399d71a1ac49775561e38d775c0de28c779574539781e4bd0b4b0",
+      "bench_scope": "SHARD",
+      "fixture_id": "math_up_coding_down_REJECT",
+      "math_mean_gain": 0.2000000000000001,
+      "reject_rule_fired": true,
+      "report_path": "workspace/campaign/evidence/models/frankenstein/proto-run/focused-reject/ablation/STAGE1_AVB_ABLATION__math_up_coding_down_REJECT.json",
+      "secondary_verdict": "REJECT",
+      "status": "ABLATION_COMPLETE",
+      "verdict": "REJECT"
+    },
+    "compose_proto": {
+      "apply_path": "workspace/campaign/evidence/models/frankenstein/proto-run/focused-reject/transfer-apply/FRANKENSTEIN_TRANSFER_APPLY.json",
+      "artifact_path": "workspace/campaign/evidence/models/frankenstein/proto-run/focused-reject/PROTO_FRANKENSTEIN_ARTIFACT.json",
+      "artifact_seal_sha256": "5dbc121097bf11309699256d8b248d0f11ece848c8f1c3e55c94b41200db9170",
+      "gravity_compressed": false,
+      "status": "STRUCTURAL_LINEAR_INIT_COMPOSED_VALIDATION_PENDING",
+      "validation_status": "DEEPSEEK_FORWARD_PENDING"
+    },
+    "forward_activations": {
+      "activations_captured": false,
+      "capability_measurement": false,
+      "dry_run": false,
+      "gate": {
+        "name": "DEEPSEEK_FORWARD_PENDING",
+        "reason": "no callable DeepSeek forward registered; GPU forward lane has not exposed lab.operators.deepseek_v4_forward or DEEPSEEK_FORWARD_CALLABLE"
+      },
+      "seal_sha256": "07addafc2a4939161a0749f5c7fc2e22da09b037a0a3cb226b14d206c42ca284",
+      "status": "DEEPSEEK_FORWARD_PENDING"
+    },
+    "load_module": {
+      "bridge": "GLM_MATH_BRIDGE",
+      "meta_path": "workspace/campaign/evidence/models/frankenstein/transfer-module/FRANKENSTEIN_TRAINING_FREE_MODULE.json",
+      "module_seal_sha256": "dca95c8a9d301f4e58b0b372b62dc4f58a40469dc2248648ce9b62e743a8c286",
+      "status": "MODULE_LOADED",
+      "trained": false
+    }
+  },
+  "status": "REJECT",
+  "trained": false,
+  "training_free": true,
+  "transfer_module_id": "proto-dca95c8a9d30",
+  "verdict": "REJECT",
+  "wall_s": 0.0528895829920657
+}

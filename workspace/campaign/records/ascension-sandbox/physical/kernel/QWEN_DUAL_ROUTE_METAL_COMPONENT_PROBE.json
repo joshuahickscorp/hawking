@@ -1,0 +1,107 @@
+{
+  "claim_boundary": {
+    "direct_metal_router_component_only": true,
+    "not_a_100_tps_kernel_operational_receipt": true,
+    "not_a_complete_decoder_or_generation_path": true,
+    "not_a_gravity_artifact": true,
+    "not_a_manager_or_tournament_qualification": true,
+    "not_a_tg3_333_tps_receipt": true,
+    "qwen30_weights_not_loaded": true,
+    "qwen80_body_not_downloaded_or_loaded": true
+  },
+  "device": "Apple M3 Ultra",
+  "lanes": [
+    {
+      "architecture": "Qwen3MoeForCausalLM",
+      "cpu_oracle_route_ids": [
+        83,
+        38,
+        121,
+        76,
+        31,
+        114,
+        69,
+        24
+      ],
+      "dispatch_count_per_router_invocation": 1,
+      "exact_topology_bound": true,
+      "ids_exact_match": true,
+      "max_abs_weight_error": 7.450580596923828e-9,
+      "metal_direct_dispatch": true,
+      "metal_route_ids": [
+        83,
+        38,
+        121,
+        76,
+        31,
+        114,
+        69,
+        24
+      ],
+      "model_id": "Qwen3-Coder-30B-A3B-Instruct",
+      "n_experts": 128,
+      "source_configuration_path": "workspace/campaign/records/runs/qwen-30b/Qwen3-Coder-30B-A3B-Instruct/config.json",
+      "source_configuration_sha256": "e2c8d8eea39471785cd93379d8b48241ad7dcda299013155dd02526e34a0de62",
+      "timing": {
+        "component_dispatches_per_second_from_host_wall": 1693.0041681762618,
+        "host_wall_us_max": 1762.958,
+        "host_wall_us_min": 521.917,
+        "host_wall_us_p50": 590.666,
+        "host_wall_us_p95": 1196.625,
+        "measured_runs": 24,
+        "warmup_runs": 3
+      },
+      "top_k": 8,
+      "weights_within_1e_minus_5": true
+    },
+    {
+      "architecture": "Qwen3NextForCausalLM",
+      "cpu_oracle_route_ids": [
+        83,
+        166,
+        249,
+        332,
+        415,
+        498,
+        69,
+        152,
+        235,
+        318
+      ],
+      "dispatch_count_per_router_invocation": 1,
+      "exact_topology_bound": true,
+      "ids_exact_match": true,
+      "max_abs_weight_error": 1.862645149230957e-9,
+      "metal_direct_dispatch": true,
+      "metal_route_ids": [
+        83,
+        166,
+        249,
+        332,
+        415,
+        498,
+        69,
+        152,
+        235,
+        318
+      ],
+      "model_id": "Qwen3-Coder-Next-80B",
+      "n_experts": 512,
+      "source_configuration_path": "workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN80_SOURCE_METADATA_CANDIDATE.json",
+      "source_configuration_sha256": "8f5784aae3539c4ace82ef3d8f57f4ad7879422a50a9678602eddd152d91b46d",
+      "timing": {
+        "component_dispatches_per_second_from_host_wall": 947.193937958797,
+        "host_wall_us_max": 1911.2079999999999,
+        "host_wall_us_min": 992.7919999999999,
+        "host_wall_us_p50": 1055.75,
+        "host_wall_us_p95": 1680.958,
+        "measured_runs": 24,
+        "warmup_runs": 3
+      },
+      "top_k": 10,
+      "weights_within_1e_minus_5": true
+    }
+  ],
+  "schema": "hawking.ascension.qwen_router_metal_component_probe.v1",
+  "status": "PASS_DIRECT_METAL_ROUTER_COMPONENT_NOT_FULL_MODEL_NOT_TPS_GATE"
+}

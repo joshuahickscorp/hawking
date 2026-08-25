@@ -1,0 +1,245 @@
+{
+ "schema": "hawking.headless.tokenizer_gravity.v1",
+ "generated_at": "2026-08-25T08:42:01Z",
+ "generated_by": "tools/headless/tokenizer_gravity.py",
+ "obligation": "G036 \u2014 TOKENIZER_GRAVITY_QWEN",
+ "hand_authored": false,
+ "git_head": "ef8f1d223697fe11f88bbfa9e7ed0bd5a1dba061",
+ "organ_system": {
+  "coupled": [
+   "tokenizer",
+   "vocabulary",
+   "embedding",
+   "lm_head"
+  ],
+  "vocab_rows": 248077,
+  "embedding_bytes": 496640242,
+  "lm_head_bytes": 496640242,
+  "combined_bytes": 993280484,
+  "payload_share_pct": 11.38,
+  "bytes_per_row": 4003.92
+ },
+ "corpus": {
+  "provenance_chars": {
+   "agent_prompts_and_tool_schemas": 1827,
+   "capability_prompts": 0,
+   "python_source": 231720,
+   "json_receipts": 177611,
+   "model_replies": 2445,
+   "paths": 23148,
+   "shell": 244
+  },
+  "total_chars": 437191,
+  "total_tokens": 141434,
+  "distinct_rows_used": 8445,
+  "coverage_pct": 3.4,
+  "why": "a real HCLI/AgentOS workload -- tool schemas, missions, python, shell, JSON receipts, paths and the model's own replies -- not generic text (S011 \u00a712)"
+ },
+ "genome": {
+  "REQUIRED": 289,
+  "HOT": 2931,
+  "WARM": 5421,
+  "COLD": 239436,
+  "byte_fallback_rows": 256
+ },
+ "genome_definition": {
+  "REQUIRED": "special/control tokens, added tokens, and byte-fallback rows; removing a byte-fallback row makes some bytes unencodable",
+  "HOT": "rows covering the first 90% of observed token mass",
+  "WARM": "rows covering the next 9.5%, plus every other observed row",
+  "COLD": "rows never observed anywhere in the HCLI corpus"
+ },
+ "candidates": [
+  {
+   "candidate": "CONTROL_ascii_condensed",
+   "note": "reproduces the external ASCII-only result. S011 \u00a710: CONTROL ONLY, never production policy -- it deletes every non-ASCII row and so deletes multilingual capability outright",
+   "rows_kept": 126537,
+   "rows_removed": 121540,
+   "rows_removed_pct": 48.99,
+   "embedding_plus_head_bytes_saved": 486636447,
+   "payload_pct_saved": 5.574,
+   "complete_ebpw_after": 2.452248,
+   "token_inflation_x": 1.0026,
+   "tokens_before": 16793,
+   "tokens_after": 16836,
+   "lm_head_flops_scale": 0.5101,
+   "net_wall_time_x": 1.0026,
+   "verdict": "LOSES ON HELD-OUT TEXT: 3.105x inflation on language the HCLI corpus never contained",
+   "heldout_worst_inflation_x": 3.105
+  },
+  {
+   "candidate": "hawking_required_hot",
+   "note": "REQUIRED + the rows covering 90% of real HCLI token mass",
+   "rows_kept": 3220,
+   "rows_removed": 244857,
+   "rows_removed_pct": 98.7,
+   "embedding_plus_head_bytes_saved": 980387861,
+   "payload_pct_saved": 11.229,
+   "complete_ebpw_after": 2.305385,
+   "token_inflation_x": 1.1912,
+   "tokens_before": 16793,
+   "tokens_after": 20003,
+   "lm_head_flops_scale": 0.013,
+   "net_wall_time_x": 1.1912,
+   "verdict": "LOSES ON HELD-OUT TEXT: 3.105x inflation on language the HCLI corpus never contained",
+   "heldout_worst_inflation_x": 3.105
+  },
+  {
+   "candidate": "hawking_required_hot_warm",
+   "note": "REQUIRED + HOT + WARM: every row observed in the HCLI corpus",
+   "rows_kept": 8641,
+   "rows_removed": 239436,
+   "rows_removed_pct": 96.52,
+   "embedding_plus_head_bytes_saved": 958682610,
+   "payload_pct_saved": 10.98,
+   "complete_ebpw_after": 2.311842,
+   "token_inflation_x": 1.0156,
+   "tokens_before": 16793,
+   "tokens_after": 17055,
+   "lm_head_flops_scale": 0.0348,
+   "net_wall_time_x": 1.0156,
+   "verdict": "LOSES ON HELD-OUT TEXT: 3.105x inflation on language the HCLI corpus never contained",
+   "heldout_worst_inflation_x": 3.105
+  },
+  {
+   "candidate": "no_change_control",
+   "note": "keeps everything; must show inflation 1.0 or the measurement is wrong",
+   "rows_kept": 248077,
+   "rows_removed": 0,
+   "rows_removed_pct": 0.0,
+   "embedding_plus_head_bytes_saved": 0,
+   "payload_pct_saved": 0.0,
+   "complete_ebpw_after": 2.596994,
+   "token_inflation_x": 1.0026,
+   "tokens_before": 16793,
+   "tokens_after": 16836,
+   "lm_head_flops_scale": 1.0,
+   "net_wall_time_x": 1.0026,
+   "verdict": "CONTROL: no rows removed"
+  }
+ ],
+ "heldout_probe": {
+  "why": "COLD means 'never observed in the HCLI corpus', which is a claim about the corpus and not about what the model must be able to say. These samples were never in it.",
+  "samples": {
+   "chinese": "\u8bf7\u89e3\u91ca\u7f16\u8bd1\u5668\u5982\u4f55\u5c06\u5faa\u73af\u8f6c\u6362\u4e3a\u57fa\u672c\u5757\uff0c\u7136\u540e\u751f\u6210\u673a\u5668\u4ee3\u7801\u3002",
+   "japanese": "\u30b3\u30f3\u30d1\u30a4\u30e9\u304c\u30eb\u30fc\u30d7\u3092\u57fa\u672c\u30d6\u30ed\u30c3\u30af\u306b\u5909\u63db\u3059\u308b\u65b9\u6cd5\u3092\u8aac\u660e\u3057\u3066\u304f\u3060\u3055\u3044\u3002",
+   "russian": "\u041e\u0431\u044a\u044f\u0441\u043d\u0438\u0442\u0435, \u043a\u0430\u043a \u043a\u043e\u043c\u043f\u0438\u043b\u044f\u0442\u043e\u0440 \u043f\u0440\u0435\u043e\u0431\u0440\u0430\u0437\u0443\u0435\u0442 \u0446\u0438\u043a\u043b \u0432 \u0431\u0430\u0437\u043e\u0432\u044b\u0435 \u0431\u043b\u043e\u043a\u0438.",
+   "emoji_and_symbols": "\u2705 done \u2192 \u2211(x\u00b2) \u2248 3.14 \u00b7 \u00b5s \u00b7 \u00b10.5 \u2014 \u00abquoted\u00bb \ud83d\ude00",
+   "german_prose": "Die \u00dcbersetzung eines Schleifenkonstrukts erfordert Pr\u00e4zision."
+  },
+  "results": {
+   "CONTROL_ascii_condensed": {
+    "per_sample": {
+     "chinese": {
+      "tokens_before": 14,
+      "tokens_after": 27,
+      "inflation_x": 1.929
+     },
+     "japanese": {
+      "tokens_before": 16,
+      "tokens_after": 33,
+      "inflation_x": 2.062
+     },
+     "russian": {
+      "tokens_before": 19,
+      "tokens_after": 59,
+      "inflation_x": 3.105
+     },
+     "emoji_and_symbols": {
+      "tokens_before": 28,
+      "tokens_after": 36,
+      "inflation_x": 1.286
+     },
+     "german_prose": {
+      "tokens_before": 14,
+      "tokens_after": 17,
+      "inflation_x": 1.214
+     }
+    },
+    "worst_inflation_x": 3.105,
+    "mean_inflation_x": 1.919
+   },
+   "hawking_required_hot": {
+    "per_sample": {
+     "chinese": {
+      "tokens_before": 14,
+      "tokens_after": 27,
+      "inflation_x": 1.929
+     },
+     "japanese": {
+      "tokens_before": 16,
+      "tokens_after": 33,
+      "inflation_x": 2.062
+     },
+     "russian": {
+      "tokens_before": 19,
+      "tokens_after": 59,
+      "inflation_x": 3.105
+     },
+     "emoji_and_symbols": {
+      "tokens_before": 28,
+      "tokens_after": 41,
+      "inflation_x": 1.464
+     },
+     "german_prose": {
+      "tokens_before": 14,
+      "tokens_after": 43,
+      "inflation_x": 3.071
+     }
+    },
+    "worst_inflation_x": 3.105,
+    "mean_inflation_x": 2.326
+   },
+   "hawking_required_hot_warm": {
+    "per_sample": {
+     "chinese": {
+      "tokens_before": 14,
+      "tokens_after": 27,
+      "inflation_x": 1.929
+     },
+     "japanese": {
+      "tokens_before": 16,
+      "tokens_after": 33,
+      "inflation_x": 2.062
+     },
+     "russian": {
+      "tokens_before": 19,
+      "tokens_after": 59,
+      "inflation_x": 3.105
+     },
+     "emoji_and_symbols": {
+      "tokens_before": 28,
+      "tokens_after": 36,
+      "inflation_x": 1.286
+     },
+     "german_prose": {
+      "tokens_before": 14,
+      "tokens_after": 37,
+      "inflation_x": 2.643
+     }
+    },
+    "worst_inflation_x": 3.105,
+    "mean_inflation_x": 2.205
+   }
+  }
+ },
+ "conclusion": {
+  "adoptable_today": null,
+  "finding": "Every candidate looks good on the HCLI corpus and fails on held-out language. required_hot_warm saves 10.98% of payload (2.5970 -> 2.3118 EBPW) for 1.56% inflation ON THE CORPUS IT WAS FITTED TO, and costs 2.2x mean / 3.1x worst on text that corpus never contained. Since a forward pass costs the same whatever the token, inflation is wall time one-for-one: a 2.2x token count is a 2.2x slowdown, which no 11% byte saving repays.",
+  "why_cold_is_not_safe": "COLD means 'never observed in 141,434 tokens of English and code', which touched 3.4% of the vocabulary. It is a fact about the corpus, not about what production must be able to say.",
+  "the_control_did_its_job": "S011 \u00a710 says reproduce ASCII-condensing as a CONTROL and do not adopt it. The held-out numbers show exactly why: it deletes every CJK and Cyrillic row, and those samples collapse to byte fallback. It is reproduced at 5.57% payload saved and left unadopted.",
+  "the_inversion_worth_keeping": "on German prose the crude ASCII control (1.214x) BEATS both corpus-fitted genomes (2.643x and 3.071x). Fitting a vocabulary to an English-and-code corpus is worse for a Latin-script language than a rule that keeps all ASCII, because the corpus never contained the German subwords the genome discarded.",
+  "what_would_make_this_adoptable": [
+   "an HCLI token distribution that INCLUDES every language production must serve, so COLD is a claim about the workload and not about the sample",
+   "a retrained BPE merge table over the surviving rows, which the greedy re-encoder here only approximates",
+   "an end-to-end capability re-score, because token inflation changes what fits in the context window as well as what it costs"
+  ]
+ },
+ "inflation_method": {
+  "what": "greedy longest-match re-encoding over the surviving surface forms",
+  "honest_limit": "a MODEL of the cost, not a re-derived BPE merge table. It is an upper bound on the surviving vocabulary's efficiency and therefore a LOWER bound on inflation; a retrained tokenizer could do better than this number.",
+  "sample_chars": 60000,
+  "control": "no_change_control keeps every row and must return ~1.0"
+ },
+ "measurement_is_calibrated": true,
+ "pass": true
+}

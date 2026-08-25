@@ -1,0 +1,97 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T12:04:33Z",
+ "experiment_class": "ACCEL-HUMF",
+ "knowledge_level": "INSTANCE",
+ "git_head": "76fa7c0613b5590862479621cd4b58a8a10bdf84",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_H_P8",
+   "proof": "P8 \u2014 an object correctly managed across two memory domains",
+   "obligation": "G050",
+   "steer": "S015"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "memory_bytes": 103079215104
+  },
+  "device": {
+   "domains": [
+    "APPLE_UM (physical)",
+    "MOCK_EXTERNAL_VRAM (simulated)"
+   ]
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model; this grades the fabric, not a model organ"
+  },
+  "representation": {
+   "name": "dense_f32",
+   "layout": "row_major",
+   "bytes": 4194304
+  },
+  "kernel": {
+   "status": "ABSENT",
+   "reason": "no kernel executes here; HUMF moves and tracks, it does not compute"
+  },
+  "runtime": {
+   "python": "3.12.13"
+  },
+  "transport": {
+   "kind": "MOCK",
+   "bandwidth_gb_s": 5.0,
+   "provenance": "SIMULATED",
+   "warning": "a simulated transport number is NOT physical evidence"
+  }
+ },
+ "result": {
+  "steps": [
+   {
+    "step": "acquired_external",
+    "action": "TRANSFER",
+    "cost_ms": 0.939,
+    "provenance": "SIMULATED",
+    "valid": [
+     "APPLE_UM",
+     "MOCK_EXTERNAL_VRAM"
+    ]
+   },
+   {
+    "step": "round_trip",
+    "bit_identical": true
+   },
+   {
+    "step": "wrote_external",
+    "apple_state": "STALE",
+    "external_state": "DIRTY",
+    "valid_copies": [],
+    "owner": "MOCK_EXTERNAL_VRAM"
+   },
+   {
+    "step": "stale_not_a_source",
+    "action": "RECOMPUTE",
+    "offered": [
+     null
+    ]
+   },
+   {
+    "step": "reconciled",
+    "action": "TRANSFER",
+    "from_": "MOCK_EXTERNAL_VRAM",
+    "apple_has_mutation": true,
+    "not_the_stale_value": true
+   }
+  ],
+  "all_checks_passed": true,
+  "tests": "tools/accelerator/test_humf.py, 12 passed",
+  "CORRECTED_BY_LATER_MEASUREMENT": {
+   "corrected_by": "receipts/headless/ACCELERATOR_HUMF_FAILURE_INJECTION.json",
+   "date": "2026-08-25",
+   "what_was_wrong": "This receipt says the mock 'carries REAL BYTES rather than only accounting, so P8 grades data instead of my own bookkeeping agreeing with itself'. True of the round trip, which called the provider DIRECTLY -- and NOT true of Humf.execute(), which never called the provider at all and transitioned TRANSFERRING -> CLEAN on bookkeeping alone. The data half and the state-machine half were verified on SEPARATE PATHS and the seam between them was untested.",
+   "the_consequence": "A transfer could not fail and always ended CLEAN. Verified against the pre-fix code: with an injected copy failure armed, execute() raised nothing, the destination came out CLEAN and appeared in valid_copies(), and the injection was still armed afterwards. A copy reported valid while holding nothing.",
+   "what_stands": "The 8 coherence states, the illegal-transition guard, STALE never being offered as a transfer source, the move-vs-recompute planner and the simulated-cost flag are all unaffected -- none of them ran through the broken step."
+  }
+ },
+ "claim_boundary": "This proves P8 on a MOCK external domain and nothing more. Real bytes make the round trip and the coherence machine behaves correctly -- a write makes the other copy STALE, a STALE copy is never offered as a transfer source, and reconciliation delivers the mutated data rather than the old value -- but the 5 GB/s external bandwidth is a KNOB, not a measurement. No NVIDIA VRAM exists here, no transport was crossed, and nothing in this receipt may be cited as evidence about real external-GPU transfer cost. HUMF also does not claim hardware coherence: the domains stay physically distinct and every state change above is software bookkeeping.",
+ "pass": true
+}

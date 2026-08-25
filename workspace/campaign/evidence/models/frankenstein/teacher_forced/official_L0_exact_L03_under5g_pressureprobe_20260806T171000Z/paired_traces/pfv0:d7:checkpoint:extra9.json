@@ -1,0 +1,328 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 195,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "You are solving a formal proof search problem `extra_9`.\nEmit the next tool action.\n\nContext:\ntool=search_checkpoint problem=extra_9 id=6388c2b545a7272a\n\nPreferred tool family: search_checkpoint.",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:d7:checkpoint:extra9",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "retention",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "You are solving a formal proof search problem `extra_9`.\nEmit the next tool action.\n\nContext:\ntool=search_checkpoint problem=extra_9 id=6388c2b545a7272a\n\nPreferred tool family: search_checkpoint.",
+  "proof_plan": null,
+  "recorded_at": "2026-08-06T16:39:48.721118Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "4aa7e578b3934e7377fee350d7d0153902abed1831a8caad6c7238d58ba9e55e",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 3.604979991912842,
+          "rank": 0,
+          "token_id": 18
+        },
+        {
+          "logit": 3.594879627227783,
+          "rank": 1,
+          "token_id": 31
+        },
+        {
+          "logit": 3.560178756713867,
+          "rank": 2,
+          "token_id": 63
+        },
+        {
+          "logit": 3.2584187984466553,
+          "rank": 3,
+          "token_id": 17
+        },
+        {
+          "logit": 2.930220365524292,
+          "rank": 4,
+          "token_id": 23
+        },
+        {
+          "logit": 2.8262054920196533,
+          "rank": 5,
+          "token_id": 21
+        },
+        {
+          "logit": 2.7283637523651123,
+          "rank": 6,
+          "token_id": 16
+        },
+        {
+          "logit": 2.680171489715576,
+          "rank": 7,
+          "token_id": 19
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.2080005407333374,
+          "l2": 3.6325957775115967,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "e6c6fcd38746a321d38547707042109c4829b16c8e35b1b424c9ace150c93675",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.24417613446712494,
+          "l2": 3.385368585586548,
+          "layer": 1,
+          "mlp_type": "dense",
+          "sample_sha256": "7554484b7e5f3008dcfd4623ce827f1564db0f08c51fde2f8d52af29549ccbc2",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.26724034547805786,
+          "l2": 3.277747392654419,
+          "layer": 2,
+          "mlp_type": "dense",
+          "sample_sha256": "e099f0d0c6c6f2540e420484a71d2ab245b04c1859db7064a3fd7f52a7cfea8f",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.2929947078227997,
+          "l2": 3.3492767810821533,
+          "layer": 3,
+          "mlp_type": "sparse",
+          "sample_sha256": "4eef2a3e334c9bc0d651a1db89d6c3ee45b6bbe16f6b986ed7fa62ad3e2d0201",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": {
+        "expert_counts": {
+          "10": 1,
+          "100": 3,
+          "101": 2,
+          "105": 1,
+          "107": 1,
+          "108": 1,
+          "11": 1,
+          "110": 1,
+          "111": 2,
+          "112": 1,
+          "114": 2,
+          "115": 1,
+          "116": 1,
+          "117": 2,
+          "119": 1,
+          "12": 1,
+          "120": 2,
+          "125": 1,
+          "127": 1,
+          "128": 1,
+          "13": 3,
+          "130": 7,
+          "131": 3,
+          "132": 1,
+          "133": 1,
+          "136": 2,
+          "138": 1,
+          "14": 3,
+          "140": 6,
+          "142": 2,
+          "145": 1,
+          "146": 1,
+          "148": 8,
+          "15": 2,
+          "152": 1,
+          "157": 3,
+          "158": 1,
+          "161": 6,
+          "163": 1,
+          "164": 2,
+          "165": 1,
+          "166": 1,
+          "167": 3,
+          "17": 3,
+          "171": 1,
+          "172": 1,
+          "174": 2,
+          "177": 2,
+          "18": 1,
+          "180": 1,
+          "181": 1,
+          "183": 1,
+          "184": 1,
+          "187": 1,
+          "19": 1,
+          "190": 2,
+          "193": 2,
+          "195": 1,
+          "198": 1,
+          "199": 1,
+          "2": 2,
+          "200": 1,
+          "201": 4,
+          "203": 2,
+          "206": 2,
+          "211": 2,
+          "212": 1,
+          "213": 4,
+          "214": 3,
+          "216": 1,
+          "217": 1,
+          "218": 2,
+          "22": 1,
+          "221": 2,
+          "224": 1,
+          "227": 5,
+          "229": 4,
+          "230": 1,
+          "233": 1,
+          "237": 2,
+          "238": 3,
+          "24": 1,
+          "240": 1,
+          "241": 1,
+          "242": 1,
+          "243": 2,
+          "245": 1,
+          "246": 2,
+          "248": 1,
+          "250": 4,
+          "251": 1,
+          "252": 2,
+          "255": 2,
+          "26": 7,
+          "27": 3,
+          "28": 3,
+          "32": 1,
+          "34": 1,
+          "37": 1,
+          "4": 1,
+          "41": 2,
+          "44": 3,
+          "47": 1,
+          "48": 1,
+          "5": 1,
+          "50": 1,
+          "56": 1,
+          "57": 1,
+          "59": 1,
+          "60": 7,
+          "61": 12,
+          "62": 2,
+          "63": 4,
+          "64": 1,
+          "66": 1,
+          "69": 1,
+          "7": 1,
+          "72": 1,
+          "75": 1,
+          "76": 1,
+          "77": 2,
+          "78": 1,
+          "80": 2,
+          "83": 5,
+          "87": 1,
+          "89": 1,
+          "9": 1,
+          "90": 2,
+          "93": 1,
+          "97": 2,
+          "98": 2,
+          "99": 1
+        },
+        "load_balance_cv": null,
+        "note": "route stats are student-native; never copy GLM router weights",
+        "source_layer": 3,
+        "top_k": 8
+      },
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

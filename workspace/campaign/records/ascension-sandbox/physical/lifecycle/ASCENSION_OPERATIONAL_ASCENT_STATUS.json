@@ -1,0 +1,49 @@
+{
+  "both_valid_tg10_receipts": false,
+  "claim_boundary": {
+    "operational_ascent_does_not_activate_the_sandbox": true,
+    "operational_ascent_does_not_launch_or_score_the_protected_tournament": true,
+    "operational_ascent_is_not_a_capability_or_agent_os_pass": true,
+    "operational_ascent_is_not_tg3": true
+  },
+  "evidence": {
+    "fixed_candidate_order": [
+      "Qwen30-Gravity-Manager-Artifact",
+      "Qwen80-Gravity-Manager-Artifact"
+    ],
+    "models": {
+      "qwen30": {
+        "complete_artifact_admission_seal_sha256": "89d3c531d5638757bf0c0348df4f11e45a4f1c0cf87d27a7f3afcb675247301a",
+        "hcli_receipt_seal_sha256": null,
+        "kernel_receipt_seal_sha256": null,
+        "runtime_receipt_seal_sha256": "48f065627739877bbafae141fa6a4a37bbd8b24037921b996ca0881ca7828ced",
+        "source_identity_seal_sha256": "816648bae17f2688a04161a4f921debfe6697386f6078f069dc7e594b99930a5",
+        "source_revalidation_seal_sha256": "ac7208e11c31bbd035bd87fd62a80020b9d1d05970867576f4649f6bebe68123",
+        "tg10_receipt_seal_sha256": null
+      },
+      "qwen80": {
+        "complete_artifact_admission_seal_sha256": "939b41322363da3db774a2530b207bf380ed641d23cae671fc6438c0eecbf628",
+        "hcli_receipt_seal_sha256": null,
+        "kernel_receipt_seal_sha256": null,
+        "runtime_receipt_seal_sha256": null,
+        "source_identity_seal_sha256": "4a71f1cc860d362176e5501426e7f9b3e4e1178f1389e5989c03c38301e9a8e3",
+        "source_revalidation_seal_sha256": "541b16fca1d4805ecba356face97b4e8de1accdeb21e98ee0c13b70ab0746c45",
+        "tg10_receipt_seal_sha256": null
+      }
+    }
+  },
+  "evidence_fingerprint": null,
+  "next_transition": "await both exact sealed TG10 operational receipts",
+  "physical_gate_status_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/lifecycle/ASCENSION_PHYSICAL_TOURNAMENT_GATE_STATUS.json",
+  "physical_gate_status_seal_sha256": "cd58fe9206bc51944fb76e28fa66a413c5cc876659f9c6aec0f0a25d1476f8c6",
+  "protected_tournament": {
+    "capability_agent_os_and_final_review_remain_required": true,
+    "launch_requested": false,
+    "qualification_override": false,
+    "tg3_remains_required": true
+  },
+  "recorded_at": "2026-08-10T17:21:36.174823Z",
+  "schema": "hawking.ascension.physical_operational_ascent.v1",
+  "seal_sha256": "dea8440fcb2809f3739886114d641fc15e1a77095e1b58019d87d493eaacbc97",
+  "status": "WAITING_FOR_BOTH_VALID_TG10_OPERATIONAL_RECEIPTS"
+}

@@ -1,0 +1,146 @@
+{
+  "schema": "hawking.ascension.complete_token_profiler_contract.v1",
+  "bible_section": 11,
+  "bible_source": "HAWKING_ASCENSION_BIBLE.md",
+  "title": "Complete-token profiler and FLOPS ledger contract",
+  "status": "CONTRACT_SEALED_PLANNING",
+  "implementation_status": "NOT_STARTED",
+  "target_explained_percent": 98.0,
+  "rule": "Explain at least 98% of complete-token latency. Higher achieved FLOPS is not automatically better.",
+  "live_qwen_values": {
+    "exist": false,
+    "qwen3_coder_30b": null,
+    "qwen3_coder_next_80b": null,
+    "note": "No live Qwen complete-token profiles, FLOPS ledgers, or BASE_TRUE_TPS values exist. Scaffold shape only. Do not invent performance claims."
+  },
+  "required_stage_inventory_bible": [
+    "tokenizer/template",
+    "embedding",
+    "norm/state",
+    "QKV",
+    "attention or DeltaNet",
+    "KV/state",
+    "router",
+    "expert selection",
+    "expert gather",
+    "gate/up",
+    "activation",
+    "down",
+    "shared expert",
+    "combine",
+    "residual",
+    "head",
+    "sampling",
+    "readback",
+    "HCLI stream"
+  ],
+  "required_per_stage_observations": [
+    "GPU duration",
+    "CPU duration",
+    "bytes read",
+    "bytes written",
+    "theoretical operations",
+    "executed operations",
+    "useful operations",
+    "redundant operations",
+    "achieved FLOPS",
+    "occupancy",
+    "arithmetic intensity",
+    "reuse factor",
+    "dispatches",
+    "command buffers",
+    "waits",
+    "p50",
+    "p95",
+    "p99",
+    "fallback"
+  ],
+  "required_global_ledgers": [
+    "PEAK_UTILIZATION",
+    "FLOPS_PER_TOKEN",
+    "BYTES_PER_FLOP",
+    "REUSE_FACTOR",
+    "CRITICAL_DEPTH",
+    "STATE_TRAFFIC"
+  ],
+  "timing_accounting_fields": [
+    "observed_complete_token_wall_elapsed_ms",
+    "observed_complete_token_cpu_duration_ms",
+    "named_stage_wall_elapsed_ms",
+    "unexplained_other_wall_elapsed_ms",
+    "other_share_percent",
+    "status",
+    "target_explained_percent"
+  ],
+  "timing_pass_status": "PASS_ALL_TIME_EXPLICITLY_NAMED",
+  "timing_fail_status": "FAIL_UNEXPLAINED_OTHER_WALL",
+  "refusal_conditions": [
+    {
+      "id": "REFUSE_UNEXPLAINED_OTHER_ABOVE_TARGET",
+      "when": "other_share_percent > (100 - target_explained_percent)",
+      "action": "reject_profile_as_complete_token_authority"
+    },
+    {
+      "id": "REFUSE_OTHER_BUCKET_AS_NAMED_STAGE",
+      "when": "profile uses a catch-all OTHER stage to hide unexplained wall",
+      "action": "reject_profile"
+    },
+    {
+      "id": "REFUSE_LIVE_QWEN_CLAIM_WITHOUT_RUNTIME",
+      "when": "any Qwen FLOPS/TPS/p99 value asserted without sealed full-stack runtime",
+      "action": "METRIC_WITHHELD / REJECT_CLAIM_BOUNDARY"
+    },
+    {
+      "id": "REFUSE_BASE_TRUE_TPS_FROM_PROFILE_ALONE",
+      "when": "profile exists but TG eligibility (fallback=0, real GPU, same model/tier) not met",
+      "action": "BASE_TRUE_TPS_WITHHELD"
+    },
+    {
+      "id": "REFUSE_HIGHER_FLOPS_AS_AUTOMATIC_WIN",
+      "when": "candidate ranked solely by achieved FLOPS without complete wall and p99",
+      "action": "reject_ranking"
+    },
+    {
+      "id": "REFUSE_BLENDED_TPS",
+      "when": "scoreboard stores mean/avg/blended TPS across separated metrics",
+      "action": "reject_scoreboard"
+    },
+    {
+      "id": "REFUSE_MISSING_GLOBAL_LEDGER",
+      "when": "any of PEAK_UTILIZATION / FLOPS_PER_TOKEN / BYTES_PER_FLOP / REUSE_FACTOR / CRITICAL_DEPTH / STATE_TRAFFIC absent on an authority profile",
+      "action": "reject_as_incomplete_ledger"
+    },
+    {
+      "id": "REFUSE_MISSING_PER_STAGE_OBSERVATION",
+      "when": "authority profile stage lacks a required per-stage observation field",
+      "action": "reject_as_incomplete_stage_observation"
+    }
+  ],
+  "ranking_rule": {
+    "primary": "complete_wall_time_and_p99",
+    "not_primary": "achieved_FLOPS_alone",
+    "note": "A candidate that performs fewer useful operations can be faster with lower FLOPS."
+  },
+  "family_stage_inventories_scaffold": {
+    "note": "Family-specific stage keys live in lab/operators/ascension_parity_ladder.py; bible list above is the semantic inventory.",
+    "QWEN3_MOE": "lab/operators/ascension_parity_ladder.py::QWEN3_MOE_STAGES",
+    "QWEN3_NEXT": "lab/operators/ascension_parity_ladder.py::QWEN3_NEXT_STAGES",
+    "profiler_scaffold": "lab/operators/ascension_tg_gauntlet.py::CompleteTokenProfiler"
+  },
+  "cross_refs": {
+    "tg_harness_plan": "workspace/docs/plans/ascension/ASCENSION_TG_GAUNTLET_HARNESS_PLAN.md",
+    "parity_30b": "workspace/docs/plans/ascension/ASCENSION_30B_PARITY_LADDER_PLAN.md",
+    "parity_80b": "workspace/docs/plans/ascension/ASCENSION_80B_HYBRID_ARCHITECTURE_PLAN.md",
+    "master_schedule_steps": [13, 20],
+    "contract_doc": "workspace/docs/plans/ascension/ASCENSION_COMPLETE_TOKEN_PROFILER_CONTRACT.md",
+    "dsv4f_reference": "tools/condense/tests/test_deepseek_v4_complete_token_profile.py"
+  },
+  "honesty": {
+    "live_qwen_profile": false,
+    "live_qwen_flops_ledger": false,
+    "base_true_tps_claimed": false,
+    "performance_claims": false,
+    "stage_ready": false,
+    "reason": "Scaffold and contract only. DSV4F may supply mechanism-class evidence; Qwen values do not exist until full-stack runtime is sealed."
+  }
+}

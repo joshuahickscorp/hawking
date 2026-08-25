@@ -1,0 +1,39 @@
+{
+  "claim_boundary": {
+    "candidate_is_expected_low_fidelity_until_capability_evidence": true,
+    "every_source_tensor_is_required_for_completion": true,
+    "kv_state_and_context_bytes_are_separate_from_weight_bpw": true,
+    "not_native_runtime_or_tg_or_hcli_or_manager_qualification": true,
+    "physical_bpw_is_ledgered_not_inferred": true,
+    "raw_bf16_source_is_authority_teacher_not_tournament_participant": true
+  },
+  "heartbeat": 24018,
+  "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+  "manifest_seal_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+  "model": "Qwen3-Coder-Next-80B",
+  "phase": "EARNED_COMPLETE_PHYSICAL_BINARY_CANDIDATE_UNQUALIFIED",
+  "pid": 75734,
+  "progress": {
+    "artifact_bytes": 11285029537,
+    "complete_physical_bpw": 1.1331148544404688,
+    "completed_tensors": 74391,
+    "next_cursor": 74391,
+    "next_source_shard": null,
+    "next_tensor_name": null,
+    "planned_tensors": 74391,
+    "progress_index_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_GRAVITY_PROGRESS_INDEX.json"
+  },
+  "recorded_at": "2026-08-08T15:55:38.838052Z",
+  "representation": "direct_binary_sign_plus_fp16_group_scale",
+  "schema": "hawking.ascension.qwen80_complete_binary_gravity.v1",
+  "seal_sha256": "4a619c916f463195b63deeafbdc43443a532c168e0b71bf925dff57ba018a128",
+  "source_revalidation": {
+    "full_shards_revalidated_this_cycle": false,
+    "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_CURRENT_SOURCE_SHARD_REVALIDATION.json",
+    "receipt_seal_sha256": "541b16fca1d4805ecba356face97b4e8de1accdeb21e98ee0c13b70ab0746c45"
+  },
+  "terminal_receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_GRAVITY_TERMINAL_RECEIPT.json",
+  "terminal_receipt_schema": "hawking.ascension.complete_binary_terminal_status.v1",
+  "terminal_receipt_seal_sha256": "ed0a4ca91968e1df8f5b56cebb84bacd2904e9b7e198431a2dcdc94f70a2b974",
+  "terminal_status_is_sealed": true
+}

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.hawking.ascension.qwen30.quality-repack</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/caffeinate</string>
+    <string>-is</string>
+    <string>--</string>
+    <string>/usr/bin/nice</string>
+    <string>-n</string>
+    <string>15</string>
+    <string>/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python</string>
+    <string>/Users/scammermike/Downloads/hawking/tools/condense/ascension_qwen30_quality_repack.py</string>
+    <string>--watch</string>
+    <string>--max-tensors</string>
+    <string>32</string>
+    <string>--workers</string>
+    <string>4</string>
+    <string>--memory-budget-mib</string>
+    <string>3072</string>
+    <string>--idle-seconds</string>
+    <string>0.25</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>/Users/scammermike/Downloads/hawking</string>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <dict>
+    <key>SuccessfulExit</key>
+    <false/>
+  </dict>
+  <key>ProcessType</key>
+  <string>Background</string>
+  <key>ThrottleInterval</key>
+  <integer>30</integer>
+  <key>StandardOutPath</key>
+  <string>/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/gate-up-residual-v1/launchd.stdout.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/quality-candidates/gate-up-residual-v1/launchd.stderr.log</string>
+</dict>
+</plist>

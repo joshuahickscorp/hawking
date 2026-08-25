@@ -1,0 +1,10 @@
+{
+  "claim_boundary": "CPU/source-reference capture only",
+  "manifest": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+  "metal_or_gpu_allowed": false,
+  "mode": "cpu-oracle",
+  "pid": 51274,
+  "schema": "hawking.ascension.qwen80_first_residual_bridge_inner.v1",
+  "status": "STARTED_QWEN80_LAYER0_FIRST_RESIDUAL_CPU_ORACLE_BASELINE",
+  "token_id": 1
+}

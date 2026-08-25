@@ -1,0 +1,5194 @@
+{
+  "schema": "hawking.qwen30b.gravity_first_test.v1",
+  "at_unix": 1786067917.983584,
+  "elapsed_sec": 1.609703779220581,
+  "geometry": {
+    "source_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-30b/Qwen3-Coder-30B-A3B-Instruct",
+    "config_keys": {
+      "architectures": [
+        "Qwen3MoeForCausalLM"
+      ],
+      "model_type": "qwen3_moe",
+      "hidden_size": 2048,
+      "num_hidden_layers": 48,
+      "num_experts": 128,
+      "num_experts_per_tok": 8,
+      "moe_intermediate_size": 768,
+      "intermediate_size": 6144,
+      "num_attention_heads": 32,
+      "num_key_value_heads": 4,
+      "head_dim": 128,
+      "vocab_size": 151936,
+      "torch_dtype": "bfloat16",
+      "hidden_act": "silu",
+      "rms_norm_eps": 1e-06,
+      "rope_theta": 10000000,
+      "max_position_embeddings": 262144
+    },
+    "index_tensor_count": 18867,
+    "index_total_size_bytes": 61064245248,
+    "revision_hint": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+    "matches_expected": {
+      "architectures": true,
+      "model_type": true,
+      "hidden_size": true,
+      "num_hidden_layers": true,
+      "num_experts": true,
+      "num_experts_per_tok": true,
+      "moe_intermediate_size": true,
+      "num_attention_heads": true,
+      "num_key_value_heads": true,
+      "head_dim": true,
+      "vocab_size": true,
+      "torch_dtype": true
+    }
+  },
+  "method": {
+    "name": "symmetric_group_absmax_rtn",
+    "nbits_tested": [
+      4,
+      3,
+      2
+    ],
+    "group_size": 64,
+    "scale_dtype": "fp16_billed",
+    "activation_aware": false,
+    "activation_aware_note": "No teacher activation capsules for Qwen-30B yet. First pass is weight-space group quant. glm52_activation_aware_pack.py ideas reused for ledger/metrics and functional-output checking, not the low-rank activation basis.",
+    "protected": [
+      "router/gate.weight kept full precision in functional MoE probe",
+      "norms kept full precision",
+      "embed not quantized in this bounded pass"
+    ],
+    "layers": [
+      0,
+      24,
+      47
+    ],
+    "experts": [
+      0,
+      1,
+      7,
+      63
+    ],
+    "n_probe_tokens": 64,
+    "seed": 20260806
+  },
+  "by_bits": {
+    "4": {
+      "nbits": 4,
+      "group_size": 64,
+      "n_tensors": 48,
+      "n_weights": 113246208,
+      "complete_bits": 481320960,
+      "complete_bpw": 4.250217013888889,
+      "weight_recon": {
+        "mean_rel_l2": 0.11467103566974401,
+        "mean_cosine": 0.9934634255866209,
+        "max_rel_l2": 0.14993101358413696,
+        "min_cosine": 0.9889352321624756
+      },
+      "expert_ffn_functional": {
+        "mean_ffn_cosine": 0.9866077701250712,
+        "min_ffn_cosine": 0.9815024137496948,
+        "mean_ffn_rel_l2": 0.15298998728394508,
+        "max_ffn_rel_l2": 0.19475845992565155,
+        "n_experts_hold": 5,
+        "n_experts_total": 12,
+        "notes": [
+          "borderline_capable",
+          "degraded_math_preserve_risk",
+          "mild_degradation_likely_capable"
+        ]
+      },
+      "layer_moe_functional": [
+        {
+          "layer": 0,
+          "nbits": 4,
+          "group_size": 64,
+          "probed_experts": [
+            0,
+            1,
+            7,
+            63
+          ],
+          "tokens_scored": 14,
+          "forced_single_expert": false,
+          "moe_mean_row_cosine": 0.9945306181907654,
+          "moe_rel_l2": 0.08556976914405823,
+          "functional_holds": true,
+          "note": "mild_degradation_likely_capable"
+        },
+        {
+          "layer": 24,
+          "nbits": 4,
+          "group_size": 64,
+          "probed_experts": [
+            0,
+            1,
+            7,
+            63
+          ],
+          "tokens_scored": 14,
+          "forced_single_expert": false,
+          "moe_mean_row_cosine": 0.9833073616027832,
+          "moe_rel_l2": 0.17595110833644867,
+          "functional_holds": false,
+          "note": "degraded_math_preserve_risk"
+        },
+        {
+          "layer": 47,
+          "nbits": 4,
+          "group_size": 64,
+          "probed_experts": [
+            0,
+            1,
+            7,
+            63
+          ],
+          "tokens_scored": 13,
+          "forced_single_expert": false,
+          "moe_mean_row_cosine": 0.9860349893569946,
+          "moe_rel_l2": 0.1552463322877884,
+          "functional_holds": false,
+          "note": "degraded_math_preserve_risk"
+        }
+      ],
+      "attn_matmul_functional": {
+        "mean_matmul_cosine": 0.9945372392733892,
+        "min_matmul_cosine": 0.9915990233421326,
+        "mean_matmul_rel_l2": 0.10011542681604624
+      }
+    },
+    "3": {
+      "nbits": 3,
+      "group_size": 64,
+      "n_tensors": 48,
+      "n_weights": 113246208,
+      "complete_bits": 368074752,
+      "complete_bpw": 3.250217013888889,
+      "weight_recon": {
+        "mean_rel_l2": 0.2660836049666007,
+        "mean_cosine": 0.9663756042718887,
+        "max_rel_l2": 0.3325803577899933,
+        "min_cosine": 0.947929859161377
+      },
+      "expert_ffn_functional": {
+        "mean_ffn_cosine": 0.9310434063275655,
+        "min_ffn_cosine": 0.9066821336746216,
+        "mean_ffn_rel_l2": 0.3662309596935908,
+        "max_ffn_rel_l2": 0.4711034297943115,
+        "n_experts_hold": 0,
+        "n_experts_total": 12,
+        "notes": [
+          "degraded_math_preserve_risk"
+        ]
+      },
+      "layer_moe_functional": [
+        {
+          "layer": 0,
+          "nbits": 3,
+          "group_size": 64,
+          "probed_experts": [
+            0,
+            1,
+            7,
+            63
+          ],
+          "tokens_scored": 14,
+          "forced_single_expert": false,
+          "moe_mean_row_cosine": 0.9688192009925842,
+          "moe_rel_l2": 0.20025016367435455,
+          "functional_holds": false,
+          "note": "degraded_math_preserve_risk"
+        },
+        {
+          "layer": 24,
+          "nbits": 3,
+          "group_size": 64,
+          "probed_experts": [
+            0,
+            1,
+            7,
+            63
+          ],
+          "tokens_scored": 14,
+          "forced_single_expert": false,
+          "moe_mean_row_cosine": 0.9188418984413147,
+          "moe_rel_l2": 0.42437776923179626,
+          "functional_holds": false,
+          "note": "degraded_math_preserve_risk"
+        },
+        {
+          "layer": 47,
+          "nbits": 3,
+          "group_size": 64,
+          "probed_experts": [
+            0,
+            1,
+            7,
+            63
+          ],
+          "tokens_scored": 13,
+          "forced_single_expert": false,
+          "moe_mean_row_cosine": 0.926642656326294,
+          "moe_rel_l2": 0.38139602541923523,
+          "functional_holds": false,
+          "note": "degraded_math_preserve_risk"
+        }
+      ],
+      "attn_matmul_functional": {
+        "mean_matmul_cosine": 0.9723751544952393,
+        "min_matmul_cosine": 0.9576008319854736,
+        "mean_matmul_rel_l2": 0.22994407887260118
+      }
+    },
+    "2": {
+      "nbits": 2,
+      "group_size": 64,
+      "n_tensors": 48,
+      "n_weights": 113246208,
+      "complete_bits": 254828544,
+      "complete_bpw": 2.250217013888889,
+      "weight_recon": {
+        "mean_rel_l2": 0.7233503647148609,
+        "mean_cosine": 0.768618875493606,
+        "max_rel_l2": 0.7415372133255005,
+        "min_cosine": 0.736262857913971
+      },
+      "expert_ffn_functional": {
+        "mean_ffn_cosine": 0.5503743290901184,
+        "min_ffn_cosine": 0.44472408294677734,
+        "mean_ffn_rel_l2": 1.034558817744255,
+        "max_ffn_rel_l2": 1.3212025165557861,
+        "n_experts_hold": 0,
+        "n_experts_total": 12,
+        "notes": [
+          "collapse"
+        ]
+      },
+      "layer_moe_functional": [
+        {
+          "layer": 0,
+          "nbits": 2,
+          "group_size": 64,
+          "probed_experts": [
+            0,
+            1,
+            7,
+            63
+          ],
+          "tokens_scored": 14,
+          "forced_single_expert": false,
+          "moe_mean_row_cosine": 0.721082329750061,
+          "moe_rel_l2": 0.5589759349822998,
+          "functional_holds": false,
+          "note": "collapse"
+        },
+        {
+          "layer": 24,
+          "nbits": 2,
+          "group_size": 64,
+          "probed_experts": [
+            0,
+            1,
+            7,
+            63
+          ],
+          "tokens_scored": 14,
+          "forced_single_expert": false,
+          "moe_mean_row_cosine": 0.5042417645454407,
+          "moe_rel_l2": 1.2365049123764038,
+          "functional_holds": false,
+          "note": "collapse"
+        },
+        {
+          "layer": 47,
+          "nbits": 2,
+          "group_size": 64,
+          "probed_experts": [
+            0,
+            1,
+            7,
+            63
+          ],
+          "tokens_scored": 13,
+          "forced_single_expert": false,
+          "moe_mean_row_cosine": 0.5321815013885498,
+          "moe_rel_l2": 1.0544646978378296,
+          "functional_holds": false,
+          "note": "collapse"
+        }
+      ],
+      "attn_matmul_functional": {
+        "mean_matmul_cosine": 0.8183304071426392,
+        "min_matmul_cosine": 0.7228714823722839,
+        "mean_matmul_rel_l2": 0.6107669994235039
+      }
+    }
+  },
+  "tensor_probes": [
+    {
+      "name": "model.layers.0.self_attn.q_proj.weight",
+      "shape": [
+        4096,
+        2048
+      ],
+      "n_weights": 8388608,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25006103515625,
+      "rel_l2": 0.14993101358413696,
+      "rmse": 0.001835303264670074,
+      "max_abs": 0.0237862728536129,
+      "cosine": 0.9889352321624756,
+      "index_bits": 33554432,
+      "scale_bits": 2097152,
+      "header_bits": 512,
+      "total_bits": 35652096
+    },
+    {
+      "name": "model.layers.0.self_attn.q_proj.weight",
+      "shape": [
+        4096,
+        2048
+      ],
+      "n_weights": 8388608,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.25006103515625,
+      "rel_l2": 0.3325803577899933,
+      "rmse": 0.0040710968896746635,
+      "max_abs": 0.056884765625,
+      "cosine": 0.947929859161377,
+      "index_bits": 25165824,
+      "scale_bits": 2097152,
+      "header_bits": 512,
+      "total_bits": 27263488
+    },
+    {
+      "name": "model.layers.0.self_attn.q_proj.weight",
+      "shape": [
+        4096,
+        2048
+      ],
+      "n_weights": 8388608,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.25006103515625,
+      "rel_l2": 0.7239586710929871,
+      "rmse": 0.008861836977303028,
+      "max_abs": 0.1708984375,
+      "cosine": 0.7394869923591614,
+      "index_bits": 16777216,
+      "scale_bits": 2097152,
+      "header_bits": 512,
+      "total_bits": 18874880
+    },
+    {
+      "name": "model.layers.0.self_attn.k_proj.weight",
+      "shape": [
+        512,
+        2048
+      ],
+      "n_weights": 1048576,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25048828125,
+      "rel_l2": 0.1340884268283844,
+      "rmse": 0.0019421711331233382,
+      "max_abs": 0.0109688900411129,
+      "cosine": 0.9911448955535889,
+      "index_bits": 4194304,
+      "scale_bits": 262144,
+      "header_bits": 512,
+      "total_bits": 4456960
+    },
+    {
+      "name": "model.layers.0.self_attn.k_proj.weight",
+      "shape": [
+        512,
+        2048
+      ],
+      "n_weights": 1048576,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.25048828125,
+      "rel_l2": 0.31011301279067993,
+      "rmse": 0.004491766449064016,
+      "max_abs": 0.0259602852165699,
+      "cosine": 0.9550483822822571,
+      "index_bits": 3145728,
+      "scale_bits": 262144,
+      "header_bits": 512,
+      "total_bits": 3408384
+    },
+    {
+      "name": "model.layers.0.self_attn.k_proj.weight",
+      "shape": [
+        512,
+        2048
+      ],
+      "n_weights": 1048576,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.25048828125,
+      "rel_l2": 0.7388693690299988,
+      "rmse": 0.010701990686357021,
+      "max_abs": 0.076171875,
+      "cosine": 0.736262857913971,
+      "index_bits": 2097152,
+      "scale_bits": 262144,
+      "header_bits": 512,
+      "total_bits": 2359808
+    },
+    {
+      "name": "model.layers.0.self_attn.v_proj.weight",
+      "shape": [
+        512,
+        2048
+      ],
+      "n_weights": 1048576,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25048828125,
+      "rel_l2": 0.14075806736946106,
+      "rmse": 0.0017774332081899047,
+      "max_abs": 0.01483154296875,
+      "cosine": 0.9902514219284058,
+      "index_bits": 4194304,
+      "scale_bits": 262144,
+      "header_bits": 512,
+      "total_bits": 4456960
+    },
+    {
+      "name": "model.layers.0.self_attn.v_proj.weight",
+      "shape": [
+        512,
+        2048
+      ],
+      "n_weights": 1048576,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.25048828125,
+      "rel_l2": 0.32004523277282715,
+      "rmse": 0.0040414039976894855,
+      "max_abs": 0.034423828125,
+      "cosine": 0.9518111348152161,
+      "index_bits": 3145728,
+      "scale_bits": 262144,
+      "header_bits": 512,
+      "total_bits": 3408384
+    },
+    {
+      "name": "model.layers.0.self_attn.v_proj.weight",
+      "shape": [
+        512,
+        2048
+      ],
+      "n_weights": 1048576,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.25048828125,
+      "rel_l2": 0.7209133505821228,
+      "rmse": 0.009103400632739067,
+      "max_abs": 0.0625,
+      "cosine": 0.7507539987564087,
+      "index_bits": 2097152,
+      "scale_bits": 262144,
+      "header_bits": 512,
+      "total_bits": 2359808
+    },
+    {
+      "name": "model.layers.0.self_attn.o_proj.weight",
+      "shape": [
+        2048,
+        4096
+      ],
+      "n_weights": 8388608,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25006103515625,
+      "rel_l2": 0.11582092195749283,
+      "rmse": 0.0020284822676330805,
+      "max_abs": 0.0626395046710968,
+      "cosine": 0.9933477640151978,
+      "index_bits": 33554432,
+      "scale_bits": 2097152,
+      "header_bits": 512,
+      "total_bits": 35652096
+    },
+    {
+      "name": "model.layers.0.self_attn.o_proj.weight",
+      "shape": [
+        2048,
+        4096
+      ],
+      "n_weights": 8388608,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.25006103515625,
+      "rel_l2": 0.26902180910110474,
+      "rmse": 0.004711645655333996,
+      "max_abs": 0.1409505307674408,
+      "cosine": 0.965785562992096,
+      "index_bits": 25165824,
+      "scale_bits": 2097152,
+      "header_bits": 512,
+      "total_bits": 27263488
+    },
+    {
+      "name": "model.layers.0.self_attn.o_proj.weight",
+      "shape": [
+        2048,
+        4096
+      ],
+      "n_weights": 8388608,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.25006103515625,
+      "rel_l2": 0.7234059572219849,
+      "rmse": 0.012669464573264122,
+      "max_abs": 0.408203125,
+      "cosine": 0.7666725516319275,
+      "index_bits": 16777216,
+      "scale_bits": 2097152,
+      "header_bits": 512,
+      "total_bits": 18874880
+    },
+    {
+      "name": "model.layers.0.mlp.experts.0.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.1107792928814888,
+      "rmse": 0.002280847867950797,
+      "max_abs": 0.0125558041036129,
+      "cosine": 0.9939329028129578,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.0.mlp.experts.0.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.11007321625947952,
+      "rmse": 0.002259497996419668,
+      "max_abs": 0.010009765625,
+      "cosine": 0.9940097332000732,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.0.mlp.experts.0.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.10982675850391388,
+      "rmse": 0.0024830682668834925,
+      "max_abs": 0.0286690816283226,
+      "cosine": 0.9940342903137207,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.0.mlp.experts.0.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.2584804594516754,
+      "rmse": 0.005321901757270098,
+      "max_abs": 0.0297037772834301,
+      "cosine": 0.9683800339698792,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.0.mlp.experts.0.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.2567615807056427,
+      "rmse": 0.0052706231363117695,
+      "max_abs": 0.0238037109375,
+      "cosine": 0.968769371509552,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.0.mlp.experts.0.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.25576359033584595,
+      "rmse": 0.005782560911029577,
+      "max_abs": 0.0665690153837204,
+      "cosine": 0.9689854383468628,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.0.mlp.experts.0.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7231425046920776,
+      "rmse": 0.014888896606862545,
+      "max_abs": 0.08935546875,
+      "cosine": 0.7720993757247925,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.0.mlp.experts.0.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7211542725563049,
+      "rmse": 0.014803331345319748,
+      "max_abs": 0.06396484375,
+      "cosine": 0.7742879986763,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.0.mlp.experts.0.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7192379832267761,
+      "rmse": 0.016261253505945206,
+      "max_abs": 0.1748046875,
+      "cosine": 0.7767322659492493,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.0.mlp.experts.1.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.11781296879053116,
+      "rmse": 0.0015506873605772853,
+      "max_abs": 0.01410784013569355,
+      "cosine": 0.9931442737579346,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.0.mlp.experts.1.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.116217240691185,
+      "rmse": 0.0014685109490528703,
+      "max_abs": 0.01385498046875,
+      "cosine": 0.9933260679244995,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.0.mlp.experts.1.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.1247745230793953,
+      "rmse": 0.0019336184486746788,
+      "max_abs": 0.02001953125,
+      "cosine": 0.9923104643821716,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.0.mlp.experts.1.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.274319589138031,
+      "rmse": 0.0036106808111071587,
+      "max_abs": 0.03271484375,
+      "cosine": 0.9645000100135803,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.0.mlp.experts.1.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.2710016071796417,
+      "rmse": 0.003424359019845724,
+      "max_abs": 0.0313313826918602,
+      "cosine": 0.9653552174568176,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.0.mlp.experts.1.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.2807483971118927,
+      "rmse": 0.004350751638412476,
+      "max_abs": 0.047119140625,
+      "cosine": 0.9626144170761108,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.0.mlp.experts.1.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.734027624130249,
+      "rmse": 0.009661494754254818,
+      "max_abs": 0.07763671875,
+      "cosine": 0.7552558183670044,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.0.mlp.experts.1.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7335444092750549,
+      "rmse": 0.009269017726182938,
+      "max_abs": 0.068359375,
+      "cosine": 0.7573590278625488,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.0.mlp.experts.1.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7118226289749146,
+      "rmse": 0.011031086556613445,
+      "max_abs": 0.1357421875,
+      "cosine": 0.7707585692405701,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.0.mlp.experts.7.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.12580804526805878,
+      "rmse": 0.0018404278671368957,
+      "max_abs": 0.0116402767598629,
+      "cosine": 0.9921891689300537,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.0.mlp.experts.7.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.11641997843980789,
+      "rmse": 0.0016444326611235738,
+      "max_abs": 0.01003592275083065,
+      "cosine": 0.9932993054389954,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.0.mlp.experts.7.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.11097722500562668,
+      "rmse": 0.002093470422551036,
+      "max_abs": 0.0202985480427742,
+      "cosine": 0.9939121007919312,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.0.mlp.experts.7.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.29237669706344604,
+      "rmse": 0.004277163650840521,
+      "max_abs": 0.025146484375,
+      "cosine": 0.9598839282989502,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.0.mlp.experts.7.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.271608829498291,
+      "rmse": 0.0038364946376532316,
+      "max_abs": 0.02294921875,
+      "cosine": 0.9652004837989807,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.0.mlp.experts.7.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.25905171036720276,
+      "rmse": 0.004886765498667955,
+      "max_abs": 0.04638671875,
+      "cosine": 0.9682485461235046,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.0.mlp.experts.7.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7415372133255005,
+      "rmse": 0.010847881436347961,
+      "max_abs": 0.07275390625,
+      "cosine": 0.7410981059074402,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.0.mlp.experts.7.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7318499684333801,
+      "rmse": 0.01033741608262062,
+      "max_abs": 0.05322265625,
+      "cosine": 0.7584590911865234,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.0.mlp.experts.7.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.723075270652771,
+      "rmse": 0.013640114106237888,
+      "max_abs": 0.140625,
+      "cosine": 0.7716147899627686,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.0.mlp.experts.63.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.12015888839960098,
+      "rmse": 0.0018755733035504818,
+      "max_abs": 0.01123046875,
+      "cosine": 0.9928699731826782,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.0.mlp.experts.63.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.11389713734388351,
+      "rmse": 0.001745372312143445,
+      "max_abs": 0.00909423828125,
+      "cosine": 0.9935868382453918,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.0.mlp.experts.63.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.11142989248037338,
+      "rmse": 0.002124060643836856,
+      "max_abs": 0.0269775390625,
+      "cosine": 0.9938604831695557,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.0.mlp.experts.63.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.27958613634109497,
+      "rmse": 0.004364117048680782,
+      "max_abs": 0.026123046875,
+      "cosine": 0.9631816148757935,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.0.mlp.experts.63.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.26534318923950195,
+      "rmse": 0.004066173452883959,
+      "max_abs": 0.021240234375,
+      "cosine": 0.9667789936065674,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.0.mlp.experts.63.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.26005369424819946,
+      "rmse": 0.004957132041454315,
+      "max_abs": 0.0621744841337204,
+      "cosine": 0.9680437445640564,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.0.mlp.experts.63.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7357505559921265,
+      "rmse": 0.011484452523291111,
+      "max_abs": 0.0654296875,
+      "cosine": 0.7515630722045898,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.0.mlp.experts.63.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7284327745437622,
+      "rmse": 0.011162632144987583,
+      "max_abs": 0.05419921875,
+      "cosine": 0.7647786736488342,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.0.mlp.experts.63.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7238984704017639,
+      "rmse": 0.013798898085951805,
+      "max_abs": 0.14453125,
+      "cosine": 0.770962655544281,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.24.self_attn.q_proj.weight",
+      "shape": [
+        4096,
+        2048
+      ],
+      "n_weights": 8388608,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25006103515625,
+      "rel_l2": 0.11354691535234451,
+      "rmse": 0.002755705965682864,
+      "max_abs": 0.0189383365213871,
+      "cosine": 0.9936005473136902,
+      "index_bits": 33554432,
+      "scale_bits": 2097152,
+      "header_bits": 512,
+      "total_bits": 35652096
+    },
+    {
+      "name": "model.layers.24.self_attn.q_proj.weight",
+      "shape": [
+        4096,
+        2048
+      ],
+      "n_weights": 8388608,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.25006103515625,
+      "rel_l2": 0.26477283239364624,
+      "rmse": 0.006425874307751656,
+      "max_abs": 0.044189453125,
+      "cosine": 0.9668440222740173,
+      "index_bits": 25165824,
+      "scale_bits": 2097152,
+      "header_bits": 512,
+      "total_bits": 27263488
+    },
+    {
+      "name": "model.layers.24.self_attn.q_proj.weight",
+      "shape": [
+        4096,
+        2048
+      ],
+      "n_weights": 8388608,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.25006103515625,
+      "rel_l2": 0.7270097732543945,
+      "rmse": 0.017643695697188377,
+      "max_abs": 0.11865234375,
+      "cosine": 0.7660315036773682,
+      "index_bits": 16777216,
+      "scale_bits": 2097152,
+      "header_bits": 512,
+      "total_bits": 18874880
+    },
+    {
+      "name": "model.layers.24.self_attn.k_proj.weight",
+      "shape": [
+        512,
+        2048
+      ],
+      "n_weights": 1048576,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25048828125,
+      "rel_l2": 0.1172027513384819,
+      "rmse": 0.0028577959164977074,
+      "max_abs": 0.0322265625,
+      "cosine": 0.9932140111923218,
+      "index_bits": 4194304,
+      "scale_bits": 262144,
+      "header_bits": 512,
+      "total_bits": 4456960
+    },
+    {
+      "name": "model.layers.24.self_attn.k_proj.weight",
+      "shape": [
+        512,
+        2048
+      ],
+      "n_weights": 1048576,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.25048828125,
+      "rel_l2": 0.27259066700935364,
+      "rmse": 0.006646689027547836,
+      "max_abs": 0.0621744841337204,
+      "cosine": 0.9649092555046082,
+      "index_bits": 3145728,
+      "scale_bits": 262144,
+      "header_bits": 512,
+      "total_bits": 3408384
+    },
+    {
+      "name": "model.layers.24.self_attn.k_proj.weight",
+      "shape": [
+        512,
+        2048
+      ],
+      "n_weights": 1048576,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.25048828125,
+      "rel_l2": 0.7315590381622314,
+      "rmse": 0.017837896943092346,
+      "max_abs": 0.126953125,
+      "cosine": 0.7582884430885315,
+      "index_bits": 2097152,
+      "scale_bits": 262144,
+      "header_bits": 512,
+      "total_bits": 2359808
+    },
+    {
+      "name": "model.layers.24.self_attn.v_proj.weight",
+      "shape": [
+        512,
+        2048
+      ],
+      "n_weights": 1048576,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25048828125,
+      "rel_l2": 0.11501545459032059,
+      "rmse": 0.0031939279288053513,
+      "max_abs": 0.0152587890625,
+      "cosine": 0.9934610724449158,
+      "index_bits": 4194304,
+      "scale_bits": 262144,
+      "header_bits": 512,
+      "total_bits": 4456960
+    },
+    {
+      "name": "model.layers.24.self_attn.v_proj.weight",
+      "shape": [
+        512,
+        2048
+      ],
+      "n_weights": 1048576,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.25048828125,
+      "rel_l2": 0.2673933506011963,
+      "rmse": 0.007425402756780386,
+      "max_abs": 0.03564453125,
+      "cosine": 0.9661925435066223,
+      "index_bits": 3145728,
+      "scale_bits": 262144,
+      "header_bits": 512,
+      "total_bits": 3408384
+    },
+    {
+      "name": "model.layers.24.self_attn.v_proj.weight",
+      "shape": [
+        512,
+        2048
+      ],
+      "n_weights": 1048576,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.25048828125,
+      "rel_l2": 0.7248483896255493,
+      "rmse": 0.020128771662712097,
+      "max_abs": 0.1025390625,
+      "cosine": 0.7669968008995056,
+      "index_bits": 2097152,
+      "scale_bits": 262144,
+      "header_bits": 512,
+      "total_bits": 2359808
+    },
+    {
+      "name": "model.layers.24.self_attn.o_proj.weight",
+      "shape": [
+        2048,
+        4096
+      ],
+      "n_weights": 8388608,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25006103515625,
+      "rel_l2": 0.10903126001358032,
+      "rmse": 0.0026136627420783043,
+      "max_abs": 0.052734375,
+      "cosine": 0.9940982460975647,
+      "index_bits": 33554432,
+      "scale_bits": 2097152,
+      "header_bits": 512,
+      "total_bits": 35652096
+    },
+    {
+      "name": "model.layers.24.self_attn.o_proj.weight",
+      "shape": [
+        2048,
+        4096
+      ],
+      "n_weights": 8388608,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.25006103515625,
+      "rel_l2": 0.25447317957878113,
+      "rmse": 0.00610017217695713,
+      "max_abs": 0.123046875,
+      "cosine": 0.9692623615264893,
+      "index_bits": 25165824,
+      "scale_bits": 2097152,
+      "header_bits": 512,
+      "total_bits": 27263488
+    },
+    {
+      "name": "model.layers.24.self_attn.o_proj.weight",
+      "shape": [
+        2048,
+        4096
+      ],
+      "n_weights": 8388608,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.25006103515625,
+      "rel_l2": 0.7196944355964661,
+      "rmse": 0.01725194603204727,
+      "max_abs": 0.365234375,
+      "cosine": 0.776641845703125,
+      "index_bits": 16777216,
+      "scale_bits": 2097152,
+      "header_bits": 512,
+      "total_bits": 18874880
+    },
+    {
+      "name": "model.layers.24.mlp.experts.0.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.10856617987155914,
+      "rmse": 0.0022598612122237682,
+      "max_abs": 0.0082223080098629,
+      "cosine": 0.9941716194152832,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.24.mlp.experts.0.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.1087651252746582,
+      "rmse": 0.0022534907329827547,
+      "max_abs": 0.0086844302713871,
+      "cosine": 0.9941496253013611,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.24.mlp.experts.0.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.10841606557369232,
+      "rmse": 0.0021996861323714256,
+      "max_abs": 0.0077776238322257996,
+      "cosine": 0.9941883683204651,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.24.mlp.experts.0.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.25344419479370117,
+      "rmse": 0.005275592673569918,
+      "max_abs": 0.0191650390625,
+      "cosine": 0.9695364832878113,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.24.mlp.experts.0.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.2539525330066681,
+      "rmse": 0.005261629354208708,
+      "max_abs": 0.0198160819709301,
+      "cosine": 0.9694243669509888,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.24.mlp.experts.0.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.2531728446483612,
+      "rmse": 0.005136723164469004,
+      "max_abs": 0.0181477889418602,
+      "cosine": 0.9695950150489807,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.24.mlp.experts.0.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.71946781873703,
+      "rmse": 0.014976129867136478,
+      "max_abs": 0.05615234375,
+      "cosine": 0.7774198055267334,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.24.mlp.experts.0.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7197394967079163,
+      "rmse": 0.014912229962646961,
+      "max_abs": 0.0595703125,
+      "cosine": 0.7767501473426819,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.24.mlp.experts.0.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7195736765861511,
+      "rmse": 0.01459968276321888,
+      "max_abs": 0.054443359375,
+      "cosine": 0.7772563099861145,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.24.mlp.experts.1.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.10872095078229904,
+      "rmse": 0.0023558272514492273,
+      "max_abs": 0.01375906728208065,
+      "cosine": 0.9941524267196655,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.24.mlp.experts.1.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.1086699441075325,
+      "rmse": 0.0023589369375258684,
+      "max_abs": 0.01004464365541935,
+      "cosine": 0.994160532951355,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.24.mlp.experts.1.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.10854026675224304,
+      "rmse": 0.0023629176430404186,
+      "max_abs": 0.015380859375,
+      "cosine": 0.9941725730895996,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.24.mlp.experts.1.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.2538049519062042,
+      "rmse": 0.005499605555087328,
+      "max_abs": 0.03271484375,
+      "cosine": 0.9694565534591675,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.24.mlp.experts.1.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.25361859798431396,
+      "rmse": 0.005505403503775597,
+      "max_abs": 0.0238444022834301,
+      "cosine": 0.9695109724998474,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.24.mlp.experts.1.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.2532784640789032,
+      "rmse": 0.00551387807354331,
+      "max_abs": 0.0357259139418602,
+      "cosine": 0.9695641994476318,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.24.mlp.experts.1.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7194035053253174,
+      "rmse": 0.015588480047881603,
+      "max_abs": 0.06103515625,
+      "cosine": 0.7772192358970642,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.24.mlp.experts.1.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7196956276893616,
+      "rmse": 0.015622719191014767,
+      "max_abs": 0.06396484375,
+      "cosine": 0.7771902084350586,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.24.mlp.experts.1.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7185115218162537,
+      "rmse": 0.01564200222492218,
+      "max_abs": 0.08203125,
+      "cosine": 0.778289794921875,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.24.mlp.experts.7.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.10918369889259338,
+      "rmse": 0.0023154562804847956,
+      "max_abs": 0.01275634765625,
+      "cosine": 0.9941049218177795,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.24.mlp.experts.7.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.10910988599061966,
+      "rmse": 0.002373053692281246,
+      "max_abs": 0.0104631707072258,
+      "cosine": 0.9941101670265198,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.24.mlp.experts.7.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.10946150869131088,
+      "rmse": 0.0024282988160848618,
+      "max_abs": 0.0122244693338871,
+      "cosine": 0.9940739870071411,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.24.mlp.experts.7.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.254930704832077,
+      "rmse": 0.005406330339610577,
+      "max_abs": 0.0296630859375,
+      "cosine": 0.9691900014877319,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.24.mlp.experts.7.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.25462430715560913,
+      "rmse": 0.00553789222612977,
+      "max_abs": 0.0247802734375,
+      "cosine": 0.9692694544792175,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.24.mlp.experts.7.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.2554256021976471,
+      "rmse": 0.0056663877330720425,
+      "max_abs": 0.028564453125,
+      "cosine": 0.9690966606140137,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.24.mlp.experts.7.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7207265496253967,
+      "rmse": 0.015284470282495022,
+      "max_abs": 0.0830078125,
+      "cosine": 0.775528609752655,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.24.mlp.experts.7.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7208873629570007,
+      "rmse": 0.015678757801651955,
+      "max_abs": 0.07421875,
+      "cosine": 0.7758697867393494,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.24.mlp.experts.7.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7212868928909302,
+      "rmse": 0.016001086682081223,
+      "max_abs": 0.06103515625,
+      "cosine": 0.7749437093734741,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.24.mlp.experts.63.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.11322386562824249,
+      "rmse": 0.0024733657483011484,
+      "max_abs": 0.0185721255838871,
+      "cosine": 0.9936639666557312,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.24.mlp.experts.63.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.11300819367170334,
+      "rmse": 0.0025769248604774475,
+      "max_abs": 0.0264892578125,
+      "cosine": 0.9936853647232056,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.24.mlp.experts.63.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.10967613011598587,
+      "rmse": 0.002440756419673562,
+      "max_abs": 0.0283203125,
+      "cosine": 0.9940498471260071,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.24.mlp.experts.63.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.2642991840839386,
+      "rmse": 0.005773607641458511,
+      "max_abs": 0.0401204451918602,
+      "cosine": 0.9669979810714722,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.24.mlp.experts.63.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.2632504105567932,
+      "rmse": 0.006002906244248152,
+      "max_abs": 0.0481770858168602,
+      "cosine": 0.9672527313232422,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.24.mlp.experts.63.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.2555428147315979,
+      "rmse": 0.005686920136213303,
+      "max_abs": 0.051513671875,
+      "cosine": 0.9690424799919128,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.24.mlp.experts.63.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7271644473075867,
+      "rmse": 0.015884876251220703,
+      "max_abs": 0.07568359375,
+      "cosine": 0.7661481499671936,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.24.mlp.experts.63.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.725523054599762,
+      "rmse": 0.016544124111533165,
+      "max_abs": 0.1484375,
+      "cosine": 0.7675719857215881,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.24.mlp.experts.63.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7217050790786743,
+      "rmse": 0.01606101170182228,
+      "max_abs": 0.09765625,
+      "cosine": 0.7742355465888977,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.47.self_attn.q_proj.weight",
+      "shape": [
+        4096,
+        2048
+      ],
+      "n_weights": 8388608,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25006103515625,
+      "rel_l2": 0.11395318061113358,
+      "rmse": 0.002642040839418769,
+      "max_abs": 0.0460379496216774,
+      "cosine": 0.993561863899231,
+      "index_bits": 33554432,
+      "scale_bits": 2097152,
+      "header_bits": 512,
+      "total_bits": 35652096
+    },
+    {
+      "name": "model.layers.47.self_attn.q_proj.weight",
+      "shape": [
+        4096,
+        2048
+      ],
+      "n_weights": 8388608,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.25006103515625,
+      "rel_l2": 0.26540040969848633,
+      "rmse": 0.006153396796435118,
+      "max_abs": 0.1075846403837204,
+      "cosine": 0.96669602394104,
+      "index_bits": 25165824,
+      "scale_bits": 2097152,
+      "header_bits": 512,
+      "total_bits": 27263488
+    },
+    {
+      "name": "model.layers.47.self_attn.q_proj.weight",
+      "shape": [
+        4096,
+        2048
+      ],
+      "n_weights": 8388608,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.25006103515625,
+      "rel_l2": 0.725578784942627,
+      "rmse": 0.01682245172560215,
+      "max_abs": 0.1904296875,
+      "cosine": 0.7674591541290283,
+      "index_bits": 16777216,
+      "scale_bits": 2097152,
+      "header_bits": 512,
+      "total_bits": 18874880
+    },
+    {
+      "name": "model.layers.47.self_attn.k_proj.weight",
+      "shape": [
+        512,
+        2048
+      ],
+      "n_weights": 1048576,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25048828125,
+      "rel_l2": 0.11953762918710709,
+      "rmse": 0.0024921135045588017,
+      "max_abs": 0.0157993845641613,
+      "cosine": 0.9929441809654236,
+      "index_bits": 4194304,
+      "scale_bits": 262144,
+      "header_bits": 512,
+      "total_bits": 4456960
+    },
+    {
+      "name": "model.layers.47.self_attn.k_proj.weight",
+      "shape": [
+        512,
+        2048
+      ],
+      "n_weights": 1048576,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.25048828125,
+      "rel_l2": 0.2764540910720825,
+      "rmse": 0.005763522349298,
+      "max_abs": 0.0342610701918602,
+      "cosine": 0.9638862609863281,
+      "index_bits": 3145728,
+      "scale_bits": 262144,
+      "header_bits": 512,
+      "total_bits": 3408384
+    },
+    {
+      "name": "model.layers.47.self_attn.k_proj.weight",
+      "shape": [
+        512,
+        2048
+      ],
+      "n_weights": 1048576,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.25048828125,
+      "rel_l2": 0.725767195224762,
+      "rmse": 0.015130816027522087,
+      "max_abs": 0.1025390625,
+      "cosine": 0.7626782655715942,
+      "index_bits": 2097152,
+      "scale_bits": 262144,
+      "header_bits": 512,
+      "total_bits": 2359808
+    },
+    {
+      "name": "model.layers.47.self_attn.v_proj.weight",
+      "shape": [
+        512,
+        2048
+      ],
+      "n_weights": 1048576,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25048828125,
+      "rel_l2": 0.1302061527967453,
+      "rmse": 0.003487994195893407,
+      "max_abs": 0.02197265625,
+      "cosine": 0.9916359186172485,
+      "index_bits": 4194304,
+      "scale_bits": 262144,
+      "header_bits": 512,
+      "total_bits": 4456960
+    },
+    {
+      "name": "model.layers.47.self_attn.v_proj.weight",
+      "shape": [
+        512,
+        2048
+      ],
+      "n_weights": 1048576,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.25048828125,
+      "rel_l2": 0.29050445556640625,
+      "rmse": 0.007782105356454849,
+      "max_abs": 0.04736328125,
+      "cosine": 0.9599001407623291,
+      "index_bits": 3145728,
+      "scale_bits": 262144,
+      "header_bits": 512,
+      "total_bits": 3408384
+    },
+    {
+      "name": "model.layers.47.self_attn.v_proj.weight",
+      "shape": [
+        512,
+        2048
+      ],
+      "n_weights": 1048576,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.25048828125,
+      "rel_l2": 0.7120808362960815,
+      "rmse": 0.019075457006692886,
+      "max_abs": 0.14453125,
+      "cosine": 0.769354522228241,
+      "index_bits": 2097152,
+      "scale_bits": 262144,
+      "header_bits": 512,
+      "total_bits": 2359808
+    },
+    {
+      "name": "model.layers.47.self_attn.o_proj.weight",
+      "shape": [
+        2048,
+        4096
+      ],
+      "n_weights": 8388608,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25006103515625,
+      "rel_l2": 0.11101003736257553,
+      "rmse": 0.0025058567989617586,
+      "max_abs": 0.08984375,
+      "cosine": 0.9938881993293762,
+      "index_bits": 33554432,
+      "scale_bits": 2097152,
+      "header_bits": 512,
+      "total_bits": 35652096
+    },
+    {
+      "name": "model.layers.47.self_attn.o_proj.weight",
+      "shape": [
+        2048,
+        4096
+      ],
+      "n_weights": 8388608,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.25006103515625,
+      "rel_l2": 0.25835004448890686,
+      "rmse": 0.005831799004226923,
+      "max_abs": 0.203125,
+      "cosine": 0.9683400988578796,
+      "index_bits": 25165824,
+      "scale_bits": 2097152,
+      "header_bits": 512,
+      "total_bits": 27263488
+    },
+    {
+      "name": "model.layers.47.self_attn.o_proj.weight",
+      "shape": [
+        2048,
+        4096
+      ],
+      "n_weights": 8388608,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.25006103515625,
+      "rel_l2": 0.7168775200843811,
+      "rmse": 0.016181904822587967,
+      "max_abs": 0.54296875,
+      "cosine": 0.7771239876747131,
+      "index_bits": 16777216,
+      "scale_bits": 2097152,
+      "header_bits": 512,
+      "total_bits": 18874880
+    },
+    {
+      "name": "model.layers.47.mlp.experts.0.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.11345945298671722,
+      "rmse": 0.002887969370931387,
+      "max_abs": 0.022705078125,
+      "cosine": 0.9936358332633972,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.47.mlp.experts.0.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.11150207370519638,
+      "rmse": 0.0030345821287482977,
+      "max_abs": 0.0223911814391613,
+      "cosine": 0.993848979473114,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.47.mlp.experts.0.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.11181624978780746,
+      "rmse": 0.002942926250398159,
+      "max_abs": 0.0548270121216774,
+      "cosine": 0.9938157796859741,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.47.mlp.experts.0.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.2643866539001465,
+      "rmse": 0.006729655433446169,
+      "max_abs": 0.051513671875,
+      "cosine": 0.9669661521911621,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.47.mlp.experts.0.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.25996413826942444,
+      "rmse": 0.00707507599145174,
+      "max_abs": 0.052734375,
+      "cosine": 0.9680214524269104,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.47.mlp.experts.0.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.2591268718242645,
+      "rmse": 0.006820060778409243,
+      "max_abs": 0.1282552182674408,
+      "cosine": 0.9681732654571533,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.47.mlp.experts.0.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7240896224975586,
+      "rmse": 0.01843084767460823,
+      "max_abs": 0.142578125,
+      "cosine": 0.7689954042434692,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.47.mlp.experts.0.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7234992384910583,
+      "rmse": 0.019690442830324173,
+      "max_abs": 0.150390625,
+      "cosine": 0.7710444927215576,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.47.mlp.experts.0.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7196503281593323,
+      "rmse": 0.01894075982272625,
+      "max_abs": 0.384765625,
+      "cosine": 0.7749422192573547,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.47.mlp.experts.1.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.10983072966337204,
+      "rmse": 0.002706686733290553,
+      "max_abs": 0.018310546875,
+      "cosine": 0.994034469127655,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.47.mlp.experts.1.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.10972358286380768,
+      "rmse": 0.0028120537754148245,
+      "max_abs": 0.0205078125,
+      "cosine": 0.9940436482429504,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.47.mlp.experts.1.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.11544198542833328,
+      "rmse": 0.0026754518039524555,
+      "max_abs": 0.0723353773355484,
+      "cosine": 0.9934145212173462,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.47.mlp.experts.1.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.25606653094291687,
+      "rmse": 0.006310551892966032,
+      "max_abs": 0.04296875,
+      "cosine": 0.968937873840332,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.47.mlp.experts.1.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.2558945417404175,
+      "rmse": 0.006558211520314217,
+      "max_abs": 0.046875,
+      "cosine": 0.9689722657203674,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.47.mlp.experts.1.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.2671220898628235,
+      "rmse": 0.0061907581984996796,
+      "max_abs": 0.14453125,
+      "cosine": 0.9662284851074219,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.47.mlp.experts.1.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7195514440536499,
+      "rmse": 0.017732780426740646,
+      "max_abs": 0.10986328125,
+      "cosine": 0.7761502861976624,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.47.mlp.experts.1.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7204406261444092,
+      "rmse": 0.018463872373104095,
+      "max_abs": 0.10986328125,
+      "cosine": 0.7756328582763672,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.47.mlp.experts.1.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7243533730506897,
+      "rmse": 0.016787447035312653,
+      "max_abs": 0.435546875,
+      "cosine": 0.7675992846488953,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.47.mlp.experts.7.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.10894840955734253,
+      "rmse": 0.0025544785894453526,
+      "max_abs": 0.01348876953125,
+      "cosine": 0.9941269755363464,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.47.mlp.experts.7.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.10869592428207397,
+      "rmse": 0.0026883247774094343,
+      "max_abs": 0.014404296875,
+      "cosine": 0.9941555857658386,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.47.mlp.experts.7.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.1124456524848938,
+      "rmse": 0.002737292554229498,
+      "max_abs": 0.12353515625,
+      "cosine": 0.9937439560890198,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.47.mlp.experts.7.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.2541995048522949,
+      "rmse": 0.005960145033895969,
+      "max_abs": 0.0333658829331398,
+      "cosine": 0.9693586826324463,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.47.mlp.experts.7.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.2536425292491913,
+      "rmse": 0.006273227743804455,
+      "max_abs": 0.0338541641831398,
+      "cosine": 0.9695077538490295,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.47.mlp.experts.7.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.25878533720970154,
+      "rmse": 0.006299682892858982,
+      "max_abs": 0.12353515625,
+      "cosine": 0.9682337045669556,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.47.mlp.experts.7.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7198250889778137,
+      "rmse": 0.016877545043826103,
+      "max_abs": 0.09423828125,
+      "cosine": 0.7767425179481506,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.47.mlp.experts.7.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.719237744808197,
+      "rmse": 0.017788611352443695,
+      "max_abs": 0.07666015625,
+      "cosine": 0.7775530219078064,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.47.mlp.experts.7.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7174608111381531,
+      "rmse": 0.017465364187955856,
+      "max_abs": 0.205078125,
+      "cosine": 0.7763696908950806,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.47.mlp.experts.63.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.10855685919523239,
+      "rmse": 0.0027687083929777145,
+      "max_abs": 0.0140380859375,
+      "cosine": 0.9941715002059937,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.47.mlp.experts.63.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.10896817594766617,
+      "rmse": 0.0027754553593695164,
+      "max_abs": 0.0152413509786129,
+      "cosine": 0.9941264986991882,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.47.mlp.experts.63.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.11120182275772095,
+      "rmse": 0.0026217366103082895,
+      "max_abs": 0.0476422980427742,
+      "cosine": 0.9938843250274658,
+      "index_bits": 6291456,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 6685184
+    },
+    {
+      "name": "model.layers.47.mlp.experts.63.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.2536323666572571,
+      "rmse": 0.00646881852298975,
+      "max_abs": 0.03173828125,
+      "cosine": 0.9695004820823669,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.47.mlp.experts.63.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.2542588710784912,
+      "rmse": 0.0064760674722492695,
+      "max_abs": 0.034912109375,
+      "cosine": 0.9693730473518372,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.47.mlp.experts.63.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.2503255208333335,
+      "rel_l2": 0.25879406929016113,
+      "rmse": 0.006101436447352171,
+      "max_abs": 0.10546875,
+      "cosine": 0.9682714939117432,
+      "index_bits": 4718592,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 5112320
+    },
+    {
+      "name": "model.layers.47.mlp.experts.63.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7195254564285278,
+      "rmse": 0.018351305276155472,
+      "max_abs": 0.07373046875,
+      "cosine": 0.7772058248519897,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.47.mlp.experts.63.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7200933694839478,
+      "rmse": 0.0183410681784153,
+      "max_abs": 0.0810546875,
+      "cosine": 0.7765479683876038,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    },
+    {
+      "name": "model.layers.47.mlp.experts.63.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "n_weights": 1572864,
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.2503255208333335,
+      "rel_l2": 0.7213683724403381,
+      "rmse": 0.017007289454340935,
+      "max_abs": 0.3046875,
+      "cosine": 0.7737787961959839,
+      "index_bits": 3145728,
+      "scale_bits": 393216,
+      "header_bits": 512,
+      "total_bits": 3539456
+    }
+  ],
+  "expert_functional_probes": [
+    {
+      "layer": 0,
+      "expert": 0,
+      "nbits": 4,
+      "group_size": 64,
+      "mean_weight_cosine": 0.9939923087755839,
+      "mean_weight_rel_l2": 0.11022642254829407,
+      "mean_weight_bpw": 4.250325520833333,
+      "ffn_mean_row_cosine": 0.9883697032928467,
+      "ffn_rel_l2": 0.14746275544166565,
+      "ffn_rmse": 0.002929883310571313,
+      "functional_holds": true,
+      "note": "borderline_capable",
+      "ffn_mean_row_cosine_gauss": 0.9862226247787476,
+      "ffn_rel_l2_gauss": 0.16692611575126648
+    },
+    {
+      "layer": 0,
+      "expert": 0,
+      "nbits": 3,
+      "group_size": 64,
+      "mean_weight_cosine": 0.9687116146087646,
+      "mean_weight_rel_l2": 0.2570018768310547,
+      "mean_weight_bpw": 3.2503255208333335,
+      "ffn_mean_row_cosine": 0.9394955039024353,
+      "ffn_rel_l2": 0.3505907952785492,
+      "ffn_rmse": 0.006965759210288525,
+      "functional_holds": false,
+      "note": "degraded_math_preserve_risk",
+      "ffn_mean_row_cosine_gauss": 0.9265338778495789,
+      "ffn_rel_l2_gauss": 0.4041421711444855
+    },
+    {
+      "layer": 0,
+      "expert": 0,
+      "nbits": 2,
+      "group_size": 64,
+      "mean_weight_cosine": 0.7743732134501139,
+      "mean_weight_rel_l2": 0.7211782534917196,
+      "mean_weight_bpw": 2.2503255208333335,
+      "ffn_mean_row_cosine": 0.5667273998260498,
+      "ffn_rel_l2": 0.9551207423210144,
+      "ffn_rmse": 0.01897694356739521,
+      "functional_holds": false,
+      "note": "collapse",
+      "ffn_mean_row_cosine_gauss": 0.5137443542480469,
+      "ffn_rel_l2_gauss": 1.1334166526794434
+    },
+    {
+      "layer": 0,
+      "expert": 1,
+      "nbits": 4,
+      "group_size": 64,
+      "mean_weight_cosine": 0.9929269353548685,
+      "mean_weight_rel_l2": 0.11960157752037048,
+      "mean_weight_bpw": 4.250325520833333,
+      "ffn_mean_row_cosine": 0.9952822923660278,
+      "ffn_rel_l2": 0.09503569453954697,
+      "ffn_rmse": 0.0014868017751723528,
+      "functional_holds": true,
+      "note": "mild_degradation_likely_capable",
+      "ffn_mean_row_cosine_gauss": 0.9956870675086975,
+      "ffn_rel_l2_gauss": 0.09066465497016907
+    },
+    {
+      "layer": 0,
+      "expert": 1,
+      "nbits": 3,
+      "group_size": 64,
+      "mean_weight_cosine": 0.9641565481821696,
+      "mean_weight_rel_l2": 0.2753565311431885,
+      "mean_weight_bpw": 3.2503255208333335,
+      "ffn_mean_row_cosine": 0.9743449091911316,
+      "ffn_rel_l2": 0.22367405891418457,
+      "ffn_rmse": 0.00349930627271533,
+      "functional_holds": false,
+      "note": "degraded_math_preserve_risk",
+      "ffn_mean_row_cosine_gauss": 0.9764577150344849,
+      "ffn_rel_l2_gauss": 0.21780484914779663
+    },
+    {
+      "layer": 0,
+      "expert": 1,
+      "nbits": 2,
+      "group_size": 64,
+      "mean_weight_cosine": 0.7611244718233744,
+      "mean_weight_rel_l2": 0.7264648874600729,
+      "mean_weight_bpw": 2.2503255208333335,
+      "ffn_mean_row_cosine": 0.7508270144462585,
+      "ffn_rel_l2": 0.6541736721992493,
+      "ffn_rmse": 0.010234329849481583,
+      "functional_holds": false,
+      "note": "collapse",
+      "ffn_mean_row_cosine_gauss": 0.7572086453437805,
+      "ffn_rel_l2_gauss": 0.6648763418197632
+    },
+    {
+      "layer": 0,
+      "expert": 7,
+      "nbits": 4,
+      "group_size": 64,
+      "mean_weight_cosine": 0.99313352505366,
+      "mean_weight_rel_l2": 0.11773508290449779,
+      "mean_weight_bpw": 4.250325520833333,
+      "ffn_mean_row_cosine": 0.9916092157363892,
+      "ffn_rel_l2": 0.10398779809474945,
+      "ffn_rmse": 0.00174598244484514,
+      "functional_holds": true,
+      "note": "borderline_capable",
+      "ffn_mean_row_cosine_gauss": 0.9916743040084839,
+      "ffn_rel_l2_gauss": 0.12939627468585968
+    },
+    {
+      "layer": 0,
+      "expert": 7,
+      "nbits": 3,
+      "group_size": 64,
+      "mean_weight_cosine": 0.9644443194071451,
+      "mean_weight_rel_l2": 0.2743457456429799,
+      "mean_weight_bpw": 3.2503255208333335,
+      "ffn_mean_row_cosine": 0.9545004367828369,
+      "ffn_rel_l2": 0.24428996443748474,
+      "ffn_rmse": 0.0041016931645572186,
+      "functional_holds": false,
+      "note": "degraded_math_preserve_risk",
+      "ffn_mean_row_cosine_gauss": 0.9552571773529053,
+      "ffn_rel_l2_gauss": 0.3080425262451172
+    },
+    {
+      "layer": 0,
+      "expert": 7,
+      "nbits": 2,
+      "group_size": 64,
+      "mean_weight_cosine": 0.7570573290189108,
+      "mean_weight_rel_l2": 0.7321541508038839,
+      "mean_weight_bpw": 2.2503255208333335,
+      "ffn_mean_row_cosine": 0.6446820497512817,
+      "ffn_rel_l2": 0.6909663081169128,
+      "ffn_rmse": 0.011601506732404232,
+      "functional_holds": false,
+      "note": "collapse",
+      "ffn_mean_row_cosine_gauss": 0.6306150555610657,
+      "ffn_rel_l2_gauss": 0.8728620409965515
+    },
+    {
+      "layer": 0,
+      "expert": 63,
+      "nbits": 4,
+      "group_size": 64,
+      "mean_weight_cosine": 0.9934390981992086,
+      "mean_weight_rel_l2": 0.11516197274128596,
+      "mean_weight_bpw": 4.250325520833333,
+      "ffn_mean_row_cosine": 0.9916924238204956,
+      "ffn_rel_l2": 0.09982515126466751,
+      "ffn_rmse": 0.002106339205056429,
+      "functional_holds": true,
+      "note": "mild_degradation_likely_capable",
+      "ffn_mean_row_cosine_gauss": 0.9909330010414124,
+      "ffn_rel_l2_gauss": 0.13418591022491455
+    },
+    {
+      "layer": 0,
+      "expert": 63,
+      "nbits": 3,
+      "group_size": 64,
+      "mean_weight_cosine": 0.9660014510154724,
+      "mean_weight_rel_l2": 0.26832767327626544,
+      "mean_weight_bpw": 3.2503255208333335,
+      "ffn_mean_row_cosine": 0.954896092414856,
+      "ffn_rel_l2": 0.23954236507415771,
+      "ffn_rmse": 0.005054411478340626,
+      "functional_holds": false,
+      "note": "degraded_math_preserve_risk",
+      "ffn_mean_row_cosine_gauss": 0.9511467218399048,
+      "ffn_rel_l2_gauss": 0.3245692253112793
+    },
+    {
+      "layer": 0,
+      "expert": 63,
+      "nbits": 2,
+      "group_size": 64,
+      "mean_weight_cosine": 0.7624348004659017,
+      "mean_weight_rel_l2": 0.7293606003125509,
+      "mean_weight_bpw": 2.2503255208333335,
+      "ffn_mean_row_cosine": 0.624028205871582,
+      "ffn_rel_l2": 0.6674124002456665,
+      "ffn_rmse": 0.014082592912018299,
+      "functional_holds": false,
+      "note": "collapse",
+      "ffn_mean_row_cosine_gauss": 0.5959428548812866,
+      "ffn_rel_l2_gauss": 0.9324525594711304
+    },
+    {
+      "layer": 24,
+      "expert": 0,
+      "nbits": 4,
+      "group_size": 64,
+      "mean_weight_cosine": 0.9941698710123698,
+      "mean_weight_rel_l2": 0.10858245690663655,
+      "mean_weight_bpw": 4.250325520833333,
+      "ffn_mean_row_cosine": 0.9840329885482788,
+      "ffn_rel_l2": 0.1795295923948288,
+      "ffn_rmse": 0.0571008138358593,
+      "functional_holds": false,
+      "note": "degraded_math_preserve_risk",
+      "ffn_mean_row_cosine_gauss": 0.9840109944343567,
+      "ffn_rel_l2_gauss": 0.17948438227176666
+    },
+    {
+      "layer": 24,
+      "expert": 0,
+      "nbits": 3,
+      "group_size": 64,
+      "mean_weight_cosine": 0.9695186217625936,
+      "mean_weight_rel_l2": 0.25352319081624347,
+      "mean_weight_bpw": 3.2503255208333335,
+      "ffn_mean_row_cosine": 0.9183512330055237,
+      "ffn_rel_l2": 0.4300338923931122,
+      "ffn_rmse": 0.1367756873369217,
+      "functional_holds": false,
+      "note": "degraded_math_preserve_risk",
+      "ffn_mean_row_cosine_gauss": 0.9193465709686279,
+      "ffn_rel_l2_gauss": 0.43020132184028625
+    },
+    {
+      "layer": 24,
+      "expert": 0,
+      "nbits": 2,
+      "group_size": 64,
+      "mean_weight_cosine": 0.7771420876185099,
+      "mean_weight_rel_l2": 0.7195936640103658,
+      "mean_weight_bpw": 2.2503255208333335,
+      "ffn_mean_row_cosine": 0.49927717447280884,
+      "ffn_rel_l2": 1.2761716842651367,
+      "ffn_rmse": 0.40589651465415955,
+      "functional_holds": false,
+      "note": "collapse",
+      "ffn_mean_row_cosine_gauss": 0.49062809348106384,
+      "ffn_rel_l2_gauss": 1.282031774520874
+    },
+    {
+      "layer": 24,
+      "expert": 1,
+      "nbits": 4,
+      "group_size": 64,
+      "mean_weight_cosine": 0.99416184425354,
+      "mean_weight_rel_l2": 0.1086437205473582,
+      "mean_weight_bpw": 4.250325520833333,
+      "ffn_mean_row_cosine": 0.981742262840271,
+      "ffn_rel_l2": 0.19298194348812103,
+      "ffn_rmse": 0.060303643345832825,
+      "functional_holds": false,
+      "note": "degraded_math_preserve_risk",
+      "ffn_mean_row_cosine_gauss": 0.9816665649414062,
+      "ffn_rel_l2_gauss": 0.1949709802865982
+    },
+    {
+      "layer": 24,
+      "expert": 1,
+      "nbits": 3,
+      "group_size": 64,
+      "mean_weight_cosine": 0.969510575135549,
+      "mean_weight_rel_l2": 0.25356733798980713,
+      "mean_weight_bpw": 3.2503255208333335,
+      "ffn_mean_row_cosine": 0.9066821336746216,
+      "ffn_rel_l2": 0.4711034297943115,
+      "ffn_rmse": 0.1472119688987732,
+      "functional_holds": false,
+      "note": "degraded_math_preserve_risk",
+      "ffn_mean_row_cosine_gauss": 0.905177116394043,
+      "ffn_rel_l2_gauss": 0.4712333083152771
+    },
+    {
+      "layer": 24,
+      "expert": 1,
+      "nbits": 2,
+      "group_size": 64,
+      "mean_weight_cosine": 0.7775664130846659,
+      "mean_weight_rel_l2": 0.7192035516103109,
+      "mean_weight_bpw": 2.2503255208333335,
+      "ffn_mean_row_cosine": 0.44472408294677734,
+      "ffn_rel_l2": 1.3212025165557861,
+      "ffn_rmse": 0.41285374760627747,
+      "functional_holds": false,
+      "note": "collapse",
+      "ffn_mean_row_cosine_gauss": 0.4581089913845062,
+      "ffn_rel_l2_gauss": 1.3182346820831299
+    },
+    {
+      "layer": 24,
+      "expert": 7,
+      "nbits": 4,
+      "group_size": 64,
+      "mean_weight_cosine": 0.9940963586171468,
+      "mean_weight_rel_l2": 0.10925169785817464,
+      "mean_weight_bpw": 4.250325520833333,
+      "ffn_mean_row_cosine": 0.9834564328193665,
+      "ffn_rel_l2": 0.18381811678409576,
+      "ffn_rmse": 0.06536450237035751,
+      "functional_holds": false,
+      "note": "degraded_math_preserve_risk",
+      "ffn_mean_row_cosine_gauss": 0.9832760095596313,
+      "ffn_rel_l2_gauss": 0.1832660287618637
+    },
+    {
+      "layer": 24,
+      "expert": 7,
+      "nbits": 3,
+      "group_size": 64,
+      "mean_weight_cosine": 0.9691853721936544,
+      "mean_weight_rel_l2": 0.25499353806177777,
+      "mean_weight_bpw": 3.2503255208333335,
+      "ffn_mean_row_cosine": 0.9148797392845154,
+      "ffn_rel_l2": 0.4457058310508728,
+      "ffn_rmse": 0.15849003195762634,
+      "functional_holds": false,
+      "note": "degraded_math_preserve_risk",
+      "ffn_mean_row_cosine_gauss": 0.9133206009864807,
+      "ffn_rel_l2_gauss": 0.4443050026893616
+    },
+    {
+      "layer": 24,
+      "expert": 7,
+      "nbits": 2,
+      "group_size": 64,
+      "mean_weight_cosine": 0.7754473686218262,
+      "mean_weight_rel_l2": 0.7209669351577759,
+      "mean_weight_bpw": 2.2503255208333335,
+      "ffn_mean_row_cosine": 0.48503655195236206,
+      "ffn_rel_l2": 1.288213849067688,
+      "ffn_rmse": 0.45808032155036926,
+      "functional_holds": false,
+      "note": "collapse",
+      "ffn_mean_row_cosine_gauss": 0.48245275020599365,
+      "ffn_rel_l2_gauss": 1.2917823791503906
+    },
+    {
+      "layer": 24,
+      "expert": 63,
+      "nbits": 4,
+      "group_size": 64,
+      "mean_weight_cosine": 0.9937997261683146,
+      "mean_weight_rel_l2": 0.11196939647197723,
+      "mean_weight_bpw": 4.250325520833333,
+      "ffn_mean_row_cosine": 0.9846030473709106,
+      "ffn_rel_l2": 0.1750648468732834,
+      "ffn_rmse": 0.08070628345012665,
+      "functional_holds": false,
+      "note": "degraded_math_preserve_risk",
+      "ffn_mean_row_cosine_gauss": 0.9837675094604492,
+      "ffn_rel_l2_gauss": 0.18053704500198364
+    },
+    {
+      "layer": 24,
+      "expert": 63,
+      "nbits": 3,
+      "group_size": 64,
+      "mean_weight_cosine": 0.9677643974622091,
+      "mean_weight_rel_l2": 0.2610308031241099,
+      "mean_weight_bpw": 3.2503255208333335,
+      "ffn_mean_row_cosine": 0.920730471611023,
+      "ffn_rel_l2": 0.42694953083992004,
+      "ffn_rmse": 0.19682711362838745,
+      "functional_holds": false,
+      "note": "degraded_math_preserve_risk",
+      "ffn_mean_row_cosine_gauss": 0.9193437695503235,
+      "ffn_rel_l2_gauss": 0.4313123822212219
+    },
+    {
+      "layer": 24,
+      "expert": 63,
+      "nbits": 2,
+      "group_size": 64,
+      "mean_weight_cosine": 0.7693185607592264,
+      "mean_weight_rel_l2": 0.724797526995341,
+      "mean_weight_bpw": 2.2503255208333335,
+      "ffn_mean_row_cosine": 0.5124847888946533,
+      "ffn_rel_l2": 1.2299002408981323,
+      "ffn_rmse": 0.566993772983551,
+      "functional_holds": false,
+      "note": "collapse",
+      "ffn_mean_row_cosine_gauss": 0.50493323802948,
+      "ffn_rel_l2_gauss": 1.2475563287734985
+    },
+    {
+      "layer": 47,
+      "expert": 0,
+      "nbits": 4,
+      "group_size": 64,
+      "mean_weight_cosine": 0.9937668641408285,
+      "mean_weight_rel_l2": 0.11225925882657369,
+      "mean_weight_bpw": 4.250325520833333,
+      "ffn_mean_row_cosine": 0.9831106662750244,
+      "ffn_rel_l2": 0.15922477841377258,
+      "ffn_rmse": 0.7158901691436768,
+      "functional_holds": false,
+      "note": "degraded_math_preserve_risk",
+      "ffn_mean_row_cosine_gauss": 0.9814366102218628,
+      "ffn_rel_l2_gauss": 0.1932498812675476
+    },
+    {
+      "layer": 47,
+      "expert": 0,
+      "nbits": 3,
+      "group_size": 64,
+      "mean_weight_cosine": 0.9677202900250753,
+      "mean_weight_rel_l2": 0.2611592213312785,
+      "mean_weight_bpw": 3.2503255208333335,
+      "ffn_mean_row_cosine": 0.9155292510986328,
+      "ffn_rel_l2": 0.3742679953575134,
+      "ffn_rmse": 1.6827456951141357,
+      "functional_holds": false,
+      "note": "degraded_math_preserve_risk",
+      "ffn_mean_row_cosine_gauss": 0.9078646898269653,
+      "ffn_rel_l2_gauss": 0.4563368260860443
+    },
+    {
+      "layer": 47,
+      "expert": 0,
+      "nbits": 2,
+      "group_size": 64,
+      "mean_weight_cosine": 0.7716607054074606,
+      "mean_weight_rel_l2": 0.7224130630493164,
+      "mean_weight_bpw": 2.2503255208333335,
+      "ffn_mean_row_cosine": 0.5153210759162903,
+      "ffn_rel_l2": 1.0018230676651,
+      "ffn_rmse": 4.5042948722839355,
+      "functional_holds": false,
+      "note": "collapse",
+      "ffn_mean_row_cosine_gauss": 0.47958904504776,
+      "ffn_rel_l2_gauss": 1.1999527215957642
+    },
+    {
+      "layer": 47,
+      "expert": 1,
+      "nbits": 4,
+      "group_size": 64,
+      "mean_weight_cosine": 0.9938308795293173,
+      "mean_weight_rel_l2": 0.11166543265183766,
+      "mean_weight_bpw": 4.250325520833333,
+      "ffn_mean_row_cosine": 0.9864690899848938,
+      "ffn_rel_l2": 0.1591665893793106,
+      "ffn_rmse": 0.5023519992828369,
+      "functional_holds": false,
+      "note": "degraded_math_preserve_risk",
+      "ffn_mean_row_cosine_gauss": 0.985572338104248,
+      "ffn_rel_l2_gauss": 0.16411088407039642
+    },
+    {
+      "layer": 47,
+      "expert": 1,
+      "nbits": 3,
+      "group_size": 64,
+      "mean_weight_cosine": 0.9680462082227071,
+      "mean_weight_rel_l2": 0.2596943875153859,
+      "mean_weight_bpw": 3.2503255208333335,
+      "ffn_mean_row_cosine": 0.9279175996780396,
+      "ffn_rel_l2": 0.38506779074668884,
+      "ffn_rmse": 1.2153277397155762,
+      "functional_holds": false,
+      "note": "degraded_math_preserve_risk",
+      "ffn_mean_row_cosine_gauss": 0.924170970916748,
+      "ffn_rel_l2_gauss": 0.39668068289756775
+    },
+    {
+      "layer": 47,
+      "expert": 1,
+      "nbits": 2,
+      "group_size": 64,
+      "mean_weight_cosine": 0.7731274763743082,
+      "mean_weight_rel_l2": 0.7214484810829163,
+      "mean_weight_bpw": 2.2503255208333335,
+      "ffn_mean_row_cosine": 0.5353249311447144,
+      "ffn_rel_l2": 1.063775897026062,
+      "ffn_rmse": 3.3574254512786865,
+      "functional_holds": false,
+      "note": "collapse",
+      "ffn_mean_row_cosine_gauss": 0.5202078819274902,
+      "ffn_rel_l2_gauss": 1.0870758295059204
+    },
+    {
+      "layer": 47,
+      "expert": 7,
+      "nbits": 4,
+      "group_size": 64,
+      "mean_weight_cosine": 0.9940088391304016,
+      "mean_weight_rel_l2": 0.11002999544143677,
+      "mean_weight_bpw": 4.250325520833333,
+      "ffn_mean_row_cosine": 0.9815024137496948,
+      "ffn_rel_l2": 0.19475845992565155,
+      "ffn_rmse": 0.42918139696121216,
+      "functional_holds": false,
+      "note": "degraded_math_preserve_risk",
+      "ffn_mean_row_cosine_gauss": 0.9815587997436523,
+      "ffn_rel_l2_gauss": 0.194238543510437
+    },
+    {
+      "layer": 47,
+      "expert": 7,
+      "nbits": 3,
+      "group_size": 64,
+      "mean_weight_cosine": 0.9690333803494772,
+      "mean_weight_rel_l2": 0.25554245710372925,
+      "mean_weight_bpw": 3.2503255208333335,
+      "ffn_mean_row_cosine": 0.9092307090759277,
+      "ffn_rel_l2": 0.4578530788421631,
+      "ffn_rmse": 1.0089524984359741,
+      "functional_holds": false,
+      "note": "degraded_math_preserve_risk",
+      "ffn_mean_row_cosine_gauss": 0.9068155288696289,
+      "ffn_rel_l2_gauss": 0.4660393297672272
+    },
+    {
+      "layer": 47,
+      "expert": 7,
+      "nbits": 2,
+      "group_size": 64,
+      "mean_weight_cosine": 0.7768884102503458,
+      "mean_weight_rel_l2": 0.7188412149747213,
+      "mean_weight_bpw": 2.2503255208333335,
+      "ffn_mean_row_cosine": 0.4664364457130432,
+      "ffn_rel_l2": 1.293861985206604,
+      "ffn_rmse": 2.851231813430786,
+      "functional_holds": false,
+      "note": "collapse",
+      "ffn_mean_row_cosine_gauss": 0.4632273316383362,
+      "ffn_rel_l2_gauss": 1.3015116453170776
+    },
+    {
+      "layer": 47,
+      "expert": 63,
+      "nbits": 4,
+      "group_size": 64,
+      "mean_weight_cosine": 0.9940607746442159,
+      "mean_weight_rel_l2": 0.1095756193002065,
+      "mean_weight_bpw": 4.250325520833333,
+      "ffn_mean_row_cosine": 0.9874227046966553,
+      "ffn_rel_l2": 0.1450241208076477,
+      "ffn_rmse": 0.5221787095069885,
+      "functional_holds": true,
+      "note": "borderline_capable",
+      "ffn_mean_row_cosine_gauss": 0.9860380291938782,
+      "ffn_rel_l2_gauss": 0.1523071527481079
+    },
+    {
+      "layer": 47,
+      "expert": 63,
+      "nbits": 3,
+      "group_size": 64,
+      "mean_weight_cosine": 0.9690483411153158,
+      "mean_weight_rel_l2": 0.2555617690086365,
+      "mean_weight_bpw": 3.2503255208333335,
+      "ffn_mean_row_cosine": 0.9359627962112427,
+      "ffn_rel_l2": 0.34569278359413147,
+      "ffn_rmse": 1.2447130680084229,
+      "functional_holds": false,
+      "note": "degraded_math_preserve_risk",
+      "ffn_mean_row_cosine_gauss": 0.9279586672782898,
+      "ffn_rel_l2_gauss": 0.36442679166793823
+    },
+    {
+      "layer": 47,
+      "expert": 63,
+      "nbits": 2,
+      "group_size": 64,
+      "mean_weight_cosine": 0.7758441964785258,
+      "mean_weight_rel_l2": 0.7203290661176046,
+      "mean_weight_bpw": 2.2503255208333335,
+      "ffn_mean_row_cosine": 0.5596222281455994,
+      "ffn_rel_l2": 0.9720834493637085,
+      "ffn_rmse": 3.5001161098480225,
+      "functional_holds": false,
+      "note": "collapse",
+      "ffn_mean_row_cosine_gauss": 0.5239881277084351,
+      "ffn_rel_l2_gauss": 1.0582714080810547
+    }
+  ],
+  "layer_moe_probes": [
+    {
+      "layer": 0,
+      "nbits": 4,
+      "group_size": 64,
+      "probed_experts": [
+        0,
+        1,
+        7,
+        63
+      ],
+      "tokens_scored": 14,
+      "forced_single_expert": false,
+      "moe_mean_row_cosine": 0.9945306181907654,
+      "moe_rel_l2": 0.08556976914405823,
+      "functional_holds": true,
+      "note": "mild_degradation_likely_capable"
+    },
+    {
+      "layer": 0,
+      "nbits": 3,
+      "group_size": 64,
+      "probed_experts": [
+        0,
+        1,
+        7,
+        63
+      ],
+      "tokens_scored": 14,
+      "forced_single_expert": false,
+      "moe_mean_row_cosine": 0.9688192009925842,
+      "moe_rel_l2": 0.20025016367435455,
+      "functional_holds": false,
+      "note": "degraded_math_preserve_risk"
+    },
+    {
+      "layer": 0,
+      "nbits": 2,
+      "group_size": 64,
+      "probed_experts": [
+        0,
+        1,
+        7,
+        63
+      ],
+      "tokens_scored": 14,
+      "forced_single_expert": false,
+      "moe_mean_row_cosine": 0.721082329750061,
+      "moe_rel_l2": 0.5589759349822998,
+      "functional_holds": false,
+      "note": "collapse"
+    },
+    {
+      "layer": 24,
+      "nbits": 4,
+      "group_size": 64,
+      "probed_experts": [
+        0,
+        1,
+        7,
+        63
+      ],
+      "tokens_scored": 14,
+      "forced_single_expert": false,
+      "moe_mean_row_cosine": 0.9833073616027832,
+      "moe_rel_l2": 0.17595110833644867,
+      "functional_holds": false,
+      "note": "degraded_math_preserve_risk"
+    },
+    {
+      "layer": 24,
+      "nbits": 3,
+      "group_size": 64,
+      "probed_experts": [
+        0,
+        1,
+        7,
+        63
+      ],
+      "tokens_scored": 14,
+      "forced_single_expert": false,
+      "moe_mean_row_cosine": 0.9188418984413147,
+      "moe_rel_l2": 0.42437776923179626,
+      "functional_holds": false,
+      "note": "degraded_math_preserve_risk"
+    },
+    {
+      "layer": 24,
+      "nbits": 2,
+      "group_size": 64,
+      "probed_experts": [
+        0,
+        1,
+        7,
+        63
+      ],
+      "tokens_scored": 14,
+      "forced_single_expert": false,
+      "moe_mean_row_cosine": 0.5042417645454407,
+      "moe_rel_l2": 1.2365049123764038,
+      "functional_holds": false,
+      "note": "collapse"
+    },
+    {
+      "layer": 47,
+      "nbits": 4,
+      "group_size": 64,
+      "probed_experts": [
+        0,
+        1,
+        7,
+        63
+      ],
+      "tokens_scored": 13,
+      "forced_single_expert": false,
+      "moe_mean_row_cosine": 0.9860349893569946,
+      "moe_rel_l2": 0.1552463322877884,
+      "functional_holds": false,
+      "note": "degraded_math_preserve_risk"
+    },
+    {
+      "layer": 47,
+      "nbits": 3,
+      "group_size": 64,
+      "probed_experts": [
+        0,
+        1,
+        7,
+        63
+      ],
+      "tokens_scored": 13,
+      "forced_single_expert": false,
+      "moe_mean_row_cosine": 0.926642656326294,
+      "moe_rel_l2": 0.38139602541923523,
+      "functional_holds": false,
+      "note": "degraded_math_preserve_risk"
+    },
+    {
+      "layer": 47,
+      "nbits": 2,
+      "group_size": 64,
+      "probed_experts": [
+        0,
+        1,
+        7,
+        63
+      ],
+      "tokens_scored": 13,
+      "forced_single_expert": false,
+      "moe_mean_row_cosine": 0.5321815013885498,
+      "moe_rel_l2": 1.0544646978378296,
+      "functional_holds": false,
+      "note": "collapse"
+    }
+  ],
+  "attn_probes": [
+    {
+      "name": "model.layers.0.self_attn.q_proj.weight",
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25006103515625,
+      "weight_rel_l2": 0.14993101358413696,
+      "weight_cosine": 0.9889352321624756,
+      "matmul_mean_row_cosine": 0.9993683695793152,
+      "matmul_rel_l2": 0.03344409167766571,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.0.self_attn.q_proj.weight",
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.25006103515625,
+      "weight_rel_l2": 0.3325803577899933,
+      "weight_cosine": 0.947929859161377,
+      "matmul_mean_row_cosine": 0.9965790510177612,
+      "matmul_rel_l2": 0.07816042751073837,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.0.self_attn.q_proj.weight",
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.25006103515625,
+      "weight_rel_l2": 0.7239586710929871,
+      "weight_cosine": 0.7394869923591614,
+      "matmul_mean_row_cosine": 0.9713867902755737,
+      "matmul_rel_l2": 0.22830256819725037,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.0.self_attn.k_proj.weight",
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25048828125,
+      "weight_rel_l2": 0.1340884268283844,
+      "weight_cosine": 0.9911448955535889,
+      "matmul_mean_row_cosine": 0.999047577381134,
+      "matmul_rel_l2": 0.04065146669745445,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.0.self_attn.k_proj.weight",
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.25048828125,
+      "weight_rel_l2": 0.31011301279067993,
+      "weight_cosine": 0.9550483822822571,
+      "matmul_mean_row_cosine": 0.9947912693023682,
+      "matmul_rel_l2": 0.09531136602163315,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.0.self_attn.k_proj.weight",
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.25048828125,
+      "weight_rel_l2": 0.7388693690299988,
+      "weight_cosine": 0.736262857913971,
+      "matmul_mean_row_cosine": 0.9582279920578003,
+      "matmul_rel_l2": 0.27721863985061646,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.0.self_attn.v_proj.weight",
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25048828125,
+      "weight_rel_l2": 0.14075806736946106,
+      "weight_cosine": 0.9902514219284058,
+      "matmul_mean_row_cosine": 0.9963000416755676,
+      "matmul_rel_l2": 0.08484294265508652,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.0.self_attn.v_proj.weight",
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.25048828125,
+      "weight_rel_l2": 0.32004523277282715,
+      "weight_cosine": 0.9518111348152161,
+      "matmul_mean_row_cosine": 0.9813535213470459,
+      "matmul_rel_l2": 0.1926417499780655,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.0.self_attn.v_proj.weight",
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.25048828125,
+      "weight_rel_l2": 0.7209133505821228,
+      "weight_cosine": 0.7507539987564087,
+      "matmul_mean_row_cosine": 0.8868169784545898,
+      "matmul_rel_l2": 0.4765803813934326,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.0.self_attn.o_proj.weight",
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25006103515625,
+      "weight_rel_l2": 0.11582092195749283,
+      "weight_cosine": 0.9933477640151978,
+      "matmul_mean_row_cosine": 0.9933661222457886,
+      "matmul_rel_l2": 0.11545662581920624,
+      "in_dim": 4096
+    },
+    {
+      "name": "model.layers.0.self_attn.o_proj.weight",
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.25006103515625,
+      "weight_rel_l2": 0.26902180910110474,
+      "weight_cosine": 0.965785562992096,
+      "matmul_mean_row_cosine": 0.965076208114624,
+      "matmul_rel_l2": 0.2708345055580139,
+      "in_dim": 4096
+    },
+    {
+      "name": "model.layers.0.self_attn.o_proj.weight",
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.25006103515625,
+      "weight_rel_l2": 0.7234059572219849,
+      "weight_cosine": 0.7666725516319275,
+      "matmul_mean_row_cosine": 0.7636038064956665,
+      "matmul_rel_l2": 0.7268410325050354,
+      "in_dim": 4096
+    },
+    {
+      "name": "model.layers.24.self_attn.q_proj.weight",
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25006103515625,
+      "weight_rel_l2": 0.11354691535234451,
+      "weight_cosine": 0.9936005473136902,
+      "matmul_mean_row_cosine": 0.9937503337860107,
+      "matmul_rel_l2": 0.11220749467611313,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.24.self_attn.q_proj.weight",
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.25006103515625,
+      "weight_rel_l2": 0.26477283239364624,
+      "weight_cosine": 0.9668440222740173,
+      "matmul_mean_row_cosine": 0.9675866961479187,
+      "matmul_rel_l2": 0.26104944944381714,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.24.self_attn.q_proj.weight",
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.25006103515625,
+      "weight_rel_l2": 0.7270097732543945,
+      "weight_cosine": 0.7660315036773682,
+      "matmul_mean_row_cosine": 0.7728238105773926,
+      "matmul_rel_l2": 0.7194321751594543,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.24.self_attn.k_proj.weight",
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25048828125,
+      "weight_rel_l2": 0.1172027513384819,
+      "weight_cosine": 0.9932140111923218,
+      "matmul_mean_row_cosine": 0.9915990233421326,
+      "matmul_rel_l2": 0.13000157475471497,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.24.self_attn.k_proj.weight",
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.25048828125,
+      "weight_rel_l2": 0.27259066700935364,
+      "weight_cosine": 0.9649092555046082,
+      "matmul_mean_row_cosine": 0.9576008319854736,
+      "matmul_rel_l2": 0.2990042269229889,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.24.self_attn.k_proj.weight",
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.25048828125,
+      "weight_rel_l2": 0.7315590381622314,
+      "weight_cosine": 0.7582884430885315,
+      "matmul_mean_row_cosine": 0.7228714823722839,
+      "matmul_rel_l2": 0.7710239887237549,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.24.self_attn.v_proj.weight",
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25048828125,
+      "weight_rel_l2": 0.11501545459032059,
+      "weight_cosine": 0.9934610724449158,
+      "matmul_mean_row_cosine": 0.9942668676376343,
+      "matmul_rel_l2": 0.10757464170455933,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.24.self_attn.v_proj.weight",
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.25048828125,
+      "weight_rel_l2": 0.2673933506011963,
+      "weight_cosine": 0.9661925435066223,
+      "matmul_mean_row_cosine": 0.9704620242118835,
+      "matmul_rel_l2": 0.2493942826986313,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.24.self_attn.v_proj.weight",
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.25048828125,
+      "weight_rel_l2": 0.7248483896255493,
+      "weight_cosine": 0.7669968008995056,
+      "matmul_mean_row_cosine": 0.8010575175285339,
+      "matmul_rel_l2": 0.6828688383102417,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.24.self_attn.o_proj.weight",
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25006103515625,
+      "weight_rel_l2": 0.10903126001358032,
+      "weight_cosine": 0.9940982460975647,
+      "matmul_mean_row_cosine": 0.9941354990005493,
+      "matmul_rel_l2": 0.10877764970064163,
+      "in_dim": 4096
+    },
+    {
+      "name": "model.layers.24.self_attn.o_proj.weight",
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.25006103515625,
+      "weight_rel_l2": 0.25447317957878113,
+      "weight_cosine": 0.9692623615264893,
+      "matmul_mean_row_cosine": 0.9691436290740967,
+      "matmul_rel_l2": 0.2549600303173065,
+      "in_dim": 4096
+    },
+    {
+      "name": "model.layers.24.self_attn.o_proj.weight",
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.25006103515625,
+      "weight_rel_l2": 0.7196944355964661,
+      "weight_cosine": 0.776641845703125,
+      "matmul_mean_row_cosine": 0.7745102047920227,
+      "matmul_rel_l2": 0.724116861820221,
+      "in_dim": 4096
+    },
+    {
+      "name": "model.layers.47.self_attn.q_proj.weight",
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25006103515625,
+      "weight_rel_l2": 0.11395318061113358,
+      "weight_cosine": 0.993561863899231,
+      "matmul_mean_row_cosine": 0.9928526878356934,
+      "matmul_rel_l2": 0.11979623138904572,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.47.self_attn.q_proj.weight",
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.25006103515625,
+      "weight_rel_l2": 0.26540040969848633,
+      "weight_cosine": 0.96669602394104,
+      "matmul_mean_row_cosine": 0.9633705615997314,
+      "matmul_rel_l2": 0.27759724855422974,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.47.self_attn.q_proj.weight",
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.25006103515625,
+      "weight_rel_l2": 0.725578784942627,
+      "weight_cosine": 0.7674591541290283,
+      "matmul_mean_row_cosine": 0.7724050879478455,
+      "matmul_rel_l2": 0.7199403047561646,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.47.self_attn.k_proj.weight",
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25048828125,
+      "weight_rel_l2": 0.11953762918710709,
+      "weight_cosine": 0.9929441809654236,
+      "matmul_mean_row_cosine": 0.9935958385467529,
+      "matmul_rel_l2": 0.11328084766864777,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.47.self_attn.k_proj.weight",
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.25048828125,
+      "weight_rel_l2": 0.2764540910720825,
+      "weight_cosine": 0.9638862609863281,
+      "matmul_mean_row_cosine": 0.9678110480308533,
+      "matmul_rel_l2": 0.2589784860610962,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.47.self_attn.k_proj.weight",
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.25048828125,
+      "weight_rel_l2": 0.725767195224762,
+      "weight_cosine": 0.7626782655715942,
+      "matmul_mean_row_cosine": 0.7981336116790771,
+      "matmul_rel_l2": 0.6696975827217102,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.47.self_attn.v_proj.weight",
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25048828125,
+      "weight_rel_l2": 0.1302061527967453,
+      "weight_cosine": 0.9916359186172485,
+      "matmul_mean_row_cosine": 0.9922428727149963,
+      "matmul_rel_l2": 0.12470126897096634,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.47.self_attn.v_proj.weight",
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.25048828125,
+      "weight_rel_l2": 0.29050445556640625,
+      "weight_cosine": 0.9599001407623291,
+      "matmul_mean_row_cosine": 0.9662806987762451,
+      "matmul_rel_l2": 0.2633170783519745,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.47.self_attn.v_proj.weight",
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.25048828125,
+      "weight_rel_l2": 0.7120808362960815,
+      "weight_cosine": 0.769354522228241,
+      "matmul_mean_row_cosine": 0.8213422298431396,
+      "matmul_rel_l2": 0.6144819259643555,
+      "in_dim": 2048
+    },
+    {
+      "name": "model.layers.47.self_attn.o_proj.weight",
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25006103515625,
+      "weight_rel_l2": 0.11101003736257553,
+      "weight_cosine": 0.9938881993293762,
+      "matmul_mean_row_cosine": 0.9939216375350952,
+      "matmul_rel_l2": 0.11065028607845306,
+      "in_dim": 4096
+    },
+    {
+      "name": "model.layers.47.self_attn.o_proj.weight",
+      "nbits": 3,
+      "group_size": 64,
+      "bpw": 3.25006103515625,
+      "weight_rel_l2": 0.25835004448890686,
+      "weight_cosine": 0.9683400988578796,
+      "matmul_mean_row_cosine": 0.9684463143348694,
+      "matmul_rel_l2": 0.2580800950527191,
+      "in_dim": 4096
+    },
+    {
+      "name": "model.layers.47.self_attn.o_proj.weight",
+      "nbits": 2,
+      "group_size": 64,
+      "bpw": 2.25006103515625,
+      "weight_rel_l2": 0.7168775200843811,
+      "weight_cosine": 0.7771239876747131,
+      "matmul_mean_row_cosine": 0.7767853736877441,
+      "matmul_rel_l2": 0.7186996936798096,
+      "in_dim": 4096
+    }
+  ],
+  "honest_floor": {
+    "lowest_nbits_all_expert_ffn_hold_strict": null,
+    "expert_ffn_note": "no_level_held",
+    "generation_lowest_nbits_holds": 4,
+    "generation_lowest_nbits_coherent_human": 4,
+    "generation_note": "ALL 48 layers' expert weights quant-dequant'd (attention/router/norms/embed/lm_head untouched). generation_holds (heuristic: coherent AND mean prefix agree>=0.5) floor=4. Human review: 4-bit nearly matches baseline; 3-bit remains on-topic but rewords/changes approach (agree~0.45); 2-bit shows Math-Preserve-style collapse (repetition, nonsense) despite naive looks_coherent heuristic returning True on some strings.",
+    "claim": "Honest floor for naive symmetric group-64 RTN on this model: **4-bit** (expert-only ~4.25 BPW; whole-model with rest bf16 ~4.843 BPW). 3-bit is not claimed as working: generation diverges substantially from baseline. 2-bit is a clear capability collapse on full-expert quant.",
+    "method_scope": "weight-space group RTN, not activation-aware; first real attempt"
+  },
+  "math_preserve_style_hits": [],
+  "claim_boundary": {
+    "is_full_model_generation_benchmark": false,
+    "is_full_model_bpw_artifact": false,
+    "is_bounded_real_tensor_prototype": true,
+    "universal_1_5_bpw_required": false
+  },
+  "roundtrip_test": {
+    "schema": "hawking.qwen30b.gravity_first_test.roundtrip.v1",
+    "all_ok": true,
+    "results": [
+      {
+        "name": "model.layers.0.mlp.experts.0.gate_proj.weight",
+        "shape": [
+          768,
+          2048
+        ],
+        "nbits": 4,
+        "group_size": 64,
+        "bpw": 4.250325520833333,
+        "rel_l2": 0.1107792928814888,
+        "cosine": 0.9939329028129578,
+        "roundtrip_max_abs": 0.0,
+        "roundtrip_ok": true,
+        "bound_ok": true,
+        "status": "PASS"
+      },
+      {
+        "name": "model.layers.0.mlp.experts.0.up_proj.weight",
+        "shape": [
+          768,
+          2048
+        ],
+        "nbits": 4,
+        "group_size": 64,
+        "bpw": 4.250325520833333,
+        "rel_l2": 0.11007321625947952,
+        "cosine": 0.9940097332000732,
+        "roundtrip_max_abs": 0.0,
+        "roundtrip_ok": true,
+        "bound_ok": true,
+        "status": "PASS"
+      },
+      {
+        "name": "model.layers.0.mlp.experts.0.down_proj.weight",
+        "shape": [
+          2048,
+          768
+        ],
+        "nbits": 4,
+        "group_size": 64,
+        "bpw": 4.250325520833333,
+        "rel_l2": 0.10982675850391388,
+        "cosine": 0.9940342903137207,
+        "roundtrip_max_abs": 0.0,
+        "roundtrip_ok": true,
+        "bound_ok": true,
+        "status": "PASS"
+      },
+      {
+        "name": "model.layers.0.self_attn.q_proj.weight",
+        "shape": [
+          4096,
+          2048
+        ],
+        "nbits": 4,
+        "group_size": 64,
+        "bpw": 4.25006103515625,
+        "rel_l2": 0.14993101358413696,
+        "cosine": 0.9889352321624756,
+        "roundtrip_max_abs": 0.0,
+        "roundtrip_ok": true,
+        "bound_ok": true,
+        "status": "PASS"
+      },
+      {
+        "name": "model.layers.24.mlp.experts.7.gate_proj.weight",
+        "shape": [
+          768,
+          2048
+        ],
+        "nbits": 4,
+        "group_size": 64,
+        "bpw": 4.250325520833333,
+        "rel_l2": 0.10918369889259338,
+        "cosine": 0.9941049218177795,
+        "roundtrip_max_abs": 0.0,
+        "roundtrip_ok": true,
+        "bound_ok": true,
+        "status": "PASS"
+      },
+      {
+        "name": "model.layers.47.mlp.experts.3.down_proj.weight",
+        "shape": [
+          2048,
+          768
+        ],
+        "nbits": 4,
+        "group_size": 64,
+        "bpw": 4.250325520833333,
+        "rel_l2": 0.11413446068763733,
+        "cosine": 0.9935579299926758,
+        "roundtrip_max_abs": 0.0,
+        "roundtrip_ok": true,
+        "bound_ok": true,
+        "status": "PASS"
+      }
+    ]
+  },
+  "generation_probe_early_layers_0_1_2": {
+    "status": "RAN",
+    "load_sec": 49.98539400100708,
+    "quant_layers": [
+      0,
+      1,
+      2
+    ],
+    "group_size": 64,
+    "max_new_tokens": 32,
+    "prompts": [
+      "Write a Python function that returns the nth Fibonacci number.",
+      "What is 17 * 24? Show the calculation.",
+      "Explain in one sentence what a binary search does."
+    ],
+    "by_bits": {
+      "4": {
+        "status": "RAN",
+        "n_tensors_quantized": 6,
+        "gen_sec": 14.198621988296509,
+        "mean_prefix_token_agreement": 1.0,
+        "any_exact_match": true,
+        "all_outputs_coherent": true,
+        "comparisons": [
+          {
+            "prompt": "Write a Python function that returns the nth Fibonacci number.",
+            "baseline_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+            "quant_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+            "exact_token_match": true,
+            "prefix_token_agreement": 1.0,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "What is 17 * 24? Show the calculation.",
+            "baseline_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n-----\n ",
+            "quant_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n-----\n ",
+            "exact_token_match": true,
+            "prefix_token_agreement": 1.0,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "Explain in one sentence what a binary search does.",
+            "baseline_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+            "quant_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+            "exact_token_match": true,
+            "prefix_token_agreement": 1.0,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          }
+        ],
+        "generation_holds": true,
+        "note": "generation_holds heuristic: all outputs look coherent AND mean prefix token agreement with baseline >= 0.5. Only selected layers' experts were quantized."
+      },
+      "3": {
+        "status": "RAN",
+        "n_tensors_quantized": 6,
+        "gen_sec": 14.54594898223877,
+        "mean_prefix_token_agreement": 0.9791666666666666,
+        "any_exact_match": true,
+        "all_outputs_coherent": true,
+        "comparisons": [
+          {
+            "prompt": "Write a Python function that returns the nth Fibonacci number.",
+            "baseline_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+            "quant_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+            "exact_token_match": true,
+            "prefix_token_agreement": 1.0,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "What is 17 * 24? Show the calculation.",
+            "baseline_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n-----\n ",
+            "quant_text": "To calculate 17 \u00d7 24, I can use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n----\n ",
+            "exact_token_match": false,
+            "prefix_token_agreement": 0.9375,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "Explain in one sentence what a binary search does.",
+            "baseline_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+            "quant_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+            "exact_token_match": true,
+            "prefix_token_agreement": 1.0,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          }
+        ],
+        "generation_holds": true,
+        "note": "generation_holds heuristic: all outputs look coherent AND mean prefix token agreement with baseline >= 0.5. Only selected layers' experts were quantized."
+      }
+    },
+    "baseline": [
+      {
+        "prompt": "Write a Python function that returns the nth Fibonacci number.",
+        "gen_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+        "n_tokens": 32
+      },
+      {
+        "prompt": "What is 17 * 24? Show the calculation.",
+        "gen_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n-----\n ",
+        "n_tokens": 32
+      },
+      {
+        "prompt": "Explain in one sentence what a binary search does.",
+        "gen_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+        "n_tokens": 32
+      }
+    ],
+    "baseline_gen_sec": 37.66101288795471
+  },
+  "generation_probe_depth_sample": {
+    "status": "RAN",
+    "load_sec": 46.86927318572998,
+    "quant_layers": [
+      0,
+      12,
+      24,
+      36,
+      47
+    ],
+    "group_size": 64,
+    "max_new_tokens": 32,
+    "prompts": [
+      "Write a Python function that returns the nth Fibonacci number.",
+      "What is 17 * 24? Show the calculation.",
+      "Explain in one sentence what a binary search does."
+    ],
+    "by_bits": {
+      "4": {
+        "status": "RAN",
+        "n_tensors_quantized": 10,
+        "gen_sec": 11.060895919799805,
+        "mean_prefix_token_agreement": 0.8850574712643677,
+        "any_exact_match": true,
+        "all_outputs_coherent": true,
+        "comparisons": [
+          {
+            "prompt": "Write a Python function that returns the nth Fibonacci number.",
+            "baseline_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+            "quant_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+            "exact_token_match": true,
+            "prefix_token_agreement": 1.0,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "What is 17 * 24? Show the calculation.",
+            "baseline_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n-----\n ",
+            "quant_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n-----\n ",
+            "exact_token_match": true,
+            "prefix_token_agreement": 1.0,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "Explain in one sentence what a binary search does.",
+            "baseline_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+            "quant_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search range in half based on comparisons with the middle element.",
+            "exact_token_match": false,
+            "prefix_token_agreement": 0.6551724137931034,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 29,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          }
+        ],
+        "generation_holds": true,
+        "note": "generation_holds heuristic: all outputs look coherent AND mean prefix token agreement with baseline >= 0.5. Only selected layers' experts were quantized."
+      },
+      "3": {
+        "status": "RAN",
+        "n_tensors_quantized": 10,
+        "gen_sec": 7.175705194473267,
+        "mean_prefix_token_agreement": 0.9895833333333334,
+        "any_exact_match": true,
+        "all_outputs_coherent": true,
+        "comparisons": [
+          {
+            "prompt": "Write a Python function that returns the nth Fibonacci number.",
+            "baseline_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+            "quant_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+            "exact_token_match": true,
+            "prefix_token_agreement": 1.0,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "What is 17 * 24? Show the calculation.",
+            "baseline_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n-----\n ",
+            "quant_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n----\n ",
+            "exact_token_match": false,
+            "prefix_token_agreement": 0.96875,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "Explain in one sentence what a binary search does.",
+            "baseline_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+            "quant_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+            "exact_token_match": true,
+            "prefix_token_agreement": 1.0,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          }
+        ],
+        "generation_holds": true,
+        "note": "generation_holds heuristic: all outputs look coherent AND mean prefix token agreement with baseline >= 0.5. Only selected layers' experts were quantized."
+      },
+      "2": {
+        "status": "RAN",
+        "n_tensors_quantized": 10,
+        "gen_sec": 7.393279075622559,
+        "mean_prefix_token_agreement": 0.34375,
+        "any_exact_match": false,
+        "all_outputs_coherent": true,
+        "comparisons": [
+          {
+            "prompt": "Write a Python function that returns the nth Fibonacci number.",
+            "baseline_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+            "quant_text": "Here are several implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Recommended)\n```python\ndef fibonacci(n):\n",
+            "exact_token_match": false,
+            "prefix_token_agreement": 0.0625,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "What is 17 * 24? Show the calculation.",
+            "baseline_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n-----\n ",
+            "quant_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n----\n ",
+            "exact_token_match": false,
+            "prefix_token_agreement": 0.96875,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "Explain in one sentence what a binary search does.",
+            "baseline_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+            "quant_text": "Binary search efficiently finds a target value in a sorted array by repeatedly dividing the search range in half until the value is found or the range is empty.",
+            "exact_token_match": false,
+            "prefix_token_agreement": 0.0,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 31,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          }
+        ],
+        "generation_holds": false,
+        "note": "generation_holds heuristic: all outputs look coherent AND mean prefix token agreement with baseline >= 0.5. Only selected layers' experts were quantized."
+      }
+    },
+    "baseline": [
+      {
+        "prompt": "Write a Python function that returns the nth Fibonacci number.",
+        "gen_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+        "n_tokens": 32
+      },
+      {
+        "prompt": "What is 17 * 24? Show the calculation.",
+        "gen_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n-----\n ",
+        "n_tokens": 32
+      },
+      {
+        "prompt": "Explain in one sentence what a binary search does.",
+        "gen_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+        "n_tokens": 32
+      }
+    ],
+    "baseline_gen_sec": 33.09270215034485
+  },
+  "generation_probe": {
+    "status": "RAN",
+    "load_sec": 44.985599994659424,
+    "quant_layers": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47
+    ],
+    "group_size": 64,
+    "max_new_tokens": 32,
+    "prompts": [
+      "Write a Python function that returns the nth Fibonacci number.",
+      "What is 17 * 24? Show the calculation.",
+      "Explain in one sentence what a binary search does."
+    ],
+    "by_bits": {
+      "4": {
+        "status": "RAN",
+        "n_tensors_quantized": 96,
+        "gen_sec": 22.300255060195923,
+        "mean_prefix_token_agreement": 0.9895833333333334,
+        "any_exact_match": true,
+        "all_outputs_coherent": true,
+        "comparisons": [
+          {
+            "prompt": "Write a Python function that returns the nth Fibonacci number.",
+            "baseline_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+            "quant_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+            "exact_token_match": true,
+            "prefix_token_agreement": 1.0,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "What is 17 * 24? Show the calculation.",
+            "baseline_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n-----\n ",
+            "quant_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n----\n ",
+            "exact_token_match": false,
+            "prefix_token_agreement": 0.96875,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "Explain in one sentence what a binary search does.",
+            "baseline_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+            "quant_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+            "exact_token_match": true,
+            "prefix_token_agreement": 1.0,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          }
+        ],
+        "generation_holds": true,
+        "note": "generation_holds heuristic: all outputs look coherent AND mean prefix token agreement with baseline >= 0.5. Only selected layers' experts were quantized."
+      },
+      "3": {
+        "status": "RAN",
+        "n_tensors_quantized": 96,
+        "gen_sec": 13.334481000900269,
+        "mean_prefix_token_agreement": 0.4479166666666667,
+        "any_exact_match": false,
+        "all_outputs_coherent": true,
+        "comparisons": [
+          {
+            "prompt": "Write a Python function that returns the nth Fibonacci number.",
+            "baseline_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+            "quant_text": "Here are a few different implementations of a Fibonacci function in Python:\n\n## Method 1: Simple Recursive (Easy to understand but inefficient for large n)\n```python",
+            "exact_token_match": false,
+            "prefix_token_agreement": 0.25,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "What is 17 * 24? Show the calculation.",
+            "baseline_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n-----\n ",
+            "quant_text": "To calculate 17 \u00d7 24, I can use the distributive property:\n\n17 \u00d7 24 = 17 \u00d7 (20",
+            "exact_token_match": false,
+            "prefix_token_agreement": 0.46875,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "Explain in one sentence what a binary search does.",
+            "baseline_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+            "quant_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half and comparing the target with the middle element until found or determined",
+            "exact_token_match": false,
+            "prefix_token_agreement": 0.625,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          }
+        ],
+        "generation_holds": false,
+        "note": "generation_holds heuristic: all outputs look coherent AND mean prefix token agreement with baseline >= 0.5. Only selected layers' experts were quantized."
+      },
+      "2": {
+        "status": "RAN",
+        "n_tensors_quantized": 96,
+        "gen_sec": 15.239139795303345,
+        "mean_prefix_token_agreement": 0.010416666666666666,
+        "any_exact_match": false,
+        "all_outputs_coherent": true,
+        "comparisons": [
+          {
+            "prompt": "Write a Python function that returns the nth Fibonacci number.",
+            "baseline_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+            "quant_text": "I'll provide code to the point where I can't make a 100% chance of the 100% and 100%",
+            "exact_token_match": false,
+            "prefix_token_agreement": 0.0,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "What is 17 * 24? Show the calculation.",
+            "baseline_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n-----\n ",
+            "quant_text": "The calculation is 17 * 24 = 17 * 24 = 17 * 24 = 17 * ",
+            "exact_token_match": false,
+            "prefix_token_agreement": 0.03125,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "Explain in one sentence what a binary search does.",
+            "baseline_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+            "quant_text": "Binary search is a method of searching for a specific value that involves the first and the last element of a list, and the first and the last elements of a",
+            "exact_token_match": false,
+            "prefix_token_agreement": 0.0,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          }
+        ],
+        "generation_holds": false,
+        "note": "generation_holds heuristic: all outputs look coherent AND mean prefix token agreement with baseline >= 0.5. Only selected layers' experts were quantized."
+      }
+    },
+    "baseline": [
+      {
+        "prompt": "Write a Python function that returns the nth Fibonacci number.",
+        "gen_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+        "n_tokens": 32
+      },
+      {
+        "prompt": "What is 17 * 24? Show the calculation.",
+        "gen_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n-----\n ",
+        "n_tokens": 32
+      },
+      {
+        "prompt": "Explain in one sentence what a binary search does.",
+        "gen_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+        "n_tokens": 32
+      }
+    ],
+    "baseline_gen_sec": 146.7389271259308
+  },
+  "generation_probe_early_layers": {
+    "status": "RAN",
+    "load_sec": 49.98539400100708,
+    "quant_layers": [
+      0,
+      1,
+      2
+    ],
+    "group_size": 64,
+    "max_new_tokens": 32,
+    "prompts": [
+      "Write a Python function that returns the nth Fibonacci number.",
+      "What is 17 * 24? Show the calculation.",
+      "Explain in one sentence what a binary search does."
+    ],
+    "by_bits": {
+      "4": {
+        "status": "RAN",
+        "n_tensors_quantized": 6,
+        "gen_sec": 14.198621988296509,
+        "mean_prefix_token_agreement": 1.0,
+        "any_exact_match": true,
+        "all_outputs_coherent": true,
+        "comparisons": [
+          {
+            "prompt": "Write a Python function that returns the nth Fibonacci number.",
+            "baseline_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+            "quant_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+            "exact_token_match": true,
+            "prefix_token_agreement": 1.0,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "What is 17 * 24? Show the calculation.",
+            "baseline_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n-----\n ",
+            "quant_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n-----\n ",
+            "exact_token_match": true,
+            "prefix_token_agreement": 1.0,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "Explain in one sentence what a binary search does.",
+            "baseline_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+            "quant_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+            "exact_token_match": true,
+            "prefix_token_agreement": 1.0,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          }
+        ],
+        "generation_holds": true,
+        "note": "generation_holds heuristic: all outputs look coherent AND mean prefix token agreement with baseline >= 0.5. Only selected layers' experts were quantized."
+      },
+      "3": {
+        "status": "RAN",
+        "n_tensors_quantized": 6,
+        "gen_sec": 14.54594898223877,
+        "mean_prefix_token_agreement": 0.9791666666666666,
+        "any_exact_match": true,
+        "all_outputs_coherent": true,
+        "comparisons": [
+          {
+            "prompt": "Write a Python function that returns the nth Fibonacci number.",
+            "baseline_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+            "quant_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+            "exact_token_match": true,
+            "prefix_token_agreement": 1.0,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "What is 17 * 24? Show the calculation.",
+            "baseline_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n-----\n ",
+            "quant_text": "To calculate 17 \u00d7 24, I can use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n----\n ",
+            "exact_token_match": false,
+            "prefix_token_agreement": 0.9375,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "Explain in one sentence what a binary search does.",
+            "baseline_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+            "quant_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+            "exact_token_match": true,
+            "prefix_token_agreement": 1.0,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          }
+        ],
+        "generation_holds": true,
+        "note": "generation_holds heuristic: all outputs look coherent AND mean prefix token agreement with baseline >= 0.5. Only selected layers' experts were quantized."
+      }
+    },
+    "baseline": [
+      {
+        "prompt": "Write a Python function that returns the nth Fibonacci number.",
+        "gen_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+        "n_tokens": 32
+      },
+      {
+        "prompt": "What is 17 * 24? Show the calculation.",
+        "gen_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n-----\n ",
+        "n_tokens": 32
+      },
+      {
+        "prompt": "Explain in one sentence what a binary search does.",
+        "gen_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+        "n_tokens": 32
+      }
+    ],
+    "baseline_gen_sec": 37.66101288795471
+  },
+  "generation_probe_depth": {
+    "status": "RAN",
+    "load_sec": 46.86927318572998,
+    "quant_layers": [
+      0,
+      12,
+      24,
+      36,
+      47
+    ],
+    "group_size": 64,
+    "max_new_tokens": 32,
+    "prompts": [
+      "Write a Python function that returns the nth Fibonacci number.",
+      "What is 17 * 24? Show the calculation.",
+      "Explain in one sentence what a binary search does."
+    ],
+    "by_bits": {
+      "4": {
+        "status": "RAN",
+        "n_tensors_quantized": 10,
+        "gen_sec": 11.060895919799805,
+        "mean_prefix_token_agreement": 0.8850574712643677,
+        "any_exact_match": true,
+        "all_outputs_coherent": true,
+        "comparisons": [
+          {
+            "prompt": "Write a Python function that returns the nth Fibonacci number.",
+            "baseline_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+            "quant_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+            "exact_token_match": true,
+            "prefix_token_agreement": 1.0,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "What is 17 * 24? Show the calculation.",
+            "baseline_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n-----\n ",
+            "quant_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n-----\n ",
+            "exact_token_match": true,
+            "prefix_token_agreement": 1.0,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "Explain in one sentence what a binary search does.",
+            "baseline_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+            "quant_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search range in half based on comparisons with the middle element.",
+            "exact_token_match": false,
+            "prefix_token_agreement": 0.6551724137931034,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 29,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          }
+        ],
+        "generation_holds": true,
+        "note": "generation_holds heuristic: all outputs look coherent AND mean prefix token agreement with baseline >= 0.5. Only selected layers' experts were quantized."
+      },
+      "3": {
+        "status": "RAN",
+        "n_tensors_quantized": 10,
+        "gen_sec": 7.175705194473267,
+        "mean_prefix_token_agreement": 0.9895833333333334,
+        "any_exact_match": true,
+        "all_outputs_coherent": true,
+        "comparisons": [
+          {
+            "prompt": "Write a Python function that returns the nth Fibonacci number.",
+            "baseline_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+            "quant_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+            "exact_token_match": true,
+            "prefix_token_agreement": 1.0,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "What is 17 * 24? Show the calculation.",
+            "baseline_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n-----\n ",
+            "quant_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n----\n ",
+            "exact_token_match": false,
+            "prefix_token_agreement": 0.96875,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "Explain in one sentence what a binary search does.",
+            "baseline_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+            "quant_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+            "exact_token_match": true,
+            "prefix_token_agreement": 1.0,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          }
+        ],
+        "generation_holds": true,
+        "note": "generation_holds heuristic: all outputs look coherent AND mean prefix token agreement with baseline >= 0.5. Only selected layers' experts were quantized."
+      },
+      "2": {
+        "status": "RAN",
+        "n_tensors_quantized": 10,
+        "gen_sec": 7.393279075622559,
+        "mean_prefix_token_agreement": 0.34375,
+        "any_exact_match": false,
+        "all_outputs_coherent": true,
+        "comparisons": [
+          {
+            "prompt": "Write a Python function that returns the nth Fibonacci number.",
+            "baseline_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+            "quant_text": "Here are several implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Recommended)\n```python\ndef fibonacci(n):\n",
+            "exact_token_match": false,
+            "prefix_token_agreement": 0.0625,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "What is 17 * 24? Show the calculation.",
+            "baseline_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n-----\n ",
+            "quant_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n----\n ",
+            "exact_token_match": false,
+            "prefix_token_agreement": 0.96875,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 32,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          },
+          {
+            "prompt": "Explain in one sentence what a binary search does.",
+            "baseline_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+            "quant_text": "Binary search efficiently finds a target value in a sorted array by repeatedly dividing the search range in half until the value is found or the range is empty.",
+            "exact_token_match": false,
+            "prefix_token_agreement": 0.0,
+            "baseline_n_tokens": 32,
+            "quant_n_tokens": 31,
+            "looks_coherent": true,
+            "baseline_coherent": true
+          }
+        ],
+        "generation_holds": false,
+        "note": "generation_holds heuristic: all outputs look coherent AND mean prefix token agreement with baseline >= 0.5. Only selected layers' experts were quantized."
+      }
+    },
+    "baseline": [
+      {
+        "prompt": "Write a Python function that returns the nth Fibonacci number.",
+        "gen_text": "Here are a few different implementations of a function to return the nth Fibonacci number:\n\n## Method 1: Iterative Approach (Most Efficient)\n```python\ndef",
+        "n_tokens": 32
+      },
+      {
+        "prompt": "What is 17 * 24? Show the calculation.",
+        "gen_text": "To calculate 17 \u00d7 24, I'll use the standard multiplication algorithm:\n\n```\n   17\n\u00d7 24\n-----\n ",
+        "n_tokens": 32
+      },
+      {
+        "prompt": "Explain in one sentence what a binary search does.",
+        "gen_text": "A binary search efficiently finds a target value in a sorted list by repeatedly dividing the search interval in half until the value is found or the interval is empty.",
+        "n_tokens": 32
+      }
+    ],
+    "baseline_gen_sec": 33.09270215034485
+  },
+  "parameter_accounting": {
+    "total_weights": 30532122624,
+    "expert_weights": 28991029248,
+    "expert_fraction": 0.949525508102453,
+    "non_expert_weights": 1541093376,
+    "categories_approx": {
+      "experts": 28991029248,
+      "attn": 905981952,
+      "embed_lm_head": 622329856,
+      "router": 12582912,
+      "norm": 198656
+    },
+    "source_total_size_bytes": 61064245248,
+    "bpw_if_experts_quantized_rest_bf16": {
+      "8": {
+        "expert_only_bpw": 8.250325520833334,
+        "whole_model_bpw_experts_quant_rest_bf16": 8.641486402540659,
+        "expert_weight_fraction": 0.949525508102453,
+        "total_weights": 30532122624,
+        "expert_weights": 28991029248,
+        "non_expert_weights": 1541093376
+      },
+      "4": {
+        "expert_only_bpw": 4.250325520833333,
+        "whole_model_bpw_experts_quant_rest_bf16": 4.843384370130846,
+        "expert_weight_fraction": 0.949525508102453,
+        "total_weights": 30532122624,
+        "expert_weights": 28991029248,
+        "non_expert_weights": 1541093376
+      },
+      "3": {
+        "expert_only_bpw": 3.2503255208333335,
+        "whole_model_bpw_experts_quant_rest_bf16": 3.8938588620283934,
+        "expert_weight_fraction": 0.949525508102453,
+        "total_weights": 30532122624,
+        "expert_weights": 28991029248,
+        "non_expert_weights": 1541093376
+      },
+      "2": {
+        "expert_only_bpw": 2.2503255208333335,
+        "whole_model_bpw_experts_quant_rest_bf16": 2.9443333539259404,
+        "expert_weight_fraction": 0.949525508102453,
+        "total_weights": 30532122624,
+        "expert_weights": 28991029248,
+        "non_expert_weights": 1541093376
+      }
+    }
+  },
+  "math_preserve_assessment": {
+    "classic_hit_weight_cos_ge_0_99_and_ffn_cos_lt_0_95": [],
+    "generation_math_preserve_at_2bit": {
+      "observed": true,
+      "detail": "At 2-bit full-expert quant-dequant, outputs remain token-like English fragments but lose task competence: Fibonacci prompt yields repetitive nonsense; math prompt loops '17 * 24 = 17 * 24 = ...'. Numeric weight recon still runs (mean weight cos ~0.77) \u2014 parity of 'a number comes out' without capability.",
+      "example_outputs": [
+        "I'll provide code to the point where I can't make a 100% chance of the 100% and 100%",
+        "The calculation is 17 * 24 = 17 * 24 = 17 * 24 = 17 * ",
+        "Binary search is a method of searching for a specific value that involves the first and the last element of a list, and the first and the last elements of a"
+      ]
+    },
+    "generation_soft_degrade_at_3bit": {
+      "observed": true,
+      "detail": "3-bit stays on-topic and readable but mean prefix agreement with greedy baseline drops to ~0.45; not Math-Preserve garbage, but not 'still the same model'."
+    }
+  }
+}

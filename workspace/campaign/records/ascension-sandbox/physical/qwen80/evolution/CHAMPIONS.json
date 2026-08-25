@@ -1,0 +1,81 @@
+{
+  "claim_boundary": "component MPS matvec throughput is not a model TPS value",
+  "current_capable_champion": {
+    "candidate": null,
+    "status": "UNSET_BLOCKED_NO_NATIVE_COMPLETE_TOKEN_RUNTIME_OR_CAPABILITY_EVIDENCE"
+  },
+  "current_fastest_component_champion": {
+    "artifact_bytes": 147708,
+    "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/evolution/artifacts/qwen80-5f18f9d80c0fd06be51be18f0236e597.gravity",
+    "artifact_sha256": "7572af74a487cd155eb2ac5ba2ce9fbb486381a0d4a7c4fe56e471150635891b",
+    "candidate_id": "qwen80-5f18f9d80c0fd06be51be18f0236e597",
+    "cosine": 0.7778220176696777,
+    "created_at": "2026-08-08T07:00:27.209863Z",
+    "functional_cosine": 0.618982195854187,
+    "functional_relative_l2": 0.8372106552124023,
+    "generation": 0,
+    "mps_matvecs_per_second": 18140.589413871134,
+    "organ": "moe_router",
+    "physical_bpw": 1.126922607421875,
+    "record_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/evolution/candidates/qwen80-5f18f9d80c0fd06be51be18f0236e597.json",
+    "record_seal_sha256": "807ea07d3d1b62de25a9845a775b9854d0c7fc1ecac98baf0d94bc18b668aaa7",
+    "relative_l2": 0.6284860372543335,
+    "representation": "binary_sign_scale128",
+    "sensitive_gate_pass": false
+  },
+  "current_full_runtime_champion": {
+    "candidate": null,
+    "status": "UNSET_BLOCKED_100_TPS_CUSTOM_KERNEL_AND_TG3_REQUIRE_FULL_TOKEN_RUNTIME"
+  },
+  "current_lowest_bpw_champion": {
+    "artifact_bytes": 30771,
+    "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/evolution/artifacts/qwen80-70741a876c87ad41c692e84b40be459e.gravity",
+    "artifact_sha256": "9ef3942fb23a86113d3484698a0a911481d11c99a7eecb9ca28ba789c7267653",
+    "candidate_id": "qwen80-70741a876c87ad41c692e84b40be459e",
+    "cosine": 0.29873403906822205,
+    "created_at": "2026-08-08T07:40:43.023613Z",
+    "functional_cosine": 0.37104299664497375,
+    "functional_relative_l2": 0.9314535856246948,
+    "generation": 0,
+    "mps_matvecs_per_second": 1323.0657916778205,
+    "organ": "hybrid_attention_q",
+    "physical_bpw": 0.11738204956054688,
+    "record_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/evolution/candidates/qwen80-70741a876c87ad41c692e84b40be459e.json",
+    "record_seal_sha256": "3b8c69c1277d6f3cbca80ede861ed1d976a705de63437994b61ca52ceeaffe5f",
+    "relative_l2": 0.9560249447822571,
+    "representation": "teacher_low_rank_q3",
+    "sensitive_gate_pass": false,
+    "tensor_name": "model.layers.3.self_attn.q_proj.weight"
+  },
+  "current_most_faithful_component_champion": {
+    "artifact_bytes": 73994,
+    "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/evolution/artifacts/qwen80-19f7366e46171da97c15cd8700562c23.gravity",
+    "artifact_sha256": "b772d52fe49eedc53cdd4f6d3ca23c2451d49d345fec3d73b4786bca38c3f72a",
+    "candidate_id": "qwen80-19f7366e46171da97c15cd8700562c23",
+    "cosine": 0.9952208995819092,
+    "created_at": "2026-08-08T23:02:02.318891Z",
+    "functional_cosine": 0.9974930882453918,
+    "functional_relative_l2": 0.07086916267871857,
+    "generation": 14,
+    "mps_matvecs_per_second": 487.2781126135557,
+    "organ": "gated_deltanet_projection",
+    "physical_bpw": 4.5162353515625,
+    "record_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/evolution/candidates/qwen80-19f7366e46171da97c15cd8700562c23.json",
+    "record_seal_sha256": "f12ac02d4ce6a16c6f339aa320401ecb5db34c406794b29e595596cd2e38e047",
+    "relative_l2": 0.09817885607481003,
+    "representation": "uniform_q4_group64",
+    "schedule_version": "v2_expanded_ten_family",
+    "sensitive_gate_pass": true,
+    "tensor_name": "model.layers.0.linear_attn.in_proj_ba.weight"
+  },
+  "model": "qwen80",
+  "recorded_at": "2026-08-10T17:23:58.889337Z",
+  "schema": "hawking.ascension.gravity_champions.v1",
+  "seal_sha256": "7b91c41b96f7e5f00d461ae48d705f974202165f79d11ae2175f13ac87e0d29d",
+  "source_content_identity_sha256": "3a6c4816e885023cc6eaaf0521adb0be1a9a008ee5021116c1305b78a2745acc",
+  "status": "COMPONENT_CHAMPIONS_NOT_TOURNAMENT_SELECTION",
+  "tournament_selection": {
+    "reason": "component candidates cannot self-select into the protected tournament",
+    "status": "FORBIDDEN"
+  }
+}

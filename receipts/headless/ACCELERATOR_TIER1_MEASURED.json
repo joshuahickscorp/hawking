@@ -1,0 +1,128 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T15:05:53Z",
+ "experiment_class": "ACCEL-SUSTAINED",
+ "knowledge_level": "INSTANCE",
+ "git_head": "f6c24adc8dd410f005cc004b6d2c1bc5e12e911f",
+ "identities": {
+  "experiment": {
+   "id": "TIER1_VS_TIER2_WORKUNIT",
+   "obligation": "G046 + G049",
+   "steer": "S015 \u00a777 the metric that actually counts"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "tier1": "~/noetic/stage on the internal APPLE SSD",
+   "tier2": "/Volumes/corpdrive, USB"
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "specimen": "Qwen3-30B-A3B",
+   "tensors": "64 expert gate_proj, 768x2048 bf16"
+  },
+  "representation": {
+   "name": "ws_rtn_q4_g64",
+   "bpw": 4.25
+  },
+  "kernel": {
+   "produced_by": "gravity_native.sources"
+  },
+  "runtime": {
+   "python": "3.12.6"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "WHY_THIS_RUN_EXISTS": "The \u00a777 receipt reported a SENSITIVITY CURVE and said in its own claim boundary that it holds non-read time fixed while scaling read -- AN EXTRAPOLATION, NOT A MEASUREMENT. This converts the curve's endpoint into a measurement by staging the SAME 64 tensors onto TIER 1 and running the IDENTICAL WorkUnit.",
+  "THE_PREDICTION_WAS_WRITTEN_BEFORE_THE_RUN": {
+   "wall_s_64_units": [
+    1.1,
+    1.5
+   ],
+   "wu_per_hour": [
+    150000,
+    210000
+   ],
+   "gpu_share_pct": [
+    18,
+    25
+   ],
+   "source": "sensitivity.json compute floor 1.1143 s / 64 units"
+  },
+  "TWO_OF_THREE_CONFIRMED_ONE_MISSED": "wall 1.2817 s against a predicted 1.1-1.5 -- CONFIRMED. Throughput 179761.9 WU/h against a predicted 150,000-210,000 -- CONFIRMED. GPU share 30.878% against a predicted 18-25% -- MISSED, HIGH. The model assumed the compute floor was FIXED; it is not. The GPU phase measured 0.2754 s on TIER 2 and 0.39576 s on TIER 1 for the SAME work, because that column carries MLX kernel-compile and scheduling as well as kernel time. The curve's STRUCTURE was right and one of its ASSUMPTIONS was wrong, and the miss is reported rather than the band being widened after the fact.",
+  "THE_HEADLINE": "TIER 1 delivers 179761.9 accepted WorkUnits/hour against TIER 2's 1296.1 -- 138.7x. Read collapses from 96.98% of wall to 3.119%, at 5035.5 MB/s against 1.20, a factor of 4196.",
+  "THE_ACCELERATOR_STOPS_BEING_CONDITIONAL": "The \u00a777 receipt said the accelerator's value was 'not refuted, but conditional on storage this pipeline is not using'. On TIER 1 it is no longer conditional. THE SAME WIN IS WORTH 216x MORE: P5's fusion 1.71x moves throughput +14.71% on TIER 1 and +0.068% on TIER 2; the scan's 8.09x is +37.10% vs +0.139%; an infinitely fast GPU is +44.67% vs +0.159%. NOTHING ABOUT THE KERNELS CHANGED. Only where the bytes came from.",
+  "THE_BOTTLENECK_MOVED_AND_NAMING_IT_IS_THE_NEXT_LEVER": "pack 36.959% > gpu 30.878% > verify 29.022% > read 3.119%. The largest phase is now CPU-SIDE QUANTIZATION, which is a thing the accelerator could attack and has not. Read is no longer the story.",
+  "MY_OWN_CORRECTNESS_GATE_COSTS_29_PERCENT": "verify is 29.022% of wall, and that is the FIXED accept_pack -- a full dequantize plus two float64 matvecs against the true tensor. The broken predicate that accepted an all-zeros pack was cheaper. HONESTY HAS A MEASURED PRICE HERE and it is worth paying, but it should be paid knowingly: on TIER 2 the gate was free because everything was free next to the disk.",
+  "ALL_64_ACCEPTED_UNDER_THE_FIXED_PREDICATE": "64 of 64 accepted by accept_pack's TWO gates, not the self-referential one. The packs are genuinely faithful to the true tensors, not merely self-consistent -- a claim the previous run could not have made.",
+  "OPERATIONAL_CONSEQUENCE": "Staging cost 437.78 s at 0.46 MB/s for 192 MB, one sequential pass over TIER 2. Every later pass saves 176.5 s, so BREAK-EVEN IS 2.5 PASSES. modellake.py already declares this tier and calls it 'the hot bench, not a second archive'; it was simply empty. The pipeline has been reading from the archive because nothing put anything on the bench.",
+  "measured": {
+   "tier1": {
+    "condition": "TIER 1 SSD (~/noetic/stage), quiesced",
+    "units": 64,
+    "accepted": 64,
+    "rejected": [],
+    "wall_s": 1.2817,
+    "accepted_workunits_per_hour": 179761.9,
+    "seconds_per_unit": 0.020026,
+    "phase_seconds": {
+     "open_s": 0.00012,
+     "read_s": 0.03998,
+     "pack_s": 0.4737,
+     "gpu_s": 0.39576,
+     "verify_s": 0.37197
+    },
+    "phase_share_pct": {
+     "open_s": 0.009,
+     "read_s": 3.119,
+     "pack_s": 36.959,
+     "gpu_s": 30.878,
+     "verify_s": 29.022
+    },
+    "bytes_read": 201326592,
+    "read_mb_s": 5035.5
+   },
+   "tier2_for_comparison": {
+    "condition": "AMORTISED, QUIESCED",
+    "shard": "model-00004-of-00016.safetensors",
+    "units": 64,
+    "accepted": 64,
+    "wall_s": 177.758,
+    "accepted_workunits_per_hour": 1296.1,
+    "seconds_per_unit": 2.77746,
+    "phase_seconds": {
+     "open_s": 4.2604,
+     "read_s": 172.3823,
+     "pack_s": 0.5224,
+     "gpu_s": 0.2754,
+     "verify_s": 0.3165
+    },
+    "phase_share_pct": {
+     "open_s": 2.4,
+     "read_s": 96.98,
+     "pack_s": 0.29,
+     "gpu_s": 0.15,
+     "verify_s": 0.18
+    },
+    "bytes_read": 201326592,
+    "read_mb_s": 1.2
+   },
+   "staging": {
+    "staged_bytes": 201326592,
+    "stage_s": 437.78,
+    "stage_mb_s": 0.46,
+    "path": "/Users/scammermike/noetic/stage/qwen3_30b_a3b_expert_gate_64.bin"
+   }
+  }
+ },
+ "claim_boundary": "One specimen, one tensor class, 64 units, ONE run per tier, no repetition and no IQR -- below this program's 200-rep stability gate, so 138.7x is DIRECTIONAL. It is however a ratio of two directly measured wall times, not an extrapolation, which is exactly what the previous receipt lacked. TIER 1 read of 5035.5 MB/s is partly PAGE CACHE: the file was written moments earlier and 192 MB fits easily in 96 GiB of RAM, so this is an upper bound on cold SSD, not a disk measurement. That does NOT weaken the throughput claim -- a real hot bench would also be cache-resident -- but it must not be quoted as SSD bandwidth.",
+ "pass": true,
+ "amendment_mlx_compile_attribution": "AMENDED 2026-08-25 by ACCELERATOR_JIT_COMPILE.json: this receipt attributed a first-run cost to 'MLX kernel compile'. THAT ATTRIBUTION IS NOW MEASURED AND IT IS WRONG IN SCOPE TWICE. Compiling a distinct custom kernel costs 36.8 ms, so the WorkUnit's two kernels are 73.6 ms = 23.2% of its 0.3176 s first-run excess. The dominant term is MLX's first-use costs at 175 ms, and 151 ms of THAT is a single thing -- the FIRST mx.array from a numpy buffer, which is device and allocator initialisation, NOT compilation. The direction of every affected statement is unchanged (the first run really is slower and really should not be quoted as a baseline); only the named MECHANISM changes."
+}

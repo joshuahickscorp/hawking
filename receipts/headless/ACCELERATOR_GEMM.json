@@ -1,0 +1,108 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T12:48:42Z",
+ "experiment_class": "ACCEL-KERNEL",
+ "knowledge_level": "INSTANCE",
+ "git_head": "82b904e2d0381ea12781c7dc86554be5f687be03",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_D_GEMM",
+   "obligation": "G046",
+   "steer": "S015 \u00a7141/\u00a7142"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "measured_bandwidth_gb_s": 589.73
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model; a math primitive"
+  },
+  "representation": {
+   "name": "dense_f32"
+  },
+  "kernel": {
+   "ours": "16x16 tiled GEMM, threadgroup memory + 2 barriers per k-tile",
+   "baseline": "MLX matmul"
+  },
+  "runtime": {
+   "mlx": "0.32.1",
+   "python": "3.12.13"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "sizes": [
+   {
+    "size": 512,
+    "max_abs_err_vs_mlx": 0.0001068115234375,
+    "mlx_ms": 0.2501250128261745,
+    "ours_ms": 0.3483329783193767,
+    "mlx_gflops": 1073.205166356355,
+    "ours_gflops": 770.628888757926,
+    "verdict": {
+     "verdict": "BASELINE_WINS",
+     "speedup": 0.7181,
+     "margin_pct": 28.19,
+     "arm_noise_pct": 7.03
+    }
+   },
+   {
+    "size": 1024,
+    "max_abs_err_vs_mlx": 0.0,
+    "mlx_ms": 0.42758299969136715,
+    "ours_ms": 1.0237079986836761,
+    "mlx_gflops": 5022.378461141045,
+    "ours_gflops": 2097.7501892740106,
+    "verdict": {
+     "verdict": "NO_CLAIM",
+     "reason": "an arm failed the 10.0% IQR gate (mlx_matmul 14.7%, hawking_tiled_gemm 1.51%) and the margin 58.23% does not overwhelm that noise",
+     "speedup": null
+    }
+   },
+   {
+    "size": 2048,
+    "max_abs_err_vs_mlx": 0.0,
+    "mlx_ms": 1.3492089929059148,
+    "ours_ms": 6.4037920092232525,
+    "mlx_gflops": 12733.289856746467,
+    "ours_gflops": 2682.765017860696,
+    "verdict": {
+     "verdict": "BASELINE_WINS",
+     "speedup": 0.2107,
+     "margin_pct": 78.93,
+     "arm_noise_pct": 2.77
+    }
+   }
+  ],
+  "three_ccl_gaps_touched": {
+   "EXECUTION.shared_memory": "threadgroup float tiles now EXECUTE on this backend",
+   "EXECUTION.synchronization": "threadgroup_barrier now EXECUTES; removing it changes the answer by 5.446e+01, which is how we know it is doing something",
+   "MATH.gemm": "a real GEMM exists and is correct"
+  },
+  "negative_controls_run": {
+   "barriers_removed": {
+    "max_abs_err": 54.46,
+    "meaning": "the check CAN fail"
+   },
+   "index_transposed": {
+    "max_abs_err": 98.89,
+    "meaning": "the check CAN fail"
+   },
+   "hand_case": "[[1,2],[3,4]]@[[5,6],[7,8]] = [[19,22],[43,50]] exactly",
+   "why": "an exact 0.000e+00 error across 512 accumulations looked too good, so the check was deliberately broken twice to confirm it can fail before the passing result was trusted"
+  },
+  "verdict": "MLX WINS AT EVERY SIZE MEASURED. 12733 GFLOP/s against our 2683 at 2048x2048 -- a 4.7x gap. MLX is RETAINED as the qualified winner and no replacement is justified.",
+  "why_we_lose": "a 16x16 scalar tile with no simdgroup matrix ops, no double buffering, no register blocking and no vectorised loads. MLX uses Apple's matrix hardware; this does not."
+ },
+ "claim_boundary": "This closes NOTHING about performance and was never going to. What it establishes is CAPABILITY: threadgroup memory and barriers now execute on this backend, verified by negative controls that made the check fail on purpose. The GEMM itself is 4.7x slower than the incumbent and must not be used. AIR still cannot express this kernel -- it has no tiling, no threadgroup allocation and no barrier LOWERING, only barrier REPRESENTATION -- so this is a hand-written MSL kernel sitting beside AIR rather than produced by it.",
+ "pass": true
+}

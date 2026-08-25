@@ -1,0 +1,82 @@
+{
+ "schema": "hawking.odyssey.compiler_prerequisite_chain.v1",
+ "generated_at": "2026-08-25T10:50:26Z",
+ "generated_by": "tools/odyssey/compiler_prerequisite_chain.py",
+ "obligation": "G023 \u2014 the complete chain for the two remaining clauses",
+ "hand_authored": false,
+ "git_head": "54c8da4dd2509a2305186b900504acedc895fd19",
+ "chain": [
+  {
+   "step": 1,
+   "what": "a sealed source-body audit for model #2",
+   "producer": "lab/operators/ascension_qwen30_physical_campaign.py",
+   "producer_exists": true,
+   "blocker": "SOURCE_REPOSITORY is a MODULE CONSTANT, not a parameter -- only model_dir and root are arguments",
+   "constant_use_sites": 5,
+   "work": "parameterize the repository the way CompleteBinaryGravity already is",
+   "input_present": true,
+   "input": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-30B-A3B@ad44e777bcd1"
+  },
+  {
+   "step": 2,
+   "what": "the sealed manifest, revalidation receipt and both seals",
+   "producer": "lab/operators/ascension_qwen30_complete_gravity.py",
+   "producer_exists": true,
+   "blocker": null,
+   "already_parameterized": [
+    "repository",
+    "model_id",
+    "artifact_prefix",
+    "schema"
+   ],
+   "work": "instantiate it against model #2, as the 70-line qwen80 wrapper does for Qwen3-Coder-Next"
+  },
+  {
+   "step": 3,
+   "what": "admission accepts the artifact",
+   "producer": "crates/hawking-core",
+   "producer_exists": true,
+   "blocker": null,
+   "work": "DONE this session: allowlist, Qwen30Base variant, is_qwen30_family()",
+   "layers_opened": 3
+  },
+  {
+   "step": 4,
+   "what": "representation reconciliation",
+   "blocker": "the gravity operator packs 1-bit signs with an FP16 scale per 128; the KernelPlanner selected uniform_q4_group for moe_expert",
+   "work": "one of the two moves, and the planner's choice is the one backed by competent kernels",
+   "producer_exists": true
+  },
+  {
+   "step": 5,
+   "what": "grade the executable against a numpy oracle",
+   "blocker": "no parity harness exists for the routed family; the qwen38 path had one",
+   "producer_exists": false,
+   "work": "write it, as the qwen38 kernels were graded"
+  }
+ ],
+ "n_steps": 5,
+ "n_producers_that_exist": 4,
+ "the_existing_audit_is_not_reusable": {
+  "path": "workspace/campaign/records/ascension-sandbox/physical/qwen30/QWEN30_SOURCE_BODY_AUDIT_CANDIDATE.json",
+  "covers_repository": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+  "covers_revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+  "shard_count": 16,
+  "audited_model_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-30b/Qwen3-Coder-30B-A3B-Instruct",
+  "audited_model_dir_still_exists": false,
+  "why_not_reusable": "it audits the Coder model, at a revision whose model directory is no longer on disk. Model #2 needs its own audit over its own shards."
+ },
+ "honest_summary": "every producer in this chain exists except the parity harness. Two of them hardcode a repository where one already takes it as a parameter, and one representation decision has to be made. The remaining work is parameterize, decide, run, grade -- not invent.",
+ "what_is_NOT_claimed": "that running this chain would produce a coherent model. Local adequacy does not compose, and the routed body has never been executed at any representation.",
+ "pass": true,
+ "step_1_blocker_removed": {
+  "when": "2026-08-25",
+  "what": "lab/operators/ascension_qwen30_physical_campaign.py now takes source_repository, source_revision and audit_prefix as constructor arguments and CLI flags, matching CompleteBinaryGravity in the same directory",
+  "read_sites_converted": 3,
+  "defaults_unchanged": true,
+  "old_module_constants_still_resolve": true,
+  "why_audit_prefix": "the audit and status filenames were fixed strings, so auditing a second model into the same root would have overwritten the first",
+  "tests": "tools/odyssey/test_audit_producer_parameterized.py, 6 passed",
+  "still_not_run": "parameterizing is not auditing. The operator has not been run against model #2's 57G of shards, so no audit exists for it."
+ }
+}

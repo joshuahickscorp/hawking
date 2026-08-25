@@ -1,0 +1,73 @@
+{
+  "action": "RETRACT_NOT_DELETE",
+  "capability_claim": false,
+  "fabricated": false,
+  "must_not_gate": true,
+  "note": "Files listed under retracted_artifacts were NOT deleted. They remain on disk as historical evidence of the fabrication. Do not promote or terminalize from them.",
+  "real_measured_reference": {
+    "B_final_eval_loss": 0.10354619473218918,
+    "G_final_eval_loss": 6.489099502563477,
+    "complete_beats_linear": false,
+    "failed_checks": [
+      "complete_v0_beats_linear_init"
+    ],
+    "promotion_verdict": "HOLD",
+    "receipt": "workspace/campaign/evidence/models/frankenstein/bridge_train_real/BRIDGE_TRAIN_REAL_FIRST_RUN.json",
+    "recorded_at": "2026-08-06T19:13:41Z",
+    "train": "workspace/campaign/evidence/models/frankenstein/bridge_train_real/REAL_AG_TRAIN.json"
+  },
+  "recorded_at": "2026-08-06T20:56:30.745694Z",
+  "retracted_artifacts": [
+    {
+      "bytes": 8156,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/proto-v0-seal-refresh/PROTO_FRANKENSTEIN_V0_INDEPENDENT_VERIFY.json",
+      "present": true,
+      "sha256": "c5c12eee5080dceb0a952f13989d747572bd859bd4b778e7772670d38477ae3b"
+    },
+    {
+      "bytes": 3822,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/proto-v0-seal-refresh/PROTO_FRANKENSTEIN_V0_TERMINAL_RECEIPT.json",
+      "present": true,
+      "sha256": "0c7cf76111a13bc140ace63f7fe89aa2b88aa375716f188e071cab813fa6d44e"
+    },
+    {
+      "bytes": 6720,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/proto-v0-seal-refresh/PROTO_V0_ARM_SCORES.json",
+      "present": true,
+      "sha256": "a0cca52cb89fa4c8203efab56b7d73435967ba05c56b8753fcd42d05e16e0c88"
+    },
+    {
+      "bytes": 8156,
+      "path": "/Users/scammermike/Desktop/hawking-frankenstein/proto-frankenstein/PROTO_FRANKENSTEIN_V0_INDEPENDENT_VERIFY.json",
+      "present": true,
+      "sha256": "c5c12eee5080dceb0a952f13989d747572bd859bd4b778e7772670d38477ae3b"
+    },
+    {
+      "bytes": 3810,
+      "path": "/Users/scammermike/Desktop/hawking-frankenstein/proto-frankenstein/PROTO_FRANKENSTEIN_V0_TERMINAL_RECEIPT.json",
+      "present": true,
+      "sha256": "fcf1c2b2d969cb485d6a7ee903ecaee9ccaf188d60d82f72edcb81d2d3744b07"
+    }
+  ],
+  "schema": "hawking.frankenstein.proto_v0_seal_retraction.v1",
+  "seal_sha256": "506bbca67750bd3cce454de578976931651af7e693f5fa5e2503f1656bbb2ce5",
+  "status": "RETRACTED",
+  "summary": "The proto-v0-seal-refresh ACCEPT/TERMINALIZED receipts were produced from synthetic/fixture-substituted capability scores and a hand-set complete_beats_linear=True that contradicts the real measured False from BRIDGE_TRAIN_REAL_FIRST_RUN / REAL_AG_TRAIN. They are INVALID and must not be used to gate any further admission (30B/80B or otherwise) until superseded by a real receipt recomputed entirely from real checkpoint/loss data.",
+  "superseding_work": {
+    "diagnosis": "workspace/campaign/evidence/models/frankenstein/proto-v0-real-fix/DIAGNOSIS.json",
+    "honest_verdict_after_fix_attempts": "HOLD",
+    "retrain_receipts": [
+      "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/BRIDGE_TRAIN_REAL_FIRST_RUN.json",
+      "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix_ep8/BRIDGE_TRAIN_REAL_FIRST_RUN.json"
+    ],
+    "task": "proto-v0-real-fix"
+  },
+  "verdict": "INVALID",
+  "why_invalid": [
+    "PROTO_V0_ARM_SCORES.json invented math/secondary scores as flat 0.70 + formulaic lift from training loss (not held-out eval)",
+    "independent_verify() was called with complete_beats_linear=True hand-set by the caller; that function does not recompute the flag",
+    "Real measured complete_beats_linear is False: G_COMPLETE_V0 final_eval_loss=6.4891 vs B_LINEAR_SUBSPACE_INITIALIZATION=0.1035",
+    "A canned STAGE1_CAPABILITY_FIXTURE was used in place of real capability evaluation",
+    "Desktop mirror of ACCEPT/TERMINALIZED inherits the same fabrication"
+  ]
+}

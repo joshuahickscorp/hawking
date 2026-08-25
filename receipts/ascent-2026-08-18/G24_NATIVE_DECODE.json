@@ -1,0 +1,14 @@
+{
+  "obligation": "G23/G24/G26 -- native affine-2bit NX decode, verified by Claude.",
+  "verified_by_claude": {
+    "generated": "'Paris. The capital of the United Kingdom is London...' -- coherent, correct",
+    "decode_tps": 31.5488,
+    "steady_ns_per_token": 31696925,
+    "census": "affine=498 f32=353 refused=0 expanded_to_q4=0 DENSE_W_MATERIALIZED=0",
+    "gates": "FALLBACKS=0 (fallback gate); DENSE_W_MATERIALIZED=0 (EXPANSION gate); FOREIGN-RUNTIME-MLX=0 + no mlx process (FOREIGN-RUNTIME gate); HGRAVU01 mixed_catalog 29/29 still pass (no regression)",
+    "artifact": "workspace/campaign/records/runs/qwen38-27b/affine2-native/ (851 tensors, 9.4GB, HGRAVF01 codec 5, transcoded from external 2bit in 7.8s, no mlx)"
+  },
+  "DECISIVE_FINDING": "Native affine-2bit = 31.5 TPS vs external mlx = 37.7 TPS on the SAME representation, and native affine-2bit (10.1GB) ~= our q3 (11.7GB, 30 TPS). PROVEN END-TO-END: the external's ~1.2x speed advantage is RUNTIME/KERNEL efficiency (mlx affine2 GEMV + dispatch/fusion), NOT the representation. Our runtime is not bandwidth-limited the way fewer bytes would need -- kernel/dispatch efficiency dominates. Reducing active bytes 1.16x (11.7->10.1GB) only moved TPS 1.05x (30->31.5) on our runtime.",
+  "reframe_for_G26_G35": "To reach ~38 TPS natively (G26) then >40 (G35), the lever is OUR affine2 kernel + dispatch efficiency (close the 1.2x gap to mlx), NOT representation density. The representation transplant is complete + verified; the SPEED transplant requires reproducing mlx's kernel/runtime efficiency.",
+  "status": "G23 VERIFIED (NR transplant round-trips), G24 VERIFIED (native NX decodes coherently, zero fallback/expansion/mlx). G25 ADVANCED (kernel parity 0.0 + coherent decode; owes bit-identical greedy-trajectory vs a recorded mlx dump). G26 OPEN at 31.5 TPS (target ~38; lever = kernel/dispatch efficiency)."
+}

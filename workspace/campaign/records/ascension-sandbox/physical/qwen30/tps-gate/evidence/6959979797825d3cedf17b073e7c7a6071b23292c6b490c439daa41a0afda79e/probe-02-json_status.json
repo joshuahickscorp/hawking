@@ -1,0 +1,25 @@
+{
+  "claim_boundary": "raw HCLI command evidence; not a TPS receipt by itself",
+  "command": [
+    "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/debug/hcli",
+    "run",
+    "--prompt",
+    "Return exactly this JSON object and no prose: {\"status\":\"ok\"}.",
+    "--session",
+    "base-true-tps-qwen30-695997979782-probe-2",
+    "--model-url",
+    "http://127.0.0.1:18430",
+    "--max-output-tokens",
+    "8",
+    "--workspace",
+    "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/hcli-workspace",
+    "--json"
+  ],
+  "elapsed_seconds": 22.13670670799911,
+  "fingerprint": "6959979797825d3cedf17b073e7c7a6071b23292c6b490c439daa41a0afda79e",
+  "recorded_at": "2026-08-08T23:21:36.419390Z",
+  "returncode": 0,
+  "schema": "hawking.ascension.physical_base_true_tps_hcli_command_evidence.v1",
+  "stderr": "",
+  "stdout": "{\"command\":\"run\",\"result\":{\"model_url\":\"http://127.0.0.1:18430\",\"tps_note\":\"complete_forward_tps is null unless the runtime exposed both completed_decode_forwards and decode_ms\",\"turn\":{\"assistant_event_id\":\"evt_01KZHTX4CF2VKQWEPN7PNC1TNT\",\"complete_forward_tps\":3.2164010723481176,\"completion\":\" thumb ngOn slipỌ issued分行 requestOptions thumb\",\"generation_stats\":{\"completed_decode_forwards\":8,\"decode_ms\":2487.252,\"decode_tokens_per_second\":3.2164011001586914,\"input_tokens\":62,\"output_tokens\":8},\"intent_event_id\":\"evt_01KZHTWFBSE1GFXNEEYE9GRXD4\",\"intent_event_seq\":29,\"session_id\":\"ses_01KZHS2HC7C71SKD5FDG61NZPM\",\"stream_id\":\"31\"},\"workspace\":\"/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/hcli-workspace\"},\"schema\":\"hcli.command.v1\"}\n"
+}

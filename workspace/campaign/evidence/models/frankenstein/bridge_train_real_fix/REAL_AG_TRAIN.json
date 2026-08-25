@@ -1,0 +1,2577 @@
+{
+  "ablation": {
+    "arms": [
+      {
+        "arm": "A_BASE_DSV4F",
+        "description": "Base DSV4F only; no donor inheritance",
+        "status": "BASE",
+        "verdict": "BASE"
+      },
+      {
+        "ablation_seal_sha256": "19789dc06435226fc294adf5cbac9e8e0e67e25cfd646f3e0a3f2476c3b997db",
+        "arm": "B_LINEAR_SUBSPACE_INITIALIZATION",
+        "description": "LINEAR_SUBSPACE_INITIALIZATION only (cartography init; not inheritance)",
+        "math_mean_gain": 0.0,
+        "reject_rule_fired": false,
+        "status": "EVALUATED",
+        "synthetic_proxy": false,
+        "verdict": "ACCEPT"
+      },
+      {
+        "ablation_seal_sha256": "0912132e531acd6aff9476f1818ea29723c35b899f2bb138169e520ebde4c906",
+        "arm": "C_LATENT_BRIDGES",
+        "description": "Latent bridges only (projectors + interventions)",
+        "math_mean_gain": 0.021193756672783004,
+        "reject_rule_fired": false,
+        "status": "EVALUATED",
+        "synthetic_proxy": false,
+        "verdict": "ACCEPT"
+      },
+      {
+        "ablation_seal_sha256": "fcc4da8534b4823e086f1f17bbdbc7170b5a5cefaefd1338d2840390e267399b",
+        "arm": "D_BEHAVIOR_HEADS",
+        "description": "Behavior heads only (method/decomp/formal/repair/value)",
+        "math_mean_gain": 0.09319773220290017,
+        "reject_rule_fired": false,
+        "status": "EVALUATED",
+        "synthetic_proxy": false,
+        "verdict": "ACCEPT"
+      },
+      {
+        "ablation_seal_sha256": "576dc4c6942327f14804b395f47b5dad3bcc7719fafb03257082d59e9caf36a3",
+        "arm": "E_LATENT_BEHAVIOR",
+        "description": "Latent bridges + behavior heads",
+        "math_mean_gain": 0.020000000000000018,
+        "reject_rule_fired": false,
+        "status": "EVALUATED",
+        "synthetic_proxy": false,
+        "verdict": "ACCEPT"
+      },
+      {
+        "ablation_seal_sha256": "75acf6041a0bfc5cdafbf937e1d4407ee06ae27a828328332d44ab6e062f765d",
+        "arm": "F_LATENT_ROUTE_RESIDUAL",
+        "description": "Latent bridges + semantic route residual",
+        "math_mean_gain": 0.020000000000000018,
+        "reject_rule_fired": false,
+        "status": "EVALUATED",
+        "synthetic_proxy": false,
+        "verdict": "ACCEPT"
+      },
+      {
+        "ablation_seal_sha256": "de74a84c8f75aec7db86fb1c5f4cdf8a69de15fc7882a782ff092dc7aa369ea3",
+        "arm": "G_COMPLETE_V0",
+        "description": "Complete V0 (latent + behavior + route + retention)",
+        "math_mean_gain": 0.020000000000000018,
+        "reject_rule_fired": false,
+        "status": "EVALUATED",
+        "synthetic_proxy": false,
+        "verdict": "ACCEPT"
+      }
+    ],
+    "base_arm": "A_BASE_DSV4F",
+    "capability_claim": false,
+    "catalog": {
+      "arms": [
+        {
+          "description": "Base DSV4F only; no donor inheritance",
+          "id": "A_BASE_DSV4F",
+          "index": 0
+        },
+        {
+          "description": "LINEAR_SUBSPACE_INITIALIZATION only (cartography init; not inheritance)",
+          "id": "B_LINEAR_SUBSPACE_INITIALIZATION",
+          "index": 1
+        },
+        {
+          "description": "Latent bridges only (projectors + interventions)",
+          "id": "C_LATENT_BRIDGES",
+          "index": 2
+        },
+        {
+          "description": "Behavior heads only (method/decomp/formal/repair/value)",
+          "id": "D_BEHAVIOR_HEADS",
+          "index": 3
+        },
+        {
+          "description": "Latent bridges + behavior heads",
+          "id": "E_LATENT_BEHAVIOR",
+          "index": 4
+        },
+        {
+          "description": "Latent bridges + semantic route residual",
+          "id": "F_LATENT_ROUTE_RESIDUAL",
+          "index": 5
+        },
+        {
+          "description": "Complete V0 (latent + behavior + route + retention)",
+          "id": "G_COMPLETE_V0",
+          "index": 6
+        }
+      ],
+      "linear_init_is_not_proto_complete": true,
+      "loss_portfolio": [
+        "L_latent",
+        "L_function",
+        "L_span",
+        "L_method",
+        "L_decomposition",
+        "L_formal",
+        "L_repair",
+        "L_value",
+        "L_route",
+        "L_retention",
+        "L_runtime"
+      ],
+      "reject_rule": "REJECT any arm that regresses secondary capabilities beyond tolerance. Math gain cannot override. Complete V0 must beat linear init.",
+      "schema": "hawking.frankenstein.latent_v0_arm_catalog.v1",
+      "v0_modules": [
+        "GLM_EARLY_CONTEXT_BRIDGE",
+        "GLM_METHOD_BRIDGE",
+        "GLM_DECOMPOSITION_BRIDGE",
+        "GLM_PRE_ROUTER_BRIDGE",
+        "GLM_POST_MOE_BRIDGE",
+        "GLM_FORMALIZATION_BRIDGE",
+        "GLM_REPAIR_BRIDGE",
+        "GLM_LATE_CONSOLIDATION_BRIDGE",
+        "GLM_VALUE_HEAD",
+        "GLM_METHOD_CONDITIONED_ROUTE_RESIDUAL"
+      ]
+    },
+    "fabricated_scores": false,
+    "gate_policy": {
+      "accept_rule": {
+        "all_secondaries_non_regressing": true,
+        "bench_scope_must_be_shard_or_fixture": true,
+        "statement": "ACCEPT only when every secondary is \u2265 base \u2212 tolerance AND the score fixture is sealed shard-scope evidence (not full-model)."
+      },
+      "claim_boundary": {
+        "capability_claim_requires_sealed_shard_scores": true,
+        "direct_weight_transplant": false,
+        "full_model_bench_permitted": false,
+        "gradient_or_optimizer": false,
+        "gravity_compression_performed": false,
+        "kimi_consumed": false,
+        "kimi_simulated": false,
+        "lane_does_not_own": [
+          "C_FINAL_PROTO_KIMI",
+          "D_RAMANUJAN"
+        ],
+        "lane_owns": [
+          "A_BASE_DSV4F",
+          "B_PROTO_DSV4F_GLM"
+        ],
+        "odyssey_or_ramanujan": false,
+        "proto_frankenstein": "DeepSeek-V4-Flash + GLM math inheritance",
+        "stage": 1,
+        "training_performed": false,
+        "weight_average_performed": false
+      },
+      "kimi_out_of_scope": true,
+      "math_domains": [
+        "method_selection",
+        "mathematical_decomposition",
+        "formalization",
+        "proof_repair",
+        "value_ranking"
+      ],
+      "math_gain_advisory_min": 0.0,
+      "name": "additive_not_subtractive_stage1",
+      "optimization_target": "maximize_glm_mathematical_inheritance",
+      "reject_rule": {
+        "context_behavior_is_secondary": true,
+        "math_gain_cannot_override": true,
+        "predicate": "any(proto[s] - base[s] < -secondary_tolerance for s in SECONDARY)",
+        "routing_stability_is_secondary": true,
+        "runtime_tps_is_secondary": true,
+        "statement": "REJECT any candidate PROTO checkpoint for which any secondary capability score falls more than secondary_tolerance below the BASE_DSV4F score, regardless of math-domain gain."
+      },
+      "schema": "hawking.frankenstein.stage1_gate_policy.v1",
+      "seal_sha256": "666b620aa6e776863ea6b2a0e396a244d6308148dfdc767b54b5edae9e6e4d98",
+      "secondary_capabilities": [
+        "coding_and_repository_work",
+        "tool_use",
+        "agentic_planning",
+        "long_context_reasoning",
+        "repair_and_critique",
+        "hcli_protocols",
+        "general_knowledge_conversation",
+        "runtime_tps",
+        "bridge_compatibility",
+        "routing_stability",
+        "context_behavior"
+      ],
+      "secondary_tolerance_absolute": 0.02,
+      "training_free": true
+    },
+    "recorded_at": "2026-08-06T20:54:46.989451Z",
+    "reject_rule_fired": false,
+    "schema": "hawking.frankenstein.latent_v0_ag_ablation.v1",
+    "seal_sha256": "28b314129308621c1c5c4c4e799f0cb8c8c367511ff0561326c72b61b521a180",
+    "status": "EVALUATED",
+    "synthetic_proxy_scores": true,
+    "verdict": "ACCEPT"
+  },
+  "arm_results": {
+    "B_LINEAR_SUBSPACE_INITIALIZATION": {
+      "arm": "B_LINEAR_SUBSPACE_INITIALIZATION",
+      "bytes_account": {
+        "active_bytes_per_token_proxy": 737328,
+        "approx_flops_per_token": 0,
+        "bytes_per_param": 4,
+        "glm_router_weights_copied": false,
+        "hash_bound": "99c8fd100b9a57d11238c2737633c15fbc86b88c435ca050a3bf2c2e75858352",
+        "kimi_bridge_compatible": true,
+        "parts": {
+          "action_proj": {
+            "name": "action_proj",
+            "parameter_bytes": 196656,
+            "parameter_count": 49164
+          },
+          "linear_init": {
+            "ablatable": true,
+            "hash_bound": "6605242e81173c68586e24a1837f6d50aabfab3fbee45f7a81d5abb47f5547b3",
+            "is_inheritance": false,
+            "name": "LINEAR_SUBSPACE_INITIALIZATION",
+            "parameter_bytes": 540672,
+            "parameter_count": 135168,
+            "reversible": true
+          }
+        },
+        "runtime_parameter_bytes": 737328,
+        "steps": 18,
+        "total_parameter_bytes": 737328,
+        "total_parameter_count": 184333,
+        "tps_proxy_at_1gflops": null,
+        "training_only_parameter_bytes": 0,
+        "wall_train_ms": 873.6571250046836
+      },
+      "capability_claim": false,
+      "checkpoints": {
+        "BEST_BALANCED": {
+          "content_hash": "99c8fd100b9a57d11238c2737633c15fbc86b88c435ca050a3bf2c2e75858352",
+          "metrics": {
+            "balanced_proxy": 0.9999999377931527,
+            "balanced_score": 0.9999999377931527,
+            "eval_loss": 6.220685122571012e-08,
+            "math_proxy": 0.9999999377931527,
+            "train_loss": 1.0505307083500763e-07
+          },
+          "parameter_bytes": 737328,
+          "path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/checkpoints/real_B_LINEAR_SUBSPACE_INITIALIZATION/BEST_BALANCED.pt",
+          "phase": "B",
+          "slot": "BEST_BALANCED"
+        },
+        "BEST_MATH": {
+          "content_hash": "99c8fd100b9a57d11238c2737633c15fbc86b88c435ca050a3bf2c2e75858352",
+          "metrics": {
+            "balanced_proxy": 0.9999999377931527,
+            "eval_loss": 6.220685122571012e-08,
+            "math_proxy": 0.9999999377931527,
+            "math_score": 0.9999999377931527,
+            "train_loss": 1.0505307083500763e-07
+          },
+          "parameter_bytes": 737328,
+          "path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/checkpoints/real_B_LINEAR_SUBSPACE_INITIALIZATION/BEST_MATH.pt",
+          "phase": "B",
+          "slot": "BEST_MATH"
+        },
+        "CURRENT": {
+          "content_hash": "99c8fd100b9a57d11238c2737633c15fbc86b88c435ca050a3bf2c2e75858352",
+          "metrics": {
+            "eval_loss": 0.01918572001159191,
+            "train_loss": 0.10383039712905884
+          },
+          "parameter_bytes": 737328,
+          "path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/checkpoints/real_B_LINEAR_SUBSPACE_INITIALIZATION/CURRENT.pt",
+          "phase": "FINAL_BEST",
+          "slot": "CURRENT"
+        },
+        "ROLLBACK": {
+          "content_hash": "8a5df59626780521f758a6223b889ff3434f52169a94bb0e76e5286d449518af",
+          "metrics": {
+            "balanced_proxy": 0.9999998579729297,
+            "eval_loss": 1.420270905327925e-07,
+            "math_proxy": 0.9999998579729297,
+            "math_score": 0.9999998579729297,
+            "train_loss": 1.4535478243260513e-07
+          },
+          "parameter_bytes": 737328,
+          "path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/checkpoints/real_B_LINEAR_SUBSPACE_INITIALIZATION/BEST_MATH.pt",
+          "phase": "B",
+          "slot": "ROLLBACK"
+        }
+      },
+      "data_kind": "REAL_PAIRED_CAPTURE",
+      "final_eval_loss": 0.01918572001159191,
+      "final_train_loss": 0.10383039712905884,
+      "history": [
+        {
+          "epoch": 0.0,
+          "eval_L_function": 1.420270905327925e-07,
+          "eval_L_runtime": 0.0,
+          "eval_loss": 1.420270905327925e-07,
+          "phase": "B",
+          "train_loss": 1.4535478243260513e-07
+        },
+        {
+          "epoch": 1.0,
+          "eval_L_function": 6.220685122571012e-08,
+          "eval_L_runtime": 0.0,
+          "eval_loss": 6.220685122571012e-08,
+          "phase": "B",
+          "train_loss": 1.0505307083500763e-07
+        },
+        {
+          "epoch": 0.0,
+          "eval_L_function": 6.220685122571012e-08,
+          "eval_L_runtime": 0.0,
+          "eval_L_span": 0.22859984636306763,
+          "eval_loss": 0.057149991393089294,
+          "phase": "C",
+          "train_loss": 0.025701428453127544
+        },
+        {
+          "epoch": 1.0,
+          "eval_L_function": 6.220685122571012e-08,
+          "eval_L_runtime": 0.0,
+          "eval_L_span": 0.17435315251350403,
+          "eval_loss": 0.043588317930698395,
+          "phase": "C",
+          "train_loss": 0.04340726447602113
+        },
+        {
+          "epoch": 0.0,
+          "eval_L_function": 1.7724782082950696e-05,
+          "eval_L_route": 0.0,
+          "eval_L_runtime": 0.0,
+          "eval_L_span": 0.12339979410171509,
+          "eval_loss": 0.061717621982097626,
+          "phase": "E",
+          "train_loss": 0.06070025761922201
+        },
+        {
+          "epoch": 1.0,
+          "eval_L_function": 4.0158527554012835e-05,
+          "eval_L_route": 0.0,
+          "eval_L_runtime": 0.0,
+          "eval_L_span": 0.07055369019508362,
+          "eval_loss": 0.03531700372695923,
+          "phase": "E",
+          "train_loss": 0.10383039712905884
+        }
+      ],
+      "learned": false,
+      "phase_results": {
+        "A": {
+          "note": "arm has no trainable modules in this phase",
+          "status": "SKIP_NO_PARAMS"
+        },
+        "B": {
+          "epochs": 2,
+          "final_eval_loss": 6.220685122571012e-08,
+          "history_len": 2,
+          "loss_weights": {
+            "L_decomposition": 0.0,
+            "L_formal": 0.0,
+            "L_function": 1.0,
+            "L_latent": 0.5,
+            "L_method": 0.0,
+            "L_repair": 0.0,
+            "L_retention": 0.25,
+            "L_route": 0.0,
+            "L_runtime": 0.05,
+            "L_span": 0.0,
+            "L_value": 0.0
+          },
+          "status": "TRAINED"
+        },
+        "C": {
+          "epochs": 2,
+          "final_eval_loss": 0.043588317930698395,
+          "history_len": 2,
+          "loss_weights": {
+            "L_decomposition": 1.0,
+            "L_formal": 1.0,
+            "L_function": 0.5,
+            "L_latent": 0.25,
+            "L_method": 1.0,
+            "L_repair": 1.0,
+            "L_retention": 0.5,
+            "L_route": 0.0,
+            "L_runtime": 0.05,
+            "L_span": 0.25,
+            "L_value": 1.0
+          },
+          "status": "TRAINED"
+        },
+        "E": {
+          "epochs": 2,
+          "final_eval_loss": 0.03531700372695923,
+          "history_len": 2,
+          "loss_weights": {
+            "L_decomposition": 0.4,
+            "L_formal": 0.4,
+            "L_function": 1.0,
+            "L_latent": 1.0,
+            "L_method": 0.5,
+            "L_repair": 0.4,
+            "L_retention": 0.75,
+            "L_route": 0.5,
+            "L_runtime": 0.05,
+            "L_span": 0.5,
+            "L_value": 0.25
+          },
+          "status": "TRAINED"
+        },
+        "__final_eval_source": "BEST_BALANCED_reeval_phase_E"
+      },
+      "reverse_ok": true,
+      "reverse_recon_error": 1.4901161193847656e-08,
+      "steps": 18,
+      "wall_ms": 873.6571250046836
+    },
+    "C_LATENT_BRIDGES": {
+      "arm": "C_LATENT_BRIDGES",
+      "bytes_account": {
+        "active_bytes_per_token_proxy": 6963280,
+        "approx_flops_per_token": 2293760,
+        "bytes_per_param": 4,
+        "glm_router_weights_copied": false,
+        "hash_bound": "b4be02521655c5a22c719b7d2c640f4cf12efec965b2d565f848b65af5dc72ad",
+        "kimi_bridge_compatible": true,
+        "parts": {
+          "GLM_DECOMPOSITION_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "d7ceb201c87180ca628fa6ae2178b337f6706a4f467944fb381551cacd1de867",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_DECOMPOSITION_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_EARLY_CONTEXT_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "5930c1ae000fe8ddb90b795245383809f4ec0a7dc7f2343fe776951171e63bbd",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_EARLY_CONTEXT_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_FORMALIZATION_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "09b974ab751df7df85dcd99b971de327f64db983d9cd8004f04c010be9bfc629",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_FORMALIZATION_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_LATE_CONSOLIDATION_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "aa1ca60c77a429045eabfe875d28791420492d0d7ec359a8153698816c7202e9",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_LATE_CONSOLIDATION_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_METHOD_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "04fe3c7943ef6e672c2e5d35ee1577b651c2c93323560d05aadba42ae482ddd2",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_METHOD_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_POST_MOE_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "204f2d238fbdb6801598d64fe85ff3f286f58c1f03fa7efe40bdeafd51cd0782",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_POST_MOE_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_PRE_ROUTER_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "1038cfded498d440d6214ca147d14432c869c105f397a59800cd35867c31d04a",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_PRE_ROUTER_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_REPAIR_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "a544399a34295eb5ef5cc84ca1e1e9fccc32a3550a11fabc35862dcc71f8c5cc",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_REPAIR_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "action_proj": {
+            "name": "action_proj",
+            "parameter_bytes": 196656,
+            "parameter_count": 49164
+          },
+          "student_observer": {
+            "ablatable": true,
+            "hash_bound": "c8efe16318a7c99ac3d41ea8df91a34d2bbb6a6691784ec721f23b91b5be2f37",
+            "name": "STUDENT_OBSERVER",
+            "parameter_bytes": 2113536,
+            "parameter_count": 528384,
+            "runtime_resident": true
+          },
+          "teacher_projector": {
+            "ablatable": true,
+            "hash_bound": "6aa5285a2401a3f5a41cc9c9cf9e0ab870ea0857739b46cdcb80ab2129f743c2",
+            "name": "TEACHER_PROJECTOR",
+            "parameter_bytes": 3170304,
+            "parameter_count": 792576,
+            "runtime_resident": false,
+            "training_only": true
+          }
+        },
+        "runtime_parameter_bytes": 6963280,
+        "steps": 24,
+        "total_parameter_bytes": 10133584,
+        "total_parameter_count": 2533397,
+        "tps_proxy_at_1gflops": 435.9654017857143,
+        "training_only_parameter_bytes": 3170304,
+        "wall_train_ms": 2383.427249995293
+      },
+      "capability_claim": false,
+      "checkpoints": {
+        "BEST_BALANCED": {
+          "content_hash": "b4be02521655c5a22c719b7d2c640f4cf12efec965b2d565f848b65af5dc72ad",
+          "metrics": {
+            "balanced_proxy": 0.21269686410555505,
+            "balanced_score": 0.21269686410555505,
+            "eval_loss": 1.852334976196289,
+            "math_proxy": 0.21269686410555505,
+            "train_loss": 3.267439047495524
+          },
+          "parameter_bytes": 10133584,
+          "path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/checkpoints/real_C_LATENT_BRIDGES/BEST_BALANCED.pt",
+          "phase": "B",
+          "slot": "BEST_BALANCED"
+        },
+        "BEST_MATH": {
+          "content_hash": "b4be02521655c5a22c719b7d2c640f4cf12efec965b2d565f848b65af5dc72ad",
+          "metrics": {
+            "balanced_proxy": 0.21269686410555505,
+            "eval_loss": 1.852334976196289,
+            "math_proxy": 0.21269686410555505,
+            "math_score": 0.21269686410555505,
+            "train_loss": 3.267439047495524
+          },
+          "parameter_bytes": 10133584,
+          "path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/checkpoints/real_C_LATENT_BRIDGES/BEST_MATH.pt",
+          "phase": "B",
+          "slot": "BEST_MATH"
+        },
+        "CURRENT": {
+          "content_hash": "b4be02521655c5a22c719b7d2c640f4cf12efec965b2d565f848b65af5dc72ad",
+          "metrics": {
+            "eval_loss": 3.7183706760406494,
+            "train_loss": 8.113343874613443
+          },
+          "parameter_bytes": 10133584,
+          "path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/checkpoints/real_C_LATENT_BRIDGES/CURRENT.pt",
+          "phase": "FINAL_BEST",
+          "slot": "CURRENT"
+        },
+        "ROLLBACK": {
+          "content_hash": "3cc116cff94308905bbd9d908502275bb091d2d504a424aed8b3b3ccb8df46e6",
+          "metrics": {
+            "balanced_proxy": 0.12313401199897131,
+            "eval_loss": 7.1215500831604,
+            "math_proxy": 0.12313401199897131,
+            "math_score": 0.12313401199897131,
+            "train_loss": 8.953632354736328
+          },
+          "parameter_bytes": 10133584,
+          "path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/checkpoints/real_C_LATENT_BRIDGES/BEST_MATH.pt",
+          "phase": "A",
+          "slot": "ROLLBACK"
+        }
+      },
+      "data_kind": "REAL_PAIRED_CAPTURE",
+      "final_eval_loss": 3.7183706760406494,
+      "final_train_loss": 8.113343874613443,
+      "history": [
+        {
+          "epoch": 0.0,
+          "eval_L_latent": 8.556882858276367,
+          "eval_L_runtime": 0.03173200413584709,
+          "eval_loss": 8.55720043182373,
+          "phase": "A",
+          "train_loss": 10.564456303914389
+        },
+        {
+          "epoch": 1.0,
+          "eval_L_latent": 7.121232986450195,
+          "eval_L_runtime": 0.03173200413584709,
+          "eval_loss": 7.1215500831604,
+          "phase": "A",
+          "train_loss": 8.953632354736328
+        },
+        {
+          "epoch": 0.0,
+          "eval_L_function": 3.136185114271939e-06,
+          "eval_L_latent": 10.419995307922363,
+          "eval_L_runtime": 0.031515609472990036,
+          "eval_loss": 5.21157693862915,
+          "phase": "B",
+          "train_loss": 5.119201262791951
+        },
+        {
+          "epoch": 1.0,
+          "eval_L_function": 9.662606316851452e-06,
+          "eval_L_latent": 3.701517105102539,
+          "eval_L_runtime": 0.03133530914783478,
+          "eval_loss": 1.852334976196289,
+          "phase": "B",
+          "train_loss": 3.267439047495524
+        },
+        {
+          "epoch": 0.0,
+          "eval_L_function": 1.341983261227142e-05,
+          "eval_L_latent": 22.2055721282959,
+          "eval_L_runtime": 0.031135335564613342,
+          "eval_L_span": 0.4999919831752777,
+          "eval_loss": 5.67795467376709,
+          "phase": "C",
+          "train_loss": 1.988643745581309
+        },
+        {
+          "epoch": 1.0,
+          "eval_L_function": 0.0003509803209453821,
+          "eval_L_latent": 15.331037521362305,
+          "eval_L_runtime": 0.031025387346744537,
+          "eval_L_span": 0.2820132076740265,
+          "eval_loss": 3.904989242553711,
+          "phase": "C",
+          "train_loss": 2.8841323057810464
+        },
+        {
+          "epoch": 0.0,
+          "eval_L_function": 0.00012839031114708632,
+          "eval_L_latent": 9.768638610839844,
+          "eval_L_route": 0.0,
+          "eval_L_runtime": 0.030836472287774086,
+          "eval_L_span": 0.3095151484012604,
+          "eval_loss": 9.925066947937012,
+          "phase": "E",
+          "train_loss": 11.764350255330404
+        },
+        {
+          "epoch": 1.0,
+          "eval_L_function": 4.5446926378645e-05,
+          "eval_L_latent": 6.797403812408447,
+          "eval_L_route": 0.0,
+          "eval_L_runtime": 0.03070260025560856,
+          "eval_L_span": 0.23131391406059265,
+          "eval_loss": 6.9146409034729,
+          "phase": "E",
+          "train_loss": 8.113343874613443
+        }
+      ],
+      "learned": true,
+      "phase_results": {
+        "A": {
+          "epochs": 2,
+          "final_eval_loss": 7.1215500831604,
+          "history_len": 2,
+          "loss_weights": {
+            "L_decomposition": 0.0,
+            "L_formal": 0.0,
+            "L_function": 0.0,
+            "L_latent": 1.0,
+            "L_method": 0.0,
+            "L_repair": 0.0,
+            "L_retention": 0.0,
+            "L_route": 0.0,
+            "L_runtime": 0.01,
+            "L_span": 0.0,
+            "L_value": 0.0
+          },
+          "status": "TRAINED"
+        },
+        "B": {
+          "epochs": 2,
+          "final_eval_loss": 1.852334976196289,
+          "history_len": 2,
+          "loss_weights": {
+            "L_decomposition": 0.0,
+            "L_formal": 0.0,
+            "L_function": 1.0,
+            "L_latent": 0.5,
+            "L_method": 0.0,
+            "L_repair": 0.0,
+            "L_retention": 0.25,
+            "L_route": 0.0,
+            "L_runtime": 0.05,
+            "L_span": 0.0,
+            "L_value": 0.0
+          },
+          "status": "TRAINED"
+        },
+        "C": {
+          "epochs": 2,
+          "final_eval_loss": 3.904989242553711,
+          "history_len": 2,
+          "loss_weights": {
+            "L_decomposition": 1.0,
+            "L_formal": 1.0,
+            "L_function": 0.5,
+            "L_latent": 0.25,
+            "L_method": 1.0,
+            "L_repair": 1.0,
+            "L_retention": 0.5,
+            "L_route": 0.0,
+            "L_runtime": 0.05,
+            "L_span": 0.25,
+            "L_value": 1.0
+          },
+          "status": "TRAINED"
+        },
+        "E": {
+          "epochs": 2,
+          "final_eval_loss": 6.9146409034729,
+          "history_len": 2,
+          "loss_weights": {
+            "L_decomposition": 0.4,
+            "L_formal": 0.4,
+            "L_function": 1.0,
+            "L_latent": 1.0,
+            "L_method": 0.5,
+            "L_repair": 0.4,
+            "L_retention": 0.75,
+            "L_route": 0.5,
+            "L_runtime": 0.05,
+            "L_span": 0.5,
+            "L_value": 0.25
+          },
+          "status": "TRAINED"
+        },
+        "__final_eval_source": "BEST_BALANCED_reeval_phase_E"
+      },
+      "reverse_ok": true,
+      "reverse_recon_error": 1.1920928955078125e-07,
+      "steps": 24,
+      "wall_ms": 2383.427249995293
+    },
+    "D_BEHAVIOR_HEADS": {
+      "arm": "D_BEHAVIOR_HEADS",
+      "bytes_account": {
+        "active_bytes_per_token_proxy": 622744,
+        "approx_flops_per_token": 0,
+        "bytes_per_param": 4,
+        "glm_router_weights_copied": false,
+        "hash_bound": "07206fd29335bcf3261410ab4d1bd985a3941e1d74d2a422208d92af683552cb",
+        "kimi_bridge_compatible": true,
+        "parts": {
+          "action_proj": {
+            "name": "action_proj",
+            "parameter_bytes": 196656,
+            "parameter_count": 49164
+          },
+          "decomp_head": {
+            "ablatable": true,
+            "hash_bound": "07d4d7c129d8c04f3a489420998dc589626b56f30187fd8878afaf061da706ee",
+            "name": "GLM_DECOMPOSITION_HEAD",
+            "parameter_bytes": 98328,
+            "parameter_count": 24582,
+            "runtime_resident": true
+          },
+          "formal_head": {
+            "ablatable": true,
+            "hash_bound": "6a08ead515bd280f7e4742ce379e74ad050619ee90c1dcb0457fe60594e2ec85",
+            "name": "GLM_FORMALIZATION_HEAD",
+            "parameter_bytes": 65552,
+            "parameter_count": 16388,
+            "runtime_resident": true
+          },
+          "method_head": {
+            "ablatable": true,
+            "hash_bound": "089fbb974f50e28b3ae99ae5d4691564c7960ed1a52d8a81b6347a82996ce2f4",
+            "name": "GLM_METHOD_HEAD",
+            "parameter_bytes": 180268,
+            "parameter_count": 45067,
+            "runtime_resident": true
+          },
+          "repair_head": {
+            "ablatable": true,
+            "hash_bound": "b306e9e99c46d183d647aebb38eebaeb2ca02d41c9ed77e8f019443a91a31f65",
+            "name": "GLM_REPAIR_HEAD",
+            "parameter_bytes": 65552,
+            "parameter_count": 16388,
+            "runtime_resident": true
+          },
+          "value_head": {
+            "ablatable": true,
+            "copy_glm_router_weights": false,
+            "hash_bound": "e1668de95f908604a9f076a0a59bf551b5f1b7efdf7ac564542942690dfa26d8",
+            "name": "GLM_VALUE_HEAD",
+            "parameter_bytes": 16388,
+            "parameter_count": 4097,
+            "reversible": false
+          }
+        },
+        "runtime_parameter_bytes": 622744,
+        "steps": 12,
+        "total_parameter_bytes": 622744,
+        "total_parameter_count": 155687,
+        "tps_proxy_at_1gflops": null,
+        "training_only_parameter_bytes": 0,
+        "wall_train_ms": 908.5176670050714
+      },
+      "capability_claim": false,
+      "checkpoints": {
+        "BEST_BALANCED": {
+          "content_hash": "07206fd29335bcf3261410ab4d1bd985a3941e1d74d2a422208d92af683552cb",
+          "metrics": {
+            "balanced_proxy": 0.9999585056259043,
+            "balanced_score": 0.9999585056259043,
+            "eval_loss": 0.07298748195171356,
+            "math_proxy": 0.9999585056259043,
+            "train_loss": 0.08727320283651352
+          },
+          "parameter_bytes": 622744,
+          "path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/checkpoints/real_D_BEHAVIOR_HEADS/BEST_BALANCED.pt",
+          "phase": "E",
+          "slot": "BEST_BALANCED"
+        },
+        "BEST_MATH": {
+          "content_hash": "07206fd29335bcf3261410ab4d1bd985a3941e1d74d2a422208d92af683552cb",
+          "metrics": {
+            "balanced_proxy": 0.9999585056259043,
+            "eval_loss": 0.07298748195171356,
+            "math_proxy": 0.9999585056259043,
+            "math_score": 0.9999585056259043,
+            "train_loss": 0.08727320283651352
+          },
+          "parameter_bytes": 622744,
+          "path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/checkpoints/real_D_BEHAVIOR_HEADS/BEST_MATH.pt",
+          "phase": "E",
+          "slot": "BEST_MATH"
+        },
+        "CURRENT": {
+          "content_hash": "07206fd29335bcf3261410ab4d1bd985a3941e1d74d2a422208d92af683552cb",
+          "metrics": {
+            "eval_loss": 0.07298748195171356,
+            "train_loss": 0.08727320283651352
+          },
+          "parameter_bytes": 622744,
+          "path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/checkpoints/real_D_BEHAVIOR_HEADS/CURRENT.pt",
+          "phase": "FINAL_BEST",
+          "slot": "CURRENT"
+        },
+        "ROLLBACK": {
+          "content_hash": "a554e97502c70f1fe3defafbee40d2e9045fe07953f69746164252aedbb1651c",
+          "metrics": {
+            "balanced_proxy": 0.999796078412535,
+            "eval_loss": 0.09822488576173782,
+            "math_proxy": 0.999796078412535,
+            "math_score": 0.999796078412535,
+            "train_loss": 0.07165068512161572
+          },
+          "parameter_bytes": 622744,
+          "path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/checkpoints/real_D_BEHAVIOR_HEADS/BEST_MATH.pt",
+          "phase": "E",
+          "slot": "ROLLBACK"
+        }
+      },
+      "data_kind": "REAL_PAIRED_CAPTURE",
+      "final_eval_loss": 0.07298748195171356,
+      "final_train_loss": 0.08727320283651352,
+      "history": [
+        {
+          "epoch": 0.0,
+          "eval_L_decomposition": 0.03110315650701523,
+          "eval_L_formal": 0.02394997701048851,
+          "eval_L_function": 4.116913431120644e-15,
+          "eval_L_method": 0.07228328287601471,
+          "eval_L_repair": 0.021409930661320686,
+          "eval_L_runtime": 0.0,
+          "eval_L_span": 0.16069115698337555,
+          "eval_L_value": 0.07306915521621704,
+          "eval_loss": 0.2619882822036743,
+          "phase": "C",
+          "train_loss": 3.9160038034121194
+        },
+        {
+          "epoch": 1.0,
+          "eval_L_decomposition": 0.0010726170148700476,
+          "eval_L_formal": 0.0008420310914516449,
+          "eval_L_function": 4.116913431120644e-15,
+          "eval_L_method": 0.0019322015577927232,
+          "eval_L_repair": 0.0008093637879937887,
+          "eval_L_runtime": 0.0,
+          "eval_L_span": 0.12344972044229507,
+          "eval_L_value": 0.008784085512161255,
+          "eval_loss": 0.04430272802710533,
+          "phase": "C",
+          "train_loss": 0.1442074254155159
+        },
+        {
+          "epoch": 0.0,
+          "eval_L_decomposition": 9.975887951441109e-05,
+          "eval_L_formal": 7.821916369721293e-05,
+          "eval_L_function": 4.116913431120644e-15,
+          "eval_L_method": 0.0002039631799561903,
+          "eval_L_repair": 7.24538040230982e-05,
+          "eval_L_route": 0.0,
+          "eval_L_runtime": 0.0,
+          "eval_L_span": 0.19519391655921936,
+          "eval_L_value": 0.0017030835151672363,
+          "eval_loss": 0.09822488576173782,
+          "phase": "E",
+          "train_loss": 0.07165068512161572
+        },
+        {
+          "epoch": 1.0,
+          "eval_L_decomposition": 1.8268097846885212e-05,
+          "eval_L_formal": 1.4900679161655717e-05,
+          "eval_L_function": 4.116913431120644e-15,
+          "eval_L_method": 4.149609594605863e-05,
+          "eval_L_repair": 1.3470245903590694e-05,
+          "eval_L_route": 0.0,
+          "eval_L_runtime": 0.0,
+          "eval_L_span": 0.14565207064151764,
+          "eval_L_value": 0.0004881620407104492,
+          "eval_loss": 0.07298748195171356,
+          "phase": "E",
+          "train_loss": 0.08727320283651352
+        }
+      ],
+      "learned": true,
+      "phase_results": {
+        "A": {
+          "note": "arm has no trainable modules in this phase",
+          "status": "SKIP_NO_PARAMS"
+        },
+        "B": {
+          "note": "arm has no trainable modules in this phase",
+          "status": "SKIP_NO_PARAMS"
+        },
+        "C": {
+          "epochs": 2,
+          "final_eval_loss": 0.04430272802710533,
+          "history_len": 2,
+          "loss_weights": {
+            "L_decomposition": 1.0,
+            "L_formal": 1.0,
+            "L_function": 0.5,
+            "L_latent": 0.25,
+            "L_method": 1.0,
+            "L_repair": 1.0,
+            "L_retention": 0.5,
+            "L_route": 0.0,
+            "L_runtime": 0.05,
+            "L_span": 0.25,
+            "L_value": 1.0
+          },
+          "status": "TRAINED"
+        },
+        "E": {
+          "epochs": 2,
+          "final_eval_loss": 0.07298748195171356,
+          "history_len": 2,
+          "loss_weights": {
+            "L_decomposition": 0.4,
+            "L_formal": 0.4,
+            "L_function": 1.0,
+            "L_latent": 1.0,
+            "L_method": 0.5,
+            "L_repair": 0.4,
+            "L_retention": 0.75,
+            "L_route": 0.5,
+            "L_runtime": 0.05,
+            "L_span": 0.5,
+            "L_value": 0.25
+          },
+          "status": "TRAINED"
+        },
+        "__final_eval_source": "BEST_BALANCED_reeval_phase_E"
+      },
+      "reverse_ok": true,
+      "reverse_recon_error": 0.0,
+      "steps": 12,
+      "wall_ms": 908.5176670050714
+    },
+    "E_LATENT_BEHAVIOR": {
+      "arm": "E_LATENT_BEHAVIOR",
+      "bytes_account": {
+        "active_bytes_per_token_proxy": 7389368,
+        "approx_flops_per_token": 2293760,
+        "bytes_per_param": 4,
+        "glm_router_weights_copied": false,
+        "hash_bound": "c09321fa31c7860de41824999210b5c01b7ebdb38276cccf3a9bef79d9dba8a7",
+        "kimi_bridge_compatible": true,
+        "parts": {
+          "GLM_DECOMPOSITION_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "23b32c87b8830bfcbc1d15ce3cbb0fb92f0694b828974d669499204e2d804ea1",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_DECOMPOSITION_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_EARLY_CONTEXT_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "462602b301527c9420dc3f33d4bed516ecba10d570ad5d6b36894abf3ff16050",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_EARLY_CONTEXT_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_FORMALIZATION_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "5639a296e8f8376d056a9b73a00f30383b08b37bc7cad870a5f438a6c7b6540a",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_FORMALIZATION_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_LATE_CONSOLIDATION_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "fbda34932761f44bb6d0bac0995e0e6a26b6dda476d1d7187baf78c79c9a13bd",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_LATE_CONSOLIDATION_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_METHOD_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "462043a6bc33ec51dce14d39f67f6150284f37f40a10f8b35aac1b3cff999e80",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_METHOD_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_POST_MOE_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "bf17c0f9a7e00855aa50644e04e33cb7e53a40a1d9078cc8c67b74b08ea5cd34",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_POST_MOE_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_PRE_ROUTER_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "2816e88b54f54252a6b56125fd19b7994ad2beae69e664bf21fdc0e2ef41e025",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_PRE_ROUTER_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_REPAIR_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "9cbc6610ae7e7dc33386755c4918f9f5815c55f7ba9cd066d56112305cbe6e4e",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_REPAIR_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "action_proj": {
+            "name": "action_proj",
+            "parameter_bytes": 196656,
+            "parameter_count": 49164
+          },
+          "decomp_head": {
+            "ablatable": true,
+            "hash_bound": "bd6bab7a80c5183f183727f1e28fb3709f0918a4074233b61d6bfa7fb70dc4f0",
+            "name": "GLM_DECOMPOSITION_HEAD",
+            "parameter_bytes": 98328,
+            "parameter_count": 24582,
+            "runtime_resident": true
+          },
+          "formal_head": {
+            "ablatable": true,
+            "hash_bound": "749d7978d5206d9d65530c9bd470dd590d76f6fd69b14252f7a24df0cc465d3e",
+            "name": "GLM_FORMALIZATION_HEAD",
+            "parameter_bytes": 65552,
+            "parameter_count": 16388,
+            "runtime_resident": true
+          },
+          "method_head": {
+            "ablatable": true,
+            "hash_bound": "08cfaa9d104d0bc286550042dab8258f9b6c4e6ed2a958f5d3d708fcda72f314",
+            "name": "GLM_METHOD_HEAD",
+            "parameter_bytes": 180268,
+            "parameter_count": 45067,
+            "runtime_resident": true
+          },
+          "repair_head": {
+            "ablatable": true,
+            "hash_bound": "b8d676a3e6e56fe60aa6957942ff0b8afc6cfeda448e76299f6a290098f45fa1",
+            "name": "GLM_REPAIR_HEAD",
+            "parameter_bytes": 65552,
+            "parameter_count": 16388,
+            "runtime_resident": true
+          },
+          "student_observer": {
+            "ablatable": true,
+            "hash_bound": "0bf31866716a84ade5fbc75e66e7986308217ec72b45cd96e4bf5e6426d80ab2",
+            "name": "STUDENT_OBSERVER",
+            "parameter_bytes": 2113536,
+            "parameter_count": 528384,
+            "runtime_resident": true
+          },
+          "teacher_projector": {
+            "ablatable": true,
+            "hash_bound": "0a814c62ab27e65ae094cc76f394f212276bfb6cba5ccb274ca102ce0d28221d",
+            "name": "TEACHER_PROJECTOR",
+            "parameter_bytes": 3170304,
+            "parameter_count": 792576,
+            "runtime_resident": false,
+            "training_only": true
+          },
+          "value_head": {
+            "ablatable": true,
+            "copy_glm_router_weights": false,
+            "hash_bound": "d91b3ab62cbdd967f67c96e3f9074a67c0b08068e695929a0e5d20f792b92cfd",
+            "name": "GLM_VALUE_HEAD",
+            "parameter_bytes": 16388,
+            "parameter_count": 4097,
+            "reversible": false
+          }
+        },
+        "runtime_parameter_bytes": 7389368,
+        "steps": 24,
+        "total_parameter_bytes": 10559672,
+        "total_parameter_count": 2639919,
+        "tps_proxy_at_1gflops": 435.9654017857143,
+        "training_only_parameter_bytes": 3170304,
+        "wall_train_ms": 2660.024542012252
+      },
+      "capability_claim": false,
+      "checkpoints": {
+        "BEST_BALANCED": {
+          "content_hash": "c09321fa31c7860de41824999210b5c01b7ebdb38276cccf3a9bef79d9dba8a7",
+          "metrics": {
+            "balanced_proxy": 0.215469615791346,
+            "balanced_score": 0.215469615791346,
+            "eval_loss": 1.7943569421768188,
+            "math_proxy": 0.2183993839340538,
+            "train_loss": 3.289384126663208
+          },
+          "parameter_bytes": 10559672,
+          "path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/checkpoints/real_E_LATENT_BEHAVIOR/BEST_BALANCED.pt",
+          "phase": "B",
+          "slot": "BEST_BALANCED"
+        },
+        "BEST_MATH": {
+          "content_hash": "c09321fa31c7860de41824999210b5c01b7ebdb38276cccf3a9bef79d9dba8a7",
+          "metrics": {
+            "balanced_proxy": 0.215469615791346,
+            "eval_loss": 1.7943569421768188,
+            "math_proxy": 0.2183993839340538,
+            "math_score": 0.2183993839340538,
+            "train_loss": 3.289384126663208
+          },
+          "parameter_bytes": 10559672,
+          "path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/checkpoints/real_E_LATENT_BEHAVIOR/BEST_MATH.pt",
+          "phase": "B",
+          "slot": "BEST_MATH"
+        },
+        "CURRENT": {
+          "content_hash": "c09321fa31c7860de41824999210b5c01b7ebdb38276cccf3a9bef79d9dba8a7",
+          "metrics": {
+            "eval_loss": 6.698406219482422,
+            "train_loss": 12.475533803304037
+          },
+          "parameter_bytes": 10559672,
+          "path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/checkpoints/real_E_LATENT_BEHAVIOR/CURRENT.pt",
+          "phase": "FINAL_BEST",
+          "slot": "CURRENT"
+        },
+        "ROLLBACK": {
+          "content_hash": "13f1ec328cd9d3b264e2e0d96e6739d4e1f9f22c01ce9311f8a306c144022c88",
+          "metrics": {
+            "balanced_proxy": 0.09360091750130896,
+            "eval_loss": 4.775010108947754,
+            "math_proxy": 0.09487624967259785,
+            "math_score": 0.09487624967259785,
+            "train_loss": 4.733631292978923
+          },
+          "parameter_bytes": 10559672,
+          "path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/checkpoints/real_E_LATENT_BEHAVIOR/BEST_MATH.pt",
+          "phase": "B",
+          "slot": "ROLLBACK"
+        }
+      },
+      "data_kind": "REAL_PAIRED_CAPTURE",
+      "final_eval_loss": 6.698406219482422,
+      "final_train_loss": 12.475533803304037,
+      "history": [
+        {
+          "epoch": 0.0,
+          "eval_L_latent": 15.495147705078125,
+          "eval_L_runtime": 0.03173200413584709,
+          "eval_loss": 15.495465278625488,
+          "phase": "A",
+          "train_loss": 10.422544002532959
+        },
+        {
+          "epoch": 1.0,
+          "eval_L_latent": 11.381938934326172,
+          "eval_L_runtime": 0.03173200413584709,
+          "eval_loss": 11.382256507873535,
+          "phase": "A",
+          "train_loss": 12.857556660970053
+        },
+        {
+          "epoch": 0.0,
+          "eval_L_function": 6.55956910122768e-06,
+          "eval_L_latent": 9.5400390625,
+          "eval_L_retention": 0.013625210151076317,
+          "eval_L_runtime": 0.03154650330543518,
+          "eval_loss": 4.775010108947754,
+          "phase": "B",
+          "train_loss": 4.733631292978923
+        },
+        {
+          "epoch": 1.0,
+          "eval_L_function": 4.009654730907641e-06,
+          "eval_L_latent": 3.578763484954834,
+          "eval_L_retention": 0.013597128912806511,
+          "eval_L_runtime": 0.03143792599439621,
+          "eval_loss": 1.7943569421768188,
+          "phase": "B",
+          "train_loss": 3.289384126663208
+        },
+        {
+          "epoch": 0.0,
+          "eval_L_decomposition": 0.023453162983059883,
+          "eval_L_formal": 0.015083933249115944,
+          "eval_L_function": 0.00020405021496117115,
+          "eval_L_latent": 7.645275115966797,
+          "eval_L_method": 0.050516415387392044,
+          "eval_L_repair": 0.014275330118834972,
+          "eval_L_retention": 0.08629726618528366,
+          "eval_L_runtime": 0.03143170848488808,
+          "eval_L_span": 0.17218643426895142,
+          "eval_L_value": 0.06829285621643066,
+          "eval_loss": 2.170809507369995,
+          "phase": "C",
+          "train_loss": 5.605312466621399
+        },
+        {
+          "epoch": 1.0,
+          "eval_L_decomposition": 0.0006899627042002976,
+          "eval_L_formal": 0.0004834515566471964,
+          "eval_L_function": 0.0005450012977235019,
+          "eval_L_latent": 5.621343612670898,
+          "eval_L_method": 0.0010289513738825917,
+          "eval_L_repair": 0.0004604610148817301,
+          "eval_L_retention": 0.0428791344165802,
+          "eval_L_runtime": 0.03139742463827133,
+          "eval_L_span": 0.08466826379299164,
+          "eval_L_value": 0.006992161273956299,
+          "eval_loss": 1.4594398736953735,
+          "phase": "C",
+          "train_loss": 2.142549475034078
+        },
+        {
+          "epoch": 0.0,
+          "eval_L_decomposition": 0.00020278868032619357,
+          "eval_L_formal": 0.00013108571874909103,
+          "eval_L_function": 9.960522220353596e-06,
+          "eval_L_latent": 20.129146575927734,
+          "eval_L_method": 0.0003093839040957391,
+          "eval_L_repair": 0.0001290425134357065,
+          "eval_L_retention": 0.20806100964546204,
+          "eval_L_route": 0.0,
+          "eval_L_runtime": 0.031198671087622643,
+          "eval_L_span": 0.4161021113395691,
+          "eval_L_value": 0.0022166967391967773,
+          "eval_loss": 20.495708465576172,
+          "phase": "E",
+          "train_loss": 11.675124486287435
+        },
+        {
+          "epoch": 1.0,
+          "eval_L_decomposition": 5.293824870022945e-05,
+          "eval_L_formal": 3.1722691346658394e-05,
+          "eval_L_function": 9.050307562574744e-05,
+          "eval_L_latent": 7.852804183959961,
+          "eval_L_method": 7.3363640694879e-05,
+          "eval_L_repair": 3.149905023747124e-05,
+          "eval_L_retention": 0.15327298641204834,
+          "eval_L_route": 0.0,
+          "eval_L_runtime": 0.031086279079318047,
+          "eval_L_span": 0.3063649535179138,
+          "eval_L_value": 0.0007106661796569824,
+          "eval_loss": 8.122845649719238,
+          "phase": "E",
+          "train_loss": 12.475533803304037
+        }
+      ],
+      "learned": true,
+      "phase_results": {
+        "A": {
+          "epochs": 2,
+          "final_eval_loss": 11.382256507873535,
+          "history_len": 2,
+          "loss_weights": {
+            "L_decomposition": 0.0,
+            "L_formal": 0.0,
+            "L_function": 0.0,
+            "L_latent": 1.0,
+            "L_method": 0.0,
+            "L_repair": 0.0,
+            "L_retention": 0.0,
+            "L_route": 0.0,
+            "L_runtime": 0.01,
+            "L_span": 0.0,
+            "L_value": 0.0
+          },
+          "status": "TRAINED"
+        },
+        "B": {
+          "epochs": 2,
+          "final_eval_loss": 1.7943569421768188,
+          "history_len": 2,
+          "loss_weights": {
+            "L_decomposition": 0.0,
+            "L_formal": 0.0,
+            "L_function": 1.0,
+            "L_latent": 0.5,
+            "L_method": 0.0,
+            "L_repair": 0.0,
+            "L_retention": 0.25,
+            "L_route": 0.0,
+            "L_runtime": 0.05,
+            "L_span": 0.0,
+            "L_value": 0.0
+          },
+          "status": "TRAINED"
+        },
+        "C": {
+          "epochs": 2,
+          "final_eval_loss": 1.4594398736953735,
+          "history_len": 2,
+          "loss_weights": {
+            "L_decomposition": 1.0,
+            "L_formal": 1.0,
+            "L_function": 0.5,
+            "L_latent": 0.25,
+            "L_method": 1.0,
+            "L_repair": 1.0,
+            "L_retention": 0.5,
+            "L_route": 0.0,
+            "L_runtime": 0.05,
+            "L_span": 0.25,
+            "L_value": 1.0
+          },
+          "status": "TRAINED"
+        },
+        "E": {
+          "epochs": 2,
+          "final_eval_loss": 8.122845649719238,
+          "history_len": 2,
+          "loss_weights": {
+            "L_decomposition": 0.4,
+            "L_formal": 0.4,
+            "L_function": 1.0,
+            "L_latent": 1.0,
+            "L_method": 0.5,
+            "L_repair": 0.4,
+            "L_retention": 0.75,
+            "L_route": 0.5,
+            "L_runtime": 0.05,
+            "L_span": 0.5,
+            "L_value": 0.25
+          },
+          "status": "TRAINED"
+        },
+        "__final_eval_source": "BEST_BALANCED_reeval_phase_E"
+      },
+      "reverse_ok": true,
+      "reverse_recon_error": 2.384185791015625e-07,
+      "steps": 24,
+      "wall_ms": 2660.024542012252
+    },
+    "F_LATENT_ROUTE_RESIDUAL": {
+      "arm": "F_LATENT_ROUTE_RESIDUAL",
+      "bytes_account": {
+        "active_bytes_per_token_proxy": 6964368,
+        "approx_flops_per_token": 2293760,
+        "bytes_per_param": 4,
+        "glm_router_weights_copied": false,
+        "hash_bound": "17a83990970b65f092c571aefbb0cd453a640ba271133320f0c98e1fedc4ec7b",
+        "kimi_bridge_compatible": true,
+        "parts": {
+          "GLM_DECOMPOSITION_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "776a098cb8a40b2974f3f2da3b57187892542f10eeed4abf034b8d60f156d5da",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_DECOMPOSITION_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_EARLY_CONTEXT_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "0477bc29ecdcd00258328f134aaf428f2e85f7f64ff82a2e4a55e1882cc704f1",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_EARLY_CONTEXT_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_FORMALIZATION_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "a64f9eb6c10d5fc7f82870ff599d9061f5a9d123d593feb52f776f05fa9cd724",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_FORMALIZATION_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_LATE_CONSOLIDATION_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "af2d2c9068c317bd13f37dcfa5f047da80fb00af520db1f5b9d698754ff22617",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_LATE_CONSOLIDATION_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_METHOD_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "ca22f280ec3dd524cf6d5866bfd57a5cfb633d3e8a12c3b198d8c11d157f4b36",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_METHOD_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_POST_MOE_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "168cabdf8ebf879de50dfcf12e0a7bc3cf436e5c73039d755f3dd6917e1e51e3",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_POST_MOE_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_PRE_ROUTER_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "d815242456e168f85ec81a307117280b842b09c055be19695df947191ff4702f",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_PRE_ROUTER_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_REPAIR_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "2b941dbaa4f74a7f6fbe96b53f89f6f782680256fcb142fa3ccd429a4fb1e9b6",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_REPAIR_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "action_proj": {
+            "name": "action_proj",
+            "parameter_bytes": 196656,
+            "parameter_count": 49164
+          },
+          "route_residual": {
+            "ablatable": true,
+            "copy_glm_router_weights": false,
+            "hash_bound": "2aa278f699642c050b7a95de4a0780bc157a72bdacab511de8596a3d735e511e",
+            "name": "GLM_METHOD_CONDITIONED_ROUTE_RESIDUAL",
+            "parameter_bytes": 1088,
+            "parameter_count": 272,
+            "reversible": true
+          },
+          "student_observer": {
+            "ablatable": true,
+            "hash_bound": "7bada8251d7ddc4619938e702b42696f76788f9349e17e09e0c9524fef70c164",
+            "name": "STUDENT_OBSERVER",
+            "parameter_bytes": 2113536,
+            "parameter_count": 528384,
+            "runtime_resident": true
+          },
+          "teacher_projector": {
+            "ablatable": true,
+            "hash_bound": "6318bd8e7ade4eeb3e1ec6f4b688a5b48ea71cd8f67c6531d0567acd0c4ed25a",
+            "name": "TEACHER_PROJECTOR",
+            "parameter_bytes": 3170304,
+            "parameter_count": 792576,
+            "runtime_resident": false,
+            "training_only": true
+          }
+        },
+        "runtime_parameter_bytes": 6964368,
+        "steps": 24,
+        "total_parameter_bytes": 10134672,
+        "total_parameter_count": 2533669,
+        "tps_proxy_at_1gflops": 435.9654017857143,
+        "training_only_parameter_bytes": 3170304,
+        "wall_train_ms": 2334.20254100929
+      },
+      "capability_claim": false,
+      "checkpoints": {
+        "BEST_BALANCED": {
+          "content_hash": "17a83990970b65f092c571aefbb0cd453a640ba271133320f0c98e1fedc4ec7b",
+          "metrics": {
+            "balanced_proxy": 0.14492317762465393,
+            "balanced_score": 0.14492317762465393,
+            "eval_loss": 5.900524616241455,
+            "math_proxy": 0.14492317762465393,
+            "train_loss": 8.862088998158773
+          },
+          "parameter_bytes": 10134672,
+          "path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/checkpoints/real_F_LATENT_ROUTE_RESIDUAL/BEST_BALANCED.pt",
+          "phase": "A",
+          "slot": "BEST_BALANCED"
+        },
+        "BEST_MATH": {
+          "content_hash": "c58426a254bcd8c5cb473ba66bd3c9ac7fe927492c60797894c7ffcbe4ee45ee",
+          "metrics": {
+            "balanced_proxy": 0.13711163157983663,
+            "eval_loss": 5.907341957092285,
+            "math_proxy": 0.1476928660818761,
+            "math_score": 0.1476928660818761,
+            "train_loss": 9.186574141184488
+          },
+          "parameter_bytes": 10134672,
+          "path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/checkpoints/real_F_LATENT_ROUTE_RESIDUAL/BEST_MATH.pt",
+          "phase": "E",
+          "slot": "BEST_MATH"
+        },
+        "CURRENT": {
+          "content_hash": "17a83990970b65f092c571aefbb0cd453a640ba271133320f0c98e1fedc4ec7b",
+          "metrics": {
+            "eval_loss": 5.940763473510742,
+            "train_loss": 9.186574141184488
+          },
+          "parameter_bytes": 10134672,
+          "path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/checkpoints/real_F_LATENT_ROUTE_RESIDUAL/CURRENT.pt",
+          "phase": "FINAL_BEST",
+          "slot": "CURRENT"
+        },
+        "ROLLBACK": {
+          "content_hash": "17a83990970b65f092c571aefbb0cd453a640ba271133320f0c98e1fedc4ec7b",
+          "metrics": {
+            "balanced_proxy": 0.14492317762465393,
+            "eval_loss": 5.900524616241455,
+            "math_proxy": 0.14492317762465393,
+            "math_score": 0.14492317762465393,
+            "train_loss": 8.862088998158773
+          },
+          "parameter_bytes": 10134672,
+          "path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/checkpoints/real_F_LATENT_ROUTE_RESIDUAL/BEST_MATH.pt",
+          "phase": "A",
+          "slot": "ROLLBACK"
+        }
+      },
+      "data_kind": "REAL_PAIRED_CAPTURE",
+      "final_eval_loss": 5.940763473510742,
+      "final_train_loss": 9.186574141184488,
+      "history": [
+        {
+          "epoch": 0.0,
+          "eval_L_latent": 5.964324474334717,
+          "eval_L_runtime": 0.03173200413584709,
+          "eval_loss": 5.964641571044922,
+          "phase": "A",
+          "train_loss": 11.057390689849854
+        },
+        {
+          "epoch": 1.0,
+          "eval_L_latent": 5.90020751953125,
+          "eval_L_runtime": 0.03173200413584709,
+          "eval_loss": 5.900524616241455,
+          "phase": "A",
+          "train_loss": 8.862088998158773
+        },
+        {
+          "epoch": 0.0,
+          "eval_L_function": 2.864560428861296e-06,
+          "eval_L_latent": 11.412552833557129,
+          "eval_L_retention": 0.022041402757167816,
+          "eval_L_runtime": 0.03152329474687576,
+          "eval_loss": 5.71336555480957,
+          "phase": "B",
+          "train_loss": 5.930151542027791
+        },
+        {
+          "epoch": 1.0,
+          "eval_L_function": 1.1960002666455694e-05,
+          "eval_L_latent": 7.914324760437012,
+          "eval_L_retention": 0.02186717838048935,
+          "eval_L_runtime": 0.031451690942049026,
+          "eval_loss": 3.9642136096954346,
+          "phase": "B",
+          "train_loss": 5.356598933537801
+        },
+        {
+          "epoch": 0.0,
+          "eval_L_function": 7.94331390352454e-06,
+          "eval_L_latent": 6.8028883934021,
+          "eval_L_retention": 0.06118524819612503,
+          "eval_L_runtime": 0.031271230429410934,
+          "eval_L_span": 0.12235461175441742,
+          "eval_loss": 1.7634708881378174,
+          "phase": "C",
+          "train_loss": 2.8542136351267495
+        },
+        {
+          "epoch": 1.0,
+          "eval_L_function": 3.860306605929509e-05,
+          "eval_L_latent": 7.2666215896606445,
+          "eval_L_retention": 0.06432617455720901,
+          "eval_L_runtime": 0.031170671805739403,
+          "eval_L_span": 0.1285751461982727,
+          "eval_loss": 1.882540225982666,
+          "phase": "C",
+          "train_loss": 1.2582219044367473
+        },
+        {
+          "epoch": 0.0,
+          "eval_L_function": 2.3704147679382004e-05,
+          "eval_L_latent": 9.743904113769531,
+          "eval_L_retention": 0.12517662346363068,
+          "eval_L_route": -1.4901161193847656e-08,
+          "eval_L_runtime": 0.03110470250248909,
+          "eval_L_span": 0.25030583143234253,
+          "eval_loss": 9.964518547058105,
+          "phase": "E",
+          "train_loss": 11.025807539621988
+        },
+        {
+          "epoch": 1.0,
+          "eval_L_function": 6.960966857150197e-05,
+          "eval_L_latent": 5.770738124847412,
+          "eval_L_retention": 0.0771724060177803,
+          "eval_L_route": -7.450580596923828e-08,
+          "eval_L_runtime": 0.031038694083690643,
+          "eval_L_span": 0.1542055904865265,
+          "eval_loss": 5.907341957092285,
+          "phase": "E",
+          "train_loss": 9.186574141184488
+        }
+      ],
+      "learned": true,
+      "phase_results": {
+        "A": {
+          "epochs": 2,
+          "final_eval_loss": 5.900524616241455,
+          "history_len": 2,
+          "loss_weights": {
+            "L_decomposition": 0.0,
+            "L_formal": 0.0,
+            "L_function": 0.0,
+            "L_latent": 1.0,
+            "L_method": 0.0,
+            "L_repair": 0.0,
+            "L_retention": 0.0,
+            "L_route": 0.0,
+            "L_runtime": 0.01,
+            "L_span": 0.0,
+            "L_value": 0.0
+          },
+          "status": "TRAINED"
+        },
+        "B": {
+          "epochs": 2,
+          "final_eval_loss": 3.9642136096954346,
+          "history_len": 2,
+          "loss_weights": {
+            "L_decomposition": 0.0,
+            "L_formal": 0.0,
+            "L_function": 1.0,
+            "L_latent": 0.5,
+            "L_method": 0.0,
+            "L_repair": 0.0,
+            "L_retention": 0.25,
+            "L_route": 0.0,
+            "L_runtime": 0.05,
+            "L_span": 0.0,
+            "L_value": 0.0
+          },
+          "status": "TRAINED"
+        },
+        "C": {
+          "epochs": 2,
+          "final_eval_loss": 1.882540225982666,
+          "history_len": 2,
+          "loss_weights": {
+            "L_decomposition": 1.0,
+            "L_formal": 1.0,
+            "L_function": 0.5,
+            "L_latent": 0.25,
+            "L_method": 1.0,
+            "L_repair": 1.0,
+            "L_retention": 0.5,
+            "L_route": 0.0,
+            "L_runtime": 0.05,
+            "L_span": 0.25,
+            "L_value": 1.0
+          },
+          "status": "TRAINED"
+        },
+        "E": {
+          "epochs": 2,
+          "final_eval_loss": 5.907341957092285,
+          "history_len": 2,
+          "loss_weights": {
+            "L_decomposition": 0.4,
+            "L_formal": 0.4,
+            "L_function": 1.0,
+            "L_latent": 1.0,
+            "L_method": 0.5,
+            "L_repair": 0.4,
+            "L_retention": 0.75,
+            "L_route": 0.5,
+            "L_runtime": 0.05,
+            "L_span": 0.5,
+            "L_value": 0.25
+          },
+          "status": "TRAINED"
+        },
+        "__final_eval_source": "BEST_BALANCED_reeval_phase_E"
+      },
+      "reverse_ok": true,
+      "reverse_recon_error": 1.7881393432617188e-07,
+      "steps": 24,
+      "wall_ms": 2334.20254100929
+    },
+    "G_COMPLETE_V0": {
+      "arm": "G_COMPLETE_V0",
+      "bytes_account": {
+        "active_bytes_per_token_proxy": 7390456,
+        "approx_flops_per_token": 2293760,
+        "bytes_per_param": 4,
+        "glm_router_weights_copied": false,
+        "hash_bound": "0efae2f46f00669dd12fa9017933f44a683b86debab8a66a42dc9f30ddb2babb",
+        "kimi_bridge_compatible": true,
+        "parts": {
+          "GLM_DECOMPOSITION_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "8c84f95f6ae66a977424d2cd42d787ed46f54318b4f7bc4f220ba363898437e8",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_DECOMPOSITION_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_EARLY_CONTEXT_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "14383030da9370529ce2ca5a847cff1d26a8a1d61c3769b9b587f633af150b9e",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_EARLY_CONTEXT_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_FORMALIZATION_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "d026036e09ad022e1980a5c4b1f8834d55c76a797b8afa8e7dd3146d6610851c",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_FORMALIZATION_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_LATE_CONSOLIDATION_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "b52fbaeb71ffc286a62c8df53918832e5b20073b11b0bf3e8b69a0d5f679f0be",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_LATE_CONSOLIDATION_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_METHOD_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "e400e3f0cccd84c0782c879fedba505906bdfa95b5209fd0d3d46b8578096fad",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_METHOD_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_POST_MOE_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "0ba307e0fc82820504930f93d7642fbe9ed1f99974aefdaaf933beddeede11d0",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_POST_MOE_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_PRE_ROUTER_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "1456ecdf089dbd40cf1c75865fb7c6e075e2c5f926918b79f45f50d68bde6b82",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_PRE_ROUTER_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "GLM_REPAIR_BRIDGE": {
+            "ablatable": true,
+            "approx_flops_per_token": 286720,
+            "bypassable": true,
+            "gravity_accounted": true,
+            "hash_bound": "8b64b4ed97755d625a5f2ca087c44a0a85a867cd0dcdb9193d09cb07cd774b26",
+            "kimi_bridge_compatible": true,
+            "name": "GLM_REPAIR_BRIDGE",
+            "parameter_bytes": 581636,
+            "parameter_count": 145409,
+            "reversible": true,
+            "runtime_resident": true
+          },
+          "action_proj": {
+            "name": "action_proj",
+            "parameter_bytes": 196656,
+            "parameter_count": 49164
+          },
+          "decomp_head": {
+            "ablatable": true,
+            "hash_bound": "21e6c3e69ba46301f12bad1e721124b0cc06530eeeae045a78cb7b66f726accb",
+            "name": "GLM_DECOMPOSITION_HEAD",
+            "parameter_bytes": 98328,
+            "parameter_count": 24582,
+            "runtime_resident": true
+          },
+          "formal_head": {
+            "ablatable": true,
+            "hash_bound": "41cb510d30dcb616b18525e9aa4af80caf8c6d75d06756a1ec4a1f667f80100a",
+            "name": "GLM_FORMALIZATION_HEAD",
+            "parameter_bytes": 65552,
+            "parameter_count": 16388,
+            "runtime_resident": true
+          },
+          "method_head": {
+            "ablatable": true,
+            "hash_bound": "a02152912dd0c26f870f32e4083ca8bbcc0fdf92fbeaca954f4dcf9a3dd4cf65",
+            "name": "GLM_METHOD_HEAD",
+            "parameter_bytes": 180268,
+            "parameter_count": 45067,
+            "runtime_resident": true
+          },
+          "repair_head": {
+            "ablatable": true,
+            "hash_bound": "521585ad7c0f176d844b24b64f2dd3c4f78e3be82149298b32318e01fdc7175a",
+            "name": "GLM_REPAIR_HEAD",
+            "parameter_bytes": 65552,
+            "parameter_count": 16388,
+            "runtime_resident": true
+          },
+          "route_residual": {
+            "ablatable": true,
+            "copy_glm_router_weights": false,
+            "hash_bound": "7877168dd36af8fe2bae0acdddba5fe6585c887cd6862eb6725f11fc8c327689",
+            "name": "GLM_METHOD_CONDITIONED_ROUTE_RESIDUAL",
+            "parameter_bytes": 1088,
+            "parameter_count": 272,
+            "reversible": true
+          },
+          "student_observer": {
+            "ablatable": true,
+            "hash_bound": "46d26cd0eb3494058b96dd3471a476ab7bf8b88e7e11c0648bf6df3bc7cdc5f2",
+            "name": "STUDENT_OBSERVER",
+            "parameter_bytes": 2113536,
+            "parameter_count": 528384,
+            "runtime_resident": true
+          },
+          "teacher_projector": {
+            "ablatable": true,
+            "hash_bound": "c5d0e5214ff37677053978bee0c7fc803ad2f7bad7dae9852b2d7f3cac2f82bb",
+            "name": "TEACHER_PROJECTOR",
+            "parameter_bytes": 3170304,
+            "parameter_count": 792576,
+            "runtime_resident": false,
+            "training_only": true
+          },
+          "value_head": {
+            "ablatable": true,
+            "copy_glm_router_weights": false,
+            "hash_bound": "e50d7f8009b39609e78a852cd40dd86acb384da875dd8a7a51901d6455fad3f8",
+            "name": "GLM_VALUE_HEAD",
+            "parameter_bytes": 16388,
+            "parameter_count": 4097,
+            "reversible": false
+          }
+        },
+        "runtime_parameter_bytes": 7390456,
+        "steps": 24,
+        "total_parameter_bytes": 10560760,
+        "total_parameter_count": 2640191,
+        "tps_proxy_at_1gflops": 435.9654017857143,
+        "training_only_parameter_bytes": 3170304,
+        "wall_train_ms": 2521.370874994318
+      },
+      "capability_claim": false,
+      "checkpoints": {
+        "BEST_BALANCED": {
+          "content_hash": "0efae2f46f00669dd12fa9017933f44a683b86debab8a66a42dc9f30ddb2babb",
+          "metrics": {
+            "balanced_proxy": 0.14183579541417732,
+            "balanced_score": 0.14183579541417732,
+            "eval_loss": 1.4854350090026855,
+            "math_proxy": 0.1487396692304129,
+            "train_loss": 1.611969033877055
+          },
+          "parameter_bytes": 10560760,
+          "path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/checkpoints/real_G_COMPLETE_V0/BEST_BALANCED.pt",
+          "phase": "C",
+          "slot": "BEST_BALANCED"
+        },
+        "BEST_MATH": {
+          "content_hash": "0efae2f46f00669dd12fa9017933f44a683b86debab8a66a42dc9f30ddb2babb",
+          "metrics": {
+            "balanced_proxy": 0.14183579541417732,
+            "eval_loss": 1.4854350090026855,
+            "math_proxy": 0.1487396692304129,
+            "math_score": 0.1487396692304129,
+            "train_loss": 1.611969033877055
+          },
+          "parameter_bytes": 10560760,
+          "path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/checkpoints/real_G_COMPLETE_V0/BEST_MATH.pt",
+          "phase": "C",
+          "slot": "BEST_MATH"
+        },
+        "CURRENT": {
+          "content_hash": "0efae2f46f00669dd12fa9017933f44a683b86debab8a66a42dc9f30ddb2babb",
+          "metrics": {
+            "eval_loss": 5.807374000549316,
+            "train_loss": 11.203853925069174
+          },
+          "parameter_bytes": 10560760,
+          "path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/checkpoints/real_G_COMPLETE_V0/CURRENT.pt",
+          "phase": "FINAL_BEST",
+          "slot": "CURRENT"
+        },
+        "ROLLBACK": {
+          "content_hash": "ea753120c9f39fed8db5528448d9ac4e3912906ef8521f0efba25905c80d4cc7",
+          "metrics": {
+            "balanced_proxy": 0.127596153190926,
+            "eval_loss": 6.837543964385986,
+            "math_proxy": 0.127596153190926,
+            "math_score": 0.127596153190926,
+            "train_loss": 9.184120972951254
+          },
+          "parameter_bytes": 10560760,
+          "path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/checkpoints/real_G_COMPLETE_V0/BEST_MATH.pt",
+          "phase": "A",
+          "slot": "ROLLBACK"
+        }
+      },
+      "data_kind": "REAL_PAIRED_CAPTURE",
+      "final_eval_loss": 5.807374000549316,
+      "final_train_loss": 11.203853925069174,
+      "history": [
+        {
+          "epoch": 0.0,
+          "eval_L_latent": 8.632143020629883,
+          "eval_L_runtime": 0.03173200413584709,
+          "eval_loss": 8.632460594177246,
+          "phase": "A",
+          "train_loss": 11.03720792134603
+        },
+        {
+          "epoch": 1.0,
+          "eval_L_latent": 6.837226867675781,
+          "eval_L_runtime": 0.03173200413584709,
+          "eval_loss": 6.837543964385986,
+          "phase": "A",
+          "train_loss": 9.184120972951254
+        },
+        {
+          "epoch": 0.0,
+          "eval_L_function": 2.9587990866275504e-06,
+          "eval_L_latent": 30.62034797668457,
+          "eval_L_retention": 0.016210192814469337,
+          "eval_L_runtime": 0.03149574622511864,
+          "eval_loss": 15.315803527832031,
+          "phase": "B",
+          "train_loss": 7.129076798756917
+        },
+        {
+          "epoch": 1.0,
+          "eval_L_function": 0.003350341459736228,
+          "eval_L_latent": 9.345585823059082,
+          "eval_L_retention": 0.018356550484895706,
+          "eval_L_runtime": 0.031526681035757065,
+          "eval_loss": 4.682308673858643,
+          "phase": "B",
+          "train_loss": 12.802810986836752
+        },
+        {
+          "epoch": 0.0,
+          "eval_L_decomposition": 0.020217206329107285,
+          "eval_L_formal": 0.012103614397346973,
+          "eval_L_function": 0.0018211097922176123,
+          "eval_L_latent": 8.047255516052246,
+          "eval_L_method": 0.040876735001802444,
+          "eval_L_repair": 0.012925693765282631,
+          "eval_L_retention": 0.03869495168328285,
+          "eval_L_runtime": 0.03142291679978371,
+          "eval_L_span": 0.07374768704175949,
+          "eval_L_value": 0.052037835121154785,
+          "eval_loss": 2.1902406215667725,
+          "phase": "C",
+          "train_loss": 6.86543067296346
+        },
+        {
+          "epoch": 1.0,
+          "eval_L_decomposition": 0.0002973088121507317,
+          "eval_L_formal": 0.0002287780516780913,
+          "eval_L_function": 0.003611575346440077,
+          "eval_L_latent": 5.719021797180176,
+          "eval_L_method": 0.0005226299981586635,
+          "eval_L_repair": 0.00022934102162253112,
+          "eval_L_retention": 0.048675116151571274,
+          "eval_L_runtime": 0.03136798366904259,
+          "eval_L_span": 0.09012708067893982,
+          "eval_L_value": 0.00415802001953125,
+          "eval_loss": 1.4854350090026855,
+          "phase": "C",
+          "train_loss": 1.611969033877055
+        },
+        {
+          "epoch": 0.0,
+          "eval_L_decomposition": 3.617852053139359e-05,
+          "eval_L_formal": 2.5301398636656813e-05,
+          "eval_L_function": 0.024339471012353897,
+          "eval_L_latent": 6.973968505859375,
+          "eval_L_method": 6.342925189528614e-05,
+          "eval_L_repair": 2.5048109819181263e-05,
+          "eval_L_retention": 0.12271438539028168,
+          "eval_L_route": -4.470348358154297e-08,
+          "eval_L_runtime": 0.03135419264435768,
+          "eval_L_span": 0.19674983620643616,
+          "eval_L_value": 0.0008884668350219727,
+          "eval_loss": 7.190575122833252,
+          "phase": "E",
+          "train_loss": 15.807544549306234
+        },
+        {
+          "epoch": 1.0,
+          "eval_L_decomposition": 0.00013186444994062185,
+          "eval_L_formal": 7.983158866409212e-05,
+          "eval_L_function": 0.008715549483895302,
+          "eval_L_latent": 7.498997688293457,
+          "eval_L_method": 0.00023756590962875634,
+          "eval_L_repair": 7.597304647788405e-05,
+          "eval_L_retention": 0.08178094774484634,
+          "eval_L_route": -1.4901161193847656e-08,
+          "eval_L_runtime": 0.03125468268990517,
+          "eval_L_span": 0.14613080024719238,
+          "eval_L_value": 0.0012743473052978516,
+          "eval_loss": 7.644229412078857,
+          "phase": "E",
+          "train_loss": 11.203853925069174
+        }
+      ],
+      "learned": true,
+      "phase_results": {
+        "A": {
+          "epochs": 2,
+          "final_eval_loss": 6.837543964385986,
+          "history_len": 2,
+          "loss_weights": {
+            "L_decomposition": 0.0,
+            "L_formal": 0.0,
+            "L_function": 0.0,
+            "L_latent": 1.0,
+            "L_method": 0.0,
+            "L_repair": 0.0,
+            "L_retention": 0.0,
+            "L_route": 0.0,
+            "L_runtime": 0.01,
+            "L_span": 0.0,
+            "L_value": 0.0
+          },
+          "status": "TRAINED"
+        },
+        "B": {
+          "epochs": 2,
+          "final_eval_loss": 4.682308673858643,
+          "history_len": 2,
+          "loss_weights": {
+            "L_decomposition": 0.0,
+            "L_formal": 0.0,
+            "L_function": 1.0,
+            "L_latent": 0.5,
+            "L_method": 0.0,
+            "L_repair": 0.0,
+            "L_retention": 0.25,
+            "L_route": 0.0,
+            "L_runtime": 0.05,
+            "L_span": 0.0,
+            "L_value": 0.0
+          },
+          "status": "TRAINED"
+        },
+        "C": {
+          "epochs": 2,
+          "final_eval_loss": 1.4854350090026855,
+          "history_len": 2,
+          "loss_weights": {
+            "L_decomposition": 1.0,
+            "L_formal": 1.0,
+            "L_function": 0.5,
+            "L_latent": 0.25,
+            "L_method": 1.0,
+            "L_repair": 1.0,
+            "L_retention": 0.5,
+            "L_route": 0.0,
+            "L_runtime": 0.05,
+            "L_span": 0.25,
+            "L_value": 1.0
+          },
+          "status": "TRAINED"
+        },
+        "E": {
+          "epochs": 2,
+          "final_eval_loss": 7.644229412078857,
+          "history_len": 2,
+          "loss_weights": {
+            "L_decomposition": 0.4,
+            "L_formal": 0.4,
+            "L_function": 1.0,
+            "L_latent": 1.0,
+            "L_method": 0.5,
+            "L_repair": 0.4,
+            "L_retention": 0.75,
+            "L_route": 0.5,
+            "L_runtime": 0.05,
+            "L_span": 0.5,
+            "L_value": 0.25
+          },
+          "status": "TRAINED"
+        },
+        "__final_eval_source": "BEST_BALANCED_reeval_phase_E"
+      },
+      "reverse_ok": true,
+      "reverse_recon_error": 1.1920928955078125e-07,
+      "steps": 24,
+      "wall_ms": 2521.370874994318
+    }
+  },
+  "arms_trained": [
+    "B_LINEAR_SUBSPACE_INITIALIZATION",
+    "C_LATENT_BRIDGES",
+    "D_BEHAVIOR_HEADS",
+    "E_LATENT_BEHAVIOR",
+    "F_LATENT_ROUTE_RESIDUAL",
+    "G_COMPLETE_V0"
+  ],
+  "capability_claim": false,
+  "claim_boundary": {
+    "behavior_labels_real": false,
+    "capability_claim": false,
+    "full_model_math_bench": false,
+    "kimi_consumed": false,
+    "training_performed_on_real_activations": true
+  },
+  "complete_beats_linear": false,
+  "d_student": 4096,
+  "d_teacher": 6144,
+  "data_kind": "REAL_PAIRED_CAPTURE",
+  "device": "cpu",
+  "loss_portfolio": [
+    "L_latent",
+    "L_function",
+    "L_span",
+    "L_method",
+    "L_decomposition",
+    "L_formal",
+    "L_repair",
+    "L_value",
+    "L_route",
+    "L_retention",
+    "L_runtime"
+  ],
+  "n_eval": 8,
+  "n_train": 24,
+  "parallelism": {
+    "backend": "thread",
+    "cpu_count": 28,
+    "cpu_only": true,
+    "gpu_used": false,
+    "n_units": 6,
+    "n_workers": 6,
+    "parallel": true,
+    "threads_per_worker": 4,
+    "total_threads_budget": 24,
+    "unit": "arm",
+    "wall_ms": 2908.10462499212,
+    "why_safe": "Each A\u2013G arm builds its own LatentV0Stack with independent params/optimizer; no shared state across arms."
+  },
+  "promotion_gate": {
+    "capability_claim": false,
+    "checks": {
+      "complete_intended_bridge_classes": true,
+      "complete_v0_beats_linear_init": false,
+      "held_out_math_improves_over_base": true,
+      "kimi_strategic_bridge_intact": true,
+      "method_decomp_repair_improve": true,
+      "no_material_secondary_regression": true,
+      "nonlinear_latent_bridges_trained": true,
+      "real_glm_activations_from_78_layer_path": true,
+      "reversible_and_loadable": true,
+      "routing_stable": true
+    },
+    "failed": [
+      "complete_v0_beats_linear_init"
+    ],
+    "note": "Promotion requires real capture. Fixture runs never promote.",
+    "recorded_at": "2026-08-06T20:54:46.989519Z",
+    "schema": "hawking.frankenstein.latent_v0_promotion_gate.v1",
+    "seal_sha256": "05144381f48958a43f074a32280784421a1714acb3a8d448aa6248909ad91812",
+    "verdict": "HOLD"
+  },
+  "real_glm_dsv4f_capture": true,
+  "recorded_at": "2026-08-06T20:54:46.989528Z",
+  "retention_gate": {
+    "capability_claim": false,
+    "domains": [
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "coding_and_repository_work",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "tool_use",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "agentic_planning",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "long_context_reasoning",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "repair_and_critique",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "hcli_protocols",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "general_knowledge_conversation",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "runtime_tps",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "bridge_compatibility",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "routing_stability",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      },
+      {
+        "base": 0.7,
+        "delta": 0.0,
+        "domain": "context_behavior",
+        "floor": 0.6799999999999999,
+        "gate": "PASS",
+        "hard": true,
+        "proto": 0.7,
+        "tolerance": 0.02
+      }
+    ],
+    "recorded_at": "2026-08-06T20:54:46.989496Z",
+    "regressions": [],
+    "reject_rule_fired": false,
+    "schema": "hawking.frankenstein.latent_v0_retention_gate.v1",
+    "seal_sha256": "63ed3efa9ab3bfb2dd67884f6a0405a20d182858a903c561ac2588ea35dd1244",
+    "tolerance": 0.02,
+    "verdict": "PASS"
+  },
+  "schema": "hawking.frankenstein.bridge_train_real_ag.v1",
+  "seal_sha256": "73dc175b38e189c1f9fa3ba3233b7d043c9efb7242bb22e83ea7055c8311df28",
+  "site_map": {
+    "GLM_DECOMPOSITION_BRIDGE": {
+      "bridge": "GLM_MATH_BRIDGE",
+      "dsv4f_layer": 15,
+      "glm_layer": 13,
+      "phase_score": 0.5566583814057259,
+      "site": "GLM_DECOMPOSITION_BRIDGE",
+      "transplant_point": "pre_router_hidden_state"
+    },
+    "GLM_EARLY_CONTEXT_BRIDGE": {
+      "bridge": "GLM_MATH_BRIDGE",
+      "dsv4f_layer": 7,
+      "glm_layer": 13,
+      "phase_score": 0.5652091246747242,
+      "site": "GLM_EARLY_CONTEXT_BRIDGE",
+      "transplant_point": "pre_norm_hidden_state"
+    },
+    "GLM_FORMALIZATION_BRIDGE": {
+      "bridge": "GLM_MATH_BRIDGE",
+      "dsv4f_layer": 25,
+      "glm_layer": 13,
+      "phase_score": 0.4021373589065593,
+      "site": "GLM_FORMALIZATION_BRIDGE",
+      "transplant_point": "post_moe_hidden_state"
+    },
+    "GLM_LATE_CONSOLIDATION_BRIDGE": {
+      "bridge": "GLM_MATH_BRIDGE",
+      "dsv4f_layer": 37,
+      "glm_layer": 13,
+      "phase_score": 0.366099523022149,
+      "site": "GLM_LATE_CONSOLIDATION_BRIDGE",
+      "transplant_point": "final_hidden_state"
+    },
+    "GLM_METHOD_BRIDGE": {
+      "bridge": "GLM_MATH_BRIDGE",
+      "dsv4f_layer": 7,
+      "glm_layer": 13,
+      "phase_score": 0.5652091246747242,
+      "site": "GLM_METHOD_BRIDGE",
+      "transplant_point": "post_attention_hidden_state"
+    },
+    "GLM_POST_MOE_BRIDGE": {
+      "bridge": "GLM_MATH_BRIDGE",
+      "dsv4f_layer": 16,
+      "glm_layer": 13,
+      "phase_score": 0.5609983617853487,
+      "site": "GLM_POST_MOE_BRIDGE",
+      "transplant_point": "post_moe_hidden_state"
+    },
+    "GLM_PRE_ROUTER_BRIDGE": {
+      "bridge": "GLM_MATH_BRIDGE",
+      "dsv4f_layer": 16,
+      "glm_layer": 13,
+      "phase_score": 0.5609983617853487,
+      "site": "GLM_PRE_ROUTER_BRIDGE",
+      "transplant_point": "pre_router_hidden_state"
+    },
+    "GLM_REPAIR_BRIDGE": {
+      "bridge": "GLM_MATH_BRIDGE",
+      "dsv4f_layer": 34,
+      "glm_layer": 13,
+      "phase_score": 0.37975650110355375,
+      "site": "GLM_REPAIR_BRIDGE",
+      "transplant_point": "final_hidden_state"
+    }
+  },
+  "status": "REAL_AG_TRAIN_COMPLETE",
+  "v0_modules": [
+    "GLM_EARLY_CONTEXT_BRIDGE",
+    "GLM_METHOD_BRIDGE",
+    "GLM_DECOMPOSITION_BRIDGE",
+    "GLM_PRE_ROUTER_BRIDGE",
+    "GLM_POST_MOE_BRIDGE",
+    "GLM_FORMALIZATION_BRIDGE",
+    "GLM_REPAIR_BRIDGE",
+    "GLM_LATE_CONSOLIDATION_BRIDGE",
+    "GLM_VALUE_HEAD",
+    "GLM_METHOD_CONDITIONED_ROUTE_RESIDUAL"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "admission_current": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_ADMISSION_CURRENT.json",
+  "claim_boundary": {
+    "does_not_execute_a_complete_layer_token_decoder_hcli_or_tps": true,
+    "does_not_execute_ten_physical_expert_projections": true,
+    "materialized_source_route_shaped_fixture_only": true,
+    "metal_requires_a_sealed_cpu_baseline_and_component_quiet_lease": true
+  },
+  "manifest": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+  "mode": "metal",
+  "router_outer_receipt": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_POSTNORM_ROUTER_TOP10_OUTER_METAL_FINAL_LANE_FIX_CAPTURE_20260808T232524Z/outer-terminal-receipt.json",
+  "router_receipt": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_POSTNORM_ROUTER_TOP10_OUTER_METAL_FINAL_LANE_FIX_CAPTURE_20260808T232524Z/inner/receipt.json",
+  "schema": "hawking.ascension.qwen80_direct_packed_moe_combine_capture.v1",
+  "started_unix_millis": 1786237094285,
+  "status": "STARTED_QWEN80_MOE_COMBINE_COMPONENT_ATTEMPT"
+}

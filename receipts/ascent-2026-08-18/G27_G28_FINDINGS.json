@@ -1,0 +1,28 @@
+{
+ "G27_wider_battery": {
+  "2bit": "15/20",
+  "bf16": "20/20",
+  "by_cat_2bit": {
+   "arith": "3/5",
+   "fact": "4/5",
+   "reason": "2/3",
+   "code": "3/3",
+   "inst": "2/2",
+   "lang": "1/2"
+  },
+  "verdict": "external 2-bit DEGRADES ~25% vs bf16 -- NOT full-Doctor-valid, not promotable as-is. 5/6 smoke was misleading (S034 \u00a78 vindicated). It is a specimen + a repair case, not a finished successor."
+ },
+ "G28_prime_diagnosis": {
+  "divergence_step": 0,
+  "bf16": "top ' ' margin 3.625 -> '2, 3'",
+  "2bit": "top ' $' margin 0.875 -> '$3,5,7$'",
+  "verdict": "LOW-MARGIN first-token flip (0.875). The 2-bit logits are noisier at a low-confidence branch point; a minimal correction restoring the margin repairs it. Not a deep failure -> Doctor-guided minimal repair (S034 \u00a79-10) is the right tool, not raising the whole model to q3."
+ },
+ "implication": "Phase-C path validated: 2-bit base (cheap, ~coherent) + minimal Doctor-guided correction (recover the ~25% lost capability by restoring low-margin sensitive predictions) = the matryoshka NX. Next: localize which organ's 2-bit quant costs the margin (G28 organ localization) -> minimal repair (G29).",
+ "G28_organ_localization": {
+  "attention_2bit_rel_err": 0.56,
+  "mlp": 0.386,
+  "deltanet": 0.383,
+  "verdict": "ATTENTION is the sensitive organ (0.56 vs 0.38). External over-compressed attention to 2-bit; our q3 keeps it at 4.25 bpw and stays 0.96-capable. Repair target = restore attention precision (629MB organ, cheap) -> recover the ~25% loss while keeping most byte savings on MLP/deltanet."
+ }
+}

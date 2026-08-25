@@ -1,0 +1,1276 @@
+{
+  "schema": "hawking.headless.hybrid_operator.v1",
+  "generated_at": "2026-08-24T20:30:09Z",
+  "git_head": "4a66db57371bc3e322d1936cae92cb9b642cd0fe",
+  "obligation": "N038 (S024 \u00a714, \u00a7102; N036 evidence)",
+  "question": "Can binary's physical speed keep a DISTRIBUTED correction under 2.25 bpw AND under 27.55 ms while restoring generation, as ONE fused native operator (no dense W)?",
+  "answer": "No coherent hybrid exists that is BOTH below q2f 2.25 bpw AND faster than 27.55 ms. No distributed correction under the 1.0 bpw budget restored held-out activations on real X. Even r=256 (1.035 extra bpw, body 2.285 > 2.25) rel_fro=0.4798. Shared K=2 (extra 0.531 bpw) mean rel_fro=0.49895017594099045. Composition died at held_out_activation. This confirms the 2.25 MLP floor: binary's physical speed cannot keep a distributed correction that actually restores generation under both 2.25 bpw and 27.55 ms.",
+  "coherent_hybrid_beats_q2f": false,
+  "did_not_load_second_27b": true,
+  "did_not_write_under_models": true,
+  "did_not_mutate_noetic_parent_a": true,
+  "dense_w": 0,
+  "dense_w_materialized": 0,
+  "dense_w_is_a_counter": true,
+  "native_only": true,
+  "kernel_autopsy": {
+    "file": "crates/hawking-core/shaders/hybrid_operator.metal",
+    "n_kernels": 12,
+    "all_present": true,
+    "kernels_present": {
+      "binary_lowrank_r8_fused_xproj_c5120_tpr64_tg128": true,
+      "binary_lowrank_r8_fused_xproj_c17408_tpr64_tg128": true,
+      "binary_lowrank_r32_fused_xproj_c5120_tpr64_tg128": true,
+      "binary_lowrank_r32_fused_xproj_c17408_tpr64_tg128": true,
+      "binary_shared_k2_fused_geo_c5120_tpr64_tg128": true,
+      "binary_shared_k2_fused_geo_c17408_tpr64_tg128": true,
+      "binary_lowrank_r8_fused_xproj_c5120_tpr64_tg128_noop": true,
+      "binary_lowrank_r8_fused_xproj_c17408_tpr64_tg128_noop": true,
+      "binary_lowrank_r32_fused_xproj_c5120_tpr64_tg128_noop": true,
+      "binary_lowrank_r32_fused_xproj_c17408_tpr64_tg128_noop": true,
+      "binary_shared_k2_fused_geo_c5120_tpr64_tg128_noop": true,
+      "binary_shared_k2_fused_geo_c17408_tpr64_tg128_noop": true
+    },
+    "all_clear": true,
+    "production_all_clear": true,
+    "production_no_bind_time_shape": true,
+    "uses_shift_not_div": true,
+    "dense_w_written": false,
+    "kernels": [
+      {
+        "kernel": "binary_lowrank_r8_fused_xproj_c5120_tpr64_tg128",
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": [],
+        "has_constant_uint_rows": false,
+        "has_constant_uint_rank": false,
+        "n_threadgroup_barriers": 3
+      },
+      {
+        "kernel": "binary_lowrank_r8_fused_xproj_c5120_tpr64_tg128_noop",
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": [],
+        "has_constant_uint_rows": false,
+        "has_constant_uint_rank": false,
+        "n_threadgroup_barriers": 0
+      },
+      {
+        "kernel": "binary_lowrank_r8_fused_xproj_c17408_tpr64_tg128",
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": [],
+        "has_constant_uint_rows": false,
+        "has_constant_uint_rank": false,
+        "n_threadgroup_barriers": 3
+      },
+      {
+        "kernel": "binary_lowrank_r8_fused_xproj_c17408_tpr64_tg128_noop",
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": [],
+        "has_constant_uint_rows": false,
+        "has_constant_uint_rank": false,
+        "n_threadgroup_barriers": 0
+      },
+      {
+        "kernel": "binary_lowrank_r32_fused_xproj_c5120_tpr64_tg128",
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": [],
+        "has_constant_uint_rows": false,
+        "has_constant_uint_rank": false,
+        "n_threadgroup_barriers": 2
+      },
+      {
+        "kernel": "binary_lowrank_r32_fused_xproj_c17408_tpr64_tg128",
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": [],
+        "has_constant_uint_rows": false,
+        "has_constant_uint_rank": false,
+        "n_threadgroup_barriers": 2
+      },
+      {
+        "kernel": "binary_lowrank_r32_fused_xproj_c5120_tpr64_tg128_noop",
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": [],
+        "has_constant_uint_rows": false,
+        "has_constant_uint_rank": false,
+        "n_threadgroup_barriers": 0
+      },
+      {
+        "kernel": "binary_lowrank_r32_fused_xproj_c17408_tpr64_tg128_noop",
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": [],
+        "has_constant_uint_rows": false,
+        "has_constant_uint_rank": false,
+        "n_threadgroup_barriers": 0
+      },
+      {
+        "kernel": "binary_shared_k2_fused_geo_c5120_tpr64_tg128",
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": [],
+        "has_constant_uint_rows": false,
+        "has_constant_uint_rank": false,
+        "n_threadgroup_barriers": 1
+      },
+      {
+        "kernel": "binary_shared_k2_fused_geo_c17408_tpr64_tg128",
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": [],
+        "has_constant_uint_rows": false,
+        "has_constant_uint_rank": false,
+        "n_threadgroup_barriers": 1
+      },
+      {
+        "kernel": "binary_shared_k2_fused_geo_c5120_tpr64_tg128_noop",
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": [],
+        "has_constant_uint_rows": false,
+        "has_constant_uint_rank": false,
+        "n_threadgroup_barriers": 0
+      },
+      {
+        "kernel": "binary_shared_k2_fused_geo_c17408_tpr64_tg128_noop",
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": [],
+        "has_constant_uint_rows": false,
+        "has_constant_uint_rank": false,
+        "n_threadgroup_barriers": 0
+      }
+    ],
+    "wanted_geometry": "tpr64 tg128 (2 rows / TG of 128, 64 lanes/row), group 64 as a shift, rank and K as literals, V^T x fused into the binary sweep, one dispatch per GEMV."
+  },
+  "kernel_competence": {
+    "ok": true,
+    "any_geo_defective": false,
+    "hybrid_kernels": {
+      "binary_lowrank_r8_fused_xproj_c5120_tpr64_tg128": {
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": []
+      },
+      "binary_lowrank_r8_fused_xproj_c5120_tpr64_tg128_noop": {
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": []
+      },
+      "binary_lowrank_r8_fused_xproj_c17408_tpr64_tg128": {
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": []
+      },
+      "binary_lowrank_r8_fused_xproj_c17408_tpr64_tg128_noop": {
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": []
+      },
+      "binary_lowrank_r32_fused_xproj_c5120_tpr64_tg128": {
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": []
+      },
+      "binary_lowrank_r32_fused_xproj_c17408_tpr64_tg128": {
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": []
+      },
+      "binary_lowrank_r32_fused_xproj_c5120_tpr64_tg128_noop": {
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": []
+      },
+      "binary_lowrank_r32_fused_xproj_c17408_tpr64_tg128_noop": {
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": []
+      },
+      "binary_shared_k2_fused_geo_c5120_tpr64_tg128": {
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": []
+      },
+      "binary_shared_k2_fused_geo_c17408_tpr64_tg128": {
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": []
+      },
+      "binary_shared_k2_fused_geo_c5120_tpr64_tg128_noop": {
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": []
+      },
+      "binary_shared_k2_fused_geo_c17408_tpr64_tg128_noop": {
+        "verdict": "CLEAR",
+        "n_findings": 0,
+        "findings": []
+      }
+    }
+  },
+  "competent": true,
+  "build": {
+    "ok": true,
+    "wall_s": null,
+    "exit_code": null,
+    "stderr_tail": null,
+    "skipped": true
+  },
+  "run": {
+    "ok": true,
+    "wall_s": null,
+    "exit_code": null,
+    "stderr_tail": null,
+    "command": null,
+    "reused_raw": true
+  },
+  "parity": {
+    "ok": true,
+    "noop_diverges": true,
+    "rows": [
+      {
+        "dense_w_materialized": 0,
+        "id": "binary_geo_c5120",
+        "kernel": "binary_g64_matvec_geo_c5120_tpr64_tg128",
+        "max_abs_diff": 0.0,
+        "must_match": true,
+        "n_rows_compared": 16,
+        "ok": true,
+        "tolerance": 0.029999999329447746
+      },
+      {
+        "dense_w_materialized": 0,
+        "id": "q2f_geo_c5120",
+        "kernel": "q2f_g64_matvec_geo_c5120_tpr64_tg128",
+        "max_abs_diff": 0.0,
+        "must_match": true,
+        "n_rows_compared": 16,
+        "ok": true,
+        "tolerance": 0.029999999329447746
+      },
+      {
+        "dense_w_materialized": 0,
+        "id": "lowrank_r8_fused_c5120",
+        "kernel": "binary_lowrank_r8_fused_xproj_c5120_tpr64_tg128",
+        "max_abs_diff": 9.5367431640625e-07,
+        "must_match": true,
+        "n_rows_compared": 16,
+        "ok": true,
+        "tolerance": 0.029999999329447746
+      },
+      {
+        "dense_w_materialized": 0,
+        "id": "shared_k2_fused_c5120",
+        "kernel": "binary_shared_k2_fused_geo_c5120_tpr64_tg128",
+        "max_abs_diff": 0.0,
+        "must_match": true,
+        "n_rows_compared": 16,
+        "ok": true,
+        "tolerance": 0.029999999329447746
+      },
+      {
+        "dense_w_materialized": 0,
+        "id": "lowrank_r8_noop_diverges",
+        "max_abs_vs_fused_cpu": 8.00584602355957,
+        "noop_diverges": true,
+        "ok": true
+      }
+    ]
+  },
+  "q2f_baseline": {
+    "bpw": 2.25,
+    "complete_token_ns": 27547874,
+    "ms": 27.55,
+    "mlp_graph_gpu_ns": 15790458
+  },
+  "binary_bulk": {
+    "bpw": 1.25,
+    "note": "injured body; N032 23.43 ms, 16 copies of token 271"
+  },
+  "representations": [
+    {
+      "id": "binary_lowrank_r8",
+      "correction": "lowrank",
+      "distributed": true,
+      "not_sparse": true,
+      "not_island": true,
+      "rank": 8.0,
+      "n_layers": 64.0,
+      "binary_bytes": 2673868800.0,
+      "correction_bytes": 69206016.0,
+      "active_bytes": 2743074816.0,
+      "active_bpw": 1.2823529411764707,
+      "correction_bpw": 0.03235294117647059,
+      "dram_bytes_per_token": 7949607896.0,
+      "complete_ebpw": 2.3645473973804583,
+      "below_q2f_bpw": true,
+      "dense_w": 0,
+      "COMPLETE_TOKEN_NS": {
+        "mlp_graph_gpu_ns": {
+          "n": 7,
+          "min": 40868500,
+          "median": 40890125,
+          "max": 41036708,
+          "all": [
+            41000249,
+            40962250,
+            40869750,
+            40890125,
+            41036708,
+            40868500,
+            40876374
+          ]
+        },
+        "mlp_graph_wall_ns": {
+          "n": 7,
+          "min": 41234333,
+          "median": 41335041,
+          "max": 41429042,
+          "all": [
+            41361208,
+            41335041,
+            41248917,
+            41269291,
+            41397166,
+            41429042,
+            41234333
+          ]
+        },
+        "composed": {
+          "kind": "MLP_GRAPH_PLUS_N021_NON_MLP",
+          "mlp_graph_gpu_ns": 40890125,
+          "q2f_mlp_graph_gpu_ns": 15790458,
+          "n021_complete_gpu_ns": 27547874,
+          "non_mlp_ns": 11757416,
+          "complete_token_ns": 52647541
+        },
+        "min": 40868500,
+        "median": 52647541,
+        "max": 41036708,
+        "reps": 7
+      },
+      "faster_than_q2f_27_55ms": false,
+      "parity": {
+        "ok": true
+      },
+      "dense_w_materialized": 0,
+      "fused_native_operator": true,
+      "one_dispatch_per_gemv": true,
+      "composition": {
+        "rung": "local_functional_probe",
+        "status": "FAILED",
+        "died_at": "held_out_activation",
+        "unreached_above": null,
+        "why": "Neither distributed correction healed held-out real activations while staying under q2f 2.25 bpw. Low-rank r in [8, 32, 64, 128, 256] never reached rel_fro<=0.5 and gain>=0.5 on L0 up_proj. Shared K=2 mean rel_fro=0.49895017594099045."
+      },
+      "held_out": {
+        "curve_head": {
+          "rank": 8,
+          "layer": 0,
+          "organ": "up_proj",
+          "vs_teacher": {
+            "rel_fro": 0.5217446088790894,
+            "cosine": 0.8561398983001709,
+            "gain": 0.3177938759326935,
+            "scale_aware": 0.2720760166214333,
+            "null": 0.3223702609539032,
+            "beats_null": true,
+            "surplus_over_null": 0.5337696373462677,
+            "healthy": false
+          },
+          "vs_q2f": {
+            "rel_fro": 0.4392254650592804,
+            "cosine": 0.9148187637329102,
+            "gain": 0.3922700583934784,
+            "scale_aware": 0.3588560098689584,
+            "null": 0.3130480945110321,
+            "beats_null": true,
+            "surplus_over_null": 0.601770669221878,
+            "healthy": false
+          },
+          "healthy": false,
+          "active_bpw": 1.2823529411764707,
+          "correction_bpw": 0.03235294117647059,
+          "complete_ebpw": 2.3645473973804583,
+          "below_q2f_bpw": true,
+          "below_rank_budget": true
+        }
+      },
+      "counts_as_win": false,
+      "control": {
+        "noop": {
+          "gpu_ns": {
+            "all": [
+              9242375,
+              9185166,
+              9377125,
+              9178375,
+              9182458,
+              9221125,
+              9437666
+            ],
+            "max": 9437666,
+            "median": 9221125,
+            "min": 9178375,
+            "n": 7
+          },
+          "overlap_with_fused": false,
+          "wall_ns": {
+            "all": [
+              9560584,
+              9485500,
+              9665125,
+              9503500,
+              9494333,
+              9517333,
+              9750958
+            ],
+            "max": 9750958,
+            "median": 9517333,
+            "min": 9485500,
+            "n": 7
+          }
+        },
+        "overlap": false,
+        "label": "SEPARATED"
+      }
+    },
+    {
+      "id": "binary_lowrank_r32",
+      "correction": "lowrank",
+      "distributed": true,
+      "not_sparse": true,
+      "not_island": true,
+      "rank": 32.0,
+      "n_layers": 64.0,
+      "binary_bytes": 2673868800.0,
+      "correction_bytes": 276824064.0,
+      "active_bytes": 2950692864.0,
+      "active_bpw": 1.3794117647058823,
+      "correction_bpw": 0.12941176470588237,
+      "dram_bytes_per_token": 8157225944.0,
+      "complete_ebpw": 2.4263017280933763,
+      "below_q2f_bpw": true,
+      "dense_w": 0,
+      "COMPLETE_TOKEN_NS": {
+        "mlp_graph_gpu_ns": {
+          "n": 7,
+          "min": 320047458,
+          "median": 321033166,
+          "max": 321298499,
+          "all": [
+            321134375,
+            320047458,
+            320856416,
+            320208041,
+            321033166,
+            321298499,
+            321275958
+          ]
+        },
+        "mlp_graph_wall_ns": {
+          "n": 7,
+          "min": 320597667,
+          "median": 321484583,
+          "max": 321704458,
+          "all": [
+            321553750,
+            320617875,
+            321258583,
+            320597667,
+            321484583,
+            321704458,
+            321654125
+          ]
+        },
+        "composed": {
+          "kind": "MLP_GRAPH_PLUS_N021_NON_MLP",
+          "mlp_graph_gpu_ns": 321033166,
+          "q2f_mlp_graph_gpu_ns": 15790458,
+          "n021_complete_gpu_ns": 27547874,
+          "non_mlp_ns": 11757416,
+          "complete_token_ns": 332790582
+        },
+        "min": 320047458,
+        "median": 332790582,
+        "max": 321298499,
+        "reps": 7
+      },
+      "faster_than_q2f_27_55ms": false,
+      "parity": {
+        "ok": true
+      },
+      "dense_w_materialized": 0,
+      "fused_native_operator": true,
+      "one_dispatch_per_gemv": true,
+      "composition": {
+        "rung": "local_functional_probe",
+        "status": "FAILED",
+        "died_at": "held_out_activation",
+        "unreached_above": null,
+        "why": "Neither distributed correction healed held-out real activations while staying under q2f 2.25 bpw. Low-rank r in [8, 32, 64, 128, 256] never reached rel_fro<=0.5 and gain>=0.5 on L0 up_proj. Shared K=2 mean rel_fro=0.49895017594099045."
+      },
+      "held_out": {
+        "curve": [
+          {
+            "rank": 32,
+            "layer": 0,
+            "organ": "up_proj",
+            "vs_teacher": {
+              "rel_fro": 0.5166633129119873,
+              "cosine": 0.8586236834526062,
+              "gain": 0.31526511907577515,
+              "scale_aware": 0.27069409780496656,
+              "null": 0.3223702609539032,
+              "beats_null": true,
+              "surplus_over_null": 0.536253422498703,
+              "healthy": false
+            },
+            "vs_q2f": {
+              "rel_fro": 0.43647730350494385,
+              "cosine": 0.9146373867988586,
+              "gain": 0.4315333366394043,
+              "scale_aware": 0.3946965233404569,
+              "null": 0.3130480945110321,
+              "beats_null": true,
+              "surplus_over_null": 0.6015892922878265,
+              "healthy": false
+            },
+            "healthy": false,
+            "active_bpw": 1.3794117647058823,
+            "correction_bpw": 0.12941176470588237,
+            "complete_ebpw": 2.4263017280933763,
+            "below_q2f_bpw": true,
+            "below_rank_budget": true
+          }
+        ]
+      },
+      "counts_as_win": false,
+      "control": {
+        "noop": {
+          "gpu_ns": {
+            "all": [
+              48232875,
+              48614208,
+              48691499,
+              48481624,
+              48506999,
+              48613583,
+              48297291
+            ],
+            "max": 48691499,
+            "median": 48506999,
+            "min": 48232875,
+            "n": 7
+          },
+          "overlap_with_fused": false,
+          "wall_ns": {
+            "all": [
+              48623792,
+              48976583,
+              49053792,
+              48875166,
+              48869708,
+              48961375,
+              48660959
+            ],
+            "max": 49053792,
+            "median": 48875166,
+            "min": 48623792,
+            "n": 7
+          }
+        },
+        "overlap": false,
+        "label": "SEPARATED"
+      }
+    },
+    {
+      "id": "binary_shared_k2",
+      "correction": "shared_basis",
+      "distributed": true,
+      "not_sparse": true,
+      "not_island": true,
+      "k": 2.0,
+      "n_layers": 64.0,
+      "binary_bytes": 2673868800.0,
+      "correction_bytes": 1136394240.0,
+      "basis_sign_bytes": 66846720.0,
+      "scale_bytes": 1069547520.0,
+      "active_bytes": 3810263040.0,
+      "active_bpw": 1.78125,
+      "correction_bpw": 0.53125,
+      "dram_bytes_per_token": 9016796120.0,
+      "complete_ebpw": 2.681974013961633,
+      "below_q2f_bpw": true,
+      "dense_w": 0,
+      "COMPLETE_TOKEN_NS": {
+        "mlp_graph_gpu_ns": {
+          "n": 7,
+          "min": 18257250,
+          "median": 18338083,
+          "max": 18422333,
+          "all": [
+            18269750,
+            18422333,
+            18257250,
+            18419333,
+            18338083,
+            18292749,
+            18399499
+          ]
+        },
+        "mlp_graph_wall_ns": {
+          "n": 7,
+          "min": 18551584,
+          "median": 18664459,
+          "max": 18733417,
+          "all": [
+            18598250,
+            18733417,
+            18551584,
+            18698208,
+            18624708,
+            18664459,
+            18694333
+          ]
+        },
+        "composed": {
+          "kind": "MLP_GRAPH_PLUS_N021_NON_MLP",
+          "mlp_graph_gpu_ns": 18338083,
+          "q2f_mlp_graph_gpu_ns": 15790458,
+          "n021_complete_gpu_ns": 27547874,
+          "non_mlp_ns": 11757416,
+          "complete_token_ns": 30095499
+        },
+        "min": 18257250,
+        "median": 30095499,
+        "max": 18422333,
+        "reps": 7
+      },
+      "faster_than_q2f_27_55ms": false,
+      "parity": {
+        "ok": true
+      },
+      "dense_w_materialized": 0,
+      "fused_native_operator": true,
+      "one_dispatch_per_gemv": true,
+      "composition": {
+        "rung": "local_functional_probe",
+        "status": "FAILED",
+        "died_at": "held_out_activation",
+        "unreached_above": null,
+        "why": "Neither distributed correction healed held-out real activations while staying under q2f 2.25 bpw. Low-rank r in [8, 32, 64, 128, 256] never reached rel_fro<=0.5 and gain>=0.5 on L0 up_proj. Shared K=2 mean rel_fro=0.49895017594099045."
+      },
+      "held_out": {
+        "k": 2,
+        "organ": "up_proj",
+        "fit_layers": [
+          0,
+          1,
+          7,
+          31
+        ],
+        "fit_wall_s": 3.012359041982563,
+        "layers": [
+          {
+            "layer": 0,
+            "organ": "up_proj",
+            "binary": {
+              "rel_fro": 0.5237986445426941,
+              "cosine": 0.855146586894989,
+              "gain": 0.309203177690506,
+              "scale_aware": 0.264414042059121,
+              "null": 0.3223702609539032,
+              "beats_null": true,
+              "surplus_over_null": 0.5327763259410858,
+              "healthy": false
+            },
+            "hybrid": {
+              "rel_fro": 0.45882123708724976,
+              "cosine": 0.8916645646095276,
+              "gain": 0.3829987943172455,
+              "scale_aware": 0.3415064531808607,
+              "null": 0.3223702609539032,
+              "beats_null": true,
+              "surplus_over_null": 0.5692943036556244,
+              "healthy": false
+            },
+            "healthy": false
+          },
+          {
+            "layer": 1,
+            "organ": "up_proj",
+            "binary": {
+              "rel_fro": 0.5466018319129944,
+              "cosine": 0.8400335311889648,
+              "gain": 0.30966266989707947,
+              "scale_aware": 0.26012702607104643,
+              "null": 0.28053250908851624,
+              "beats_null": true,
+              "surplus_over_null": 0.5595010221004486,
+              "healthy": false
+            },
+            "hybrid": {
+              "rel_fro": 0.4737415611743927,
+              "cosine": 0.8831517696380615,
+              "gain": 0.3598055839538574,
+              "scale_aware": 0.3177629381945053,
+              "null": 0.28053250908851624,
+              "beats_null": true,
+              "surplus_over_null": 0.6026192605495453,
+              "healthy": false
+            },
+            "healthy": false
+          },
+          {
+            "layer": 7,
+            "organ": "up_proj",
+            "binary": {
+              "rel_fro": 0.5791229009628296,
+              "cosine": 0.8137907981872559,
+              "gain": 0.4250994324684143,
+              "scale_aware": 0.34594200645742035,
+              "null": 0.25113821029663086,
+              "beats_null": true,
+              "surplus_over_null": 0.562652587890625,
+              "healthy": false
+            },
+            "hybrid": {
+              "rel_fro": 0.500205397605896,
+              "cosine": 0.8648169040679932,
+              "gain": 0.5459784865379333,
+              "scale_aware": 0.472171424415464,
+              "null": 0.25113821029663086,
+              "beats_null": true,
+              "surplus_over_null": 0.6136786937713623,
+              "healthy": false
+            },
+            "healthy": false
+          },
+          {
+            "layer": 31,
+            "organ": "up_proj",
+            "binary": {
+              "rel_fro": 0.6804623007774353,
+              "cosine": 0.7470793724060059,
+              "gain": 0.25219258666038513,
+              "scale_aware": 0.18840787936768777,
+              "null": 0.33276358246803284,
+              "beats_null": true,
+              "surplus_over_null": 0.414315789937973,
+              "healthy": false
+            },
+            "hybrid": {
+              "rel_fro": 0.5630325078964233,
+              "cosine": 0.8269034028053284,
+              "gain": 0.35463833808898926,
+              "scale_aware": 0.2932516485310117,
+              "null": 0.33276358246803284,
+              "beats_null": true,
+              "surplus_over_null": 0.49413982033729553,
+              "healthy": false
+            },
+            "healthy": false
+          }
+        ],
+        "mean_rel_fro": 0.49895017594099045,
+        "mean_gain": 0.4108553007245064,
+        "healthy": false,
+        "n_healthy": 0,
+        "n": 4,
+        "accounting": {
+          "k": 2.0,
+          "n_layers": 64.0,
+          "binary_bytes": 2673868800.0,
+          "correction_bytes": 1136394240.0,
+          "basis_sign_bytes": 66846720.0,
+          "scale_bytes": 1069547520.0,
+          "active_bytes": 3810263040.0,
+          "active_bpw": 1.78125,
+          "correction_bpw": 0.53125,
+          "dram_bytes_per_token": 9016796120.0,
+          "complete_ebpw": 2.681974013961633,
+          "below_q2f_bpw": true,
+          "dense_w": 0.0
+        },
+        "not_gaussian": true,
+        "real_activations": true
+      },
+      "counts_as_win": false,
+      "control": {
+        "noop": {
+          "gpu_ns": {
+            "all": [
+              14007666,
+              13979333,
+              14142125,
+              13952249,
+              14182958,
+              13983166,
+              14052583
+            ],
+            "max": 14182958,
+            "median": 14007666,
+            "min": 13952249,
+            "n": 7
+          },
+          "overlap_with_fused": false,
+          "wall_ns": {
+            "all": [
+              14295292,
+              14296792,
+              14506625,
+              14264333,
+              14485000,
+              14304167,
+              14365583
+            ],
+            "max": 14506625,
+            "median": 14304167,
+            "min": 14264333,
+            "n": 7
+          }
+        },
+        "overlap": false,
+        "label": "SEPARATED"
+      }
+    }
+  ],
+  "n_hybrid_fused_operators": 3,
+  "ACTIVE_BYTES_PER_TOKEN": {
+    "binary_lowrank_r8": 7949607896.0,
+    "binary_lowrank_r32": 8157225944.0,
+    "binary_shared_k2": 9016796120.0
+  },
+  "held_out_lowrank": {
+    "organ": "up_proj",
+    "layer": 0,
+    "n_tokens": 48,
+    "not_gaussian": true,
+    "real_activations": true,
+    "reference": {
+      "binary_vs_teacher": {
+        "rel_fro": 0.5237986445426941,
+        "cosine": 0.855146586894989,
+        "gain": 0.309203177690506,
+        "scale_aware": 0.264414042059121,
+        "null": 0.3223702609539032,
+        "beats_null": true,
+        "surplus_over_null": 0.5327763259410858,
+        "healthy": false
+      },
+      "q2f_vs_teacher": {
+        "rel_fro": 0.31786084175109863,
+        "cosine": 0.9489501118659973,
+        "gain": 0.615628719329834,
+        "scale_aware": 0.5842009420759666,
+        "null": 0.3223702609539032,
+        "beats_null": true,
+        "surplus_over_null": 0.6265798509120941,
+        "healthy": true
+      },
+      "binary_vs_q2f": {
+        "rel_fro": 0.44030165672302246,
+        "cosine": 0.915088951587677,
+        "gain": 0.397127628326416,
+        "scale_aware": 0.3634071050517207,
+        "null": 0.3130480945110321,
+        "beats_null": true,
+        "surplus_over_null": 0.6020408570766449,
+        "healthy": false
+      }
+    },
+    "curve": [
+      {
+        "rank": 8,
+        "layer": 0,
+        "organ": "up_proj",
+        "vs_teacher": {
+          "rel_fro": 0.5217446088790894,
+          "cosine": 0.8561398983001709,
+          "gain": 0.3177938759326935,
+          "scale_aware": 0.2720760166214333,
+          "null": 0.3223702609539032,
+          "beats_null": true,
+          "surplus_over_null": 0.5337696373462677,
+          "healthy": false
+        },
+        "vs_q2f": {
+          "rel_fro": 0.4392254650592804,
+          "cosine": 0.9148187637329102,
+          "gain": 0.3922700583934784,
+          "scale_aware": 0.3588560098689584,
+          "null": 0.3130480945110321,
+          "beats_null": true,
+          "surplus_over_null": 0.601770669221878,
+          "healthy": false
+        },
+        "healthy": false,
+        "active_bpw": 1.2823529411764707,
+        "correction_bpw": 0.03235294117647059,
+        "complete_ebpw": 2.3645473973804583,
+        "below_q2f_bpw": true,
+        "below_rank_budget": true
+      },
+      {
+        "rank": 32,
+        "layer": 0,
+        "organ": "up_proj",
+        "vs_teacher": {
+          "rel_fro": 0.5166633129119873,
+          "cosine": 0.8586236834526062,
+          "gain": 0.31526511907577515,
+          "scale_aware": 0.27069409780496656,
+          "null": 0.3223702609539032,
+          "beats_null": true,
+          "surplus_over_null": 0.536253422498703,
+          "healthy": false
+        },
+        "vs_q2f": {
+          "rel_fro": 0.43647730350494385,
+          "cosine": 0.9146373867988586,
+          "gain": 0.4315333366394043,
+          "scale_aware": 0.3946965233404569,
+          "null": 0.3130480945110321,
+          "beats_null": true,
+          "surplus_over_null": 0.6015892922878265,
+          "healthy": false
+        },
+        "healthy": false,
+        "active_bpw": 1.3794117647058823,
+        "correction_bpw": 0.12941176470588237,
+        "complete_ebpw": 2.4263017280933763,
+        "below_q2f_bpw": true,
+        "below_rank_budget": true
+      },
+      {
+        "rank": 64,
+        "layer": 0,
+        "organ": "up_proj",
+        "vs_teacher": {
+          "rel_fro": 0.5097836256027222,
+          "cosine": 0.8620333671569824,
+          "gain": 0.29970046877861023,
+          "scale_aware": 0.25835180423975146,
+          "null": 0.3223702609539032,
+          "beats_null": true,
+          "surplus_over_null": 0.5396631062030792,
+          "healthy": false
+        },
+        "vs_q2f": {
+          "rel_fro": 0.4328822195529938,
+          "cosine": 0.9144555926322937,
+          "gain": 0.4301067292690277,
+          "scale_aware": 0.39331350400884624,
+          "null": 0.3130480945110321,
+          "beats_null": true,
+          "surplus_over_null": 0.6014074981212616,
+          "healthy": false
+        },
+        "healthy": false,
+        "active_bpw": 1.5088235294117647,
+        "correction_bpw": 0.25882352941176473,
+        "complete_ebpw": 2.508640835710601,
+        "below_q2f_bpw": true,
+        "below_rank_budget": true
+      },
+      {
+        "rank": 128,
+        "layer": 0,
+        "organ": "up_proj",
+        "vs_teacher": {
+          "rel_fro": 0.5000815987586975,
+          "cosine": 0.8671754002571106,
+          "gain": 0.3385426104068756,
+          "scale_aware": 0.2935758236836694,
+          "null": 0.3223702609539032,
+          "beats_null": true,
+          "surplus_over_null": 0.5448051393032074,
+          "healthy": false
+        },
+        "vs_q2f": {
+          "rel_fro": 0.4281620681285858,
+          "cosine": 0.9145264625549316,
+          "gain": 0.44827383756637573,
+          "scale_aware": 0.4099582869255016,
+          "null": 0.3130480945110321,
+          "beats_null": true,
+          "surplus_over_null": 0.6014783680438995,
+          "healthy": false
+        },
+        "healthy": false,
+        "active_bpw": 1.7676470588235293,
+        "correction_bpw": 0.5176470588235295,
+        "complete_ebpw": 2.6733190509450497,
+        "below_q2f_bpw": true,
+        "below_rank_budget": true
+      },
+      {
+        "rank": 256,
+        "layer": 0,
+        "organ": "up_proj",
+        "vs_teacher": {
+          "rel_fro": 0.4798254668712616,
+          "cosine": 0.877770721912384,
+          "gain": 0.3266755938529968,
+          "scale_aware": 0.2867462718475018,
+          "null": 0.3223702609539032,
+          "beats_null": true,
+          "surplus_over_null": 0.5554004609584808,
+          "healthy": false
+        },
+        "vs_q2f": {
+          "rel_fro": 0.4185481667518616,
+          "cosine": 0.9159209132194519,
+          "gain": 0.4265681505203247,
+          "scale_aware": 0.3907026899749084,
+          "null": 0.3130480945110321,
+          "beats_null": true,
+          "surplus_over_null": 0.6028728187084198,
+          "healthy": false
+        },
+        "healthy": false,
+        "active_bpw": 2.2852941176470587,
+        "correction_bpw": 1.035294117647059,
+        "complete_ebpw": 3.002675481413948,
+        "below_q2f_bpw": false,
+        "below_rank_budget": false
+      }
+    ],
+    "probes": [
+      {
+        "layer": 1,
+        "organ": "up_proj",
+        "binary": {
+          "rel_fro": 0.5466018319129944,
+          "cosine": 0.8400335311889648,
+          "gain": 0.30966266989707947,
+          "scale_aware": 0.26012702607104643,
+          "null": 0.28053250908851624,
+          "beats_null": true,
+          "surplus_over_null": 0.5595010221004486,
+          "healthy": false
+        },
+        "lowrank_r32": {
+          "rel_fro": 0.5402401089668274,
+          "cosine": 0.8432577252388,
+          "gain": 0.3378325402736664,
+          "scale_aware": 0.2848798994228172,
+          "null": 0.28053250908851624,
+          "beats_null": true,
+          "surplus_over_null": 0.5627252161502838,
+          "healthy": false
+        }
+      },
+      {
+        "layer": 7,
+        "organ": "up_proj",
+        "binary": {
+          "rel_fro": 0.5791229009628296,
+          "cosine": 0.8137907981872559,
+          "gain": 0.4250994324684143,
+          "scale_aware": 0.34594200645742035,
+          "null": 0.25113821029663086,
+          "beats_null": true,
+          "surplus_over_null": 0.562652587890625,
+          "healthy": false
+        },
+        "lowrank_r32": {
+          "rel_fro": 0.5753592848777771,
+          "cosine": 0.8163782954216003,
+          "gain": 0.4400719106197357,
+          "scale_aware": 0.3592651562546667,
+          "null": 0.25113821029663086,
+          "beats_null": true,
+          "surplus_over_null": 0.5652400851249695,
+          "healthy": false
+        }
+      }
+    ],
+    "first_healthy_rank_below_q2f": null,
+    "first_healthy_rank_any": null,
+    "rank_budget_for_1bpw_extra": 247
+  },
+  "held_out_shared": {
+    "k": 2,
+    "organ": "up_proj",
+    "fit_layers": [
+      0,
+      1,
+      7,
+      31
+    ],
+    "fit_wall_s": 3.012359041982563,
+    "layers": [
+      {
+        "layer": 0,
+        "organ": "up_proj",
+        "binary": {
+          "rel_fro": 0.5237986445426941,
+          "cosine": 0.855146586894989,
+          "gain": 0.309203177690506,
+          "scale_aware": 0.264414042059121,
+          "null": 0.3223702609539032,
+          "beats_null": true,
+          "surplus_over_null": 0.5327763259410858,
+          "healthy": false
+        },
+        "hybrid": {
+          "rel_fro": 0.45882123708724976,
+          "cosine": 0.8916645646095276,
+          "gain": 0.3829987943172455,
+          "scale_aware": 0.3415064531808607,
+          "null": 0.3223702609539032,
+          "beats_null": true,
+          "surplus_over_null": 0.5692943036556244,
+          "healthy": false
+        },
+        "healthy": false
+      },
+      {
+        "layer": 1,
+        "organ": "up_proj",
+        "binary": {
+          "rel_fro": 0.5466018319129944,
+          "cosine": 0.8400335311889648,
+          "gain": 0.30966266989707947,
+          "scale_aware": 0.26012702607104643,
+          "null": 0.28053250908851624,
+          "beats_null": true,
+          "surplus_over_null": 0.5595010221004486,
+          "healthy": false
+        },
+        "hybrid": {
+          "rel_fro": 0.4737415611743927,
+          "cosine": 0.8831517696380615,
+          "gain": 0.3598055839538574,
+          "scale_aware": 0.3177629381945053,
+          "null": 0.28053250908851624,
+          "beats_null": true,
+          "surplus_over_null": 0.6026192605495453,
+          "healthy": false
+        },
+        "healthy": false
+      },
+      {
+        "layer": 7,
+        "organ": "up_proj",
+        "binary": {
+          "rel_fro": 0.5791229009628296,
+          "cosine": 0.8137907981872559,
+          "gain": 0.4250994324684143,
+          "scale_aware": 0.34594200645742035,
+          "null": 0.25113821029663086,
+          "beats_null": true,
+          "surplus_over_null": 0.562652587890625,
+          "healthy": false
+        },
+        "hybrid": {
+          "rel_fro": 0.500205397605896,
+          "cosine": 0.8648169040679932,
+          "gain": 0.5459784865379333,
+          "scale_aware": 0.472171424415464,
+          "null": 0.25113821029663086,
+          "beats_null": true,
+          "surplus_over_null": 0.6136786937713623,
+          "healthy": false
+        },
+        "healthy": false
+      },
+      {
+        "layer": 31,
+        "organ": "up_proj",
+        "binary": {
+          "rel_fro": 0.6804623007774353,
+          "cosine": 0.7470793724060059,
+          "gain": 0.25219258666038513,
+          "scale_aware": 0.18840787936768777,
+          "null": 0.33276358246803284,
+          "beats_null": true,
+          "surplus_over_null": 0.414315789937973,
+          "healthy": false
+        },
+        "hybrid": {
+          "rel_fro": 0.5630325078964233,
+          "cosine": 0.8269034028053284,
+          "gain": 0.35463833808898926,
+          "scale_aware": 0.2932516485310117,
+          "null": 0.33276358246803284,
+          "beats_null": true,
+          "surplus_over_null": 0.49413982033729553,
+          "healthy": false
+        },
+        "healthy": false
+      }
+    ],
+    "mean_rel_fro": 0.49895017594099045,
+    "mean_gain": 0.4108553007245064,
+    "healthy": false,
+    "n_healthy": 0,
+    "n": 4,
+    "accounting": {
+      "k": 2.0,
+      "n_layers": 64.0,
+      "binary_bytes": 2673868800.0,
+      "correction_bytes": 1136394240.0,
+      "basis_sign_bytes": 66846720.0,
+      "scale_bytes": 1069547520.0,
+      "active_bytes": 3810263040.0,
+      "active_bpw": 1.78125,
+      "correction_bpw": 0.53125,
+      "dram_bytes_per_token": 9016796120.0,
+      "complete_ebpw": 2.681974013961633,
+      "below_q2f_bpw": true,
+      "dense_w": 0.0
+    },
+    "not_gaussian": true,
+    "real_activations": true
+  },
+  "short_chain": {},
+  "complete_organ": {},
+  "composition_ladder": {
+    "rung": "local_functional_probe",
+    "status": "FAILED",
+    "died_at": "held_out_activation",
+    "unreached_above": null,
+    "why": "Neither distributed correction healed held-out real activations while staying under q2f 2.25 bpw. Low-rank r in [8, 32, 64, 128, 256] never reached rel_fro<=0.5 and gain>=0.5 on L0 up_proj. Shared K=2 mean rel_fro=0.49895017594099045."
+  },
+  "parent": {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
+    "is_noetic_parent_a": true,
+    "mutated": false
+  },
+  "capture": {
+    "path": "/Users/scammermike/Downloads/hawking-copy/workspace/campaign/phaseB/capture_diverse2",
+    "split_rule": "prompt_hold: last 3 prompts/family",
+    "n_fit": 9057,
+    "n_hold": 2212
+  },
+  "streamed_one_tensor_at_a_time": true,
+  "not_gaussian": true,
+  "toward_roof_729_7": {
+    "candidate_complete_token_ns": 30095499,
+    "q2f_complete_token_ns": 27547874,
+    "faster_than_q2f": false,
+    "roof_tok_s": 729.7
+  },
+  "finding": {
+    "coherent_hybrid_beats_q2f": false,
+    "reason": "No distributed correction under the 1.0 bpw budget restored held-out activations on real X. Even r=256 (1.035 extra bpw, body 2.285 > 2.25) rel_fro=0.4798. Shared K=2 (extra 0.531 bpw) mean rel_fro=0.49895017594099045. Composition died at held_out_activation. This confirms the 2.25 MLP floor: binary's physical speed cannot keep a distributed correction that actually restores generation under both 2.25 bpw and 27.55 ms.",
+    "n_representations": 3,
+    "n_fused_native": 3,
+    "n_wins": 0,
+    "rank_budget_for_1bpw_extra": 247,
+    "shared_k2_below_q2f_bpw": true,
+    "lowrank_r8_below_q2f_bpw": true,
+    "died_at": "held_out_activation",
+    "rung": "local_functional_probe"
+  },
+  "elapsed_s": 10.147170459007611
+}

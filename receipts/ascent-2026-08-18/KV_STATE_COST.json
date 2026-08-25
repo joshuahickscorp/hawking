@@ -1,0 +1,14 @@
+{
+  "schema": "hawking.nos.kv_state_cost.v1", "session": "f5169750", "date": "2026-08-18",
+  "basis": "state_bytes from QWEN38_TOKEN_NS_FRESH.json (uniform-q4 anatomy)",
+  "per_token_state_traffic": {
+    "deltanet_rec_state_rw_bytes": 301989888, "deltanet_rec_state_resident_bytes": 150994944, "context_dependent": false,
+    "deltanet_conv_state_rw_bytes": 11796480, "conv_state_resident_bytes": 5898240,
+    "gqa_kv_write_bytes": 131072, "gqa_kv_read_bytes_at_pos": 2490368, "gqa_context_dependent": true,
+    "total_state_rw_bytes": 316407808, "total_state_ms_at_471gbs": 0.67, "pct_of_token": 2.3
+  },
+  "finding": "On this hybrid (DeltaNet + GQA) model the state is NOT a per-token speed lever. Total state traffic 316 MB/token = ~0.67 ms = ~2.3% of the ~29 ms token. GQA KV (the thing KV-precision-reduction usually targets) is only 2.49 MB/token and grows sub-linearly with context (still << the 13.6 GB weights even at 32k). The dominant state traffic is the DeltaNet recurrent state (302 MB rw/token, 151 MB resident, CONTEXT-INDEPENDENT) whose precision is bound to recurrence stability (Doctor risk).",
+  "G8_verdict": "MEASURED NEGATIVE as a speed lever: KV precision reduction on GQA saves ~0 (2.49 MB/token). rec_state precision (fp32->fp16) could save ~0.32 ms (~1% token) but risks recurrence stability. Not worth disturbing for speed (S012 section 11).",
+  "G9_verdict": "The state is already small and mostly fixed-size; latent-KV/compression has little per-token headroom here. The hybrid's fixed DeltaNet state is a RESIDENCY advantage (flat long-context slope, confirmed), not a cost problem. Record as science; do not spend GPU on it while the MLP/representation front is open.",
+  "reopen_if": "state exceeds ~5% of the token at a target context (e.g. GQA KV at very long context), or a successor architecture with growing state is adopted."
+}

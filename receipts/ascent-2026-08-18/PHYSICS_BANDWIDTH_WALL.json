@@ -1,0 +1,22 @@
+{
+  "schema": "hawking.nos.physics_wall.v1", "session": "f5169750", "date": "2026-08-18",
+  "claim": "Dense full-activation single-stream decode at the 3.3448 BPW coherent floor is bandwidth-walled at ~70 TPS (M3 Ultra peak) / ~40 TPS (current effective). 100 TPS is NOT reachable by kernel tuning alone at coherent density.",
+  "grounding": {
+    "active_bytes_per_token_uniform_q4": 13618141856,
+    "active_bytes_breakdown": {"mlp": 9091153920, "deltanet": 2953789440, "gqa": 891289600, "lm_head": 675430400},
+    "m3_ultra_peak_gb_s": 819.0, "honest_decode_ceiling_gb_s": 411.51,
+    "measured_effective_gb_s_uniform_q4": 471.5, "pct_of_peak": 57.6,
+    "dense_tps_ceilings": {"uniform_q4_peak": 60.1, "uniform_q4_effective": 34.5, "mixed_q3_peak": 70.1, "mixed_q3_effective": 40.3}
+  },
+  "consequence_for_ladder": {
+    "G20_40tps": "dense-reachable: close the 471->819 bandwidth gap (fusion, fewer dispatches, better MLP kernel) OR run q3 near peak. Kernel work only.",
+    "G21_60tps": "dense-reachable only near peak bandwidth (uniform-q4 @peak = 60.1). Tight; needs near-peak efficiency.",
+    "G22_100tps": "NOT dense-reachable at coherent density. Requires breaking one invariant: (1) 471->819 effective bandwidth AND (2) one of: activation sparsity / conditional compute (skip near-zero SwiGLU neurons -> fewer active MLP bytes), multi-token amortization (G12 self-speculative / G11 Matryoshka: share the weight sweep over K accepted tokens; G12 primitive already measured 2.57x over 4 positions). Sub-2.44 BPW density is DEAD (below 3.3448 coherent floor)."
+  },
+  "levers_ranked": [
+    "close bandwidth gap 471->819 GB/s (kernel/dispatch efficiency): 34.5 -> up to 60 TPS dense",
+    "activation sparsity in SwiGLU MLP (67% of active bytes): skip near-zero gated neurons",
+    "multi-token amortization G11/G12: only path to break the per-token weight-sweep wall for 100 TPS"
+  ],
+  "caution": "Q80 collapsed a supposed roof once; this wall is grounded in measured active_bytes + measured effective bandwidth, and it names the three escape hatches rather than declaring impossibility. Verify any TPS>70-at-coherent-density claim against active_bytes and whether all weights were actually touched."
+}

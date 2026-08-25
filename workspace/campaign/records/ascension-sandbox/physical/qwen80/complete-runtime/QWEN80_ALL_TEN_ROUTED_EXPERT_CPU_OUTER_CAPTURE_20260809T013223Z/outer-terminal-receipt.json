@@ -1,0 +1,110 @@
+{
+  "child": {
+    "command": [
+      "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/debug/examples/ascension_qwen80_all_ten_routed_expert_cpu",
+      "--manifest",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+      "--expected-manifest-seal-sha256",
+      "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+      "--expected-source-audit-seal-sha256",
+      "c572b2270b623b8677c374b43c89ddd729de135c25721488bb874b184ff8c3d4",
+      "--expected-source-revision",
+      "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+      "--route-plan",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_ALL_TEN_ROUTED_EXPERT_BINDING_PLAN_20260809T010114Z.json",
+      "--router-inner",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_POSTNORM_ROUTER_TOP10_OUTER_METAL_FINAL_LANE_FIX_CAPTURE_20260808T232524Z/inner/receipt.json",
+      "--router-outer",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_POSTNORM_ROUTER_TOP10_OUTER_METAL_FINAL_LANE_FIX_CAPTURE_20260808T232524Z/outer-terminal-receipt.json",
+      "--capture-dir",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_ALL_TEN_ROUTED_EXPERT_CPU_OUTER_CAPTURE_20260809T013223Z/inner"
+    ],
+    "finished_at": "2026-08-09T01:36:05.389412Z",
+    "pid": 21343,
+    "started_at": "2026-08-09T01:32:47.886593Z",
+    "terminal": {
+      "exit_code": 0,
+      "reaped": true,
+      "returncode": 0,
+      "signal": null,
+      "timed_out": false
+    }
+  },
+  "claim_boundary": {
+    "cpu_oracle_only": true,
+    "no_metal_gpu_watcher_or_server_action": true,
+    "not_a_complete_layer_token_decoder_generation_hcli_tps_tg_or_tournament_result": true,
+    "pre_shared_expert_pre_combine_pre_residual": true
+  },
+  "inner_probe_capture": {
+    "binding_valid": true,
+    "mode": "cpu-oracle",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_ALL_TEN_ROUTED_EXPERT_CPU_OUTER_CAPTURE_20260809T013223Z/inner/receipt.json",
+    "present": true,
+    "schema": "hawking.ascension.qwen80_all_ten_routed_expert_cpu_oracle.v1",
+    "sha256": "af10caa70a1f8a2b3a7deb14768f0af8736252b9a736b179520961849fec5675",
+    "status": "EARNED_CURRENT_ADMITTED_QWEN80_ALL_TEN_ROUTED_EXPERT_CPU_ORACLE_READY_FOR_SEPARATE_DEVICE_LEASE"
+  },
+  "launch_identity_sha256": "4e8a54f5576b3760d3853a5dbae2f93c42b42630b2ca0ddc70c4c401aafdce89",
+  "mode": "cpu-oracle",
+  "one_shot": {
+    "automatic_retry_disabled": true,
+    "same_capture_dir_never_starts_a_second_child": true,
+    "terminal_receipt_written_last": true
+  },
+  "outer_capture": {
+    "directory": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_ALL_TEN_ROUTED_EXPERT_CPU_OUTER_CAPTURE_20260809T013223Z",
+    "stderr": {
+      "bytes": 0,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_ALL_TEN_ROUTED_EXPERT_CPU_OUTER_CAPTURE_20260809T013223Z/outer.stderr.log",
+      "present": true,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout": {
+      "bytes": 0,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_ALL_TEN_ROUTED_EXPERT_CPU_OUTER_CAPTURE_20260809T013223Z/outer.stdout.log",
+      "present": true,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "recorded_at": "2026-08-09T01:36:05.389412Z",
+  "schema": "hawking.ascension.qwen80_all_ten_routed_expert_cpu_outer_launcher.v1",
+  "seal_sha256": "9d22c4cf37694afba9cc7808669e37004f9d153fe6b3eea45f5e09a5f82122f5",
+  "source_binding": {
+    "expected_manifest_seal_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+    "expected_source_audit_seal_sha256": "c572b2270b623b8677c374b43c89ddd729de135c25721488bb874b184ff8c3d4",
+    "expected_source_revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+    "manifest": {
+      "bytes": 77842421,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+      "present": true,
+      "sha256": "a0fcac0401a7962402bb8cb87d5055c83667b39575f9e0f4c7470d080758aa10"
+    },
+    "probe_binary": {
+      "bytes": 2942904,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/debug/examples/ascension_qwen80_all_ten_routed_expert_cpu",
+      "present": true,
+      "sha256": "e7980fea527fa9b43fcca244519163ffcf820c0d2ad9eae83b3b9d36893e6d13"
+    },
+    "route_plan": {
+      "bytes": 38337,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_ALL_TEN_ROUTED_EXPERT_BINDING_PLAN_20260809T010114Z.json",
+      "present": true,
+      "sha256": "b59a062fc5636e46de6baed151f139ccbb42be2fa9a8b5813b132ebd7c42da51"
+    },
+    "router_inner": {
+      "bytes": 14456,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_POSTNORM_ROUTER_TOP10_OUTER_METAL_FINAL_LANE_FIX_CAPTURE_20260808T232524Z/inner/receipt.json",
+      "present": true,
+      "sha256": "31d2e06aae10695d25f445ff50661f6c63ec42c74f617e637b62e56c4f7ac343"
+    },
+    "router_outer": {
+      "bytes": 5522,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_POSTNORM_ROUTER_TOP10_OUTER_METAL_FINAL_LANE_FIX_CAPTURE_20260808T232524Z/outer-terminal-receipt.json",
+      "present": true,
+      "sha256": "0a9c2c57acef64e9f4c0fcb050f47a8f7792026bf05a6f8a73e4fa3d3786d87f"
+    },
+    "router_outer_seal_sha256": "1bd9af3b6baf4d583f77bbfc02c25f0f1740cd8110c74fb6e55520758256c835"
+  },
+  "status": "CAPTURED_QWEN80_ALL_TEN_ROUTED_EXPERT_CPU_OUTER_TERMINAL_PRE_SHARED_PRE_COMBINE_PRE_RESIDUAL"
+}

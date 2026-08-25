@@ -1,0 +1,52 @@
+{
+  "artifact_binding": {
+    "admission_receipt_seal_sha256": "939b41322363da3db774a2530b207bf380ed641d23cae671fc6438c0eecbf628",
+    "manifest_document_sha256": "a0fcac0401a7962402bb8cb87d5055c83667b39575f9e0f4c7470d080758aa10",
+    "manifest_seal_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+    "post_attention_norm_artifact_sha256": "a00ba60c88bd0d5dcf77e4c1fad05d83ddb6feec844ee3bbc65480fffd5a1fa7",
+    "router_gate_artifact_sha256": "582725c1fa47c62b0f109216e8c2c40533b2931a583f4a41dfa34477deda45f4"
+  },
+  "authorization_seal_sha256": "f5c15394161329dfe72c99ab3379e09eb3e52198904a560ab3b0d231169545c8",
+  "claim_boundary": {
+    "component_only": true,
+    "not_a_complete_layer_token_decoder_generation_hcli_tps_tg_or_tournament_receipt": true
+  },
+  "coordination": {
+    "automatic_retry_prohibited": true,
+    "one_shot_outer_capture_required": true,
+    "qwen80_watcher": "existing watcher coordination hold stays active"
+  },
+  "execution_policy": {
+    "complete_layer_or_token_allowed": false,
+    "component": "qwen80_direct_packed_postnorm_router_top10",
+    "quiet_qwen80_device_lease": true,
+    "strict_math": true,
+    "timing_or_benchmarking_allowed": false,
+    "tps_or_tg_claim_allowed": false
+  },
+  "implementation_binding": {
+    "probe_binary_path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/debug/examples/ascension_qwen80_direct_packed_postnorm_router_top10",
+    "probe_binary_sha256": "c229600ed90819b5cd720e666a8e9abdc0570e3a775b5c59a091b58565124406",
+    "repair": "compiler-signature-compatible uint3 position builtins; lane=tid.x and router row=group_position.y; static ABI regression passed",
+    "shader_path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen80_postnorm_router_top10.metal",
+    "shader_source_sha256": "24b28542293a5d4561e106c4de0e8c066b68d782248701e21ff4c047cddce6de"
+  },
+  "lease_id": "dc0ac3d01acf31aca80eea3976ccbc8f9345c06695e8bc678e58804a95b6e289",
+  "model": {
+    "id": "Qwen3-Coder-Next-80B",
+    "key": "qwen80",
+    "repository": "Qwen/Qwen3-Coder-Next",
+    "revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb"
+  },
+  "prior_negative_science": {
+    "must_not_be_overwritten_or_reinterpreted": true,
+    "outer_capture_paths": [
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_POSTNORM_ROUTER_TOP10_OUTER_METAL_CAPTURE_20260808T231340Z/outer-terminal-receipt.json",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_POSTNORM_ROUTER_TOP10_OUTER_METAL_REPAIR_CAPTURE_20260808T231911Z/outer-terminal-receipt.json"
+    ]
+  },
+  "recorded_at": "2026-08-08T23:20:56.165540Z",
+  "schema": "hawking.ascension.qwen80_quiet_metal_lease.v1",
+  "seal_sha256": "b86ff24e07c5fc65a0f19ee2e39f67c1faa2bdde53840e0c694825d3c036ba5a",
+  "status": "GRANTED_QWEN80_POSTNORM_ROUTER_TOP10_NON_TIMED_DEVICE_PARITY_LEASE"
+}

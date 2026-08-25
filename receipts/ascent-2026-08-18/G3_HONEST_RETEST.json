@@ -1,0 +1,26 @@
+{
+ "operator": {
+  "train": 1.8567923307418823,
+  "by_prompt_held": 3.2174542229622602,
+  "cross_family_held": 4.021837053820491
+ },
+ "q3": {
+  "by_prompt_held": 0.34476401726715267,
+  "cross_family_held": 0.33734932192601264
+ },
+ "active_bytes_MB": {
+  "operator": 39.9,
+  "q3_per_layer": 108.6
+ },
+ "held_families": [
+  "dialogue",
+  "instruction"
+ ],
+ "train_families": [
+  "prose",
+  "code",
+  "math",
+  "multilingual"
+ ],
+ "aggregation": "per-layer mean rel-L2 for BOTH; cross-family = entirely unseen families (no leakage possible)"
+}

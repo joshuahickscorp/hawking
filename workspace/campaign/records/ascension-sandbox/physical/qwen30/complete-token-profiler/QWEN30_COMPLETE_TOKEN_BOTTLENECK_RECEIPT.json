@@ -1,0 +1,51 @@
+{
+  "binding": {
+    "admission_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/QWEN30_COMPLETE_BINARY_GRAVITY_ADMISSION_RECEIPT.json",
+    "admission_seal_sha256": "89d3c531d5638757bf0c0348df4f11e45a4f1c0cf87d27a7f3afcb675247301a",
+    "canonical_runtime_receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_EXACT_FULL_TOKEN_RUNTIME_RECEIPT.json",
+    "canonical_runtime_receipt_seal_sha256": "48f065627739877bbafae141fa6a4a37bbd8b24037921b996ca0881ca7828ced",
+    "custom_kernel_used": true,
+    "gate_up_swiglu_kernel": "paired_direct_packed_gate_up_swiglu_scalar_order_production_no_parity",
+    "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/QWEN30_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+    "manifest_seal_sha256": "3321a99d719e70499663b7bfebe14dd6c732bfc533bb05b9277eb398e44d6357",
+    "runtime_executable_sha256": "884b1d5052fa4387fd14a28600604e4e07ca280592f4a5182b2fc6598176f797",
+    "source_audit_seal_sha256": "00ed3e495416c2cbafbcdb7800528e15f243b1a13f5f4af13240109c8fc69f7b",
+    "source_revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120"
+  },
+  "bottleneck_implementation_revision": "interval-sweep-source-bound-runtime-epoch-v3",
+  "claim_boundary": {
+    "no_roofline_substitution": true,
+    "not_a_runtime_or_capability_pass": true,
+    "not_a_tps_or_tg_receipt": true
+  },
+  "next_experiment": {
+    "acceptance": "exact CPU parity against the same admitted direct-binary payload; any speed observation remains component-only until integrated and re-profiled on a complete token",
+    "hypothesis": "fusing each routed expert's independent gate/up direct-packed projections can remove one dispatch and encoder per route without changing the admitted packed values",
+    "id": "qwen30-direct-packed-gate-up-pair-command-topology",
+    "reopen_condition": "the current artifact binding, direct-binary layout, Qwen30 runtime graph, or complete-token trace changes"
+  },
+  "observed": {
+    "command_graph_transition_gap_us": 427350.258,
+    "complete_token_timestamp_envelope_coverage_percent": 95.0120724035425,
+    "complete_token_wall_coverage_percent": 100.0,
+    "dominant_gpu_bucket": {
+      "bucket": "expert_gate_up",
+      "gpu_us": 235663,
+      "share_of_gpu_kernel_percent": 59.10325507673093
+    },
+    "dominant_source_bound_host_stage": {
+      "bucket": "command_graph_transition_gap",
+      "host_stage_wall_us": 609865.0,
+      "share_of_host_wall_percent": 72.43026450024524
+    },
+    "host_wall_outside_gpu_timestamp_envelope_us": 41998.5,
+    "multi_stage_gpu_overlap_us": 10.334
+  },
+  "profile_input_fingerprint_sha256": "9077d58de0bb25e3e4966e4331b968aa557c369b67283e5cbfbf9409ad6b5bc7",
+  "profile_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-token-profiler/QWEN30_COMPLETE_TOKEN_PROFILE.json",
+  "profile_seal_sha256": "b22b4cc650ba58021f1d4ce6dacbbf7f1eadf2d5b13fb0fb98c8600686ab877f",
+  "recorded_at": "2026-08-08T22:39:05.527213Z",
+  "schema": "hawking.ascension.qwen30_direct_packed_complete_token_bottleneck.v1",
+  "seal_sha256": "455d3b21b3bdbce44d24436042a6b3f47a09e611895b73f40f13b4a690f2a5ef",
+  "status": "SEALED_REAL_TOKEN_PROFILER_BOTTLENECK_READY_FOR_KERNEL_EXPERIMENT"
+}

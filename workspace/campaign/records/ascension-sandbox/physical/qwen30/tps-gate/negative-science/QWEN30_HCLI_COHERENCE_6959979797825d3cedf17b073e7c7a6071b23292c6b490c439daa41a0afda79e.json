@@ -1,0 +1,63 @@
+{
+  "binding": {
+    "complete_artifact_admission_seal_sha256": "89d3c531d5638757bf0c0348df4f11e45a4f1c0cf87d27a7f3afcb675247301a",
+    "complete_manifest_seal_sha256": "3321a99d719e70499663b7bfebe14dd6c732bfc533bb05b9277eb398e44d6357",
+    "endpoint_server_binary_sha256": "41869f3640e04ea248ee677a1a047c7c47f5debc3206b0513071fbe21c65934e",
+    "endpoint_url": "http://127.0.0.1:18430",
+    "hcli_binary_sha256": "71fd249cd0af0734d7ca40b927a6d3f4c09ead59530610c5dabef5d9c3f30bdb",
+    "model_id": "Qwen3-Coder-30B-A3B-Instruct",
+    "runtime_receipt_seal_sha256": "48f065627739877bbafae141fa6a4a37bbd8b24037921b996ca0881ca7828ced",
+    "source_content_identity_sha256": "dfc985ac9e293c271209742f33c694664ed67b30962dad769cc3f596c58a9bb9",
+    "source_revalidation_seal_sha256": "ac7208e11c31bbd035bd87fd62a80020b9d1d05970867576f4649f6bebe68123"
+  },
+  "claim_boundary": {
+    "negative_result_is_not_hcli_tps_tg_or_tournament_qualification": true,
+    "reopens_only_for_a_material_runtime_endpoint_kernel_or_binding_change": true
+  },
+  "details": {
+    "probe_observations": [
+      {
+        "acceptance": "contains_hawking",
+        "accepted": false,
+        "completion_sha256": "d876212971a98d15ff03a751544a5cfa3457c6ff89a6387aadfda94f7dcae430",
+        "completion_utf8_bytes": 34,
+        "hcli_command_evidence_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/evidence/6959979797825d3cedf17b073e7c7a6071b23292c6b490c439daa41a0afda79e/probe-01-literal_hawking.json",
+        "probe_id": "literal_hawking",
+        "prompt_sha256": "b7cd626f844d937768c916bc3a7bdea625e7d84fcbbc74be89ba3e1551427e30",
+        "runtime_completed_decode_forwards": 8,
+        "runtime_decode_ms": 2551.931
+      },
+      {
+        "acceptance": "json_status_ok",
+        "accepted": false,
+        "completion_sha256": "21b3fb5b4c556387f64291a8410ea9fdc615770cc5e14220b42ecd961a3af08d",
+        "completion_utf8_bytes": 60,
+        "hcli_command_evidence_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/evidence/6959979797825d3cedf17b073e7c7a6071b23292c6b490c439daa41a0afda79e/probe-02-json_status.json",
+        "probe_id": "json_status",
+        "prompt_sha256": "b48b7f872a92ae7e6fec79750515e25c24a2deeeccd25d2d5507e59490ad08df",
+        "runtime_completed_decode_forwards": 8,
+        "runtime_decode_ms": 2404.58
+      },
+      {
+        "acceptance": "python_add",
+        "accepted": false,
+        "completion_sha256": "df3eec785d54ec2efbf1b295c3ced2015c9838354755cb32c354b6bebb709b00",
+        "completion_utf8_bytes": 34,
+        "hcli_command_evidence_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/evidence/6959979797825d3cedf17b073e7c7a6071b23292c6b490c439daa41a0afda79e/probe-03-python_add.json",
+        "probe_id": "python_add",
+        "prompt_sha256": "4a84d367e375949e6c5c2293547da4dd28282be13169c8d2957ae259051fd982",
+        "runtime_completed_decode_forwards": 8,
+        "runtime_decode_ms": 2539.246
+      }
+    ],
+    "reasons": [
+      "coherence probe literal_hawking did not meet contains_hawking",
+      "coherence probe json_status did not meet json_status_ok",
+      "coherence probe python_add did not meet python_add"
+    ]
+  },
+  "recorded_at": "2026-08-08T22:50:01.617161Z",
+  "schema": "hawking.ascension.physical_hcli_coherence_negative.v1",
+  "seal_sha256": "c22e7430605c41cb9ae02d8b9ab3b04c4b4084b5179c17a4302773c9c7287919",
+  "status": "BLOCKED_HCLI_PROMPT_DEPENDENT_COHERENCE_NOT_EARNED"
+}

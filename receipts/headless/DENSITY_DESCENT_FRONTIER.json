@@ -1,0 +1,1698 @@
+{
+ "schema": "hawking.headless.density_descent_frontier.v1",
+ "generated_at": "2026-08-24T21:57:49Z",
+ "git_head": "3048963996c6ed32df3712a805c7f5918ea86fd8",
+ "generated_by": "tools/headless/density_descent_frontier.py",
+ "obligation": "N037 \u2014 DENSITY_DESCENT_FRONTIER (S024 \u00a72, \u00a73, \u00a718). Track the two coupled frontiers: COHERENCE (lowest complete EBPW that still generates coherently) and EXECUTION (lowest COMPLETE_TOKEN_NS among coherent candidates). Density ladder 2.25..0.1 are coordinates, not pass literals.",
+ "hand_authored": false,
+ "did_not_load_a_model": true,
+ "did_not_touch_gpu": true,
+ "did_not_run_cargo_or_metal_benchmarks": true,
+ "did_not_mutate_parent": true,
+ "did_not_write_under_models": true,
+ "did_not_rederive_roofs": true,
+ "unmeasured_is_absent": true,
+ "s024": [
+  "\u00a72",
+  "\u00a73",
+  "\u00a718"
+ ],
+ "one_line": "Two coupled frontiers (S024 \u00a72): COHERENCE=q2f_g64 at 2.25 bpw coherent; EXECUTION=q2f_g64 at 27.55 ms. Faster incoherent bodies do not take the execution frontier.",
+ "question": "On the campaign's own receipts, who currently holds the COHERENCE frontier (lowest complete EBPW that still generates coherently) and who holds the EXECUTION frontier (lowest COMPLETE_TOKEN_NS among coherent candidates), and where does every density-descent candidate sit on both axes?",
+ "answer": "Two coupled frontiers (S024 \u00a72): COHERENCE=q2f_g64 at 2.25 bpw coherent; EXECUTION=q2f_g64 at 27.55 ms. Faster incoherent bodies do not take the execution frontier.",
+ "why_two_frontiers": "S024 \u00a72: a candidate may lead coherence and lose execution, or vice versa. binary_g64 is faster than q2f and not coherent; shared_basis_k2 fused is faster than q2f, kernel-competent, and dead on held-out activation. Collapsing both axes into one number is how an injured fast body gets thrown away, or a slow coherent body gets treated as the only story.",
+ "required_inputs": [
+  {
+   "path": "receipts/headless/BYTES_FRONTIER.json",
+   "present": true,
+   "required": true,
+   "role": "coupled-frontier source",
+   "absent_reason": null
+  },
+  {
+   "path": "receipts/headless/SHARED_BASIS_KERNEL.json",
+   "present": true,
+   "required": true,
+   "role": "coupled-frontier source",
+   "absent_reason": null
+  },
+  {
+   "path": "receipts/headless/DISPATCH_LEDGER.json",
+   "present": true,
+   "required": true,
+   "role": "coupled-frontier source",
+   "absent_reason": null
+  },
+  {
+   "path": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+   "present": true,
+   "required": true,
+   "role": "coupled-frontier source",
+   "absent_reason": null
+  }
+ ],
+ "optional_inputs": [
+  {
+   "path": "receipts/headless/COMPOSITION_LADDER.json",
+   "present": true,
+   "required": false,
+   "role": "supporting citation",
+   "absent_reason": null
+  },
+  {
+   "path": "receipts/headless/NATIVE_2BIT_MLP.json",
+   "present": true,
+   "required": false,
+   "role": "supporting citation",
+   "absent_reason": null
+  },
+  {
+   "path": "receipts/headless/Q2F_G64_GENERATION.json",
+   "present": true,
+   "required": false,
+   "role": "supporting citation",
+   "absent_reason": null
+  },
+  {
+   "path": "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+   "present": true,
+   "required": false,
+   "role": "supporting citation",
+   "absent_reason": null
+  },
+  {
+   "path": "receipts/headless/ORGAN_FRONTIERS.json",
+   "present": true,
+   "required": false,
+   "role": "supporting citation",
+   "absent_reason": null
+  },
+  {
+   "path": "receipts/headless/ORGAN_LIBRARY.json",
+   "present": true,
+   "required": false,
+   "role": "supporting citation",
+   "absent_reason": null
+  },
+  {
+   "path": "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_Q2F_G64.json",
+   "present": true,
+   "required": false,
+   "role": "supporting citation",
+   "absent_reason": null
+  },
+  {
+   "path": "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+   "present": true,
+   "required": false,
+   "role": "supporting citation",
+   "absent_reason": null
+  },
+  {
+   "path": "receipts/headless/FRACTIONAL_BIT_CANON.json",
+   "present": true,
+   "required": false,
+   "role": "supporting citation",
+   "absent_reason": null
+  },
+  {
+   "path": "receipts/headless/C1SHAREDBASIS_DESIGN.json",
+   "present": true,
+   "required": false,
+   "role": "supporting citation",
+   "absent_reason": null
+  },
+  {
+   "path": "receipts/headless/C3LOWRANKSPARSE_DESIGN.json",
+   "present": true,
+   "required": false,
+   "role": "supporting citation",
+   "absent_reason": null
+  },
+  {
+   "path": "receipts/headless/ONEBIT_FAMILIES.json",
+   "present": true,
+   "required": false,
+   "role": "supporting citation",
+   "absent_reason": null
+  },
+  {
+   "path": "receipts/headless/ORGAN_DENSITY_FLOORS.json",
+   "present": true,
+   "required": false,
+   "role": "supporting citation",
+   "absent_reason": null
+  },
+  {
+   "path": "receipts/headless/SHARED_BASIS_COHERENT.json",
+   "present": true,
+   "required": false,
+   "role": "optional healed/coherent point",
+   "absent_reason": null
+  },
+  {
+   "path": "receipts/headless/BINARY_HEALING.json",
+   "present": true,
+   "required": false,
+   "role": "optional healed/coherent point",
+   "absent_reason": null
+  }
+ ],
+ "candidates": [
+  {
+   "id": "q2f_g64",
+   "name": "N021 native 2-bit MLP (baseline)",
+   "family": "q2_affine",
+   "complete_ebpw": {
+    "value": 2.25,
+    "kind": "CITED",
+    "unit": "bpw",
+    "command": "BYTES_FRONTIER.representations[q2_4level_fitted_g64].active_bpw",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "absent_reason": null,
+    "note": "Fully-accounted body EBPW of the density-descent representation (scales counted, no hidden bits). This is the S024 \u00a72 coordinate, not whole-model mix EBPW.",
+    "representation_id": "q2_4level_fitted_g64"
+   },
+   "active_bytes_per_token": {
+    "value": 4812963840.0,
+    "kind": "CITED",
+    "unit": "bytes/token",
+    "command": "BYTES_FRONTIER.representations[q2_4level_fitted_g64].active_bytes_per_token",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "absent_reason": null
+   },
+   "dram_bytes_per_token": {
+    "value": 10019496920.0,
+    "kind": "CITED",
+    "unit": "bytes/token",
+    "command": "BYTES_FRONTIER.representations[q2_4level_fitted_g64].dram_bytes_per_token",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "absent_reason": null
+   },
+   "COMPLETE_TOKEN_NS": {
+    "value": 27547874,
+    "kind": "CITED",
+    "unit": "ns/token",
+    "command": "NATIVE_2BIT_MLP.complete_token_bench.arms[production_fused_swiglu_geo].bench.gpu_ns.median",
+    "source": "receipts/headless/NATIVE_2BIT_MLP.json",
+    "absent_reason": null,
+    "note": "N021 fused complete-token GPU median, 7 reps. BYTES_FRONTIER reuses this as the q2f composed complete_token_ns.",
+    "ms": 27.547874,
+    "spread": {
+     "n": 7,
+     "min": 27447458,
+     "median": 27547874,
+     "max": 27613708
+    },
+    "timing_label": "DIRTY_ENGINEERING",
+    "dispatches": 836,
+    "bytes_frontier_composed_agrees": true
+   },
+   "composition_rung": {
+    "highest_rung_reached": "coherent_generation",
+    "highest_rung_index": 6,
+    "status": "UNTESTED_ABOVE",
+    "died_at": null,
+    "unreached_above": "capability",
+    "may_be_described_as": "coherent_generation",
+    "why": "Survived complete_token (argmax 9714=9714 on the composition arm) and native fused-SwiGLU generation is non-degenerate.",
+    "source": "receipts/headless/NATIVE_2BIT_MLP.json",
+    "citations": [
+     "receipts/headless/NATIVE_2BIT_MLP.json",
+     "receipts/headless/BYTES_FRONTIER.json"
+    ]
+   },
+   "coherent": true,
+   "coherent_reason": "Survived complete_token (argmax 9714=9714 on the composition arm) and native fused-SwiGLU generation is non-degenerate.",
+   "source_receipt": "receipts/headless/BYTES_FRONTIER.json",
+   "citations": [
+    "receipts/headless/BYTES_FRONTIER.json",
+    "receipts/headless/NATIVE_2BIT_MLP.json",
+    "receipts/headless/Q2F_G64_GENERATION.json",
+    "receipts/headless/COMPOSITION_LADDER.json"
+   ],
+   "whole_model_complete_ebpw": {
+    "value": 2.9802419191571827,
+    "kind": "CITED",
+    "unit": "bpw",
+    "command": "Q2F_G64_GENERATION.comparison[q2_4level_fitted_g64].complete_ebpw",
+    "source": "receipts/headless/Q2F_G64_GENERATION.json",
+    "absent_reason": null,
+    "note": "Whole-model mix including Q4 attention/embed. The S024 density coordinate is the 2.25 body EBPW, not this mix.",
+    "body_bpw": 2.25
+   },
+   "bytes_frontier_id": "q2_4level_fitted_g64",
+   "lower_than_q2f_2_25": false,
+   "dense_w_materialized": 0,
+   "parity_ok": true,
+   "toward_roof_729_7": {
+    "moved": false,
+    "delta_ns": 0,
+    "baseline_ns": 27547874,
+    "candidate_ns": 27547874,
+    "roof_ns": 1370426.2025489926,
+    "reason": "fewer bytes, same or worse COMPLETE_TOKEN_NS \u2014 compute/dispatch bound (or the cheaper code is a worse kernel than q2f geo)"
+   },
+   "on_coherence_frontier": true,
+   "on_execution_frontier": true,
+   "occupies_density_coordinate": 2.25,
+   "composition_ladder_entry": {
+    "id": "q2_4level_fitted_g64 whole-MLP (2.25 bpw)",
+    "highest_rung_reached": "coherent_generation",
+    "status": "UNTESTED_ABOVE",
+    "died_at": null,
+    "unreached_above": "capability",
+    "source": "receipts/headless/COMPOSITION_LADDER.json"
+   },
+   "role": "coherent_baseline"
+  },
+  {
+   "id": "binary_g64",
+   "name": "binary sign + g64 scale (independent per tensor)",
+   "family": "binary",
+   "complete_ebpw": {
+    "value": 1.25,
+    "kind": "CITED",
+    "unit": "bpw",
+    "command": "BYTES_FRONTIER.representations[binary_g64].active_bpw",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "absent_reason": null,
+    "note": "Fully-accounted body EBPW of the density-descent representation (scales counted, no hidden bits). This is the S024 \u00a72 coordinate, not whole-model mix EBPW.",
+    "representation_id": "binary_g64"
+   },
+   "active_bytes_per_token": {
+    "value": 2673868800.0,
+    "kind": "CITED",
+    "unit": "bytes/token",
+    "command": "BYTES_FRONTIER.representations[binary_g64].active_bytes_per_token",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "absent_reason": null
+   },
+   "dram_bytes_per_token": {
+    "value": 7880401880.0,
+    "kind": "CITED",
+    "unit": "bytes/token",
+    "command": "BYTES_FRONTIER.representations[binary_g64].dram_bytes_per_token",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "absent_reason": null
+   },
+   "COMPLETE_TOKEN_NS": {
+    "value": 23431791,
+    "kind": "CITED",
+    "unit": "ns/token",
+    "command": "BYTES_FRONTIER.representations[binary_g64].COMPLETE_TOKEN_NS.composed.complete_token_ns",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "absent_reason": null,
+    "note": {
+     "billing": "1 sign bit + f16 mean-abs / 64 = 1.25 bpw",
+     "scales_counted": true
+    },
+    "ms": 23.431791,
+    "composed_kind": "MLP_GRAPH_PLUS_N021_NON_MLP",
+    "mlp_graph_gpu_ns": {
+     "n": 7,
+     "min": 11585833,
+     "median": 11622166,
+     "max": 11626499
+    },
+    "non_mlp_ns": 11809625,
+    "reps": 7
+   },
+   "composition_rung": {
+    "highest_rung_reached": "complete_token",
+    "highest_rung_index": 5,
+    "status": "FAILED",
+    "died_at": "coherent_generation",
+    "unreached_above": null,
+    "may_be_described_as": "complete_token",
+    "why": "Native binary geo matches the CPU oracle. mix_c_all_mlp_binary_g64 already ran the whole-model token loop and degenerated (16 copies of token 271). Associativity: the cheaper kernel does not reopen that death. Speed is reported; the arm is DEAD for promotion (S022 \u00a738).",
+    "source": "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+    "citations": [
+     "receipts/headless/FIRST_NOETIC_EXECUTABLE.json"
+    ]
+   },
+   "coherent": false,
+   "coherent_reason": "died_at coherent_generation: Native binary geo matches the CPU oracle. mix_c_all_mlp_binary_g64 already ran the whole-model token loop and degenerated (16 copies of token 271). Associativity: the cheaper kernel does not reopen that death. Speed is reported; the arm is DEAD for promotion (S022 \u00a738).",
+   "source_receipt": "receipts/headless/BYTES_FRONTIER.json",
+   "citations": [
+    "receipts/headless/BYTES_FRONTIER.json",
+    "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+    "receipts/headless/COMPOSITION_LADDER.json"
+   ],
+   "whole_model_complete_ebpw": {
+    "value": 2.343974955991431,
+    "kind": "CITED",
+    "unit": "bpw",
+    "command": "FIRST_NOETIC_EXECUTABLE.mix_scoreboard[mix_c_all_mlp_binary_g64].complete_ebpw",
+    "source": "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+    "absent_reason": null,
+    "note": "Whole-model mix EBPW of mix_c. Body is 1.25 bpw; generation degenerated (16 copies of token 271). Injured, not a coherent frontier.",
+    "mix_id": "mix_c_all_mlp_binary_g64",
+    "mix_coherent": false,
+    "tok_s": 33.44218765414758
+   },
+   "bytes_frontier_id": "binary_g64",
+   "lower_than_q2f_2_25": true,
+   "dense_w_materialized": 0,
+   "parity_ok": true,
+   "toward_roof_729_7": {
+    "moved": true,
+    "delta_ns": 4116083,
+    "baseline_ns": 27547874,
+    "candidate_ns": 23431791,
+    "roof_ns": 1370426.2025489926,
+    "gap_closed_frac": 0.15723775028980472
+   },
+   "on_coherence_frontier": false,
+   "on_execution_frontier": false,
+   "occupies_density_coordinate": 1.25,
+   "composition_ladder_entry": {
+    "id": "mix_c_all_mlp_binary_g64",
+    "highest_rung_reached": "complete_token",
+    "status": "FAILED",
+    "died_at": "coherent_generation",
+    "why": "decode degenerated: 16 copies of the same token (271)",
+    "source": "receipts/headless/COMPOSITION_LADDER.json"
+   },
+   "s024_binary_is_injured_not_dead": true,
+   "role": "fast_incoherent_parent"
+  },
+  {
+   "id": "ternary_5in8_g64",
+   "name": "ternary {-1,0,+1} 5-in-8 + g64 scale",
+   "family": "ternary",
+   "complete_ebpw": {
+    "value": 1.85,
+    "kind": "CITED",
+    "unit": "bpw",
+    "command": "BYTES_FRONTIER.representations[ternary_5in8_g64].active_bpw",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "absent_reason": null,
+    "note": "Fully-accounted body EBPW of the density-descent representation (scales counted, no hidden bits). This is the S024 \u00a72 coordinate, not whole-model mix EBPW.",
+    "representation_id": "ternary_5in8_g64"
+   },
+   "active_bytes_per_token": {
+    "value": 3957325824.0,
+    "kind": "CITED",
+    "unit": "bytes/token",
+    "command": "BYTES_FRONTIER.representations[ternary_5in8_g64].active_bytes_per_token",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "absent_reason": null
+   },
+   "dram_bytes_per_token": {
+    "value": 9163858904.0,
+    "kind": "CITED",
+    "unit": "bytes/token",
+    "command": "BYTES_FRONTIER.representations[ternary_5in8_g64].dram_bytes_per_token",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "absent_reason": null
+   },
+   "COMPLETE_TOKEN_NS": {
+    "value": 59417374,
+    "kind": "CITED",
+    "unit": "ns/token",
+    "command": "BYTES_FRONTIER.representations[ternary_5in8_g64].COMPLETE_TOKEN_NS.composed.complete_token_ns",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "absent_reason": null,
+    "note": {
+     "zero_macs_elided": true,
+     "zero_bytes_skipped": false,
+     "why_active_eq_stored": "5-in-8 still streams every packed byte; skipping a zero trit saves an FMA, not a DRAM load. Index-carrying sparsity was already the expensive topology (G070)."
+    },
+    "ms": 59.417374,
+    "composed_kind": "MLP_GRAPH_PLUS_N021_NON_MLP",
+    "mlp_graph_gpu_ns": {
+     "n": 7,
+     "min": 47503708,
+     "median": 47607749,
+     "max": 47683375
+    },
+    "non_mlp_ns": 11809625,
+    "reps": 7
+   },
+   "composition_rung": {
+    "highest_rung_reached": "held_out_activation",
+    "highest_rung_index": 1,
+    "status": "FAILED",
+    "died_at": "complete_token",
+    "unreached_above": null,
+    "may_be_described_as": "held_out_activation",
+    "why": "Organ-local CANON (rel_fro 0.321) flipped the whole-model argmax (10895 vs teacher 9714). Native 5-in-8 equals reconstruct-then-GEMV on the packed codes (parity), so the cheaper kernel does not reopen the fidelity death. S022 \u00a738: a cheaper representation that flips the argmax is DEAD.",
+    "source": "receipts/headless/FRACTIONAL_BIT_CANON.json",
+    "citations": [
+     "receipts/headless/FRACTIONAL_BIT_CANON.json",
+     "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json"
+    ]
+   },
+   "coherent": false,
+   "coherent_reason": "died_at complete_token: Organ-local CANON (rel_fro 0.321) flipped the whole-model argmax (10895 vs teacher 9714). Native 5-in-8 equals reconstruct-then-GEMV on the packed codes (parity), so the cheaper kernel does not reopen the fidelity death. S022 \u00a738: a cheaper representation that flips the argmax is DEAD.",
+   "source_receipt": "receipts/headless/BYTES_FRONTIER.json",
+   "citations": [
+    "receipts/headless/BYTES_FRONTIER.json",
+    "receipts/headless/FRACTIONAL_BIT_CANON.json",
+    "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+    "receipts/headless/COMPOSITION_LADDER.json"
+   ],
+   "whole_model_complete_ebpw": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "bpw",
+    "command": "whole_model_complete_ebpw",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "absent_reason": "whole-model mix EBPW not measured for this operating point"
+   },
+   "bytes_frontier_id": "ternary_5in8_g64",
+   "lower_than_q2f_2_25": true,
+   "dense_w_materialized": 0,
+   "parity_ok": true,
+   "toward_roof_729_7": {
+    "moved": false,
+    "delta_ns": -31869500,
+    "baseline_ns": 27547874,
+    "candidate_ns": 59417374,
+    "roof_ns": 1370426.2025489926,
+    "reason": "fewer bytes, same or worse COMPLETE_TOKEN_NS \u2014 compute/dispatch bound (or the cheaper code is a worse kernel than q2f geo)"
+   },
+   "on_coherence_frontier": false,
+   "on_execution_frontier": false,
+   "occupies_density_coordinate": null,
+   "role": "dead_on_complete_token"
+  },
+  {
+   "id": "shared_basis_k2",
+   "name": "K=2 shared binary bases + per-layer group scales",
+   "family": "shared_basis",
+   "complete_ebpw": {
+    "value": 0.53125,
+    "kind": "CITED",
+    "unit": "bpw",
+    "command": "BYTES_FRONTIER.representations[shared_binary_k2].active_bpw",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "absent_reason": null,
+    "note": "Fully-accounted body EBPW of the density-descent representation (scales counted, no hidden bits). This is the S024 \u00a72 coordinate, not whole-model mix EBPW.",
+    "representation_id": "shared_binary_k2"
+   },
+   "active_bytes_per_token": {
+    "value": 1136394240.0,
+    "kind": "CITED",
+    "unit": "bytes/token",
+    "command": "SHARED_BASIS_KERNEL.active_bytes_per_token",
+    "source": "receipts/headless/SHARED_BASIS_KERNEL.json",
+    "absent_reason": null
+   },
+   "dram_bytes_per_token": {
+    "value": 6342927320.0,
+    "kind": "CITED",
+    "unit": "bytes/token",
+    "command": "SHARED_BASIS_KERNEL.dram_bytes_per_token",
+    "source": "receipts/headless/SHARED_BASIS_KERNEL.json",
+    "absent_reason": null
+   },
+   "COMPLETE_TOKEN_NS": {
+    "value": 24554625,
+    "kind": "CITED",
+    "unit": "ns/token",
+    "command": "SHARED_BASIS_KERNEL.after.COMPLETE_TOKEN_NS.composed.complete_token_ns",
+    "source": "receipts/headless/SHARED_BASIS_KERNEL.json",
+    "absent_reason": null,
+    "note": "N033 fused competent kernel (192 dispatches). N032 two-pass 384-dispatch path is the superseded kernel, not this operating point's execution.",
+    "ms": 24.554625,
+    "composed_kind": "MLP_GRAPH_PLUS_N021_NON_MLP",
+    "mlp_graph_gpu_ns": {
+     "n": 7,
+     "min": 12678125,
+     "median": 12745000,
+     "max": 12764166
+    },
+    "non_mlp_ns": 11809625,
+    "reps": 7
+   },
+   "composition_rung": {
+    "highest_rung_reached": "local_functional_probe",
+    "highest_rung_index": 0,
+    "status": "FAILED",
+    "died_at": "held_out_activation",
+    "unreached_above": null,
+    "may_be_described_as": "local_functional_probe",
+    "why": "K=2 g=64 fitted on adjacent layers missed health on held-out real activations (rel_fro/gain). A cheaper rep that cannot preserve the activation is dead at this rung (S022 \u00a738).",
+    "source": "receipts/headless/SHARED_BASIS_KERNEL.json",
+    "citations": [
+     "receipts/headless/SHARED_BASIS_KERNEL.json"
+    ]
+   },
+   "coherent": false,
+   "coherent_reason": "died_at held_out_activation: K=2 g=64 fitted on adjacent layers missed health on held-out real activations (rel_fro/gain). A cheaper rep that cannot preserve the activation is dead at this rung (S022 \u00a738).",
+   "source_receipt": "receipts/headless/SHARED_BASIS_KERNEL.json",
+   "citations": [
+    "receipts/headless/BYTES_FRONTIER.json",
+    "receipts/headless/C1SHAREDBASIS_DESIGN.json",
+    "receipts/headless/ONEBIT_FAMILIES.json",
+    "receipts/headless/SHARED_BASIS_KERNEL.json"
+   ],
+   "whole_model_complete_ebpw": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "bpw",
+    "command": "whole_model_complete_ebpw",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "absent_reason": "whole-model mix EBPW not measured for this operating point"
+   },
+   "bytes_frontier_id": "shared_binary_k2",
+   "lower_than_q2f_2_25": true,
+   "dense_w_materialized": 0,
+   "parity_ok": true,
+   "toward_roof_729_7": {
+    "moved": true,
+    "delta_ns": 2993249,
+    "baseline_ns": 27547874,
+    "candidate_ns": 24554625,
+    "roof_ns": 1370426.2025489926,
+    "gap_closed_frac": 0.11434456953788533
+   },
+   "on_coherence_frontier": false,
+   "on_execution_frontier": false,
+   "occupies_density_coordinate": 0.53,
+   "active_bpw_cited": {
+    "value": 0.53125,
+    "kind": "CITED",
+    "unit": "bpw",
+    "command": "SHARED_BASIS_KERNEL.active_bpw",
+    "source": "receipts/headless/SHARED_BASIS_KERNEL.json",
+    "absent_reason": null
+   },
+   "kernel_competent": true,
+   "byte_win_translates_to_token_ns": true,
+   "superseded_two_pass": {
+    "id": "two_pass_384",
+    "dispatches": 384,
+    "complete_token_ns": 110201749,
+    "source": "receipts/headless/SHARED_BASIS_KERNEL.json",
+    "note": "Incompetent two-pass kernel (N032). Not the K2 execution number."
+   },
+   "fused_dispatches": 192,
+   "k": 2,
+   "role": "competent_kernel_dead_on_activation"
+  },
+  {
+   "id": "shared_basis_k8",
+   "name": "shared binary K=8 (2-layer healthy; 64-layer untested)",
+   "family": "shared_basis",
+   "complete_ebpw": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "bpw",
+    "command": "SHARED_BASIS_KERNEL.k_tradeoff_curve[k=8].counterfactual_64_layer_bpw",
+    "source": "receipts/headless/SHARED_BASIS_KERNEL.json",
+    "absent_reason": "64-layer K=8 complete EBPW is untested. The curve bills 6.0 bpw over the 2 layers actually fitted; 2.125 bpw is a counterfactual amortization of those same bases over 64 layers. Adding layers at fixed K is a tighter constraint (SHARED_BASIS_KERNEL.composition.reading).",
+    "counterfactual_64_layer_bpw": {
+     "value": 2.125,
+     "kind": "DERIVED",
+     "unit": "bpw",
+     "command": "SHARED_BASIS_KERNEL.k_tradeoff_curve[k=8].counterfactual_64_layer_bpw",
+     "source": "receipts/headless/SHARED_BASIS_KERNEL.json",
+     "absent_reason": null,
+     "note": "Not a sealed 64-layer operating point."
+    },
+    "tested_2_layer_storage_bpw": {
+     "value": 6.0,
+     "kind": "CITED",
+     "unit": "bpw",
+     "command": "SHARED_BASIS_KERNEL.k_tradeoff_curve[k=8].storage_bpw_over_2_layers",
+     "source": "receipts/headless/SHARED_BASIS_KERNEL.json",
+     "absent_reason": null
+    }
+   },
+   "active_bytes_per_token": {
+    "value": 4545576960.0,
+    "kind": "DERIVED",
+    "unit": "bytes/token",
+    "command": "SHARED_BASIS_KERNEL.active_bytes_per_token * (K=8 / K=2)",
+    "source": "receipts/headless/SHARED_BASIS_KERNEL.json",
+    "absent_reason": null,
+    "note": "Linear in K under the N033 fused billing (signs + f16 scales)."
+   },
+   "dram_bytes_per_token": {
+    "value": 9752110040.0,
+    "kind": "DERIVED",
+    "unit": "bytes/token",
+    "command": "k2_dram + (k8_active - k2_active)",
+    "source": "receipts/headless/SHARED_BASIS_KERNEL.json",
+    "absent_reason": null,
+    "note": "Q4 attention/f32 remainder held fixed; only the shared-basis payload scales with K."
+   },
+   "COMPLETE_TOKEN_NS": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "ns/token",
+    "command": "SHARED_BASIS_KERNEL K=8 COMPLETE_TOKEN_NS",
+    "source": "receipts/headless/SHARED_BASIS_KERNEL.json",
+    "absent_reason": "N033 timed the fused K=2 kernel only. K=8 COMPLETE_TOKEN_NS is unmeasured; not scaled from K=2."
+   },
+   "composition_rung": {
+    "highest_rung_reached": "held_out_activation",
+    "highest_rung_index": 1,
+    "status": "UNTESTED_ABOVE",
+    "died_at": null,
+    "unreached_above": "adjacent_layers",
+    "may_be_described_as": "held_out_activation",
+    "why": "First healthy K on the 2-layer gate L30/L31 curve (rel_fro=0.48242688179016113, gain=0.6037944853305817). 64-layer composition and generation are UNREACHED.",
+    "source": "receipts/headless/SHARED_BASIS_KERNEL.json",
+    "citations": [
+     "receipts/headless/SHARED_BASIS_KERNEL.json"
+    ],
+    "n_layers_fitted": 2,
+    "mean_rel_fro": 0.48242688179016113,
+    "mean_gain": 0.6037944853305817,
+    "healthy_2_layer": true
+   },
+   "coherent": false,
+   "coherent_reason": "highest rung is 'held_out_activation' (status 'UNTESTED_ABOVE'); coherent_generation not reached",
+   "source_receipt": "receipts/headless/SHARED_BASIS_KERNEL.json",
+   "citations": [
+    "receipts/headless/SHARED_BASIS_KERNEL.json"
+   ],
+   "whole_model_complete_ebpw": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "bpw",
+    "command": "whole_model_complete_ebpw",
+    "source": "receipts/headless/SHARED_BASIS_KERNEL.json",
+    "absent_reason": "whole-model mix EBPW not measured for this operating point"
+   },
+   "k": 8,
+   "kernel_competent": true,
+   "k_tradeoff_row": {
+    "k": 8,
+    "n_layers_fitted": 2,
+    "storage_bpw_over_2_layers": 6.0,
+    "counterfactual_64_layer_bpw": 2.125,
+    "mean_rel_fro": 0.48242688179016113,
+    "mean_gain": 0.6037944853305817,
+    "healthy": true,
+    "source": "receipts/headless/SHARED_BASIS_KERNEL.json"
+   },
+   "dense_w_materialized": 0,
+   "on_coherence_frontier": false,
+   "on_execution_frontier": false,
+   "occupies_density_coordinate": null,
+   "role": "first_healthy_k_on_2_layer_curve"
+  },
+  {
+   "id": "binary_csr_2pct",
+   "name": "binary plane + 2% CSR residual fused",
+   "family": "binary_sparse_residual",
+   "complete_ebpw": {
+    "value": 2.216250359030331,
+    "kind": "CITED",
+    "unit": "bpw",
+    "command": "BYTES_FRONTIER.representations[binary_residual_sparse_2pct].active_bpw",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "absent_reason": null,
+    "note": "Fully-accounted body EBPW of the density-descent representation (scales counted, no hidden bits). This is the S024 \u00a72 coordinate, not whole-model mix EBPW.",
+    "representation_id": "binary_residual_sparse_2pct"
+   },
+   "active_bytes_per_token": {
+    "value": 4740770150.4,
+    "kind": "CITED",
+    "unit": "bytes/token",
+    "command": "BYTES_FRONTIER.representations[binary_residual_sparse_2pct].active_bytes_per_token",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "absent_reason": null
+   },
+   "dram_bytes_per_token": {
+    "value": 9947303230.4,
+    "kind": "CITED",
+    "unit": "bytes/token",
+    "command": "BYTES_FRONTIER.representations[binary_residual_sparse_2pct].dram_bytes_per_token",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "absent_reason": null
+   },
+   "COMPLETE_TOKEN_NS": {
+    "value": 37147375,
+    "kind": "CITED",
+    "unit": "ns/token",
+    "command": "BYTES_FRONTIER.representations[binary_residual_sparse_2pct].COMPLETE_TOKEN_NS.composed.complete_token_ns",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "absent_reason": null,
+    "note": {
+     "binary_bytes": 2673868800.0,
+     "csr_bytes": 2066901350.4,
+     "nnz_frac": 0.02,
+     "active_bytes": 4740770150.4,
+     "active_bpw": 2.216250359030331
+    },
+    "ms": 37.147375,
+    "composed_kind": "MLP_GRAPH_PLUS_N021_NON_MLP",
+    "mlp_graph_gpu_ns": {
+     "n": 7,
+     "min": 25244208,
+     "median": 25337750,
+     "max": 25555125
+    },
+    "non_mlp_ns": 11809625,
+    "reps": 7
+   },
+   "composition_rung": {
+    "highest_rung_reached": "local_functional_probe",
+    "highest_rung_index": 0,
+    "status": "UNTESTED_ABOVE",
+    "died_at": null,
+    "unreached_above": "complete_token",
+    "may_be_described_as": "local_functional_probe",
+    "why": "Fused kernel matches CPU binary+CSR. mix_c_all_mlp_binary_g64 already died at coherent_generation (16 copies of token 271). A 2% correction does not reopen that death without a new whole-model argmax. G070: index-carrying topologies lose on overhead; this pack bills the indices.",
+    "source": "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+    "citations": [
+     "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+     "receipts/headless/C3LOWRANKSPARSE_DESIGN.json"
+    ]
+   },
+   "coherent": false,
+   "coherent_reason": "highest rung is 'local_functional_probe' (status 'UNTESTED_ABOVE'); coherent_generation not reached",
+   "source_receipt": "receipts/headless/BYTES_FRONTIER.json",
+   "citations": [
+    "receipts/headless/BYTES_FRONTIER.json",
+    "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+    "receipts/headless/C3LOWRANKSPARSE_DESIGN.json"
+   ],
+   "whole_model_complete_ebpw": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "bpw",
+    "command": "whole_model_complete_ebpw",
+    "source": "receipts/headless/BYTES_FRONTIER.json",
+    "absent_reason": "whole-model mix EBPW not measured for this operating point"
+   },
+   "bytes_frontier_id": "binary_residual_sparse_2pct",
+   "lower_than_q2f_2_25": true,
+   "dense_w_materialized": 0,
+   "parity_ok": true,
+   "toward_roof_729_7": {
+    "moved": false,
+    "delta_ns": -9599501,
+    "baseline_ns": 27547874,
+    "candidate_ns": 37147375,
+    "roof_ns": 1370426.2025489926,
+    "reason": "fewer bytes, same or worse COMPLETE_TOKEN_NS \u2014 compute/dispatch bound (or the cheaper code is a worse kernel than q2f geo)"
+   },
+   "on_coherence_frontier": false,
+   "on_execution_frontier": false,
+   "occupies_density_coordinate": null,
+   "role": "index_carrying_residual"
+  },
+  {
+   "id": "shared_basis_coherent",
+   "name": "shared_basis_coherent",
+   "family": "shared_basis_coherent",
+   "complete_ebpw": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "bpw",
+    "command": "complete_ebpw",
+    "source": "receipts/headless/SHARED_BASIS_COHERENT.json",
+    "absent_reason": "field not present on optional receipt"
+   },
+   "active_bytes_per_token": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "bytes/token",
+    "command": "active_bytes_per_token",
+    "source": "receipts/headless/SHARED_BASIS_COHERENT.json",
+    "absent_reason": "field not present on optional receipt"
+   },
+   "dram_bytes_per_token": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "bytes/token",
+    "command": "dram_bytes_per_token",
+    "source": "receipts/headless/SHARED_BASIS_COHERENT.json",
+    "absent_reason": "not billed on this candidate"
+   },
+   "COMPLETE_TOKEN_NS": {
+    "value": 59754833,
+    "kind": "CITED",
+    "unit": "ns/token",
+    "command": "receipts/headless/SHARED_BASIS_COHERENT.json COMPLETE_TOKEN_NS",
+    "source": "receipts/headless/SHARED_BASIS_COHERENT.json",
+    "absent_reason": null,
+    "ms": 59.754833,
+    "composed_kind": "MLP_GRAPH_PLUS_N021_NON_MLP",
+    "mlp_graph_gpu_ns": {
+     "n": 7,
+     "min": 47828791,
+     "median": 47945208,
+     "max": 48117999
+    },
+    "non_mlp_ns": 11809625,
+    "reps": 7
+   },
+   "composition_rung": {
+    "rung": "local_functional_probe",
+    "status": "FAILED",
+    "died_at": "held_out_activation",
+    "unreached_above": null,
+    "first_healthy_k_on_held_out": null,
+    "why": "K=2 on the 64-layer joint fit missed health on held-out real activations. No K in {2,4,8} healed held-out on the full 64-layer joint fit. K=16 is 4.25 bpw > q2f 2.25 so it cannot win density.",
+    "source": "receipts/headless/SHARED_BASIS_COHERENT.json",
+    "citations": [
+     "receipts/headless/SHARED_BASIS_COHERENT.json"
+    ],
+    "highest_rung_reached": "local_functional_probe"
+   },
+   "coherent": false,
+   "coherent_reason": "died_at held_out_activation: K=2 on the 64-layer joint fit missed health on held-out real activations. No K in {2,4,8} healed held-out on the full 64-layer joint fit. K=16 is 4.25 bpw > q2f 2.25 so it cannot win density.",
+   "source_receipt": "receipts/headless/SHARED_BASIS_COHERENT.json",
+   "citations": [
+    "receipts/headless/SHARED_BASIS_COHERENT.json"
+   ],
+   "whole_model_complete_ebpw": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "bpw",
+    "command": "whole_model_complete_ebpw",
+    "source": "receipts/headless/SHARED_BASIS_COHERENT.json",
+    "absent_reason": "whole-model mix EBPW not measured for this operating point"
+   },
+   "on_coherence_frontier": false,
+   "on_execution_frontier": false,
+   "occupies_density_coordinate": null
+  },
+  {
+   "id": "binary_healing",
+   "name": "binary_healing",
+   "family": "binary_heal",
+   "complete_ebpw": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "bpw",
+    "command": "complete_ebpw",
+    "source": "receipts/headless/BINARY_HEALING.json",
+    "absent_reason": "receipts/headless/BINARY_HEALING.json is present but has no complete_ebpw/active_bpw to map"
+   },
+   "active_bytes_per_token": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "bytes/token",
+    "command": "active_bytes_per_token",
+    "source": "receipts/headless/BINARY_HEALING.json",
+    "absent_reason": "receipts/headless/BINARY_HEALING.json has no active_bytes_per_token to map"
+   },
+   "dram_bytes_per_token": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "bytes/token",
+    "command": "dram_bytes_per_token",
+    "source": "receipts/headless/BINARY_HEALING.json",
+    "absent_reason": "not billed on this candidate"
+   },
+   "COMPLETE_TOKEN_NS": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "ns/token",
+    "command": "COMPLETE_TOKEN_NS",
+    "source": "receipts/headless/BINARY_HEALING.json",
+    "absent_reason": "receipts/headless/BINARY_HEALING.json has no COMPLETE_TOKEN_NS to map"
+   },
+   "composition_rung": {
+    "highest_rung_reached": null,
+    "status": "ABSENT",
+    "died_at": null,
+    "why": "optional frontier receipt present; composition rung not mapped",
+    "source": "receipts/headless/BINARY_HEALING.json",
+    "citations": [
+     "receipts/headless/BINARY_HEALING.json"
+    ]
+   },
+   "coherent": false,
+   "coherent_reason": "highest rung is None (status 'ABSENT'); coherent_generation not reached",
+   "source_receipt": "receipts/headless/BINARY_HEALING.json",
+   "citations": [
+    "receipts/headless/BINARY_HEALING.json"
+   ],
+   "whole_model_complete_ebpw": {
+    "value": null,
+    "kind": "ABSENT",
+    "unit": "bpw",
+    "command": "whole_model_complete_ebpw",
+    "source": "receipts/headless/BINARY_HEALING.json",
+    "absent_reason": "whole-model mix EBPW not measured for this operating point"
+   },
+   "receipt_present_unmapped": true,
+   "on_coherence_frontier": false,
+   "on_execution_frontier": false,
+   "occupies_density_coordinate": null
+  }
+ ],
+ "n_candidates": 8,
+ "COHERENCE_FRONTIER": {
+  "name": "q2f_g64",
+  "candidate_id": "q2f_g64",
+  "display_name": "N021 native 2-bit MLP (baseline)",
+  "kind": "CITED",
+  "axis": "lowest_coherent_complete_ebpw",
+  "complete_ebpw": {
+   "value": 2.25,
+   "kind": "CITED",
+   "unit": "bpw",
+   "command": "BYTES_FRONTIER.representations[q2_4level_fitted_g64].active_bpw",
+   "source": "receipts/headless/BYTES_FRONTIER.json",
+   "absent_reason": null,
+   "note": "Fully-accounted body EBPW of the density-descent representation (scales counted, no hidden bits). This is the S024 \u00a72 coordinate, not whole-model mix EBPW.",
+   "representation_id": "q2_4level_fitted_g64"
+  },
+  "COMPLETE_TOKEN_NS": {
+   "value": 27547874,
+   "kind": "CITED",
+   "unit": "ns/token",
+   "command": "NATIVE_2BIT_MLP.complete_token_bench.arms[production_fused_swiglu_geo].bench.gpu_ns.median",
+   "source": "receipts/headless/NATIVE_2BIT_MLP.json",
+   "absent_reason": null,
+   "note": "N021 fused complete-token GPU median, 7 reps. BYTES_FRONTIER reuses this as the q2f composed complete_token_ns.",
+   "ms": 27.547874,
+   "spread": {
+    "n": 7,
+    "min": 27447458,
+    "median": 27547874,
+    "max": 27613708
+   },
+   "timing_label": "DIRTY_ENGINEERING",
+   "dispatches": 836,
+   "bytes_frontier_composed_agrees": true
+  },
+  "active_bytes_per_token": {
+   "value": 4812963840.0,
+   "kind": "CITED",
+   "unit": "bytes/token",
+   "command": "BYTES_FRONTIER.representations[q2_4level_fitted_g64].active_bytes_per_token",
+   "source": "receipts/headless/BYTES_FRONTIER.json",
+   "absent_reason": null
+  },
+  "composition_rung": {
+   "highest_rung_reached": "coherent_generation",
+   "highest_rung_index": 6,
+   "status": "UNTESTED_ABOVE",
+   "died_at": null,
+   "unreached_above": "capability",
+   "may_be_described_as": "coherent_generation",
+   "why": "Survived complete_token (argmax 9714=9714 on the composition arm) and native fused-SwiGLU generation is non-degenerate.",
+   "source": "receipts/headless/NATIVE_2BIT_MLP.json",
+   "citations": [
+    "receipts/headless/NATIVE_2BIT_MLP.json",
+    "receipts/headless/BYTES_FRONTIER.json"
+   ]
+  },
+  "coherent": true,
+  "source_receipt": "receipts/headless/BYTES_FRONTIER.json",
+  "tied_ids": [
+   "q2f_g64"
+  ],
+  "n_coherent_with_ebpw": 1
+ },
+ "EXECUTION_FRONTIER": {
+  "name": "q2f_g64",
+  "candidate_id": "q2f_g64",
+  "display_name": "N021 native 2-bit MLP (baseline)",
+  "kind": "CITED",
+  "axis": "lowest_coherent_complete_token_ns",
+  "complete_ebpw": {
+   "value": 2.25,
+   "kind": "CITED",
+   "unit": "bpw",
+   "command": "BYTES_FRONTIER.representations[q2_4level_fitted_g64].active_bpw",
+   "source": "receipts/headless/BYTES_FRONTIER.json",
+   "absent_reason": null,
+   "note": "Fully-accounted body EBPW of the density-descent representation (scales counted, no hidden bits). This is the S024 \u00a72 coordinate, not whole-model mix EBPW.",
+   "representation_id": "q2_4level_fitted_g64"
+  },
+  "COMPLETE_TOKEN_NS": {
+   "value": 27547874,
+   "kind": "CITED",
+   "unit": "ns/token",
+   "command": "NATIVE_2BIT_MLP.complete_token_bench.arms[production_fused_swiglu_geo].bench.gpu_ns.median",
+   "source": "receipts/headless/NATIVE_2BIT_MLP.json",
+   "absent_reason": null,
+   "note": "N021 fused complete-token GPU median, 7 reps. BYTES_FRONTIER reuses this as the q2f composed complete_token_ns.",
+   "ms": 27.547874,
+   "spread": {
+    "n": 7,
+    "min": 27447458,
+    "median": 27547874,
+    "max": 27613708
+   },
+   "timing_label": "DIRTY_ENGINEERING",
+   "dispatches": 836,
+   "bytes_frontier_composed_agrees": true
+  },
+  "ms": 27.547874,
+  "active_bytes_per_token": {
+   "value": 4812963840.0,
+   "kind": "CITED",
+   "unit": "bytes/token",
+   "command": "BYTES_FRONTIER.representations[q2_4level_fitted_g64].active_bytes_per_token",
+   "source": "receipts/headless/BYTES_FRONTIER.json",
+   "absent_reason": null
+  },
+  "composition_rung": {
+   "highest_rung_reached": "coherent_generation",
+   "highest_rung_index": 6,
+   "status": "UNTESTED_ABOVE",
+   "died_at": null,
+   "unreached_above": "capability",
+   "may_be_described_as": "coherent_generation",
+   "why": "Survived complete_token (argmax 9714=9714 on the composition arm) and native fused-SwiGLU generation is non-degenerate.",
+   "source": "receipts/headless/NATIVE_2BIT_MLP.json",
+   "citations": [
+    "receipts/headless/NATIVE_2BIT_MLP.json",
+    "receipts/headless/BYTES_FRONTIER.json"
+   ]
+  },
+  "coherent": true,
+  "source_receipt": "receipts/headless/BYTES_FRONTIER.json",
+  "tied_ids": [
+   "q2f_g64"
+  ],
+  "n_coherent_with_token_ns": 1
+ },
+ "frontiers_are_the_same_artifact": true,
+ "faster_than_execution_frontier_but_incoherent": [
+  {
+   "id": "binary_g64",
+   "COMPLETE_TOKEN_NS": 23431791.0,
+   "ms": 23.431791,
+   "complete_ebpw": 1.25,
+   "why_not_execution_frontier": "faster than the coherent execution frontier but not coherent (died_at coherent_generation: Native binary geo matches the CPU oracle. mix_c_all_mlp_binary_g64 already ran the whole-model token loop and degenerated (16 copies of token 271). Associativity: the cheaper kernel does not reopen that death. Speed is reported; the arm is DEAD for promotion (S022 \u00a738).)",
+   "source_receipt": "receipts/headless/BYTES_FRONTIER.json"
+  },
+  {
+   "id": "shared_basis_k2",
+   "COMPLETE_TOKEN_NS": 24554625.0,
+   "ms": 24.554625,
+   "complete_ebpw": 0.53125,
+   "why_not_execution_frontier": "faster than the coherent execution frontier but not coherent (died_at held_out_activation: K=2 g=64 fitted on adjacent layers missed health on held-out real activations (rel_fro/gain). A cheaper rep that cannot preserve the activation is dead at this rung (S022 \u00a738).)",
+   "source_receipt": "receipts/headless/SHARED_BASIS_KERNEL.json"
+  }
+ ],
+ "density_ladder": {
+  "rule": "S024 \u00a72: 2.25\u21922.0\u21921.75\u21921.5\u21921.25\u21921.0\u21920.75\u21920.53\u21920.4\u21920.25\u21920.1 are COORDINATES, not obligations. Occupying a coordinate is not passing it. A coherent occupant is REACHED_COHERENT; an incoherent occupant is OCCUPIED_INCOHERENT; an empty coordinate is UNREACHED.",
+  "match_tolerance_bpw": 0.02,
+  "coordinates": [
+   {
+    "coordinate_bpw": 2.25,
+    "not_an_obligation": true,
+    "not_a_pass_literal": true,
+    "status": "REACHED_COHERENT",
+    "occupied_by": [
+     {
+      "id": "q2f_g64",
+      "complete_ebpw": 2.25,
+      "coherent": true,
+      "COMPLETE_TOKEN_NS": 27547874.0
+     }
+    ]
+   },
+   {
+    "coordinate_bpw": 2.0,
+    "not_an_obligation": true,
+    "not_a_pass_literal": true,
+    "status": "UNREACHED",
+    "occupied_by": []
+   },
+   {
+    "coordinate_bpw": 1.75,
+    "not_an_obligation": true,
+    "not_a_pass_literal": true,
+    "status": "UNREACHED",
+    "occupied_by": []
+   },
+   {
+    "coordinate_bpw": 1.5,
+    "not_an_obligation": true,
+    "not_a_pass_literal": true,
+    "status": "UNREACHED",
+    "occupied_by": []
+   },
+   {
+    "coordinate_bpw": 1.25,
+    "not_an_obligation": true,
+    "not_a_pass_literal": true,
+    "status": "OCCUPIED_INCOHERENT",
+    "occupied_by": [
+     {
+      "id": "binary_g64",
+      "complete_ebpw": 1.25,
+      "coherent": false,
+      "COMPLETE_TOKEN_NS": 23431791.0
+     }
+    ]
+   },
+   {
+    "coordinate_bpw": 1.0,
+    "not_an_obligation": true,
+    "not_a_pass_literal": true,
+    "status": "UNREACHED",
+    "occupied_by": []
+   },
+   {
+    "coordinate_bpw": 0.75,
+    "not_an_obligation": true,
+    "not_a_pass_literal": true,
+    "status": "UNREACHED",
+    "occupied_by": []
+   },
+   {
+    "coordinate_bpw": 0.53,
+    "not_an_obligation": true,
+    "not_a_pass_literal": true,
+    "status": "OCCUPIED_INCOHERENT",
+    "occupied_by": [
+     {
+      "id": "shared_basis_k2",
+      "complete_ebpw": 0.53125,
+      "coherent": false,
+      "COMPLETE_TOKEN_NS": 24554625.0
+     }
+    ]
+   },
+   {
+    "coordinate_bpw": 0.4,
+    "not_an_obligation": true,
+    "not_a_pass_literal": true,
+    "status": "UNREACHED",
+    "occupied_by": []
+   },
+   {
+    "coordinate_bpw": 0.25,
+    "not_an_obligation": true,
+    "not_a_pass_literal": true,
+    "status": "UNREACHED",
+    "occupied_by": []
+   },
+   {
+    "coordinate_bpw": 0.1,
+    "not_an_obligation": true,
+    "not_a_pass_literal": true,
+    "status": "UNREACHED",
+    "occupied_by": []
+   }
+  ],
+  "off_ladder": [
+   {
+    "id": "ternary_5in8_g64",
+    "complete_ebpw": 1.85,
+    "coherent": false,
+    "COMPLETE_TOKEN_NS": 59417374.0
+   },
+   {
+    "id": "shared_basis_k8",
+    "complete_ebpw": null,
+    "coherent": false,
+    "COMPLETE_TOKEN_NS": null
+   },
+   {
+    "id": "binary_csr_2pct",
+    "complete_ebpw": 2.216250359030331,
+    "coherent": false,
+    "COMPLETE_TOKEN_NS": 37147375.0
+   },
+   {
+    "id": "shared_basis_coherent",
+    "complete_ebpw": null,
+    "coherent": false,
+    "COMPLETE_TOKEN_NS": 59754833.0
+   },
+   {
+    "id": "binary_healing",
+    "complete_ebpw": null,
+    "coherent": false,
+    "COMPLETE_TOKEN_NS": null
+   }
+  ]
+ },
+ "roofs": {
+  "did_not_rederive": true,
+  "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+  "three_roofs": {
+   "DEVICE_THEORETICAL": {
+    "value": 819.0,
+    "kind": "CITED",
+    "unit": "GB/s",
+    "command": "BANDWIDTH_ROOF.hardware.published_peak_gb_s",
+    "absent_reason": null,
+    "note": "Datasheet peak. Not a measured decode roof. S022 \u00a71.",
+    "source": "receipts/headless/BANDWIDTH_ROOF.json"
+   },
+   "DEVICE_MEASURED_SUSTAINED": {
+    "value": 778.8,
+    "kind": "CITED",
+    "unit": "GB/s",
+    "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+    "absent_reason": null,
+    "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+    "source": "receipts/headless/BANDWIDTH_ROOF.json"
+   },
+   "MODEL_REACHABLE": {
+    "value": 729.6978633780673,
+    "kind": "DERIVED",
+    "unit": "GB/s",
+    "command": "parent_active_bytes / sum(organ_reachable_ns)",
+    "absent_reason": null,
+    "note": "Roof THIS token graph can hit given AI + occupancy + 1-CB serial structure, expressed as active-weight GB/s so it sits next to production 358.2 without collapsing onto 778.8 or 819."
+   },
+   "never_collapsed": true,
+   "not_a_single_number": true,
+   "s022_section": 1,
+   "distinct": true
+  },
+  "ranking_quantity": "recoverable_token_ns",
+  "largest_recoverable_organ": "mlp_gate_up",
+  "ranked_by_recoverable_token_ns": [
+   {
+    "organ": "mlp_gate_up",
+    "recoverable_token_ns": 5292216.967877891,
+    "measured_gpu_ns": 9887463.24151622,
+    "reachable_ns": 4595246.273638329,
+    "achieved_gb_s": 360.70618245384145,
+    "reachable_gb_s": 777.9469293099655,
+    "bound_class": "memory",
+    "occupancy_factor": 0.9989046344503923,
+    "pct_of_device_measured_sustained": 0.4631563719232685,
+    "rank": 1,
+    "rank_if_pct_bw": 6
+   },
+   {
+    "organ": "mlp_down",
+    "recoverable_token_ns": 3453488.9701968655,
+    "measured_gpu_ns": 5759460.043174991,
+    "reachable_ns": 2305971.072978126,
+    "achieved_gb_s": 309.5045692889859,
+    "reachable_gb_s": 777.2337428696796,
+    "bound_class": "memory",
+    "occupancy_factor": 0.9979888840134562,
+    "pct_of_device_measured_sustained": 0.39741213313942725,
+    "rank": 2,
+    "rank_if_pct_bw": 3
+   },
+   {
+    "organ": "deltanet",
+    "recoverable_token_ns": 3385151.580319722,
+    "measured_gpu_ns": 6640392.887055211,
+    "reachable_ns": 3255241.3067354886,
+    "achieved_gb_s": 325.5340876311656,
+    "reachable_gb_s": 767.8449234556558,
+    "bound_class": "memory",
+    "occupancy_factor": 0.985933389131556,
+    "pct_of_device_measured_sustained": 0.417994462803243,
+    "rank": 3,
+    "rank_if_pct_bw": 4
+   },
+   {
+    "organ": "gqa_attention",
+    "recoverable_token_ns": 954503.6464293868,
+    "measured_gpu_ns": 1784175.3592412332,
+    "reachable_ns": 829671.7128118464,
+    "achieved_gb_s": 349.88890792970267,
+    "reachable_gb_s": 766.640151975684,
+    "bound_class": "memory",
+    "occupancy_factor": 0.9843864303745302,
+    "pct_of_device_measured_sustained": 0.44926670252915085,
+    "rank": 4,
+    "rank_if_pct_bw": 5
+   },
+   {
+    "organ": "q4_remainder",
+    "recoverable_token_ns": 748243.403777441,
+    "measured_gpu_ns": 2125273.58354118,
+    "reachable_ns": 1377030.179763739,
+    "achieved_gb_s": 503.2516887627687,
+    "reachable_gb_s": 778.8,
+    "bound_class": "memory",
+    "occupancy_factor": 1.0,
+    "pct_of_device_measured_sustained": 0.6461886090944642,
+    "rank": 5,
+    "rank_if_pct_bw": 7
+   },
+   {
+    "organ": "lm_head",
+    "recoverable_token_ns": 165763.29052956146,
+    "measured_gpu_ns": 1034493.1178716992,
+    "reachable_ns": 868729.8273421377,
+    "achieved_gb_s": 652.9293122699839,
+    "reachable_gb_s": 778.729564368425,
+    "bound_class": "memory",
+    "occupancy_factor": 0.9999095587678801,
+    "pct_of_device_measured_sustained": 0.8383786752311042,
+    "rank": 6,
+    "rank_if_pct_bw": 8
+   },
+   {
+    "organ": "sampling",
+    "recoverable_token_ns": 33396.03182858974,
+    "measured_gpu_ns": 339492.7960812862,
+    "reachable_ns": 306096.7642526965,
+    "achieved_gb_s": 0.0,
+    "reachable_gb_s": 3.2449999999999997,
+    "bound_class": "launch",
+    "occupancy_factor": 0.004166666666666667,
+    "pct_of_device_measured_sustained": 0.0,
+    "rank": 7,
+    "rank_if_pct_bw": 1
+   },
+   {
+    "organ": "embedding",
+    "recoverable_token_ns": 8516.498482742354,
+    "measured_gpu_ns": 8873.971518181492,
+    "reachable_ns": 357.47303543913716,
+    "achieved_gb_s": 0.3065143937443467,
+    "reachable_gb_s": 64.89999999999999,
+    "bound_class": "memory",
+    "occupancy_factor": 0.08333333333333333,
+    "pct_of_device_measured_sustained": 0.00039357266787923306,
+    "rank": 8,
+    "rank_if_pct_bw": 2
+   }
+  ],
+  "model_reachable_tok_s_from_bytes_frontier": {
+   "value": 729.7,
+   "kind": "CITED",
+   "unit": "tok/s",
+   "command": "BYTES_FRONTIER.roof_tok_s",
+   "source": "receipts/headless/BYTES_FRONTIER.json",
+   "absent_reason": null,
+   "note": "BYTES_FRONTIER's 729.7 annotation of ORGAN_ROOF_LEDGER MODEL_REACHABLE. Not re-derived."
+  },
+  "model_reachable_ns_from_bytes_frontier": {
+   "value": 1370426.2025489926,
+   "kind": "CITED",
+   "unit": "ns/token",
+   "command": "BYTES_FRONTIER.roof_ns",
+   "source": "receipts/headless/BYTES_FRONTIER.json",
+   "absent_reason": null
+  }
+ },
+ "organ_density": {
+  "s024": "\u00a717, \u00a718",
+  "rule": "Whole-model EBPW may stay >0.5 while an organ hits <<1 because a shared structure represents many nominal weights. Track per organ; do not collapse.",
+  "mlp_bracket_cited_not_transferred": {
+   "do_not_transfer": true,
+   "fail_bpw": {
+    "value": 1.85,
+    "status": "CITED",
+    "null": "not a floor for DeltaNet/GQA/embed",
+    "unit": "bpw",
+    "source": "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+    "note": "whole-model uniform ternary; argmax flipped (9714 vs 10895)"
+   },
+   "survive_bpw": {
+    "value": 2.25,
+    "status": "CITED",
+    "null": "not a floor for DeltaNet/GQA/embed",
+    "unit": "bpw",
+    "source": "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_Q2F_G64.json",
+    "note": "whole-model uniform q2 g64; argmax agreed"
+   },
+   "applies_to": "mlp / whole-model uniform mix, not these three organs"
+  },
+  "organs": [
+   {
+    "organ": "mlp_gate_up",
+    "contract_organ": "mlp_gate_up",
+    "recoverable_token_ns": {
+     "value": 5292216.967877891,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "ORGAN_ROOF_LEDGER.ranked_by_recoverable_token_ns[mlp_gate_up].recoverable_token_ns",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": null
+    },
+    "floor_storage_bpw": {
+     "value": 2.25,
+     "kind": "CITED",
+     "unit": "EBPW",
+     "command": "BYTES_FRONTIER.representations[q2_4level_fitted_g64].active_bpw",
+     "source": "receipts/headless/BYTES_FRONTIER.json",
+     "absent_reason": null,
+     "note": "Lowest coherent native MLP in the N021/BYTES_FRONTIER harness. Parent affine tensors store 2.5 bpw (scale+bias). Whole-model complete EBPW 3.1393 is NOT this organ's number."
+    },
+    "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "composition_floor_complete_ebpw": null
+   },
+   {
+    "organ": "mlp_down",
+    "contract_organ": "mlp_down",
+    "recoverable_token_ns": {
+     "value": 3453488.9701968655,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "ORGAN_ROOF_LEDGER.ranked_by_recoverable_token_ns[mlp_down].recoverable_token_ns",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": null
+    },
+    "floor_storage_bpw": {
+     "value": 2.25,
+     "kind": "CITED",
+     "unit": "EBPW",
+     "command": "BYTES_FRONTIER.representations[q2_4level_fitted_g64].active_bpw",
+     "source": "receipts/headless/BYTES_FRONTIER.json",
+     "absent_reason": null,
+     "note": "Lowest coherent native MLP in the N021/BYTES_FRONTIER harness. Parent affine tensors store 2.5 bpw (scale+bias). Whole-model complete EBPW 3.1393 is NOT this organ's number."
+    },
+    "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "composition_floor_complete_ebpw": null
+   },
+   {
+    "organ": "deltanet",
+    "contract_organ": "deltanet",
+    "recoverable_token_ns": {
+     "value": 3385151.580319722,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "ORGAN_ROOF_LEDGER.ranked_by_recoverable_token_ns[deltanet].recoverable_token_ns",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": null
+    },
+    "floor_storage_bpw": {
+     "value": 4.125,
+     "kind": "CITED",
+     "unit": "bpw",
+     "command": "ORGAN_FRONTIERS.organs[deltanet].floor.storage_bpw",
+     "source": "receipts/headless/ORGAN_FRONTIERS.json",
+     "absent_reason": null
+    },
+    "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "composition_floor_complete_ebpw": {
+     "value": 3.2614879737507687,
+     "kind": "CITED",
+     "unit": "EBPW",
+     "command": "ORGAN_DENSITY_FLOORS.organs[deltanet].floor.complete_ebpw",
+     "source": "receipts/headless/ORGAN_DENSITY_FLOORS.json",
+     "absent_reason": null
+    }
+   },
+   {
+    "organ": "gqa_attention",
+    "contract_organ": "gqa_attention",
+    "recoverable_token_ns": {
+     "value": 954503.6464293868,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "ORGAN_ROOF_LEDGER.ranked_by_recoverable_token_ns[gqa_attention].recoverable_token_ns",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": null
+    },
+    "floor_storage_bpw": {
+     "value": 4.25,
+     "kind": "CITED",
+     "unit": "bpw",
+     "command": "ORGAN_FRONTIERS.organs[gqa].floor.storage_bpw",
+     "source": "receipts/headless/ORGAN_FRONTIERS.json",
+     "absent_reason": null
+    },
+    "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "composition_floor_complete_ebpw": {
+     "value": 3.126550820024315,
+     "kind": "CITED",
+     "unit": "EBPW",
+     "command": "ORGAN_DENSITY_FLOORS.organs[gqa_attention].floor.complete_ebpw",
+     "source": "receipts/headless/ORGAN_DENSITY_FLOORS.json",
+     "absent_reason": null
+    }
+   },
+   {
+    "organ": "q4_remainder",
+    "contract_organ": "q4_remainder",
+    "recoverable_token_ns": {
+     "value": 748243.403777441,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "ORGAN_ROOF_LEDGER.ranked_by_recoverable_token_ns[q4_remainder].recoverable_token_ns",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": null
+    },
+    "floor_storage_bpw": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "bpw",
+     "command": "organ q4_remainder floor",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": "no ORGAN_FRONTIERS floor and no ORGAN_LIBRARY complete EBPW"
+    },
+    "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "composition_floor_complete_ebpw": null
+   },
+   {
+    "organ": "lm_head",
+    "contract_organ": "lm_head",
+    "recoverable_token_ns": {
+     "value": 165763.29052956146,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "ORGAN_ROOF_LEDGER.ranked_by_recoverable_token_ns[lm_head].recoverable_token_ns",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": null
+    },
+    "floor_storage_bpw": {
+     "value": 3.25,
+     "kind": "CITED",
+     "unit": "EBPW",
+     "command": "ORGAN_FRONTIERS.organs.embedding_output.lm_head_floor.storage_bpw",
+     "source": "receipts/headless/ORGAN_FRONTIERS.json",
+     "absent_reason": null
+    },
+    "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "composition_floor_complete_ebpw": null
+   },
+   {
+    "organ": "sampling",
+    "contract_organ": "sampling",
+    "recoverable_token_ns": {
+     "value": 33396.03182858974,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "ORGAN_ROOF_LEDGER.ranked_by_recoverable_token_ns[sampling].recoverable_token_ns",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": null
+    },
+    "floor_storage_bpw": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "EBPW",
+     "command": "best_complete_ebpw",
+     "source": "receipts/headless/ORGAN_BANDWIDTH.json",
+     "absent_reason": "sampling has no stored weights; EBPW is not defined for this organ"
+    },
+    "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "composition_floor_complete_ebpw": null
+   },
+   {
+    "organ": "embedding",
+    "contract_organ": "embed",
+    "recoverable_token_ns": {
+     "value": 8516.498482742354,
+     "kind": "CITED",
+     "unit": "ns/token",
+     "command": "ORGAN_ROOF_LEDGER.ranked_by_recoverable_token_ns[embedding].recoverable_token_ns",
+     "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+     "absent_reason": null
+    },
+    "floor_storage_bpw": {
+     "value": 4.125,
+     "kind": "CITED",
+     "unit": "bpw",
+     "command": "ORGAN_FRONTIERS.organs[embedding_output].floor.storage_bpw",
+     "source": "receipts/headless/ORGAN_FRONTIERS.json",
+     "absent_reason": null
+    },
+    "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "composition_floor_complete_ebpw": {
+     "value": 3.125,
+     "kind": "CITED",
+     "unit": "EBPW",
+     "command": "ORGAN_DENSITY_FLOORS.organs[embedding_output].floor.complete_ebpw",
+     "source": "receipts/headless/ORGAN_DENSITY_FLOORS.json",
+     "absent_reason": null
+    }
+   }
+  ],
+  "citations": [
+   "receipts/headless/ORGAN_ROOF_LEDGER.json",
+   "receipts/headless/ORGAN_FRONTIERS.json",
+   "receipts/headless/ORGAN_LIBRARY.json",
+   "receipts/headless/ORGAN_DENSITY_FLOORS.json"
+  ]
+ },
+ "dispatch_parent_context": {
+  "source": "receipts/headless/DISPATCH_LEDGER.json",
+  "note": "Sealed parent execution context. Not a density-descent candidate and not mixed into candidate COMPLETE_TOKEN_NS (those use the N021/N032/N033 harness).",
+  "parent_complete_ebpw": {
+   "value": 3.139300850311054,
+   "kind": "CITED",
+   "unit": "bpw",
+   "command": "DISPATCH_LEDGER.parent.complete_ebpw",
+   "source": "receipts/headless/DISPATCH_LEDGER.json",
+   "absent_reason": null
+  },
+  "parent_dispatches": {
+   "value": 756,
+   "kind": "CITED",
+   "unit": "1",
+   "command": "DISPATCH_LEDGER.parent.dispatches",
+   "source": "receipts/headless/DISPATCH_LEDGER.json",
+   "absent_reason": null
+  },
+  "parent_tok_s_sealed": {
+   "value": 34.873,
+   "kind": "CITED",
+   "unit": "tok/s",
+   "command": "DISPATCH_LEDGER.parent.tok_s_sealed",
+   "source": "receipts/headless/DISPATCH_LEDGER.json",
+   "absent_reason": null
+  },
+  "parent_complete_wall_ns_from_tok_s": {
+   "value": 28675479.59739627,
+   "kind": "DERIVED",
+   "unit": "ns/token",
+   "command": "1e9 / DISPATCH_LEDGER.parent.tok_s_sealed",
+   "source": "receipts/headless/DISPATCH_LEDGER.json",
+   "absent_reason": null,
+   "note": "Wall from sealed tok/s. Not the N021 27.55 ms GPU complete-token figure."
+  },
+  "reduction": {
+   "from": 756,
+   "to": 628,
+   "token_ids_unchanged": true,
+   "source": "receipts/headless/DISPATCH_LEDGER.json"
+  },
+  "did_not_mutate_parent": true,
+  "parent_path_present": true,
+  "parent_immutable": true
+ },
+ "citations": [
+  "receipts/headless/BYTES_FRONTIER.json",
+  "receipts/headless/SHARED_BASIS_KERNEL.json",
+  "receipts/headless/DISPATCH_LEDGER.json",
+  "receipts/headless/ORGAN_ROOF_LEDGER.json",
+  "receipts/headless/NATIVE_2BIT_MLP.json",
+  "receipts/headless/Q2F_G64_GENERATION.json",
+  "receipts/headless/COMPOSITION_LADDER.json",
+  "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+  "receipts/headless/FRACTIONAL_BIT_CANON.json",
+  "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+  "receipts/headless/C1SHAREDBASIS_DESIGN.json",
+  "receipts/headless/ONEBIT_FAMILIES.json",
+  "receipts/headless/C3LOWRANKSPARSE_DESIGN.json",
+  "receipts/headless/SHARED_BASIS_COHERENT.json",
+  "receipts/headless/BINARY_HEALING.json"
+ ],
+ "finding": {
+  "coherence_frontier_name": "q2f_g64",
+  "execution_frontier_name": "q2f_g64",
+  "currently_same_artifact": true,
+  "faster_incoherent_bodies": [
+   "binary_g64",
+   "shared_basis_k2"
+  ],
+  "heal_receipts_present": [
+   "receipts/headless/BINARY_HEALING.json",
+   "receipts/headless/SHARED_BASIS_COHERENT.json"
+  ]
+ }
+}

@@ -1,0 +1,97 @@
+{
+  "schema": "hawking.ascension.qwen80_tokenizer_sampler_handoff_contract.v1",
+  "status": "EARNED_SOURCE_BOUND_TOKENIZER_TEMPLATE_SAMPLER_HANDOFF_COMPONENT_NOT_RUNTIME_OR_TOKEN",
+  "component_only": true,
+  "live_packed_artifact_scan_performed": false,
+  "metal_device_or_dispatch_performed": false,
+  "source_binding": {
+    "source_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-80b/Qwen3-Coder-Next",
+    "source_repository": "Qwen/Qwen3-Coder-Next",
+    "source_revision_from_pre_admitted_source_audit": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+    "config_sha256": "a7b8098d3b05777f12bb5677a26bf1240a1bb09def1b06b29e6be86cae2e84f8",
+    "tokenizer_sha256": "19564a48c4f71a2a1b937cce34c737a1e662b171c5f5d7edf641a15cd896f07d",
+    "tokenizer_config_sha256": "fc76878832c668e3f0f8be66e6239a475b9093d2fe5cef97c242369779e6c6e6",
+    "chat_template_sha256": "c79a833039a43602150cce0902403d6e376c50930c1b2a139b2964e1f0c322a0",
+    "generation_config_sha256": "37a3c1ef63516ca489c575f0db1c0405ddc0c3dbaca9ed987344c966c37aeef5",
+    "architecture": "Qwen3NextForCausalLM",
+    "model_type": "qwen3_next",
+    "lm_head_vocab_size": 151936,
+    "tokenizer_addressable_vocab_size": 151669,
+    "reserved_lm_head_tail_rows": 267,
+    "bos_token_id": 151643,
+    "im_start_token_id": 151644,
+    "im_end_token_id": 151645,
+    "tokenizer_config_template_byte_identical_to_template_file": false,
+    "tokenizer_config_template_equivalent_after_exactly_one_terminal_lf_normalization": true,
+    "bounded_one_user_branch_anchors_verified": true
+  },
+  "prompt": {
+    "bounded_mode": "exact_source_one_user_no_system_no_tools_branch_plus_hcli_delimiter_refusal",
+    "rendered_prompt_sha256": "9f6692de2e03854f63d3137255139eaa1502cd00c3a263fda7144fd818ab9775",
+    "rendered_prompt": "<|im_start|>user\nReturn the word ready.<|im_end|>\n<|im_start|>assistant\n",
+    "token_count": 13,
+    "token_ids": [
+      151644,
+      872,
+      198,
+      5598,
+      279,
+      3409,
+      5527,
+      13,
+      151645,
+      198,
+      151644,
+      77091,
+      198
+    ],
+    "first_token_is_im_start": true,
+    "im_start_count": 2,
+    "im_end_count": 1,
+    "all_token_ids_are_tokenizer_addressable": true,
+    "deterministic_repeat_matches": true
+  },
+  "sampler_fixture": {
+    "raw_fixture_argmax_before_tail_mask": 151935,
+    "expected_reserved_raw_argmax": 151935,
+    "reserved_tail_mask_cutoff": 151669,
+    "masked_fixture_argmax": 151668,
+    "sampled_feedback_token_id": 151668,
+    "all_selected_reserved_fixture_logits_are_negative_infinity": true,
+    "sampled_id_is_tokenizer_addressable": true
+  },
+  "rejection_tests": {
+    "source_config_hash_mismatch_rejected": true,
+    "source_template_mismatch_rejected": true,
+    "unsupported_system_message_rejected": true,
+    "unsupported_tools_rejected": true,
+    "chat_delimiter_injection_rejected": true,
+    "reserved_prompt_token_rejected": true,
+    "sample_before_tail_mask_rejected": true,
+    "wrong_tail_mask_cutoff_rejected": true,
+    "reserved_tail_feedback_rejected": true
+  },
+  "integration_contract": {
+    "rawls_hybrid_scheduler_handoff": [
+      "Before a Qwen80 native prefill/decode step, use the exact source-bound one-user/no-system/no-tools formatter only when that bounded HCLI surface is requested; unsupported message/tool shapes must fail closed or use a separately source-faithful renderer.",
+      "Encode the rendered prompt with the pinned source tokenizer and reject any ID >=151669 before the native embedding lookup/state schedule begins.",
+      "After the eventual full 151936-row native lm_head, execute mask_reserved_lm_head_tail(151669) before any sampler policy, then validate sampled_id <151669 before autoregressive feedback.",
+      "This contract's deterministic argmax fixture is a test seam. Production sampling must separately honor the explicitly selected HCLI/source sampling policy and earn native full-token parity."
+    ],
+    "source_binding_requirements": [
+      "Bind source sidecars by all five pinned SHA-256 values and source-audit revision a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb; a sidecar/template update must reopen this contract.",
+      "Require Qwen3NextForCausalLM / qwen3_next, lm_head vocab 151936, tokenizer vocab 151669, and a 267-row reserved tail; do not synthesize token text for tail IDs.",
+      "Require the two separately pinned template sidecars to be byte-identical or to differ only by chat_template.jinja's exactly one terminal LF; validate the source special-token IDs 151643/151644/151645."
+    ],
+    "sampler_requirements": [
+      "Mask every full logit-domain row 151669..151935, not only rows observed in this selected-logit fixture.",
+      "Sampling before masking, sampling an unaddressable ID, or forwarding it to the next token must fail closed.",
+      "The direct-packed final-head component remains a separate prerequisite; this tokenizer/sampler handoff does not supply logits or an lm-head implementation."
+    ],
+    "claim_boundary": [
+      "No packed Qwen80 artifact or safetensors shard was opened; no Metal context, model runtime, HCLI process, benchmark, or TPS measurement occurred.",
+      "This receipt is tokenizer/template/sampler-handoff evidence only and cannot qualify Qwen80 for generation, capability, HCLI, TG, Agent OS, or tournament gates."
+    ]
+  },
+  "unsealed_preimage_sha256": "5c2f66487c7a4fb387806bb9439259eb62c86f33b1e30ca4dac701ee38ac164c"
+}

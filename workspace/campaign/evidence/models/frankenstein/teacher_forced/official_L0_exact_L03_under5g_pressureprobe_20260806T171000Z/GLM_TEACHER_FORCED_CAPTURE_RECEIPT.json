@@ -1,0 +1,634 @@
+{
+  "architecture": {
+    "first_k_dense_replace": 3,
+    "hidden_size": 6144,
+    "layers_executed": 4,
+    "n_routed_experts": 256,
+    "num_experts_per_tok": 8,
+    "num_hidden_layers_config": 78
+  },
+  "architecture_binding": {
+    "architecture_class": "GlmMoeDsaForCausalLM",
+    "attention_variant": "mla_dsa_indexshare",
+    "backend": "glm52",
+    "family": "glm52",
+    "first_k_dense_replace": 3,
+    "hidden_size": 6144,
+    "immutable_revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "max_position_embeddings": null,
+    "model_type": "glm_moe_dsa",
+    "moe_variant": "noaux_tc_swiglu",
+    "n_routed_experts": 256,
+    "n_shared_experts": 1,
+    "notes": [
+      "Stage-1 mathematical donor for PROTO_FRANKENSTEIN_V0.",
+      "Reference path reuses glm52_reference (sealed parity vs Transformers)."
+    ],
+    "num_experts_per_tok": 8,
+    "num_hidden_layers": 78,
+    "profile_official": "official",
+    "profile_synthetic": "synthetic",
+    "repo_id": "zai-org/GLM-5.2",
+    "tokenizer_kind": "hf_sentencepiece",
+    "torch_dtype": "bfloat16",
+    "vocab_size": 154880,
+    "weight_shard_bytes": null,
+    "weight_shard_count": null
+  },
+  "blocker": null,
+  "bytes_captured": 47321456,
+  "bytes_reclaimed": 21717480800,
+  "capability_claim_permitted": false,
+  "capture_seconds": 254.374,
+  "captured_at": "2026-08-06T16:39:48.729064Z",
+  "corpus": {
+    "level": "L0",
+    "max_sequence": 32,
+    "membership_sha256": "a318f866624c8a3cb352d381d28a00740d821f52cf74e477263735fa8fa26b68",
+    "n_sequences": 32,
+    "seal_sha256": "e9bf3a9fe9dd9dd2779ef84cb904ceb7366ae014810a4d9b24062a8e69db630c",
+    "shard": {
+      "corpus_len_before_shard": 32,
+      "n_sequences_in_shard": 32,
+      "out_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L03_under5g_pressureprobe_20260806T171000Z",
+      "seq_end": 32,
+      "seq_start": 0,
+      "sharded": false,
+      "weight_stream_amplification_risk": false,
+      "worker_id": null
+    },
+    "source": "PROTO_FRANKENSTEIN_V0_MERGED_CORPUS"
+  },
+  "deepest_layer_verified": 3,
+  "double_buffer_log": [
+    {
+      "layer": 0,
+      "n": 0,
+      "n_minus_1": null,
+      "n_plus_1": 1,
+      "pipeline": "seal_evict(N-1) | execute(N) | prefetch(N+1)",
+      "prefetch_status": "NONE"
+    },
+    {
+      "layer": 1,
+      "n": 1,
+      "n_minus_1": 0,
+      "n_plus_1": 2,
+      "pipeline": "seal_evict(N-1) | execute(N) | prefetch(N+1)",
+      "prefetch_status": "NONE"
+    },
+    {
+      "layer": 2,
+      "n": 2,
+      "n_minus_1": 1,
+      "n_plus_1": 3,
+      "pipeline": "seal_evict(N-1) | execute(N) | prefetch(N+1)",
+      "prefetch_status": "NONE"
+    },
+    {
+      "layer": 3,
+      "n": 3,
+      "n_minus_1": 2,
+      "n_plus_1": null,
+      "pipeline": "seal_evict(N-1) | execute(N) | prefetch(N+1)",
+      "prefetch_status": "NONE"
+    }
+  ],
+  "eviction_count": 2,
+  "evictions": [
+    {
+      "at": "2026-08-06T16:39:48.403891Z",
+      "bytes_reclaimed": 16081041160,
+      "policy": "source_only_reclaim_stream_scratch",
+      "removed": [
+        {
+          "bytes": 5360347104,
+          "sha256": "1c65131e725c858d2e458da91b443ba95488b0f1343129fc629cbc3d35350d6c",
+          "shard": "model-00076-of-00282.safetensors"
+        },
+        {
+          "bytes": 5360347104,
+          "sha256": "68aceb515ad523d9794318ec8578b68fbe9e42648bf222ccd337e1fdac02b23d",
+          "shard": "model-00077-of-00282.safetensors"
+        },
+        {
+          "bytes": 5360346952,
+          "sha256": "8720873631cb258ece1f196e7f389e39b219901a4c49db2328f783fc78e4ee15",
+          "shard": "model-00078-of-00282.safetensors"
+        }
+      ],
+      "schema": "hawking.frankenstein.glm_layer_eviction.v1",
+      "seal_sha256": "11114033ebfe35aa61850028b73a5baa3e5ef636cf7004bbc57a2dca98cc12ff"
+    },
+    {
+      "at": "2026-08-06T16:39:48.709253Z",
+      "bytes_reclaimed": 5636439640,
+      "policy": "source_only_reclaim_stream_scratch",
+      "removed": [
+        {
+          "bytes": 5342821416,
+          "sha256": "004bf9404964da8ea71ea2d3ebf02148fa766b956bd4fca3f54b093e58a6a74c",
+          "shard": "model-00001-of-00282.safetensors"
+        },
+        {
+          "bytes": 293618224,
+          "sha256": "46c23d3a25db83ab8b7e47d0a5efec49e00f57a815358323f1ab45136de327d7",
+          "shard": "model-00282-of-00282.safetensors"
+        }
+      ],
+      "schema": "hawking.frankenstein.glm_layer_eviction.v1",
+      "seal_sha256": "9bfe67d5c319a910cd993de62a625a49616c7aa465c05c989fd24c077331fcc2"
+    }
+  ],
+  "fabricated": false,
+  "final_status": "CAPTURED_BOUNDED",
+  "floor": {
+    "final": {
+      "floor_bytes": 26843545600,
+      "floor_preserved": true,
+      "free_bytes": 167645319168,
+      "headroom_bytes": 140801773568,
+      "label": "output_dir_final",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L03_under5g_pressureprobe_20260806T171000Z"
+    },
+    "floor_bytes": 26843545600,
+    "preserved_throughout": true,
+    "records": [
+      {
+        "floor_bytes": 26843545600,
+        "floor_preserved": true,
+        "free_bytes": 162908323840,
+        "headroom_bytes": 136064778240,
+        "label": "pre_layer_02",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L03_under5g_pressureprobe_20260806T171000Z"
+      },
+      {
+        "floor_bytes": 26843545600,
+        "floor_preserved": true,
+        "free_bytes": 162853027840,
+        "headroom_bytes": 136009482240,
+        "label": "post_layer_02",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L03_under5g_pressureprobe_20260806T171000Z"
+      },
+      {
+        "floor_bytes": 26843545600,
+        "floor_preserved": true,
+        "free_bytes": 162853027840,
+        "headroom_bytes": 136009482240,
+        "label": "pre_layer_03",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L03_under5g_pressureprobe_20260806T171000Z"
+      },
+      {
+        "floor_bytes": 26843545600,
+        "floor_preserved": true,
+        "free_bytes": 162010943488,
+        "headroom_bytes": 135167397888,
+        "label": "post_layer_03",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L03_under5g_pressureprobe_20260806T171000Z"
+      },
+      {
+        "floor_bytes": 26843545600,
+        "floor_preserved": true,
+        "free_bytes": 167645319168,
+        "headroom_bytes": 140801773568,
+        "label": "output_dir_final",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L03_under5g_pressureprobe_20260806T171000Z"
+      }
+    ]
+  },
+  "forward": {
+    "autoregressive": false,
+    "exact_ops": [
+      "rmsnorm",
+      "mla_dsa_attention",
+      "indexshare",
+      "interleaved_rope",
+      "noaux_tc_router",
+      "swiglu_moe"
+    ],
+    "kind": "teacher_forced_layer_major",
+    "reference_module": "lab.operators.glm52_reference.decoder_layer",
+    "verification": "synthetic: exact reference path previously sealed in GLM52_REFERENCE_PARITY.json against Transformers; this run reuses the same decoder_layer implementation without faking."
+  },
+  "layers_captured": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "layers_total_config": 78,
+  "mode": "official",
+  "note": "Teacher-forced layer-major capture. Not a serving stack. Official path uses direct hf_hub layer-major streaming (not GLM52_STREAMING_SCHEDULE restream). Synthetic path proves the mechanism end-to-end on a miniature twin.",
+  "output_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L03_under5g_pressureprobe_20260806T171000Z",
+  "paired_traces": {
+    "dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L03_under5g_pressureprobe_20260806T171000Z/paired_traces",
+    "index_seal_sha256": "15fac8ac217a48bd2cd543e777e97f348b1ecc1b578cb885c2b0739fd6650402",
+    "n": 32
+  },
+  "profile": "official",
+  "repo": "zai-org/GLM-5.2",
+  "resident_shards_remaining": [
+    "model-00002-of-00282.safetensors",
+    "model-00016-of-00282.safetensors",
+    "model-00038-of-00282.safetensors",
+    "model-00075-of-00282.safetensors",
+    "model-00079-of-00282.safetensors",
+    "model-00116-of-00282.safetensors",
+    "model-00120-of-00282.safetensors",
+    "model-00156-of-00282.safetensors",
+    "model-00160-of-00282.safetensors",
+    "model-00197-of-00282.safetensors",
+    "model-00201-of-00282.safetensors",
+    "model-00237-of-00282.safetensors",
+    "model-00241-of-00282.safetensors",
+    "model-00252-of-00282.safetensors",
+    "model-00253-of-00282.safetensors",
+    "model-00254-of-00282.safetensors",
+    "model-00255-of-00282.safetensors",
+    "model-00256-of-00282.safetensors",
+    "model-00257-of-00282.safetensors",
+    "model-00258-of-00282.safetensors",
+    "model-00259-of-00282.safetensors",
+    "model-00270-of-00282.safetensors",
+    "model-00274-of-00282.safetensors"
+  ],
+  "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+  "schema": "hawking.frankenstein.glm_teacher_forced_capture.v1",
+  "seal_sha256": "c0e2919594bbc5992da20164ffe2323afa5f33adb4c51618b8518c28ac0c44b1",
+  "shard": {
+    "corpus_len_before_shard": 32,
+    "n_sequences_in_shard": 32,
+    "out_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_exact_L03_under5g_pressureprobe_20260806T171000Z",
+    "seq_end": 32,
+    "seq_start": 0,
+    "sharded": false,
+    "weight_stream_amplification_risk": false,
+    "worker_id": null
+  },
+  "status": "PASS_PARTIAL",
+  "stream": {
+    "bytes_fetched": 16081041160,
+    "bytes_reclaimed": 21717480800,
+    "control_root": "/Users/scammermike/Library/Application Support/hawking/GLM52Gravity/stream_control/b4734de4facf877f85769a911abafc5283eab3d9",
+    "events_tail": [
+      {
+        "at": "2026-08-06T16:35:34.548714Z",
+        "event": "STREAMER_INIT",
+        "prefetch_workers": 1,
+        "public_path_compat_env_active": {
+          "HF_HUB_DISABLE_IMPLICIT_TOKEN": "1",
+          "HF_HUB_DISABLE_TELEMETRY": "1",
+          "HF_HUB_ENABLE_HF_TRANSFER": "0",
+          "HF_XET_CHUNK_CACHE_SIZE_BYTES": "0",
+          "HF_XET_DATA_MAX_CONCURRENT_FILE_DOWNLOADS": "4",
+          "HF_XET_HIGH_PERFORMANCE": "1",
+          "HF_XET_NUM_CONCURRENT_RANGE_GETS": "8",
+          "HF_XET_RECONSTRUCTION_USE_VECTORED_WRITE": "true",
+          "HF_XET_RECONSTRUCT_WRITE_SEQUENTIALLY": "false"
+        },
+        "public_path_compat_env_newly_set": []
+      },
+      {
+        "at": "2026-08-06T16:35:39.485715Z",
+        "event": "SHARD_HASH_OK",
+        "sha256": "004bf9404964da8ea71ea2d3ebf02148fa766b956bd4fca3f54b093e58a6a74c",
+        "shard": "model-00001-of-00282.safetensors"
+      },
+      {
+        "at": "2026-08-06T16:35:39.617638Z",
+        "event": "SHARD_HASH_OK",
+        "sha256": "46c23d3a25db83ab8b7e47d0a5efec49e00f57a815358323f1ab45136de327d7",
+        "shard": "model-00282-of-00282.safetensors"
+      },
+      {
+        "at": "2026-08-06T16:35:39.923725Z",
+        "event": "INVENTORY_ADMITTED",
+        "shards": [
+          "model-00001-of-00282.safetensors",
+          "model-00002-of-00282.safetensors",
+          "model-00016-of-00282.safetensors",
+          "model-00038-of-00282.safetensors",
+          "model-00075-of-00282.safetensors",
+          "model-00079-of-00282.safetensors",
+          "model-00116-of-00282.safetensors",
+          "model-00120-of-00282.safetensors",
+          "model-00156-of-00282.safetensors",
+          "model-00160-of-00282.safetensors",
+          "model-00197-of-00282.safetensors",
+          "model-00201-of-00282.safetensors",
+          "model-00237-of-00282.safetensors",
+          "model-00241-of-00282.safetensors",
+          "model-00252-of-00282.safetensors",
+          "model-00253-of-00282.safetensors",
+          "model-00254-of-00282.safetensors",
+          "model-00255-of-00282.safetensors",
+          "model-00256-of-00282.safetensors",
+          "model-00257-of-00282.safetensors",
+          "model-00258-of-00282.safetensors",
+          "model-00259-of-00282.safetensors",
+          "model-00270-of-00282.safetensors",
+          "model-00274-of-00282.safetensors",
+          "model-00282-of-00282.safetensors"
+        ],
+        "tensor_count": 4897
+      },
+      {
+        "at": "2026-08-06T16:35:40.253931Z",
+        "event": "INVENTORY_ADMITTED",
+        "shards": [
+          "model-00001-of-00282.safetensors",
+          "model-00002-of-00282.safetensors",
+          "model-00016-of-00282.safetensors",
+          "model-00038-of-00282.safetensors",
+          "model-00075-of-00282.safetensors",
+          "model-00079-of-00282.safetensors",
+          "model-00116-of-00282.safetensors",
+          "model-00120-of-00282.safetensors",
+          "model-00156-of-00282.safetensors",
+          "model-00160-of-00282.safetensors",
+          "model-00197-of-00282.safetensors",
+          "model-00201-of-00282.safetensors",
+          "model-00237-of-00282.safetensors",
+          "model-00241-of-00282.safetensors",
+          "model-00252-of-00282.safetensors",
+          "model-00253-of-00282.safetensors",
+          "model-00254-of-00282.safetensors",
+          "model-00255-of-00282.safetensors",
+          "model-00256-of-00282.safetensors",
+          "model-00257-of-00282.safetensors",
+          "model-00258-of-00282.safetensors",
+          "model-00259-of-00282.safetensors",
+          "model-00270-of-00282.safetensors",
+          "model-00274-of-00282.safetensors",
+          "model-00282-of-00282.safetensors"
+        ],
+        "tensor_count": 4897
+      },
+      {
+        "at": "2026-08-06T16:35:55.304794Z",
+        "event": "SHARD_HASH_OK",
+        "sha256": "7682416ae5caa51698994d71d011bf308016f97bc33fe2f8187f37cd73b85e39",
+        "shard": "model-00002-of-00282.safetensors"
+      },
+      {
+        "at": "2026-08-06T16:35:55.591002Z",
+        "event": "INVENTORY_ADMITTED",
+        "shards": [
+          "model-00001-of-00282.safetensors",
+          "model-00002-of-00282.safetensors",
+          "model-00016-of-00282.safetensors",
+          "model-00038-of-00282.safetensors",
+          "model-00075-of-00282.safetensors",
+          "model-00079-of-00282.safetensors",
+          "model-00116-of-00282.safetensors",
+          "model-00120-of-00282.safetensors",
+          "model-00156-of-00282.safetensors",
+          "model-00160-of-00282.safetensors",
+          "model-00197-of-00282.safetensors",
+          "model-00201-of-00282.safetensors",
+          "model-00237-of-00282.safetensors",
+          "model-00241-of-00282.safetensors",
+          "model-00252-of-00282.safetensors",
+          "model-00253-of-00282.safetensors",
+          "model-00254-of-00282.safetensors",
+          "model-00255-of-00282.safetensors",
+          "model-00256-of-00282.safetensors",
+          "model-00257-of-00282.safetensors",
+          "model-00258-of-00282.safetensors",
+          "model-00259-of-00282.safetensors",
+          "model-00270-of-00282.safetensors",
+          "model-00274-of-00282.safetensors",
+          "model-00282-of-00282.safetensors"
+        ],
+        "tensor_count": 4897
+      },
+      {
+        "at": "2026-08-06T16:36:10.698844Z",
+        "event": "SHARD_HASH_OK",
+        "sha256": "3eb356ec94ec4112d3b0a7faaf2b3dc62eb0d958696713b5283376d4461bcc4d",
+        "shard": "model-00038-of-00282.safetensors"
+      },
+      {
+        "at": "2026-08-06T16:36:10.984960Z",
+        "event": "INVENTORY_ADMITTED",
+        "shards": [
+          "model-00001-of-00282.safetensors",
+          "model-00002-of-00282.safetensors",
+          "model-00016-of-00282.safetensors",
+          "model-00038-of-00282.safetensors",
+          "model-00075-of-00282.safetensors",
+          "model-00079-of-00282.safetensors",
+          "model-00116-of-00282.safetensors",
+          "model-00120-of-00282.safetensors",
+          "model-00156-of-00282.safetensors",
+          "model-00160-of-00282.safetensors",
+          "model-00197-of-00282.safetensors",
+          "model-00201-of-00282.safetensors",
+          "model-00237-of-00282.safetensors",
+          "model-00241-of-00282.safetensors",
+          "model-00252-of-00282.safetensors",
+          "model-00253-of-00282.safetensors",
+          "model-00254-of-00282.safetensors",
+          "model-00255-of-00282.safetensors",
+          "model-00256-of-00282.safetensors",
+          "model-00257-of-00282.safetensors",
+          "model-00258-of-00282.safetensors",
+          "model-00259-of-00282.safetensors",
+          "model-00270-of-00282.safetensors",
+          "model-00274-of-00282.safetensors",
+          "model-00282-of-00282.safetensors"
+        ],
+        "tensor_count": 4897
+      },
+      {
+        "at": "2026-08-06T16:36:23.387248Z",
+        "event": "ENSURE_SUBMIT",
+        "shard": "model-00076-of-00282.safetensors"
+      },
+      {
+        "at": "2026-08-06T16:36:23.387283Z",
+        "event": "ENSURE_SUBMIT",
+        "shard": "model-00077-of-00282.safetensors"
+      },
+      {
+        "at": "2026-08-06T16:36:23.387341Z",
+        "event": "ENSURE_SUBMIT",
+        "shard": "model-00078-of-00282.safetensors"
+      },
+      {
+        "at": "2026-08-06T16:36:47.822645Z",
+        "event": "SHARD_HASH_OK",
+        "sha256": "1c65131e725c858d2e458da91b443ba95488b0f1343129fc629cbc3d35350d6c",
+        "shard": "model-00076-of-00282.safetensors"
+      },
+      {
+        "at": "2026-08-06T16:36:47.822673Z",
+        "bytes": 5360347104,
+        "event": "SHARD_FETCHED",
+        "mib_s": 243.7,
+        "seconds": 22.0,
+        "sha256": "1c65131e725c858d2e458da91b443ba95488b0f1343129fc629cbc3d35350d6c",
+        "shard": "model-00076-of-00282.safetensors"
+      },
+      {
+        "at": "2026-08-06T16:37:12.854321Z",
+        "event": "SHARD_HASH_OK",
+        "sha256": "68aceb515ad523d9794318ec8578b68fbe9e42648bf222ccd337e1fdac02b23d",
+        "shard": "model-00077-of-00282.safetensors"
+      },
+      {
+        "at": "2026-08-06T16:37:12.854348Z",
+        "bytes": 5360347104,
+        "event": "SHARD_FETCHED",
+        "mib_s": 235.8,
+        "seconds": 22.73,
+        "sha256": "68aceb515ad523d9794318ec8578b68fbe9e42648bf222ccd337e1fdac02b23d",
+        "shard": "model-00077-of-00282.safetensors"
+      },
+      {
+        "at": "2026-08-06T16:37:37.985923Z",
+        "event": "SHARD_HASH_OK",
+        "sha256": "8720873631cb258ece1f196e7f389e39b219901a4c49db2328f783fc78e4ee15",
+        "shard": "model-00078-of-00282.safetensors"
+      },
+      {
+        "at": "2026-08-06T16:37:37.985947Z",
+        "bytes": 5360346952,
+        "event": "SHARD_FETCHED",
+        "mib_s": 234.8,
+        "seconds": 22.83,
+        "sha256": "8720873631cb258ece1f196e7f389e39b219901a4c49db2328f783fc78e4ee15",
+        "shard": "model-00078-of-00282.safetensors"
+      },
+      {
+        "at": "2026-08-06T16:37:40.442954Z",
+        "event": "SHARD_HASH_OK",
+        "sha256": "3db48a22799b5ddb4ef2e4e05a0050316a7a13474a0434b2c5211a517a711396",
+        "shard": "model-00075-of-00282.safetensors"
+      },
+      {
+        "at": "2026-08-06T16:37:42.903741Z",
+        "event": "SHARD_HASH_OK",
+        "sha256": "752aab04bae4535d66705d243fd0cec7edbb50b0df20db368e1de6e80dcc5fd1",
+        "shard": "model-00079-of-00282.safetensors"
+      },
+      {
+        "at": "2026-08-06T16:37:43.191713Z",
+        "event": "INVENTORY_ADMITTED",
+        "shards": [
+          "model-00001-of-00282.safetensors",
+          "model-00002-of-00282.safetensors",
+          "model-00016-of-00282.safetensors",
+          "model-00038-of-00282.safetensors",
+          "model-00075-of-00282.safetensors",
+          "model-00076-of-00282.safetensors",
+          "model-00077-of-00282.safetensors",
+          "model-00078-of-00282.safetensors",
+          "model-00079-of-00282.safetensors",
+          "model-00116-of-00282.safetensors",
+          "model-00120-of-00282.safetensors",
+          "model-00156-of-00282.safetensors",
+          "model-00160-of-00282.safetensors",
+          "model-00197-of-00282.safetensors",
+          "model-00201-of-00282.safetensors",
+          "model-00237-of-00282.safetensors",
+          "model-00241-of-00282.safetensors",
+          "model-00252-of-00282.safetensors",
+          "model-00253-of-00282.safetensors",
+          "model-00254-of-00282.safetensors",
+          "model-00255-of-00282.safetensors",
+          "model-00256-of-00282.safetensors",
+          "model-00257-of-00282.safetensors",
+          "model-00258-of-00282.safetensors",
+          "model-00259-of-00282.safetensors",
+          "model-00270-of-00282.safetensors",
+          "model-00274-of-00282.safetensors",
+          "model-00282-of-00282.safetensors"
+        ],
+        "tensor_count": 5536
+      },
+      {
+        "at": "2026-08-06T16:39:48.403874Z",
+        "bytes_reclaimed": 16081041160,
+        "event": "EVICT",
+        "removed": [
+          "model-00076-of-00282.safetensors",
+          "model-00077-of-00282.safetensors",
+          "model-00078-of-00282.safetensors"
+        ]
+      },
+      {
+        "at": "2026-08-06T16:39:48.651813Z",
+        "event": "INVENTORY_ADMITTED",
+        "shards": [
+          "model-00001-of-00282.safetensors",
+          "model-00002-of-00282.safetensors",
+          "model-00016-of-00282.safetensors",
+          "model-00038-of-00282.safetensors",
+          "model-00075-of-00282.safetensors",
+          "model-00079-of-00282.safetensors",
+          "model-00116-of-00282.safetensors",
+          "model-00120-of-00282.safetensors",
+          "model-00156-of-00282.safetensors",
+          "model-00160-of-00282.safetensors",
+          "model-00197-of-00282.safetensors",
+          "model-00201-of-00282.safetensors",
+          "model-00237-of-00282.safetensors",
+          "model-00241-of-00282.safetensors",
+          "model-00252-of-00282.safetensors",
+          "model-00253-of-00282.safetensors",
+          "model-00254-of-00282.safetensors",
+          "model-00255-of-00282.safetensors",
+          "model-00256-of-00282.safetensors",
+          "model-00257-of-00282.safetensors",
+          "model-00258-of-00282.safetensors",
+          "model-00259-of-00282.safetensors",
+          "model-00270-of-00282.safetensors",
+          "model-00274-of-00282.safetensors",
+          "model-00282-of-00282.safetensors"
+        ],
+        "tensor_count": 4897
+      },
+      {
+        "at": "2026-08-06T16:39:48.709239Z",
+        "bytes_reclaimed": 5636439640,
+        "event": "EVICT",
+        "removed": [
+          "model-00001-of-00282.safetensors",
+          "model-00282-of-00282.safetensors"
+        ]
+      }
+    ],
+    "fetch_seconds": 67.56,
+    "not_used": [
+      "GLM52_STREAMING_SCHEDULE restream",
+      "glm-donor mapping cache as authority",
+      "direct_presigned_range python_http11_reuse (winner transport)"
+    ],
+    "prefetch_workers": 1,
+    "public_path_compat_env": {
+      "HF_HUB_DISABLE_IMPLICIT_TOKEN": "1",
+      "HF_HUB_DISABLE_TELEMETRY": "1",
+      "HF_HUB_ENABLE_HF_TRANSFER": "0",
+      "HF_XET_CHUNK_CACHE_SIZE_BYTES": "0",
+      "HF_XET_DATA_MAX_CONCURRENT_FILE_DOWNLOADS": "4",
+      "HF_XET_HIGH_PERFORMANCE": "1",
+      "HF_XET_NUM_CONCURRENT_RANGE_GETS": "8",
+      "HF_XET_RECONSTRUCTION_USE_VECTORED_WRITE": "true",
+      "HF_XET_RECONSTRUCT_WRITE_SEQUENTIALLY": "false"
+    },
+    "public_path_note": "Uses hf_hub_download with multi-shard concurrency + HF_XET knobs compatible with the frozen public-path profile. Does NOT use the custom direct_presigned_range python_http11_reuse transport (194 MiB/s sustained winner) — that remains a separate path.",
+    "repo": "zai-org/GLM-5.2",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "stream_root": "/Users/scammermike/Library/Application Support/hawking/GLM52Gravity/stream_scratch",
+    "transport": "huggingface_hub.hf_hub_download",
+    "verified_hashes_head": {
+      "model-00002-of-00282.safetensors": "7682416ae5caa51698994d71d011bf308016f97bc33fe2f8187f37cd73b85e39",
+      "model-00038-of-00282.safetensors": "3eb356ec94ec4112d3b0a7faaf2b3dc62eb0d958696713b5283376d4461bcc4d",
+      "model-00075-of-00282.safetensors": "3db48a22799b5ddb4ef2e4e05a0050316a7a13474a0434b2c5211a517a711396",
+      "model-00079-of-00282.safetensors": "752aab04bae4535d66705d243fd0cec7edbb50b0df20db368e1de6e80dcc5fd1"
+    },
+    "verified_shard_count": 4
+  },
+  "stream_enabled": true
+}

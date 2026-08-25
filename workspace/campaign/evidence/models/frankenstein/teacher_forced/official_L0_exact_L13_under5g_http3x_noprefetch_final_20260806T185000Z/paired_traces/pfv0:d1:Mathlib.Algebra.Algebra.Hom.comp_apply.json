@@ -1,0 +1,466 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 232,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Formalize and prove the following Lean 4 statement.\n\nName: comp_apply\nStatement:\ncomp_apply (φ₁ : B →ₐ[R] C) (φ₂ : A →ₐ[R] B) (p : A) : φ₁.comp φ₂ p = φ₁ (φ₂ p)\n\nProvide a valid proof term or tactic script.",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.Hom.comp_apply",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "train",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: comp_apply\nStatement:\ncomp_apply (φ₁ : B →ₐ[R] C) (φ₂ : A →ₐ[R] B) (p : A) : φ₁.comp φ₂ p = φ₁ (φ₂ p)\n\nProvide a valid proof term or tactic script.",
+  "proof_plan": null,
+  "recorded_at": "2026-08-06T17:58:08.323957Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "1fd931305e76d8484c6c40795b35eb94eb5d67d9b6e53367b369ac5dff330d22",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 3.3556666374206543,
+          "rank": 0,
+          "token_id": 23
+        },
+        {
+          "logit": 3.2885913848876953,
+          "rank": 1,
+          "token_id": 21
+        },
+        {
+          "logit": 3.256283760070801,
+          "rank": 2,
+          "token_id": 20
+        },
+        {
+          "logit": 3.0964324474334717,
+          "rank": 3,
+          "token_id": 18
+        },
+        {
+          "logit": 2.9628357887268066,
+          "rank": 4,
+          "token_id": 22
+        },
+        {
+          "logit": 2.531700372695923,
+          "rank": 5,
+          "token_id": 19
+        },
+        {
+          "logit": 1.8623586893081665,
+          "rank": 6,
+          "token_id": 15
+        },
+        {
+          "logit": 1.5039424896240234,
+          "rank": 7,
+          "token_id": 44
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.1839570552110672,
+          "l2": 3.5686938762664795,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "764f44d25e11f4604899b9eceba93c168de046ac6fb68489d1c4affd07c8043c",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.2288963347673416,
+          "l2": 3.309516668319702,
+          "layer": 1,
+          "mlp_type": "dense",
+          "sample_sha256": "cbc828a6990b8f0d47ea62f6b286a1a3ee49087fd3ac3f8018047067ceeefeea",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.2548713684082031,
+          "l2": 3.1726040840148926,
+          "layer": 2,
+          "mlp_type": "dense",
+          "sample_sha256": "3ea1ffbc7bc66754193ec548dcefeb7fb4a4dbe102125d4a752212b8e9c56b07",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.2849278748035431,
+          "l2": 3.2784950733184814,
+          "layer": 3,
+          "mlp_type": "sparse",
+          "sample_sha256": "be932b829b47cc21266fa8e7ee9c16c57ed2e60f28a8df65e6aeec71b4d134ad",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.3040565550327301,
+          "l2": 3.474677562713623,
+          "layer": 4,
+          "mlp_type": "sparse",
+          "sample_sha256": "c1fe2edff82f41098035776d07d31bb3f63301dca2d873c6eec529a6030e7d09",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.3639216721057892,
+          "l2": 3.8814446926116943,
+          "layer": 5,
+          "mlp_type": "sparse",
+          "sample_sha256": "87ca7b52a53ea01e9b5ff89bce4a4e5e360d87f73161e32b1b8db153dfea6f67",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.560620903968811,
+          "l2": 5.218515396118164,
+          "layer": 6,
+          "mlp_type": "sparse",
+          "sample_sha256": "2f4148f2890b27cd5163c64255729a7f57093fdc5405c6e0d77159908df975bd",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 1.0784003734588623,
+          "l2": 6.263851642608643,
+          "layer": 7,
+          "mlp_type": "sparse",
+          "sample_sha256": "7d83082526177df3015deed20ae1d5853bfced0b37c13989b816b695399174f4",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 37.9384880065918,
+          "l2": 92.65843963623047,
+          "layer": 8,
+          "mlp_type": "sparse",
+          "sample_sha256": "37a764d8b12f231a5cb55747face46169831152e209a4b21f9d904742a3dc3cb",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 81.0011215209961,
+          "l2": 633.3805541992188,
+          "layer": 9,
+          "mlp_type": "sparse",
+          "sample_sha256": "8f0ad65ccb25134057f81257d41c03f5630508d4c85c922bb05293bbf10be06c",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 83.16350555419922,
+          "l2": 639.8595581054688,
+          "layer": 10,
+          "mlp_type": "sparse",
+          "sample_sha256": "1baa8d0c23de6ea2e8086bfad71a9c140ef807208305a21a2afbf154f7bebf50",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 83.65841674804688,
+          "l2": 639.9235229492188,
+          "layer": 11,
+          "mlp_type": "sparse",
+          "sample_sha256": "e1a85abebbf953e72672fb765fd7c8058c7cb89b74f94b972e1a99f1d2f1c539",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 87.17266082763672,
+          "l2": 640.5902099609375,
+          "layer": 12,
+          "mlp_type": "sparse",
+          "sample_sha256": "926cc37b2e5b9d16ff66d5bc13fe8489b3d0307c7f93d66ac914ae6022db790b",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 87.91516876220703,
+          "l2": 640.7959594726562,
+          "layer": 13,
+          "mlp_type": "sparse",
+          "sample_sha256": "0b30ec443b79cd6a4a2994879be60e3abefcf16d736999abe6b1e9d0e3c3da98",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": {
+        "expert_counts": {
+          "0": 2,
+          "100": 2,
+          "101": 2,
+          "102": 1,
+          "11": 4,
+          "110": 1,
+          "111": 1,
+          "114": 1,
+          "118": 1,
+          "126": 1,
+          "128": 2,
+          "129": 1,
+          "13": 5,
+          "130": 4,
+          "132": 1,
+          "133": 1,
+          "14": 4,
+          "140": 4,
+          "141": 1,
+          "142": 2,
+          "147": 1,
+          "148": 4,
+          "149": 3,
+          "15": 4,
+          "154": 1,
+          "155": 1,
+          "156": 2,
+          "157": 1,
+          "158": 2,
+          "163": 3,
+          "166": 3,
+          "167": 8,
+          "169": 1,
+          "170": 1,
+          "171": 1,
+          "172": 2,
+          "173": 1,
+          "176": 1,
+          "177": 2,
+          "183": 3,
+          "184": 2,
+          "185": 2,
+          "187": 1,
+          "19": 2,
+          "190": 1,
+          "193": 1,
+          "194": 1,
+          "197": 1,
+          "199": 2,
+          "2": 3,
+          "20": 1,
+          "200": 2,
+          "201": 6,
+          "203": 1,
+          "206": 3,
+          "21": 2,
+          "213": 2,
+          "214": 4,
+          "217": 1,
+          "218": 9,
+          "219": 2,
+          "220": 1,
+          "223": 2,
+          "224": 2,
+          "227": 1,
+          "229": 4,
+          "230": 2,
+          "231": 1,
+          "237": 1,
+          "238": 2,
+          "243": 1,
+          "248": 4,
+          "249": 1,
+          "250": 4,
+          "251": 1,
+          "252": 2,
+          "253": 1,
+          "254": 1,
+          "26": 9,
+          "27": 1,
+          "28": 6,
+          "3": 2,
+          "30": 1,
+          "32": 1,
+          "34": 2,
+          "37": 1,
+          "38": 2,
+          "41": 3,
+          "43": 2,
+          "47": 2,
+          "48": 1,
+          "5": 1,
+          "50": 1,
+          "53": 1,
+          "54": 2,
+          "56": 1,
+          "57": 2,
+          "58": 1,
+          "60": 5,
+          "61": 8,
+          "62": 4,
+          "63": 2,
+          "64": 1,
+          "66": 1,
+          "69": 1,
+          "7": 2,
+          "70": 2,
+          "72": 1,
+          "75": 2,
+          "77": 2,
+          "78": 1,
+          "8": 1,
+          "82": 2,
+          "83": 3,
+          "88": 2,
+          "90": 1,
+          "92": 1,
+          "95": 1,
+          "97": 2,
+          "98": 3
+        },
+        "load_balance_cv": null,
+        "note": "route stats are student-native; never copy GLM router weights",
+        "source_layer": 3,
+        "top_k": 8
+      },
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

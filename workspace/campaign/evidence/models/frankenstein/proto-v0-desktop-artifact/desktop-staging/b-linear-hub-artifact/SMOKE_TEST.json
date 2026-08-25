@@ -1,0 +1,990 @@
+{
+  "action_proj_disclaimer": "action_argmax fields are 12-way action_proj diagnostics on pooled hidden states \u2014 not vocabulary next-token predictions. No real held-out math capability eval is performed here.",
+  "activations": {
+    "dtype": "float32",
+    "export_json": {
+      "dtype": "float32",
+      "example_ids_path": "receipts/dsv4f_fullseq_capture_L0_frozen_export/activations/example_ids.json",
+      "host_activation_handoff_permitted": false,
+      "layer": 37,
+      "mode": "offline_analysis_diagnostic",
+      "note": "Post-execute host copy for correspondence only; device graph still no-host.",
+      "npy": "receipts/dsv4f_fullseq_capture_L0_frozen_export/activations/L37.npy",
+      "schema": "hawking.gravity.deepseek_v4.fullseq_activation_export.v1",
+      "shape": [
+        32,
+        4096
+      ],
+      "site": "late_hidden"
+    },
+    "host_activation_export_is_diagnostic_only": true,
+    "layer": 37,
+    "n_rows": 32,
+    "n_unique_rows": 13,
+    "path": "/Users/scammermike/.claude-grok/worktrees/proto-v0-desktop-artifact-20260806-195146/receipts/dsv4f_fullseq_capture_L0_frozen_export/activations/L37.npy",
+    "sha256": "dce85ba25ff3a4197b2df15dc50f5cb472563b547d07cbefc9ab1065e571ecec",
+    "shape": [
+      32,
+      4096
+    ],
+    "source": "gravity_deepseek_v4_fullseq_capture host export",
+    "unique_row_note": "Host-export late_hidden rows are not all unique across the 32-sequence L0 corpus (shared vectors across some example_ids). Smoke prefers distinct rows when available."
+  },
+  "bridge_on_batch": {
+    "aux_path": "gated",
+    "differs_from_input": true,
+    "hub_active": true,
+    "input_stats": {
+      "abs_max": 56.328125,
+      "finite": true,
+      "has_inf": false,
+      "has_nan": false,
+      "mean": -0.026706648990511894,
+      "norm_l2": 1334.6580810546875,
+      "norm_rms": 3.6865077018737793,
+      "shape": [
+        32,
+        4096
+      ]
+    },
+    "matches_module_residual": true,
+    "max_abs_residual_vs_ref": 0.0,
+    "output_stats": {
+      "abs_max": 56.32569122314453,
+      "finite": true,
+      "has_inf": false,
+      "has_nan": false,
+      "mean": -0.026727963238954544,
+      "norm_l2": 1334.6221923828125,
+      "norm_rms": 3.6864099502563477,
+      "shape": [
+        32,
+        4096
+      ]
+    },
+    "residual_stats": {
+      "abs_max": 0.03388894721865654,
+      "finite": true,
+      "has_inf": false,
+      "has_nan": false,
+      "mean": -2.131081055267714e-05,
+      "norm_l2": 1.4745290279388428,
+      "norm_rms": 0.004072859883308411,
+      "shape": [
+        32,
+        4096
+      ]
+    },
+    "selected": "LINEAR_SUBSPACE_INITIALIZATION",
+    "y_equals_x_plus_r": true
+  },
+  "bypass_identity": {
+    "apply_with_residual_path": "gated",
+    "atol": 1e-06,
+    "aux_path": "gated",
+    "hub_active": true,
+    "max_abs_diff_vs_input": 0.0,
+    "max_abs_residual": 0.0,
+    "output_stats": {
+      "abs_max": 56.328125,
+      "finite": true,
+      "has_inf": false,
+      "has_nan": false,
+      "mean": -0.026706648990511894,
+      "norm_l2": 1334.6580810546875,
+      "norm_rms": 3.6865077018737793,
+      "shape": [
+        32,
+        4096
+      ]
+    },
+    "pass": true,
+    "plain_dsv4f_path_definition": "identity on captured student_hidden (host export); no residual applied",
+    "y_apply_matches_forward": true
+  },
+  "capability_claim": false,
+  "checkpoint": {
+    "load_info": {
+      "capability_claim": false,
+      "linear_init_param_count": 135168,
+      "missing_keys": [],
+      "n_state_tensors": 6,
+      "phase": "B",
+      "schema": "hawking.frankenstein.latent_v0_checkpoint.v1",
+      "slot": "BEST_BALANCED",
+      "state_key": "runtime_state_dict",
+      "unexpected_keys": []
+    },
+    "metrics": {
+      "balanced_proxy": 0.9999999836195939,
+      "balanced_score": 0.9999999836195939,
+      "eval_loss": 1.638040636464666e-08,
+      "math_proxy": 0.9999999836195939,
+      "train_loss": 1.5882450021820205e-08
+    },
+    "path": "/Users/scammermike/.claude-grok/worktrees/proto-v0-desktop-artifact-20260806-195146/workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix_ep8/checkpoints/real_B_LINEAR_SUBSPACE_INITIALIZATION/BEST_BALANCED.pt",
+    "sha256": "588bcb4c3da44842135754333272e7c037b8401c494071e6098194e769bad634"
+  },
+  "fabricated": false,
+  "health": {
+    "all_finite": true,
+    "bridge_on_differs_from_off": true,
+    "bypass_identity_pass": true,
+    "max_norm_ratio_threshold": 50.0,
+    "no_exception": true,
+    "norms_bounded": true
+  },
+  "hub_activation": {
+    "config_hub_active": true,
+    "env_key": "FRANKENSTEIN_HUB_ACTIVE",
+    "env_previous": null,
+    "env_set_to": "1",
+    "module_default_HUB_ACTIVE": false,
+    "note": "Module-level HUB_ACTIVE left False. Activation via env/config only.",
+    "resolved_active": true
+  },
+  "master_layer": 37,
+  "module_HUB_ACTIVE_unchanged": true,
+  "n_prompts": 5,
+  "prompts": [
+    {
+      "comparison": {
+        "action_argmax_changed": false,
+        "action_argmax_off": 3,
+        "action_argmax_on": 3,
+        "action_logits_off_top3": [
+          {
+            "index": 3,
+            "logit": 3.8560187816619873
+          },
+          {
+            "index": 9,
+            "logit": 3.6407368183135986
+          },
+          {
+            "index": 11,
+            "logit": 2.845991373062134
+          }
+        ],
+        "action_logits_on_top3": [
+          {
+            "index": 3,
+            "logit": 3.85465931892395
+          },
+          {
+            "index": 9,
+            "logit": 3.6420674324035645
+          },
+          {
+            "index": 11,
+            "logit": 2.8495888710021973
+          }
+        ],
+        "action_proj_note": "NOT vocabulary lm_head next-token. Host export has logits_captured=false. This is arm-B action_proj (12-way) over pooled hidden \u2014 diagnostic only.",
+        "bridge_off_stats": {
+          "abs_max": 15.782470703125,
+          "finite": true,
+          "has_inf": false,
+          "has_nan": false,
+          "mean": -0.008273335173726082,
+          "norm_l2": 141.38311767578125,
+          "norm_rms": 2.2091104984283447,
+          "shape": [
+            1,
+            4096
+          ]
+        },
+        "bridge_on_stats": {
+          "abs_max": 15.776840209960938,
+          "finite": true,
+          "has_inf": false,
+          "has_nan": false,
+          "mean": -0.008228311315178871,
+          "norm_l2": 141.38235473632812,
+          "norm_rms": 2.209099292755127,
+          "shape": [
+            1,
+            4096
+          ]
+        },
+        "cosine_off_on": 0.9999987483024597,
+        "delta_stats": {
+          "abs_max": 0.010608673095703125,
+          "finite": true,
+          "has_inf": false,
+          "has_nan": false,
+          "mean": 4.502864976529963e-05,
+          "norm_l2": 0.19887793064117432,
+          "norm_rms": 0.0031074676662683487,
+          "shape": [
+            1,
+            4096
+          ]
+        },
+        "identical": false,
+        "max_abs_delta": 0.010608673095703125,
+        "near_identical_1e6": false,
+        "norm_ratio_on_over_off": 0.9999946037443107
+      },
+      "domain": "symbolic",
+      "example_id": "pfv0:expert:fix:two_plus_two",
+      "index": 14,
+      "master_layer": 37,
+      "per_site": {
+        "GLM_DECOMPOSITION_BRIDGE": {
+          "dsv4f_layer": 15,
+          "max_abs_delta": 0.0018432438373565674,
+          "norm_ratio": 0.9999931543063951,
+          "off_finite": true,
+          "off_rms": 0.38745608925819397,
+          "on_finite": true,
+          "on_rms": 0.3874535858631134
+        },
+        "GLM_EARLY_CONTEXT_BRIDGE": {
+          "dsv4f_layer": 7,
+          "max_abs_delta": 0.0003232508897781372,
+          "norm_ratio": 1.0000133717475441,
+          "off_finite": true,
+          "off_rms": 0.21841774880886078,
+          "on_finite": true,
+          "on_rms": 0.21842071413993835
+        },
+        "GLM_FORMALIZATION_BRIDGE": {
+          "dsv4f_layer": 25,
+          "max_abs_delta": 0.0046318769454956055,
+          "norm_ratio": 0.9999785398469133,
+          "off_finite": true,
+          "off_rms": 1.116537094116211,
+          "on_finite": true,
+          "on_rms": 1.1165134906768799
+        },
+        "GLM_LATE_CONSOLIDATION_BRIDGE": {
+          "dsv4f_layer": 37,
+          "max_abs_delta": 0.010608673095703125,
+          "norm_ratio": 0.9999946037443107,
+          "off_finite": true,
+          "off_rms": 2.2091104984283447,
+          "on_finite": true,
+          "on_rms": 2.209099292755127
+        },
+        "GLM_METHOD_BRIDGE": {
+          "dsv4f_layer": 7,
+          "max_abs_delta": 0.0003232508897781372,
+          "norm_ratio": 1.0000133717475441,
+          "off_finite": true,
+          "off_rms": 0.21841774880886078,
+          "on_finite": true,
+          "on_rms": 0.21842071413993835
+        },
+        "GLM_POST_MOE_BRIDGE": {
+          "dsv4f_layer": 16,
+          "max_abs_delta": 0.0017889589071273804,
+          "norm_ratio": 0.9999921203883217,
+          "off_finite": true,
+          "off_rms": 0.4122604429721832,
+          "on_finite": true,
+          "on_rms": 0.4122573137283325
+        },
+        "GLM_PRE_ROUTER_BRIDGE": {
+          "dsv4f_layer": 16,
+          "max_abs_delta": 0.0017889589071273804,
+          "norm_ratio": 0.9999921203883217,
+          "off_finite": true,
+          "off_rms": 0.4122604429721832,
+          "on_finite": true,
+          "on_rms": 0.4122573137283325
+        },
+        "GLM_REPAIR_BRIDGE": {
+          "dsv4f_layer": 34,
+          "max_abs_delta": 0.006757020950317383,
+          "norm_ratio": 1.000016839886438,
+          "off_finite": true,
+          "off_rms": 1.5219810009002686,
+          "on_finite": true,
+          "on_rms": 1.5220067501068115
+        }
+      },
+      "prompt_source": "/Users/scammermike/.claude-grok/worktrees/proto-v0-desktop-artifact-20260806-195146/receipts/dsv4f_fullseq_capture_L0_frozen_export/traces/pfv0:expert:fix:two_plus_two.json",
+      "prompt_text": "Solve exactly (symbolic / numeric).\n\nProblem: What is 2 + 2?\nExpression: 2 + 2\nReturn the exact answer only."
+    },
+    {
+      "comparison": {
+        "action_argmax_changed": false,
+        "action_argmax_off": 9,
+        "action_argmax_on": 9,
+        "action_logits_off_top3": [
+          {
+            "index": 9,
+            "logit": 5.4872565269470215
+          },
+          {
+            "index": 6,
+            "logit": 5.479878902435303
+          },
+          {
+            "index": 8,
+            "logit": 1.0007624626159668
+          }
+        ],
+        "action_logits_on_top3": [
+          {
+            "index": 9,
+            "logit": 5.487836837768555
+          },
+          {
+            "index": 6,
+            "logit": 5.4807868003845215
+          },
+          {
+            "index": 8,
+            "logit": 1.001450538635254
+          }
+        ],
+        "action_proj_note": "NOT vocabulary lm_head next-token. Host export has logits_captured=false. This is arm-B action_proj (12-way) over pooled hidden \u2014 diagnostic only.",
+        "bridge_off_stats": {
+          "abs_max": 19.37890625,
+          "finite": true,
+          "has_inf": false,
+          "has_nan": false,
+          "mean": -0.03291558474302292,
+          "norm_l2": 140.78829956054688,
+          "norm_rms": 2.1998162269592285,
+          "shape": [
+            1,
+            4096
+          ]
+        },
+        "bridge_on_stats": {
+          "abs_max": 19.37757110595703,
+          "finite": true,
+          "has_inf": false,
+          "has_nan": false,
+          "mean": -0.032928258180618286,
+          "norm_l2": 140.7848663330078,
+          "norm_rms": 2.199763774871826,
+          "shape": [
+            1,
+            4096
+          ]
+        },
+        "cosine_off_on": 0.9999991059303284,
+        "delta_stats": {
+          "abs_max": 0.007992148399353027,
+          "finite": true,
+          "has_inf": false,
+          "has_nan": false,
+          "mean": -1.2673056517087389e-05,
+          "norm_l2": 0.1318640410900116,
+          "norm_rms": 0.002060375642031431,
+          "shape": [
+            1,
+            4096
+          ]
+        },
+        "identical": false,
+        "max_abs_delta": 0.007992148399353027,
+        "near_identical_1e6": false,
+        "norm_ratio_on_over_off": 0.9999756142552344
+      },
+      "domain": "coding",
+      "example_id": "pfv0:thesis:t01_add",
+      "index": 18,
+      "master_layer": 37,
+      "per_site": {
+        "GLM_DECOMPOSITION_BRIDGE": {
+          "dsv4f_layer": 15,
+          "max_abs_delta": 0.0009428411722183228,
+          "norm_ratio": 1.0000131928484361,
+          "off_finite": true,
+          "off_rms": 0.30947956442832947,
+          "on_finite": true,
+          "on_rms": 0.30948376655578613
+        },
+        "GLM_EARLY_CONTEXT_BRIDGE": {
+          "dsv4f_layer": 7,
+          "max_abs_delta": 0.0002342909574508667,
+          "norm_ratio": 0.9999903807829419,
+          "off_finite": true,
+          "off_rms": 0.16730307042598724,
+          "on_finite": true,
+          "on_rms": 0.16730159521102905
+        },
+        "GLM_FORMALIZATION_BRIDGE": {
+          "dsv4f_layer": 25,
+          "max_abs_delta": 0.0039023160934448242,
+          "norm_ratio": 1.0000105688514433,
+          "off_finite": true,
+          "off_rms": 1.263282060623169,
+          "on_finite": true,
+          "on_rms": 1.2632955312728882
+        },
+        "GLM_LATE_CONSOLIDATION_BRIDGE": {
+          "dsv4f_layer": 37,
+          "max_abs_delta": 0.007992148399353027,
+          "norm_ratio": 0.9999756142552344,
+          "off_finite": true,
+          "off_rms": 2.1998162269592285,
+          "on_finite": true,
+          "on_rms": 2.199763774871826
+        },
+        "GLM_METHOD_BRIDGE": {
+          "dsv4f_layer": 7,
+          "max_abs_delta": 0.0002342909574508667,
+          "norm_ratio": 0.9999903807829419,
+          "off_finite": true,
+          "off_rms": 0.16730307042598724,
+          "on_finite": true,
+          "on_rms": 0.16730159521102905
+        },
+        "GLM_POST_MOE_BRIDGE": {
+          "dsv4f_layer": 16,
+          "max_abs_delta": 0.0008223354816436768,
+          "norm_ratio": 1.0000003716438355,
+          "off_finite": true,
+          "off_rms": 0.32076212763786316,
+          "on_finite": true,
+          "on_rms": 0.32076236605644226
+        },
+        "GLM_PRE_ROUTER_BRIDGE": {
+          "dsv4f_layer": 16,
+          "max_abs_delta": 0.0008223354816436768,
+          "norm_ratio": 1.0000003716438355,
+          "off_finite": true,
+          "off_rms": 0.32076212763786316,
+          "on_finite": true,
+          "on_rms": 0.32076236605644226
+        },
+        "GLM_REPAIR_BRIDGE": {
+          "dsv4f_layer": 34,
+          "max_abs_delta": 0.005468130111694336,
+          "norm_ratio": 1.0000043245515386,
+          "off_finite": true,
+          "off_rms": 1.6539415121078491,
+          "on_finite": true,
+          "on_rms": 1.65394926071167
+        }
+      },
+      "prompt_source": "/Users/scammermike/.claude-grok/worktrees/proto-v0-desktop-artifact-20260806-195146/receipts/dsv4f_fullseq_capture_L0_frozen_export/traces/pfv0:thesis:t01_add.json",
+      "prompt_text": "Write a Python function `add(a, b)` that returns the sum of two integers. Return only the function in a code block.\n\nTests (must pass):\n```\nassert add(2, 3) == 5\nassert add(-1, 1) == 0\nassert add(0, 0) == 0\n```"
+    },
+    {
+      "comparison": {
+        "action_argmax_changed": false,
+        "action_argmax_off": 5,
+        "action_argmax_on": 5,
+        "action_logits_off_top3": [
+          {
+            "index": 5,
+            "logit": 2.4589037895202637
+          },
+          {
+            "index": 0,
+            "logit": 2.3847217559814453
+          },
+          {
+            "index": 3,
+            "logit": 2.350522994995117
+          }
+        ],
+        "action_logits_on_top3": [
+          {
+            "index": 5,
+            "logit": 2.460897922515869
+          },
+          {
+            "index": 0,
+            "logit": 2.388277769088745
+          },
+          {
+            "index": 3,
+            "logit": 2.345376968383789
+          }
+        ],
+        "action_proj_note": "NOT vocabulary lm_head next-token. Host export has logits_captured=false. This is arm-B action_proj (12-way) over pooled hidden \u2014 diagnostic only.",
+        "bridge_off_stats": {
+          "abs_max": 17.55322265625,
+          "finite": true,
+          "has_inf": false,
+          "has_nan": false,
+          "mean": -0.026048434898257256,
+          "norm_l2": 117.77600860595703,
+          "norm_rms": 1.8402494192123413,
+          "shape": [
+            1,
+            4096
+          ]
+        },
+        "bridge_on_stats": {
+          "abs_max": 17.550392150878906,
+          "finite": true,
+          "has_inf": false,
+          "has_nan": false,
+          "mean": -0.026062946766614914,
+          "norm_l2": 117.77467346191406,
+          "norm_rms": 1.8402295112609863,
+          "shape": [
+            1,
+            4096
+          ]
+        },
+        "cosine_off_on": 0.9999990463256836,
+        "delta_stats": {
+          "abs_max": 0.007573843002319336,
+          "finite": true,
+          "has_inf": false,
+          "has_nan": false,
+          "mean": -1.4512196685245726e-05,
+          "norm_l2": 0.12989187240600586,
+          "norm_rms": 0.0020295598078519106,
+          "shape": [
+            1,
+            4096
+          ]
+        },
+        "identical": false,
+        "max_abs_delta": 0.007573843002319336,
+        "near_identical_1e6": false,
+        "norm_ratio_on_over_off": 0.9999886637010477
+      },
+      "domain": "math_method",
+      "example_id": "pfv0:d3:Mathlib.Algebra.Algebra.Equiv.symm_trans_apply",
+      "index": 0,
+      "master_layer": 37,
+      "per_site": {
+        "GLM_DECOMPOSITION_BRIDGE": {
+          "dsv4f_layer": 15,
+          "max_abs_delta": 0.0014762133359909058,
+          "norm_ratio": 0.9999843751324141,
+          "off_finite": true,
+          "off_rms": 0.337603360414505,
+          "on_finite": true,
+          "on_rms": 0.3375983238220215
+        },
+        "GLM_EARLY_CONTEXT_BRIDGE": {
+          "dsv4f_layer": 7,
+          "max_abs_delta": 0.0005593299865722656,
+          "norm_ratio": 1.000002259626404,
+          "off_finite": true,
+          "off_rms": 0.19783566892147064,
+          "on_finite": true,
+          "on_rms": 0.19783619046211243
+        },
+        "GLM_FORMALIZATION_BRIDGE": {
+          "dsv4f_layer": 25,
+          "max_abs_delta": 0.0031061191111803055,
+          "norm_ratio": 0.9999815390791064,
+          "off_finite": true,
+          "off_rms": 0.9847509860992432,
+          "on_finite": true,
+          "on_rms": 0.9847331643104553
+        },
+        "GLM_LATE_CONSOLIDATION_BRIDGE": {
+          "dsv4f_layer": 37,
+          "max_abs_delta": 0.007573843002319336,
+          "norm_ratio": 0.9999886637010477,
+          "off_finite": true,
+          "off_rms": 1.8402494192123413,
+          "on_finite": true,
+          "on_rms": 1.8402295112609863
+        },
+        "GLM_METHOD_BRIDGE": {
+          "dsv4f_layer": 7,
+          "max_abs_delta": 0.0005593299865722656,
+          "norm_ratio": 1.000002259626404,
+          "off_finite": true,
+          "off_rms": 0.19783566892147064,
+          "on_finite": true,
+          "on_rms": 0.19783619046211243
+        },
+        "GLM_POST_MOE_BRIDGE": {
+          "dsv4f_layer": 16,
+          "max_abs_delta": 0.0015164315700531006,
+          "norm_ratio": 0.9999813654378452,
+          "off_finite": true,
+          "off_rms": 0.35344600677490234,
+          "on_finite": true,
+          "on_rms": 0.3534395396709442
+        },
+        "GLM_PRE_ROUTER_BRIDGE": {
+          "dsv4f_layer": 16,
+          "max_abs_delta": 0.0015164315700531006,
+          "norm_ratio": 0.9999813654378452,
+          "off_finite": true,
+          "off_rms": 0.35344600677490234,
+          "on_finite": true,
+          "on_rms": 0.3534395396709442
+        },
+        "GLM_REPAIR_BRIDGE": {
+          "dsv4f_layer": 34,
+          "max_abs_delta": 0.0064068809151649475,
+          "norm_ratio": 1.0000026869073637,
+          "off_finite": true,
+          "off_rms": 1.4197349548339844,
+          "on_finite": true,
+          "on_rms": 1.4197393655776978
+        }
+      },
+      "prompt_source": "/Users/scammermike/.claude-grok/worktrees/proto-v0-desktop-artifact-20260806-195146/receipts/dsv4f_fullseq_capture_L0_frozen_export/traces/pfv0:d3:Mathlib.Algebra.Algebra.Equiv.symm_trans_apply.json",
+      "prompt_text": "Select useful premises for proving the goal (method selection).\n\nGoal:\nsymm_trans_apply (e\u2081 : A\u2081 \u2243\u2090[R] A\u2082) (e\u2082 : A\u2082 \u2243\u2090[R] A\u2083) (x : A\u2083) :\n    (e\u2081.trans e\u2082).symm x = e\u2081.symm (e\u2082.symm x)\n\nCandidate premises (mixed useful/distractor):\n- simp\n- self_trans_symm\n- e.trans\n- e.symm\n- refl\n- symm_trans_self\n- e.symm.trans\n- norm_cast\n- ext\n- congr_arg\n- congr_fun\n- coe_mk\n\nReturn the useful premises only."
+    },
+    {
+      "comparison": {
+        "action_argmax_changed": false,
+        "action_argmax_off": 6,
+        "action_argmax_on": 6,
+        "action_logits_off_top3": [
+          {
+            "index": 6,
+            "logit": 4.755046367645264
+          },
+          {
+            "index": 0,
+            "logit": 2.049503803253174
+          },
+          {
+            "index": 11,
+            "logit": 1.2335420846939087
+          }
+        ],
+        "action_logits_on_top3": [
+          {
+            "index": 6,
+            "logit": 4.7530670166015625
+          },
+          {
+            "index": 0,
+            "logit": 2.044471502304077
+          },
+          {
+            "index": 11,
+            "logit": 1.2372198104858398
+          }
+        ],
+        "action_proj_note": "NOT vocabulary lm_head next-token. Host export has logits_captured=false. This is arm-B action_proj (12-way) over pooled hidden \u2014 diagnostic only.",
+        "bridge_off_stats": {
+          "abs_max": 27.0234375,
+          "finite": true,
+          "has_inf": false,
+          "has_nan": false,
+          "mean": -0.02160484902560711,
+          "norm_l2": 159.7595672607422,
+          "norm_rms": 2.4962427616119385,
+          "shape": [
+            1,
+            4096
+          ]
+        },
+        "bridge_on_stats": {
+          "abs_max": 27.02161979675293,
+          "finite": true,
+          "has_inf": false,
+          "has_nan": false,
+          "mean": -0.021610800176858902,
+          "norm_l2": 159.7592010498047,
+          "norm_rms": 2.4962375164031982,
+          "shape": [
+            1,
+            4096
+          ]
+        },
+        "cosine_off_on": 0.9999992251396179,
+        "delta_stats": {
+          "abs_max": 0.008937239646911621,
+          "finite": true,
+          "has_inf": false,
+          "has_nan": false,
+          "mean": -5.946916644461453e-06,
+          "norm_l2": 0.17114657163619995,
+          "norm_rms": 0.002674164716154337,
+          "shape": [
+            1,
+            4096
+          ]
+        },
+        "identical": false,
+        "max_abs_delta": 0.008937239646911621,
+        "near_identical_1e6": false,
+        "norm_ratio_on_over_off": 0.9999977077370465
+      },
+      "domain": "multi_step",
+      "example_id": "pfv0:d2:Mathlib.Algebra.Algebra.Epi.isEpi_of_surjective_algebraMap:step2",
+      "index": 3,
+      "master_layer": 37,
+      "per_site": {
+        "GLM_DECOMPOSITION_BRIDGE": {
+          "dsv4f_layer": 15,
+          "max_abs_delta": 0.0008855387568473816,
+          "norm_ratio": 0.9999941357578817,
+          "off_finite": true,
+          "off_rms": 0.26426610350608826,
+          "on_finite": true,
+          "on_rms": 0.2642645835876465
+        },
+        "GLM_EARLY_CONTEXT_BRIDGE": {
+          "dsv4f_layer": 7,
+          "max_abs_delta": 0.0002249404788017273,
+          "norm_ratio": 0.9999872266952815,
+          "off_finite": true,
+          "off_rms": 0.14815640449523926,
+          "on_finite": true,
+          "on_rms": 0.14815454185009003
+        },
+        "GLM_FORMALIZATION_BRIDGE": {
+          "dsv4f_layer": 25,
+          "max_abs_delta": 0.0045472681522369385,
+          "norm_ratio": 0.9999952759943441,
+          "off_finite": true,
+          "off_rms": 1.362678050994873,
+          "on_finite": true,
+          "on_rms": 1.362672209739685
+        },
+        "GLM_LATE_CONSOLIDATION_BRIDGE": {
+          "dsv4f_layer": 37,
+          "max_abs_delta": 0.008937239646911621,
+          "norm_ratio": 0.9999977077370465,
+          "off_finite": true,
+          "off_rms": 2.4962427616119385,
+          "on_finite": true,
+          "on_rms": 2.4962375164031982
+        },
+        "GLM_METHOD_BRIDGE": {
+          "dsv4f_layer": 7,
+          "max_abs_delta": 0.0002249404788017273,
+          "norm_ratio": 0.9999872266952815,
+          "off_finite": true,
+          "off_rms": 0.14815640449523926,
+          "on_finite": true,
+          "on_rms": 0.14815454185009003
+        },
+        "GLM_POST_MOE_BRIDGE": {
+          "dsv4f_layer": 16,
+          "max_abs_delta": 0.0009622424840927124,
+          "norm_ratio": 1.0000053698222937,
+          "off_finite": true,
+          "off_rms": 0.2830481231212616,
+          "on_finite": true,
+          "on_rms": 0.28304973244667053
+        },
+        "GLM_PRE_ROUTER_BRIDGE": {
+          "dsv4f_layer": 16,
+          "max_abs_delta": 0.0009622424840927124,
+          "norm_ratio": 1.0000053698222937,
+          "off_finite": true,
+          "off_rms": 0.2830481231212616,
+          "on_finite": true,
+          "on_rms": 0.28304973244667053
+        },
+        "GLM_REPAIR_BRIDGE": {
+          "dsv4f_layer": 34,
+          "max_abs_delta": 0.005494952201843262,
+          "norm_ratio": 0.9999981857440432,
+          "off_finite": true,
+          "off_rms": 1.8397951126098633,
+          "on_finite": true,
+          "on_rms": 1.8397917747497559
+        }
+      },
+      "prompt_source": "/Users/scammermike/.claude-grok/worktrees/proto-v0-desktop-artifact-20260806-195146/receipts/dsv4f_fullseq_capture_L0_frozen_export/traces/pfv0:d2:Mathlib.Algebra.Algebra.Epi.isEpi_of_surjective_algebraMap:step2.json",
+      "prompt_text": "Given the Lean proof state goal:\n(h : Surjective (algebraMap R A)) :\n    Algebra.IsEpi R A\n\nWhat single tactic advances the proof? State the next tactic and the resulting goal sketch."
+    },
+    {
+      "comparison": {
+        "action_argmax_changed": false,
+        "action_argmax_off": 11,
+        "action_argmax_on": 11,
+        "action_logits_off_top3": [
+          {
+            "index": 11,
+            "logit": 7.64159631729126
+          },
+          {
+            "index": 9,
+            "logit": 4.4089460372924805
+          },
+          {
+            "index": 0,
+            "logit": 1.965824842453003
+          }
+        ],
+        "action_logits_on_top3": [
+          {
+            "index": 11,
+            "logit": 7.643348217010498
+          },
+          {
+            "index": 9,
+            "logit": 4.407295227050781
+          },
+          {
+            "index": 0,
+            "logit": 1.9641005992889404
+          }
+        ],
+        "action_proj_note": "NOT vocabulary lm_head next-token. Host export has logits_captured=false. This is arm-B action_proj (12-way) over pooled hidden \u2014 diagnostic only.",
+        "bridge_off_stats": {
+          "abs_max": 22.2353515625,
+          "finite": true,
+          "has_inf": false,
+          "has_nan": false,
+          "mean": -0.03600911796092987,
+          "norm_l2": 150.13504028320312,
+          "norm_rms": 2.3458595275878906,
+          "shape": [
+            1,
+            4096
+          ]
+        },
+        "bridge_on_stats": {
+          "abs_max": 22.235158920288086,
+          "finite": true,
+          "has_inf": false,
+          "has_nan": false,
+          "mean": -0.03604895621538162,
+          "norm_l2": 150.13523864746094,
+          "norm_rms": 2.3458635807037354,
+          "shape": [
+            1,
+            4096
+          ]
+        },
+        "cosine_off_on": 0.9999994039535522,
+        "delta_stats": {
+          "abs_max": 0.009042978286743164,
+          "finite": true,
+          "has_inf": false,
+          "has_nan": false,
+          "mean": -3.983661372330971e-05,
+          "norm_l2": 0.15276868641376495,
+          "norm_rms": 0.0023870107252150774,
+          "shape": [
+            1,
+            4096
+          ]
+        },
+        "identical": false,
+        "max_abs_delta": 0.009042978286743164,
+        "near_identical_1e6": false,
+        "norm_ratio_on_over_off": 1.0000013212389156
+      },
+      "domain": "multi_step",
+      "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.Hom.comp_apply",
+      "index": 4,
+      "master_layer": 37,
+      "per_site": {
+        "GLM_DECOMPOSITION_BRIDGE": {
+          "dsv4f_layer": 15,
+          "max_abs_delta": 0.0009714365005493164,
+          "norm_ratio": 1.000011979934281,
+          "off_finite": true,
+          "off_rms": 0.3109607696533203,
+          "on_finite": true,
+          "on_rms": 0.31096455454826355
+        },
+        "GLM_EARLY_CONTEXT_BRIDGE": {
+          "dsv4f_layer": 7,
+          "max_abs_delta": 0.0004404336214065552,
+          "norm_ratio": 1.0000040553364171,
+          "off_finite": true,
+          "off_rms": 0.20944400131702423,
+          "on_finite": true,
+          "on_rms": 0.20944494009017944
+        },
+        "GLM_FORMALIZATION_BRIDGE": {
+          "dsv4f_layer": 25,
+          "max_abs_delta": 0.005208730697631836,
+          "norm_ratio": 1.000012541576184,
+          "off_finite": true,
+          "off_rms": 1.3877482414245605,
+          "on_finite": true,
+          "on_rms": 1.3877663612365723
+        },
+        "GLM_LATE_CONSOLIDATION_BRIDGE": {
+          "dsv4f_layer": 37,
+          "max_abs_delta": 0.009042978286743164,
+          "norm_ratio": 1.0000013212389156,
+          "off_finite": true,
+          "off_rms": 2.3458595275878906,
+          "on_finite": true,
+          "on_rms": 2.3458635807037354
+        },
+        "GLM_METHOD_BRIDGE": {
+          "dsv4f_layer": 7,
+          "max_abs_delta": 0.0004404336214065552,
+          "norm_ratio": 1.0000040553364171,
+          "off_finite": true,
+          "off_rms": 0.20944400131702423,
+          "on_finite": true,
+          "on_rms": 0.20944494009017944
+        },
+        "GLM_POST_MOE_BRIDGE": {
+          "dsv4f_layer": 16,
+          "max_abs_delta": 0.0009673237800598145,
+          "norm_ratio": 1.0000124540151516,
+          "off_finite": true,
+          "off_rms": 0.32544636726379395,
+          "on_finite": true,
+          "on_rms": 0.32545050978660583
+        },
+        "GLM_PRE_ROUTER_BRIDGE": {
+          "dsv4f_layer": 16,
+          "max_abs_delta": 0.0009673237800598145,
+          "norm_ratio": 1.0000124540151516,
+          "off_finite": true,
+          "off_rms": 0.32544636726379395,
+          "on_finite": true,
+          "on_rms": 0.32545050978660583
+        },
+        "GLM_REPAIR_BRIDGE": {
+          "dsv4f_layer": 34,
+          "max_abs_delta": 0.0059143006801605225,
+          "norm_ratio": 1.0000029622400568,
+          "off_finite": true,
+          "off_rms": 1.7706893682479858,
+          "on_finite": true,
+          "on_rms": 1.7706952095031738
+        }
+      },
+      "prompt_source": "/Users/scammermike/.claude-grok/worktrees/proto-v0-desktop-artifact-20260806-195146/receipts/dsv4f_fullseq_capture_L0_frozen_export/traces/pfv0:d1:Mathlib.Algebra.Algebra.Hom.comp_apply.json",
+      "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: comp_apply\nStatement:\ncomp_apply (\u03c6\u2081 : B \u2192\u2090[R] C) (\u03c6\u2082 : A \u2192\u2090[R] B) (p : A) : \u03c6\u2081.comp \u03c6\u2082 p = \u03c6\u2081 (\u03c6\u2082 p)\n\nProvide a valid proof term or tactic script."
+    }
+  ],
+  "recorded_at": "2026-08-07T00:01:16.551239Z",
+  "schema": "hawking.frankenstein.b_linear_hub_smoke.v1",
+  "site_bypass_sample": {
+    "GLM_EARLY_CONTEXT_BRIDGE": {
+      "apply_with_residual_path": "gated",
+      "atol": 1e-06,
+      "aux_path": "gated",
+      "hub_active": true,
+      "max_abs_diff_vs_input": 0.0,
+      "max_abs_residual": 0.0,
+      "output_stats": {
+        "abs_max": 1.6484375,
+        "finite": true,
+        "has_inf": false,
+        "has_nan": false,
+        "mean": 0.0014478516532108188,
+        "norm_l2": 70.93792724609375,
+        "norm_rms": 0.19594025611877441,
+        "shape": [
+          32,
+          4096
+        ]
+      },
+      "pass": true,
+      "plain_dsv4f_path_definition": "identity on captured student_hidden (host export); no residual applied",
+      "y_apply_matches_forward": true
+    }
+  },
+  "site_layers": {
+    "GLM_DECOMPOSITION_BRIDGE": 15,
+    "GLM_EARLY_CONTEXT_BRIDGE": 7,
+    "GLM_FORMALIZATION_BRIDGE": 25,
+    "GLM_LATE_CONSOLIDATION_BRIDGE": 37,
+    "GLM_METHOD_BRIDGE": 7,
+    "GLM_POST_MOE_BRIDGE": 16,
+    "GLM_PRE_ROUTER_BRIDGE": 16,
+    "GLM_REPAIR_BRIDGE": 34
+  },
+  "validation_scope": "offline harness only \u2014 real DSV4F host-export activations from gravity_deepseek_v4_fullseq_capture; NOT production Rust/Metal token-by-token serving; lm_head logits were not captured (logits_captured=false in fullseq receipt)"
+}

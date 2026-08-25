@@ -1,0 +1,31 @@
+{
+  "command": [
+    "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/debug/examples/ascension_qwen80_all_ten_routed_expert_cpu",
+    "--manifest",
+    "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+    "--expected-manifest-seal-sha256",
+    "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+    "--expected-source-audit-seal-sha256",
+    "c572b2270b623b8677c374b43c89ddd729de135c25721488bb874b184ff8c3d4",
+    "--expected-source-revision",
+    "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+    "--route-plan",
+    "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_ALL_TEN_ROUTED_EXPERT_BINDING_PLAN_20260809T010114Z.json",
+    "--router-inner",
+    "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_POSTNORM_ROUTER_TOP10_OUTER_METAL_FINAL_LANE_FIX_CAPTURE_20260808T232524Z/inner/receipt.json",
+    "--router-outer",
+    "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_POSTNORM_ROUTER_TOP10_OUTER_METAL_FINAL_LANE_FIX_CAPTURE_20260808T232524Z/outer-terminal-receipt.json",
+    "--capture-dir",
+    "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_ALL_TEN_ROUTED_EXPERT_CPU_OUTER_CAPTURE_20260809T013223Z/inner"
+  ],
+  "inner_capture_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_ALL_TEN_ROUTED_EXPERT_CPU_OUTER_CAPTURE_20260809T013223Z/inner",
+  "launch_identity_sha256": "4e8a54f5576b3760d3853a5dbae2f93c42b42630b2ca0ddc70c4c401aafdce89",
+  "metal_or_gpu_allowed": false,
+  "mode": "cpu-oracle",
+  "parent_pid": 21338,
+  "pid": 21343,
+  "recorded_at": "2026-08-09T01:32:47.896828Z",
+  "schema": "hawking.ascension.qwen80_all_ten_routed_expert_cpu_outer_launcher.v1",
+  "seal_sha256": "f722ebe16c9d02d6c25bb009f3a2ba9c93cc0ece559aa062490742afe5da742a",
+  "status": "RUNNING_QWEN80_ALL_TEN_ROUTED_EXPERT_CPU_OUTER_ONE_SHOT"
+}

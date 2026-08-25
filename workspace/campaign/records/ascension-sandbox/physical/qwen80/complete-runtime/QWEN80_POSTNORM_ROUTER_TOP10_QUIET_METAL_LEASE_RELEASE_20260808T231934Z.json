@@ -1,0 +1,30 @@
+{
+  "claim_boundary": {
+    "component_refusal_or_component_parity_never_establishes_layer_token_hcli_tps_tg_or_tournament": true
+  },
+  "lease": {
+    "lease_id": "30e1593371d003f710c5f029dfb1d04ca1f24f86062a5d1a7bebbf0164251478",
+    "lease_seal_sha256": "69f5f6e13a432f667c23aa6675940924ffb2c612baf063a227c70fe0c30ce9a1",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_POSTNORM_ROUTER_TOP10_QUIET_METAL_LEASE_20260808T231856Z.json"
+  },
+  "one_shot": {
+    "capture_replayed_or_retried": false,
+    "lease_released_after_first_terminal_child": true
+  },
+  "recorded_at": "2026-08-08T23:19:34.683921Z",
+  "schema": "hawking.ascension.qwen80_quiet_metal_lease_release.v1",
+  "seal_sha256": "32260bcf0c1a7924e72d04bb41d139317d8ac04e676d652c8d3d86cc51e7d135",
+  "status": "RELEASED_QWEN80_POSTNORM_ROUTER_TOP10_NON_TIMED_DEVICE_PARITY_LEASE_AFTER_TERMINAL_CAPTURE",
+  "terminal_capture": {
+    "inner_receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_POSTNORM_ROUTER_TOP10_OUTER_METAL_REPAIR_CAPTURE_20260808T231911Z/inner/receipt.json",
+    "inner_receipt_sha256": "4081a5977656da57e18f0b158ff483c5d0e59a87cd9d70904a3c27cdc4ff44f1",
+    "inner_status": "REFUSED_QWEN80_POSTNORM_ROUTER_TOP10_COMPONENT_ATTEMPT_ERROR",
+    "outer_seal_sha256": "89693211c6661ab4f9ab874ee332222e648338921732ec77d71cbbe8673dce3b",
+    "outer_status": "REFUSED_QWEN80_POSTNORM_ROUTER_TOP10_OUTER_CHILD_NONZERO",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_POSTNORM_ROUTER_TOP10_OUTER_METAL_REPAIR_CAPTURE_20260808T231911Z/outer-terminal-receipt.json"
+  },
+  "watcher": {
+    "existing_qwen30_coordination_hold_preserved": true,
+    "runtime_watcher_restarted": false
+  }
+}

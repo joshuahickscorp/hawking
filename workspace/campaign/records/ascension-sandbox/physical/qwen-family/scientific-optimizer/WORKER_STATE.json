@@ -1,0 +1,46 @@
+{
+  "created_at": "2026-08-08T14:39:22.322268Z",
+  "heartbeat": 3517,
+  "last_material_progress_at": "2026-08-10T17:21:39.167286Z",
+  "material_progress_count": 2159,
+  "previous_observations": {
+    "qwen30": {
+      "activity_marker": {
+        "candidate_count": 1274,
+        "current_experiment_id": "qwen30-8b294d7b11be63465509e3c8a88b6b34",
+        "current_representation": "uniform_q3_group64"
+      },
+      "heartbeat": 7841,
+      "material_marker": {
+        "admission_seal": "89d3c531d5638757bf0c0348df4f11e45a4f1c0cf87d27a7f3afcb675247301a",
+        "complete_manifest_seal": "3321a99d719e70499663b7bfebe14dd6c732bfc533bb05b9277eb398e44d6357",
+        "completed_candidate_count": 1274,
+        "last_material_progress_at": "2026-08-10T11:58:53.638788Z",
+        "pack_completed_tensors": 18867,
+        "pack_phase": "EARNED_COMPLETE_PHYSICAL_BINARY_CANDIDATE_UNQUALIFIED",
+        "runtime_phase": "QWEN30_PAIRED_SCALAR_ORDER_PRODUCTION_DEPLOYMENT_INVALID_HCLI_CLOSED",
+        "runtime_receipt_seal": "48f065627739877bbafae141fa6a4a37bbd8b24037921b996ca0881ca7828ced"
+      }
+    },
+    "qwen80": {
+      "activity_marker": {
+        "candidate_count": 1002,
+        "current_experiment_id": "qwen80-89f76c4e15a343f96b66d7ad51ac553e",
+        "current_representation": "teacher_low_rank_q3"
+      },
+      "heartbeat": 7511,
+      "material_marker": {
+        "admission_seal": "431593e986626a7349b697b2f033d128436d62ca2dced05901814502ac5c4545",
+        "complete_manifest_seal": null,
+        "completed_candidate_count": 1002,
+        "last_material_progress_at": "2026-08-10T12:07:13.505132Z",
+        "pack_completed_tensors": 74391,
+        "pack_phase": "EARNED_COMPLETE_PHYSICAL_BINARY_CANDIDATE_UNQUALIFIED",
+        "runtime_phase": "WAITING_FOR_COORDINATED_GPU_LEASE",
+        "runtime_receipt_seal": null
+      }
+    }
+  },
+  "schema": "hawking.ascension.qwen_scientific_optimizer.v1",
+  "updated_at": "2026-08-10T17:23:17.911652Z"
+}

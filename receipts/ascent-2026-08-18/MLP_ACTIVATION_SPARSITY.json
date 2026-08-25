@@ -1,0 +1,14 @@
+{
+  "schema": "hawking.nos.activation_sparsity.v1", "session": "f5169750", "date": "2026-08-18",
+  "source": "activation-capture-v2/parent_bf16/post_swiglu (real bf16 parent, 23216 tokens x 17408 intermediate, 64 layers)",
+  "method": "256 sampled tokens per layer; |x|<1%max fraction; dims needed for 99% L2 energy (down_proj output = sum swiglu_i * Wdown[:,i], so energy concentration bounds droppable dims)",
+  "per_layer": {
+    "L00": {"frac_lt_1pct_max": 0.782, "exact0": 0.0, "dims_for_99pct_energy_pct": 39.2},
+    "L15": {"frac_lt_1pct_max": 0.374, "exact0": 0.0, "dims_for_99pct_energy_pct": 52.9},
+    "L31": {"frac_lt_1pct_max": 0.339, "exact0": 0.0, "dims_for_99pct_energy_pct": 56.9},
+    "L47": {"frac_lt_1pct_max": 0.447, "exact0": 0.0, "dims_for_99pct_energy_pct": 55.0},
+    "L62": {"frac_lt_1pct_max": 0.750, "exact0": 0.0, "dims_for_99pct_energy_pct": 37.3}
+  },
+  "verdict": "MODERATE not extreme. No hard zeros; 99% energy needs ~37-57% of dims. Conditional MLP compute caps at ~2x MLP byte reduction, is dynamic per-token (gather/scatter cost), and 1% per-layer energy loss compounds over 62 layers (Doctor risk). A ~2x MLP win takes 15.4ms->~8-10ms => ~45 TPS: a real G20/G21 helper, NOT a dense path to 100 TPS.",
+  "consequence": "100 TPS critical path remains multi-token amortization (G12 self-speculative / G11 Matryoshka). Sparsity demoted to secondary G20/G21 lever, contingent on gather overhead and Doctor holding."
+}

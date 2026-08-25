@@ -1,0 +1,268 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T13:32:00Z",
+ "experiment_class": "ACCEL-KERNEL",
+ "knowledge_level": "INSTANCE",
+ "git_head": "3b04b9afdf952dcf987432c7335d9a7a77bb5951",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_D_SCAN",
+   "obligation": "G046 + G043",
+   "steer": "S015 \u00a73 required corpus 'scans'; \u00a712 MATH; \u00a7141 existing winners"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model; a math primitive"
+  },
+  "representation": {
+   "name": "dense_f32"
+  },
+  "kernel": {
+   "produced_by": "air.lower_scan_block_to_msl + air.lower_scan_offset_to_msl",
+   "shape": "three-phase: block scan, recursive scan of block totals, offset fold",
+   "strategies": [
+    "simd_prefix (Apple simd_prefix_inclusive_sum)",
+    "hillis_steele (threadgroup memory, log2(tg) doubling steps)"
+   ]
+  },
+  "runtime": {
+   "mlx": "0.32.1",
+   "python": "3.12.6"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "correctness": [
+   {
+    "n": 7,
+    "scale": 2.619,
+    "numpy_f32_sequential_err": 3.2719647466454606e-08,
+    "mlx_cumsum_err": 1.2803340312960497e-08,
+    "simd_prefix_err": 3.2719647466454606e-08,
+    "hillis_steele_err": 1.2803340312960497e-08,
+    "exclusive_err": 1.2803340312960497e-08,
+    "max_scan_exact_vs_numpy": true
+   },
+   {
+    "n": 256,
+    "scale": 8.445,
+    "numpy_f32_sequential_err": 1.2980492492720092e-07,
+    "mlx_cumsum_err": 3.380221706897798e-07,
+    "simd_prefix_err": 1.713822033448345e-07,
+    "hillis_steele_err": 2.534339145987321e-07,
+    "exclusive_err": 1.784404150655999e-07,
+    "max_scan_exact_vs_numpy": true
+   },
+   {
+    "n": 1000,
+    "scale": 16.982,
+    "numpy_f32_sequential_err": 2.11994679611656e-07,
+    "mlx_cumsum_err": 1.42236383757099e-07,
+    "simd_prefix_err": 3.254513104627611e-07,
+    "hillis_steele_err": 2.6216430306012055e-07,
+    "exclusive_err": 3.2972894181233297e-07,
+    "max_scan_exact_vs_numpy": true
+   },
+   {
+    "n": 4099,
+    "scale": 70.576,
+    "numpy_f32_sequential_err": 5.005887916612904e-07,
+    "mlx_cumsum_err": 2.251553521553201e-07,
+    "simd_prefix_err": 2.1758353053074099e-07,
+    "hillis_steele_err": 1.244197943749307e-07,
+    "exclusive_err": 2.3658576566733686e-07,
+    "max_scan_exact_vs_numpy": true
+   },
+   {
+    "n": 65536,
+    "scale": 343.462,
+    "numpy_f32_sequential_err": 4.451511925748345e-06,
+    "mlx_cumsum_err": 2.8344211694067514e-07,
+    "simd_prefix_err": 1.2156521371915662e-07,
+    "hillis_steele_err": 1.9001057733307834e-07,
+    "exclusive_err": 1.5552094415430835e-07,
+    "max_scan_exact_vs_numpy": true
+   },
+   {
+    "n": 1048576,
+    "scale": 1116.881,
+    "numpy_f32_sequential_err": 1.3545656621089534e-05,
+    "mlx_cumsum_err": 2.7231737160101883e-07,
+    "simd_prefix_err": 1.8769055531283188e-07,
+    "hillis_steele_err": 1.8687022040944142e-07,
+    "exclusive_err": 2.0987809482198583e-07,
+    "max_scan_exact_vs_numpy": true
+   },
+   {
+    "n": 4194304,
+    "scale": 3162.766,
+    "numpy_f32_sequential_err": 3.792549269330713e-05,
+    "mlx_cumsum_err": 1.2479677736525978e-06,
+    "simd_prefix_err": 2.5719211995041644e-07,
+    "hillis_steele_err": 2.294700689708795e-07,
+    "exclusive_err": 2.914734472450721e-07,
+    "max_scan_exact_vs_numpy": true
+   },
+   {
+    "n": 16777216,
+    "scale": 2200.714,
+    "numpy_f32_sequential_err": 6.901073482155542e-05,
+    "mlx_cumsum_err": 9.259914645640886e-07,
+    "simd_prefix_err": 6.731859831685236e-07,
+    "hillis_steele_err": 5.510766832910215e-07,
+    "exclusive_err": 6.996967863992534e-07,
+    "max_scan_exact_vs_numpy": true
+   }
+  ],
+  "negative_controls": {
+   "hillis_barriers_removed": 1.0425258854067114,
+   "simd_warp_offset_dropped": 0.9766367514412428,
+   "block_local_only_no_cross_block_fold": 0.9497987759223175
+  },
+  "performance": {
+   "1048576": {
+    "arms": {
+     "simd_prefix": {
+      "median_s": 0.003092208004090935,
+      "q1_s": 0.002926290995674208,
+      "q3_s": 0.00323783399653621,
+      "iqr_spread_pct": 10.65,
+      "full_range_pct": 43.42,
+      "reps": 200,
+      "warmup": 40,
+      "reliable": false,
+      "reliability_verdict_is_stable": true,
+      "reliability_caveat": null
+     },
+     "hillis_steele": {
+      "median_s": 0.0032963749836198986,
+      "q1_s": 0.0030655419977847487,
+      "q3_s": 0.0034300840052310377,
+      "iqr_spread_pct": 11.89,
+      "full_range_pct": 41.63,
+      "reps": 200,
+      "warmup": 40,
+      "reliable": false,
+      "reliability_verdict_is_stable": true,
+      "reliability_caveat": null
+     },
+     "mlx_cumsum": {
+      "median_s": 0.005697291984688491,
+      "q1_s": 0.005631959007587284,
+      "q3_s": 0.005829790985444561,
+      "iqr_spread_pct": 3.51,
+      "full_range_pct": 14.46,
+      "reps": 200,
+      "warmup": 40,
+      "reliable": true,
+      "reliability_verdict_is_stable": true,
+      "reliability_caveat": null
+     }
+    },
+    "ms_per_call": {
+     "simd_prefix": 0.3092,
+     "hillis_steele": 0.3296,
+     "mlx_cumsum": 0.5697
+    },
+    "gbps_2n": {
+     "simd_prefix": 27.13,
+     "hillis_steele": 25.45,
+     "mlx_cumsum": 14.72
+    },
+    "simd_vs_hillis": {
+     "verdict": "NO_CLAIM",
+     "reason": "an arm failed the 10.0% IQR gate (hillis_steele 11.89%, simd_prefix 10.65%) and the margin 6.60% does not overwhelm that noise",
+     "speedup": null
+    },
+    "simd_vs_mlx": {
+     "verdict": "CANDIDATE_WINS_DESPITE_NOISE",
+     "speedup": 1.8425,
+     "margin_pct": 84.25,
+     "arm_noise_pct": 10.65,
+     "margin_over_noise_ratio": 7.9,
+     "caveat": "an arm exceeded the 10.0% IQR gate, but the margin is 8x the worst arm noise, so the direction of the result is not in doubt; the MAGNITUDE carries more uncertainty than a clean measurement would"
+    }
+   },
+   "16777216": {
+    "arms": {
+     "simd_prefix": {
+      "median_s": 0.008662292006192729,
+      "q1_s": 0.008525541983544827,
+      "q3_s": 0.00884862500242889,
+      "iqr_spread_pct": 3.79,
+      "full_range_pct": 13.54,
+      "reps": 200,
+      "warmup": 40,
+      "reliable": true,
+      "reliability_verdict_is_stable": true,
+      "reliability_caveat": null
+     },
+     "hillis_steele": {
+      "median_s": 0.009808167000301182,
+      "q1_s": 0.00962770899059251,
+      "q3_s": 0.009984749980503693,
+      "iqr_spread_pct": 3.71,
+      "full_range_pct": 14.64,
+      "reps": 200,
+      "warmup": 40,
+      "reliable": true,
+      "reliability_verdict_is_stable": true,
+      "reliability_caveat": null
+     },
+     "mlx_cumsum": {
+      "median_s": 0.07003800000529736,
+      "q1_s": 0.0699219579983037,
+      "q3_s": 0.07019037500140257,
+      "iqr_spread_pct": 0.38,
+      "full_range_pct": 1.82,
+      "reps": 200,
+      "warmup": 40,
+      "reliable": true,
+      "reliability_verdict_is_stable": true,
+      "reliability_caveat": null
+     }
+    },
+    "ms_per_call": {
+     "simd_prefix": 0.8662,
+     "hillis_steele": 0.9808,
+     "mlx_cumsum": 7.0038
+    },
+    "gbps_2n": {
+     "simd_prefix": 154.94,
+     "hillis_steele": 136.84,
+     "mlx_cumsum": 19.16
+    },
+    "simd_vs_hillis": {
+     "verdict": "CANDIDATE_WINS",
+     "speedup": 1.1323,
+     "margin_pct": 13.23,
+     "arm_noise_pct": 3.79
+    },
+    "simd_vs_mlx": {
+     "verdict": "CANDIDATE_WINS",
+     "speedup": 8.0854,
+     "margin_pct": 708.54,
+     "arm_noise_pct": 3.79
+    }
+   }
+  },
+  "correct": true,
+  "controls_all_broke": true,
+  "batching": "10 calls per timed rep, 200 reps, 40 warmup, lake fill SIGSTOPped",
+  "accuracy_finding": "THE PARALLEL SCAN IS MORE ACCURATE THAN THE SEQUENTIAL ONE, and the gap WIDENS with n. At 2^24 numpy's sequential f32 cumsum is off by 6.901e-05 relative while the GPU scan is off by 6.732e-07 -- 103x better -- because sequential summation accumulates O(n) rounding error and a block/tree structure accumulates O(log n). The error gap tracks n exactly as that predicts: the two are equal at n=7 and separate by two orders of magnitude by 2^24. This inverts the usual intuition that the GPU answer is the approximate one. MLX's cumsum is ALSO a parallel scan and is accordingly in the same class (9.260e-07 at 2^24, within 1.4x of ours) -- the contrast that matters here is parallel vs sequential, NOT ours vs MLX, and it is not claimed as one.",
+  "141_answer": "Apple's simd_prefix_inclusive_sum is worth 1.13x over the textbook threadgroup-memory Hillis-Steele shape at 2^24 (clean arms) and nothing distinguishable at 2^20. Real but modest, and it COSTS max support: Metal has prefix sum and product but no prefix max, so hillis_steele is kept as the only strategy that scans a general associative op."
+ },
+ "claim_boundary": "f32, 1-D, sum and max, one machine, microbenchmark. The 8.09x over mx.cumsum at 2^24 is a statement about MLX's cumsum on THIS shape -- it measures 19 GB/s on a 589 GB/s machine, 3% of bandwidth -- not a general claim that our kernels beat MLX. MLX remains the qualified winner at GEMM, softmax, attention and reduction. Nothing here ran inside a model.",
+ "pass": true
+}

@@ -1,0 +1,15 @@
+{
+  "capability_claim": false,
+  "note": "First real bridge-train attempt did NOT promote. No PROTO_FRANKENSTEIN_V0 artifact assembled.",
+  "promotion_verdict": "HOLD",
+  "reason": [
+    "promotion_gate=HOLD failed=['complete_v0_beats_linear_init']"
+  ],
+  "recorded_at": "2026-08-06T20:54:46.994903Z",
+  "run_path": "workspace/campaign/evidence/models/frankenstein/bridge_train_real_fix/BRIDGE_TRAIN_REAL_FIRST_RUN.json",
+  "run_seal_sha256": "13326a7da76e1f49c579a6944c04e9632d6520f9b8345a6b375c88bdb2213e17",
+  "schema": "hawking.frankenstein.bridge_train_real_desktop_receipt.v1",
+  "seal_sha256": "c14544219881ec9f3a272d9bf818f9a2884c75bcb3e2d75df87cd0d3f78dd469",
+  "sealed_artifact": false,
+  "status": "REJECT_PROMOTION_GATES"
+}

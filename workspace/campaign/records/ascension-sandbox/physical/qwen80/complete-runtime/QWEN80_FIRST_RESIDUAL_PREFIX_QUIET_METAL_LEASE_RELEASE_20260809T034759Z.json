@@ -1,0 +1,31 @@
+{
+  "claim_boundary": {
+    "does_not_promote_component_to_layer_token_decoder_hcli_tps_tg_or_tournament": true,
+    "release_is_gpu_coordination_only": true
+  },
+  "coordination": {
+    "new_qwen80_gpu_work_requires_a_fresh_explicit_lease": true,
+    "quiet_qwen80_component_lease_released": true,
+    "watcher_hold_remains_active": true,
+    "watcher_restart_or_transition_authorized": false
+  },
+  "lease": {
+    "bytes": 2836,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_FIRST_RESIDUAL_PREFIX_QUIET_METAL_LEASE_20260809T034414Z.json",
+    "present": true,
+    "seal_sha256": "e694724b70e6fe1ddbec166f047646f6b2529cd92bcb1b027853bc30ee98138a",
+    "sha256": "1d4779dfcaab45c65a9b4956252c2ee01b90e50384a456a9064f83543ccd0bfc"
+  },
+  "outer_terminal": {
+    "bytes": 7204,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_FIRST_RESIDUAL_STRICT_METAL_OUTER_CAPTURE_20260809T034414Z/outer-terminal-receipt.json",
+    "present": true,
+    "seal_sha256": "1d29db9d1ef180eed105d4664be26b59facc666c596f4e453098e0f4faf3a3f1",
+    "sha256": "2e189163c45daf10a10a7a44b749374c4f38ec25376951c4cb748bc6cf6237ce",
+    "status": "CAPTURED_QWEN80_FIRST_RESIDUAL_STRICT_MATH_COMPONENT_ONLY"
+  },
+  "recorded_at": "2026-08-09T03:47:59.313140Z",
+  "schema": "hawking.ascension.qwen80_first_residual_quiet_metal_lease_release.v1",
+  "seal_sha256": "9e02b2071c94b1fb50766cba4b73e2c84bc9684696cdd9c72aa6da81b2e0c702",
+  "status": "RELEASED_QWEN80_FIRST_RESIDUAL_COMPONENT_QUIET_METAL_LEASE_AFTER_TERMINAL_CAPTURE"
+}

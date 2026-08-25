@@ -1,0 +1,37 @@
+{
+  "bottleneck_implementation_revision": "interval-sweep-source-bound-v2",
+  "claim_boundary": {
+    "no_roofline_substitution": true,
+    "not_a_runtime_or_capability_pass": true,
+    "not_a_tps_or_tg_receipt": true
+  },
+  "next_experiment": {
+    "acceptance": "exact CPU parity against the same admitted direct-binary payload; any speed observation remains component-only until integrated and re-profiled on a complete token",
+    "hypothesis": "fusing each routed expert's independent gate/up direct-packed projections can remove one dispatch and encoder per route without changing the admitted packed values",
+    "id": "qwen30-direct-packed-gate-up-pair-command-topology",
+    "reopen_condition": "the current artifact binding, direct-binary layout, Qwen30 runtime graph, or complete-token trace changes"
+  },
+  "observed": {
+    "command_graph_transition_gap_us": 427350.258,
+    "complete_token_timestamp_envelope_coverage_percent": 95.0120724035425,
+    "complete_token_wall_coverage_percent": 100.0,
+    "dominant_gpu_bucket": {
+      "bucket": "expert_gate_up",
+      "gpu_us": 235663,
+      "share_of_gpu_kernel_percent": 59.10325507673093
+    },
+    "dominant_source_bound_host_stage": {
+      "bucket": "command_graph_transition_gap",
+      "host_stage_wall_us": 609865.0,
+      "share_of_host_wall_percent": 72.43026450024524
+    },
+    "host_wall_outside_gpu_timestamp_envelope_us": 41998.5,
+    "multi_stage_gpu_overlap_us": 10.334
+  },
+  "profile_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-token-profiler/QWEN30_COMPLETE_TOKEN_PROFILE.json",
+  "profile_seal_sha256": "33b14281a016872a0c224fe2ecf632f55e1a2426daf3da8f7b64c6726d5744ce",
+  "recorded_at": "2026-08-08T22:29:16.065528Z",
+  "schema": "hawking.ascension.qwen30_direct_packed_complete_token_bottleneck.v1",
+  "seal_sha256": "c15ee1c591036edf668484ff7da6258ba83f132012931726a2a583319e36a324",
+  "status": "SEALED_REAL_TOKEN_PROFILER_BOTTLENECK_READY_FOR_KERNEL_EXPERIMENT"
+}

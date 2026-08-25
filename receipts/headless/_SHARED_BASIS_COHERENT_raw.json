@@ -1,0 +1,442 @@
+{
+  "dense_w_materialized": 0,
+  "device": "Apple M3 Ultra",
+  "elapsed_s": 42.693092125,
+  "git_head": "bab8f140631fb7463f4cdb548eebbeb9bac0b54f",
+  "graphs": [
+    {
+      "dense_w_materialized": 0,
+      "dispatches": 192,
+      "gpu_ns": {
+        "all": [
+          12609833,
+          13023958,
+          12974541,
+          12924708,
+          12716208,
+          12823875,
+          12965000
+        ],
+        "max": 13023958,
+        "median": 12924708,
+        "min": 12609833,
+        "n": 7
+      },
+      "id": "fused_k2_192",
+      "k": 2,
+      "kernels": [
+        "shared_binary_k2_fused_stream_c5120_tpr64_tg128",
+        "shared_binary_k2_fused_stream_c5120_tpr64_tg128",
+        "shared_binary_k2_fused_stream_c17408_tpr64_tg128"
+      ],
+      "layers": 64,
+      "role": "n033_winner_replay",
+      "wall_ns": {
+        "all": [
+          12989000,
+          13416917,
+          13375750,
+          13283291,
+          13174250,
+          13843541,
+          13345209
+        ],
+        "max": 13843541,
+        "median": 13345209,
+        "min": 12989000,
+        "n": 7
+      }
+    },
+    {
+      "basis_sign_bytes": 133693440,
+      "dense_w_materialized": 0,
+      "dispatches": 192,
+      "gpu_ns": {
+        "all": [
+          25851375,
+          26024749,
+          25833499,
+          26034999,
+          25982208,
+          25956625,
+          26094958
+        ],
+        "max": 26094958,
+        "median": 25982208,
+        "min": 25833499,
+        "n": 7
+      },
+      "id": "fused_k4_192",
+      "k": 4,
+      "kernels": [
+        "shared_binary_k4_fused_stream_c5120_tpr64_tg128",
+        "shared_binary_k4_fused_stream_c17408_tpr64_tg128"
+      ],
+      "layers": 64,
+      "per_layer_scale_bytes_total": 2139095040,
+      "role": "k_sweep",
+      "wall_ns": {
+        "all": [
+          26246584,
+          26402750,
+          26281875,
+          26417458,
+          26371542,
+          26275833,
+          26433666
+        ],
+        "max": 26433666,
+        "median": 26371542,
+        "min": 26246584,
+        "n": 7
+      }
+    },
+    {
+      "basis_sign_bytes": 267386880,
+      "dense_w_materialized": 0,
+      "dispatches": 192,
+      "gpu_ns": {
+        "all": [
+          47966874,
+          47934375,
+          47986999,
+          47829833,
+          47828791,
+          48117999,
+          47945208
+        ],
+        "max": 48117999,
+        "median": 47945208,
+        "min": 47828791,
+        "n": 7
+      },
+      "id": "fused_k8_192",
+      "k": 8,
+      "kernels": [
+        "shared_binary_k8_fused_stream_c5120_tpr64_tg128",
+        "shared_binary_k8_fused_stream_c17408_tpr64_tg128"
+      ],
+      "layers": 64,
+      "overlap_with_k2": false,
+      "overlap_with_noop": false,
+      "overlap_with_serial": false,
+      "overlap_with_tpr32": false,
+      "per_layer_scale_bytes_total": 4278190080,
+      "role": "hypothesized_coherent_point",
+      "wall_ns": {
+        "all": [
+          48824375,
+          48536292,
+          48366750,
+          48237042,
+          48237250,
+          48517959,
+          48376959
+        ],
+        "max": 48824375,
+        "median": 48376959,
+        "min": 48237042,
+        "n": 7
+      }
+    },
+    {
+      "dense_w_materialized": 0,
+      "dispatches": 192,
+      "gpu_ns": {
+        "all": [
+          48389208,
+          48431500,
+          48332375,
+          48236083,
+          48325624,
+          48299499,
+          48220750
+        ],
+        "max": 48431500,
+        "median": 48325624,
+        "min": 48220750,
+        "n": 7
+      },
+      "id": "fused_k8_tpr32_ablation",
+      "k": 8,
+      "layers": 64,
+      "role": "geometry_ablation",
+      "wall_ns": {
+        "all": [
+          48741500,
+          48787958,
+          48703125,
+          48593958,
+          48668625,
+          48635250,
+          48840667
+        ],
+        "max": 48840667,
+        "median": 48703125,
+        "min": 48593958,
+        "n": 7
+      }
+    },
+    {
+      "dense_w_materialized": 0,
+      "dispatches": 192,
+      "gpu_ns": {
+        "all": [
+          3479340999,
+          3454761875,
+          3434084000,
+          3357247166,
+          3339055458,
+          3337287375,
+          3330979250
+        ],
+        "max": 3479340999,
+        "median": 3357247166,
+        "min": 3330979250,
+        "n": 7
+      },
+      "id": "fused_k8_serial",
+      "k": 8,
+      "layers": 64,
+      "overlap_with_fused": false,
+      "role": "bad_control",
+      "wall_ns": {
+        "all": [
+          3493119166,
+          3471731375,
+          3437121458,
+          3360169708,
+          3342719208,
+          3340246334,
+          3334055792
+        ],
+        "max": 3493119166,
+        "median": 3360169708,
+        "min": 3334055792,
+        "n": 7
+      }
+    },
+    {
+      "dense_w_materialized": 0,
+      "dispatches": 192,
+      "gpu_ns": {
+        "all": [
+          32951583,
+          33119291,
+          33055249,
+          32972666,
+          33017999,
+          33083708,
+          33027750
+        ],
+        "max": 33119291,
+        "median": 33027750,
+        "min": 32951583,
+        "n": 7
+      },
+      "id": "fused_k8_noop",
+      "k": 8,
+      "layers": 64,
+      "overlap_with_fused": false,
+      "role": "noop_control",
+      "wall_ns": {
+        "all": [
+          33364458,
+          33500292,
+          33427292,
+          33367000,
+          33410541,
+          33416042,
+          33388334
+        ],
+        "max": 33500292,
+        "median": 33410541,
+        "min": 33364458,
+        "n": 7
+      }
+    },
+    {
+      "basis_sign_bytes": 534773760,
+      "dense_w_materialized": 0,
+      "dispatches": 192,
+      "gpu_ns": {
+        "all": [
+          91192375,
+          91153541,
+          91244874,
+          91297375,
+          91398874,
+          91139041,
+          91066208
+        ],
+        "max": 91398874,
+        "median": 91192375,
+        "min": 91066208,
+        "n": 7
+      },
+      "id": "fused_k16_192",
+      "k": 16,
+      "layers": 64,
+      "per_layer_scale_bytes_total": 8556380160,
+      "role": "k_sweep_above_q2f",
+      "wall_ns": {
+        "all": [
+          91600667,
+          91511667,
+          91728125,
+          91642917,
+          91793292,
+          91467125,
+          91478750
+        ],
+        "max": 91793292,
+        "median": 91600667,
+        "min": 91467125,
+        "n": 7
+      }
+    }
+  ],
+  "layers": 64,
+  "n021_complete_gpu_ns_median": 27547874,
+  "n032_q2f_mlp_gpu_ns_median": 15738249,
+  "n033_k2_mlp_gpu_ns_median": 12745000,
+  "occupancy": [
+    {
+      "kernel": "shared_binary_k2_fused_stream_c5120_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 16,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "shared_binary_k2_fused_stream_c17408_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 16,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "shared_binary_k4_fused_stream_c5120_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 16,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "shared_binary_k4_fused_stream_c17408_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 16,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "shared_binary_k8_fused_stream_c5120_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 16,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "shared_binary_k8_fused_stream_c17408_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 16,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "shared_binary_k8_fused_stream_c5120_tpr32_tg256",
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "shared_binary_k8_fused_serial_c5120",
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "shared_binary_k8_fused_serial_c17408",
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 0,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "shared_binary_k8_fused_stream_c5120_tpr64_tg128_noop",
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 16,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "shared_binary_k16_fused_stream_c5120_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 16,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "shared_binary_k16_fused_stream_c17408_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "static_threadgroup_memory_length": 16,
+      "thread_execution_width": 32
+    }
+  ],
+  "parity": [
+    {
+      "dense_w_materialized": 0,
+      "id": "fused_shared_binary_k4_fused_stream_c5120_tpr64_tg128",
+      "k": 4,
+      "kernel": "shared_binary_k4_fused_stream_c5120_tpr64_tg128",
+      "max_abs_diff": 0.0,
+      "must_match": true,
+      "ok": true,
+      "tolerance": 0.019999999552965164
+    },
+    {
+      "dense_w_materialized": 0,
+      "id": "fused_shared_binary_k8_fused_stream_c5120_tpr64_tg128",
+      "k": 8,
+      "kernel": "shared_binary_k8_fused_stream_c5120_tpr64_tg128",
+      "max_abs_diff": 0.0,
+      "must_match": true,
+      "ok": true,
+      "tolerance": 0.019999999552965164
+    },
+    {
+      "dense_w_materialized": 0,
+      "id": "fused_shared_binary_k16_fused_stream_c5120_tpr64_tg128",
+      "k": 16,
+      "kernel": "shared_binary_k16_fused_stream_c5120_tpr64_tg128",
+      "max_abs_diff": 0.0,
+      "must_match": true,
+      "ok": true,
+      "tolerance": 0.019999999552965164
+    },
+    {
+      "dense_w_materialized": 0,
+      "id": "fused_shared_binary_k8_fused_serial_c5120",
+      "k": 8,
+      "kernel": "shared_binary_k8_fused_serial_c5120",
+      "max_abs_diff": 0.0,
+      "must_match": true,
+      "ok": true,
+      "tolerance": 0.019999999552965164
+    },
+    {
+      "dense_w_materialized": 0,
+      "id": "fused_noop_k8_c5120",
+      "k": 8,
+      "kernel": "shared_binary_k8_fused_stream_c5120_tpr64_tg128_noop",
+      "max_abs_diff": 5.427490234375,
+      "must_match": false,
+      "ok": false,
+      "tolerance": 0.019999999552965164
+    },
+    {
+      "dense_w_materialized": 0,
+      "id": "fused_shared_binary_k8_fused_stream_c17408_tpr64_tg128",
+      "k": 8,
+      "kernel": "shared_binary_k8_fused_stream_c17408_tpr64_tg128",
+      "max_abs_diff": 0.0,
+      "must_match": true,
+      "ok": true,
+      "tolerance": 0.019999999552965164
+    }
+  ],
+  "reps": 7,
+  "schema": "hawking.headless.shared_basis_coherent.raw.v1",
+  "warmup": 2
+}

@@ -1,0 +1,46 @@
+{
+  "audit_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80-acquisition/QWEN80_SOURCE_BODY_AUDIT_CANDIDATE.json",
+  "audit_seal_sha256": "c572b2270b623b8677c374b43c89ddd729de135c25721488bb874b184ff8c3d4",
+  "claim_boundary": {
+    "credential_material_never_recorded": true,
+    "no_gravity_artifact_or_bpw_claim": true,
+    "no_manager_or_tournament_state_changed": true,
+    "no_model_loaded_or_executed": true,
+    "raw_qwen80_is_not_a_tournament_participant": true,
+    "raw_qwen80_is_source_authority_and_teacher_only": true
+  },
+  "heartbeat": 1813,
+  "phase": "EARNED_FULL_PINNED_SOURCE_BODY_VERIFIED",
+  "pid": 33429,
+  "progress": {
+    "expected_files": 52,
+    "hashed_files": 52,
+    "verified_bytes": 159376351965
+  },
+  "recorded_at": "2026-08-08T15:39:41.589711Z",
+  "reserve": {
+    "cache_policy": "hf_hub_download local_dir only; no duplicate central weight cache authorized",
+    "filesystem": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-80b",
+    "free_after_missing_download_bytes": 341807030272,
+    "free_before_bytes": 341807030272,
+    "post_download_reserve_bytes": 171798691840,
+    "post_download_reserve_components": {
+      "build_cache_bytes": 17179869184,
+      "rollback_bytes": 17179869184,
+      "scratch_bytes": 34359738368,
+      "system_reserve_bytes": 103079215104
+    },
+    "qwen30_source_already_materialized_bytes": 61079830175,
+    "qwen80_existing_expected_bytes": 159376351965,
+    "qwen80_inventory_total_bytes": 159376351965,
+    "qwen80_missing_expected_bytes": 0,
+    "status": "SAFE",
+    "total_filesystem_bytes": 994662584320
+  },
+  "schema": "hawking.ascension.qwen80_acquisition.v1",
+  "source": {
+    "repository": "Qwen/Qwen3-Coder-Next",
+    "revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb"
+  },
+  "target_directory": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-80b/Qwen3-Coder-Next"
+}

@@ -1,397 +1,49 @@
 {
- "schema": "hawking.headless.machine_genome.v1",
- "generated_at": "2026-08-22T23:13:28Z",
- "reprofile_command": "python3 tools/headless/machine_probe.py --ctx 8192 --max-runtimes 3 --n-predict 96 --reps 3",
- "machine": {
-  "hw_model": "Mac15,14",
-  "cpu": "Apple M3 Ultra",
-  "ncpu": 28,
-  "mem_bytes": 103079215104
- },
- "runtime_identity": {
-  "llama_server": "/opt/homebrew/bin/llama-server",
-  "llama_version": "version: 9430 (d48a56eff)\nbuilt with AppleClang 21.0.0.21000099 for Darwin arm64",
-  "model_path": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
-  "model_size_bytes": 19535701280,
-  "ctx": 8192,
-  "n_predict_per_decode": 96,
-  "decode_flags": "temperature=0 ignore_eos=true cache_prompt=false -np 1"
- },
- "gpu_gate": {
-  "device": "Apple M3 Ultra",
-  "source": "MTLDevice.recommendedMaxWorkingSetSize (measured)",
-  "recommendedMaxWorkingSetSize_bytes": 83494174720,
-  "recommendedMaxWorkingSetSize_gib": 77.76,
-  "maxBufferLength_gib": 58.32,
-  "wired_limit": {
-   "iogpu_wired_limit_mb": 0,
-   "in_effect": false,
-   "note": "0 means the OS default applies. A nonzero value raises the working-set budget and would change every admission number below."
+ "schema": "hawking.accelerator.machine_genome.v1",
+ "generated_at": "2026-08-25T12:01:05Z",
+ "soc": "Apple M3 Ultra",
+ "arch": "arm64",
+ "cpu_cores": 28,
+ "perf_cores": 20,
+ "efficiency_cores": 8,
+ "gpu_cores": 60,
+ "memory_bytes": 103079215104,
+ "os": "Darwin 27.0.0",
+ "os_product": "27.0",
+ "toolchain": {
+  "metal_compiler": {
+   "status": "ABSENT",
+   "reason": "xcrun metal is not installed; no Metal developer toolchain, so AOT metallib compilation is unavailable and kernels go through the MLX JIT"
   },
-  "per_runtime_gpu_bytes": 21253688198,
-  "per_runtime_gpu_gib": 19.79,
-  "headroom_frac": 0.1,
-  "gpu_admission_ceiling": 3
+  "mlx": "0.32.1",
+  "python": "3.12.13"
  },
- "RESIDENT_RUNTIME_LIMIT": 3,
- "resident_limit_reason": "reached --max-runtimes",
- "resident_gate_params": {
-  "reserve_gib": 8.0,
-  "swap_ceiling_gib": 2.0
+ "measured_bandwidth": {
+  "pattern": "triad c = a + b, f32",
+  "elements": 67108864,
+  "bytes_moved_per_rep": 805306368,
+  "reps": 30,
+  "warmup": 8,
+  "median_gb_s": 589.73,
+  "q1_gb_s": 585.34,
+  "q3_gb_s": 596.41,
+  "iqr_spread_pct": 1.89,
+  "full_range_spread_pct": 13.9,
+  "reliable": true,
+  "is_theoretical_roof": false,
+  "note": "one access pattern on one dtype; not the SoC roof and not a workload-reachable roof"
  },
- "admission": [
-  {
-   "index": 0,
-   "pid": 15497,
-   "port": 54559,
-   "load_s": 3.03,
-   "rss_bytes": 20553433088,
-   "marginal_free_ram_cost_bytes": 9127886848,
-   "marginal_free_ram_cost_gib": 8.501,
-   "free_after_gib": 47.197,
-   "swap_growth_gib": 0.0,
-   "compressed_gib": 0.855,
-   "free_pct_after": 72.0,
-   "warm_decode_tps": 25.5468217358746
-  },
-  {
-   "index": 1,
-   "pid": 15508,
-   "port": 54568,
-   "load_s": 1.51,
-   "rss_bytes": 20559577088,
-   "marginal_free_ram_cost_bytes": 1877803008,
-   "marginal_free_ram_cost_gib": 1.749,
-   "free_after_gib": 45.448,
-   "swap_growth_gib": 0.0,
-   "compressed_gib": 0.855,
-   "free_pct_after": 71.0,
-   "warm_decode_tps": 25.44403822330642
-  },
-  {
-   "index": 2,
-   "pid": 15519,
-   "port": 54574,
-   "load_s": 1.51,
-   "rss_bytes": 20552007680,
-   "marginal_free_ram_cost_bytes": 1814675456,
-   "marginal_free_ram_cost_gib": 1.69,
-   "free_after_gib": 43.757,
-   "swap_growth_gib": 0.0,
-   "compressed_gib": 0.855,
-   "free_pct_after": 69.0,
-   "warm_decode_tps": 25.414817473957754
-  }
- ],
- "ACTIVE_DECODE_LIMIT": 2,
- "active_decode_reason": "k=3 gained only -1.9% over k=2, within the 0.2% noise floor -> saturated",
- "measurement_noise_floor_pct": 0.2,
- "single_decoder_tps": 21.289,
- "best_aggregate_tps": 25.407,
- "aggregate_scaling_vs_1": 1.1934,
- "concurrency_curve": [
-  {
-   "k": 1,
-   "aggregate_tps_min": 21.287,
-   "aggregate_tps_median": 21.289,
-   "aggregate_tps_max": 21.293,
-   "spread_pct": 0.0,
-   "valid_reps": 3,
-   "invalid_reps": 0,
-   "reps": [
-    {
-     "k": 1,
-     "batch_wall_s": 4.51,
-     "ok_count": 1,
-     "total_tokens": 96,
-     "aggregate_tps": 21.287,
-     "per_runtime_tps": [
-      24.241903898527433
-     ],
-     "per_runtime_wall_s": [
-      4.509
-     ],
-     "failures": [],
-     "rep": 0,
-     "mem": {
-      "free_gib": 44.1,
-      "swap_gib": 0.0
-     },
-     "valid": true
-    },
-    {
-     "k": 1,
-     "batch_wall_s": 4.509,
-     "ok_count": 1,
-     "total_tokens": 96,
-     "aggregate_tps": 21.289,
-     "per_runtime_tps": [
-      24.24822912151697
-     ],
-     "per_runtime_wall_s": [
-      4.509
-     ],
-     "failures": [],
-     "rep": 1,
-     "mem": {
-      "free_gib": 44.02,
-      "swap_gib": 0.0
-     },
-     "valid": true
-    },
-    {
-     "k": 1,
-     "batch_wall_s": 4.508,
-     "ok_count": 1,
-     "total_tokens": 96,
-     "aggregate_tps": 21.293,
-     "per_runtime_tps": [
-      24.217833356584133
-     ],
-     "per_runtime_wall_s": [
-      4.508
-     ],
-     "failures": [],
-     "rep": 2,
-     "mem": {
-      "free_gib": 44.33,
-      "swap_gib": 0.0
-     },
-     "valid": true
-    }
-   ]
-  },
-  {
-   "k": 2,
-   "aggregate_tps_min": 25.401,
-   "aggregate_tps_median": 25.407,
-   "aggregate_tps_max": 25.442,
-   "spread_pct": 0.2,
-   "valid_reps": 3,
-   "invalid_reps": 0,
-   "reps": [
-    {
-     "k": 2,
-     "batch_wall_s": 7.547,
-     "ok_count": 2,
-     "total_tokens": 192,
-     "aggregate_tps": 25.442,
-     "per_runtime_tps": [
-      14.547081173622143,
-      14.537637261418066
-     ],
-     "per_runtime_wall_s": [
-      7.532,
-      7.546
-     ],
-     "failures": [],
-     "rep": 0,
-     "mem": {
-      "free_gib": 43.31,
-      "swap_gib": 0.0
-     },
-     "valid": true
-    },
-    {
-     "k": 2,
-     "batch_wall_s": 7.557,
-     "ok_count": 2,
-     "total_tokens": 192,
-     "aggregate_tps": 25.407,
-     "per_runtime_tps": [
-      14.52310656510981,
-      14.528456251640126
-     ],
-     "per_runtime_wall_s": [
-      7.557,
-      7.554
-     ],
-     "failures": [],
-     "rep": 1,
-     "mem": {
-      "free_gib": 42.84,
-      "swap_gib": 0.0
-     },
-     "valid": true
-    },
-    {
-     "k": 2,
-     "batch_wall_s": 7.559,
-     "ok_count": 2,
-     "total_tokens": 192,
-     "aggregate_tps": 25.401,
-     "per_runtime_tps": [
-      14.498617420904377,
-      14.521445755139382
-     ],
-     "per_runtime_wall_s": [
-      7.559,
-      7.553
-     ],
-     "failures": [],
-     "rep": 2,
-     "mem": {
-      "free_gib": 41.23,
-      "swap_gib": 0.0
-     },
-     "valid": true
-    }
-   ]
-  },
-  {
-   "k": 3,
-   "aggregate_tps_min": 24.893,
-   "aggregate_tps_median": 24.913,
-   "aggregate_tps_max": 24.923,
-   "spread_pct": 0.1,
-   "valid_reps": 3,
-   "invalid_reps": 0,
-   "reps": [
-    {
-     "k": 3,
-     "batch_wall_s": 11.569,
-     "ok_count": 3,
-     "total_tokens": 288,
-     "aggregate_tps": 24.893,
-     "per_runtime_tps": [
-      9.478199450145954,
-      9.510891506387505,
-      9.511149692913708
-     ],
-     "per_runtime_wall_s": [
-      11.569,
-      11.534,
-      11.497
-     ],
-     "failures": [],
-     "rep": 0,
-     "mem": {
-      "free_gib": 42.07,
-      "swap_gib": 0.0
-     },
-     "valid": true
-    },
-    {
-     "k": 3,
-     "batch_wall_s": 11.56,
-     "ok_count": 3,
-     "total_tokens": 288,
-     "aggregate_tps": 24.913,
-     "per_runtime_tps": [
-      9.516307878729723,
-      9.48144308748972,
-      9.479765292861055
-     ],
-     "per_runtime_wall_s": [
-      11.537,
-      11.517,
-      11.56
-     ],
-     "failures": [],
-     "rep": 1,
-     "mem": {
-      "free_gib": 42.4,
-      "swap_gib": 0.0
-     },
-     "valid": true
-    },
-    {
-     "k": 3,
-     "batch_wall_s": 11.556,
-     "ok_count": 3,
-     "total_tokens": 288,
-     "aggregate_tps": 24.923,
-     "per_runtime_tps": [
-      9.525496330451373,
-      9.529627512669938,
-      9.489931973004307
-     ],
-     "per_runtime_wall_s": [
-      11.504,
-      11.478,
-      11.555
-     ],
-     "failures": [],
-     "rep": 2,
-     "mem": {
-      "free_gib": 42.76,
-      "swap_gib": 0.0
-     },
-     "valid": true
-    }
-   ]
-  }
- ],
- "foreign_load_at_start": {
-  "count": 0,
-  "processes": [],
-  "any_actively_decoding": false
+ "measurement_conditions": {
+  "contended": false,
+  "note": "lake fill SIGSTOPped for the window; downloads resumed after"
  },
- "foreign_load_at_end": {
-  "count": 3,
-  "processes": [
-   {
-    "pid": 15497,
-    "etime": "01:22",
-    "pcpu": 0.0,
-    "rss_bytes": 20554432512,
-    "port": 54559,
-    "slots_total": 1,
-    "slots_processing": 0,
-    "command": "llama-server -m /Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf --port 54559 -c 8192 -ngl 999 --host 127.0.0.1 -np 1 --jinja"
-   },
-   {
-    "pid": 15508,
-    "etime": "01:18",
-    "pcpu": 0.0,
-    "rss_bytes": 20560068608,
-    "port": 54568,
-    "slots_total": 1,
-    "slots_processing": 0,
-    "command": "llama-server -m /Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf --port 54568 -c 8192 -ngl 999 --host 127.0.0.1 -np 1 --jinja"
-   },
-   {
-    "pid": 15519,
-    "etime": "01:15",
-    "pcpu": 0.0,
-    "rss_bytes": 20552843264,
-    "port": 54574,
-    "slots_total": 1,
-    "slots_processing": 0,
-    "command": "llama-server -m /Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf --port 54574 -c 8192 -ngl 999 --host 127.0.0.1 -np 1 --jinja"
-   }
-  ],
-  "any_actively_decoding": false
+ "thermal_envelope": {
+  "status": "ABSENT",
+  "reason": "no sustained thermal campaign has been run; sustained behaviour is required before any production ADP (G049) and is not claimed here"
  },
- "memory_start": {
-  "total_bytes": 103079215104,
-  "free_bytes": 59804958720,
-  "wired_bytes": 6183829504,
-  "compressed_bytes": 918388736,
-  "file_backed_bytes": 53434400768,
-  "anonymous_bytes": 18019237888,
-  "swapins": 0,
-  "swapouts": 0,
-  "swap_used_bytes": 0,
-  "free_pct": 92.0,
-  "at": "2026-08-22T23:12:07Z"
+ "sustained_behaviour": {
+  "status": "ABSENT",
+  "reason": "microbenchmark only; the steer requires sustained evidence to be distinguished from a microbenchmark and this is the latter"
  },
- "memory_end": {
-  "total_bytes": 103079215104,
-  "free_bytes": 45376208896,
-  "wired_bytes": 30468079616,
-  "compressed_bytes": 917323776,
-  "file_backed_bytes": 35377741824,
-  "anonymous_bytes": 19543932928,
-  "swapins": 0,
-  "swapouts": 0,
-  "swap_used_bytes": 0,
-  "free_pct": 69.0,
-  "at": "2026-08-22T23:13:29Z"
- },
- "caveats": [
-  "llama.cpp mmaps weights, so runtimes of the same model share file-backed pages; marginal_free_ram_cost is the true admission cost, RSS is not.",
-  "aggregate_tps is tokens over the whole batch wall, so a straggler is charged against the batch rather than hidden by per-call averaging.",
-  "ACTIVE_DECODE_LIMIT is judged against the worst observed within-k spread, so a gain smaller than the harness's own jitter is not counted as real."
- ]
+ "knowledge_level": "INSTANCE"
 }

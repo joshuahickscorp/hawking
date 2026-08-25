@@ -1,0 +1,119 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T13:00:22Z",
+ "experiment_class": "ACCEL-KERNEL",
+ "knowledge_level": "INSTANCE",
+ "git_head": "664d1f8c722e2f51a53315231f95c9cce70ceb73",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_D_REDUCTION",
+   "obligation": "G046 + G043",
+   "steer": "S015 \u00a712 MATH.reduction"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model; a math primitive"
+  },
+  "representation": {
+   "name": "dense_f32"
+  },
+  "kernel": {
+   "produced_by": "air.lower_reduce_to_msl",
+   "shape": "two-stage, simd_sum + 1 barrier"
+  },
+  "runtime": {
+   "mlx": "0.32.1",
+   "python": "3.12.13"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "correctness": {
+   "sum_1024": "rel_err 4.80e-07",
+   "sum_2^20": "7.06e-08",
+   "sum_4194311_non_power_of_two": "1.02e-07",
+   "max_2^20": "exact"
+  },
+  "negative_control": {
+   "with_barrier": 1756.596435546875,
+   "barrier_stripped": 1109.5311279296875,
+   "differs": true
+  },
+  "performance": [
+   {
+    "n": 1048576,
+    "mlx_gbs": 20.164921893418963,
+    "ours_gbs": 6.922241689783487,
+    "iqrs": {
+     "mlx": 29.57,
+     "air_reduce": 24.63
+    },
+    "verdict": {
+     "verdict": "NO_CLAIM",
+     "reason": "an arm failed the 10.0% IQR gate (mlx 29.57%, air_reduce 24.63%) and the margin 65.67% does not overwhelm that noise",
+     "speedup": null
+    },
+    "passes": 3,
+    "verdict_symmetric": {
+     "verdict": "BASELINE_WINS_DESPITE_NOISE",
+     "speedup": 0.3433,
+     "margin_pct": 191.31,
+     "arm_noise_pct": 29.57,
+     "margin_over_noise_ratio": 6.5,
+     "caveat": "an arm exceeded the 10.0% IQR gate, but the margin is 6x the worst arm noise, so the direction of the result is not in doubt; the MAGNITUDE carries more uncertainty than a clean measurement would"
+    }
+   },
+   {
+    "n": 16777216,
+    "mlx_gbs": 226.01894426613768,
+    "ours_gbs": 73.8541895156326,
+    "iqrs": {
+     "mlx": 13.09,
+     "air_reduce": 13.99
+    },
+    "verdict": {
+     "verdict": "NO_CLAIM",
+     "reason": "an arm failed the 10.0% IQR gate (mlx 13.09%, air_reduce 13.99%) and the margin 67.32% does not overwhelm that noise",
+     "speedup": null
+    },
+    "passes": 3,
+    "verdict_symmetric": {
+     "verdict": "BASELINE_WINS_DESPITE_NOISE",
+     "speedup": 0.3268,
+     "margin_pct": 206.03,
+     "arm_noise_pct": 13.99,
+     "margin_over_noise_ratio": 14.7,
+     "caveat": "an arm exceeded the 10.0% IQR gate, but the margin is 15x the worst arm noise, so the direction of the result is not in doubt; the MAGNITUDE carries more uncertainty than a clean measurement would"
+    }
+   }
+  ],
+  "verdict": "MLX WINS by roughly 3x at both sizes (0.343 and 0.327). MLX is retained.",
+  "why_we_lose": "three separate GPU passes with a full launch each, and one element per thread. MLX does a proper multi-stage reduction with far less launch overhead. Atomics would collapse this to one pass but atomics are still a LARGE gap in the ledger, and borrowing an unbuilt capability to look faster would be a lie about what executes.",
+  "an_asymmetry_in_my_own_instrument": {
+   "defect": "compare() measured margin as |speedup - 1|, which is bounded by 100% for ANY slowdown however severe, while a speedup is unbounded. A 3x slowdown scored 67% and was refused; a 3x speedup scored 200% and passed.",
+   "consequence": "the instrument was quietly HARDER ON LOSSES THAN ON WINS -- exactly the wrong bias for a gate that exists to stop overclaiming. This reduction's 3x loss was being reported as NO_CLAIM.",
+   "fix": "margin is now max(speedup, 1/speedup) - 1, symmetric by construction",
+   "no_prior_verdict_flips": "every earlier comparison was re-evaluated under the corrected metric: P5 fusion 1.7081 and 2.6213 still CANDIDATE_WINS, P7 native 2.0796 still CANDIDATE_WINS, GEMM 4096 still BASELINE_WINS at 0.8081, GEMM 1024 still INDISTINGUISHABLE, forge champion still INDISTINGUISHABLE from its runner-up. The fix only ever made losses easier to state."
+  },
+  "CORRECTED_BY_LATER_MEASUREMENT": {
+   "corrected_by": "receipts/headless/ACCELERATOR_SYNC_CORRECTION.json",
+   "date": "2026-08-25",
+   "what_was_wrong": "'MLX WINS ~3x' overstated the loss. About half of it was this program's own harness calling mx.eval once per level of the reduction tree, turning one command buffer into three with a host round trip between each.",
+   "corrected_numbers": "With one sync: 0.241 ms vs MLX 0.204 at 2^20 (NO_CLAIM -- margin 18% against 10.6% arm noise) and 0.522 vs 0.298 at 2^24 (MLX wins 1.75x). MLX remains the qualified winner for reduction, by a smaller margin than published.",
+   "what_still_stands": "The correctness results, the load-bearing barrier control (1756.60 -> 1109.53 with the barrier stripped), and the margin-asymmetry fix to compare() -- none of which depended on the sync count."
+  }
+ },
+ "claim_boundary": "A correct f32 sum and max reduction exists in AIR and handles non-power-of-two sizes. It is about 3x slower than MLX and MLX is retained. No scan, no segmented reduction, no other dtype, and no softmax -- so attention remains blocked behind this even though the reduction itself now exists.",
+ "pass": true
+}

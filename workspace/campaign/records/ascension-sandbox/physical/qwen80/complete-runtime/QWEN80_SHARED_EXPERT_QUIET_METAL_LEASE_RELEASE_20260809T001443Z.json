@@ -1,0 +1,53 @@
+{
+  "claim_boundary": {
+    "shared_expert_component_parity_never_establishes_routed_sum_moe_combine_second_residual_layer_token_decoder_generation_hcli_tps_tg_or_tournament": true
+  },
+  "lease": {
+    "lease_document_sha256": "df8448a31aebb7ea58f48abf985e3c205c1c07f323a971bf46d1440d6e85abf3",
+    "lease_id": "06f93707f98b05f6e8256f000e588eff0615540ec5c6498fb7a6d9113bb9b59e",
+    "lease_seal_sha256": "0bc9db33f00ac33e02aaa24a59aad5c723c2a68b41fa72dc0c3662ba2df4516c",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SHARED_EXPERT_QUIET_METAL_LEASE_20260809T001101Z.json"
+  },
+  "one_shot": {
+    "automatic_retry_prohibited": true,
+    "capture_replayed_or_retried": false,
+    "lease_released_after_first_terminal_child": true,
+    "terminal_pass_is_shared_expert_component_only": true
+  },
+  "recorded_at": "2026-08-09T00:14:43.229241Z",
+  "schema": "hawking.ascension.qwen80_shared_expert_quiet_metal_lease_release.v1",
+  "seal_sha256": "90d29665e51fcc102ffb46bc4e18999ccf7a9feb54e0a974e1e185d1faac2690",
+  "status": "RELEASED_QWEN80_SHARED_EXPERT_NON_TIMED_DEVICE_PARITY_LEASE_AFTER_TERMINAL_CAPTURE",
+  "terminal_capture": {
+    "acceptance": {
+      "down_max_abs": 4.76837158203125e-07,
+      "down_tolerance": 0.0010000000474974513,
+      "gate_max_abs": 7.152557373046875e-07,
+      "gate_tolerance": 0.0005000000237487257,
+      "gated_shared_max_abs": 2.384185791015625e-07,
+      "gated_shared_tolerance": 0.0003000000142492354,
+      "scalar_gate_max_abs": 1.043081283569336e-07,
+      "scalar_gate_tolerance": 0.0005000000237487257,
+      "silu_gate_times_up_max_abs": 1.1920928955078125e-06,
+      "silu_gate_times_up_tolerance": 0.0005000000237487257,
+      "up_max_abs": 6.258487701416016e-07,
+      "up_tolerance": 0.0005000000237487257
+    },
+    "command_buffers": 1,
+    "compute_dispatches": 5,
+    "device": "Apple M3 Ultra",
+    "inner_receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SHARED_EXPERT_OUTER_METAL_CAPTURE_20260809T001145Z/inner/receipt.json",
+    "inner_receipt_sha256": "b91248671b129a27420f75062459a54b1886422d05f5ae8a7f13bbf2eeb46fc8",
+    "inner_status": "EARNED_CURRENT_ADMITTED_QWEN80_DIRECT_PACKED_SHARED_EXPERT_STRICT_MATH_METAL_COMPONENT_NOT_ROUTED_MOE_OR_LAYER",
+    "metal_device_or_dispatch_performed": true,
+    "outer_terminal_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SHARED_EXPERT_OUTER_METAL_CAPTURE_20260809T001145Z/outer-terminal-receipt.json",
+    "outer_terminal_seal_sha256": "5992de7e7e8fe92cd59e5d04c47f12503a3240009cec878071dcb26c3c2e196b",
+    "outer_terminal_status": "CAPTURED_QWEN80_SHARED_EXPERT_OUTER_TERMINAL_COMPONENT_ONLY",
+    "strict_math": true
+  },
+  "watcher": {
+    "component_lease_did_not_release_or_modify_watcher_hold": true,
+    "existing_qwen30_coordination_hold_preserved": true,
+    "runtime_watcher_restarted": false
+  }
+}

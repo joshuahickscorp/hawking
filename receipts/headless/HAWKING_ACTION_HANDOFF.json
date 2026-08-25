@@ -5,8 +5,87 @@
       "/Users/scammermike/.claude-grok/tasks/*/status"
     ],
     "value": {
-      "n_running": 0,
-      "running": [],
+      "n_running": 6,
+      "running": [
+        {
+          "base_commit": "e00ab15a76901b15384f5c472c3fd412f866f2c3",
+          "branch": "grok/device-bound-enrolment-20260824-152147",
+          "id": "device-bound-enrolment-20260824-152147",
+          "mode": "delegate",
+          "model": "grok-4.6",
+          "profile": "power",
+          "started_at": "2026-08-24T19:21:53Z",
+          "status": "running",
+          "status_path": "/Users/scammermike/.claude-grok/tasks/device-bound-enrolment-20260824-152147/status",
+          "task_id": "device-bound-enrolment-20260824-152147",
+          "workdir": "/Users/scammermike/.claude-grok/worktrees/device-bound-enrolment-20260824-152147"
+        },
+        {
+          "base_commit": "",
+          "branch": "",
+          "id": "w0-activation-20260824-155747",
+          "mode": "audit",
+          "model": "grok-4.6",
+          "profile": "maximum",
+          "started_at": "2026-08-24T19:58:07Z",
+          "status": "running",
+          "status_path": "/Users/scammermike/.claude-grok/tasks/w0-activation-20260824-155747/status",
+          "task_id": "w0-activation-20260824-155747",
+          "workdir": "/Users/scammermike/Downloads/substrate"
+        },
+        {
+          "base_commit": "",
+          "branch": "",
+          "id": "w0-archaeology-20260824-155808",
+          "mode": "audit",
+          "model": "grok-4.6",
+          "profile": "maximum",
+          "started_at": "2026-08-24T19:58:26Z",
+          "status": "running",
+          "status_path": "/Users/scammermike/.claude-grok/tasks/w0-archaeology-20260824-155808/status",
+          "task_id": "w0-archaeology-20260824-155808",
+          "workdir": "/Users/scammermike/Downloads/substrate"
+        },
+        {
+          "base_commit": "",
+          "branch": "",
+          "id": "w0-recorder-20260824-155826",
+          "mode": "audit",
+          "model": "grok-4.6",
+          "profile": "maximum",
+          "started_at": "2026-08-24T19:58:45Z",
+          "status": "running",
+          "status_path": "/Users/scammermike/.claude-grok/tasks/w0-recorder-20260824-155826/status",
+          "task_id": "w0-recorder-20260824-155826",
+          "workdir": "/Users/scammermike/Downloads/substrate"
+        },
+        {
+          "base_commit": "",
+          "branch": "",
+          "id": "w0-security-20260824-155702",
+          "mode": "audit",
+          "model": "grok-4.6",
+          "profile": "maximum",
+          "started_at": "2026-08-24T19:57:28Z",
+          "status": "running",
+          "status_path": "/Users/scammermike/.claude-grok/tasks/w0-security-20260824-155702/status",
+          "task_id": "w0-security-20260824-155702",
+          "workdir": "/Users/scammermike/Downloads/substrate"
+        },
+        {
+          "base_commit": "",
+          "branch": "",
+          "id": "w0-storage-20260824-155729",
+          "mode": "audit",
+          "model": "grok-4.6",
+          "profile": "maximum",
+          "started_at": "2026-08-24T19:57:47Z",
+          "status": "running",
+          "status_path": "/Users/scammermike/.claude-grok/tasks/w0-storage-20260824-155729/status",
+          "task_id": "w0-storage-20260824-155729",
+          "workdir": "/Users/scammermike/Downloads/substrate"
+        }
+      ],
       "tasks_root": "/Users/scammermike/.claude-grok/tasks"
     }
   },
@@ -230,7 +309,7 @@
     ],
     "value": {
       "branch": "odyssey-i",
-      "head": "093ba393c2d3a93153d74a5f840de9017250c5af",
+      "head": "7bcb1a954e6833a6322d53387f6e48b7a21ecde1",
       "remote_sync": {
         "ahead": null,
         "behind": null,
@@ -4957,7 +5036,7 @@
         "chipset": "Apple M3 Ultra",
         "genome_digest": "c61afb5cce7ba294cd4bc3b6c19aeba4f726041fff1fd30bece0a5758a506ddb",
         "gpu_cores": 60,
-        "in_head": false,
+        "in_head": true,
         "in_this_worktree": true,
         "measured_roof_gb_s": 595.9,
         "metal_family": "Metal 4",
@@ -5056,10 +5135,10 @@
       ],
       "counts": {
         "by_status": {
-          "VERIFIED": 31
+          "VERIFIED": 37
         },
-        "n_checked": 31,
-        "n_total": 31,
+        "n_checked": 37,
+        "n_total": 37,
         "n_unchecked": 0
       },
       "ids_by_status": {
@@ -5094,7 +5173,13 @@
           "N028",
           "N029",
           "N030",
-          "N031"
+          "N031",
+          "N032",
+          "N033",
+          "N034",
+          "N035",
+          "N036",
+          "N037"
         ]
       },
       "ids_checked": [
@@ -5128,7 +5213,13 @@
         "N028",
         "N029",
         "N030",
-        "N031"
+        "N031",
+        "N032",
+        "N033",
+        "N034",
+        "N035",
+        "N036",
+        "N037"
       ],
       "ids_pending": []
     }

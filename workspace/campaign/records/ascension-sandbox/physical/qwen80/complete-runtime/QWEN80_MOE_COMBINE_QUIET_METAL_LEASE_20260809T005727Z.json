@@ -1,0 +1,90 @@
+{
+  "artifact_binding": {
+    "admission_receipt_seal_sha256": "939b41322363da3db774a2530b207bf380ed641d23cae671fc6438c0eecbf628",
+    "manifest_document_sha256": "a0fcac0401a7962402bb8cb87d5055c83667b39575f9e0f4c7470d080758aa10",
+    "manifest_seal_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b"
+  },
+  "claim_boundary": {
+    "materialized_source_top10_vectors_only": true,
+    "not_ten_physical_expert_waves_or_complete_layer": true,
+    "not_token_decoder_generation_hcli_tps_tg_or_tournament": true
+  },
+  "cpu_baseline_binding": {
+    "receipt_document_sha256": "ccd1edaf6f1ea731c70b56fa2e97a6313ce297b93aa4aad2b969b7a7598409b0",
+    "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_MOE_COMBINE_CPU_BASELINE_SEALED_WRAPPER_20260809T002839Z.json",
+    "schema": "hawking.ascension.qwen80_moe_combine_cpu_baseline_wrapper.v1",
+    "seal_sha256": "00e335125aa4caa79d9d8af5ca197ac028cc643005925c6233751adf8c16c0f0",
+    "status": "SEALED_CURRENT_ADMITTED_QWEN80_MOE_COMBINE_SHARED_ADD_SECOND_RESIDUAL_CPU_ORACLE_BASELINE"
+  },
+  "execution_policy": {
+    "complete_layer_or_token_allowed": false,
+    "component": "qwen80_direct_packed_moe_combine",
+    "quiet_qwen80_device_lease": true,
+    "strict_math": true,
+    "timing_or_benchmarking_allowed": false,
+    "tps_or_tg_claim_allowed": false
+  },
+  "implementation_binding": {
+    "kernel_sequence": [
+      "qwen80_moe_wave_aggregate_second_residual_route_sum",
+      "qwen80_moe_wave_aggregate_second_residual_add_shared_residual"
+    ],
+    "probe_binary": {
+      "bytes": 3738456,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/debug/examples/ascension_qwen80_direct_packed_moe_combine",
+      "present": true,
+      "sha256": "3762e0731a9f395fcd09db9f0ab454ebaf1df10ee51c58ce662e05526ebbd2ce"
+    },
+    "shader": {
+      "bytes": 2439,
+      "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen80_moe_wave_aggregate_second_residual.metal",
+      "present": true,
+      "sha256": "963e97427801dd4b6e0c66a96fb06569cab8fbfc1c6c45fe6d7305f61bc49c32"
+    }
+  },
+  "lease_id": "a43eff206fc1a5bb69916c1ded14fdecc554e0443610b08af33948749df7aaab",
+  "model": {
+    "id": "Qwen3-Coder-Next-80B",
+    "key": "qwen80",
+    "repository": "Qwen/Qwen3-Coder-Next",
+    "revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb"
+  },
+  "one_shot": {
+    "automatic_retry_prohibited": true,
+    "lease_released_after_first_terminal_child": true,
+    "outer_reaped_capture_required": true
+  },
+  "recorded_at": "2026-08-09T00:57:44.443146Z",
+  "schema": "hawking.ascension.qwen80_moe_combine_quiet_metal_lease.v1",
+  "seal_sha256": "f82f919a674236c5586c43675e96fe75c8a8e7abd5afb7332147d9f0edf9c298",
+  "source_top10_binding": {
+    "ids": [
+      65,
+      245,
+      227,
+      35,
+      189,
+      440,
+      298,
+      405,
+      109,
+      494
+    ],
+    "router_outer_receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_POSTNORM_ROUTER_TOP10_OUTER_METAL_FINAL_LANE_FIX_CAPTURE_20260808T232524Z/outer-terminal-receipt.json",
+    "router_outer_receipt_seal_sha256": "1bd9af3b6baf4d583f77bbfc02c25f0f1740cd8110c74fb6e55520758256c835",
+    "router_outer_receipt_sha256": "0a9c2c57acef64e9f4c0fcb050f47a8f7792026bf05a6f8a73e4fa3d3786d87f",
+    "router_receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_POSTNORM_ROUTER_TOP10_OUTER_METAL_FINAL_LANE_FIX_CAPTURE_20260808T232524Z/inner/receipt.json",
+    "router_receipt_sha256": "31d2e06aae10695d25f445ff50661f6c63ec42c74f617e637b62e56c4f7ac343"
+  },
+  "status": "GRANTED_QWEN80_MOE_COMBINE_SHARED_ADD_SECOND_RESIDUAL_NON_TIMED_DEVICE_PARITY_LEASE",
+  "watcher_coordination": {
+    "hold": {
+      "bytes": 2088,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_WATCHER_GPU_COORDINATION_HOLD_20260808T220751Z.json",
+      "present": true,
+      "sha256": "d3a010096476d1cd95a8764b19ba676aed3d4236bac3a7182e532d01724a7d3d"
+    },
+    "watcher_hold_must_remain_active": true,
+    "watcher_restart_or_transition_authorized": false
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "schema": "hawking.nos.phase_b_functional_lowrank.v1", "session": "f5169750", "date": "2026-08-18",
+  "obligation": "Phase B (S012 §13/§26) -- can activation-aware functional representation break the MLP byte floor where weight-space low-rank failed?",
+  "method": "down_proj L31/L15; real post_swiglu activations (activation-capture-v2); reduced-rank / output-PCA operator vs q3 group64; output relative-Frobenius error = ||X W_approx^T - X W^T|| / ||X W^T||; MATCHED bytes (rank-803 bf16 ~ full-q3 36.2 MB); TRAIN/TEST split (disjoint tokens).",
+  "weight_vs_function_space": {
+    "weight_space_99pct_energy": "92.5% of ranks (near-full-rank, useless)",
+    "function_space_output_99pct_energy": "56.2% of ranks (1152/2048); 90% needs only 25.5%",
+    "interpretation": "the activation manifold IS low-dim, so function-space rank is 3.4x lower than weight-space -- the RIGHT direction"
+  },
+  "decisive_matched_bytes": {
+    "fit_set": {"functional_rank803": 0.2017, "q3": 0.2220, "verdict": "functional WINS on the fit set (misleading)"},
+    "held_out_L31": {"functional_rank803": 0.3876, "q3": 0.2216, "verdict": "functional LOSES"},
+    "held_out_L15": {"functional_rank803": 0.3120, "q3": 0.2219, "verdict": "functional LOSES"}
+  },
+  "verdict": "MEASURED NEGATIVE (rigorous). Activation-aware functional low-rank OVERFITS: the fit-set win (0.2017 < 0.2220) collapses on held-out tokens (0.39/0.31 vs q3 0.22). A rank-803 operator fit on ~2048 activation samples memorizes them and generalizes worse than uniform q3. Confirms G034's matched-budget refutation and adds the mechanism (overfitting). The function-space rank being 3.4x lower than weight-space is real and interesting but does NOT translate to a matched-byte win that generalizes.",
+  "consequence": "The Phase-B functional-representation frontier is genuinely hard: even the strongest direction (activation-aware, function-space) does not beat q3 for the MLP held-out at matched bytes. The MLP byte floor (hence the TPS wall) stands. Remaining unrefuted sub-families: low-rank + sparse EXACT correction (hybrid, campaign scored it), and distilled/generated operators -- both incremental and unproven. 100 TPS remains representation-gated with no measured lever in hand.",
+  "reopen_if": "a hybrid (low-rank prefix + q3/exact residual) or a distilled operator shows a GENERALIZING (held-out) matched-byte win over q3 across layers and matrix types, with Doctor holding."
+}

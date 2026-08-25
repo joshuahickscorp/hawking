@@ -1,0 +1,25 @@
+{
+  "claim_boundary": "this frontier cannot select a manager or qualify any tournament gate",
+  "component_io_frontier": {
+    "qwen30": {
+      "artifact_read_mib_per_second": 2966.002101562471,
+      "artifact_sha256": "a9a1e016ff99eeeb819a84d8402065fcf64c8d918d64bbc34c94d701f4519293",
+      "claim_boundary": "bounded component artifact reader I/O only; not native decoder or model TPS",
+      "profile_seal_sha256": "d6e5b6b7ca3de6f311ba2055ac7556be9b4a7565613bdac4d4e31b6ec4f3b755",
+      "task_id": "qwen30-blocked_native_runtime-a25eaaef9c6b39f4225f",
+      "updated_at": "2026-08-08T14:39:27.800316Z"
+    },
+    "qwen80": {
+      "artifact_read_mib_per_second": 6158.047153931594,
+      "artifact_sha256": "7572af74a487cd155eb2ac5ba2ce9fbb486381a0d4a7c4fe56e471150635891b",
+      "claim_boundary": "bounded component artifact reader I/O only; not native decoder or model TPS",
+      "profile_seal_sha256": "31249c42faa6c2c6358efc2435a84a1fb0470d1f2a1772946eabe6738cd341d6",
+      "task_id": "qwen80-blocked_complete_artifact_and_native_runtime-19f529890e8328e981a2",
+      "updated_at": "2026-08-08T14:39:27.800322Z"
+    }
+  },
+  "recorded_at": "2026-08-08T14:40:18.924878Z",
+  "schema": "hawking.ascension.qwen_scientific_optimizer_frontier.v1",
+  "seal_sha256": "3036a11725fa5859c88f919bde54dfd3397670273c311fadfe6a463f53510c98",
+  "status": "COMPONENT_ONLY_FRONTIER_NOT_MODEL_SELECTION"
+}

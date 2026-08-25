@@ -1,0 +1,14 @@
+{
+  "schema": "hawking.nos.phase_b_data_bound.v1", "session": "f5169750", "date": "2026-08-18",
+  "obligation": "G1 benchmark (memorization guard) + the critical Phase-B bottleneck",
+  "q3_control_held_out": 0.3857,
+  "candidates": {
+    "gelu_bottleneck_d2048": {"held_out": 0.4452, "train": null, "active_mb": 41.9, "note": "undertrained"},
+    "swiglu_op_m4096": {"held_out": 0.7885, "train": 0.1836, "gap": 0.605, "active_mb_q3": 25.6},
+    "swiglu_op_m8704": {"held_out": 1.5090, "train": 0.2482, "gap": 1.261, "active_mb_q3": 54.3}
+  },
+  "G1_guard_validated": "The train-vs-held-out gap MEMORIZATION GUARD fires hard on the SwiGLU operators (gap 0.60 and 1.26): train error 0.18-0.25 (great) but held-out 0.79-1.51 (terrible). This is exactly the fit-set false-win the campaign warns about, and the guard catches it -- satisfying G1's acceptance (harness runs q3 + candidates, emits RD vectors, guard fires on an overfit).",
+  "CRITICAL_FINDING": "Executable-operator synthesis is DATA-BOUND, not architecture-bound, at the current capture scale. 3413-6827 MLP-input tokens is FAR too few to train 30-60M-parameter operators -- they memorize the training activations and fail held-out. Larger operators (m=8704) overfit MORE. The architecture search (G3-G8) CANNOT succeed until the teacher dataset is much larger and more diverse. G2 (large diverse teacher dataset) is the P0 blocker for the whole Phase-B program.",
+  "reframe": "G2 must generate teacher (h, F(h)) pairs from a LARGE diverse corpus (thousands of prompts x positions, many task families), not the 6827-token capture. This needs teacher forward passes to capture MLP inputs h at scale; F(h) is then computed from the bf16 weights. Regularization + smaller operators help at the margin but do not substitute for data volume.",
+  "next": "Build the large teacher dataset (G2) as the P0 gate, THEN run the operator-family search (G3-G8) against it with the held-out guard. The current activation captures are the seed; scale is the blocker."
+}

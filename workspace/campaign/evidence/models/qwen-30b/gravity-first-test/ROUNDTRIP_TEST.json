@@ -1,0 +1,102 @@
+{
+  "schema": "hawking.qwen30b.gravity_first_test.roundtrip.v1",
+  "all_ok": true,
+  "results": [
+    {
+      "name": "model.layers.0.mlp.experts.0.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.1107792928814888,
+      "cosine": 0.9939329028129578,
+      "roundtrip_max_abs": 0.0,
+      "roundtrip_ok": true,
+      "bound_ok": true,
+      "status": "PASS"
+    },
+    {
+      "name": "model.layers.0.mlp.experts.0.up_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.11007321625947952,
+      "cosine": 0.9940097332000732,
+      "roundtrip_max_abs": 0.0,
+      "roundtrip_ok": true,
+      "bound_ok": true,
+      "status": "PASS"
+    },
+    {
+      "name": "model.layers.0.mlp.experts.0.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.10982675850391388,
+      "cosine": 0.9940342903137207,
+      "roundtrip_max_abs": 0.0,
+      "roundtrip_ok": true,
+      "bound_ok": true,
+      "status": "PASS"
+    },
+    {
+      "name": "model.layers.0.self_attn.q_proj.weight",
+      "shape": [
+        4096,
+        2048
+      ],
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.25006103515625,
+      "rel_l2": 0.14993101358413696,
+      "cosine": 0.9889352321624756,
+      "roundtrip_max_abs": 0.0,
+      "roundtrip_ok": true,
+      "bound_ok": true,
+      "status": "PASS"
+    },
+    {
+      "name": "model.layers.24.mlp.experts.7.gate_proj.weight",
+      "shape": [
+        768,
+        2048
+      ],
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.10918369889259338,
+      "cosine": 0.9941049218177795,
+      "roundtrip_max_abs": 0.0,
+      "roundtrip_ok": true,
+      "bound_ok": true,
+      "status": "PASS"
+    },
+    {
+      "name": "model.layers.47.mlp.experts.3.down_proj.weight",
+      "shape": [
+        2048,
+        768
+      ],
+      "nbits": 4,
+      "group_size": 64,
+      "bpw": 4.250325520833333,
+      "rel_l2": 0.11413446068763733,
+      "cosine": 0.9935579299926758,
+      "roundtrip_max_abs": 0.0,
+      "roundtrip_ok": true,
+      "bound_ok": true,
+      "status": "PASS"
+    }
+  ]
+}

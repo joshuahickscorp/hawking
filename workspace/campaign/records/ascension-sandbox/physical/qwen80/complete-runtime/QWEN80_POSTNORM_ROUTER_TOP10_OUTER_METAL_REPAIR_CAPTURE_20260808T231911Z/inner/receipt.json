@@ -1,0 +1,46 @@
+{
+  "claim_boundary": {
+    "component_only": true,
+    "does_not_execute_a_complete_layer_or_decoder": true,
+    "does_not_generate_tokens_expose_hcli_or_measure_tps": true,
+    "no_cpu_or_metal_parity_is_claimed": true
+  },
+  "durable_capture": {
+    "directory": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_POSTNORM_ROUTER_TOP10_OUTER_METAL_REPAIR_CAPTURE_20260808T231911Z/inner",
+    "invocation_file": "invocation.json",
+    "metal_lease_binding_is_recorded_in_invocation": true,
+    "receipt_file": "receipt.json",
+    "receipt_written_last_is_completion_marker": true,
+    "stderr_file": "stderr.log",
+    "stdout_file": "stdout.jsonl",
+    "strict_math_and_no_timing_policy_is_recorded_in_invocation": true
+  },
+  "error": "metal: strict-math shader compile: program_source:5067:16: warning: unused variable 'v_tg' [-Wunused-variable]\n    const uint v_tg = (args.kv_rows + 3u) / 4u;\n               ^\nprogram_source:5117:16: warning: unused variable 'v_tg' [-Wunused-variable]\n    const uint v_tg = (args.kv_rows + 3u) / 4u;\n               ^\nprogram_source:13647:20: warning: unused variable 'kLogicalVectorWidth' [-Wunused-variable]\n    constexpr uint kLogicalVectorWidth = kPackedVectorWidth * 2u;\n                   ^\nprogram_source:13660:16: warning: unused variable 'logical_cols' [-Wunused-variable]\n    const uint logical_cols = packed_cols * 2u;\n               ^\nprogram_source:13849:20: warning: unused variable 'PV' [-Wunused-variable]\n    constexpr uint PV       = 128u;\n                   ^\nprogram_source:17113:13: error: expecting input declarations with either all scalar types or all vector types with the same number of elements\nkernel void qwen80_postnorm_router_top10_matvec(\n            ^\nprogram_source:17121:10: note: declaration with attribute 'thread_position_in_threadgroup' of type 'uint' (aka 'unsigned int') here\n    uint tid [[thread_position_in_threadgroup]],\n    ~~~~~^~~\nprogram_source:17122:11: note: declaration with attribute 'threadgroup_position_in_grid' of type 'uint3' (vector of 3 'unsigned int' values) here\n    uint3 group_position [[threadgroup_position_in_grid]])\n    ~~~~~~^~~~~~~~~~~~~~\n",
+  "metal_execution_policy": {
+    "complete_layer_or_token_allowed": false,
+    "device_context_or_dispatch_performed": "unknown_after_authorized_metal_attempt_error",
+    "lease_binding": {
+      "authorization_seal_sha256": "27047714ce09440d7bbef9c285abd1096687e1cc5dbdba7b6e37585120b7a59e",
+      "lease_id": "30e1593371d003f710c5f029dfb1d04ca1f24f86062a5d1a7bebbf0164251478",
+      "policy": {
+        "complete_layer_or_token_allowed": false,
+        "component": "qwen80_direct_packed_postnorm_router_top10",
+        "strict_math": true,
+        "timing_or_benchmarking_allowed": false,
+        "tps_or_tg_claim_allowed": false
+      },
+      "receipt_document_sha256": "b55a7b8a1e79c3ccd28e407a7653287e96065596ac0f8cfbb0eb15d8617dbc08",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_POSTNORM_ROUTER_TOP10_QUIET_METAL_LEASE_20260808T231856Z.json",
+      "schema": "hawking.ascension.qwen80_quiet_metal_lease.v1",
+      "status": "GRANTED_QWEN80_POSTNORM_ROUTER_TOP10_NON_TIMED_DEVICE_PARITY_LEASE"
+    },
+    "lease_required_for_metal": true,
+    "post_attempt_state": "no_device_parity_or_runtime_claim",
+    "strict_math_required": true,
+    "timing_or_benchmarking_allowed": false,
+    "tps_or_tg_claim_allowed": false
+  },
+  "mode": "metal",
+  "schema": "hawking.ascension.qwen80_direct_packed_postnorm_router_top10.v1",
+  "status": "REFUSED_QWEN80_POSTNORM_ROUTER_TOP10_COMPONENT_ATTEMPT_ERROR"
+}

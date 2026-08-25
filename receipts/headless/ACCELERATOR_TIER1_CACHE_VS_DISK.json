@@ -1,0 +1,119 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T15:39:52Z",
+ "experiment_class": "ACCEL-MEMORY",
+ "knowledge_level": "INSTANCE",
+ "git_head": "50d97a8645d99067fa09b51cc7d33a94f8d1eb82",
+ "identities": {
+  "experiment": {
+   "id": "TIER1_CACHE_VS_DISK",
+   "obligation": "G046 + G049",
+   "steer": "S015 \u00a773 a claim needs uncontended measurement; \u00a777 the metric that counts"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "ram_gib": 96,
+   "page_size_bytes": 16384,
+   "storage": "TIER 1 ~/noetic/stage, internal SSD"
+  },
+  "device": {
+   "status": "ABSENT",
+   "reason": "storage experiment, no GPU involved"
+  },
+  "model": {
+   "specimen": "Qwen3-30B-A3B",
+   "tensors": "64 expert gate_proj, 192 MB total"
+  },
+  "representation": {
+   "status": "ABSENT",
+   "reason": "raw bytes on disk"
+  },
+  "kernel": {
+   "status": "ABSENT",
+   "reason": "no kernel"
+  },
+  "runtime": {
+   "python": "3.12.6",
+   "instrument": "vm_stat Pageins, no sudo"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single machine"
+  }
+ },
+ "headline": "THE CAVEAT THREE RECEIPTS CARRIED IS SETTLED AND IT WAS SMALL. A cold read of the staged shard measures 6265.8 MB/s at 99.76% of pages actually coming from disk; cached it is 8318.4 MB/s. The ratio is only 1.33x, so the pipeline's WorkUnits/hour was inflated by cache residency at the level of a few percent, not by a factor.",
+ "the_prediction_and_both_branches_are_refuted": {
+  "written_before": {
+   "cache_branch": {
+    "uncached_MB_s": [
+     1500,
+     3500
+    ],
+    "wu_h": [
+     1200000,
+     1700000
+    ]
+   },
+   "ssd_branch": {
+    "uncached_within_pct_of_warm": 25,
+    "wu_h": "barely moves"
+   },
+   "third_outcome": "below 500 MB/s means 3 MB strided reads are seek-bound"
+  },
+  "what_happened": "F_NOCACHE reads came out FASTER than warm ones (8653 vs 7520 MB/s) and WorkUnits/hour went UP 7.48%. Neither branch allowed that direction.",
+  "why": "F_NOCACHE asks the kernel not to RETAIN this file's pages. IT DOES NOT EVICT PAGES ALREADY CACHED. So the experiment compared cache against cache, and the ~7% it measured is the cost of retention bookkeeping, not of touching a disk. I designed a contrast that CANNOT PRODUCE THE CONDITION IT NAMES.",
+  "how_that_was_caught": "vm_stat reports cumulative PAGEINS without sudo. A read that touches the disk must produce pageins; one served from cache produces none. Checking the assumption rather than the man page is what settled it."
+ },
+ "the_measurement": {
+  "instrument": "vm_stat Pageins delta across each read, 16384-byte pages, 12288 pages if every byte came from disk",
+  "cold_read": {
+   "MB_s": 6265.8,
+   "seconds": 0.0321,
+   "pct_of_pages_from_disk": 99.76,
+   "n": 1,
+   "how_it_was_obtained": "BY ACCIDENT -- the probe's FIRST touch of the file in this process was genuinely cold, which is exactly why it cannot be repeated without evicting"
+  },
+  "cached_reads": {
+   "MB_s_median": 8318.4,
+   "pct_of_pages_from_disk": 0.01,
+   "n": 3
+  },
+  "f_nocache_reads": {
+   "MB_s_median": 8930.5,
+   "pct_of_pages_from_disk": 0.01,
+   "means": "F_NOCACHE did NOT produce a cold read; 0.01% pageins is the proof, not an inference"
+  },
+  "cache_advantage_x": 1.33
+ },
+ "the_substitute_that_does_not_substitute": {
+  "idea": "write a file with F_NOCACHE, then read it back -- its pages should not be resident",
+  "result": "EXACTLY 66.67% of pages from disk, on ALL SEVEN samples across two probes (8193, 8193, 8193, 8193, 8193, 8194, 8184 of 12288). A stable ~64 MB window stays resident, which is a third of the file.",
+  "rate": {
+   "no_settle_MB_s": 2326.3,
+   "after_20s_settle_MB_s": 3316.6,
+   "cold_repeat_median_MB_s": 2214.4,
+   "cold_repeat_spread_pct": 46.0
+  },
+  "diagnosis_split_two_ways": "settling 20 s changes the PAGEIN FRACTION by 0.12% (structural, not write-in-flight) but changes the RATE by +43% (write-in-flight). Both candidate explanations were partly right, on DIFFERENT QUANTITIES, and picking one would have been wrong either way.",
+  "verdict": "REFUSED as a cold-read measurement: 46% spread against a 10% gate, and it never reaches the ~100% pagein fraction that would make it cold at all. The 2214-3317 MB/s numbers are NOT quoted as this SSD's cold rate.",
+  "an_instrument_defect_in_my_own_probe": "the script's automatic verdict keyed on EXACT EQUALITY of an integer counter, so 8194 vs 8184 -- a 0.12% difference -- was labelled 'settling moves it'. A verdict computed by exact equality of a noisy counter reports noise as a finding."
+ },
+ "consequence_for_the_pipeline": {
+  "read_s_cached": 0.0242,
+  "read_s_cold_equivalent": 0.0321,
+  "wall_s": 0.107,
+  "wu_h_penalty_pct_if_every_read_were_cold": 7.38,
+  "means": "the 2,151,304 WU/h figure would fall by roughly 7% if every read came from disk. The three receipts that warned it was 'partly page cache, an upper bound' were right to warn and the warning was OVERCAUTIOUS: the cold SSD is 6266 MB/s, ABOVE the 5035.5 MB/s the Tier 1 receipt measured and flagged as cache-inflated."
+ },
+ "named_gate": {
+  "blocked_on": "a clean, REPEATABLE cold read needs `sudo purge` or a working set exceeding 96 GiB of RAM",
+  "why_not_available": "sudo is not available to this process, and staging a >96 GiB working set onto Tier 1 costs 437.78 s per 192 MB at the measured Tier 2 rate",
+  "recorded_as": "a NAMED GATE with its exact missing input per \u00a7129, alongside the powermetrics/thermal gate and the NVIDIA/P2 gate -- not a parking lot"
+ },
+ "claim_boundary": {
+  "n_equals_1_for_the_number_that_matters": "the cold read is a SINGLE sample. It is a direct measurement with a 99.76% pagein fraction proving it was cold, but it has no spread and cannot be cited as a characterised disk rate.",
+  "one_file_one_pattern": "192 MB read as 64 sequential 3 MB chunks. Nothing here says anything about random small reads, about writes, or about Tier 2.",
+  "the_lake_fill_was_running": "not quiesced for this probe, so the cold sample carries whatever contention the concurrent downloads imposed -- which makes 6266 MB/s a LOWER bound on the quiet-machine cold rate, in the safe direction for the claim"
+ },
+ "pass": true
+}

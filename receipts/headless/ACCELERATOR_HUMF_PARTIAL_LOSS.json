@@ -1,0 +1,63 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T16:15:39Z",
+ "experiment_class": "ACCEL-MEMORY",
+ "knowledge_level": "INSTANCE",
+ "git_head": "7eaa9075161719f420352575dfb7f3ea1c1c3cf2",
+ "identities": {
+  "experiment": {
+   "id": "HUMF_PARTIAL_LOSS_AND_THE_ROUND_TRIP_BLIND_SPOT",
+   "obligation": "G050",
+   "steer": "S015 \u00a714 coherence states; \u00a721 simulated is not physical"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra"
+  },
+  "device": {
+   "status": "ABSENT",
+   "reason": "fabric-level, no GPU in this path"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "opaque bytes"
+  },
+  "representation": {
+   "status": "ABSENT",
+   "reason": "opaque bytes by design"
+  },
+  "kernel": {
+   "status": "ABSENT",
+   "reason": "no kernel"
+  },
+  "runtime": {
+   "python": "3.12.6"
+  },
+  "transport": {
+   "status": "MOCK",
+   "reason": "no external GPU exists; \u00a721 forbids citing any transport number here as physical evidence"
+  }
+ },
+ "headline": "A PARTIAL LOSS CANNOT REUSE THE FULL-LOSS HANDLER, AND A ROUND-TRIP CHECK DOES NOT VALIDATE THE RESIDENT COPY. The first is the last named-absent failure mode; the second is a blind spot the corruption receipt could not see because it was looking at the wrong path.",
+ "what_the_previous_receipt_named": "still not modelled: a provider that corrupts CONSISTENTLY in both directions, corruption AFTER the check, and A PARTIAL DEVICE LOSS where some memory survives",
+ "partial_loss": {
+  "why_it_cannot_reuse_the_full_handler": "device_lost is safe because of a BLANKET ASSUMPTION -- nothing in that domain survived. On a partial loss that assumption is WRONG IN BOTH DIRECTIONS. Assume everything survived and valid_copies() names PHANTOMS. Assume everything died and a DIRTY copy the device still holds becomes MANUFACTURED DATA LOSS -- the fabric destroying live state that was never gone.",
+  "so_the_fabric_asks": "device_partially_lost PROBES each copy through the provider and classifies per object. A partial loss is the case where the bookkeeping CANNOT BE DERIVED and has to be MEASURED.",
+  "demonstrated": "two objects in the domain, ONE allocation cleared: survived=['KEPT'], lost=['GONE'], and valid_copies() follows both ways",
+  "the_contrast_is_the_evidence": "a DIRTY copy that survived is reported data_lost=[] by the partial handler and IS in data_lost when the SAME state is run through the full handler -- the two verdicts differ on identical state, which is precisely why one cannot stand in for the other"
+ },
+ "the_round_trip_blind_spot": {
+  "the_hazard": "the integrity check compares the SOURCE bytes against what copy_out RETURNS, so it validates THE ROUND TRIP. It does NOT validate THE RESIDENT COPY.",
+  "why_that_is_not_pedantry": "on a real bridge copy_out and a KERNEL are NOT THE SAME PATH -- one comes back over the transport, the other reads device memory directly. A provider whose compute path diverges from its read-back path PASSES verification and still computes on wrong bytes.",
+  "demonstrated_not_asserted": "compute_skew makes read_for_compute return different bytes from copy_out. The transfer verifies, the destination is CLEAN, its payload equals the source EXACTLY -- and what a kernel would read differs. A test pins all three facts together.",
+  "there_is_no_cheap_fix_and_that_is_stated": "catching it needs a check that reads through THE SAME PATH THE COMPUTATION USES, which means the DEVICE computing a digest of its own memory. That is a real design requirement for EGB and it is recorded rather than invented against a mock. The limit is now written where it lives -- in the verification block itself -- so `verified` cannot be read as a guarantee about what the GPU sees.",
+  "relation_to_what_was_named": "the previous receipt listed 'corruption AFTER the check' as unmodelled and this is a SHARPER version of it: not corruption after the check in TIME, but a check on the WRONG PATH entirely."
+ },
+ "still_not_modelled": "a provider that corrupts consistently in both directions such that the digest agrees with itself, and any adversary who can recompute a crc32 -- the checksum defends against ACCIDENT and is the wrong tool for a MALICIOUS peer",
+ "claim_boundary": {
+  "mock_only": "no external GPU exists. What is proven is the STATE MACHINE and the SCOPE OF THE CHECK, not any hardware property. Every transport number in this module remains a knob.",
+  "the_probe_is_the_provider_itself": "device_partially_lost asks the provider whether a copy survived. Against a real device that probe is itself a transport operation that can fail or hang, and the partial-loss handler does NOT wrap it in the deadline the transfer path uses -- an honest gap, named.",
+  "no_performance_claim": "nothing timed"
+ },
+ "tests": "test_humf.py 35 passed (was 32, 24, 19, 12); 194 accelerator tests pass",
+ "pass": true
+}

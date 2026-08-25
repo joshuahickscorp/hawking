@@ -1,0 +1,70 @@
+{
+ "schema": "hawking.headless.superoperator_library.v1",
+ "generated_at": "2026-08-25T09:57:52Z",
+ "obligation": "G019 \u2014 SUPEROPERATOR_LIBRARY (directive \u00a752)",
+ "law": "graph-collapsed operators are tracked separately from primitive kernels; a fusion win must never be read as a codec win",
+ "operators": [
+  {
+   "operator": "gate_up_swiglu",
+   "kernels": [
+    "q2f_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+    "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+    "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128"
+   ],
+   "collapses": [
+    "mlp.gate_proj matvec",
+    "mlp.up_proj matvec",
+    "silu",
+    "elementwise mul"
+   ],
+   "semantic_justification": "gate and up read the same activation vector and their outputs are consumed only by SwiGLU; the intermediate vectors are not observable outside the fused region",
+   "cost_delta": {
+    "kind": "CITED",
+    "source": "receipts/headless/NOETIC_DISPATCH_FUSION.json"
+   }
+  },
+  {
+   "operator": "norm_projection",
+   "kernels": [
+    "qwen80_add_residual_rmsnorm_tg"
+   ],
+   "collapses": [
+    "residual add",
+    "rmsnorm"
+   ],
+   "semantic_justification": "the residual sum is consumed only by the norm",
+   "cost_delta": {
+    "kind": "ABSENT",
+    "value": null,
+    "absent_reason": "no isolated fusion measurement for this operator"
+   }
+  },
+  {
+   "operator": "recurrent_fused_update",
+   "kernels": [
+    "qwen38_gated_delta_decode_vi_simd_ba_f4"
+   ],
+   "collapses": [
+    "delta state read",
+    "gated update",
+    "state write"
+   ],
+   "semantic_justification": "the intermediate state is never read outside the step",
+   "cost_delta": {
+    "kind": "CITED",
+    "source": "receipts/headless/DELTANET_ORGAN.json"
+   }
+  }
+ ],
+ "refuted": [
+  {
+   "operator": "multi_layer_megakernel",
+   "verdict": "REFUTED",
+   "physical_reason": "an 8-layer f16 fused megakernel measured 4.4x SLOWER than the unfused sequence; use_resource 2.62us vs 4.5us set_buffer",
+   "reopen_condition": "a dispatch model where per-dispatch overhead again dominates the fused region's occupancy loss",
+   "law": "build evidence-backed operator families, never chase one universal megakernel"
+  }
+ ],
+ "n_operators": 3,
+ "n_refuted": 1
+}

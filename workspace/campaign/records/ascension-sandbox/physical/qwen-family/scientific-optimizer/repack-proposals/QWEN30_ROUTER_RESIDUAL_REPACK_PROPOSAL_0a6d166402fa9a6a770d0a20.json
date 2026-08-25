@@ -1,0 +1,74 @@
+{
+  "automatic_action": {
+    "may_claim_capability_hcli_tps_or_tg": false,
+    "may_claim_model_quality_pass": false,
+    "may_enqueue_for_repack_owner": true,
+    "may_replace_admitted_baseline": false
+  },
+  "baseline_control": {
+    "admission_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/QWEN30_COMPLETE_BINARY_GRAVITY_ADMISSION_RECEIPT.json",
+    "admission_seal_sha256": "89d3c531d5638757bf0c0348df4f11e45a4f1c0cf87d27a7f3afcb675247301a",
+    "complete_physical_bpw": 1.1303663832684598,
+    "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/QWEN30_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+    "manifest_seal_sha256": "3321a99d719e70499663b7bfebe14dd6c732bfc533bb05b9277eb398e44d6357",
+    "preserve_as_rollback_control": true,
+    "replacement_forbidden_until_all_acceptance_gates_pass": true
+  },
+  "claim_boundary": "a physical repack candidate proposal only; it neither changes the admitted Qwen30 baseline nor proves model quality",
+  "hard_full_artifact_accounting_gate": {
+    "required_complete_physical_bpw_max": 1.5,
+    "requirements": [
+      "repack every affected tensor into a new complete artifact; do not extrapolate component BPW",
+      "seal a complete all-tensor physical-byte and BPW ledger at <=1.5 COMPLETE BPW",
+      "bind the same immutable source identity and a current full-shard revalidation receipt",
+      "verify every payload, tensor catalog, control tensor, hash, and layout through native artifact admission"
+    ],
+    "state": "UNMEASURED_FULL_ARTIFACT_REPACK_REQUIRED"
+  },
+  "post_runtime_capability_retest_gate": {
+    "requirements": [
+      "native all-layer exact token execution with no fallback and raw BF16 excluded from runtime",
+      "multiple prompt-dependent autoregressive continuations, including structured/code samples, with coherence scoring",
+      "actual logits/sampler/next-token feedback verification",
+      "fresh HCLI chat, structured-output, session, and restart receipts",
+      "capability, Context/KV, Agent OS, and storage/rollback evaluations on the new exact artifact",
+      "new clean complete-token profiler and official 100 BASE_TRUE_TPS/TG receipts; prior timing cannot transfer"
+    ],
+    "state": "REQUIRED_AFTER_ANY_MATERIAL_REPRESENTATION_OR_RUNTIME_CHANGE"
+  },
+  "proposal_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen-family/scientific-optimizer/repack-proposals/QWEN30_ROUTER_RESIDUAL_REPACK_PROPOSAL_0a6d166402fa9a6a770d0a20.json",
+  "proposed_mutation": {
+    "component_evidence": {
+      "component_physical_bpw": 1.2574462890625,
+      "name": "binary_sign_scale_sparse_fp16_residual_0.0025",
+      "physical_bytes": 41204,
+      "router_control": {
+        "claim_boundary": "deterministic source-router controls only; not prompt-dependent routing, generation, capability, HCLI, or TPS",
+        "control_count": 32,
+        "mean_router_logit_relative_l2": 0.6838687807321548,
+        "mean_top_k_overlap": 0.35546875,
+        "minimum_top_k_overlap": 0.125,
+        "top1_agreement": 0.21875,
+        "top_k": 8
+      },
+      "weight_quality": {
+        "cosine": 0.797705352306366,
+        "max_abs": 0.256683349609375,
+        "relative_l2": 0.603203296661377,
+        "rmse": 0.03907502442598343
+      },
+      "within_1_5_bpw_component_budget": true
+    },
+    "initial_sensitive_organ": "model.layers.0.mlp.gate.weight",
+    "not_applied_to_complete_artifact": true,
+    "representation": "binary_sign_scale_sparse_fp16_residual_0.0025",
+    "scope_rule": "start with source-bound router-sensitive organs only; expand only after direct per-organ control evidence"
+  },
+  "quality_receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen-family/scientific-optimizer/capability-quality/QWEN30_SENSITIVE_ROUTER_REPRESENTATION_QUALITY_097f6a944610cbe3df3f417e.json",
+  "quality_receipt_seal_sha256": "0a6d166402fa9a6a770d0a209b4af2906ee58cf50ba76572997cdf2abbd342b2",
+  "record_id": "qwen30-repack-proposal:0a6d166402fa9a6a770d0a209b4af2906ee58cf50ba76572997cdf2abbd342b2",
+  "recorded_at": "2026-08-08T19:01:39.618856Z",
+  "schema": "hawking.ascension.qwen30_sensitive_router_repack_proposal.v1",
+  "seal_sha256": "ea98a85abc0e987b66ee6163bbd067638bc6bda7250d0e3b52e95269ec8214c0",
+  "status": "PROPOSED_NOT_APPLIED_COMPLETE_ACCOUNTING_AND_CAPABILITY_RETEST_REQUIRED"
+}

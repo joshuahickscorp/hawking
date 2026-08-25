@@ -1,0 +1,76 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T15:38:56Z",
+ "experiment_class": "ACCEL-MEMORY",
+ "knowledge_level": "INSTANCE",
+ "git_head": "50d97a8645d99067fa09b51cc7d33a94f8d1eb82",
+ "identities": {
+  "experiment": {
+   "id": "HUMF_TORN_TIMEOUT_LOST",
+   "obligation": "G050",
+   "steer": "S015 \u00a714 coherence states; \u00a732 the twelve fields; \u00a721 simulated is not physical"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "fabric-level, no model involved"
+  },
+  "representation": {
+   "status": "ABSENT",
+   "reason": "opaque bytes by design"
+  },
+  "kernel": {
+   "status": "ABSENT",
+   "reason": "no GPU kernel in this path"
+  },
+  "runtime": {
+   "python": "3.12.6"
+  },
+  "transport": {
+   "status": "MOCK",
+   "reason": "no external GPU exists; every transport number here is a knob and \u00a721 forbids reading one as evidence"
+  }
+ },
+ "headline": "THE THREE MODES THE LAST RECEIPT LISTED AS NOT MODELLED. A torn write needed NO new defence and saying so is the result; a hang needed a deadline AND a quarantine, because the call cannot be abandoned; and a LOST DEVICE needed something genuinely absent -- invalidating every copy that domain held, not only the one in flight.",
+ "what_the_previous_receipt_named": "partial or torn writes, timeouts, a provider vanishing mid-transfer -- 'A PROVIDER THAT LIES IS A HARDER PROBLEM THAN ONE THAT FAILS and only the second is handled'",
+ "one_by_one": {
+  "torn_write": {
+   "modelled": "tear_next stores a PREFIX of the payload and leaves the tail as whatever was there, raising nothing",
+   "result": "CAUGHT by the existing integrity check, with no new mechanism",
+   "why_that_is_the_finding": "a crc32 over the whole payload cannot miss a truncated tail, so a torn write is the SAME CLASS as silent corruption rather than a new one. Recording that beats inventing a second mechanism that would need its own tests and could drift from the first.",
+   "control": "with verify_transfers=False the torn copy is marked CLEAN, appears in valid_copies(), and its payload differs from the source -- pinned by a test, because a check never watched failing is indistinguishable from one that does nothing"
+  },
+  "timeout": {
+   "modelled": "hang_next_s makes the provider sleep past the fabric's deadline",
+   "why_it_is_worse_than_a_failure": "a provider that raises lets the state machine react. A provider that HANGS raises nothing and completes nothing, so the destination sits in TRANSFERRING forever and the except branch NEVER RUNS.",
+   "what_the_deadline_buys": "the fabric regains control, the destination goes INVALID, and the domain is QUARANTINED",
+   "what_it_does_NOT_buy_and_this_is_stated_in_the_code": "the call is NOT ABANDONED. The worker thread is still inside the provider and may still complete, mutating provider state after the fabric gave up. THAT is why quarantine is load-bearing rather than decoration -- refusing the next transfer into that domain is the only thing keeping a second call from racing the first. Real abandonment needs the transport to run somewhere it can be killed, which is NOT BUILT and NOT CLAIMED."
+  },
+  "device_lost": {
+   "modelled": "vanish_next clears the provider's store and marks it absent; further calls raise DeviceLost, a DISTINCT type from HumfError",
+   "the_hole_it_closed": "a failed COPY damages ONE object. A lost DEVICE takes EVERY copy it held. Nothing did the second, so valid_copies() would have kept naming copies on a device that no longer exists and the planner would have kept choosing them as transfer sources -- a silent wrong answer, not an error.",
+   "demonstrated": "a BYSTANDER object whose only copy lived in the lost domain goes from valid_copies() == ['MOCK_EXTERNAL_VRAM'] to [] without ever being part of the transfer that failed",
+   "data_loss_is_named_separately": "an object whose copy there was DIRTY held the ONLY live state, so losing it is DATA LOSS, reported in its own field rather than folded into a count of invalidated copies. The other direction is pinned too: a replicated object is reported degraded and NOT lost, because crying wolf on every disconnection would make the field useless."
+  }
+ },
+ "a_defect_the_tests_found_in_the_recovery_path": {
+  "symptom": "after a timeout the destination is INVALID, and INVALID -> TRANSFERRING is ILLEGAL, so releasing the quarantine left the object permanently stuck",
+  "the_state_machine_was_right": "INVALID means the contents are UNKNOWN; letting a transfer 'resume' from there would be a lie about what happened. The recovery is INVALID -> ABSENT -> TRANSFERRING.",
+  "fix": "release_quarantine() now performs that reset and returns what it cleared, so recovery is ONE explicit operator action rather than a sequence a caller can half-perform and leave the fabric inconsistent",
+  "found_by": "writing the test for the recovery, not by reading the code"
+ },
+ "claim_boundary": {
+  "mock_only": "no external GPU exists. Every transport rate here is a knob and \u00a721 forbids citing one as physical evidence; what is proven is the STATE MACHINE's behaviour under three failure shapes, not any hardware property.",
+  "still_not_modelled": "a provider that corrupts CONSISTENTLY in both directions (the digest agrees with itself), corruption AFTER the check, a partial device loss where some memory survives, and any adversary who can recompute a crc32 -- the checksum defends against ACCIDENT and is the wrong tool for a MALICIOUS peer.",
+  "the_timeout_is_detection_not_abandonment": "restated here because it is the kind of limitation that reads as solved once a test passes"
+ },
+ "tests": "test_humf.py 32 passed (was 24, was 19, was 12); 181 accelerator tests pass",
+ "pass": true
+}

@@ -530,13 +530,26 @@ pub fn qwen30_quality_residual_matvec_f64(
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum QwenCompleteBinaryModel {
     Qwen30Coder,
+    /// Qwen/Qwen3-30B-A3B, the base sibling of Qwen30Coder.
+    ///
+    /// Structurally identical to Qwen30Coder in every field the runtime validates: same
+    /// Qwen3MoeForCausalLM architecture, same qwen3_moe type, and all ten exact config
+    /// fields -- 48 layers, hidden 2048, 32 heads, 4 kv heads, head_dim 128, 128 experts,
+    /// top-k 8, moe_intermediate 768, decoder_sparse_step 1, vocab 151936 -- which gives
+    /// both models the same 18,867 tensors. It is a DISTINCT VARIANT rather than a second
+    /// string on Qwen30Coder because the source model genuinely differs: the manifest
+    /// records which repository an artifact was built from, and collapsing the two would
+    /// lose that.
+    ///
+    /// The binary FORMAT is the same, so the manifest and audit schemas are shared.
+    Qwen30Base,
     Qwen80CoderNext,
 }
 
 impl QwenCompleteBinaryModel {
     pub const fn manifest_schema(self) -> &'static str {
         match self {
-            Self::Qwen30Coder => QWEN30_COMPLETE_BINARY_SCHEMA,
+            Self::Qwen30Coder | Self::Qwen30Base => QWEN30_COMPLETE_BINARY_SCHEMA,
             Self::Qwen80CoderNext => QWEN80_COMPLETE_BINARY_SCHEMA,
         }
     }
@@ -544,22 +557,80 @@ impl QwenCompleteBinaryModel {
     pub const fn source_repository(self) -> &'static str {
         match self {
             Self::Qwen30Coder => "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+            Self::Qwen30Base => "Qwen/Qwen3-30B-A3B",
             Self::Qwen80CoderNext => "Qwen/Qwen3-Coder-Next",
         }
     }
 
+    /// Whether this is a Qwen30-family model.
+    ///
+    /// Two call sites compared `!= Qwen30Coder` while their own error text said "is not
+    /// the Qwen30 model family". Qwen30Base is in that family -- same architecture, same
+    /// 18,867 tensors, same binary format -- so the equality was narrower than the check
+    /// it claimed to be making.
+    pub const fn is_qwen30_family(self) -> bool {
+        matches!(self, Self::Qwen30Coder | Self::Qwen30Base)
+    }
+
     const fn source_audit_schema(self) -> &'static str {
         match self {
-            Self::Qwen30Coder => "hawking.ascension.qwen30_source_body_audit_candidate.v1",
+            Self::Qwen30Coder | Self::Qwen30Base => {
+                "hawking.ascension.qwen30_source_body_audit_candidate.v1"
+            }
             Self::Qwen80CoderNext => "hawking.ascension.qwen80_source_body_audit_candidate.v1",
         }
     }
 
     const fn source_audit_status(self) -> &'static str {
         match self {
-            Self::Qwen30Coder => "CANDIDATE_SOURCE_BODY_VERIFIED",
+            Self::Qwen30Coder | Self::Qwen30Base => "CANDIDATE_SOURCE_BODY_VERIFIED",
             Self::Qwen80CoderNext => "CANDIDATE_FULL_PINNED_SOURCE_BODY_VERIFIED",
         }
+    }
+}
+
+#[cfg(test)]
+mod qwen30_base_variant_tests {
+    use super::*;
+
+    #[test]
+    fn qwen30_base_names_the_base_repository() {
+        assert_eq!(
+            QwenCompleteBinaryModel::Qwen30Base.source_repository(),
+            "Qwen/Qwen3-30B-A3B"
+        );
+        assert_eq!(
+            QwenCompleteBinaryModel::Qwen30Coder.source_repository(),
+            "Qwen/Qwen3-Coder-30B-A3B-Instruct"
+        );
+    }
+
+    #[test]
+    fn qwen30_base_shares_the_coder_format_but_not_its_identity() {
+        // The binary format is identical -- same architecture, same 18,867 tensors -- so
+        // the schemas are shared. The repository is not, because the manifest records
+        // which source an artifact was built from and collapsing the two would lose it.
+        let base = QwenCompleteBinaryModel::Qwen30Base;
+        let coder = QwenCompleteBinaryModel::Qwen30Coder;
+        assert_eq!(base.manifest_schema(), coder.manifest_schema());
+        assert_eq!(base.source_audit_schema(), coder.source_audit_schema());
+        assert_eq!(base.source_audit_status(), coder.source_audit_status());
+        assert_ne!(base.source_repository(), coder.source_repository());
+    }
+
+    #[test]
+    fn the_family_predicate_covers_both_qwen30_variants_and_not_qwen80() {
+        assert!(QwenCompleteBinaryModel::Qwen30Coder.is_qwen30_family());
+        assert!(QwenCompleteBinaryModel::Qwen30Base.is_qwen30_family());
+        assert!(!QwenCompleteBinaryModel::Qwen80CoderNext.is_qwen30_family());
+    }
+
+    #[test]
+    fn the_qwen80_variant_is_untouched() {
+        let q80 = QwenCompleteBinaryModel::Qwen80CoderNext;
+        assert_eq!(q80.source_repository(), "Qwen/Qwen3-Coder-Next");
+        assert_ne!(q80.manifest_schema(),
+                   QwenCompleteBinaryModel::Qwen30Base.manifest_schema());
     }
 }
 

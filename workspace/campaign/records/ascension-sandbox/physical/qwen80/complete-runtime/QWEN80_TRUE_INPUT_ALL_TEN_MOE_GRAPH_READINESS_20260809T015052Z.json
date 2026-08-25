@@ -1,0 +1,204 @@
+{
+  "claim_boundary": {
+    "current_records_do_not_prove_a_real_complete_moe_or_layer": true,
+    "no_existing_fixture_or_component_is_promoted": true,
+    "no_full_token_decoder_generation_hcli_tps_tg_or_tournament_claim": true
+  },
+  "evidence": {
+    "all_ten_inner": {
+      "bytes": 10194,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_ALL_TEN_ROUTED_EXPERT_CPU_OUTER_CAPTURE_20260809T013223Z/inner/receipt.json",
+      "present": true,
+      "sha256": "af10caa70a1f8a2b3a7deb14768f0af8736252b9a736b179520961849fec5675"
+    },
+    "all_ten_outer": {
+      "file": {
+        "bytes": 6446,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_ALL_TEN_ROUTED_EXPERT_CPU_OUTER_CAPTURE_20260809T013223Z/outer-terminal-receipt.json",
+        "present": true,
+        "sha256": "53c89dd78584b28fa862792596c32206146099cd0b7914609fea8016ae785329"
+      },
+      "seal_sha256": "9d22c4cf37694afba9cc7808669e37004f9d153fe6b3eea45f5e09a5f82122f5"
+    },
+    "combine_inner": {
+      "bytes": 6775,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_MOE_COMBINE_OUTER_METAL_CAPTURE_20260809T005727Z/inner/receipt.json",
+      "present": true,
+      "sha256": "c936966b2b71efdba536414596c7a4b61b4cf46608a10f7782a93d7830c7d664"
+    },
+    "combine_outer": {
+      "file": {
+        "bytes": 8832,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_MOE_COMBINE_OUTER_METAL_CAPTURE_20260809T005727Z/outer-terminal-receipt.json",
+        "present": true,
+        "sha256": "048c269066eadb1099244fc6a2f576dc0b127e8bad105bec71012f3cca515632"
+      },
+      "seal_sha256": "77f8b8d76c88e9cc77165ec2c412fd1a2d31ba0618a018bfb01b5f4f26d73742"
+    },
+    "first_residual_receipt": {
+      "bytes": 1220,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/layer0-mixer-captures/QWEN80_LAYER0_DELTANET_MIXER_RETRY_20260808T213530Z/receipt.json",
+      "present": true,
+      "sha256": "6a37a8a0272cd484c964bb2587e5d6188ea1765a7d49b13e0276842dd95f63e6"
+    },
+    "shared_inner": {
+      "bytes": 12961,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SHARED_EXPERT_OUTER_METAL_CAPTURE_20260809T001145Z/inner/receipt.json",
+      "present": true,
+      "sha256": "b91248671b129a27420f75062459a54b1886422d05f5ae8a7f13bbf2eeb46fc8"
+    },
+    "shared_outer": {
+      "file": {
+        "bytes": 6791,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SHARED_EXPERT_OUTER_METAL_CAPTURE_20260809T001145Z/outer-terminal-receipt.json",
+        "present": true,
+        "sha256": "a37080dd305610ad50159bd1dbc1033a33216c2459f56db71dd8cb7c15829adc"
+      },
+      "seal_sha256": "5992de7e7e8fe92cd59e5d04c47f12503a3240009cec878071dcb26c3c2e196b"
+    }
+  },
+  "executor_gaps": [
+    "first_residual_receipt_has_no_machine_checkable_first_residual_output_hash_or_current_graph_input_link",
+    "shared_expert_component_has_no_first_residual_and_normalized_hidden_input_provenance",
+    "current_combine_is_a_materialized_fixture_not_outputs_of_the_ten_real_route_bodies",
+    "current_combine_has_no_all_ten_plan_first_residual_normalized_hidden_shared_and_ten_output_hash_join",
+    "future_combine_must_use_the_direct_packed_real_moe_boundary_status_not_the_historical_fixture_component_status",
+    "all_ten_cpu_oracle_does_not_retain_same_capture_2048_element_route_buffers_for_device_parity",
+    "no_generic_all_ten_direct_packed_metal_route_executor_has_produced_ten_same_input_device_witnesses",
+    "no_single_source_bound_command_graph_has_joined_first_residual_router_all_ten_shared_and_second_residual"
+  ],
+  "mode": "cpu-only-readiness-contract",
+  "recorded_by": "no_artifact_scan_no_metal_no_watcher_no_server",
+  "schema": "hawking.ascension.qwen80_true_input_all_ten_moe_graph_contract.v1",
+  "seal_sha256": "195623bf7cbfda7c1cbc48bcf3e7a109795a9fee48e2baa6957de0724327e15f",
+  "status": "REFUSED_QWEN80_TRUE_INPUT_ALL_TEN_MOE_GRAPH_NOT_READY",
+  "true_input_graph_plan": {
+    "device_buffers": [
+      {
+        "elements": 2048,
+        "must_hash_bind_router_shared_combine": true,
+        "name": "first_residual",
+        "producer": "direct-packed DeltaNet mixer"
+      },
+      {
+        "elements": 2048,
+        "must_hash_bind_all_route_and_shared_bodies": true,
+        "name": "postnorm_hidden",
+        "producer": "post-attention RMSNorm(first_residual)"
+      },
+      {
+        "elements": 10,
+        "must_equal_source_route": true,
+        "name": "route_ids",
+        "producer": "router top-10"
+      },
+      {
+        "elements": 10,
+        "must_equal_source_route": true,
+        "name": "route_weights",
+        "producer": "router normalized top-10"
+      },
+      {
+        "must_retain_each_vector_and_hash": true,
+        "name": "weighted_route_outputs",
+        "producer": "generic direct-packed gate/up/SiLU/down for each selected route",
+        "shape": [
+          10,
+          2048
+        ]
+      },
+      {
+        "elements": 2048,
+        "must_hash_bind_postnorm_hidden": true,
+        "name": "gated_shared",
+        "producer": "direct-packed shared expert plus sigmoid shared gate"
+      },
+      {
+        "elements": 2048,
+        "must_be_fenced_and_parity_checked": true,
+        "name": "second_residual",
+        "producer": "fixed f32 r0..r9 then gated_shared then first_residual"
+      }
+    ],
+    "fixed_order": [
+      "source-bound DeltaNet mixer -> first_residual[2048]",
+      "post-attention RMSNorm(first_residual) -> postnorm_hidden[2048]",
+      "router(postnorm_hidden) -> exact ordered top10 ids/weights",
+      "for route index 0..9: gate/up -> SiLU(gate)*up -> down -> source-normalized weight",
+      "shared gate/up/down + sigmoid(shared_expert_gate(postnorm_hidden)) -> gated_shared[2048]",
+      "for each hidden element: r0 + r1 + ... + r9 + gated_shared + first_residual -> second_residual"
+    ],
+    "future_receipt_requirements": {
+      "all_device_input_output_hashes_retained_in_one_durable_capture": true,
+      "no_full_layer_token_decoder_hcli_tps_or_tg_promotion": true,
+      "one_admission_scan_then_catalog_reuse": true,
+      "outer_reaped_stdout_stderr_exit_and_receipt_last": true,
+      "strict_math_non_timed_device_dispatch": true,
+      "ten_route_witnesses_exactly_ordered_and_bound_to_the_all_ten_plan": true
+    },
+    "identity": {
+      "all_ten_route_plan_document_sha256": "b59a062fc5636e46de6baed151f139ccbb42be2fa9a8b5813b132ebd7c42da51",
+      "manifest_document_sha256": "a0fcac0401a7962402bb8cb87d5055c83667b39575f9e0f4c7470d080758aa10",
+      "source_normalized_weights": [
+        0.24545888602733612,
+        0.11939491331577301,
+        0.09865251183509827,
+        0.09824474155902863,
+        0.08122280240058899,
+        0.07801184803247452,
+        0.07371144741773605,
+        0.0716269463300705,
+        0.06921377778053284,
+        0.0644620731472969
+      ],
+      "source_route_ids": [
+        65,
+        245,
+        227,
+        35,
+        189,
+        440,
+        298,
+        405,
+        109,
+        494
+      ]
+    },
+    "layer": 0,
+    "single_same_input_capture_required": true
+  },
+  "validated_current_facts": {
+    "all_ten_cpu_source_bound_witnesses": true,
+    "all_ten_route_ids": [
+      65,
+      245,
+      227,
+      35,
+      189,
+      440,
+      298,
+      405,
+      109,
+      494
+    ],
+    "all_ten_routed_sum_sha256": "c2ec3e5efb46abf7bce2ed45433b828648f464ece5658c98856926dd754ac28f",
+    "all_ten_weighted_output_sha256": [
+      "a56a5f4869185ea92019b1373c14fd56d953ab1ae62deb034b9ad3a5aa3c0ccb",
+      "d33cd9e5cd154d2b78bced95b2b0eb3a3944336fa655b496f3c90ebeb09a2878",
+      "da7a4d25dbcf95b1ad96a88c87bad88fae4a31ad03e0cc4f698fb079205bfdb2",
+      "dfc24541ecffa0c69f4e56c61f9d99f4b3b83b4deb5a87a97642a93ec92155f9",
+      "adc5c8654a8b27bc72f30036666a704697da4f52930e45114c94cf417f8f3a28",
+      "22dca33d68f4b215cd917690da27bed3e8856f0daf560d10e335721cdf9a038c",
+      "e17b1fef18535250227249fe9dd7e6ed3b9891ce706e7094e5105d9f467d1f58",
+      "3bded52d411e3d3394b05485968dd6803c51d872d73ba0307c96877eae05e80a",
+      "d4b568fb2da8130be5b5d3e1f52a53e3ff9601aee21a8e0df8901fd732adc57f",
+      "0b2249123602d19f1c13d00039121cf879d873282b69c71376241e7f83cc38e1"
+    ],
+    "combine_component_has_real_strict_math_metal_dispatch": true,
+    "combine_is_explicit_materialized_fixture": true,
+    "current_fixture_combine_reusable_as_true_input_production_boundary": false,
+    "normalized_hidden_sha256": "0a6091f96bcbc676fe687c1ee3e87c879f06a28fb7b4f6bb85c55f5e45bfa38e",
+    "shared_component_has_real_strict_math_metal_dispatch": true,
+    "true_input_graph_plan_defined_but_not_executed": true
+  }
+}

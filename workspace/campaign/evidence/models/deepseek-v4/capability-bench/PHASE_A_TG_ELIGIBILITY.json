@@ -1,0 +1,144 @@
+{
+  "schema": "hawking.campaign.deepseek_v4.capability_bench.phase_a.v1",
+  "status": "LARGE_GAP_STOPPED_NO_STANDARD_BENCHMARK_RUN",
+  "decision": "large_gap",
+  "decision_rationale": "Real scaled end-to-end generation for capability benchmarks is missing. What exists is (1) a layer-4-only CPU NumPy diagnostic with max 4 output tokens that self-labels diagnostic_cpu_only_not_tg_eligible, and (2) a single-position BOS (token_id=0, position=0) full 43-layer Metal forward that can emit one greedy token_id after ~41s. Neither path is a multi-token prefill+decode serving loop over arbitrary prompts. Closing the gap requires registered 43-layer causal executor work (position>0 KV continuation, full compressed attention graphs beyond BOS empty-topk, tokenizer/chat encode, sampling loop, serve adapter) — architecture/depth outside this task's thin-harness scope.",
+  "phase_a": {
+    "label_investigated": "diagnostic_cpu_only_not_tg_eligible",
+    "where_set": [
+      "lab/operators/deepseek_v4_gravity.py::_runtime_context -> capability_status",
+      "lab/operators/deepseek_v4_gravity.py: runtime_adapter on sealed layer-4 diagnostic manifest",
+      "HCLI live suite asserts this string on the diagnostic endpoint"
+    ],
+    "what_it_means": {
+      "not": "a deliberate slow-CPU harness around a working full Metal generate path",
+      "is": "an honest capability gate on the only HCLI-servable DSV4F adapter: layer-4-only full-width NumPy diagnostic, metal_dispatches=0, max_output_tokens=4, ctx=128, quality not inferable"
+    },
+    "live_generate_run_2026_08_06": {
+      "command_notes": "DeepSeekV4DiagnosticRuntime.generate on streamed-layer4-diagnostic.gravity",
+      "artifact": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/streamed-layer4-diagnostic.gravity",
+      "artifact_seal_sha256": "850f6d20a1b770f75ec3a3b237c2b5b070e289b273359d154d4b991b13e4e6b9",
+      "runtime_context": {
+        "model_id": "deepseek-ai/DeepSeek-V4-Flash@60d8d70770c6776ff598c94bb586a859a38244f1:layer4-diagnostic",
+        "arch": "deepseek_v4_layer4_diagnostic",
+        "capability_status": "diagnostic_cpu_only_not_tg_eligible",
+        "metal_dispatches": 0,
+        "max_output_tokens": 4,
+        "ctx_len_effective": 128
+      },
+      "prompt": "The capital of France is",
+      "max_tokens": 4,
+      "text": " nakalista unflaggeditalaplenty",
+      "completion_ids": [120159, 87331, 1911, 60846],
+      "stats": {
+        "device": "cpu_numpy_diagnostic",
+        "prompt_tokens": 5,
+        "completion_tokens": 4,
+        "prefill_ms": 5145.96,
+        "decode_ms": 2430.51,
+        "wall_ms_approx": 7577.9,
+        "dispatches_per_token": 0,
+        "fallback": "cpu_numpy_activation_qat_and_metal_parity_not_implemented"
+      },
+      "hard_rejects": {
+        "max_tokens_0": "diagnostic runtime supports 1..4 output tokens; it is not TPS/TG eligible",
+        "max_tokens_5": "diagnostic runtime supports 1..4 output tokens; it is not TPS/TG eligible"
+      },
+      "quality_claim": "NOT a capability result — single-layer diagnostic noise, not full-model generation"
+    },
+    "full_body_metal_state": {
+      "exists": true,
+      "kind": "single_position_BOS_full_43_layer_gpu_forward_plus_host_lm_head_greedy",
+      "receipt": "/Users/scammermike/Downloads/hawking/receipts/dsv4f_multi_layer_gpu_forward_bos_l0_l42_greedy_receipt.json",
+      "status": "PASS_MULTI_LAYER_GPU_FORWARD_BOS_L0_L42_GREEDY_TOKEN",
+      "scope": {
+        "token_id": 0,
+        "token_position": 0,
+        "layers": "0..42 (43 layers)",
+        "wall_time_ms": 41416.23,
+        "metal_dispatches": 3654,
+        "greedy_token_id": 5
+      },
+      "honesty_flags": {
+        "serve_endpoint_flipped": false,
+        "ratio_4_full_compressed_graph": false,
+        "ratio_128_full_compressed_graph": false,
+        "ratio_4_bos_window_only": true,
+        "ratio_128_bos_window_only": true,
+        "lm_head_on_device": false,
+        "argmax_on_device": false
+      },
+      "missing_for_capability_bench": [
+        "arbitrary multi-token prompts (not only BOS token_id=0)",
+        "position>0 causal KV continuation across 43 layers",
+        "full compressed attention graphs for ratio-4/ratio-128 beyond BOS empty topk",
+        "source tokenizer + chat encoding path into Metal executor",
+        "autoregressive sample/decode loop with detokenized text",
+        "registered 43-layer Engine / HCLI serve adapter"
+      ]
+    },
+    "full_runtime_blocker": {
+      "receipt": "workspace/campaign/records/runs/deepseek-v4/full-runtime-blocker-receipt-v2.json",
+      "status": "FULL_STREAMED_RUNTIME_NO_REGISTERED_43_LAYER_ADAPTER",
+      "milestones": {
+        "source_streamed": true,
+        "manifest_loadable": true,
+        "runtime_adapter_registered": false,
+        "full_runtime_load": false,
+        "full_first_forward": false,
+        "full_first_token": false,
+        "full_hcli_endpoint": false,
+        "base_true_tps": false
+      },
+      "first_missing_milestone": "full streamed artifact has no local 43-layer execution adapter yet"
+    },
+    "runtime_spine": {
+      "receipt": "workspace/campaign/records/runs/deepseek-v4/DSV4F_RUNTIME_SPINE_ADMISSION-v2.json",
+      "status": "PASS_FULL_BASE_BODY_TOPOLOGY_AND_BOUNDED_STAGING_NOT_EXECUTABLE",
+      "capability_gate": {
+        "causal_forward_available": false,
+        "registered_43_layer_engine": false,
+        "metal_dispatches_available": false,
+        "base_true_tps_eligible": false,
+        "full_causal_runtime_denied": true
+      }
+    },
+    "throughput_numbers_note": "The campaign tok/s figures ~13-106 decode (ctx 8192..128) cited in HAWKING_MOTHERLOAD_LEDGER are Llama Gravity BASE_TRUE_TPS, not DeepSeek-V4-Flash. DSV4F 100TPS scoreboard status is BASE_TRUE_TPS_NOT_REACHED_NOT_ELIGIBLE_ON_CURRENT_RUNTIME."
+  },
+  "phase_b": {
+    "attempted": false,
+    "reason": "Decision gate: large gap — do not build multi-hour causal executor blind under this contract"
+  },
+  "published_deepseek_v4_flash_reference": {
+    "source_url": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash",
+    "source_kind": "official Hugging Face model card",
+    "base_model_selected_rows": {
+      "MMLU (EM) 5-shot": {"DeepSeek-V4-Flash-Base": 88.7},
+      "MMLU-Pro (EM) 5-shot": {"DeepSeek-V4-Flash-Base": 68.3},
+      "GSM8K (EM) 8-shot": {"DeepSeek-V4-Flash-Base": 90.8},
+      "MATH (EM) 4-shot": {"DeepSeek-V4-Flash-Base": 57.4},
+      "HumanEval (Pass@1) 0-shot": {"DeepSeek-V4-Flash-Base": 69.5}
+    },
+    "instruct_model_selected_rows": {
+      "MMLU-Pro (EM)": {
+        "V4-Flash Non-Think": 83.0,
+        "V4-Flash High": 86.4,
+        "V4-Flash Max": 86.2
+      },
+      "GPQA Diamond (Pass@1)": {
+        "V4-Flash Non-Think": 71.2,
+        "V4-Flash High": 87.4,
+        "V4-Flash Max": 88.1
+      },
+      "SWE Verified (Resolved)": {
+        "V4-Flash Non-Think": 73.7,
+        "V4-Flash High": 78.6,
+        "V4-Flash Max": 79.0
+      }
+    },
+    "our_measured_score": null,
+    "our_measured_score_reason": "No capability sample run — real multi-token full-body generation path not available"
+  },
+  "bridge_involvement": false,
+  "files_changed_for_harness": []
+}

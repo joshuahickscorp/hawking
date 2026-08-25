@@ -1,0 +1,528 @@
+{
+  "schema": "hawking.ascension.qwen80_mixed_representation_candidate.v1",
+  "status": "CANDIDATE_MIXED_REPRESENTATION_PACKED_NOT_GENERATED",
+  "branch_id": "qwen80-mixed-sub655-v1",
+  "model_id": "Qwen3-Coder-Next-mixed-sub655-v1",
+  "artifact_prefix": "QWEN80_MIXED_SUB655_V1",
+  "source_body_audit_seal_sha256": "c572b2270b623b8677c374b43c89ddd729de135c25721488bb874b184ff8c3d4",
+  "source_revalidation_receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_CURRENT_SOURCE_SHARD_REVALIDATION.json",
+  "source_revalidation_receipt_seal_sha256": "541b16fca1d4805ecba356face97b4e8de1accdeb21e98ee0c13b70ab0746c45",
+  "source": {
+    "repository": "Qwen/Qwen3-Coder-Next",
+    "model_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-80b/Qwen3-Coder-Next",
+    "tensor_count": 74391,
+    "revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb"
+  },
+  "representation": {
+    "family": "mixed_per_component",
+    "recipe": "hgravs01_r16_b3|hgravs01_r40_b3|binary_g128|ne4",
+    "gate_proj": "hgravs01_r16_b3",
+    "up_proj": "hgravs01_r40_b3",
+    "down_proj": "binary_g128",
+    "nonexpert": "ne4",
+    "gate_fit_x": "layer_hidden",
+    "up_fit_x": "layer_hidden",
+    "down_fit_x": "none",
+    "sensitive_3pct_untouched": false,
+    "identity": "complete_bpw = 0.97032*expert_bpw + 0.02968*nonexpert_bpw"
+  },
+  "activation_capture": {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-diagnostics/source-bf16-capture-n192-scale64",
+    "capture_result_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-diagnostics/source-bf16-capture-n192-scale64/capture-result.json",
+    "sha256": "17a1e9b60a53cc491601a549880c2d215ff16395ee36abaa05fb95eb7fe2aabe",
+    "schema": "hawking.ascension.qwen80_broad_activation_all_layer_route_capture_result.v1",
+    "status": "EARNED_NEW_DIAGNOSTIC_NOT_HISTORICAL_SOURCE_BF16_LAYER_MAJOR_ALL_LAYER_ROUTE_AND_HIDDEN_CAPTURE",
+    "fit_kind": "real_routed_activation_capture",
+    "not_synthetic_unit_direction": true
+  },
+  "down_proj_fit": {
+    "requested_rank": 0,
+    "gate_requested_rank": 16,
+    "up_requested_rank": 40,
+    "rank_clamped_to_n_fit": false,
+    "n_activation_weighted_r160": 13298,
+    "n_activation_weighted_gram_rank_deficient": 11057,
+    "n_weight_space_never_routed": 221,
+    "n_fit_census": {
+      "n_pairs": 24576,
+      "n_zero": 221,
+      "n_lt_160": 7536,
+      "n_ge_160": 17040,
+      "n_lt_512": 19592,
+      "n_ge_512": 4984,
+      "min": 0,
+      "p50": 258,
+      "max": 9573,
+      "mean": 365.0764973958333
+    },
+    "note": "Rank is never clamped to n_fit_rows. Never-routed experts (no X) use weight-space truncated SVD at r160, same HGRAVS01 body; this is reported, not silent."
+  },
+  "complete_physical_bpw_ledger": {
+    "source_weight_elements": 79674391296,
+    "tensor_payload_bytes": 6422626405,
+    "catalog_bytes": 13011181,
+    "fit_table_bytes": 73728,
+    "format_bytes": 2253,
+    "manifest_bytes_billed": 23758,
+    "side_table_bytes": 13110920,
+    "all_required_weight_artifact_bytes": 6435737325,
+    "complete_physical_bpw": 0.6462038524865996,
+    "payload_only_physical_bpw": 0.6448874023914827,
+    "expert_physical_bpw": 0.5345848147860832,
+    "nonexpert_physical_bpw": 4.250595793629995,
+    "design_identity_complete_bpw": 0.6448874023914827,
+    "threshold_bpw": 0.6552,
+    "passes_storage_threshold": true,
+    "organ_breakdown": {
+      "routed_gate_proj": {
+        "bytes": 461266558,
+        "elements": 25769803776,
+        "tensors": 24576,
+        "physical_bpw": 0.14319598612686
+      },
+      "routed_up_proj": {
+        "bytes": 1074716301,
+        "elements": 25769803776,
+        "tensors": 24576,
+        "physical_bpw": 0.3336358508095145
+      },
+      "routed_down_proj": {
+        "bytes": 3630071808,
+        "elements": 25769803776,
+        "tensors": 24576,
+        "physical_bpw": 1.126922607421875
+      },
+      "nonexpert_4bit": {
+        "bytes": 1256571738,
+        "elements": 2364979968,
+        "tensors": 663,
+        "physical_bpw": 4.250595793629995
+      }
+    }
+  },
+  "quality_summary": {
+    "mean_component_cosine": 0.4241542566881947,
+    "quality_rows_with_cosine": 74391,
+    "verdict": "PACKED_NOT_A_COHERENCE_CLAIM"
+  },
+  "catalog": {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/catalog.hq80m15",
+    "sha256": "720092bfa8387cac221abc223a790f3af066ac1ea64fdcdaf7a4faaa00bc60bf",
+    "bytes": 13011181,
+    "format": "hawking.q80.mixed_catalog.hq80m15.v1"
+  },
+  "segments": [
+    {
+      "id": 0,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/00_embed.hq80seg",
+      "filename": "00_embed.hq80seg",
+      "bytes": 165306651,
+      "sha256": "ce91d0d8f1f97fb0543de636848a90b8d70df27ceba22432e26ee6a960f87f41",
+      "tensor_count": 1
+    },
+    {
+      "id": 1,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L00.hq80seg",
+      "filename": "L00.hq80seg",
+      "bytes": 127777430,
+      "sha256": "1e761a451359a08e60647f4513c79741bef7e2bdfaea65e33a85a081d2e606cf",
+      "tensor_count": 1550
+    },
+    {
+      "id": 2,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L01.hq80seg",
+      "filename": "L01.hq80seg",
+      "bytes": 127774509,
+      "sha256": "92dc0c39f10e8f8909f037d33af6040f620d63db7b7401d64d39568d9836893c",
+      "tensor_count": 1550
+    },
+    {
+      "id": 3,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L02.hq80seg",
+      "filename": "L02.hq80seg",
+      "bytes": 127778338,
+      "sha256": "fedd0ce5d1cb6903b60388873b92d94c41a3465143cd9a184a496fd02c344828",
+      "tensor_count": 1550
+    },
+    {
+      "id": 4,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L03.hq80seg",
+      "filename": "L03.hq80seg",
+      "bytes": 124344302,
+      "sha256": "795c1726ecb2d6d64780b0b413ae57b3b55b4944ec3e149461d78d3f80da1c8e",
+      "tensor_count": 1549
+    },
+    {
+      "id": 5,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L04.hq80seg",
+      "filename": "L04.hq80seg",
+      "bytes": 127775491,
+      "sha256": "7c2aa14ac0a157444151f0e9d82cd2faf0c85727560a3dede8ec035197cf9b50",
+      "tensor_count": 1550
+    },
+    {
+      "id": 6,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L05.hq80seg",
+      "filename": "L05.hq80seg",
+      "bytes": 127776306,
+      "sha256": "6eff53d0360411000839a4a2615b4b499268047631cde42ff54fa458e632b746",
+      "tensor_count": 1550
+    },
+    {
+      "id": 7,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L06.hq80seg",
+      "filename": "L06.hq80seg",
+      "bytes": 127774271,
+      "sha256": "00a100b174bde1550439babeaa4becea8811fc3dc52bf3379f6886035441bd98",
+      "tensor_count": 1550
+    },
+    {
+      "id": 8,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L07.hq80seg",
+      "filename": "L07.hq80seg",
+      "bytes": 124347675,
+      "sha256": "70a691b95931dc80db245bc0eba8b42093282abd2223a8862e168a47e77e70ff",
+      "tensor_count": 1549
+    },
+    {
+      "id": 9,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L08.hq80seg",
+      "filename": "L08.hq80seg",
+      "bytes": 127774625,
+      "sha256": "dc28a93eef251690d8249840729e11066af83160bbd7740451212470bd94b0f2",
+      "tensor_count": 1550
+    },
+    {
+      "id": 10,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L09.hq80seg",
+      "filename": "L09.hq80seg",
+      "bytes": 127762810,
+      "sha256": "3954b9ed3271527fcfa99f29c1781096b9d1d686e075190c776e6450d6b8b223",
+      "tensor_count": 1550
+    },
+    {
+      "id": 11,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L10.hq80seg",
+      "filename": "L10.hq80seg",
+      "bytes": 127772133,
+      "sha256": "aaf71290bf62e87fb77411189a2de3a22ebdba42280a1228ec229b95684d6d17",
+      "tensor_count": 1550
+    },
+    {
+      "id": 12,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L11.hq80seg",
+      "filename": "L11.hq80seg",
+      "bytes": 124342692,
+      "sha256": "f410f93b436a616a40ac860f9b9494d822a00c7038cbd163e935dc9e436900f6",
+      "tensor_count": 1549
+    },
+    {
+      "id": 13,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L12.hq80seg",
+      "filename": "L12.hq80seg",
+      "bytes": 127772886,
+      "sha256": "48838f5a56cbd84e8adaf49c88e99d3b90cd8091ba1d67fa4ffaf499879c16a5",
+      "tensor_count": 1550
+    },
+    {
+      "id": 14,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L13.hq80seg",
+      "filename": "L13.hq80seg",
+      "bytes": 127773025,
+      "sha256": "7e56cdcd89bd1177ae29f93df49d1962b5ebec52258151087777aa4b87649ce9",
+      "tensor_count": 1550
+    },
+    {
+      "id": 15,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L14.hq80seg",
+      "filename": "L14.hq80seg",
+      "bytes": 127774617,
+      "sha256": "e5d8c0735b1664161fe88d2dd659ab076992a2b69b34e20904aadcfde09e206a",
+      "tensor_count": 1550
+    },
+    {
+      "id": 16,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L15.hq80seg",
+      "filename": "L15.hq80seg",
+      "bytes": 124346784,
+      "sha256": "9a346bd642eb745fe587c515deca4d5363f0b5e3be75b0522abd336c2bd797c7",
+      "tensor_count": 1549
+    },
+    {
+      "id": 17,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L16.hq80seg",
+      "filename": "L16.hq80seg",
+      "bytes": 127773904,
+      "sha256": "fca35939b4cfa96c6539e5a907b8a528b828299ea64d5ed4f50982c8bdf1d9fd",
+      "tensor_count": 1550
+    },
+    {
+      "id": 18,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L17.hq80seg",
+      "filename": "L17.hq80seg",
+      "bytes": 127776510,
+      "sha256": "e45c9e3e7c07622c7f2778a00bc2a3e694646cf909036589e8116499e58473bb",
+      "tensor_count": 1550
+    },
+    {
+      "id": 19,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L18.hq80seg",
+      "filename": "L18.hq80seg",
+      "bytes": 127776573,
+      "sha256": "3d11d32a26ef5aae0c85bd989a87e93f5bdfb9d26f477bc53036f53574ecfb43",
+      "tensor_count": 1550
+    },
+    {
+      "id": 20,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L19.hq80seg",
+      "filename": "L19.hq80seg",
+      "bytes": 124347860,
+      "sha256": "71f9c916bd03277460ff94966f008184c201fe59eacf23846505fe1ead861657",
+      "tensor_count": 1549
+    },
+    {
+      "id": 21,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L20.hq80seg",
+      "filename": "L20.hq80seg",
+      "bytes": 127775457,
+      "sha256": "830cfe5b7533c807b92c170fc62eff2b851e2b0a0b691ae5f5b46af221379c2b",
+      "tensor_count": 1550
+    },
+    {
+      "id": 22,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L21.hq80seg",
+      "filename": "L21.hq80seg",
+      "bytes": 127772833,
+      "sha256": "763619294c221c0ad488fcacf5bc2515e2bfe2d482c9d784c662a4ffb64550a4",
+      "tensor_count": 1550
+    },
+    {
+      "id": 23,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L22.hq80seg",
+      "filename": "L22.hq80seg",
+      "bytes": 127776264,
+      "sha256": "1c6d402d8f57f3c1fceeffea1f2606d6915ac0497c244ed6f0997153c871f1be",
+      "tensor_count": 1550
+    },
+    {
+      "id": 24,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L23.hq80seg",
+      "filename": "L23.hq80seg",
+      "bytes": 124347268,
+      "sha256": "e2ca57eb3f9c2a97946b6f119b1e0742fa0f8d6fce4f51e49d7b7760f62be852",
+      "tensor_count": 1549
+    },
+    {
+      "id": 25,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L24.hq80seg",
+      "filename": "L24.hq80seg",
+      "bytes": 127776842,
+      "sha256": "5b12e413532617673911a014af91795678d979259f65bd84d7df106e853a3db9",
+      "tensor_count": 1550
+    },
+    {
+      "id": 26,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L25.hq80seg",
+      "filename": "L25.hq80seg",
+      "bytes": 127776850,
+      "sha256": "1d2a5ab3c70e5d99cc8e7efc386317276dfde7a47dbfae3ce14e098d7eb103b6",
+      "tensor_count": 1550
+    },
+    {
+      "id": 27,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L26.hq80seg",
+      "filename": "L26.hq80seg",
+      "bytes": 127775260,
+      "sha256": "ae1072051d578bb34798def3d163f187e23342534b2e7cc1e4564aa20f6eb0fa",
+      "tensor_count": 1550
+    },
+    {
+      "id": 28,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L27.hq80seg",
+      "filename": "L27.hq80seg",
+      "bytes": 124347324,
+      "sha256": "1b94aac2873c58efd1608e69b5d4006bd53e11d7942fa4578d4e5725187f7257",
+      "tensor_count": 1549
+    },
+    {
+      "id": 29,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L28.hq80seg",
+      "filename": "L28.hq80seg",
+      "bytes": 127774678,
+      "sha256": "898c4f8f633b0281ca2bf0db6ef78da8b912805a1642010c7899c4bbce87db2f",
+      "tensor_count": 1550
+    },
+    {
+      "id": 30,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L29.hq80seg",
+      "filename": "L29.hq80seg",
+      "bytes": 127775610,
+      "sha256": "53089e5450a83f9eed093e739ec48c4b36bf28bf7532c88787ee5f277f72f699",
+      "tensor_count": 1550
+    },
+    {
+      "id": 31,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L30.hq80seg",
+      "filename": "L30.hq80seg",
+      "bytes": 127775752,
+      "sha256": "c0ed4e95a7c9a294d375b852df14f1ebf5e31c8deb9a5334dad1fd958980a322",
+      "tensor_count": 1550
+    },
+    {
+      "id": 32,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L31.hq80seg",
+      "filename": "L31.hq80seg",
+      "bytes": 124347695,
+      "sha256": "5a1246ddacb673d1ec072bc5f66c5448dff140257af84222666500cef7aef6cb",
+      "tensor_count": 1549
+    },
+    {
+      "id": 33,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L32.hq80seg",
+      "filename": "L32.hq80seg",
+      "bytes": 127777052,
+      "sha256": "42f3ed1bab6120a59af1d402ce787003e893794b96e2635747638ed24f9572e1",
+      "tensor_count": 1550
+    },
+    {
+      "id": 34,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L33.hq80seg",
+      "filename": "L33.hq80seg",
+      "bytes": 127774475,
+      "sha256": "7151c8a50246a25c36e47e3ae76b0bfb663b40be5556b94f0479e207a3333267",
+      "tensor_count": 1550
+    },
+    {
+      "id": 35,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L34.hq80seg",
+      "filename": "L34.hq80seg",
+      "bytes": 127774555,
+      "sha256": "9c5f73a76d758f8ffcb5e48759cc51c1c97a135fd46e99d879c64d843a98392c",
+      "tensor_count": 1550
+    },
+    {
+      "id": 36,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L35.hq80seg",
+      "filename": "L35.hq80seg",
+      "bytes": 124347477,
+      "sha256": "731b7d99af6b06edb87339dc86856fd27ee0658ae1997288a5b8fac3e5d7aed9",
+      "tensor_count": 1549
+    },
+    {
+      "id": 37,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L36.hq80seg",
+      "filename": "L36.hq80seg",
+      "bytes": 127775400,
+      "sha256": "75cef84cda9b2d59ea28528e7d39f7dcc8e0c27d021f1d954a39b04bdc9e4a9e",
+      "tensor_count": 1550
+    },
+    {
+      "id": 38,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L37.hq80seg",
+      "filename": "L37.hq80seg",
+      "bytes": 127775343,
+      "sha256": "5591b627fd52e4565afa9f64cc0b25345dc87794cd3bc816c4394eaf5f8bc0a1",
+      "tensor_count": 1550
+    },
+    {
+      "id": 39,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L38.hq80seg",
+      "filename": "L38.hq80seg",
+      "bytes": 127772226,
+      "sha256": "5209999ae667189ca0b398a45ae1d4a54cb1ef9e3072f79893d76bd5f02c6911",
+      "tensor_count": 1550
+    },
+    {
+      "id": 40,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L39.hq80seg",
+      "filename": "L39.hq80seg",
+      "bytes": 124346706,
+      "sha256": "f9c52dd264ebee8a839d1b773be26fbd9ccd3e63b9c64e20146941f12de2fa4f",
+      "tensor_count": 1549
+    },
+    {
+      "id": 41,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L40.hq80seg",
+      "filename": "L40.hq80seg",
+      "bytes": 127774689,
+      "sha256": "9f1d70304c82200a530d397de32b4e504f06ce8aab45d701c9cbdd0feac3131d",
+      "tensor_count": 1550
+    },
+    {
+      "id": 42,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L41.hq80seg",
+      "filename": "L41.hq80seg",
+      "bytes": 127774095,
+      "sha256": "689af3b78e696b8830f12d994b122a10dda8721f6f9c30c067c26614e699d790",
+      "tensor_count": 1550
+    },
+    {
+      "id": 43,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L42.hq80seg",
+      "filename": "L42.hq80seg",
+      "bytes": 127773153,
+      "sha256": "f1ba4a817fbb96a6f3b31cb66b3fb6bdaaca44aa4a879e99c33917048cdbca09",
+      "tensor_count": 1550
+    },
+    {
+      "id": 44,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L43.hq80seg",
+      "filename": "L43.hq80seg",
+      "bytes": 124343733,
+      "sha256": "e15814d8fc3e98a4759ed9ceb424252e3c2919ff602dd23bac5848d8cc81ce4e",
+      "tensor_count": 1549
+    },
+    {
+      "id": 45,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L44.hq80seg",
+      "filename": "L44.hq80seg",
+      "bytes": 127768359,
+      "sha256": "d3b3f61bcf7bfc7866d0a660b30c1ec66d5a976f75a4ad6893d34129b09bc96e",
+      "tensor_count": 1550
+    },
+    {
+      "id": 46,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L45.hq80seg",
+      "filename": "L45.hq80seg",
+      "bytes": 127769539,
+      "sha256": "60754442e36e69d89a9ad53986c147097f310e8741855918c4382f2939384800",
+      "tensor_count": 1550
+    },
+    {
+      "id": 47,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L46.hq80seg",
+      "filename": "L46.hq80seg",
+      "bytes": 127762323,
+      "sha256": "e6f7e64a2c628fcb8024824b3a6af210ff9f6474dede7010dad3ed5e35bd5fd9",
+      "tensor_count": 1550
+    },
+    {
+      "id": 48,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/L47.hq80seg",
+      "filename": "L47.hq80seg",
+      "bytes": 124338060,
+      "sha256": "d67b1ef936ad7a5e1c0704398f8ca68a418d0619bfa7d3a46c083ff67eaacc22",
+      "tensor_count": 1549
+    },
+    {
+      "id": 49,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/quality-candidates/mixed-sub655-v1/segments/99_terminal.hq80seg",
+      "filename": "99_terminal.hq80seg",
+      "bytes": 165307995,
+      "sha256": "c1e3f5d550db6c8094501ed5349cbbfe9111319589136bd924101afd900bdf63",
+      "tensor_count": 2
+    }
+  ],
+  "claim_boundary": {
+    "artifact_packed": true,
+    "decode_kernel_exists": false,
+    "coherence_generation_tested": false,
+    "packing_is_not_a_le_1_5_coherence_claim": true,
+    "generation_is_the_gate": true,
+    "sensitive_3pct_untouched": false,
+    "did_not_mutate_source": true,
+    "did_not_write_metal_kernels": true,
+    "did_not_create_giant_json_index": true
+  },
+  "seal_sha256": "c27c91875b2493b2309b28da5df1c060d38b43aff820da4731223d6d1a94bf36"
+}

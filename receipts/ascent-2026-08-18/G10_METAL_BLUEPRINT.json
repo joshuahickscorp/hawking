@@ -1,0 +1,18 @@
+{
+  "obligation": "G10 -- Metal-native execution of the shared operator: implementation blueprint (design stage).",
+  "deliverable": "workspace/campaign/metal_shared_op_blueprint.md (964 lines), produced by Grok lane metal-shared-op-blueprint, verified against the live decoder.",
+  "verified_facts": {
+    "dispatch_chain": "step -> encode_layers -> encode_dense_mlp -> encode_dense_mlp_mixed -> encode_named_matvec -> dispatch_uniform -> qwen_uniform_q3_group64_matvec_geo_tpr64_tg128",
+    "q3_patient_bytes": "mixed-q3mlp-v1 packs each layer gate/up/down as HGRAVU01 q3 group-64 at native 17408; each matrix body 36,208,640 bytes = 108.6 MB/layer = 6.95 GB/token MLP DRAM.",
+    "shared_op_plan": "SharedOp = name-selected kind on existing codec 3 (HGRAVU01), reuses geo_tpr64 GEMV kernel; FiLM = new tiny qwen38_mlp_film_f32 after gk_swiglu_f32. m=6144 bits=3 = 38.3 MB loaded once + 3.1 MB FiLM codes = 41.4 MB/token.",
+    "win": "168x unique-DRAM cut (6.95 GB -> 41.4 MB). Adds +1 dispatch/layer (FiLM), 384->448 dispatches/token; the win is DRAM not dispatch count.",
+    "swap_test_rungs": "Rung A identity catalog (shared op = one real layer's weights, sanity), Rung B one layer reduced-m, Rung C all 64 layers for the traffic win."
+  },
+  "critical_caveats_from_grok": [
+    "A one-layer swap does NOT produce the 38 MB traffic win; that requires ALL 64 layers on the shared operator (Rung C).",
+    "The reduced-m operator + FiLM codes do not exist yet; the decoder bind + Rung A identity catalog can be built from the blueprint alone. Full win needs the trained checkpoint exported to the packed shared-op catalog.",
+    "SharedOp reuses geo_tpr64 only with HAWKING_QWEN38_RECON_FUSE=1; =0 drops to the incumbent simd3 path (the known execution lever)."
+  ],
+  "status": "DESIGN COMPLETE, verified. Implementation (touches crates/) is a later Grok contract, gated on the trained checkpoint export. Next: checkpoint (tuned run) -> MLX assembled-coherence de-risk -> if coherent, Metal implementation.",
+  "confidence": "Grok: HIGH on dispatch sites/kernel signatures/byte math (quoted from live decoder+catalog); MEDIUM-HIGH on naming/admission rewrite (design choice)."
+}

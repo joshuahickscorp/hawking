@@ -1,0 +1,218 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T13:50:22Z",
+ "experiment_class": "ACCEL-C2M",
+ "knowledge_level": "INSTANCE",
+ "git_head": "ac7f8108f3efaa3b2b1683110bd49349ae066b62",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_C_T2_IDIOM",
+   "obligation": "G045 + G046",
+   "steer": "S015 \u00a73 required corpus (GEMM, reductions); conformance ladder C2M-T0..T5"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model; a frontend-coverage experiment"
+  },
+  "representation": {
+   "name": "dense_f32"
+  },
+  "kernel": {
+   "produced_by": "c2m_idiom.recognize into air.AirMatmul / air.AirReduce",
+   "shape": "textbook CUDA tiled GEMM and block reduction, recognised at algorithm level and executed by AIR's own kernels"
+  },
+  "runtime": {
+   "mlx": "0.32.1",
+   "python": "3.12.6"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "conformance": {
+   "tier_claimed": "C2M-T2",
+   "tier_definition": "T2 = a math/ML kernel corpus reachable through C2M",
+   "mechanism": "IDIOM RECOGNITION, not general compilation. C2M does not compile a loop, shared memory or a barrier; it recognises two exact algorithms and hands them to AIR's implementation.",
+   "idioms_recognised": [
+    "block_reduce_sum",
+    "tiled_gemm"
+   ],
+   "kernels_executed": 6,
+   "kernels_matching_oracle": 6,
+   "near_misses_presented": 12,
+   "near_misses_refused": 12,
+   "why_the_near_misses_are_the_evidence": "Grading a recognised kernel against an oracle derived from the idiom is CIRCULAR -- the same recognition chose the oracle. The non-circular evidence is that kernels differing from the idiom in exactly one respect are REFUSED with that respect named.",
+   "higher_tiers": {
+    "C2M-T3": "NOT CLAIMED: no real open CUDA project has been run, and recognition of 2 idioms will not carry one",
+    "C2M-T4": "NOT CLAIMED: no AI workload",
+    "C2M-T5": "NOT CLAIMED: nothing is production-supported"
+   },
+   "oracle": "numpy on CPU",
+   "is_a_cuda_differential": false
+  },
+  "executions": [
+   {
+    "idiom": "tiled_gemm",
+    "kernel": "sgemm_tiled",
+    "tile": 16,
+    "shape": [
+     64,
+     64,
+     64
+    ],
+    "rel_err": 2.075092825891157e-07,
+    "matches_oracle": true
+   },
+   {
+    "idiom": "tiled_gemm",
+    "kernel": "sgemm_tiled",
+    "tile": 16,
+    "shape": [
+     256,
+     128,
+     512
+    ],
+    "rel_err": 3.458119064533159e-07,
+    "matches_oracle": true
+   },
+   {
+    "idiom": "tiled_gemm",
+    "kernel": "sgemm_tiled",
+    "tile": 16,
+    "shape": [
+     48,
+     80,
+     32
+    ],
+    "rel_err": 3.067572544118698e-07,
+    "matches_oracle": true
+   },
+   {
+    "idiom": "block_reduce_sum",
+    "kernel": "reduce_sum",
+    "threadgroup": 256,
+    "n": 1024,
+    "rel_err": 5.638558029873855e-08,
+    "matches_oracle": true
+   },
+   {
+    "idiom": "block_reduce_sum",
+    "kernel": "reduce_sum",
+    "threadgroup": 256,
+    "n": 1048576,
+    "rel_err": 1.6222493247226476e-07,
+    "matches_oracle": true
+   },
+   {
+    "idiom": "block_reduce_sum",
+    "kernel": "reduce_sum",
+    "threadgroup": 256,
+    "n": 4194311,
+    "rel_err": 1.6102470007950555e-06,
+    "matches_oracle": true
+   }
+  ],
+  "near_misses": [
+   {
+    "name": "gemm_index_transposed",
+    "differs_by": "reads B's tile transposed: computes A@B^T, not A@B",
+    "refused": true,
+    "refusal": "not recognised as tiled_gemm: the required element 'inner product over the tile' is absent. Refusing rather than treating a near-miss as the idiom, because substituting AIR's tiled_gemm for a kernel that is not one would compute a DIFFERENT ANSWER and return it quickly."
+   },
+   {
+    "name": "gemm_one_barrier_removed",
+    "differs_by": "drops the barrier after staging: a race on As/Bs",
+    "refused": true,
+    "refusal": "not recognised as tiled_gemm: found 1 __syncthreads() calls, and the idiom has exactly 2 (after staging, after consuming). A different barrier count is a different synchronization structure, and a missing one is a RACE."
+   },
+   {
+    "name": "gemm_both_barriers_removed",
+    "differs_by": "no synchronization at all",
+    "refused": true,
+    "refusal": "not recognised as tiled_gemm: found 0 __syncthreads() calls, and the idiom has exactly 2 (after staging, after consuming). A different barrier count is a different synchronization structure, and a missing one is a RACE."
+   },
+   {
+    "name": "gemm_rectangular_tiles",
+    "differs_by": "mismatched tile shapes: a different tiling",
+    "refused": true,
+    "refusal": "not recognised as tiled_gemm: the shared tiles are 16x16 and 16x32. AIR's tiled matmul assumes ONE square tile size; a rectangular or mismatched tiling is a different kernel."
+   },
+   {
+    "name": "gemm_accumulator_not_zeroed",
+    "differs_by": "accumulator starts at 1: every output off by one",
+    "refused": true,
+    "refusal": "not recognised as tiled_gemm: the required element 'accumulator initialised to zero' is absent. Refusing rather than treating a near-miss as the idiom, because substituting AIR's tiled_gemm for a kernel that is not one would compute a DIFFERENT ANSWER and return it quickly."
+   },
+   {
+    "name": "gemm_column_major_store",
+    "differs_by": "stores transposed",
+    "refused": true,
+    "refusal": "not recognised as tiled_gemm: the required element 'store to C row-major' is absent. Refusing rather than treating a near-miss as the idiom, because substituting AIR's tiled_gemm for a kernel that is not one would compute a DIFFERENT ANSWER and return it quickly."
+   },
+   {
+    "name": "reduce_barrier_in_loop_removed",
+    "differs_by": "drops the barrier inside the tree loop: a race on sdata",
+    "refused": true,
+    "refusal": "not recognised as block_reduce_sum: found 1 __syncthreads() calls, and the idiom has exactly 2 (after the load, inside the tree loop). A missing one is a RACE on sdata."
+   },
+   {
+    "name": "reduce_product_not_sum",
+    "differs_by": "reduces by product: a different operator entirely",
+    "refused": true,
+    "refusal": "not recognised as block_reduce_sum: the required element 'partial SUM into the lower half' is absent. Refusing rather than treating a near-miss as the idiom, because substituting AIR's block_reduce_sum for a kernel that is not one would compute a DIFFERENT ANSWER and return it quickly."
+   },
+   {
+    "name": "reduce_wrong_identity",
+    "differs_by": "identity 1 for a sum: out-of-range lanes contribute 1 each",
+    "refused": true,
+    "refusal": "not recognised as block_reduce_sum: the required element 'guarded load with zero identity' is absent. Refusing rather than treating a near-miss as the idiom, because substituting AIR's block_reduce_sum for a kernel that is not one would compute a DIFFERENT ANSWER and return it quickly."
+   },
+   {
+    "name": "reduce_doubling_not_halving",
+    "differs_by": "sweeps the tree the other way: a scan-shaped loop, not a reduction",
+    "refused": true,
+    "refusal": "not recognised as block_reduce_sum: the required element 'halving tree loop' is absent. Refusing rather than treating a near-miss as the idiom, because substituting AIR's block_reduce_sum for a kernel that is not one would compute a DIFFERENT ANSWER and return it quickly."
+   },
+   {
+    "name": "reduce_illegal_threadgroup",
+    "differs_by": "100 is not a legal Metal threadgroup",
+    "refused": true,
+    "refusal": "not recognised as block_reduce_sum: shared buffer of 100 does not correspond to a legal Metal threadgroup (multiple of 32, at most 1024)"
+   },
+   {
+    "name": "elementwise_kernel",
+    "differs_by": "no idiom: this is a T0 kernel and belongs at the other door",
+    "refused": true,
+    "refusal": "no known idiom: the kernel declares neither the As/Bs tile pair of a tiled GEMM nor the sdata buffer of a block reduction. The T2 door recognises exactly two algorithms and this is neither; the T0 door (c2m.translate) handles trivially elementwise kernels."
+   }
+  ],
+  "the_two_doors": {
+   "tiled_gemm": {
+    "t0_translate_refuses_with": "shared memory is not in the C2M-T0 subset (found '__shared__'); refusing rather than mistranslating"
+   },
+   "block_reduce_sum": {
+    "t0_translate_refuses_with": "shared memory is not in the C2M-T0 subset (found '__shared__'); refusing rather than mistranslating"
+   },
+   "elementwise": {
+    "t2_recognize_refuses_with": "no known idiom: the kernel declares neither the As/Bs tile pair of a tiled GEMM nor the sdata buffer of a block reduction. The T2 door recognises exactly two algorithms and this is neither; the T0 door (c2m.translate) handles trivially elementwise kernels.",
+    "t0_translate_accepts": true
+   }
+  },
+  "headline_THE_MECHANISM_IS_RECOGNITION_AND_THAT_IS_STATED_EVERYWHERE": "T1 named this blocker precisely: AIR has GEMM, reduction, scan, softmax and attention and none was reachable through C2M, because the T0 frontend is a pattern matcher over 4 elementwise expression forms. This closes it WITHOUT writing a C compiler, by recognising that a kernel IS a known algorithm and handing it to AIR's implementation. That is a real technique and it is NOT compilation, so 'mechanism' is a first-class field on the conformance report rather than a footnote.",
+  "the_hazard_and_what_breaks_it": "Recognition is a CLAIM ABOUT SEMANTICS: saying 'this is a tiled GEMM' asserts the kernel computes A@B. A loose match silently substitutes a DIFFERENT computation that runs fast and returns a plausible wrong answer. Worse, the usual defence fails -- grading the output against an oracle derived from the idiom is CIRCULAR, because the same recognition chose the oracle. The non-circular evidence is the 12 NEAR-MISS kernels, each differing from its idiom in EXACTLY ONE respect: a transposed tile index, a removed barrier, product instead of sum, identity 1 instead of 0, a doubling instead of halving sweep, a column-major store, an accumulator starting at 1, rectangular tiles, an illegal threadgroup. ALL 12 ARE REFUSED, each naming the element that failed. A recognizer that accepted them would be recognising nothing, so conformance_t2 REFUSES to claim the tier unless every near-miss was rejected.",
+  "two_doors_do_not_overlap": "c2m.translate (T0) REFUSES both idioms by name because they use __shared__ and __syncthreads; c2m_idiom.recognize (T2) refuses the elementwise kernel because it declares neither idiom's buffers. Each door is narrow and says so, and a kernel that is neither trivially elementwise nor an exact known idiom is refused by BOTH.",
+  "what_this_does_not_do": "It does not compile a loop, shared memory or a barrier. Two idioms are recognised and they are the two textbook ones; a tiled GEMM written with different variable names, a different guard style or 4x4 register tiling is REFUSED even though it computes the same thing. That brittleness is inherent to recognition and is the reason T3 explicitly says recognition of 2 idioms will not carry a real CUDA project."
+ },
+ "claim_boundary": "C2M-T2 by recognition, over exactly two idioms, f32, graded against numpy. Not a CUDA differential -- no NVIDIA hardware, so P2 stays open. The recognised GEMM runs AIR's tiled strategy, which the GEMM receipt already recorded as LOSING to MLX; recognition closes a FRONTEND gap and changes no performance claim. Nothing here ran inside a model.",
+ "pass": true
+}

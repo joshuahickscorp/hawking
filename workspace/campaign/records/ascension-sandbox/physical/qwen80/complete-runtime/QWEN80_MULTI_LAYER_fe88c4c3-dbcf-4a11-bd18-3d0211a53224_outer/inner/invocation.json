@@ -1,0 +1,15 @@
+{
+  "capture_body_wired": true,
+  "execution_policy": {
+    "non_timed": true,
+    "single_fence_required": true,
+    "source_token_id": 1,
+    "total_dispatches": 69
+  },
+  "layer_count": 3,
+  "lease_id": "b2ace8a8df37920d772bbba53aeed65320a2d3e304076d15154953b94e1dbd2c",
+  "mode": "metal",
+  "schema": "hawking.ascension.qwen80_source_token_multi_layer_same_runtime_inner_invocation.v1",
+  "seal_sha256": "542b274b900bc15303023a6c21c3a868af503325bc68da909f469d139d582719",
+  "status": "STARTED_QWEN80_SOURCE_TOKEN_MULTI_LAYER_SAME_RUNTIME_STRICT_METAL_CHILD_OUTER_REAPED"
+}

@@ -1,0 +1,63 @@
+{
+  "authority_boundary": {
+    "artifact_payload_or_directory_scan_performed": false,
+    "gpu_or_metal_action_performed": false,
+    "lease_or_process_action_performed": false,
+    "server_or_watcher_action_performed": false,
+    "tournament_action_performed": false,
+    "tps_or_tg_measurement_performed": false
+  },
+  "blockers": [
+    "historical: input.historical_joint_assessment must be an object",
+    "inner: input.fresh_full_layer_inner must be an object",
+    "input.schema must be hawking.ascension.qwen80_l1_full_layer_completion_assessor_input.v1",
+    "outer: input.fresh_full_layer_outer must be an object",
+    "release: input.fresh_full_layer_release must be an object"
+  ],
+  "claim_boundary": {
+    "complete_l1_component_only": true,
+    "cross_process_buffer_reuse_accepted": false,
+    "decoder_started": false,
+    "historical_component_is_not_execution_input": true,
+    "server_started": false,
+    "token_generated": false,
+    "tournament_started": false,
+    "tps_or_tg_measured": false
+  },
+  "component_scope": {
+    "exact_route_payload_authority_count": 30,
+    "fresh_l0_dispatches": 23,
+    "fresh_l1_moe_suffix_dispatches": 14,
+    "fresh_l1_prefix_dispatches": 9,
+    "fresh_total_dispatches": 46,
+    "historical_assessment_is_provenance_only": true,
+    "historical_joint_assessment_seal_sha256": "d1b2893135287e282987e7d35609db3d44cd6c42846f79518f58f7ed5684829d",
+    "token_decoder_server_tps_or_tournament_earned": false
+  },
+  "earned_complete_l1_component_only": false,
+  "schema": "hawking.ascension.qwen80_l1_full_layer_completion_assessment.v1",
+  "seal_sha256": "e349e2a305c2026e50cb64da676e60e8e9298e822d63cddcda2647d3a58c333b",
+  "sealed_inputs": {
+    "fresh_full_layer_inner": {
+      "document_seal_sha256": null,
+      "document_sha256": null,
+      "present": false
+    },
+    "fresh_full_layer_outer": {
+      "document_seal_sha256": null,
+      "document_sha256": null,
+      "present": false
+    },
+    "fresh_full_layer_release": {
+      "document_seal_sha256": null,
+      "document_sha256": null,
+      "present": false
+    },
+    "historical_joint_assessment": {
+      "document_seal_sha256": null,
+      "document_sha256": null,
+      "present": false
+    }
+  },
+  "status": "REFUSED_QWEN80_SOURCE_TOKEN_L1_FULL_LAYER_COMPLETION_INCOMPLETE_OR_UNTRUSTED"
+}

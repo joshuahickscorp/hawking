@@ -1,0 +1,80 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T12:43:35Z",
+ "experiment_class": "ACCEL-STATE",
+ "knowledge_level": "INSTANCE",
+ "git_head": "d9445617b0baaa0a2aa3831222f5e4a4b73e3de0",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_A_AIR_COMPLETENESS",
+   "obligation": "G043",
+   "steer": "S015 \u00a77 (AIR must represent synchronization, memory, side effects, placement)"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model; this grades the IR's expressive range"
+  },
+  "representation": {
+   "status": "ABSENT",
+   "reason": "dtype-agnostic structural change"
+  },
+  "kernel": {
+   "lowering": "lower_to_msl now refuses what it cannot execute"
+  },
+  "runtime": {
+   "python": "3.12.13"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "cases": [
+   {
+    "case": "pure elementwise",
+    "representable": true,
+    "executable_here": true,
+    "reason": "pure elementwise program over Apple unified memory"
+   },
+   {
+    "case": "threadgroup barrier",
+    "representable": true,
+    "executable_here": false,
+    "reason": "1 barrier(s) declared; the Metal backend has no synchronization lowering, and dropping a barrier would silently introduce a race"
+   },
+   {
+    "case": "declared side effect",
+    "representable": true,
+    "executable_here": false,
+    "reason": "the program declares side effects beyond its output; the elementwise lowering assumes pure ops"
+   },
+   {
+    "case": "operand in external VRAM",
+    "representable": true,
+    "executable_here": false,
+    "reason": "operands require ['NVIDIA_VRAM_DIRECT'], which this backend cannot reach; HUMF must materialise them in APPLE_UM first"
+   },
+   {
+    "case": "operand in Apple UM",
+    "representable": true,
+    "executable_here": true,
+    "reason": "pure elementwise program over Apple unified memory"
+   }
+  ],
+  "closed_gap": "G043 recorded that AIR did not represent synchronization, side effects, memory-domain requirements or multi-device placement. Synchronization (AirBarrier over THREADGROUP/SIMDGROUP/DEVICE), side effects (writes_external on an op, read_only on an operand) and memory-domain requirements (7 named domains on every tensor plus an output domain) are now REPRESENTED. Placement was already a field.",
+  "the_discipline_that_makes_it_honest": "REPRESENTING more than the backend can RUN is the point, but only if the two are never confused. lower_to_msl now calls executable_on_metal_backend() and REFUSES with the reason rather than emitting code that ignores the construct. A silently dropped barrier is a RACE -- the worst class of bug to ship quietly -- and a silently ignored memory domain would compute on the wrong copy.",
+  "vocabulary_shared_with_humf": "AIR's memory domain names ARE HUMF's domain names, verified by a test that takes a requirement straight out of an AIR program and looks it up in a HUMF fabric with no mapping layer. A translation layer between them would be free to drift; there isn't one.",
+  "tests": "tools/accelerator/test_air.py, 61 pass across the suite"
+ },
+ "claim_boundary": "AIR now REPRESENTS synchronization, side effects and memory domains. It EXECUTES none of them -- every such program is refused by the lowering, and the receipt above shows 4 of 5 probe cases refused. This widens the IR and narrows nothing about the backend. Multi-device placement remains a field with no backend that honours it, and there is still no GEMM, attention or reduction in AIR at all.",
+ "pass": true
+}

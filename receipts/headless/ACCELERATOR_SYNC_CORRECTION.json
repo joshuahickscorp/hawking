@@ -1,0 +1,171 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T13:32:00Z",
+ "experiment_class": "ACCEL-DISPATCH",
+ "knowledge_level": "INSTANCE",
+ "git_head": "3b04b9afdf952dcf987432c7335d9a7a77bb5951",
+ "identities": {
+  "experiment": {
+   "id": "SYNC_VS_LAUNCH_CORRECTION",
+   "obligation": "G046 + G047",
+   "steer": "S015 \u00a773 performance claim gates; \u00a7112 negative science"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model; a math primitive"
+  },
+  "representation": {
+   "name": "dense_f32"
+  },
+  "kernel": {
+   "produced_by": "air.lower_reduce_to_msl",
+   "shape": "two-stage reduction, three dispatches, one or three host syncs"
+  },
+  "runtime": {
+   "mlx": "0.32.1",
+   "python": "3.12.6"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "what_was_published": "ACCELERATOR_ATOMICS.json diagnosed the two-stage reduction's loss as LAUNCH COUNT and reported that collapsing 3 launches to 1 with atomics bought 3.05x at 2^20 and 1.80x at 2^24, calling the diagnosis CONFIRMED.",
+  "the_defect": "execute_reduce called mx.eval once PER LEVEL of the reduction tree. MLX is lazy, so that split what should be one command buffer into three, with a HOST ROUND TRIP between each. The atomic arm had one launch AND one sync; the two-stage arm had three launches AND three syncs. The comparison moved both variables at once and attributed the result to the wrong one.",
+  "decomposition": {
+   "1048576": {
+    "atomic_vs_eager_two_stage_THE_ORIGINAL_COMPARISON": {
+     "verdict": "CANDIDATE_WINS",
+     "speedup": 2.4483,
+     "margin_pct": 144.83,
+     "arm_noise_pct": 9.7
+    },
+    "atomic_vs_lazy_two_stage_LAUNCHES_ISOLATED": {
+     "verdict": "NO_CLAIM",
+     "reason": "an arm failed the 10.0% IQR gate (two_stage_one_eval 10.56%, atomic_one_launch 6.47%) and the margin 6.39% does not overwhelm that noise",
+     "speedup": null
+    },
+    "lazy_vs_eager_two_stage_SYNCS_ISOLATED": {
+     "verdict": "CANDIDATE_WINS_DESPITE_NOISE",
+     "speedup": 2.3013,
+     "margin_pct": 130.13,
+     "arm_noise_pct": 10.56,
+     "margin_over_noise_ratio": 12.3,
+     "caveat": "an arm exceeded the 10.0% IQR gate, but the margin is 12x the worst arm noise, so the direction of the result is not in doubt; the MAGNITUDE carries more uncertainty than a clean measurement would"
+    },
+    "lazy_two_stage_vs_mlx": {
+     "verdict": "NO_CLAIM",
+     "reason": "an arm failed the 10.0% IQR gate (mlx_sum 6.64%, two_stage_one_eval 10.56%) and the margin 18.22% does not overwhelm that noise",
+     "speedup": null
+    },
+    "eager_two_stage_vs_mlx_AS_PUBLISHED": {
+     "verdict": "BASELINE_WINS",
+     "speedup": 0.3676,
+     "margin_pct": 63.24,
+     "arm_noise_pct": 9.7
+    },
+    "scan_simd_vs_hillis": {
+     "verdict": "NO_CLAIM",
+     "reason": "an arm failed the 10.0% IQR gate (hillis_steele 11.89%, simd_prefix 10.65%) and the margin 6.60% does not overwhelm that noise",
+     "speedup": null
+    },
+    "scan_simd_vs_mlx": {
+     "verdict": "CANDIDATE_WINS_DESPITE_NOISE",
+     "speedup": 1.8425,
+     "margin_pct": 84.25,
+     "arm_noise_pct": 10.65,
+     "margin_over_noise_ratio": 7.9,
+     "caveat": "an arm exceeded the 10.0% IQR gate, but the margin is 8x the worst arm noise, so the direction of the result is not in doubt; the MAGNITUDE carries more uncertainty than a clean measurement would"
+    }
+   },
+   "16777216": {
+    "atomic_vs_eager_two_stage_THE_ORIGINAL_COMPARISON": {
+     "verdict": "CANDIDATE_WINS",
+     "speedup": 1.3008,
+     "margin_pct": 30.08,
+     "arm_noise_pct": 6.94
+    },
+    "atomic_vs_lazy_two_stage_LAUNCHES_ISOLATED": {
+     "verdict": "INDISTINGUISHABLE",
+     "speedup": 1.0191,
+     "reason": "margin 1.91% does not clear arm noise 4.66%"
+    },
+    "lazy_vs_eager_two_stage_SYNCS_ISOLATED": {
+     "verdict": "CANDIDATE_WINS",
+     "speedup": 1.2764,
+     "margin_pct": 27.64,
+     "arm_noise_pct": 6.94
+    },
+    "lazy_two_stage_vs_mlx": {
+     "verdict": "BASELINE_WINS",
+     "speedup": 0.5711,
+     "margin_pct": 42.89,
+     "arm_noise_pct": 8.67
+    },
+    "eager_two_stage_vs_mlx_AS_PUBLISHED": {
+     "verdict": "BASELINE_WINS",
+     "speedup": 0.4474,
+     "margin_pct": 55.26,
+     "arm_noise_pct": 8.67
+    },
+    "scan_simd_vs_hillis": {
+     "verdict": "CANDIDATE_WINS",
+     "speedup": 1.1323,
+     "margin_pct": 13.23,
+     "arm_noise_pct": 3.79
+    },
+    "scan_simd_vs_mlx": {
+     "verdict": "CANDIDATE_WINS",
+     "speedup": 8.0854,
+     "margin_pct": 708.54,
+     "arm_noise_pct": 3.79
+    }
+   }
+  },
+  "reduce_ms_per_call": {
+   "1048576": {
+    "two_stage_eval_per_level": 0.5546,
+    "two_stage_one_eval": 0.241,
+    "atomic_one_launch": 0.2265,
+    "mlx_sum": 0.2039
+   },
+   "16777216": {
+    "two_stage_eval_per_level": 0.6668,
+    "two_stage_one_eval": 0.5224,
+    "atomic_one_launch": 0.5126,
+    "mlx_sum": 0.2984
+   }
+  },
+  "reduce_gbps": {
+   "1048576": {
+    "two_stage_eval_per_level": 15.13,
+    "two_stage_one_eval": 34.81,
+    "atomic_one_launch": 37.03,
+    "mlx_sum": 41.15
+   },
+   "16777216": {
+    "two_stage_eval_per_level": 201.28,
+    "two_stage_one_eval": 256.91,
+    "atomic_one_launch": 261.82,
+    "mlx_sum": 449.86
+   }
+  },
+  "correction_1_launch_count_is_REFUTED": "Holding syncs at one and varying ONLY launch count (atomic 1 dispatch vs two-stage 3 dispatches) gives NO_CLAIM at 2^20 and INDISTINGUISHABLE (1.019x) at 2^24. Collapsing three dispatches into one buys nothing measurable. The published mechanism is wrong.",
+  "correction_2_the_real_mechanism_is_HOST_ROUND_TRIPS": "Holding launches at three and varying ONLY the sync count gives 2.30x at 2^20 and 1.28x at 2^24 -- essentially the whole originally-reported effect. The cost was host round trips and command-buffer boundaries, not GPU kernel launches.",
+  "correction_3_the_recommendation_FLIPS": "The atomics receipt named a real tradeoff: atomic adds land in nondeterministic order and are 3.4x less exact. That trade was worth making for a 3x speedup. It is NOT worth making for nothing. With the sync defect fixed the atomic strategy is INDISTINGUISHABLE from exact two-stage, so two_stage is now the strategy to prefer and atomic is retained only as evidence that float atomics work.",
+  "correction_4_MLX_wins_by_less_than_published": "ACCELERATOR_REDUCTION.json reported MLX winning ~3x. Roughly half of that was our own harness: with one sync, MLX wins 1.75x at 2^24 and the gate returns NO_CLAIM at 2^20 (margin 18% against 10.6% arm noise). MLX is still the qualified winner for reduction, by a smaller margin.",
+  "how_it_was_found": "Not by auditing the reduction. Building the scan required the same recursive shape, the first scan measurement came out implausibly slow, and removing the per-level eval moved it 2.2x -- which immediately implicated every earlier measurement that used the same loop. A defect in a harness is found by writing a SECOND thing that uses it.",
+  "blast_radius": "Bounded and checked: only execute_reduce and the new scan used a multi-level loop. Every other timed path in this program (fusion, gravity-native, GEMM, softmax, attention, the forge) is a single dispatch with a single eval and cannot carry this defect."
+ },
+ "claim_boundary": "f32 sum reduction and scan, 2^20 and 2^24, one machine. This does NOT say kernel launches are free in general -- the P7 size sweep separately showed small kernels here are launch-bound. It says that at these sizes, on this runtime, three dispatches inside ONE command buffer cost no more than one, while three command buffers cost 1.3-2.3x more than one.",
+ "pass": true
+}

@@ -1,0 +1,8 @@
+{
+ "text_decode_active_GB": 10.09,
+ "vision_inactive_GB": 0.92,
+ "total_GB": 11.01,
+ "hawking_q3_active_GB": 11.7,
+ "byte_ratio_q3_over_2bit": 1.16,
+ "tps_ratio_ext_over_ours": 1.257
+}

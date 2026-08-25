@@ -1,0 +1,119 @@
+{
+  "artifact_binding": {
+    "admission_receipt": {
+      "bytes": 4749,
+      "document_seal_sha256": "939b41322363da3db774a2530b207bf380ed641d23cae671fc6438c0eecbf628",
+      "document_sha256": "e23b4eaec6296299c79cb3648c8db35b193867004f6e78c8ae423611d5167e21",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/complete-admission/receipts/QWEN80_COMPLETE_BINARY_GRAVITY_ADMISSION_RECEIPT_14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b.json",
+      "sha256": "0b601b57ef459bbfba69c4adba8c9fd2b069b3cbbf6ad7beaf3cee26556e9e53"
+    },
+    "manifest": {
+      "bytes": 77842421,
+      "document_seal_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+      "document_sha256": "b19c733b337facf441493ad7bc2ce042acaa29b5e65b7f4f8694f7f4607e2d1f",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+      "sha256": "a0fcac0401a7962402bb8cb87d5055c83667b39575f9e0f4c7470d080758aa10"
+    }
+  },
+  "claim_boundary": {
+    "complete_layer_executed": false,
+    "component_only": true,
+    "decoder_started": false,
+    "l1_suffix_or_moe_executed": false,
+    "server_or_watcher_started": false,
+    "token_generated": false
+  },
+  "durable_capture": {
+    "capture_directory": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_OUTER_CAPTURE_20260809T112940Z/inner",
+    "outer_reaped_capture_required": true,
+    "receipt_written_last_is_completion_marker": true,
+    "replay_guarded": true
+  },
+  "execution_phase": {
+    "command_commit_may_have_been_attempted": true,
+    "command_fence_succeeded": false,
+    "device_dispatch_may_have_occurred": null,
+    "dispatches_encoded": 32,
+    "encoded_kernel_names": [
+      "qwen_next_direct_packed_input_rmsnorm",
+      "qwen_binary_sign_scale_matvec",
+      "qwen_binary_sign_scale_matvec",
+      "qwen_next_qkvz_rearrange_conv_l2",
+      "qwen_next_ba_to_decay_beta",
+      "qwen_next_gated_delta_decode_single",
+      "qwen_next_deltanet_gated_rmsnorm",
+      "qwen_binary_sign_scale_matvec",
+      "qwen_next_add_residual",
+      "qwen80_postnorm_router_top10_rmsnorm",
+      "qwen80_postnorm_router_top10_matvec",
+      "qwen80_postnorm_router_top10_select",
+      "qwen80_all_ten_routed_wave_route_guard",
+      "qwen80_all_ten_routed_wave_gate_up",
+      "qwen80_all_ten_routed_wave_swiglu",
+      "qwen80_all_ten_routed_wave_down_weighted",
+      "qwen80_shared_expert_wave_gate_up",
+      "qwen80_shared_expert_wave_swiglu",
+      "qwen80_shared_expert_wave_down",
+      "qwen80_shared_expert_wave_scalar_gate",
+      "qwen80_shared_expert_wave_apply_sigmoid_gate",
+      "qwen80_moe_wave_aggregate_second_residual_route_sum",
+      "qwen80_moe_wave_aggregate_second_residual_add_shared_residual",
+      "qwen_next_direct_packed_input_rmsnorm",
+      "qwen_binary_sign_scale_matvec",
+      "qwen_binary_sign_scale_matvec",
+      "qwen_next_qkvz_rearrange_conv_l2",
+      "qwen_next_ba_to_decay_beta",
+      "qwen_next_gated_delta_decode_single",
+      "qwen_next_deltanet_gated_rmsnorm",
+      "qwen_binary_sign_scale_matvec",
+      "qwen_next_add_residual"
+    ],
+    "metal_context_constructed": true,
+    "metal_context_construction_attempted": true,
+    "readback_started": false,
+    "strict_artifact_admission_started": true,
+    "strict_artifact_admission_succeeded": true,
+    "structural_kernel_trace_enabled": true
+  },
+  "fixture_or_synthetic": false,
+  "issuer": {
+    "issuer_identity_sha256": "27473ad7bb5a4577a6af80b2273daa91759870d5bfe1c3538eb375562f4eee82",
+    "role": "joint_component_capture_child"
+  },
+  "joint_lease_binding": {
+    "lease_id": "f4445e80a081bcb926387b3f80bd878514a3d1197e57990d5d9799d54277128d",
+    "receipt": {
+      "bytes": 2522,
+      "document_seal_sha256": "f9cfd35b9a610ceb916040322131cca2684564bda919574aed86567b48a54ff6",
+      "document_sha256": "104969068ebbbc41116b0bdfbc73e280c5598096dccabe8f75b1c5a984b393e3",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_QUIET_METAL_LEASE_20260809T112940Z.json",
+      "sha256": "104969068ebbbc41116b0bdfbc73e280c5598096dccabe8f75b1c5a984b393e3"
+    }
+  },
+  "joint_outer_preflight_binding": {
+    "bytes": 8285,
+    "document_seal_sha256": "55fcea2f4a135203cd567ff434952da621cd8f9ea73478b613d7c5db609b9884",
+    "document_sha256": "90ae82320fd2b92fde7dc0cd0dece851bca5a5ca25d230a76c23714c04275337",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_INTERFACE_OUTER_CPU_PREFLIGHT_20260809T112900Z/outer-preflight.json",
+    "sha256": "90ae82320fd2b92fde7dc0cd0dece851bca5a5ca25d230a76c23714c04275337"
+  },
+  "joint_static_plan_binding": {
+    "bytes": 9852,
+    "document_seal_sha256": "d70fb7b621b6382b4868a3ded5a33a53dff5fa52f4a04666556395c0663dcd06",
+    "document_sha256": "45b6fd41f6b671df5bb49274d691631fd6eeebc20fba0d45b6b82f6bc68c22d9",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_INTERFACE_STATIC_PLAN_20260809T112700Z/joint-child-static-plan.json",
+    "sha256": "9a36510f002033d9c30663299875e2ae4c04c6c47db02a4ae8e198d40d5e3e66"
+  },
+  "outer_launch_authority_binding": {
+    "bytes": 2674,
+    "document_seal_sha256": "9912993d9aa65c1f682857508fd5a0cd1c0d8e225a3183361665b6b0105c794a",
+    "document_sha256": "abe7299d0494128380ed2cb44f99f0dac5ab25aaf1e208931845cc23869fe04b",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_OUTER_CAPTURE_20260809T112940Z/outer-launch-authority.json",
+    "sha256": "abe7299d0494128380ed2cb44f99f0dac5ab25aaf1e208931845cc23869fe04b"
+  },
+  "schema": "hawking.ascension.qwen80_source_token_l0_l1_same_runtime_prefix_capture.v1",
+  "seal_sha256": "0c833dc53b0c103c9d3ef5b9bda238f70bb6d415282281127aadf0f5e1b29bb9",
+  "self_asserted": false,
+  "status": "REFUSED_QWEN80_SOURCE_TOKEN_L0_REENCODE_AND_L1_SLOT1_PREFIX_SAME_RUNTIME_PHASE_ACCURATE_TERMINAL_FAILURE",
+  "terminal_error": "joint host exact finalizer refused: model: qwen80 complete native runtime: same-runtime Layer-1 live input differs from its retained L0 CPU shadow"
+}

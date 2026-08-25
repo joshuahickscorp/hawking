@@ -1,7 +1,7 @@
 {
   "schema": "hawking.headless.noetic_information_accounting_canary.v1",
-  "generated_at": "2026-08-24T06:56:20Z",
-  "commit": "7703d50237aacee45fb1643da5e40d3ac255a588",
+  "generated_at": "2026-08-24T15:49:53Z",
+  "commit": "9678590e733e233cdab8e0ac29b7f0d34701db20",
   "why": "S020 \u00a740 / canon law 2: EBPW is measured from the full executable closure. A representation that reports 1 EBPW must not secretly carry 3 EBPW in shader constants, generated source, caches, route tables, runtime/MLX blobs, or an alignment-prefixed compiled blob. This canary plants known bytes in each channel and asserts the existing accountant counts them. It does not invent a second system.",
   "accountant": {
     "module": "tools/headless/noetic_information_accounting.py",

@@ -1,0 +1,7 @@
+{
+  "obligation": "G26 -- why native affine-2bit = 31.5 TPS vs mlx 37.7 on the same representation.",
+  "kernel_is_optimized": "Our affine GEMV dispatches qwen_affine_q2_group32_matvec_geo_tpr64_tg128 (recon_fuse ON, g32) -- the FAST geo_tpr64 tiled path (2 rows/threadgroup, simdgroup reduction, kSplit=2), same class as our HGRAVU01 fast kernel. NOT the naive serial one. So the gap is not a naive-kernel miss.",
+  "gap_is_gpu_kernel": "Per prior census: ~964 dispatches/token, host ceremony only ~1.07 ms/token, GPU = 96.5% of the wall. So the 5.2 ms/token gap (31.7 vs 26.5) is GPU KERNEL time -- mlx's affine2 GEMV is ~1.18x more efficient per-GEMV than our geo_tpr64 affine. Not dispatch/ceremony.",
+  "strategic_reframe_TPS": "PROVEN across Phase A/B/C: on OUR runtime, reducing active bytes barely moves TPS (11.7->10.1GB gave 30->31.5, ~1.05x, not the 1.16x byte ratio) -- we are NOT bandwidth-bound, GPU-kernel efficiency is the wall. Therefore DENSITY work (G31 below-external, G32 sub-2-bit) buys STORED density / RAM but NOT TPS. The real TPS levers are: (1) kernel micro-opt to match mlx (~1.18x, hard, uncertain); (2) MTP multi-token (2-3x, untapped, model supports mtp_num_hidden_layers=1). MTP is the highest-leverage path to >40/60/100.",
+  "G26_status": "native reproduction VERIFIED at 31.5 TPS (coherent, zero mlx). ~38 target needs kernel micro-opt (hard) OR MTP. Recorded as the honest ceiling of our current runtime on this representation."
+}

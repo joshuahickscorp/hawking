@@ -1,0 +1,14 @@
+{
+  "claim_boundary": {
+    "complete_binary_candidate_is_not_a_runtime_or_density_qualification": true,
+    "component_kernel_evidence_is_not_model_tps": true,
+    "does_not_claim_full_token_tg3_or_manager_qualification": true,
+    "raw_bf16_source_is_authority_teacher_not_tournament_participant": true
+  },
+  "heartbeat": 18425,
+  "lane": "QWEN80_COMPLETE_HYBRID_RUNTIME",
+  "phase": "SOURCE_AND_PHYSICAL_ASSEMBLY_AUDIT_RUNNING",
+  "pid": 22035,
+  "recorded_at": "2026-08-10T17:23:42.139401Z",
+  "schema": "hawking.ascension.qwen80_bootstrap_lanes.v1"
+}

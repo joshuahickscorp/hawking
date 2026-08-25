@@ -1,0 +1,11 @@
+{
+  "schema": "hawking.nos.reconstruction_cost.v1", "session": "f5169750", "date": "2026-08-18",
+  "obligation": "G17 -- reconstruction cost accounted for every NR: no small artifact hides expansion cost",
+  "method": "process peak memory footprint (/usr/bin/time -l) during native greedy decode = reconstruction working set (artifact-resident + transient decode buffers); no-expand codec so no whole-tensor materialization",
+  "candidates": {
+    "uniform-q4-v1":        {"on_disk_bytes": 14308518399, "on_disk_gb": 14.31, "peak_working_set_gb": 15.9,  "decode_ms": 28.88, "fallbacks": 0, "dense_w_materialized": 0},
+    "mixed-q3mlp-q3attn-v1":{"on_disk_bytes": 16904346694, "on_disk_gb": 16.90, "peak_working_set_gb": 12.83, "decode_ms": 31.04, "fallbacks": 0, "dense_w_materialized": 0, "note": "on-disk OVERSTATES: 4 GB on disk is never loaded (the F3 uncounted-bytes leftover); runtime loads the honest ~12.8 GB"},
+    "c-q3r1p22":            {"on_disk_bytes": 11245158443, "on_disk_gb": 11.24, "peak_working_set_gb": 12.83, "decode_ms": 31.11, "fallbacks": 0, "dense_w_materialized": 0, "note": "on-disk 11.24 GB + ~1.6 GB transient decode working set = 12.83 GB peak"}
+  },
+  "verdict": "PASS. For 3 candidates all three metrics reported together. NO candidate hides expansion cost: peak working set ~= resident weights + small transients (NOT a 2x dense expand); dense_w_materialized=0 everywhere. The only accounting anomaly is the OPPOSITE of hiding -- mixed-q3mlp's on-disk 16.9 GB overstates its 12.83 GB runtime working set (dead bytes on disk, reclaimable). c-q3r1p22 is the honest artifact (disk ~= working set)."
+}

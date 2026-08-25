@@ -1,0 +1,19 @@
+{
+  "dedupe_key": "a940d23a2dfa71d8fe74f775fded0d8a3c61492690afdaaed1e486ab836d73c5",
+  "delivery": {
+    "bot_api_http_status": 200,
+    "message_date": 1786313722,
+    "message_id": 7367
+  },
+  "event_fingerprint": "51d1184909172b5eda94e70be2726b5beca8b7633e7a1d895be6dddca6719f9e",
+  "event_id": "global_campaign_resumed",
+  "evidence_path": "lifecycle/ASCENSION_DUAL_MANAGER_PHYSICAL_STATUS.json",
+  "message_sha256": "9bfaac3a5763fb191ff28ec83aca48af4879486fc36082565561208a64511548",
+  "model": null,
+  "reason": null,
+  "recorded_at": "2026-08-09T22:15:22.236485Z",
+  "schema": "hawking.ascension.physical_telegram_delivery_receipt.v1",
+  "seal_sha256": "aac0e4d8f6df021d2e202ae8cea62c5f901d313f333a7e18f7d83bcb8912d0d4",
+  "secret_boundary": "no token or chat identifier is persisted",
+  "status": "DELIVERED"
+}

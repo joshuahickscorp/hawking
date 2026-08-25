@@ -1,0 +1,15 @@
+{
+  "claim_boundary": {
+    "complete_binary_candidate_is_not_a_runtime_or_density_qualification": true,
+    "component_kernel_evidence_is_not_model_tps": true,
+    "does_not_claim_full_token_tg3_or_manager_qualification": true,
+    "raw_bf16_source_is_authority_teacher_not_tournament_participant": true
+  },
+  "current_artifact": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/tg3/QWEN80_TG3_ASCENT_CANDIDATE.json",
+  "heartbeat": 1414,
+  "lane": "QWEN80_METAL_TG3",
+  "phase": "WAITING_FOR_NATIVE_COMPLETE_TOKEN_HYBRID_RUNTIME",
+  "pid": 74331,
+  "recorded_at": "2026-08-10T17:24:13.825313Z",
+  "schema": "hawking.ascension.qwen80_bootstrap_lanes.v1"
+}

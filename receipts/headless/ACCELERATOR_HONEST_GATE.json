@@ -1,0 +1,223 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T15:21:42Z",
+ "experiment_class": "ACCEL-THROUGHPUT",
+ "knowledge_level": "INSTANCE",
+ "git_head": "5f39f1592c7c6d0e2857564b3bd137f8ebc94451",
+ "identities": {
+  "experiment": {
+   "id": "HONEST_GATE_MADE_CHEAP",
+   "obligation": "G046 + G049",
+   "steer": "S015 \u00a719 no dense rematerialization; \u00a777 the metric that counts; \u00a773 gated claims"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "storage": "TIER 1 ~/noetic/stage"
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "specimen": "Qwen3-30B-A3B",
+   "tensors": "64 expert gate_proj, 768x2048"
+  },
+  "representation": {
+   "name": "ws_rtn_q4_g64",
+   "bpw": 4.25
+  },
+  "kernel": {
+   "status": "UNCHANGED",
+   "note": "the native matvec and the GPU packer are byte-identical to the previous block; only the CPU-side verifier changed"
+  },
+  "runtime": {
+   "python": "3.12.6",
+   "numpy_path": "einsum with uint8 promotion"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "the_lever_was_named_by_the_previous_receipt": {
+  "quoted": "verify 60.97% > pack 12.23% > read 7.39% > gpu 6.47%. THE DOMINANT PHASE IS NOW accept_pack ... the next lever is making the HONEST gate cheap, NOT weakening it back toward the cheap dishonest one",
+  "baseline_reproduced": "the dense-gate arm here measures verify at 61.595% of wall, against 60.97% recorded in the previous block on a different day and a different process -- the baseline is reproducible"
+ },
+ "where_the_cost_actually_was": {
+  "method": "profiled accept_pack phase by phase on a real 768x2048 expert BEFORE changing anything",
+  "accept_pack_total_ms": 2.7733,
+  "dequantize_ms": 2.3295,
+  "dequantize_share_pct": 84.0,
+  "matvec_decoded_f64_ms": 0.0376,
+  "matvec_true_f64_ms": 0.0375,
+  "cast_w_true_f64_ms": 0.1634,
+  "cast_decoded_f64_ms": 0.1542,
+  "finding": "THE GATE'S COST WAS A DENSE REMATERIALIZATION. 84% of the honest predicate was dequantize() building the full dense f32 tensor so it could be multiplied -- the exact `compact bytes -> reconstruct dense -> conventional GEMM` shape S015 \u00a719 rules out, sitting INSIDE the gate that certifies the compact path. The two float64 matvecs it was blamed on cost 0.037 ms each, 1.4% of the total.",
+  "why_that_matters": "the fix is not a cheaper CHECK, it is the removal of work the verifier should never have been doing. Nothing was traded away."
+ },
+ "the_transformation": {
+  "identity": "decoded[r,c] = (q[r,c] - BOUND) * scale[r, c//GROUP], so the group scale factors out of the inner sum and ref[r] = SUM_g scale[r,g] * SUM_{c in g} (q[r,c] - BOUND) * x[c]",
+  "second_fold": "the -BOUND term collapses to BOUND * SUM_{c in g} x[c], which does not depend on the row at all and is computed once per group instead of rows times",
+  "nibbles": "contracted where they lie, two per byte, against the even and odd halves of x -- the interleave the dense path materialised is never undone",
+  "exactness": "float64 accumulation throughout; agrees with the dense path to 8.3e-17 relative, which is machine epsilon and not a tolerance"
+ },
+ "the_exact_option_was_also_the_fastest": {
+  "explicit_float64_cast_ms": 1.5785,
+  "einsum_promotes_uint8_ms": 1.0713,
+  "float32_inner_product_ms": 1.1327,
+  "rel_error_vs_dense": {
+   "explicit_cast": 8.3e-17,
+   "uint8_promotion": 8.3e-17,
+   "float32_inner": 2.176e-07
+  },
+  "finding": "casting the nibbles to float64 first materialises 24 MB of temporaries. Letting einsum promote uint8 against a float64 operand is BIT-IDENTICAL and 1.47x cheaper -- and it also beats the float32 inner product, which is NOT exact. THERE WAS NOTHING TO TRADE: the option that changes no number is also the fastest one measured. The float32 variant is recorded with its price so the choice is visible rather than silently foreclosed.",
+  "first_run_of_this_AB_used_the_slower_exact_variant": {
+   "wu_h": 567093.1,
+   "gain_pct": 36.34,
+   "note": "measured, then superseded by the uint8-promotion form before the receipt was written; reported so the 52.3% below is not read as a single leap"
+  }
+ },
+ "prediction_written_before_the_run": {
+  "expected_wu_h": [
+   570000,
+   630000
+  ],
+  "expected_gain_pct": [
+   37,
+   52
+  ],
+  "point_estimate_wu_h": 597000,
+  "below_this_means_the_profile_was_wrong_pct": 5,
+  "note": "FIRST RUN of this A/B used an explicit float64 cast of the nibbles and measured +36.34% at 567,093 WU/h -- OUTSIDE its own [12,30] band on the HIGH side, an under-prediction recorded rather than rebased. Letting einsum promote from uint8 is BIT-IDENTICAL and 1.47x cheaper again (1.07 vs 1.58 ms), so this run re-predicts off the measured 0.4175 s wall."
+ },
+ "result": {
+  "dense_median_wu_h": 416466.5,
+  "dense_spread_pct": 9.15,
+  "cheap_median_wu_h": 634259.3,
+  "cheap_spread_pct": 7.6,
+  "gain_pct": 52.3,
+  "complete_separation": true,
+  "min_cheap": 607942.6,
+  "max_dense": 423899.5,
+  "verify_s_dense_median": 0.33974499999999996,
+  "verify_s_cheap_median": 0.1577,
+  "accepted_dense": [
+   64,
+   64,
+   64,
+   64,
+   64,
+   64
+  ],
+  "accepted_cheap": [
+   64,
+   64,
+   64,
+   64,
+   64,
+   64
+  ]
+ },
+ "phase_shares": {
+  "dense_gate": {
+   "read_s": 7.047,
+   "pack_s": 12.654,
+   "gpu_s": 6.19,
+   "verify_s": 61.595
+  },
+  "cheap_gate": {
+   "read_s": 9.903,
+   "pack_s": 15.811,
+   "gpu_s": 9.843,
+   "verify_s": 43.276
+  },
+  "dense_wall_s": 0.5731,
+  "cheap_wall_s": 0.3581
+ },
+ "equivalence_evidence": {
+  "tensors": 64,
+  "controls_checked": 32,
+  "controls_rejected_by_cheap_gate": 32,
+  "verdict_mismatches": [],
+  "worst_relative_disagreement": {
+   "cosine": 4.3344455973531214e-16,
+   "magnitude_ratio": 2.2023582132043438e-16,
+   "kernel_max_abs_err": 2.2737367544323206e-13
+  }
+ },
+ "pass": true,
+ "prediction_verdict": {
+  "gain_pct": {
+   "band": [
+    37,
+    52
+   ],
+   "actual": 52.3,
+   "verdict": "AT THE EDGE, 0.3 points above"
+  },
+  "wu_h": {
+   "band": [
+    570000,
+    630000
+   ],
+   "actual": 634259.3,
+   "verdict": "MISSED HIGH by 0.7%"
+  },
+  "the_pattern_is_the_finding": "THREE CONSECUTIVE PREDICTIONS IN THIS PIPELINE HAVE COME IN ABOVE THEIR BAND. Tier 1 predicted an 18-25% GPU share and measured 30.88%; the GPU packer predicted 215-270k WU/h and measured 411k; this predicted 570-630k and measured 634k. The bias has ONE mechanism and it is measured below: every prediction held the untouched phases FIXED, and they are not fixed."
+ },
+ "cross_phase_interference": {
+  "claim": "removing the verifier's dense temporaries made phases it does not touch faster",
+  "phase_medians_s": {
+   "read_s": {
+    "dense": 0.0406,
+    "cheap": 0.0352,
+    "ratio": 1.156,
+    "complete_separation": true
+   },
+   "pack_s": {
+    "dense": 0.0672,
+    "cheap": 0.0603,
+    "ratio": 1.114,
+    "complete_separation": true
+   },
+   "gpu_s": {
+    "dense": 0.0356,
+    "cheap": 0.0355,
+    "ratio": 1.004,
+    "complete_separation": false
+   },
+   "verify_s": {
+    "dense": 0.3397,
+    "cheap": 0.1577,
+    "ratio": 2.154,
+    "complete_separation": true
+   }
+  },
+  "read_is_the_clean_one": "read_s runs IDENTICAL CODE in both arms and is 1.156x faster in the cheap arm with COMPLETE SEPARATION and both spreads inside the 10% gate (4.5% and 5.9%). pack_s moves the same way, 1.114x with separation, but both arms sit above the gate (14.8%, 10.8%) so it is directional only.",
+  "the_control_that_makes_it_credible": "gpu_s is FLAT at 1.004x and is the ONLY phase that does NOT separate. If this were a global 'the cheap arm ran in a better minute' artifact the GPU dispatch would have moved with everything else. It did not.",
+  "mechanism": "the dense path allocated and touched roughly 30 MB of float64 temporaries PER TENSOR -- a 6 MB dense f32 tensor, its 12.6 MB float64 copy, a 12.6 MB float64 copy of the true tensor -- against a 64-tensor loop whose read and pack phases are host-memory-bound. The verifier was evicting the working set of the phases either side of it.",
+  "size": "0.0124 s of the 0.190 s saved = 6.5%. Small, real, and enough to put a phase-additive prediction outside its own band."
+ },
+ "what_is_left_inside_the_gate": {
+  "per_tensor_ms": {
+   "ref_matvec_s": 1.736,
+   "w_true_cast_and_matvec_s": 0.562,
+   "norms_and_dot_s": 0.013,
+   "accept_pack_total_s": 2.337
+  },
+  "share_pct": {
+   "ref_matvec_s": 74.3,
+   "w_true_cast_and_matvec_s": 24.1,
+   "norms_and_dot_s": 0.6
+  },
+  "next_lever": "verify is still the largest phase at 43.28% and ref_matvec is 74.3% of it. The honest options are (a) move ref_matvec to the GPU, which requires an implementation INDEPENDENT of the native matvec kernel or gate 1 becomes vacuous -- the DEQUANT+DENSE pair P7 already uses as its control is the obvious candidate and shares the nibble convention, which is the exact thing to think about before shipping it -- and (b) the 24.1% spent casting the true tensor to float64, which a float32 matvec would remove at a ~1e-7 relative change."
+ },
+ "claim_boundary": {
+  "what_this_is": "a CLEAN gate result, unlike the block before it: both arms inside the 10% IQR gate (dense 9.15%, cheap 7.60%), complete separation (min cheap 607,943 > max dense 423,900), margin 52.3% against worst-arm noise 9.15% = 5.7x.",
+  "reps": "6 alternating pairs, warmed twice on both paths, lake fill SIGSTOPped. Still 6 samples per arm, not the 200 reps this program's own stability audit says a RELIABILITY VERDICT needs; the verdict is admitted on separation as much as on the gate.",
+  "what_it_does_not_show": "nothing about the kernels changed -- the native matvec and the GPU packer are byte-identical to the previous block, so no Metal claim moves. This is a CPU-side verifier change measured through a GPU pipeline. Bit-exactness of a pack and a faithful gate still say NOTHING about whether ws_rtn_q4_g64 is adequate for a MODEL; local adequacy does not compose.",
+  "the_thing_that_would_falsify_the_headline": "if the cheap gate accepted anything the dense one rejected. 96 accept_pack calls on real tensors, 32 of them negative controls, ZERO verdict mismatches and worst numeric disagreement 4.3e-16."
+ },
+ "headline": "THE GATE GOT 2.15x CHEAPER BY DOING LESS OF WHAT IT SHOULD NEVER HAVE BEEN DOING. 84% of the honest predicate was a DENSE REMATERIALIZATION inside the verifier -- \u00a719's forbidden shape, in the one place nobody had looked for it. Contracting the packed nibbles where they lie is 2.15x faster on the phase and +52.3% on WorkUnits/hour, at 4.3e-16 disagreement and zero verdict changes."
+}

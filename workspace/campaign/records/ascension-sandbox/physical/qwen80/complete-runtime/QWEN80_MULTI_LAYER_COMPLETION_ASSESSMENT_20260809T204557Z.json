@@ -1,0 +1,16 @@
+{
+  "blockers": [
+    "input seal mismatch: observed=fb589173e61d571327fdc5b31f8707ceba71ba2b10b383ac3096408fd0e484a8, expected=77e1b83d7126c97307ce900c6ab8d02e202caa4e6aa4def6d0c59177c7e8d890",
+    "input.fresh_multi_layer_inner.document_sha256 does not bind its document (wrapper json_sha convention)"
+  ],
+  "claim_boundary": {
+    "decoder_started": false,
+    "multi_layer_component_only": false,
+    "token_generated": false,
+    "tps_or_tg_measured": false
+  },
+  "earned_multi_layer_component_only": false,
+  "schema": "hawking.ascension.qwen80_multi_layer_completion_assessment.v1",
+  "seal_sha256": "18503d2bd08cda7ee5d2051193a8d1804911a9fe7673e075bce86c58d061f290",
+  "status": "REFUSED_QWEN80_SOURCE_TOKEN_MULTI_LAYER_COMPLETION_INCOMPLETE_OR_UNTRUSTED"
+}

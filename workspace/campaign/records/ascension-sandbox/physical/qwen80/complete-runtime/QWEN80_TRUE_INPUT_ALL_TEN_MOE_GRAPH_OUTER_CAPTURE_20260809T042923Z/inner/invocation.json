@@ -1,0 +1,22 @@
+{
+  "admission_current": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_ADMISSION_CURRENT.json",
+  "execution_policy": {
+    "complete_layer_or_token_allowed": false,
+    "prefix_dispatches_expected": 9,
+    "source_token_id": 1,
+    "strict_math": true,
+    "suffix_dispatches_expected": 14,
+    "timing_or_benchmarking_allowed": false,
+    "total_dispatches_expected": 23,
+    "tps_or_tg_claim_allowed": false
+  },
+  "fixed_abi_contract": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_TRUE_MOE_FIXED_PAYLOAD_PLAN_20260809T030514Z.json",
+  "lease_receipt": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_TRUE_INPUT_ALL_TEN_MOE_GRAPH_LEASE_20260809T042923Z.json",
+  "manifest": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+  "mode": "metal",
+  "schema": "hawking.ascension.qwen80_all_ten_true_moe_graph_device.v1",
+  "started_unix_millis": 1786249881249,
+  "status": "STARTED_QWEN80_SOURCE_INPUT_L0_TRUE_MOE_STRICT_MATH_COMPONENT",
+  "typed_bridge_receipt": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_ALL_TEN_SOURCE_BRIDGE_TYPED_AUTHORITY_20260809T041230Z/typed-bridge.json",
+  "workers": 2
+}

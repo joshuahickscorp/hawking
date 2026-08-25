@@ -1,0 +1,139 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T13:04:51Z",
+ "experiment_class": "ACCEL-FUSION",
+ "knowledge_level": "INSTANCE",
+ "git_head": "13c2f78b046babecf2e1afc526e882de81dcedb3",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_D_ATTENTION",
+   "obligation": "G046 + G043",
+   "steer": "S015 \u00a73 corpus"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model; the attention primitive itself"
+  },
+  "representation": {
+   "name": "dense_f32"
+  },
+  "kernel": {
+   "produced_by": "air.lower_attention_to_msl",
+   "shape": "one threadgroup per query row, score row in threadgroup memory, 4 barriers"
+  },
+  "runtime": {
+   "mlx": "0.32.1",
+   "python": "3.12.13"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "correctness": {
+   "512x64": "2.15e-07",
+   "512x512x64": "2.88e-07",
+   "256x128_causal": "3.03e-07",
+   "37x40_non_power_of_two": "2.32e-07",
+   "note": "causal masking verified against a numpy reference that builds the triangular mask"
+  },
+  "performance": [
+   {
+    "seq": 512,
+    "dim": 64,
+    "err_vs_naive": 3.725290298461914e-07,
+    "ms": {
+     "mlx_fused_sdpa": 0.3428329946473241,
+     "naive_materialised": 0.30074999085627496,
+     "air_fused": 0.24674998712725937
+    },
+    "iqrs": {
+     "mlx_fused_sdpa": 23.98,
+     "naive_materialised": 32.83,
+     "air_fused": 9.19
+    },
+    "bytes_avoided": 2097152,
+    "vs_naive": {
+     "verdict": "NO_CLAIM",
+     "reason": "an arm failed the 10.0% IQR gate (naive_materialised 32.83%, air_fused 9.19%) and the margin 21.88% does not overwhelm that noise",
+     "speedup": null
+    },
+    "vs_mlx": {
+     "verdict": "NO_CLAIM",
+     "reason": "an arm failed the 10.0% IQR gate (mlx_fused_sdpa 23.98%, air_fused 9.19%) and the margin 38.94% does not overwhelm that noise",
+     "speedup": null
+    }
+   },
+   {
+    "seq": 1024,
+    "dim": 64,
+    "err_vs_naive": 2.980232238769531e-07,
+    "ms": {
+     "mlx_fused_sdpa": 0.42216700967401266,
+     "naive_materialised": 0.2770409919321537,
+     "air_fused": 0.3792080096900463
+    },
+    "iqrs": {
+     "mlx_fused_sdpa": 5.96,
+     "naive_materialised": 6.81,
+     "air_fused": 4.33
+    },
+    "bytes_avoided": 8388608,
+    "vs_naive": {
+     "verdict": "BASELINE_WINS",
+     "speedup": 0.7306,
+     "margin_pct": 26.94,
+     "arm_noise_pct": 6.81
+    },
+    "vs_mlx": {
+     "verdict": "CANDIDATE_WINS",
+     "speedup": 1.1133,
+     "margin_pct": 11.33,
+     "arm_noise_pct": 5.96
+    }
+   },
+   {
+    "seq": 2048,
+    "dim": 128,
+    "err_vs_naive": 4.023313522338867e-07,
+    "ms": {
+     "mlx_fused_sdpa": 0.5853750044479966,
+     "naive_materialised": 0.4646669840440154,
+     "air_fused": 1.6347499913536012
+    },
+    "iqrs": {
+     "mlx_fused_sdpa": 2.38,
+     "naive_materialised": 9.05,
+     "air_fused": 2.99
+    },
+    "bytes_avoided": 33554432,
+    "vs_naive": {
+     "verdict": "BASELINE_WINS",
+     "speedup": 0.2842,
+     "margin_pct": 71.58,
+     "arm_noise_pct": 9.05
+    },
+    "vs_mlx": {
+     "verdict": "BASELINE_WINS",
+     "speedup": 0.3581,
+     "margin_pct": 64.19,
+     "arm_noise_pct": 2.99
+    }
+   }
+  ],
+  "the_finding_is_negative_and_useful": "FUSION LOSES HERE, and it loses to the shape it was supposed to beat. At 1024 the naive materialised path (Q@K^T, softmax, @V as three MLX calls) is 1.37x FASTER than the fused kernel, and at 2048x128 it is 3.5x faster. The fused kernel avoids writing 8 MiB and 32 MiB of score and probability matrices respectively -- and that saving does not pay.\\nWHY: the naive path gets to use MLX's matmul, which reaches the matrix hardware, while the fused kernel computes every score as a SCALAR dot product over head_dim. At head_dim 128 that is 128 scalar multiply-adds per score where MLX issues simdgroup matrix instructions. The register-blocking work already measured that gap at 2.5x for GEMM alone, so this is the same lesson arriving from a different direction: AVOIDING MEMORY TRAFFIC IS NOT WORTH GIVING UP THE MATRIX UNITS.",
+  "where_it_does_win": "at 1024x64 it beats MLX's own fused scaled_dot_product_attention by 1.11x -- but loses to the naive path at the same size, so beating one baseline while losing to another is not a win and is not reported as one",
+  "what_a_real_flash_attention_would_need": "tiled Q/K/V blocks with an ONLINE softmax so the score row never has to fit, plus simdgroup matrix ops for the score and output matmuls. This kernel has neither, and its threadgroup-memory cap is the direct consequence -- it REFUSES a sequence it cannot hold rather than truncating."
+ },
+ "claim_boundary": "Correct single-head attention with causal masking now exists in AIR, verified to 3e-07 including a non-power-of-two shape. It is SLOWER than the naive materialised path at every size where the comparison is clean, and 3.5x slower at 2048x128. MLX is retained. Single head only, f32 only, no batching, no multi-head, no KV cache, no dropout, and no sequence longer than threadgroup memory allows. Nothing was run inside a model.",
+ "pass": true
+}

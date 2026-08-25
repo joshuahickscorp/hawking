@@ -1,0 +1,79 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T16:18:40Z",
+ "experiment_class": "ACCEL-MEMORY",
+ "knowledge_level": "INSTANCE",
+ "git_head": "b6aa51512d2874a219ed0da16cc89e75d6be3334",
+ "identities": {
+  "experiment": {
+   "id": "QUARANTINE_IS_ABOUT_TRUST_NOT_DIRECTION",
+   "obligation": "G050",
+   "steer": "S015 \u00a714 coherence states; \u00a734 the move-vs-recompute planner"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra"
+  },
+  "device": {
+   "status": "ABSENT",
+   "reason": "fabric-level"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "opaque bytes"
+  },
+  "representation": {
+   "status": "ABSENT",
+   "reason": "opaque bytes by design"
+  },
+  "kernel": {
+   "status": "ABSENT",
+   "reason": "no kernel"
+  },
+  "runtime": {
+   "python": "3.12.6"
+  },
+  "transport": {
+   "status": "MOCK",
+   "reason": "no external GPU; every rate is a knob"
+  }
+ },
+ "headline": "I CLOSED A GAP LAST BLOCK AND OPENED A HOLE DOING IT. Quarantine was only ever checked on the DESTINATION, so the planner would source FROM a domain the fabric had just declared untrustworthy -- and say nothing. Demonstrated against the pre-fix code, then closed. Also: the probe now runs under a deadline, and a probe that TIMES OUT is UNKNOWN, not lost.",
+ "the_gap_i_named_myself": "the previous receipt closed with 'device_partially_lost asks the provider whether a copy survived, and against a real device THAT PROBE IS ITSELF A TRANSPORT OPERATION that can fail or hang -- it is NOT wrapped in the deadline the transfer path uses'. Doing the thing a receipt said was not done is what found the second, larger problem.",
+ "the_hole_and_it_is_mine": {
+  "what": "quarantine appeared in exactly ONE place -- execute()'s check on `want_domain` -- so it governed transfers INTO a domain and nothing else",
+  "demonstrated_against_the_pre_fix_code": {
+   "quarantined": [
+    "MOCK_EXTERNAL_VRAM"
+   ],
+   "plan_action": "TRANSFER",
+   "plan_detail": "W -> SCRATCH via TRANSFER from MOCK_EXTERNAL_VRAM",
+   "sources_offered": [
+    "MOCK_EXTERNAL_VRAM"
+   ],
+   "hole_exists": true
+  },
+  "reading": "with MOCK_EXTERNAL_VRAM quarantined after a partial loss, plan_acquire returned 'W -> SCRATCH via TRANSFER from MOCK_EXTERNAL_VRAM'. The planner read from a domain the fabric had declared untrustworthy WITHOUT A WORD, which is the silent-wrong-answer class this module exists to prevent.",
+  "the_principle_the_fix_encodes": "QUARANTINE IS ABOUT TRUST, NOT DIRECTION. A quarantined domain supplies NOTHING -- not as a transfer source, and not as an ALREADY_RESIDENT answer either, because handing back a copy that happens to live there is the same trust failure through a different door.",
+  "how_it_was_found": "not by re-reading the code but by asking what quarantine actually COVERS, one block after adding it"
+ },
+ "the_probe_under_a_deadline_and_a_third_outcome": {
+  "deadline": "the probe now goes through _with_deadline, the same wrapper the transfer path uses, so a device that HANGS on the probe no longer hangs the handler",
+  "why_a_timeout_is_not_a_loss": "calling it LOST would be the manufactured-data-loss error ONE LEVEL UP -- the copy may be perfectly fine and we merely could not ask. Calling it SURVIVED would name a phantom. So there is a THIRD outcome, UNKNOWN.",
+  "what_UNKNOWN_does": "the fabric LEAVES THE STATE ALONE -- it must not act on information it does not have. The copy stays CLEAN with its payload intact, is reported in its own field, and is counted as NEITHER survived NOR lost. The quarantine is what stops it being used before an operator resolves it, and that only works because of the source-side fix above.",
+  "pinned": "a hanging probe yields unknown=['SLOW'], lost=[], data_lost=[], the materialization still CLEAN with payload == PAYLOAD, and the domain quarantined"
+ },
+ "a_test_of_mine_asserted_the_wrong_thing_and_the_code_was_right": {
+  "what_i_asserted": "that refusing a quarantined source makes the plan IMPOSSIBLE",
+  "what_happened": "the fixture object HAS a recompute recipe, so the planner correctly fell back to RECOMPUTE rather than stranding it -- a BETTER outcome than I asserted",
+  "the_fix": "the test now asserts the property that actually matters -- the untrusted domain is not offered AT ALL -- and a SECOND test with the recipe removed pins that IMPOSSIBLE happens only when there is no honest alternative, naming the quarantine",
+  "and_the_other_direction_is_pinned_too": "release_quarantine restores the domain as a source, because a check that can only ever refuse is as useless as one that only ever accepts"
+ },
+ "claim_boundary": {
+  "mock_only": "no external GPU exists; what is proven is the PLANNER'S TRUST MODEL and the state machine, not any hardware property",
+  "still_not_modelled": "a provider that corrupts consistently in both directions so the digest agrees with itself; any adversary who can recompute a crc32; and the round-trip-vs-resident-copy blind spot from the previous receipt, which needs the DEVICE digesting its own memory and is not built",
+  "an_honest_asymmetry_that_remains": "an UNKNOWN copy is protected only by the quarantine on its domain. If an operator releases the quarantine without resolving the unknowns, those copies become sources again with their trust never re-established -- release_quarantine does not distinguish 'the link is fine' from 'and every copy on it is good'.",
+  "no_performance_claim": "nothing timed"
+ },
+ "tests": "test_humf.py 40 passed (was 35, 32, 24, 19, 12); 199 accelerator tests pass",
+ "pass": true
+}

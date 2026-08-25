@@ -1,0 +1,996 @@
+{
+  "assessor_binding": {
+    "document": {
+      "assessment_required_before_joint_child_launch": true,
+      "assessment_result_bound": true,
+      "authority_boundary": {
+        "l1_dispatches_authorized": 0,
+        "lease_actions_authorized": 0,
+        "metal_or_gpu_actions_authorized": 0,
+        "new_model_processes_authorized": 0,
+        "server_or_watcher_actions_authorized": 0,
+        "tournament_actions_authorized": 0,
+        "tps_or_tg_measurements_authorized": 0
+      },
+      "baseline_l0_evidence_is_provenance_only": true,
+      "claim_boundary": {
+        "cpu_only_sealed_binding": true,
+        "does_not_claim_complete_layer_token_decoder_or_tournament": true,
+        "does_not_construct_metal_or_dispatch": true,
+        "does_not_execute_l0_or_l1": true,
+        "does_not_issue_or_consume_a_lease": true,
+        "does_not_measure_tps_or_tg": true,
+        "does_not_open_or_scan_artifacts": true,
+        "does_not_start_runtime_server_or_watcher": true
+      },
+      "cross_process_pinned_buffer_transfer_allowed": false,
+      "future_joint_capture_requirement": {
+        "fresh_l0_reencode_dispatches": 23,
+        "future_joint_total_dispatches": 32,
+        "future_l1_slot1_prefix_dispatches": 9,
+        "historical_pinned_buffer_or_state_import_allowed": false,
+        "historical_receipts_are_provenance_only": true,
+        "same_runtime_required": true,
+        "same_session_required": true,
+        "same_tcb_required": true
+      },
+      "future_l1_requires_fresh_same_runtime_same_tcb_joint_l0_to_l1_capture": true,
+      "immutable_authority_chain": {
+        "assessment_historical_continuation_only": {
+          "assessment_did_not_revalidate_or_authorize_a_follow_on_continuation": true,
+          "document_seal_sha256": "2c7da055d3e969cd72e6fdebf32c234d48f9614dbc0449e52e6c919a1c6e5c4c",
+          "document_sha256": "944ca0199f9de618478044c687c13ee2e7dbb2ebc7c2ce791fb8459a39bec590",
+          "schema": "hawking.ascension.qwen80_l1_source_token_continuation_readiness_contract.v1",
+          "status": "INCOMPLETE_QWEN80_SOURCE_TOKEN_L1_CONTINUATION_MISSING_TRUSTED_L0_HANDOFF_OR_AUTHORITY"
+        },
+        "handoff_authority": {
+          "document_seal_sha256": "ec31baec387a1065692b7fd0c2350f54db689112e77b50046225a37d316c40ca",
+          "document_sha256": "0d17df0a225cf763c7d80f043479a0378bfbc35ed81354a1ed4e9a8ab09cb43f",
+          "schema": "hawking.ascension.qwen80_l0_to_layer1_handoff_authority.v1",
+          "status": "ASSESSED_QWEN80_SOURCE_TOKEN_L0_TO_LAYER1_HANDOFF_INCOMPLETE_MISSING_RETAINED_DEVICE_OUTPUT_AND_POST_STATE_WITNESSES"
+        },
+        "l0_dispatch_plan": {
+          "l1_prefix_dispatches_in_historical_capture": 0,
+          "prefix_dispatches": 9,
+          "suffix_dispatches": 14,
+          "total_dispatches": 23
+        },
+        "lease_release_recommendation_contract": {
+          "document_seal_sha256": "820d078856f3f4d356c88fcd6741142e68de819a651f2fe97d359b73d1229378",
+          "document_sha256": "0987b7aa3848b1942ae029fdea279884668bb822c54d48757e55a11b6685358f",
+          "schema": "hawking.ascension.qwen80_source_token_l0_state_handoff_recommended_lease_release_contract.v1",
+          "status": "RECOMMENDED_QWEN80_SOURCE_TOKEN_L0_STATE_HANDOFF_LEASE_RELEASE_AFTER_OUTER_TERMINAL"
+        },
+        "versioned_manifest_and_admission": {
+          "admission_file_sha256": "0b601b57ef459bbfba69c4adba8c9fd2b069b3cbbf6ad7beaf3cee26556e9e53",
+          "admission_seal_sha256": "939b41322363da3db774a2530b207bf380ed641d23cae671fc6438c0eecbf628",
+          "manifest_file_sha256": "a0fcac0401a7962402bb8cb87d5055c83667b39575f9e0f4c7470d080758aa10",
+          "manifest_seal_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+          "model_key": "qwen80"
+        }
+      },
+      "joint_child_execution_authorized_by_this_wrapper": false,
+      "joint_l0_reencode_required": true,
+      "l0_inner_capture": {
+        "document_seal_sha256": "4389a5252bb787307c0e909c88e016eacf9e25c5d501c999db407695e7ee1171",
+        "document_sha256": "1d1ea7625f1914d53f10033be234cec78fa938cc2215f535ff7ece171ce708b1",
+        "present": true
+      },
+      "l0_outer_terminal": {
+        "document_seal_sha256": "0268f5642684a95488269f88df04bab70e3b9a8e876b598aa8032d8e633bd29c",
+        "document_sha256": "4063a539206d9e3899a8edd142d12825ad31581d6f46919952e9044ec3394966",
+        "present": true
+      },
+      "l1_execution_authorized_by_this_wrapper": false,
+      "lease_release_receipt": {
+        "document_seal_sha256": "5b49a1a85441bedd6e986b5ab2bfcdb1ac8560cc6fc30a31081b898a12a02820",
+        "document_sha256": "ad8f13579a09a560a070d9878b3f65c3608ca7f07c219cc830027333b6ffb286",
+        "present": true
+      },
+      "post_capture_assessment": {
+        "document_seal_sha256": "23b6021b8403b9403a9b11044d43b2ba712fbcb2b99c431936d93b16e75ddba5",
+        "document_sha256": "d85851dce965d95b98faaa3bf687b75adfdbc8c4b7ec539e0a48354303f4b7f9",
+        "present": true
+      },
+      "required_assessment": {
+        "assessment_document_seal_sha256": "23b6021b8403b9403a9b11044d43b2ba712fbcb2b99c431936d93b16e75ddba5",
+        "assessment_document_sha256": "d85851dce965d95b98faaa3bf687b75adfdbc8c4b7ec539e0a48354303f4b7f9",
+        "earned_status": "EARNED_QWEN80_SOURCE_TOKEN_L0_STATE_HANDOFF_COMPONENT_L1_BINDING_NOT_EXECUTED",
+        "must_be_sealed": true,
+        "must_bind_actual_release": true,
+        "must_bind_l0_outer_and_inner": true,
+        "must_remain_l1_not_executed": true,
+        "schema": "hawking.ascension.qwen80_l0_state_handoff_post_capture_assessment.v1"
+      },
+      "retained_l0_state_handoff": {
+        "captured_session_id": "qwen80-source-token-l0-next-layer",
+        "l0_active_and_rollback_state": {
+          "active_conv": {
+            "allocation_id": "qwen80/session=qwen80-source-token-l0-next-layer/arena=active/domain=deltanet_conv_history",
+            "device_buffer_id": "882c61cd10cedcaacfc386c70e69ea40fb57cbdf4ecf3599fd2eb83296f63a04",
+            "post_state_f32le_sha256": "06693599bda32df3759a8d1694cf08258c36bc44c93629a7bf09070837ca14c7"
+          },
+          "active_recurrent": {
+            "allocation_id": "qwen80/session=qwen80-source-token-l0-next-layer/arena=active/domain=deltanet_recurrent",
+            "device_buffer_id": "020abfec318529fa55bf3c420baa078a18d889608dd293f4e2b90fcf8958a08d",
+            "post_state_f32le_sha256": "fa273e313257f7c79c3a743b68a78e7dca653f32e9d9892d3357ef7618960faf"
+          },
+          "rollback_conv": {
+            "allocation_id": "qwen80/session=qwen80-source-token-l0-next-layer/arena=rollback/domain=deltanet_conv_history",
+            "checkpoint_f32le_sha256": "3a3ed164e42500a1c5b2d0093f0a813d27dc50d038f330cc100a7e70ece2e6e4",
+            "device_buffer_id": "22d328bd70971d17bddbe4db9aaa59f8196277d418d07b0291f256d965f98fee"
+          },
+          "rollback_recurrent": {
+            "allocation_id": "qwen80/session=qwen80-source-token-l0-next-layer/arena=rollback/domain=deltanet_recurrent",
+            "checkpoint_f32le_sha256": "5647f05ec18958947d32874eeb788fa396a05d0bab7c1b71f112ceb7e9b31eee",
+            "device_buffer_id": "3689079ce370d31f8277b5027cf804bb1cdb88e5b8fc6724b0b511937dfa9b03"
+          }
+        },
+        "l1_binding_not_executed": true,
+        "l1_prefix_dispatches": 0,
+        "reserved_l1_slot": {
+          "active_conv_capacity_bytes": 196608,
+          "active_conv_offset_bytes": 98304,
+          "active_recurrent_capacity_bytes": 4194304,
+          "active_recurrent_offset_bytes": 2097152,
+          "layer": 1,
+          "linear_state_slot": 1
+        },
+        "retained_l0_second_residual": {
+          "bytes": 8192,
+          "device_buffer_id": "8eee2226c5bb0ff71e0d5e38eb1981e9f39692912222a73cbdc6b4a952f7e549",
+          "elements": 2048,
+          "f32le_sha256": "dae9e008fc5fb62ff3e10f8c89e2623b4c79c7b5fc44af5e1478923ec748f85c"
+        },
+        "source_token_id": 1
+      },
+      "schema": "hawking.ascension.qwen80_l0_state_handoff_post_capture_assessor_binding.v1",
+      "seal_sha256": "523518a8fdc3d43416dfdfdf62488da9032275b41b8fe2e71c6c8cc29e27e403",
+      "status": "REQUIRED_QWEN80_SOURCE_TOKEN_L0_STATE_HANDOFF_POST_CAPTURE_ASSESSMENT_BEFORE_L1_JOINT_CAPTURE"
+    },
+    "document_seal_sha256": "523518a8fdc3d43416dfdfdf62488da9032275b41b8fe2e71c6c8cc29e27e403",
+    "document_sha256": "75444bee046d533ff6eefc3ed7df8b41e5b359e552ec9e17e98e40ad7a1cbc1c"
+  },
+  "continuation": {
+    "document": {
+      "authority_boundary": {
+        "gpu_leases_authorized": 0,
+        "new_physical_model_processes_authorized": 0,
+        "port_binds_authorized": 0,
+        "server_starts_authorized": 0,
+        "tournament_state_mutations_authorized": 0,
+        "watcher_changes_authorized": 0
+      },
+      "blockers": [],
+      "claim_boundary": {
+        "cpu_only_checklist": true,
+        "cross_process_or_prior_capture_pinned_buffer_reuse_authorized": false,
+        "does_not_acquire_lease": true,
+        "does_not_claim_complete_layer_token_decoder_or_tournament": true,
+        "does_not_construct_metal_or_dispatch": true,
+        "does_not_execute_l1": true,
+        "does_not_measure_tps_or_tg": true,
+        "does_not_open_or_scan_artifacts": true,
+        "does_not_start_runtime_server_or_watcher": true,
+        "future_l1_requires_fresh_same_runtime_same_tcb_joint_l0_to_l1_capture": true,
+        "l0_handoff_is_evidence_baseline_only": true,
+        "l0_handoff_receipt_must_state_l1_binding_not_executed": true
+      },
+      "future_l1_slot1_deltanet_prefix_scope": {
+        "baseline_l0_handoff_receipt_seal_sha256": "4389a5252bb787307c0e909c88e016eacf9e25c5d501c999db407695e7ee1171",
+        "baseline_l0_output_device_buffer_id": "8eee2226c5bb0ff71e0d5e38eb1981e9f39692912222a73cbdc6b4a952f7e549",
+        "baseline_l0_output_f32le_sha256": "dae9e008fc5fb62ff3e10f8c89e2623b4c79c7b5fc44af5e1478923ec748f85c",
+        "baseline_l0_session_id": "qwen80-source-token-l0-next-layer",
+        "cross_process_or_prior_capture_pinned_buffer_reuse_authorized": false,
+        "exact_prefix_dispatch_count": 9,
+        "exact_prefix_dispatches": [
+          {
+            "kernel": "qwen_next_direct_packed_input_rmsnorm",
+            "ordinal": 1,
+            "stage": "input_rmsnorm"
+          },
+          {
+            "kernel": "qwen_binary_sign_scale_matvec",
+            "ordinal": 2,
+            "stage": "qkvz_projection"
+          },
+          {
+            "kernel": "qwen_binary_sign_scale_matvec",
+            "ordinal": 3,
+            "stage": "ba_projection"
+          },
+          {
+            "kernel": "qwen_next_qkvz_rearrange_conv_l2",
+            "ordinal": 4,
+            "stage": "qkvz_rearrange_conv"
+          },
+          {
+            "kernel": "qwen_next_ba_to_decay_beta",
+            "ordinal": 5,
+            "stage": "ba_decay_beta"
+          },
+          {
+            "kernel": "qwen_next_gated_delta_decode_single",
+            "ordinal": 6,
+            "stage": "deltanet_recurrent"
+          },
+          {
+            "kernel": "qwen_next_deltanet_gated_rmsnorm",
+            "ordinal": 7,
+            "stage": "deltanet_gated_rmsnorm"
+          },
+          {
+            "kernel": "qwen_binary_sign_scale_matvec",
+            "ordinal": 8,
+            "stage": "out_projection"
+          },
+          {
+            "kernel": "qwen_next_add_residual",
+            "ordinal": 9,
+            "stage": "first_residual"
+          }
+        ],
+        "fresh_joint_capture_dispatch_sequence": "L0_component(23)+L1_slot1_DeltaNet_prefix(9)",
+        "fresh_joint_capture_same_runtime_required": true,
+        "fresh_joint_capture_same_session_required": true,
+        "fresh_joint_capture_same_tcb_required": true,
+        "fresh_joint_l0_component_dispatch_count": 23,
+        "fresh_joint_l0_output_baseline_parity_required": true,
+        "fresh_joint_l0_output_identity_required": true,
+        "fresh_joint_l1_slot1_prefix_dispatch_count": 9,
+        "fresh_joint_total_dispatch_count": 32,
+        "fresh_same_runtime_same_tcb_joint_l0_to_l1_capture_required": true,
+        "future_l1_not_authorized_by_baseline_receipt_alone": true,
+        "l0_baseline_evidence_only": true,
+        "layer": 1,
+        "linear_state_slot": 1,
+        "mixer": "delta_net",
+        "no_l1_suffix_or_moe_dispatch_authorized": true,
+        "required_post_l1_state_rollback_and_output_parity": {
+          "active_conv": {
+            "capacity_bytes": 196608,
+            "device_buffer_identity_required": true,
+            "offset_bytes": 98304,
+            "post_state_f32le_sha256_required": true,
+            "slot": 1
+          },
+          "active_recurrent": {
+            "capacity_bytes": 4194304,
+            "device_buffer_identity_required": true,
+            "offset_bytes": 2097152,
+            "post_state_f32le_sha256_required": true,
+            "slot": 1
+          },
+          "layer": 1,
+          "linear_state_slot": 1,
+          "output": {
+            "bytes": 8192,
+            "device_buffer_identity_required": true,
+            "elements": 2048,
+            "f32le_sha256_required": true,
+            "fresh_joint_l0_output_baseline_parity_required": true,
+            "prior_capture_pinned_buffer_reuse_authorized": false,
+            "same_fresh_joint_capture_session_runtime_tcb_and_l0_input_identity_required": true,
+            "strict_cpu_device_parity_required": true
+          },
+          "rollback_conv": {
+            "capacity_bytes": 196608,
+            "checkpoint_f32le_sha256_required": true,
+            "device_buffer_identity_required": true,
+            "offset_bytes": 98304,
+            "slot": 1
+          },
+          "rollback_recurrent": {
+            "capacity_bytes": 4194304,
+            "checkpoint_f32le_sha256_required": true,
+            "device_buffer_identity_required": true,
+            "offset_bytes": 2097152,
+            "slot": 1
+          }
+        }
+      },
+      "l0_state_handoff_receipt": {
+        "blockers": [],
+        "document_seal_sha256": "4389a5252bb787307c0e909c88e016eacf9e25c5d501c999db407695e7ee1171",
+        "document_sha256": "1d1ea7625f1914d53f10033be234cec78fa938cc2215f535ff7ece171ce708b1",
+        "present": true,
+        "valid": true
+      },
+      "l0_to_l1_preflight": {
+        "blockers": [],
+        "document_seal_sha256": "c7c81b8015f946adaf7e217273a9ac6557ef98de7e7a4c08cbff069dbf69f6bf",
+        "document_sha256": "111632516d38d6af26e1af77debe0c04cc69a6aeb1251c97cb58c4560daeb44c",
+        "present": true,
+        "valid": true
+      },
+      "l1_execution_performed_by_this_contract": false,
+      "l1_prefix_dispatches_executed_by_this_contract": 0,
+      "prepared": true,
+      "schedule_authority": {
+        "blockers": [],
+        "document_seal_sha256": "5ed1367c4e5e0680967dde35ae583aec09f4417b5ecbae14d0d54184cd4a8554",
+        "document_sha256": "4ab2c83d9df8573d95a65a1498ddd45dc6d812d47c123700981ffd87be1e5e39",
+        "present": true,
+        "valid": true
+      },
+      "schema": "hawking.ascension.qwen80_l1_source_token_continuation_readiness_contract.v1",
+      "seal_sha256": "fdb3ec5a9ca400517ab958ef1a26ce56567c00ed9705eff30ecf725b98187f93",
+      "status": "PREPARED_QWEN80_SOURCE_TOKEN_L1_SLOT1_DELTANET_PREFIX_CAPTURE_RESERVED_NOT_EXECUTED"
+    },
+    "document_seal_sha256": "fdb3ec5a9ca400517ab958ef1a26ce56567c00ed9705eff30ecf725b98187f93",
+    "document_sha256": "cad60fdb800b5ba2f4202d3c61095ee501e17f79f19abefd87c1e66c83e7cb7e"
+  },
+  "joint_inner_capture": {
+    "document": {
+      "artifact_binding": {
+        "admission_receipt": {
+          "bytes": 4749,
+          "document_seal_sha256": "939b41322363da3db774a2530b207bf380ed641d23cae671fc6438c0eecbf628",
+          "document_sha256": "e23b4eaec6296299c79cb3648c8db35b193867004f6e78c8ae423611d5167e21",
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/complete-admission/receipts/QWEN80_COMPLETE_BINARY_GRAVITY_ADMISSION_RECEIPT_14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b.json",
+          "sha256": "0b601b57ef459bbfba69c4adba8c9fd2b069b3cbbf6ad7beaf3cee26556e9e53"
+        },
+        "manifest": {
+          "bytes": 77842421,
+          "document_seal_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+          "document_sha256": "b19c733b337facf441493ad7bc2ce042acaa29b5e65b7f4f8694f7f4607e2d1f",
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+          "sha256": "a0fcac0401a7962402bb8cb87d5055c83667b39575f9e0f4c7470d080758aa10"
+        }
+      },
+      "claim_boundary": {
+        "complete_layer_executed": false,
+        "component_only": true,
+        "decoder_started": false,
+        "l1_suffix_or_moe_executed": false,
+        "server_or_watcher_started": false,
+        "token_generated": false
+      },
+      "durable_capture": {
+        "capture_directory": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_OUTER_CAPTURE_20260809T115059Z/inner",
+        "outer_reaped_capture_required": true,
+        "receipt_written_last_is_completion_marker": true,
+        "replay_guarded": true
+      },
+      "execution_phase": {
+        "command_commit_may_have_been_attempted": true,
+        "command_fence_succeeded": true,
+        "device_dispatch_may_have_occurred": true,
+        "dispatches_encoded": 32,
+        "encoded_kernel_names": [
+          "qwen_next_direct_packed_input_rmsnorm",
+          "qwen_binary_sign_scale_matvec",
+          "qwen_binary_sign_scale_matvec",
+          "qwen_next_qkvz_rearrange_conv_l2",
+          "qwen_next_ba_to_decay_beta",
+          "qwen_next_gated_delta_decode_single",
+          "qwen_next_deltanet_gated_rmsnorm",
+          "qwen_binary_sign_scale_matvec",
+          "qwen_next_add_residual",
+          "qwen80_postnorm_router_top10_rmsnorm",
+          "qwen80_postnorm_router_top10_matvec",
+          "qwen80_postnorm_router_top10_select",
+          "qwen80_all_ten_routed_wave_route_guard",
+          "qwen80_all_ten_routed_wave_gate_up",
+          "qwen80_all_ten_routed_wave_swiglu",
+          "qwen80_all_ten_routed_wave_down_weighted",
+          "qwen80_shared_expert_wave_gate_up",
+          "qwen80_shared_expert_wave_swiglu",
+          "qwen80_shared_expert_wave_down",
+          "qwen80_shared_expert_wave_scalar_gate",
+          "qwen80_shared_expert_wave_apply_sigmoid_gate",
+          "qwen80_moe_wave_aggregate_second_residual_route_sum",
+          "qwen80_moe_wave_aggregate_second_residual_add_shared_residual",
+          "qwen_next_direct_packed_input_rmsnorm",
+          "qwen_binary_sign_scale_matvec",
+          "qwen_binary_sign_scale_matvec",
+          "qwen_next_qkvz_rearrange_conv_l2",
+          "qwen_next_ba_to_decay_beta",
+          "qwen_next_gated_delta_decode_single",
+          "qwen_next_deltanet_gated_rmsnorm",
+          "qwen_binary_sign_scale_matvec",
+          "qwen_next_add_residual"
+        ],
+        "metal_context_constructed": true,
+        "metal_context_construction_attempted": true,
+        "readback_started": true,
+        "strict_artifact_admission_started": true,
+        "strict_artifact_admission_succeeded": true,
+        "structural_kernel_trace_enabled": true
+      },
+      "fixture_or_synthetic": false,
+      "fresh_joint_execution": {
+        "fence_count": 1,
+        "fresh_runtime": true,
+        "fresh_session": true,
+        "l0_dispatches": 23,
+        "l1_prefix_dispatches": 9,
+        "route_guard_enforced_before_l1": true,
+        "runtime_identity_sha256": "11f7778b111a9b48b053871894023a7af5080bbc2324a6ebc67c8f68be5e2d17",
+        "same_runtime": true,
+        "same_tcb": true,
+        "session_identity_sha256": "19b95c7d18e7b975f6142e93d0e01effca8f927bf3814ae5d10af1f784bb2ce3",
+        "source_token_id": 1,
+        "structural_trace_non_timed": true,
+        "tcb_identity_sha256": "ee57736f29333a3d79ec02f83287451e91fef7962a3be1a3def8c0f93641fdce",
+        "total_dispatches": 32
+      },
+      "fresh_readbacks": {
+        "fresh_l0_state": {
+          "active_conv": {
+            "capacity_bytes": 98304,
+            "device_buffer_identity_sha256": "fd0ab8d1820767a19bb7a370669771a79281f4fcdfa3cabcd1388cab3eaff3cb",
+            "f32le_sha256": "06693599bda32df3759a8d1694cf08258c36bc44c93629a7bf09070837ca14c7",
+            "max_abs_error": 1.0967254638671875e-05,
+            "offset_bytes": 0,
+            "passed": true,
+            "slot": 0
+          },
+          "active_recurrent": {
+            "capacity_bytes": 2097152,
+            "device_buffer_identity_sha256": "a8b42be3f4c8d1da9afe2d0fe28ee741c2c169ec48ed70077f03e40daa81dbe2",
+            "f32le_sha256": "fa273e313257f7c79c3a743b68a78e7dca653f32e9d9892d3357ef7618960faf",
+            "max_abs_error": 5.029141902923584e-08,
+            "offset_bytes": 0,
+            "passed": true,
+            "slot": 0
+          },
+          "rollback_conv": {
+            "capacity_bytes": 98304,
+            "device_buffer_identity_sha256": "4d8d6da46b0c6374ad7afba9af9ca1a01e1dd9c4498a22a8b67051254cd45f3a",
+            "f32le_sha256": "3a3ed164e42500a1c5b2d0093f0a813d27dc50d038f330cc100a7e70ece2e6e4",
+            "max_abs_error": 0.0,
+            "offset_bytes": 0,
+            "passed": true,
+            "slot": 0
+          },
+          "rollback_recurrent": {
+            "capacity_bytes": 2097152,
+            "device_buffer_identity_sha256": "3eb07a2fc291db419da5e7d7bd6f4961e89213b2a6b5a5692a47ac63137802c7",
+            "f32le_sha256": "5647f05ec18958947d32874eeb788fa396a05d0bab7c1b71f112ceb7e9b31eee",
+            "max_abs_error": 0.0,
+            "offset_bytes": 0,
+            "passed": true,
+            "slot": 0
+          }
+        },
+        "fresh_l1_slot1": {
+          "active_conv": {
+            "capacity_bytes": 196608,
+            "device_buffer_identity_sha256": "4c0a543898b4fc7b1aed8b41a9827d752628e1c0e45feb2353b38fe1cb3ab84e",
+            "f32le_sha256": "ff9f1658bb6e6abe064d16e1422636e9c16d2a3542f220383f45e24d2db7cda6",
+            "max_abs_error": 1.33514404296875e-05,
+            "offset_bytes": 98304,
+            "passed": true,
+            "slot": 1
+          },
+          "active_recurrent": {
+            "capacity_bytes": 4194304,
+            "device_buffer_identity_sha256": "8d7191587d56e105d747ac0cb98ca5796a8d899c3827924c7bf5f4cf7026ff80",
+            "f32le_sha256": "a569607b330333cbb7c505b8db52448378cfac48faf818a35cf2dd52fff938ca",
+            "max_abs_error": 4.470348358154297e-08,
+            "offset_bytes": 2097152,
+            "passed": true,
+            "slot": 1
+          },
+          "first_residual_output": {
+            "cpu_f32le_sha256": "e5ba6af25a3f697d52bcab194a93934b336984355dbab421e1835420863cf1ac",
+            "device_f32le_sha256": "43e83b58df4129dec51a151b53792c27f618e1ec3569f0aa170d61499cc3d1c0",
+            "max_abs_error": 8.344650268554688e-07,
+            "passed": true
+          },
+          "input": {
+            "cpu_f32le_sha256": "9361e6eba7c1b88732cc2986620e50d146f8f3481c90f422f0423b0f0f7461cf",
+            "device_f32le_sha256": "dae9e008fc5fb62ff3e10f8c89e2623b4c79c7b5fc44af5e1478923ec748f85c",
+            "max_abs_error": 8.344650268554688e-07,
+            "passed": true
+          },
+          "layer": 1,
+          "linear_state_slot": 1,
+          "output_bytes": 8192,
+          "output_elements": 2048,
+          "rollback_conv": {
+            "capacity_bytes": 196608,
+            "device_buffer_identity_sha256": "ae442a72e1f97f1901d7e5a93333d7c29fb3d81814d7fac39195e4850efbafd2",
+            "f32le_sha256": "3a3ed164e42500a1c5b2d0093f0a813d27dc50d038f330cc100a7e70ece2e6e4",
+            "max_abs_error": 0.0,
+            "offset_bytes": 98304,
+            "passed": true,
+            "slot": 1
+          },
+          "rollback_recurrent": {
+            "capacity_bytes": 4194304,
+            "device_buffer_identity_sha256": "9d14468703d752ebbf3085a8501bf952c70c2d2500a2b2cdffaec05f5a373b59",
+            "f32le_sha256": "5647f05ec18958947d32874eeb788fa396a05d0bab7c1b71f112ceb7e9b31eee",
+            "max_abs_error": 0.0,
+            "offset_bytes": 2097152,
+            "passed": true,
+            "slot": 1
+          }
+        },
+        "l0_suffix": {
+          "all_ten_weighted_route_witnesses": [
+            {
+              "cpu_f32le_sha256": "0a86ab8a6b1d56cb0c1273013627b66ce1893893f6e6671aa25a008cd83bd8f7",
+              "expert_id": 423,
+              "f32le_sha256": "e3a2d4f94e18fb46fee41e81f651bb1687d83778767b6007958998507c41f425",
+              "max_abs_error": 2.0489096641540527e-08,
+              "passed": true,
+              "wave_index": 0
+            },
+            {
+              "cpu_f32le_sha256": "963f02fbaa0ec26e070f9b4dcc685f2e355a18b9b191e6ac610b7aabfb65de64",
+              "expert_id": 463,
+              "f32le_sha256": "9e4206c965572ef164b53de489aa3ac7b0239bbf5df652541c7039e088e18869",
+              "max_abs_error": 4.284083843231201e-08,
+              "passed": true,
+              "wave_index": 1
+            },
+            {
+              "cpu_f32le_sha256": "17a5609ce6d0955b605ede52c28e1107a56ff7b0e32571d0d872f9c1fcde36f2",
+              "expert_id": 367,
+              "f32le_sha256": "3e37d698ab35cf102977be2d07ef564b837ae604135c3732f89980597cbc3714",
+              "max_abs_error": 1.0244548320770264e-08,
+              "passed": true,
+              "wave_index": 2
+            },
+            {
+              "cpu_f32le_sha256": "00aeeb1ba396507d481e3f041e1cae9d74efcf8d3eec6396e830debd48008f16",
+              "expert_id": 451,
+              "f32le_sha256": "c2db99f9e9e099038c819cade777ad392e724ea0268c640eac3f6e1b79e168c2",
+              "max_abs_error": 5.3551048040390015e-09,
+              "passed": true,
+              "wave_index": 3
+            },
+            {
+              "cpu_f32le_sha256": "0e2d65b6a49128e7661cd82ae12dca29cc7eb690c97d823ac504a90f052298f7",
+              "expert_id": 379,
+              "f32le_sha256": "4c7142504821d9022633da9d0bf184a304fcd8d3781be7f7de3bfc81d6352963",
+              "max_abs_error": 1.5133991837501526e-09,
+              "passed": true,
+              "wave_index": 4
+            },
+            {
+              "cpu_f32le_sha256": "a3894a993257b40d32da2f38b5c95457b613d8897871af87ab8cb7731929832e",
+              "expert_id": 2,
+              "f32le_sha256": "ef00850a7e35553a62218ee9bb5fd8e793d97831225c6fc44646923f776e543c",
+              "max_abs_error": 4.190951585769653e-09,
+              "passed": true,
+              "wave_index": 5
+            },
+            {
+              "cpu_f32le_sha256": "ebc1bce07be29894278ed0795ece2dbb2299f9f8e2ff3c7e01a42467ca5fc4f0",
+              "expert_id": 444,
+              "f32le_sha256": "6140d876a0fac8346c6491a49938f5c9c5266bd5b6dee38345d63dc3d16eeec3",
+              "max_abs_error": 1.5832483768463135e-08,
+              "passed": true,
+              "wave_index": 6
+            },
+            {
+              "cpu_f32le_sha256": "4fcd5ce6112cb4910f926b9ccb815675dfd4fab7e62907f9dba9ce2cad0ace2a",
+              "expert_id": 237,
+              "f32le_sha256": "40dc08ce393a81ed875ebc5f596e021f0fdf4cb6407f2928c09ae7f2c3e2979a",
+              "max_abs_error": 4.0745362639427185e-09,
+              "passed": true,
+              "wave_index": 7
+            },
+            {
+              "cpu_f32le_sha256": "fe159aa2c7e5ed1d27469a2b68258718b62cfa302b91fc0fc29ef7644aab2477",
+              "expert_id": 198,
+              "f32le_sha256": "143ab57d0cce8a940056d5f1d5837b9675c0e26ec714b77726c42cdf3ed55f29",
+              "max_abs_error": 1.4435499906539917e-08,
+              "passed": true,
+              "wave_index": 8
+            },
+            {
+              "cpu_f32le_sha256": "f2d2c365bc667f56f375d51609602c28b97770de44a4ba679a918299ec90ecd2",
+              "expert_id": 328,
+              "f32le_sha256": "21f1119d3337b7ce838645c4343cea6ce0acb5ac1ccfc89c7c63410cc0707030",
+              "max_abs_error": 3.725290298461914e-09,
+              "passed": true,
+              "wave_index": 9
+            }
+          ],
+          "postnorm": {
+            "cpu_f32le_sha256": "6e0be11595ef1fc626bf3af453886ed30f2fa2321f06b2ace0ac475245f73839",
+            "device_f32le_sha256": "a4998d92bfec21408aa38ecd983ca3156ba4d84d6afb1d4b9c68c242b2779be4",
+            "max_abs_error": 3.039836883544922e-06,
+            "passed": true
+          },
+          "route_guard": {
+            "expected_route_ids": [
+              423,
+              463,
+              367,
+              451,
+              379,
+              2,
+              444,
+              237,
+              198,
+              328
+            ],
+            "expected_route_weights": [
+              0.291953444480896,
+              0.1298169195652008,
+              0.10554979741573334,
+              0.10270649194717407,
+              0.06565224379301071,
+              0.06529171764850616,
+              0.06260598450899124,
+              0.06068083271384239,
+              0.059149645268917084,
+              0.056592922657728195
+            ],
+            "observed_route_ids": [
+              423,
+              463,
+              367,
+              451,
+              379,
+              2,
+              444,
+              237,
+              198,
+              328
+            ],
+            "observed_route_weights": [
+              0.29195326566696167,
+              0.12981680035591125,
+              0.10554997622966766,
+              0.10270661115646362,
+              0.06565220654010773,
+              0.06529173254966736,
+              0.06260598450899124,
+              0.06068090349435806,
+              0.05914952978491783,
+              0.056592948734760284
+            ],
+            "passed": true,
+            "value": 1,
+            "weights_max_abs_error": 1.7881393432617188e-07
+          },
+          "routed_sum": {
+            "cpu_f32le_sha256": "a6e214781597e58e5ded67f571e3b2c3c3685882b8c438a3a131568aceb41eee",
+            "device_f32le_sha256": "91f5bcbe04c9a59df79305ef0954f8d043f37ee7cadaf9735e7a3a6b45fe871b",
+            "max_abs_error": 5.587935447692871e-08,
+            "passed": true
+          },
+          "router_logits": {
+            "cpu_f32le_sha256": "c711a01a52c7e54ebe874458b9599fb5a5455cc40dfae3436de0503e6e9509b5",
+            "device_f32le_sha256": "b33b309b47bf47863a9ed493626337fa451efa9e1d5382edf329cb87b10841ef",
+            "max_abs_error": 7.152557373046875e-06,
+            "passed": true
+          },
+          "second_residual": {
+            "cpu_f32le_sha256": "9361e6eba7c1b88732cc2986620e50d146f8f3481c90f422f0423b0f0f7461cf",
+            "device_f32le_sha256": "dae9e008fc5fb62ff3e10f8c89e2623b4c79c7b5fc44af5e1478923ec748f85c",
+            "max_abs_error": 8.344650268554688e-07,
+            "passed": true
+          },
+          "shared_output": {
+            "cpu_f32le_sha256": "5d4002e51a5397b1827392531acd9f3b09dd6fe52800a6e68bbfd844c50c6c99",
+            "device_f32le_sha256": "45485eef8b16a6d3fd06cc442758677a7c0fcc24240e89e765f770f937f77454",
+            "max_abs_error": 8.344650268554688e-07,
+            "passed": true
+          }
+        }
+      },
+      "issuer": {
+        "issuer_identity_sha256": "b8f97e484cf8e0680576d9639bf40fd98a76fc23eeb00e9ffcb5c7a330589aea",
+        "role": "joint_component_capture_child"
+      },
+      "joint_lease_binding": {
+        "lease_id": "5ac5478ab1a3bd7f20c1233de4adfb07adfb54d486e2abf6627bab4a0c9a8239",
+        "receipt": {
+          "bytes": 2522,
+          "document_seal_sha256": "03906ef7efd21cccaed4ff8e8f29df6d8d75858313e9f076ae8d85ff3807f60d",
+          "document_sha256": "b82f39b45a903253cd80ff08fe1c01d1df108c88b55bc236cadc7e023d40ec4a",
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_QUIET_METAL_LEASE_20260809T115059Z.json",
+          "sha256": "b82f39b45a903253cd80ff08fe1c01d1df108c88b55bc236cadc7e023d40ec4a"
+        }
+      },
+      "joint_outer_preflight_binding": {
+        "bytes": 8285,
+        "document_seal_sha256": "eb8849b790699065f247856e5494c2ecde1af1098bdeb4f49af95caf6b5481bb",
+        "document_sha256": "f3c6008c69c2fcf1e66e5ec781a9bb55dd3b28b80eb597eb1d97473374c990fc",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_INTERFACE_OUTER_CPU_PREFLIGHT_20260809T114233Z/outer-preflight.json",
+        "sha256": "f3c6008c69c2fcf1e66e5ec781a9bb55dd3b28b80eb597eb1d97473374c990fc"
+      },
+      "joint_static_plan_binding": {
+        "bytes": 9852,
+        "document_seal_sha256": "c03b548ecb16935273957902554ab50427b80c79781c9f2e57ed28577f810eb3",
+        "document_sha256": "512c3dc384e9b5c0a5ee23524b304e8dcc9027ea4fdcf4a373d0dd720a5d08fb",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_INTERFACE_STATIC_PLAN_20260809T114151Z/joint-child-static-plan.json",
+        "sha256": "c71875c01ba0e4cd7b6eff23fdd6c60be70b11993c20e13ad545230b401e3eb0"
+      },
+      "opaque_l0_continuation": {
+        "capability_identity_sha256": "a961975ee21da9fd91c274449977b10c2639744f9b72f09498659a5723aeb93f",
+        "command_buffer_identity_sha256": "ee57736f29333a3d79ec02f83287451e91fef7962a3be1a3def8c0f93641fdce",
+        "consuming_finalizer": "Qwen80SameRuntimeLayer1DeltaNetPrefixEncoder::finalize_after_exact_joint_fence",
+        "factory": "Qwen80CompleteNativeRuntime::certify_source_token_l0_true_moe_continuation",
+        "freshly_derived_from_l0_23_dispatch_graph": true,
+        "l1_encoder": "Qwen80CompleteNativeRuntime::encode_source_token_l1_deltanet_prefix_from_canonical_l0_continuation_into",
+        "non_transferable_across_processes": true,
+        "opaque": true,
+        "raw_pinned_buffer_or_dispatch_count_input_accepted": false,
+        "runtime_identity_sha256": "11f7778b111a9b48b053871894023a7af5080bbc2324a6ebc67c8f68be5e2d17",
+        "runtime_state_arena_identity_sha256": "31e720ae22c627fa2aa037a3ffe70a0c5fea8eeac0471db15227c289a5930804",
+        "same_command_buffer_bound": true,
+        "same_runtime_state_arena_bound": true
+      },
+      "outer_launch_authority_binding": {
+        "bytes": 2674,
+        "document_seal_sha256": "7f881aefc99e51d45d84261a7e99c7b41cbcf4009155f10f489af5303533a7f1",
+        "document_sha256": "afef634e23cc2813f781cf0f12c3e8fa1f70125b2a2ecc80fe3796673d001385",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_OUTER_CAPTURE_20260809T115059Z/outer-launch-authority.json",
+        "sha256": "afef634e23cc2813f781cf0f12c3e8fa1f70125b2a2ecc80fe3796673d001385"
+      },
+      "schema": "hawking.ascension.qwen80_source_token_l0_l1_same_runtime_prefix_capture.v1",
+      "seal_sha256": "d87f1e1c61f4dc8b7103cd327780638f089b1d78f20b9dffb4393470f41229f6",
+      "self_asserted": false,
+      "single_fence": {
+        "append_after_fence_possible": false,
+        "consuming_finalizer": "Qwen80SameRuntimeLayer1DeltaNetPrefixEncoder::finalize_after_exact_joint_fence",
+        "fence_count": 1,
+        "fence_succeeded": true,
+        "only_command_buffer_consumed": true,
+        "readbacks_after_fence": true
+      },
+      "status": "CAPTURED_QWEN80_SOURCE_TOKEN_L0_REENCODE_AND_L1_SLOT1_PREFIX_SAME_RUNTIME_COMPONENT_ONLY",
+      "structural_kernel_trace": {
+        "exact_order": true,
+        "kernel_names": [
+          "qwen_next_direct_packed_input_rmsnorm",
+          "qwen_binary_sign_scale_matvec",
+          "qwen_binary_sign_scale_matvec",
+          "qwen_next_qkvz_rearrange_conv_l2",
+          "qwen_next_ba_to_decay_beta",
+          "qwen_next_gated_delta_decode_single",
+          "qwen_next_deltanet_gated_rmsnorm",
+          "qwen_binary_sign_scale_matvec",
+          "qwen_next_add_residual",
+          "qwen80_postnorm_router_top10_rmsnorm",
+          "qwen80_postnorm_router_top10_matvec",
+          "qwen80_postnorm_router_top10_select",
+          "qwen80_all_ten_routed_wave_route_guard",
+          "qwen80_all_ten_routed_wave_gate_up",
+          "qwen80_all_ten_routed_wave_swiglu",
+          "qwen80_all_ten_routed_wave_down_weighted",
+          "qwen80_shared_expert_wave_gate_up",
+          "qwen80_shared_expert_wave_swiglu",
+          "qwen80_shared_expert_wave_down",
+          "qwen80_shared_expert_wave_scalar_gate",
+          "qwen80_shared_expert_wave_apply_sigmoid_gate",
+          "qwen80_moe_wave_aggregate_second_residual_route_sum",
+          "qwen80_moe_wave_aggregate_second_residual_add_shared_residual",
+          "qwen_next_direct_packed_input_rmsnorm",
+          "qwen_binary_sign_scale_matvec",
+          "qwen_binary_sign_scale_matvec",
+          "qwen_next_qkvz_rearrange_conv_l2",
+          "qwen_next_ba_to_decay_beta",
+          "qwen_next_gated_delta_decode_single",
+          "qwen_next_deltanet_gated_rmsnorm",
+          "qwen_binary_sign_scale_matvec",
+          "qwen_next_add_residual"
+        ],
+        "non_timed": true
+      },
+      "upstream_authorities": {
+        "assessor_binding": {
+          "document_seal_sha256": "523518a8fdc3d43416dfdfdf62488da9032275b41b8fe2e71c6c8cc29e27e403",
+          "document_sha256": "75444bee046d533ff6eefc3ed7df8b41e5b359e552ec9e17e98e40ad7a1cbc1c",
+          "present": true
+        },
+        "continuation": {
+          "document_seal_sha256": "fdb3ec5a9ca400517ab958ef1a26ce56567c00ed9705eff30ecf725b98187f93",
+          "document_sha256": "cad60fdb800b5ba2f4202d3c61095ee501e17f79f19abefd87c1e66c83e7cb7e",
+          "present": true
+        },
+        "schedule_wrapper": {
+          "document_seal_sha256": "5ed1367c4e5e0680967dde35ae583aec09f4417b5ecbae14d0d54184cd4a8554",
+          "document_sha256": "4ab2c83d9df8573d95a65a1498ddd45dc6d812d47c123700981ffd87be1e5e39",
+          "present": true
+        }
+      }
+    },
+    "document_seal_sha256": "d87f1e1c61f4dc8b7103cd327780638f089b1d78f20b9dffb4393470f41229f6",
+    "document_sha256": "55223ee73c1688ed108d06f1e0fa56a5214faea1b36d40087dd7209d7b50650e"
+  },
+  "joint_lease_release": {
+    "document": {
+      "actual_release_performed": true,
+      "automatic_retry_prohibited": true,
+      "capture_succeeded": true,
+      "fixture_or_synthetic": false,
+      "fresh_lease_required_for_any_future_gpu_work": true,
+      "issuer": {
+        "issuer_identity_sha256": "0300342835cc67fc92ff85fe280d8a13867a4cc39065d22b9bf389efb0d3f376",
+        "role": "joint_component_lease_release_authority"
+      },
+      "lease_id": "5ac5478ab1a3bd7f20c1233de4adfb07adfb54d486e2abf6627bab4a0c9a8239",
+      "lease_released": true,
+      "outer_terminal": {
+        "document_seal_sha256": "b575fe54a5a6650f4deb440b29c3149f121cbc8c909e89a61a703a89a22a6a40",
+        "document_sha256": "692b2ac5b1c1256a64e8d20858c59693e694061f88c684a0e660b9c7475143ef",
+        "present": true
+      },
+      "outer_terminal_status": "CAPTURED_QWEN80_SOURCE_TOKEN_L0_L1_SAME_RUNTIME_PREFIX_OUTER_TERMINAL_COMPONENT_ONLY",
+      "released_after_outer_terminal": true,
+      "schema": "hawking.ascension.qwen80_source_token_l0_l1_same_runtime_prefix_quiet_metal_lease_release.v1",
+      "seal_sha256": "216f0fba66bc3a73308878376d6d8ced2f675f766aec61691a51cf67e300f9a6",
+      "self_asserted": false,
+      "status": "RELEASED_QWEN80_SOURCE_TOKEN_L0_L1_SAME_RUNTIME_PREFIX_COMPONENT_QUIET_METAL_LEASE_AFTER_TERMINAL_CAPTURE",
+      "watcher_restart_or_transition_authorized": false
+    },
+    "document_seal_sha256": "216f0fba66bc3a73308878376d6d8ced2f675f766aec61691a51cf67e300f9a6",
+    "document_sha256": "1316bc95aca78faf9d8e2e74236dd55b6cd96e777544d0a895c71d14fcc86f21"
+  },
+  "joint_outer_terminal": {
+    "document": {
+      "child": {
+        "command": [
+          "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/debug/examples/ascension_qwen80_source_token_l0_l1_same_runtime_prefix_device",
+          "--mode",
+          "metal",
+          "--joint-outer-preflight",
+          "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_INTERFACE_OUTER_CPU_PREFLIGHT_20260809T114233Z/outer-preflight.json",
+          "--lease-receipt",
+          "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_QUIET_METAL_LEASE_20260809T115059Z.json",
+          "--outer-launch-authority",
+          "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_OUTER_CAPTURE_20260809T115059Z/outer-launch-authority.json",
+          "--outer-capture-dir",
+          "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_OUTER_CAPTURE_20260809T115059Z",
+          "--capture-dir",
+          "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_OUTER_CAPTURE_20260809T115059Z/inner",
+          "--workers",
+          "1"
+        ],
+        "pid": 58771,
+        "terminal": {
+          "exit_code": 0,
+          "reaped": true,
+          "signal": null,
+          "timed_out": false
+        }
+      },
+      "child_terminal": {
+        "automatic_retry_disabled": true,
+        "exit_code": 0,
+        "lease_reuse_prohibited": true,
+        "reaped": true,
+        "terminal_receipt_written_last": true,
+        "timed_out": false
+      },
+      "claim_boundary": {
+        "complete_layer_executed": false,
+        "component_only": true,
+        "decoder_started": false,
+        "l1_suffix_or_moe_executed": false,
+        "server_or_watcher_started": false,
+        "token_generated": false
+      },
+      "fixture_or_synthetic": false,
+      "inner_capture": {
+        "document_seal_sha256": "d87f1e1c61f4dc8b7103cd327780638f089b1d78f20b9dffb4393470f41229f6",
+        "document_sha256": "55223ee73c1688ed108d06f1e0fa56a5214faea1b36d40087dd7209d7b50650e",
+        "present": true
+      },
+      "issuer": {
+        "issuer_identity_sha256": "b9d828b639656578bacadb04cd001afb636f1e110bb2dbc4da6a4c7860abfb1d",
+        "role": "joint_component_outer_reaper"
+      },
+      "launch_identity_sha256": "d917635ced6340675060bd278b34df6ee3e120b64188bdedbe0a96539bba645d",
+      "lease_id": "5ac5478ab1a3bd7f20c1233de4adfb07adfb54d486e2abf6627bab4a0c9a8239",
+      "outer_capture": {
+        "directory": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_OUTER_CAPTURE_20260809T115059Z",
+        "inner_capture_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_OUTER_CAPTURE_20260809T115059Z/inner",
+        "stderr": {
+          "bytes": 51,
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_OUTER_CAPTURE_20260809T115059Z/outer-child.stderr.log",
+          "sha256": "bc5a4a11c5471559317c7543695c9f0651fff769d3390ca572168b9f81cedcbb",
+          "within_max_stream_bytes": true
+        },
+        "stdout": {
+          "bytes": 130,
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_OUTER_CAPTURE_20260809T115059Z/outer-child.stdout.log",
+          "sha256": "dc9cd83b2f8a031e64888ec24f0239704019cbd543416a1dd1f80749f8cfdd6b",
+          "within_max_stream_bytes": true
+        }
+      },
+      "schema": "hawking.ascension.qwen80_source_token_l0_l1_same_runtime_prefix_outer_capture.v1",
+      "seal_sha256": "b575fe54a5a6650f4deb440b29c3149f121cbc8c909e89a61a703a89a22a6a40",
+      "self_asserted": false,
+      "source_binding": {
+        "execution_binding": {
+          "bytes": 2542,
+          "document_seal_sha256": "60a835dc3716bfcbba955b985c6fcecf0ae11f0d0ded9120b8e9b73cd1a2add9",
+          "document_sha256": "9743a1cbfcbc5db2bd1cf7cf18e45c96d9e7cafe3df946d221676fe74f6bbf23",
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_INTERFACE_EXECUTION_BINDING_20260809T114245Z.json",
+          "sha256": "9743a1cbfcbc5db2bd1cf7cf18e45c96d9e7cafe3df946d221676fe74f6bbf23"
+        },
+        "lease": {
+          "bytes": 2522,
+          "document_seal_sha256": "03906ef7efd21cccaed4ff8e8f29df6d8d75858313e9f076ae8d85ff3807f60d",
+          "document_sha256": "b82f39b45a903253cd80ff08fe1c01d1df108c88b55bc236cadc7e023d40ec4a",
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_QUIET_METAL_LEASE_20260809T115059Z.json",
+          "sha256": "b82f39b45a903253cd80ff08fe1c01d1df108c88b55bc236cadc7e023d40ec4a"
+        },
+        "outer_preflight": {
+          "bytes": 8285,
+          "document_seal_sha256": "eb8849b790699065f247856e5494c2ecde1af1098bdeb4f49af95caf6b5481bb",
+          "document_sha256": "f3c6008c69c2fcf1e66e5ec781a9bb55dd3b28b80eb597eb1d97473374c990fc",
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_STRICT_HOST_INTERFACE_OUTER_CPU_PREFLIGHT_20260809T114233Z/outer-preflight.json",
+          "sha256": "f3c6008c69c2fcf1e66e5ec781a9bb55dd3b28b80eb597eb1d97473374c990fc"
+        },
+        "watcher_hold": {
+          "bytes": 2088,
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_WATCHER_GPU_COORDINATION_HOLD_20260808T220751Z.json",
+          "sha256": "d3a010096476d1cd95a8764b19ba676aed3d4236bac3a7182e532d01724a7d3d"
+        }
+      },
+      "status": "CAPTURED_QWEN80_SOURCE_TOKEN_L0_L1_SAME_RUNTIME_PREFIX_OUTER_TERMINAL_COMPONENT_ONLY"
+    },
+    "document_seal_sha256": "b575fe54a5a6650f4deb440b29c3149f121cbc8c909e89a61a703a89a22a6a40",
+    "document_sha256": "692b2ac5b1c1256a64e8d20858c59693e694061f88c684a0e660b9c7475143ef"
+  },
+  "schedule_wrapper": {
+    "document": {
+      "claim_boundary": {
+        "artifact_payload_open_or_scan_performed": false,
+        "future_joint_l0_to_l1_capture_authorized": false,
+        "lease_issued_or_released": false,
+        "metal_device_or_dispatch_performed": false,
+        "raw_schedule_rewritten_or_resealed": false,
+        "runtime_server_watcher_or_hcli_changed": false,
+        "token_generation_or_feedback_performed": false,
+        "tps_or_tg_measured": false,
+        "wrapper_is_read_only": true
+      },
+      "raw_schedule_authority": {
+        "bytes": 88551859,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_48_LAYER_PAYLOAD_SCHEDULE_AUTHORITY_20260809T033554Z.json",
+        "present": true,
+        "raw_schedule_is_static_and_unmodified": true,
+        "raw_schedule_seal_sha256": null,
+        "schema": "hawking.ascension.qwen80_48_layer_payload_schedule_authority.v1",
+        "sha256": "8302deb6beece8c04773ece19ae27baea67749014552b0b946516146b5e2282e",
+        "status": "PREPARED_QWEN80_48_LAYER_PAYLOAD_SCHEDULE_AUTHORITY_NOT_EXECUTED"
+      },
+      "recorded_at": "2026-08-09T08:45:41.871725Z",
+      "schedule_facts": {
+        "all_48_layers_scheduled": true,
+        "delta_net_layer_count": 36,
+        "delta_net_state_slot_count": 36,
+        "full_command_graph_item_count": 54,
+        "gqa_layer_count": 12,
+        "gqa_state_slot_count": 12,
+        "layer_1": {
+          "layer": 1,
+          "mixer": "delta_net",
+          "state_domain": "delta_net_conv_and_recurrent",
+          "state_slot": 1
+        },
+        "layer_count": 48
+      },
+      "schema": "hawking.ascension.qwen80_48_layer_schedule_sealed_wrapper.v1",
+      "seal_sha256": "5ed1367c4e5e0680967dde35ae583aec09f4417b5ecbae14d0d54184cd4a8554",
+      "source_authority": {
+        "descriptor_inventory_document_sha256": "a0fcac0401a7962402bb8cb87d5055c83667b39575f9e0f4c7470d080758aa10",
+        "descriptor_inventory_seal_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+        "model_id": "Qwen3-Coder-Next-80B",
+        "model_key": "qwen80",
+        "source_config_authority_document_sha256": "c21f5ac489d58d91ba2eb43c3daf34e2412f39925632b30e147e5de28780596b",
+        "source_config_authority_seal_sha256": "3d062ca5a8acdcc3c2c018e4ded049fd6647210b8161dfcedd37e99363c8fafd",
+        "source_config_sha256": "a7b8098d3b05777f12bb5677a26bf1240a1bb09def1b06b29e6be86cae2e84f8",
+        "source_repository": "Qwen/Qwen3-Coder-Next",
+        "source_revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb"
+      },
+      "status": "SEALED_QWEN80_48_LAYER_PAYLOAD_SCHEDULE_AUTHORITY_BOUND_NOT_EXECUTED"
+    },
+    "document_seal_sha256": "5ed1367c4e5e0680967dde35ae583aec09f4417b5ecbae14d0d54184cd4a8554",
+    "document_sha256": "4ab2c83d9df8573d95a65a1498ddd45dc6d812d47c123700981ffd87be1e5e39"
+  },
+  "schema": "hawking.ascension.qwen80_l0_l1_joint_post_capture_assessor_input.v1",
+  "seal_sha256": "d1fe9d683fb9d5ff560a0de693fc8d0237bfd6822c5fdce046b5022ee8ddef8b"
+}

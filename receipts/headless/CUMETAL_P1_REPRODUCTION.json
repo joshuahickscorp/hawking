@@ -1,0 +1,107 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T12:28:50Z",
+ "experiment_class": "ACCEL-C2M",
+ "knowledge_level": "INSTANCE",
+ "git_head": "e8577a7c28460ab87cc78d7e7e3ad2df0056e324",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_B_P1",
+   "proof": "P1 \u2014 the pinned CUDA-to-Metal seed reproduces",
+   "obligation": "G044",
+   "steer": "S015 \u00a74"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "os": "Darwin 27.0.0"
+  },
+  "device": {
+   "status": "ABSENT",
+   "reason": "no GPU execution was required to build or run the suite"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model involved"
+  },
+  "representation": {
+   "status": "ABSENT",
+   "reason": "not a representation experiment"
+  },
+  "kernel": {
+   "status": "ABSENT",
+   "reason": "the seed's own kernels, not ours"
+  },
+  "runtime": {
+   "cmake": "4.3.3",
+   "system_clang": "Apple clang (NO nvptx target)",
+   "homebrew_llvm": "21.1.8 at /opt/homebrew/opt/llvm@21 (HAS nvptx64)"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single machine"
+  }
+ },
+ "result": {
+  "pin": {
+   "repo": "Lulzx/cuda-metal",
+   "commit": "19a702303dd29a1b25d668c6a6eca51302a2323c",
+   "head_matches_pin": true,
+   "clone_size": "7.9M"
+  },
+  "license_now_verified_directly": {
+   "file": "LICENSE",
+   "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+   "first_line": "Apache License",
+   "note": "the earlier pin receipt marked the license NOT INDEPENDENTLY VERIFIED because it came through a summarizing fetch. It is now read byte-for-byte from the cloned tree, so that caveat is DISCHARGED.",
+   "NOTICE": "ABSENT upstream, so Apache-2.0 imposes no NOTICE obligation on a redistribution; nothing is vendored into this repository anyway"
+  },
+  "build": {
+   "configure_exit": 0,
+   "build_exit": 0,
+   "compile_errors": 0,
+   "artifacts": [
+    "cumetalc",
+    "libcumetal.dylib",
+    "cumetal",
+    "air_inspect",
+    "air_validate",
+    "cumetal-ptx2llvm",
+    "cumetal-air-emitter",
+    "ptx_diff",
+    "cumetal_bench"
+   ]
+  },
+  "test_suite": {
+   "baseline_system_clang": {
+    "passed": 194,
+    "failed": 22,
+    "total": 216,
+    "rate": "90%"
+   },
+   "with_llvm21_and_CUMETAL_CUDA_CLANG": {
+    "passed": 198,
+    "failed": 18,
+    "total": 216,
+    "rate": "92%"
+   },
+   "skipped": 148,
+   "note": "148 of 216 are SKIPPED in every configuration, overwhelmingly because xcrun metal is absent; skips are not failures but they mean the metallib path is untested here"
+  },
+  "remaining_blockers": [
+   {
+    "blocker": "the host clang cumetalc invokes has no nvptx64 target",
+    "evidence": "error: unable to create target: 'No available targets are compatible with triple \"nvptx64-nvidia-cuda\"'",
+    "class": "MISSING TOOLCHAIN, not a platform wall",
+    "partial_fix": "CUMETAL_CUDA_CLANG=/opt/homebrew/opt/llvm@21/bin/clang moved 22 failures to 18; some tests still resolve their own clang and were not reached by the env var"
+   },
+   {
+    "blocker": "xcrun metal is absent (no Metal developer toolchain)",
+    "class": "MISSING TOOLCHAIN, not a platform wall",
+    "effect": "skips rather than failures; the metallib emission path is untested"
+   }
+  ],
+  "a_prediction_i_got_wrong": "I recorded earlier that the missing Metal developer toolchain was the blocker for building the seed. It is NOT. The seed builds fine without it, and the FAILURES are caused by the host clang lacking an NVPTX target -- a different tool entirely. The Metal toolchain accounts for SKIPS, not failures. I had asserted the wrong cause from a plausible-sounding inference and only running it exposed that."
+ },
+ "claim_boundary": "P1 is SUBSTANTIALLY REPRODUCED, not fully. The pinned seed clones at the exact commit, configures, builds with zero errors, and passes 198 of its own 216 tests. It is NOT fully reproduced: 18 tests fail and 148 skip, and no CUDA source has been compiled end to end on this machine. Both remaining blockers are MISSING TOOLCHAINS that could be installed, NOT platform walls, and neither has been characterised as one. This says nothing about P2: no NVIDIA hardware exists, so no differential against real CUDA has been run and none of the seed's output has been compared to an NVIDIA reference.",
+ "pass": true
+}

@@ -1,0 +1,52 @@
+{
+  "candidate_id": "model_layers_0_mlp_experts_1_down_proj_weight__r48_b4",
+  "claim_boundary": {
+    "component_measurement_only": true,
+    "not_a_complete_model_bpw_result": true,
+    "not_a_full_model_artifact": true,
+    "not_a_native_direct_execution_plan": true,
+    "not_a_protected_manager_receipt": true,
+    "not_a_tg3_or_hcli_result": true
+  },
+  "elapsed_seconds": 0.07757933299581055,
+  "measurement": {
+    "cosine": 0.4815010130405426,
+    "relative_l2": 0.8766283392906189,
+    "rmse": 0.013585034757852554
+  },
+  "metal_component_probe": {
+    "claim_boundary": "component-only Metal smoke; not a complete-token TG measurement",
+    "device": "mps",
+    "elapsed_seconds": 0.003374665990122594,
+    "iterations": 20,
+    "matmul_per_second": 5926.512448502628,
+    "shape": [
+      2048,
+      768
+    ],
+    "status": "RAN"
+  },
+  "recorded_at": "2026-08-08T05:14:43.585011Z",
+  "representation": {
+    "artifact_bytes": 72529,
+    "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/artifacts/model_layers_0_mlp_experts_1_down_proj_weight__r48_b4.gravity",
+    "component_complete_bpw": 0.3689015706380208,
+    "factor_bits": 4,
+    "group_size": 64,
+    "kind": "randomized_low_rank_plus_group_quantized_factors",
+    "rank": 48
+  },
+  "schema": "hawking.ascension.qwen30_low_rank_gravity_candidate.v1",
+  "seal_sha256": "69d01eb063d75c56b857e291deb59183765b4f6cb9c6bf37b6c66556aed1d5aa",
+  "source": {
+    "repository": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+    "revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+    "shape": [
+      2048,
+      768
+    ],
+    "source_body_audit_seal_sha256": "0bfcb9922bcd205f94e5422483be76f04fd0e4c013898059b26c136e3e7ba710",
+    "tensor_name": "model.layers.0.mlp.experts.1.down_proj.weight"
+  },
+  "status": "CANDIDATE_RESEARCH_ONLY"
+}

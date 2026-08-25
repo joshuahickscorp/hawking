@@ -1,0 +1,57 @@
+{
+  "authority_boundary": {
+    "artifact_payload_or_directory_scan_performed": false,
+    "gpu_or_metal_action_performed": false,
+    "lease_or_process_action_performed": false,
+    "server_or_watcher_action_performed": false,
+    "tournament_action_performed": false,
+    "tps_or_tg_measurement_performed": false
+  },
+  "blockers": [],
+  "claim_boundary": {
+    "complete_l1_component_only": true,
+    "cross_process_buffer_reuse_accepted": false,
+    "decoder_started": false,
+    "historical_component_is_not_execution_input": true,
+    "server_started": false,
+    "token_generated": false,
+    "tournament_started": false,
+    "tps_or_tg_measured": false
+  },
+  "component_scope": {
+    "exact_route_payload_authority_count": 30,
+    "fresh_l0_dispatches": 23,
+    "fresh_l1_moe_suffix_dispatches": 14,
+    "fresh_l1_prefix_dispatches": 9,
+    "fresh_total_dispatches": 46,
+    "historical_assessment_is_provenance_only": true,
+    "historical_joint_assessment_seal_sha256": "d1b2893135287e282987e7d35609db3d44cd6c42846f79518f58f7ed5684829d",
+    "token_decoder_server_tps_or_tournament_earned": false
+  },
+  "earned_complete_l1_component_only": true,
+  "schema": "hawking.ascension.qwen80_l1_full_layer_completion_assessment.v1",
+  "seal_sha256": "47a4f33f0d904873edafc5943ed7a21605386c48428097b14fc167d6f46daea5",
+  "sealed_inputs": {
+    "fresh_full_layer_inner": {
+      "document_seal_sha256": "76e2d33422c3dc16f54f130c0fe47c284696037cb988ce356bc3198405b93d3f",
+      "document_sha256": "4349625604b79c64884647e6ab3810c9375549ef9f4994261e2205df54b388c8",
+      "present": true
+    },
+    "fresh_full_layer_outer": {
+      "document_seal_sha256": "1ad35cf9123b0ca0c6c7d32bd5a5e71a91b4a118c655c0175f7eebafcf3c0d84",
+      "document_sha256": "31cf58d9a4f599f5088bdb4aa1a4685ae2486fb0343ba8415d9d43657ad1beee",
+      "present": true
+    },
+    "fresh_full_layer_release": {
+      "document_seal_sha256": "8513bf4805b679d19da353fd9eda0e278020bc85c0620e6a322d50a5e6094886",
+      "document_sha256": "db7c9d367896f1168a75343fbeff304be7fc9199c2df4889c869ea430ffb370c",
+      "present": true
+    },
+    "historical_joint_assessment": {
+      "document_seal_sha256": "d1b2893135287e282987e7d35609db3d44cd6c42846f79518f58f7ed5684829d",
+      "document_sha256": "315347c24b88936fbf605587732552e9909af197d0ebfeab20e2ada69a4eee01",
+      "present": true
+    }
+  },
+  "status": "EARNED_QWEN80_SOURCE_TOKEN_L1_COMPLETE_LAYER_COMPONENT_NOT_TOKEN_DECODER"
+}

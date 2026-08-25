@@ -1,0 +1,112 @@
+{
+  "child": {
+    "command": [
+      "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/debug/examples/ascension_qwen80_source_token_all_ten_true_moe_bridge",
+      "--manifest",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+      "--admission-current",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_ADMISSION_CURRENT.json",
+      "--source-token-route-authority",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SOURCE_TOKEN_L0_ROUTE_PLAN_CPU_OUTER_CAPTURE_20260809T045052Z/inner/source-token-route-plan-authority.json",
+      "--first-residual-receipt",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_FIRST_RESIDUAL_STRICT_METAL_OUTER_CAPTURE_20260809T034414Z/outer-terminal-receipt.json",
+      "--out",
+      "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SOURCE_TOKEN_ALL_TEN_BRIDGE_CPU_OUTER_CAPTURE_20260809T050444Z/inner/source-token-bridge-material.json"
+    ],
+    "finished_at": "2026-08-09T05:07:40.500056Z",
+    "pid": 54145,
+    "started_at": "2026-08-09T05:04:55.103181Z",
+    "terminal": {
+      "exit_code": 0,
+      "reaped": true,
+      "returncode": 0,
+      "signal": null,
+      "spawn_error": null,
+      "timed_out": false
+    }
+  },
+  "claim_boundary": {
+    "cpu_artifact_scan_and_source_token_bridge_only": true,
+    "metal_device_or_dispatch_performed": false,
+    "no_complete_layer_token_decoder_generation_hcli_tps_tg_or_tournament_claim": true
+  },
+  "launch_identity_sha256": "2e26571c6751ebea3194c8af303db290be32edbdc6d32bebe936442f5a82c769",
+  "one_shot": {
+    "automatic_retry_disabled": true,
+    "same_capture_dir_never_starts_a_second_child": true,
+    "terminal_receipt_written_last": true
+  },
+  "outer_capture": {
+    "directory": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SOURCE_TOKEN_ALL_TEN_BRIDGE_CPU_OUTER_CAPTURE_20260809T050444Z",
+    "raw_material": {
+      "bytes": 4991,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SOURCE_TOKEN_ALL_TEN_BRIDGE_CPU_OUTER_CAPTURE_20260809T050444Z/inner/source-token-bridge-material.json",
+      "present": true,
+      "sha256": "3405610c3cced74f493c8cb37fb78258c12b55db600aaa63b91afcd7b0dd18ee"
+    },
+    "stderr": {
+      "bytes": 0,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SOURCE_TOKEN_ALL_TEN_BRIDGE_CPU_OUTER_CAPTURE_20260809T050444Z/outer.stderr.log",
+      "present": true,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout": {
+      "bytes": 225,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SOURCE_TOKEN_ALL_TEN_BRIDGE_CPU_OUTER_CAPTURE_20260809T050444Z/outer.stdout.log",
+      "present": true,
+      "sha256": "cede11deeeb5783b2b904b4854ceff6ac62a34e12b4e4b6f8958bbdc69c9b46a"
+    },
+    "typed_source_token_bridge": {
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SOURCE_TOKEN_ALL_TEN_BRIDGE_CPU_OUTER_CAPTURE_20260809T050444Z/inner/typed-source-token-bridge.json",
+      "present": false
+    }
+  },
+  "recorded_at": "2026-08-09T05:07:40.500046Z",
+  "schema": "hawking.ascension.qwen80_source_token_all_ten_true_moe_bridge_outer.v1",
+  "seal_error": "source-token route authority plan must be an object",
+  "seal_sha256": "58367b3a7142b4175acd4d021361c7034c57964d4e2b83e80145bd5a346cef8a",
+  "source_binding": {
+    "admission_current": {
+      "bytes": 2224,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_ADMISSION_CURRENT.json",
+      "present": true,
+      "sha256": "0fe5b835eb5514d5526f1b1320112ac07d902c799c41277de1f6fc1cb4c4762d"
+    },
+    "admission_pointer_seal_sha256": "f0fa568fc3f9c92c6e5bb40db70118b4e12f428db8a3c53548f559d443359b8d",
+    "admission_receipt": {
+      "bytes": 4749,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/complete-admission/receipts/QWEN80_COMPLETE_BINARY_GRAVITY_ADMISSION_RECEIPT_14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b.json",
+      "present": true,
+      "sha256": "0b601b57ef459bbfba69c4adba8c9fd2b069b3cbbf6ad7beaf3cee26556e9e53"
+    },
+    "admission_receipt_seal_sha256": "939b41322363da3db774a2530b207bf380ed641d23cae671fc6438c0eecbf628",
+    "first_residual_receipt": {
+      "bytes": 7204,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_FIRST_RESIDUAL_STRICT_METAL_OUTER_CAPTURE_20260809T034414Z/outer-terminal-receipt.json",
+      "present": true,
+      "sha256": "2e189163c45daf10a10a7a44b749374c4f38ec25376951c4cb748bc6cf6237ce"
+    },
+    "first_residual_receipt_seal_sha256": "1d29db9d1ef180eed105d4664be26b59facc666c596f4e453098e0f4faf3a3f1",
+    "manifest": {
+      "bytes": 77842421,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+      "present": true,
+      "sha256": "a0fcac0401a7962402bb8cb87d5055c83667b39575f9e0f4c7470d080758aa10"
+    },
+    "manifest_seal_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+    "probe_binary": {
+      "bytes": 2913784,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/debug/examples/ascension_qwen80_source_token_all_ten_true_moe_bridge",
+      "present": true,
+      "sha256": "7376a86b4516bed51d14142d386818aba7298b9c17b235ed99b3d47c019973e7"
+    },
+    "source_token_route_authority": {
+      "bytes": 47236,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SOURCE_TOKEN_L0_ROUTE_PLAN_CPU_OUTER_CAPTURE_20260809T045052Z/inner/source-token-route-plan-authority.json",
+      "present": true,
+      "sha256": "3f829bc0d218eca6ceefec389bc2293fa0928bd23e8e7b753b306e809c8c3ab6"
+    },
+    "source_token_route_authority_seal_sha256": "5b83ba2721d2cdfc8cb60b051a79ef9d69e434b5bf7eb1949c0d5117caaad692"
+  },
+  "status": "REFUSED_QWEN80_SOURCE_TOKEN_ALL_TEN_BRIDGE_CPU_OUTER_WITHOUT_SEALED_TYPED_BRIDGE"
+}

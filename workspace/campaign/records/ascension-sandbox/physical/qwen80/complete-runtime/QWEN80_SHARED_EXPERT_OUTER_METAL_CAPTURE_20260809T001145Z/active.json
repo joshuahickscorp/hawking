@@ -1,0 +1,28 @@
+{
+  "claim_boundary": {
+    "automatic_retry_disabled": true,
+    "future_strict_metal_component_only": true
+  },
+  "command": [
+    "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/debug/examples/ascension_qwen80_direct_packed_shared_expert_wave",
+    "--manifest",
+    "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+    "--admission-current",
+    "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_ADMISSION_CURRENT.json",
+    "--cpu-baseline-receipt",
+    "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SHARED_EXPERT_CPU_BASELINE_SEALED_WRAPPER_20260808T235704Z.json",
+    "--lease-receipt",
+    "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SHARED_EXPERT_QUIET_METAL_LEASE_20260809T001101Z.json",
+    "--capture-dir",
+    "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SHARED_EXPERT_OUTER_METAL_CAPTURE_20260809T001145Z/inner",
+    "--mode",
+    "metal",
+    "--workers",
+    "2"
+  ],
+  "launch_identity_sha256": "f701b4aa91b3fea796eb6d196c27ddb84759810f393104deaf89b9116a20374d",
+  "recorded_at": "2026-08-09T00:11:45.570806Z",
+  "schema": "hawking.ascension.qwen80_shared_expert_outer_launcher.v1",
+  "seal_sha256": "7f5ea6e221b90f3a76b975b9bb1cf5c0ab0383c2d763ffa2df0b9ed5f6a80e26",
+  "status": "STARTED_QWEN80_SHARED_EXPERT_OUTER_ONE_SHOT"
+}

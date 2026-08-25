@@ -1,0 +1,334 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 209,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Given the Lean proof state goal:\n:\n    Injective (lift <| LinearMap.restrictScalars₁₂ R R (LinearMap.lsmul A M))\n\nWhat single tactic advances the proof? State the next tactic and the resulting goal sketch.",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:d2:Mathlib.Algebra.Algebra.Epi.injective_lift_lsmul:step1",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "train",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Given the Lean proof state goal:\n:\n    Injective (lift <| LinearMap.restrictScalars₁₂ R R (LinearMap.lsmul A M))\n\nWhat single tactic advances the proof? State the next tactic and the resulting goal sketch.",
+  "proof_plan": null,
+  "recorded_at": "2026-08-06T17:05:03.669893Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "b2d5a8ab67a579a38a49b3a89c9f35b599ee31b620349e2b1f6cde4b52c0cffb",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 9.16347885131836,
+          "rank": 0,
+          "token_id": 23
+        },
+        {
+          "logit": 9.134943962097168,
+          "rank": 1,
+          "token_id": 17
+        },
+        {
+          "logit": 8.927740097045898,
+          "rank": 2,
+          "token_id": 19
+        },
+        {
+          "logit": 8.893613815307617,
+          "rank": 3,
+          "token_id": 20
+        },
+        {
+          "logit": 8.84175968170166,
+          "rank": 4,
+          "token_id": 24
+        },
+        {
+          "logit": 8.251328468322754,
+          "rank": 5,
+          "token_id": 16
+        },
+        {
+          "logit": 7.999270915985107,
+          "rank": 6,
+          "token_id": 21
+        },
+        {
+          "logit": 7.8325514793396,
+          "rank": 7,
+          "token_id": 22
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.19804276525974274,
+          "l2": 3.7785894870758057,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "cd1b3abe8d304b48e3ab86cc2ca1b9df0831dfc9dd10715da0da2712ff6d4a1d",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.2579249143600464,
+          "l2": 3.5186002254486084,
+          "layer": 1,
+          "mlp_type": "dense",
+          "sample_sha256": "9a224c506d7d50dbbdda55c39c5d17887b7693b20209a9fcdc64ad617beb203d",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.292902410030365,
+          "l2": 3.4330925941467285,
+          "layer": 2,
+          "mlp_type": "dense",
+          "sample_sha256": "7d8f5602fae7bb7a1d00b16090ab4dc9f04b59f1b20ca5c92dc572e992c3d103",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.327380895614624,
+          "l2": 3.5233490467071533,
+          "layer": 3,
+          "mlp_type": "sparse",
+          "sample_sha256": "45b46b6ded9e435bd57df60b2d96916c2c1cbb353b3deb11ce2c67c268a24ff3",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.3466759920120239,
+          "l2": 3.712399482727051,
+          "layer": 4,
+          "mlp_type": "sparse",
+          "sample_sha256": "ef7d8860b3d456bededf5da426caf559b44c9eab9d9e979fbdfaf2dc7357f495",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": {
+        "expert_counts": {
+          "0": 2,
+          "100": 2,
+          "101": 2,
+          "102": 1,
+          "106": 3,
+          "109": 1,
+          "110": 3,
+          "111": 2,
+          "112": 2,
+          "114": 3,
+          "115": 1,
+          "116": 1,
+          "117": 1,
+          "120": 2,
+          "122": 4,
+          "123": 1,
+          "125": 1,
+          "128": 2,
+          "129": 2,
+          "13": 2,
+          "130": 7,
+          "133": 2,
+          "134": 1,
+          "136": 1,
+          "14": 5,
+          "140": 3,
+          "142": 1,
+          "143": 1,
+          "144": 1,
+          "145": 2,
+          "148": 13,
+          "149": 1,
+          "15": 2,
+          "152": 2,
+          "154": 1,
+          "156": 1,
+          "157": 2,
+          "158": 4,
+          "161": 1,
+          "163": 3,
+          "164": 1,
+          "166": 1,
+          "167": 3,
+          "169": 2,
+          "17": 1,
+          "171": 1,
+          "174": 1,
+          "177": 3,
+          "179": 1,
+          "18": 5,
+          "180": 4,
+          "181": 1,
+          "185": 2,
+          "186": 1,
+          "187": 1,
+          "188": 1,
+          "190": 2,
+          "193": 5,
+          "196": 2,
+          "199": 2,
+          "2": 3,
+          "201": 1,
+          "206": 4,
+          "21": 1,
+          "210": 1,
+          "211": 1,
+          "213": 4,
+          "215": 3,
+          "216": 1,
+          "217": 1,
+          "218": 2,
+          "219": 1,
+          "22": 1,
+          "220": 1,
+          "221": 1,
+          "222": 1,
+          "223": 3,
+          "224": 2,
+          "226": 1,
+          "227": 1,
+          "229": 1,
+          "230": 1,
+          "232": 1,
+          "235": 1,
+          "237": 3,
+          "238": 3,
+          "239": 4,
+          "240": 3,
+          "243": 1,
+          "248": 4,
+          "250": 2,
+          "252": 1,
+          "26": 7,
+          "28": 4,
+          "30": 1,
+          "37": 2,
+          "41": 3,
+          "50": 2,
+          "52": 1,
+          "53": 1,
+          "54": 1,
+          "56": 1,
+          "57": 2,
+          "59": 1,
+          "60": 5,
+          "61": 3,
+          "62": 3,
+          "64": 1,
+          "67": 2,
+          "7": 2,
+          "70": 4,
+          "72": 2,
+          "77": 1,
+          "78": 1,
+          "81": 2,
+          "82": 2,
+          "83": 3,
+          "87": 1,
+          "88": 1,
+          "90": 3,
+          "95": 1,
+          "98": 1,
+          "99": 1
+        },
+        "load_balance_cv": null,
+        "note": "route stats are student-native; never copy GLM router weights",
+        "source_layer": 3,
+        "top_k": 8
+      },
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

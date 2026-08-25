@@ -1,0 +1,297 @@
+{
+  "artifact_binding": {
+    "admission_current_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_ADMISSION_CURRENT.json",
+    "admission_pointer_seal_sha256": "a3e8b77daa919766f9973bb8d6981567ad8cc09075c27a7c13cb4b64f4a43449",
+    "admission_receipt_seal_sha256": "939b41322363da3db774a2530b207bf380ed641d23cae671fc6438c0eecbf628",
+    "expert_down_proj": {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/tensors/e067895d2f4d84a147c26d4b377da295a4845096bf408840d58e03dc3b86aa6f.hq30g",
+      "artifact_sha256": "5e2e29adb09faf5cc12c391ae66892b1a6d107ff050c19dc603ec1761e724328",
+      "header": {
+        "elements": 1048576,
+        "group_size": 128,
+        "groups": 8192,
+        "magic": "HQ30G1B1",
+        "payload_bytes": 147496,
+        "scale_offset": 40,
+        "shape": [
+          2048,
+          512
+        ],
+        "sign_offset": 16424,
+        "version": 1
+      },
+      "name": "model.layers.0.mlp.experts.65.down_proj.weight",
+      "source_shard": "model-00001-of-00040.safetensors",
+      "source_shard_sha256": "8e9a517133bfbdc6806cf8b61793055a260efeb68e6e019fd90e4bbb1b665d0a"
+    },
+    "expert_gate_proj": {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/tensors/3715f429c4ecc3b23e8f4383989e4b0c55f0b126de6cb7b9824be9a5288b63dc.hq30g",
+      "artifact_sha256": "663b50bf179fbf0b540c61871fe90243ea3bf0b8ffbeac9617ff3e74fe3d7b80",
+      "header": {
+        "elements": 1048576,
+        "group_size": 128,
+        "groups": 8192,
+        "magic": "HQ30G1B1",
+        "payload_bytes": 147496,
+        "scale_offset": 40,
+        "shape": [
+          512,
+          2048
+        ],
+        "sign_offset": 16424,
+        "version": 1
+      },
+      "name": "model.layers.0.mlp.experts.65.gate_proj.weight",
+      "source_shard": "model-00001-of-00040.safetensors",
+      "source_shard_sha256": "8e9a517133bfbdc6806cf8b61793055a260efeb68e6e019fd90e4bbb1b665d0a"
+    },
+    "expert_up_proj": {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/tensors/6845d8560369bff315d73bf31ada481d3433743d60bbe768cee05c76f05e2d8f.hq30g",
+      "artifact_sha256": "4e5d56ea3e13d6ea02eccdaa87282731f63dbe41699c134ab2f45ec236c2c419",
+      "header": {
+        "elements": 1048576,
+        "group_size": 128,
+        "groups": 8192,
+        "magic": "HQ30G1B1",
+        "payload_bytes": 147496,
+        "scale_offset": 40,
+        "shape": [
+          512,
+          2048
+        ],
+        "sign_offset": 16424,
+        "version": 1
+      },
+      "name": "model.layers.0.mlp.experts.65.up_proj.weight",
+      "source_shard": "model-00001-of-00040.safetensors",
+      "source_shard_sha256": "8e9a517133bfbdc6806cf8b61793055a260efeb68e6e019fd90e4bbb1b665d0a"
+    },
+    "hidden": 2048,
+    "layer": 0,
+    "layer_kind": "linear_attention",
+    "manifest_document_sha256": "a0fcac0401a7962402bb8cb87d5055c83667b39575f9e0f4c7470d080758aa10",
+    "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+    "manifest_seal_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+    "moe_intermediate": 512,
+    "post_attention_norm": {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/tensors/0786790687f6be07f618ad56f3f5b89b84f6eab0076f9ed8adc27e71dabbb653.hq30g",
+      "artifact_sha256": "a00ba60c88bd0d5dcf77e4c1fad05d83ddb6feec844ee3bbc65480fffd5a1fa7",
+      "header": {
+        "elements": 2048,
+        "group_size": 128,
+        "groups": 16,
+        "magic": "HQ30G1B1",
+        "payload_bytes": 324,
+        "scale_offset": 36,
+        "shape": [
+          2048
+        ],
+        "sign_offset": 68,
+        "version": 1
+      },
+      "name": "model.layers.0.post_attention_layernorm.weight",
+      "source_shard": "model-00001-of-00040.safetensors",
+      "source_shard_sha256": "8e9a517133bfbdc6806cf8b61793055a260efeb68e6e019fd90e4bbb1b665d0a"
+    },
+    "selected_expert": 65,
+    "source_body_audit_seal_sha256": "c572b2270b623b8677c374b43c89ddd729de135c25721488bb874b184ff8c3d4",
+    "source_config_sha256": "a7b8098d3b05777f12bb5677a26bf1240a1bb09def1b06b29e6be86cae2e84f8",
+    "source_model_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-80b/Qwen3-Coder-Next",
+    "source_repository": "Qwen/Qwen3-Coder-Next",
+    "source_revalidation_seal_sha256": "541b16fca1d4805ecba356face97b4e8de1accdeb21e98ee0c13b70ab0746c45",
+    "source_revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb"
+  },
+  "complete_artifact_scan_performed": false,
+  "durable_capture": {
+    "directory": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_ROUTED_EXPERT_65_OUTER_METAL_CAPTURE_20260808T234939Z/inner",
+    "invocation_file": "invocation.json",
+    "receipt_file": "receipt.json",
+    "receipt_written_last_is_completion_marker": true,
+    "stderr_file": "stderr.log",
+    "stdout_file": "stdout.jsonl"
+  },
+  "integration_contract": {
+    "claim_boundary": [
+      "Synthetic source-shaped postnorm input component parity only; not a full Qwen80 layer, token, decoder, generation, HCLI, TPS, TG, capability, Agent OS, or tournament receipt."
+    ],
+    "scheduler_handoff": [
+      "This device result is one expert-65 weighted accumulator delta only.",
+      "The remaining nine routed experts, shared expert, aggregation, second residual, and all layer/token work remain unexecuted."
+    ]
+  },
+  "metal_device_or_dispatch_performed": true,
+  "metal_execution_policy": {
+    "complete_layer_or_token_allowed": false,
+    "device_context_or_dispatch_performed": true,
+    "lease_binding": {
+      "authorization_seal_sha256": "d10ce5476312af231a18af349f8e46df7984a2813e62695d2bcab63ee0b6f0bf",
+      "lease_id": "ba5fcec6d503256dada068896436aa96c9929c0892706075c799591871df95bd",
+      "policy": {
+        "complete_layer_or_token_allowed": false,
+        "component": "qwen80_direct_packed_routed_expert_65",
+        "strict_math": true,
+        "timing_or_benchmarking_allowed": false,
+        "tps_or_tg_claim_allowed": false
+      },
+      "receipt_document_sha256": "4344d4ea44e3bfdfa9474a4c73ca255c2fab371d42e04a69a0719b633624fedc",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_ROUTED_EXPERT_65_QUIET_METAL_LEASE_20260808T234923Z.json",
+      "schema": "hawking.ascension.qwen80_routed_expert_65_quiet_metal_lease.v1",
+      "status": "GRANTED_QWEN80_ROUTED_EXPERT_65_NON_TIMED_DEVICE_PARITY_LEASE"
+    },
+    "lease_required_for_metal": true,
+    "post_attempt_state": "strict_math_one_route_component_command_buffer_completed_and_fenced",
+    "strict_math_required": true,
+    "timing_or_benchmarking_allowed": false,
+    "tps_or_tg_claim_allowed": false
+  },
+  "metal_intermediate_error_ledger": {
+    "acceptance": {
+      "down_max_abs": 1.30385160446167e-8,
+      "down_tolerance": 0.0010000000474974513,
+      "gate_max_abs": 3.5762786865234375e-7,
+      "gate_tolerance": 0.0005000000237487257,
+      "silu_gate_times_up_max_abs": 1.043081283569336e-7,
+      "silu_gate_times_up_tolerance": 0.0005000000237487257,
+      "up_max_abs": 2.384185791015625e-7,
+      "up_tolerance": 0.0005000000237487257,
+      "weighted_one_route_delta_max_abs": 3.259629011154175e-9,
+      "weighted_one_route_delta_tolerance": 0.0003000000142492354
+    },
+    "command_buffers": 1,
+    "compute_dispatches": 3,
+    "device": "Apple M3 Ultra",
+    "device_intermediates": {
+      "down": {
+        "elements": 2048,
+        "sha256": "26970d71de85cb6aba326d18d3718fc2dec7571b8ecd52518ecf28560fb78eb3"
+      },
+      "gate": {
+        "elements": 512,
+        "sha256": "20e165a70c5e43e8e568c0f8aa003f493a1a73ff7eea51e5164f78790294fed6"
+      },
+      "silu_gate_times_up": {
+        "elements": 512,
+        "sha256": "6c5e7bbefc69f7a203629487eac1132cec548e05bc1cd303f8be44d791d6daca"
+      },
+      "up": {
+        "elements": 512,
+        "sha256": "ab72a2133d61d6bc9142e0be6de6b3b96ff15bbe4e37bcfa3f2241def3ccd3d9"
+      },
+      "weighted_one_route_delta": {
+        "elements": 2048,
+        "sha256": "c0950fb83112a2c7780932e7fd07e96f4c37e395dce9abcf148570342b214ce9"
+      }
+    },
+    "kernel_sequence": [
+      "qwen80_routed_expert_wave_gate_up",
+      "qwen80_routed_expert_wave_swiglu",
+      "qwen80_routed_expert_wave_down_weighted"
+    ],
+    "performed": true,
+    "strict_math": true,
+    "timing_or_benchmarking_performed": false
+  },
+  "mode": "metal",
+  "one_selected_expert_only": true,
+  "opened_exact_postnorm_and_selected_expert_payloads_only": true,
+  "raw_bf16_or_safetensors_opened": false,
+  "rejection_tests": {
+    "invalid_route_weight_rejected": true,
+    "malformed_direct_header_rejected": true,
+    "nonfinite_swiglu_input_rejected": true,
+    "out_of_range_expert_id_rejected": true,
+    "wrong_down_geometry_rejected": true,
+    "wrong_expert_geometry_rejected": true,
+    "wrong_group_size_rejected": true,
+    "wrong_qwen30_hidden_surface_rejected": true
+  },
+  "route_evidence": {
+    "router_fixture_post_attention_residual_sha256": "da6bd17a333c40353442d7db7e0d16c1c44870f3458c785d6a4ebe48a3477fef",
+    "router_outer_receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_POSTNORM_ROUTER_TOP10_OUTER_METAL_FINAL_LANE_FIX_CAPTURE_20260808T232524Z/outer-terminal-receipt.json",
+    "router_outer_receipt_seal_sha256": "1bd9af3b6baf4d583f77bbfc02c25f0f1740cd8110c74fb6e55520758256c835",
+    "router_outer_receipt_sha256": "0a9c2c57acef64e9f4c0fcb050f47a8f7792026bf05a6f8a73e4fa3d3786d87f",
+    "router_receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_POSTNORM_ROUTER_TOP10_OUTER_METAL_FINAL_LANE_FIX_CAPTURE_20260808T232524Z/inner/receipt.json",
+    "router_receipt_sha256": "31d2e06aae10695d25f445ff50661f6c63ec42c74f617e637b62e56c4f7ac343",
+    "selected_expert": 65,
+    "selected_normalized_weight_f32": 0.24545888602733612,
+    "selected_normalized_weight_source_f64": 0.24545888602733612,
+    "selected_route_index": 0,
+    "source_top10_ids": [
+      65,
+      245,
+      227,
+      35,
+      189,
+      440,
+      298,
+      405,
+      109,
+      494
+    ],
+    "source_top10_renormalized_weights": [
+      0.24545888602733612,
+      0.11939491331577301,
+      0.09865251183509827,
+      0.09824474155902863,
+      0.08122280240058899,
+      0.07801184803247452,
+      0.07371144741773605,
+      0.0716269463300705,
+      0.06921377778053284,
+      0.0644620731472969
+    ]
+  },
+  "same_capture_cpu_oracle": {
+    "candidate_down_duration_ms": 24.072709,
+    "candidate_gate_up_duration_ms": 49.47075,
+    "down": {
+      "elements": 2048,
+      "sha256": "a657f4da0915c2bbe6251e138d6ae880b6e2b76a3ebebfc41683f2c632ca3f46"
+    },
+    "f32_vs_f64_max_abs": {
+      "down": 7.18483614617349e-9,
+      "gate": 3.5163809908311805e-7,
+      "post_attention_rmsnorm": 2.4630067985143e-7,
+      "silu_gate_times_up": 8.096199430318585e-8,
+      "up": 2.7854941375693443e-7,
+      "weighted_full_chain": 3.6647588544554133e-9
+    },
+    "f32_vs_f64_max_relative": {
+      "down": 7.18483614617349e-9,
+      "gate": 3.374817865164914e-7,
+      "post_attention_rmsnorm": 1.7173848939497456e-7,
+      "silu_gate_times_up": 8.096199430318585e-8,
+      "up": 2.7854941375693443e-7,
+      "weighted_full_chain": 3.6647588544554133e-9
+    },
+    "gate": {
+      "elements": 512,
+      "sha256": "6992c6dc6f7ec764650b986ce2d1740c925b3a2d2be84a837bcc6a48ba323e59"
+    },
+    "post_attention_residual": {
+      "elements": 2048,
+      "sha256": "da6bd17a333c40353442d7db7e0d16c1c44870f3458c785d6a4ebe48a3477fef"
+    },
+    "postnorm_direct_decode_max_abs": 0.0,
+    "postnorm_hidden": {
+      "elements": 2048,
+      "sha256": "0a6091f96bcbc676fe687c1ee3e87c879f06a28fb7b4f6bb85c55f5e45bfa38e"
+    },
+    "reference_gate_up_duration_ms": 44.0135,
+    "silu_gate_times_up": {
+      "elements": 512,
+      "sha256": "850dd527e2d5cacc36a23d8a7ae8d432552ba4d45fedcb54e80223af3fb4b5d4"
+    },
+    "timing_is_component_cpu_work_not_tps": true,
+    "up": {
+      "elements": 512,
+      "sha256": "1099f7938f5b07b577e816843473e472ac45860cada4c0d31b6813cbb38bb16d"
+    },
+    "weighted_one_route_delta": {
+      "elements": 2048,
+      "sha256": "50434a8e79ce3426a48ec8da0036d8b307ca1e9a1d81c831f8db425ac9b1d549"
+    }
+  },
+  "schema": "hawking.ascension.qwen80_direct_packed_routed_expert_wave.v1",
+  "status": "EARNED_CURRENT_ADMITTED_QWEN80_DIRECT_PACKED_ONE_ROUTED_EXPERT_65_STRICT_MATH_METAL_COMPONENT_NOT_TEN_ROUTE_OR_LAYER"
+}

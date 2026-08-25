@@ -1,0 +1,251 @@
+{
+ "schema": "hawking.qwen38.legacy_index.v1",
+ "purpose": "NEVER repeat expensive dead Qwen3.8 science; every Odyssey hypothesis checks here first. Tag MODEL-SPECIFIC vs UNIVERSAL.",
+ "note": "Qwen3.8 retired as final Genesis resident (S042); role = dense reference / compiler-dev / negative corpus / kernel-rep control / Doctor-Tabula calibration. NOTHING deleted.",
+ "entries": [
+  {
+   "receipt": "ABLITERATED_SOURCE_PROVENANCE.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": "Source provenance of the abliterated bf16 + availability of a 1-bit variant (user steer)."
+  },
+  {
+   "receipt": "BF16_VS_2BIT_DOCTOR.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": ""
+  },
+  {
+   "receipt": "CORRECTION_MLP_INPUT_TENSOR.json",
+   "tag": "UNIVERSAL",
+   "finding": "Phase-B correctness: the MLP-operator distillation used the WRONG input tensor; caught and corrected before the assembled test."
+  },
+  {
+   "receipt": "DENSE_K1_CEILING.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": "The token is GEMV-bandwidth-bound: GEMV families are 23.55 ms = 82% of the 28.88 ms token, at 71% of peak bandwidth; non-GEMV is only 5.33 ms. The Track A ALU/amortization wave did NOT touch this because the lever is MEM"
+  },
+  {
+   "receipt": "DENSITY_LEVER_HONEST.json",
+   "tag": "UNIVERSAL",
+   "finding": "Honest verdict on the shared/grouped-operator MLP density lever, on diverse data with correct methodology."
+  },
+  {
+   "receipt": "EXEC_LEVER_MAP.json",
+   "tag": "UNIVERSAL",
+   "finding": "Map the execution lever (geo_tpr64 vs simd3) for the q3 patient MLP GEMV."
+  },
+  {
+   "receipt": "G10_METAL_BLUEPRINT.json",
+   "tag": "DENSE-SPECIFIC",
+   "finding": "G10 -- Metal-native execution of the shared operator: implementation blueprint (design stage)."
+  },
+  {
+   "receipt": "G15_ZERO_FALLBACK.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": "VERIFIED. Zero fallback during sealed runs is proven by the refuse-on-Err design (no fallback path exists) plus completed full generations. Recommend (future): either wire the counters live or remove them, since a dead t"
+  },
+  {
+   "receipt": "G17_RECONSTRUCTION_COST.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": "PASS. For 3 candidates all three metrics reported together. NO candidate hides expansion cost: peak working set ~= resident weights + small transients (NOT a 2x dense expand); dense_w_materialized=0 everywhere. The only "
+  },
+  {
+   "receipt": "G21_2BIT_CENSUS.json",
+   "tag": "UNIVERSAL",
+   "finding": ""
+  },
+  {
+   "receipt": "G21_G22_FINDINGS.json",
+   "tag": "UNIVERSAL",
+   "finding": "The external '2-bit' is 3.22 bpw effective -- the SAME density class as our Hawking q3 (3.3448). It is NOT a representation-density win. The bits=2 label hides fp16 scale+bias (S034 EFFECTIVE-BPW gate: exactly the trap t"
+  },
+  {
+   "receipt": "G21_TEXT_ACTIVE.json",
+   "tag": "DENSE-SPECIFIC",
+   "finding": ""
+  },
+  {
+   "receipt": "G23_AFFINE2_FORMAT.json",
+   "tag": "UNIVERSAL",
+   "finding": "G23 foundation -- affine-2bit-g32 representation semantics reproduced natively (exact)."
+  },
+  {
+   "receipt": "G24_NATIVE_DECODE.json",
+   "tag": "UNIVERSAL",
+   "finding": "Native affine-2bit = 31.5 TPS vs external mlx = 37.7 TPS on the SAME representation, and native affine-2bit (10.1GB) ~= our q3 (11.7GB, 30 TPS). PROVEN END-TO-END: the external's ~1.2x speed advantage is RUNTIME/KERNEL e"
+  },
+  {
+   "receipt": "G24_NATIVE_DESIGN.json",
+   "tag": "UNIVERSAL",
+   "finding": "G24 native affine2 design (from Grok archaeology, verified against our decoder + mlx)."
+  },
+  {
+   "receipt": "G25_KERNEL_PARITY.json",
+   "tag": "UNIVERSAL",
+   "finding": "G25/G24 -- native affine2 g32 GEMV kernel, exact-replication proven at kernel level (independently verified by Claude)."
+  },
+  {
+   "receipt": "G26_RUNTIME_DIAGNOSIS.json",
+   "tag": "DENSE-SPECIFIC",
+   "finding": "G26 -- why native affine-2bit = 31.5 TPS vs mlx 37.7 on the same representation."
+  },
+  {
+   "receipt": "G27_G28_DOCTOR_2BIT.json",
+   "tag": "UNIVERSAL",
+   "finding": ""
+  },
+  {
+   "receipt": "G27_G28_FINDINGS.json",
+   "tag": "UNIVERSAL",
+   "finding": ""
+  },
+  {
+   "receipt": "G27_GENESIS_SEAL.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": "G27 -- one-command NOS: candidate -> Doctor -> NR -> NX -> NVM/HIDE -> seal"
+  },
+  {
+   "receipt": "G28_STORAGE_RECLAIM.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": "G28 -- storage reclaimed safely, no needed data deleted"
+  },
+  {
+   "receipt": "G29_GENESIS_NR.json",
+   "tag": "UNIVERSAL",
+   "finding": "PASS. A real .nr for the ACTUAL patient (not the uniform-q4 demo), validates against the G6 schema, round-trips stable, rejects machine-specific fields, and its catalog_content_sha256 binds it to the exact on-disk repres"
+  },
+  {
+   "receipt": "G30_GENESIS_NX.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": "PASS. Genesis.m3ultra.nx lowers the patient's Genesis.nr (content-hash bound: change the NR and the hash no longer matches, forcing a rebind), names the exact 38 kernels dispatched + M3 Ultra genome + geometry/residency/"
+  },
+  {
+   "receipt": "G3_ALL64_SCALE.json",
+   "tag": "DENSE-SPECIFIC",
+   "finding": "At full 64-layer scale a single shared operator (m=6144, 38.3 MB group-64 q3 + 1.6 MB codes) BEATS the q3 control held-out (0.371 vs 0.384) at 35% of q3 active MLP bytes = 2.8x fewer MLP DRAM bytes/token. The q3 active-b"
+  },
+  {
+   "receipt": "G3_HONEST_RETEST.json",
+   "tag": "DENSE-SPECIFIC",
+   "finding": ""
+  },
+  {
+   "receipt": "G3_SHARED_OPERATOR_BREAKTHROUGH.json",
+   "tag": "DENSE-SPECIFIC",
+   "finding": "BREAKTHROUGH -- the q3 wall is broken in principle. A SINGLE shared operator (25.6 MB) reproduces 15 layers' MLP function HELD-OUT (0.371) BETTER than q3 (0.401), with a tiny generalization gap (0.026, no overfit -- pool"
+  },
+  {
+   "receipt": "GROUND_TRUTH_TPS.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": ""
+  },
+  {
+   "receipt": "KV_STATE_COST.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": "On this hybrid (DeltaNet + GQA) model the state is NOT a per-token speed lever. Total state traffic 316 MB/token = ~0.67 ms = ~2.3% of the ~29 ms token. GQA KV (the thing KV-precision-reduction usually targets) is only 2"
+  },
+  {
+   "receipt": "K_AMORTIZATION_FRESH.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": ""
+  },
+  {
+   "receipt": "METHODOLOGY_AUDIT.json",
+   "tag": "UNIVERSAL",
+   "finding": "The headline 'shared operator BEATS q3 held-out' (0.371 vs 0.384) does NOT survive: three defects (D3a leakage, D5 aggregation, B0 input) each swing more than the 0.0134 margin, all in the operator's favor. 'Valid succes"
+  },
+  {
+   "receipt": "MLP_ACTIVATION_SPARSITY.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": "MODERATE not extreme. No hard zeros; 99% energy needs ~37-57% of dims. Conditional MLP compute caps at ~2x MLP byte reduction, is dynamic per-token (gather/scatter cost), and 1% per-layer energy loss compounds over 62 la"
+  },
+  {
+   "receipt": "MLX_ASSEMBLED_DOCTOR.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": ""
+  },
+  {
+   "receipt": "PATIENT_IDENTITY_VECTOR.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": "The 3.3448 BPW patient is a STRONG, coherent, behaviorally-preserved Genesis: capability 0.96, abliteration intact, deterministic, long-context-flat. It is Doctor-valid at 3.3448 BPW. Its only real weakness is longform ("
+  },
+  {
+   "receipt": "PHASE_A_EXHAUSTION.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": "G31 Phase-A exhaustion + G18/G20 -- is the 3.3448 patient at the practical floor?"
+  },
+  {
+   "receipt": "PHASE_B_DATA_BOUND.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": "G1 benchmark (memorization guard) + the critical Phase-B bottleneck"
+  },
+  {
+   "receipt": "PHASE_B_FOUNDATION.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": "FOUNDATION VALIDATED (G1/G2 pipeline works): teacher F(h), q3 baseline, held-out benchmark, memorization guard, MPS training all functional. The naive first candidate is in the ballpark of q3 (0.44 vs 0.39) but undertrai"
+  },
+  {
+   "receipt": "PHASE_B_FUNCTIONAL_LOWRANK.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": "MEASURED NEGATIVE (rigorous). Activation-aware functional low-rank OVERFITS: the fit-set win (0.2017 < 0.2220) collapses on held-out tokens (0.39/0.31 vs q3 0.22). A rank-803 operator fit on ~2048 activation samples memo"
+  },
+  {
+   "receipt": "PHASE_B_HYBRID_REFUTED.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": "MEASURED NEGATIVE for byte reduction. No low-rank + correction split beats q3's density-quality point: q2-base cannot be corrected back to q3 quality cheaply, and q3-base+correction is more bytes for better quality (Matr"
+  },
+  {
+   "receipt": "PHYSICS_BANDWIDTH_WALL.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": ""
+  },
+  {
+   "receipt": "PRIOR_ART_SHARED_OPERATOR.json",
+   "tag": "UNIVERSAL",
+   "finding": "Phase-B prior-art: what the literature says about sharing one operator across a transformer's MLP stack, and how to close the generalization gap."
+  },
+  {
+   "receipt": "QWEN38_TOKEN_NS_FRESH.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": ""
+  },
+  {
+   "receipt": "STRATEGIC_FINDING_100TPS.json",
+   "tag": "UNIVERSAL",
+   "finding": "Honest strategic finding on the 100 TPS flagship for Qwen3.8-27B, after the Phase-B executable-operator investigation."
+  },
+  {
+   "receipt": "TABULA_DRIFT_PATIENT.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": "G123 -- Tabula drift instrument, reproducible for any candidate"
+  },
+  {
+   "receipt": "TABULA_PATIENT.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": "Tabula axis for the patient (S012 \u00a732/\u00a733); feeds G27 G124 seal"
+  },
+  {
+   "receipt": "TOKEN_NS_QWEN38.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": ""
+  },
+  {
+   "receipt": "TRACKA_KERNEL_HARVEST.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": ""
+  },
+  {
+   "receipt": "WIDE_BATTERY_PATIENT.json",
+   "tag": "QWEN-SPECIFIC",
+   "finding": "G126 -- >= 60 deterministic items, per-category scoring"
+  }
+ ],
+ "count": 47,
+ "S044_cleanup": {
+  "date": "2026-08-19",
+  "freed_GB": 393,
+  "disk_free_after_GB": 510,
+  "deleted": "workspace/campaign/records/runs/qwen38-27b (391GB: bf16 parent, ~30 gravity artifacts, activation captures, 2bit, affine2-native) + target-fast + stderr",
+  "kept": "receipts/ (673MB incl this index + all science), affine2/HGRAVF01 UNIVERSAL code (crates+tools), ledger, A3B download",
+  "rationale": "S044: Qwen3.8 retired ASAP; receipts + legacy index are the preservation of record; weight artifacts deletable to make disk for the dual Odyssey NX run. Nothing scientific lost -- code + receipts intact."
+ }
+}

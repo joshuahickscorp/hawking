@@ -1,0 +1,40 @@
+{
+  "ablation_verdict": "REJECT",
+  "artifact_path": "workspace/campaign/evidence/models/frankenstein/proto-run/20260806T193657Z-reject-1786045017/PROTO_FRANKENSTEIN_ARTIFACT.json",
+  "capability_claim": false,
+  "capability_validated": false,
+  "command": "run",
+  "dry_run": false,
+  "forward_gate": "DEEPSEEK_FORWARD_PENDING",
+  "forward_status": "DEEPSEEK_FORWARD_PENDING",
+  "gravity_compressed": false,
+  "receipt_path": "workspace/campaign/evidence/models/frankenstein/proto-run/20260806T193657Z-reject-1786045017/PROTO_FRANKENSTEIN_RUN_RECEIPT.json",
+  "receipt_seal_sha256": "5713849f7501aadae41b7f78d8c7885d6c1ee4330566ebaf9dc2c342330aaea6",
+  "reject_rule_fired": true,
+  "stages": {
+    "ablation": {
+      "reject_rule_fired": true,
+      "status": "ABLATION_COMPLETE",
+      "verdict": "REJECT"
+    },
+    "compose": {
+      "artifact_path": "workspace/campaign/evidence/models/frankenstein/proto-run/20260806T193657Z-reject-1786045017/PROTO_FRANKENSTEIN_ARTIFACT.json",
+      "status": "STRUCTURAL_LINEAR_INIT_COMPOSED_VALIDATION_PENDING"
+    },
+    "forward": {
+      "activations_captured": false,
+      "capability_measurement": false,
+      "status": "DEEPSEEK_FORWARD_PENDING"
+    },
+    "load": {
+      "bridge": "GLM_MATH_BRIDGE",
+      "capability_status": "UNVALIDATED_WEIGHT_ONLY_DERIVED",
+      "meta_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/transfer-module/FRANKENSTEIN_TRAINING_FREE_MODULE.json",
+      "module_seal_sha256": "dca95c8a9d301f4e58b0b372b62dc4f58a40469dc2248648ce9b62e743a8c286",
+      "status": "MODULE_LOADED",
+      "trained": false
+    }
+  },
+  "status": "REJECT",
+  "verdict": "REJECT"
+}

@@ -1,0 +1,104 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T16:04:46Z",
+ "experiment_class": "ACCEL-IR",
+ "knowledge_level": "INSTANCE",
+ "git_head": "cfdac30dc3dce54dd10eff45dd068f2331486fce",
+ "identities": {
+  "experiment": {
+   "id": "BARRIER_SCOPES",
+   "obligation": "G043",
+   "steer": "S015 AIR represents synchronization; refusal must track what the backend can EMIT"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "simd_width": 32
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal via MLX 0.32.1"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "IR-level, no model involved"
+  },
+  "representation": {
+   "status": "ABSENT",
+   "reason": "dense f32"
+  },
+  "kernel": {
+   "produced_by": "hand-written MSL probes",
+   "purpose": "cross-lane exchange"
+  },
+  "runtime": {
+   "python": "3.12.6"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device"
+  }
+ },
+ "headline": "THE LAST NAMED-ABSENT CONSTRUCT IN AIR, AND THE REFUSAL THAT WAS BLAMING THE WRONG THING. SIMDGROUP now lowers to a real instruction; DEVICE is refused with the construct that DOES carry it named; and the elementwise refusal's stated reason was WRONG -- it blamed the backend when the binding constraint is the program.",
+ "what_was_named_absent": "AIR receipts recorded for many blocks that 'SIMDGROUP/DEVICE barrier scopes remain UNLOWERABLE and therefore REFUSED'",
+ "measured_before_building": {
+  "why": "adding an instruction that does nothing and calling it a closed gap would be exactly the coverage-without-capability this program keeps refusing",
+  "within_a_simdgroup": {
+   "setup": "32 lanes exchange through threadgroup memory, each reading its neighbour's slot",
+   "arms": {
+    "none": {
+     "max_abs_err": 0.0,
+     "correct": true
+    },
+    "simdgroup": {
+     "max_abs_err": 0.0,
+     "correct": true
+    },
+    "threadgroup": {
+     "max_abs_err": 0.0,
+     "correct": true
+    }
+   },
+   "verdict": "NOT LOAD-BEARING at this shape: correct with and without the fence"
+  },
+  "across_simdgroups": {
+   "setup": "256 threads, each reading the slot 32 away, which crosses a simdgroup boundary every time",
+   "arms": {
+    "none": {
+     "max_abs_err": 9.854256629943848,
+     "correct": false
+    },
+    "simdgroup": {
+     "max_abs_err": 9.854256629943848,
+     "correct": false
+    },
+    "threadgroup": {
+     "max_abs_err": 0.0,
+     "correct": true
+    }
+   },
+   "verdict": "THE PROBE CAN FAIL: ['none', 'simdgroup'] wrong, threadgroup correct"
+  },
+  "the_two_probes_together_say_more_than_either": "WITHIN a simdgroup all three arms are exact at 0.0 -- lockstep makes the fence unnecessary. ACROSS simdgroups no-fence is wrong by 9.854 AND simdgroup_barrier is wrong by EXACTLY THE SAME 9.854 while threadgroup_barrier is exact. So the instruction's scope is precisely what its name says: NO EFFECT INSIDE because it is unnecessary, NO EFFECT OUTSIDE because it is out of scope.",
+  "the_control_is_what_makes_the_first_probe_readable": "'all three correct' is worthless unless the test CAN fail. The cross-simdgroup control fails two of three arms by 9.854, so the probe demonstrably detects a missing fence and the earlier all-pass is a result rather than a blind spot."
+ },
+ "what_shipped": {
+  "barrier_msl": "one place a lowering asks for the instruction. THREADGROUP and SIMDGROUP return one; DEVICE RAISES and names AirGraph.",
+  "simdgroup_is_emitted_but_not_claimed_as_a_closed_gap": "it is emitted for two reasons that are NOT correctness-on-this-chip: it constrains the COMPILER's reordering, and lockstep is a HARDWARE PROPERTY a future device need not preserve. Calling it a closed synchronization gap would be overreach.",
+  "device_refusal_names_the_alternative": "device-wide ordering has no in-kernel Metal instruction because IT IS A COMMAND-BUFFER BOUNDARY -- and AIR already expresses that, as an AirGraph dependency EDGE. A refusal that points at the construct which does carry the semantics is worth more than one that only says no."
+ },
+ "a_refusal_of_mine_was_blaming_the_wrong_thing": {
+  "old_message": "'the Metal backend has no synchronization lowering, and dropping a barrier would silently introduce a race'",
+  "why_it_was_wrong": "AIR's matmul, softmax and attention lowerings ALL emit threadgroup barriers, and have for many blocks. The backend was never the constraint for those programs.",
+  "the_real_constraint": "an ELEMENTWISE AIR program declares no threadgroup allocation and no cross-thread reads, so every thread is independent and a barrier of ANY scope HAS NOTHING TO ORDER. The refusal is correct; its stated cause was not.",
+  "why_that_matters": "a refusal that names the wrong cause teaches the wrong lesson to whoever reads it next -- in this case that the backend cannot synchronize, which would have made the matmul's own barriers look impossible.",
+  "the_distinction_that_must_not_rot": "two tests sit beside each other: an elementwise program carrying a barrier is REFUSED, a matmul is ACCEPTED because its lowering emits its own. Refusal tracks what the backend can EMIT FOR THIS PROGRAM."
+ },
+ "claim_boundary": {
+  "no_performance_claim": "nothing was timed; this is correctness and IR structure only",
+  "simdgroup_lowering_is_not_wired_into_a_program_that_needs_it": "barrier_msl supplies the instruction and the elementwise path still refuses barriers because it still has nothing to order. No AIR program currently DECLARES a SIMDGROUP barrier and executes -- what closed is the INSTRUCTION and the REFUSAL'S HONESTY, not a new executable program shape.",
+  "one_machine": "lockstep within a simdgroup is an M3 Ultra observation at simd width 32; nothing here is promoted to a property of Apple GPUs in general.",
+  "device_stays_absent": "DEVICE-scope barriers remain unlowerable and always will be at the instruction level; the routing to AirGraph is a redirection, not a closure."
+ },
+ "pass": true
+}

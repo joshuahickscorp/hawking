@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>Label</key><string>com.hawking.ascension.qwen30.runtime</string>
+<key>ProgramArguments</key><array>
+<string>/usr/bin/caffeinate</string><string>-is</string><string>--</string>
+<string>/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python</string>
+<string>/Users/scammermike/Downloads/hawking/tools/condense/ascension_qwen30_bootstrap_lanes.py</string>
+<string>runtime</string><string>--watch</string><string>--idle-seconds</string><string>300</string>
+</array>
+<key>WorkingDirectory</key><string>/Users/scammermike/Downloads/hawking</string>
+<key>KeepAlive</key><true/><key>ThrottleInterval</key><integer>30</integer><key>ProcessType</key><string>Background</string>
+<key>StandardOutPath</key><string>/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/launchd.stdout.log</string>
+<key>StandardErrorPath</key><string>/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/launchd.stderr.log</string>
+</dict></plist>

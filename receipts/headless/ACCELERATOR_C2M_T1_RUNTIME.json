@@ -1,0 +1,197 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T13:45:40Z",
+ "experiment_class": "ACCEL-C2M",
+ "knowledge_level": "INSTANCE",
+ "git_head": "5f58350586fe091300ee25077a296ffa1e4294fb",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_C_T1_RUNTIME",
+   "obligation": "G045 + G046",
+   "steer": "S015 \u00a73 required corpus 'memory APIs'; \u00a79 delete unnecessary CUDA-era concepts; \u00a7125 unified memory"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model; a runtime-semantics experiment"
+  },
+  "representation": {
+   "name": "dense_f32"
+  },
+  "kernel": {
+   "produced_by": "c2m.translate via cuda_runtime.execute_host",
+   "shape": "elementwise vadd/vmul launched from CUDA host source"
+  },
+  "runtime": {
+   "mlx": "0.32.1",
+   "python": "3.12.6"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "conformance": {
+   "tier_claimed": "C2M-T1",
+   "tier_definition": "T1 = kernels plus a runtime and memory API subset",
+   "runtime_calls_supported": [
+    "cudaMalloc",
+    "cudaMemcpy(HostToDevice)",
+    "cudaMemcpy(DeviceToHost)",
+    "kernel<<<g,b>>>",
+    "cudaDeviceSynchronize",
+    "cudaFree"
+   ],
+   "host_programs_run": 4,
+   "host_programs_matching": 4,
+   "higher_tiers": {
+    "C2M-T2": "NOT CLAIMED: AIR now has GEMM, reduction, scan, softmax and attention, but NONE of them is reachable through the C2M frontend -- the T0 kernel parser handles 4 elementwise expression forms and cannot express any of them",
+    "C2M-T3": "NOT CLAIMED: no real open CUDA project has been run",
+    "C2M-T4": "NOT CLAIMED: no AI workload",
+    "C2M-T5": "NOT CLAIMED: nothing is production-supported"
+   },
+   "streams_and_events": "NOT SUPPORTED: refused by name, not silently ignored",
+   "oracle": "numpy on CPU",
+   "is_a_cuda_differential": false,
+   "why_not": "no NVIDIA hardware, so nothing was compared against CUDA itself"
+  },
+  "runs": [
+   {
+    "program": "vadd_host_program",
+    "kernel": "vadd",
+    "n": 4096,
+    "max_abs_err_vs_numpy": 0.0,
+    "matches_oracle": true,
+    "both_modes_agree": true,
+    "copies_faithful": 3,
+    "copies_unified": 0,
+    "statements": 11
+   },
+   {
+    "program": "vadd_host_program",
+    "kernel": "vadd",
+    "n": 4194304,
+    "max_abs_err_vs_numpy": 0.0,
+    "matches_oracle": true,
+    "both_modes_agree": true,
+    "copies_faithful": 3,
+    "copies_unified": 0,
+    "statements": 11
+   },
+   {
+    "program": "vmul_host_program",
+    "kernel": "vmul",
+    "n": 4096,
+    "max_abs_err_vs_numpy": 0.0,
+    "matches_oracle": true,
+    "both_modes_agree": true,
+    "copies_faithful": 3,
+    "copies_unified": 0,
+    "statements": 11
+   },
+   {
+    "program": "vmul_host_program",
+    "kernel": "vmul",
+    "n": 4194304,
+    "max_abs_err_vs_numpy": 0.0,
+    "matches_oracle": true,
+    "both_modes_agree": true,
+    "copies_faithful": 3,
+    "copies_unified": 0,
+    "statements": 11
+   }
+  ],
+  "refusals": [
+   {
+    "input": "cudaStreamCreate(&s);",
+    "what": "streams",
+    "refusal": "streams (cudaStreamCreate) is not in the C2M-T1 runtime subset; refusing rather than pretending it is a no-op"
+   },
+   {
+    "input": "cudaMemcpyAsync(a,b,4,cudaMemcpyHostToDevice,0);",
+    "what": "async copies",
+    "refusal": "asynchronous copies (cudaMemcpyAsync) is not in the C2M-T1 runtime subset; refusing rather than pretending it is a no-op"
+   },
+   {
+    "input": "cudaMallocManaged((void**)&p, 4);",
+    "what": "managed memory",
+    "refusal": "managed memory (its semantics differ from both modes here) (cudaMallocManaged) is not in the C2M-T1 runtime subset; refusing rather than pretending it is a no-op"
+   },
+   {
+    "input": "cudaMemset(d_a, 0, 4);",
+    "what": "device memset",
+    "refusal": "device memset (cudaMemset) is not in the C2M-T1 runtime subset; refusing rather than pretending it is a no-op"
+   },
+   {
+    "input": "int x = foo();",
+    "what": "an unrecognised host statement",
+    "refusal": "host statement outside the C2M-T1 subset: 'int x = foo();'. Supported: cudaMalloc, cudaMemcpy (H2D/D2H), kernel<<<g,b>>>(...), cudaDeviceSynchronize, cudaFree, and a scalar host-array store."
+   },
+   {
+    "input": "launch reading unwritten device memory",
+    "what": "uninitialised device read",
+    "refusal": "kernel 'vadd' reads device buffer(s) ['d_a', 'd_b'] that were allocated but never written. CUDA leaves that memory uninitialised; refusing rather than silently reading zeros."
+   }
+  ],
+  "performance": {
+   "1048576": {
+    "ms_per_program": {
+     "faithful_port": 2.4171,
+     "unified_native": 1.4328
+    },
+    "iqr": {
+     "faithful_port": 9.09,
+     "unified_native": 11.97
+    },
+    "compare": {
+     "verdict": "CANDIDATE_WINS_DESPITE_NOISE",
+     "speedup": 1.687,
+     "margin_pct": 68.7,
+     "arm_noise_pct": 11.97,
+     "margin_over_noise_ratio": 5.7,
+     "caveat": "an arm exceeded the 10.0% IQR gate, but the margin is 6x the worst arm noise, so the direction of the result is not in doubt; the MAGNITUDE carries more uncertainty than a clean measurement would"
+    },
+    "note": "host arrays hoisted out of the timed region; the SAFE program does not mutate them"
+   },
+   "4194304": {
+    "ms_per_program": {
+     "faithful_port": 3.7227,
+     "unified_native": 2.148
+    },
+    "iqr": {
+     "faithful_port": 2.45,
+     "unified_native": 8.39
+    },
+    "compare": {
+     "verdict": "CANDIDATE_WINS",
+     "speedup": 1.7331,
+     "margin_pct": 73.31,
+     "arm_noise_pct": 8.39
+    },
+    "note": "host arrays hoisted out of the timed region; the SAFE program does not mutate them"
+   }
+  },
+  "the_hazard": {
+   "cuda_correct_h_c_0": -0.8335946798324585,
+   "aliased_h_c_0": 998.529052734375,
+   "divergence": 999.3626708984375,
+   "every_other_element_identical": true,
+   "guard_refusal": "host buffer 'h_a' is written AFTER being copied to the device, at 'h_a[0] = 999.0f;'. In CUDA that copy is a snapshot and the write does not reach the device; aliasing would make it a live reference and change the answer. Refusing to delete the copy for this program."
+  },
+  "headline_DELETING_THE_COPY_IS_NOT_UNCONDITIONALLY_SAFE": "S015 \u00a79 says to delete a CUDA-era concept that is unnecessary on Apple Silicon, and \u00a7125 calls unified memory a weapon. Both are right and there is a CONDITION nothing in this program had stated: in CUDA a host-to-device copy is a SNAPSHOT, and an alias is a LIVE REFERENCE. A program that writes its host buffer after the copy and before the launch gets a DIFFERENT ANSWER. Demonstrated, not asserted: the same host program gives -0.833595 under the faithful semantics and 998.529053 under aliasing, a divergence of 999.36 in EXACTLY ONE ELEMENT with every other element bit-identical -- which is the worst shape a bug can have, since an aggregate check would pass. may_delete_copies() refuses the optimization for such a program and NAMES the offending statement. The guard is bypassable only by a private flag used here and in its test, because a refusal nobody has watched be NECESSARY is indistinguishable from one that is merely cautious.",
+  "what_the_deletion_buys": "At program level the faithful port and the unified native path agree BIT-FOR-BIT on every safe program, and the unified path performs ZERO copies against the port's THREE. Deleting them is worth 1.69x at 2^20 and 1.73x at 2^22, the latter with clean arms (2.45% / 8.39% IQR).",
+  "relationship_to_P6": "P6 measured host<->device copying at 7.4x in a MICROBENCHMARK of the copy itself. This measures the same elimination inside a TRANSLATED PROGRAM, where the kernel work and the host-side interpretation are also in the arm, so 1.7x is the honest program-level figure and 7.4x is the honest cost-of-the-copy figure. Neither supersedes the other and quoting 7.4x as what a port gains would be wrong.",
+  "T2_is_blocked_by_the_FRONTEND_not_the_BACKEND": "AIR now has GEMM, reduction, scan, softmax and attention. NONE is reachable through C2M: the kernel parser handles 4 elementwise expression forms and cannot express a loop, shared memory or a barrier, so it cannot express any of them. T2 is a FRONTEND obligation and saying so keeps the backend's coverage from being read as C2M coverage.",
+  "a_third_harness_defect_found_and_fixed": "The first run of this comparison returned NO_CLAIM at both sizes. The cause was the same class of mistake as the mx.eval-per-level defect: the timed function rebuilt the host numpy arrays on every call, putting a 16 MiB memcpy inside BOTH arms. Common-mode, so it did not bias the direction -- it DILUTED the margin and added noise until the gate refused a real result. Hoisting it is legitimate because the SAFE program never mutates h_a or h_b, and with it the same comparison gives 1.69x and 1.73x. THREE TIMES NOW the instrument has been the thing under measurement; the pattern is that any per-call setup inside an arm is suspect, whether it biases or merely blunts."
+ },
+ "claim_boundary": "C2M-T1 as this module defines it: cudaMalloc, cudaMemcpy H2D and D2H, a <<<grid,block>>> launch, cudaDeviceSynchronize and cudaFree, over elementwise T0 kernels. NOT CUDA runtime support -- streams, events, async copies, managed memory, memset, 2-D copies, device-to-device copies and multi-device selection are all REFUSED BY NAME. The launch geometry is PARSED AND IGNORED: AIR chooses its own grid, so a kernel whose result depends on blockDim would be mistranslated and this subset cannot express one. Oracle is numpy, not CUDA, so P2 stays open and this is not a differential.",
+ "pass": true
+}

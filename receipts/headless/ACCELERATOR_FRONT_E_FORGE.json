@@ -1,0 +1,238 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T12:10:54Z",
+ "experiment_class": "ACCEL-KERNEL",
+ "knowledge_level": "INSTANCE",
+ "git_head": "59e74d2770596cb3885b753c47cc20c4ee8800d8",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_E_FORGE",
+   "obligation": "G047",
+   "steer": "S015",
+   "primitive": "fused_mul_relu_silu_f32",
+   "search": "priors over threadgroup x elements-per-thread, not a sweep"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "measured_bandwidth_gb_s": 589.73
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model; this tunes a primitive"
+  },
+  "representation": {
+   "name": "dense_f32",
+   "elements": 16777216
+  },
+  "kernel": {
+   "generated": true,
+   "variants": 15,
+   "template": "fused mul->relu->silu, parameterised by threadgroup and elements-per-thread"
+  },
+  "runtime": {
+   "mlx": "0.32.1",
+   "python": "3.12.13"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "roles": {
+   "reference_kernel": "MLX eager chain defines correctness",
+   "apple_baseline_kernel": {
+    "median_ms": 1.3499170017894357,
+    "iqr_pct": 5.43
+   },
+   "accelerator_champion": {
+    "name": "tg256_ept2",
+    "median_ms": 0.5083750002086163,
+    "iqr_pct": 2.24
+   },
+   "experimental_candidates": 15
+  },
+  "every_candidate_verified_before_timing": true,
+  "candidates_correct": 15,
+  "candidates_rejected_for_correctness": 0,
+  "candidates_failing_reliability_gate": [
+   "tg128_ept2",
+   "tg512_ept1",
+   "tg1024_ept4"
+  ],
+  "champion_vs_runner_up": {
+   "margin_pct": 0.38,
+   "arm_noise_pct": 4.94,
+   "verdict": "INDISTINGUISHABLE"
+  },
+  "landscape_spread_pct": 20.19,
+  "champion_beats_apple_baseline": true,
+  "negative_science": "THE PARAMETER LANDSCAPE IS FLAT. Across the reliable candidates the spread is 20.19%, and the champion beats the runner-up by 0.38% against 4.94% arm noise, so the winner is NOT distinguishable from several others. The mechanism is that this chain is bandwidth-saturated: once one pass over memory is achieved, threadgroup size and elements-per-thread stop mattering in the range the priors cover. Autotuning these two knobs on THIS primitive buys nothing, and recording that is more useful than crowning a 0.4% winner.",
+  "candidates": [
+   {
+    "name": "tg64_ept1",
+    "tg": 64,
+    "ept": 1,
+    "correct": true,
+    "max_abs_err": 9.5367431640625e-07,
+    "median_ms": 0.610999995842576,
+    "iqr_pct": 9.9,
+    "rejected_because": null
+   },
+   {
+    "name": "tg64_ept2",
+    "tg": 64,
+    "ept": 2,
+    "correct": true,
+    "max_abs_err": 9.5367431640625e-07,
+    "median_ms": 0.5104999872855842,
+    "iqr_pct": 1.36,
+    "rejected_because": null
+   },
+   {
+    "name": "tg64_ept4",
+    "tg": 64,
+    "ept": 4,
+    "correct": true,
+    "max_abs_err": 9.5367431640625e-07,
+    "median_ms": 0.5224999913480133,
+    "iqr_pct": 1.58,
+    "rejected_because": null
+   },
+   {
+    "name": "tg128_ept1",
+    "tg": 128,
+    "ept": 1,
+    "correct": true,
+    "max_abs_err": 9.5367431640625e-07,
+    "median_ms": 0.5102919822093099,
+    "iqr_pct": 4.94,
+    "rejected_because": null
+   },
+   {
+    "name": "tg128_ept2",
+    "tg": 128,
+    "ept": 2,
+    "correct": true,
+    "max_abs_err": 9.5367431640625e-07,
+    "median_ms": 0.5154160025995225,
+    "iqr_pct": 10.32,
+    "rejected_because": "IQR spread 10.32% failed the reliability gate; an unreliable arm cannot be champion"
+   },
+   {
+    "name": "tg128_ept4",
+    "tg": 128,
+    "ept": 4,
+    "correct": true,
+    "max_abs_err": 9.5367431640625e-07,
+    "median_ms": 0.5222499894443899,
+    "iqr_pct": 8.89,
+    "rejected_because": null
+   },
+   {
+    "name": "tg256_ept1",
+    "tg": 256,
+    "ept": 1,
+    "correct": true,
+    "max_abs_err": 9.5367431640625e-07,
+    "median_ms": 0.5132080113980919,
+    "iqr_pct": 1.75,
+    "rejected_because": null
+   },
+   {
+    "name": "tg256_ept2",
+    "tg": 256,
+    "ept": 2,
+    "correct": true,
+    "max_abs_err": 9.5367431640625e-07,
+    "median_ms": 0.5083750002086163,
+    "iqr_pct": 2.24,
+    "rejected_because": null
+   },
+   {
+    "name": "tg256_ept4",
+    "tg": 256,
+    "ept": 4,
+    "correct": true,
+    "max_abs_err": 9.5367431640625e-07,
+    "median_ms": 0.5265000218059868,
+    "iqr_pct": 8.78,
+    "rejected_because": null
+   },
+   {
+    "name": "tg512_ept1",
+    "tg": 512,
+    "ept": 1,
+    "correct": true,
+    "max_abs_err": 9.5367431640625e-07,
+    "median_ms": 0.5131250072736293,
+    "iqr_pct": 13.56,
+    "rejected_because": "IQR spread 13.56% failed the reliability gate; an unreliable arm cannot be champion"
+   },
+   {
+    "name": "tg512_ept2",
+    "tg": 512,
+    "ept": 2,
+    "correct": true,
+    "max_abs_err": 9.5367431640625e-07,
+    "median_ms": 0.5116249958518893,
+    "iqr_pct": 3.54,
+    "rejected_because": null
+   },
+   {
+    "name": "tg512_ept4",
+    "tg": 512,
+    "ept": 4,
+    "correct": true,
+    "max_abs_err": 9.5367431640625e-07,
+    "median_ms": 0.5215420096646994,
+    "iqr_pct": 9.39,
+    "rejected_because": null
+   },
+   {
+    "name": "tg1024_ept1",
+    "tg": 1024,
+    "ept": 1,
+    "correct": true,
+    "max_abs_err": 9.5367431640625e-07,
+    "median_ms": 0.5150409997440875,
+    "iqr_pct": 3.62,
+    "rejected_because": null
+   },
+   {
+    "name": "tg1024_ept2",
+    "tg": 1024,
+    "ept": 2,
+    "correct": true,
+    "max_abs_err": 9.5367431640625e-07,
+    "median_ms": 0.5111249920446426,
+    "iqr_pct": 5.53,
+    "rejected_because": null
+   },
+   {
+    "name": "tg1024_ept4",
+    "tg": 1024,
+    "ept": 4,
+    "correct": true,
+    "max_abs_err": 9.5367431640625e-07,
+    "median_ms": 0.5131250072736293,
+    "iqr_pct": 16.35,
+    "rejected_because": "IQR spread 16.35% failed the reliability gate; an unreliable arm cannot be champion"
+   }
+  ],
+  "negative_science_refined": "The first phrasing of this finding was too broad. The TOP CLUSTER is flat -- the champion beats the runner-up by 0.38% against 4.94% noise, so any of the top five configurations is equally good -- but the FULL landscape spans 20.19% across the 12 reliable candidates, so a BAD configuration does cost real time. The correct conclusion is therefore not 'autotuning buys nothing' but 'autotuning here buys AVOIDANCE OF BAD CONFIGURATIONS, not discovery of a single best one'. Three candidates also failed the reliability gate outright (tg128_ept2, tg512_ept1, tg1024_ept4), which is its own result: some configurations are not merely slower, they are less REPEATABLE, and an unrepeatable kernel cannot be a champion."
+ },
+ "claim_boundary": "A champion was selected and it does beat the MLX baseline 2.66x -- but that margin comes from FUSION, which P5 already established, NOT from autotuning. The autotune itself found NO distinguishable win: the champion's lead over the runner-up is 0.38% against 4.94% noise. This receipt therefore does NOT support P6, which needs a REPRODUCIBLE MACHINE-SPECIFIC win; nothing here is machine-specific, because a flat landscape would look flat on any bandwidth-bound device. One primitive, one shape, one dtype, INSTANCE level.",
+ "pass": true,
+ "CORRECTED_BY_LATER_MEASUREMENT": {
+  "receipt": "receipts/headless/ACCELERATOR_FORGE_REVERDICT.json",
+  "correction_1": "the three candidates this receipt reports as failing the reliability gate (tg128_ept2, tg512_ept1, tg1024_ept4) were measured at ~25 reps. At 200 reps ALL FIFTEEN are reliable, IQR 3.52-7.27%. The barring was an artifact.",
+  "correction_2": "the '20.19% landscape spread' is driven almost entirely by one configuration, tg64_ept1. The other fourteen span about 2.4%.",
+  "still_stands": "the flat top cluster, which is confirmed and stronger at 200 reps"
+ }
+}

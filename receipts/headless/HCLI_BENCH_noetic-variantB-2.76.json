@@ -1,0 +1,257 @@
+{
+ "schema": "hawking.headless.hcli_bench.v1",
+ "generated_at": "2026-08-25T07:52:41Z",
+ "generated_by": "tools/headless/hcli_bench.py",
+ "obligation": "G039 \u2014 HCLI_AUTONOMOUS_BENCH + HCLI_SCORE",
+ "hand_authored": false,
+ "label": "noetic-variantB-2.76",
+ "backend": "noetic",
+ "artifact_root": "/Users/scammermike/noetic/VARIANT_B_MLP_BIAS_Q3",
+ "headline": "VERIFIED_ACCEPTED_WORKUNITS_PER_HOUR",
+ "scoring": "every WorkUnit is accepted only by a deterministic verifier -- code executed against hidden asserts, JSON parsed against a predicate, a tool call matched against a schema. No model grades any model.",
+ "axes_covered": [
+  "code_generation",
+  "multi_turn",
+  "repair",
+  "structured_output",
+  "tool_selection",
+  "verification"
+ ],
+ "score": {
+  "verified_accepted_workunits": 5,
+  "total_workunits": 6,
+  "acceptance_rate": 0.8333,
+  "total_wall_s": 368.433,
+  "VERIFIED_ACCEPTED_WORKUNITS_PER_HOUR": 48.856,
+  "median_workunit_latency_s": 35.206,
+  "p95_workunit_latency_s": 107.223,
+  "repair_loops_per_workunit": 0.333,
+  "tool_calls": 3,
+  "tool_errors": 1,
+  "tool_reliability": 0.6667,
+  "model_tokens": 6030,
+  "tokens_per_accepted_workunit": 1206.0
+ },
+ "workunits": [
+  {
+   "id": "wu-code-dedupe",
+   "axis": "code_generation",
+   "verified": true,
+   "why": "asserts passed",
+   "turns": 1,
+   "tool_calls": 0,
+   "tool_errors": 0,
+   "repair_loops": 0,
+   "wall_s": 22.406,
+   "model_tokens": 280,
+   "trace": [
+    {
+     "turn": 1,
+     "wall_s": 18.876,
+     "n_new_tokens": 280,
+     "unterminated_think_block": false,
+     "reply_head": "```python\ndef dedupe(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        if x not in seen:\n            seen.add(x)\n            result.append(x)\n    return result\n```",
+     "verify": {
+      "verified": true,
+      "why": "asserts passed"
+     }
+    }
+   ]
+  },
+  {
+   "id": "wu-code-repair",
+   "axis": "repair",
+   "verified": true,
+   "why": "asserts passed",
+   "turns": 1,
+   "tool_calls": 0,
+   "tool_errors": 0,
+   "repair_loops": 0,
+   "wall_s": 46.93,
+   "model_tokens": 1021,
+   "trace": [
+    {
+     "turn": 1,
+     "wall_s": 46.906,
+     "n_new_tokens": 1021,
+     "unterminated_think_block": false,
+     "reply_head": "The issue is that for an even-length list, the median is the average of the two middle elements, not the upper-middle element. For `[1, 2, 3, 4]`, the two middle elements are at indices `1` and `2` (0",
+     "verify": {
+      "verified": true,
+      "why": "asserts passed"
+     }
+    }
+   ]
+  },
+  {
+   "id": "wu-tool-select",
+   "axis": "tool_selection",
+   "verified": false,
+   "why": "selected 'list_dir', expected 'read_file'",
+   "turns": 2,
+   "tool_calls": 1,
+   "tool_errors": 1,
+   "repair_loops": 0,
+   "wall_s": 23.481,
+   "model_tokens": 138,
+   "trace": [
+    {
+     "turn": 1,
+     "wall_s": 10.874,
+     "n_new_tokens": 71,
+     "unterminated_think_block": false,
+     "reply_head": "<tool>{\"name\": \"read_file\", \"args\": {\"path\": \"/etc/hostname\"}}\n</tool>",
+     "tool": {
+      "call": {
+       "name": "read_file",
+       "args": {
+        "path": "/etc/hostname"
+       }
+      },
+      "result_ok": false
+     }
+    },
+    {
+     "turn": 2,
+     "wall_s": 12.604,
+     "n_new_tokens": 67,
+     "unterminated_think_block": false,
+     "reply_head": "<tool>{\"name\": \"list_dir\", \"args\": {\"path\": \"/etc\"}}\n</tool>",
+     "verify": {
+      "verified": false,
+      "why": "selected 'list_dir', expected 'read_file'"
+     }
+    }
+   ]
+  },
+  {
+   "id": "wu-structured-extract",
+   "axis": "structured_output",
+   "verified": true,
+   "why": "got {'name': 'auth-gw', 'port': 8443, 'tls': True}",
+   "turns": 1,
+   "tool_calls": 0,
+   "tool_errors": 0,
+   "repair_loops": 0,
+   "wall_s": 13.152,
+   "model_tokens": 120,
+   "trace": [
+    {
+     "turn": 1,
+     "wall_s": 13.151,
+     "n_new_tokens": 120,
+     "unterminated_think_block": false,
+     "reply_head": "{\"name\": \"auth-gw\", \"port\": 8443, \"tls\": true}",
+     "verify": {
+      "verified": true,
+      "why": "got {'name': 'auth-gw', 'port': 8443, 'tls': True}"
+     }
+    }
+   ]
+  },
+  {
+   "id": "wu-multiturn-mission",
+   "axis": "multi_turn",
+   "verified": true,
+   "why": "expected ANSWER: 2870",
+   "turns": 2,
+   "tool_calls": 1,
+   "tool_errors": 0,
+   "repair_loops": 0,
+   "wall_s": 107.223,
+   "model_tokens": 1661,
+   "trace": [
+    {
+     "turn": 1,
+     "wall_s": 67.492,
+     "n_new_tokens": 1536,
+     "unterminated_think_block": false,
+     "reply_head": "<tool>{\"name\": \"run_python\", \"args\": {\"code\": \"print(sum(i**2 for i in range(1, 21)))\"}}</tool>\n\n<tool>{\"name\": \"run_python\", \"args\": {\"code\": \"print(sum(i**2 for i in range(1, 21)))\"}}</tool>\n\n<tool>",
+     "tool": {
+      "call": {
+       "name": "run_python",
+       "args": {
+        "code": "print(sum(i**2 for i in range(1, 21)))"
+       }
+      },
+      "result_ok": true
+     }
+    },
+    {
+     "turn": 2,
+     "wall_s": 39.704,
+     "n_new_tokens": 125,
+     "unterminated_think_block": false,
+     "reply_head": "The sum of squares of integers from 1 to 20 is 2870.\n\nANSWER: 2870",
+     "verify": {
+      "verified": true,
+      "why": "expected ANSWER: 2870"
+     }
+    }
+   ]
+  },
+  {
+   "id": "wu-self-verify",
+   "axis": "verification",
+   "verified": true,
+   "why": "expected VERDICT: TRUE",
+   "turns": 4,
+   "tool_calls": 1,
+   "tool_errors": 0,
+   "repair_loops": 2,
+   "wall_s": 155.24,
+   "model_tokens": 2810,
+   "trace": [
+    {
+     "turn": 1,
+     "wall_s": 67.602,
+     "n_new_tokens": 1536,
+     "unterminated_think_block": true,
+     "reply_head": "",
+     "verify": {
+      "verified": false,
+      "why": "expected VERDICT: TRUE"
+     }
+    },
+    {
+     "turn": 2,
+     "wall_s": 17.532,
+     "n_new_tokens": 209,
+     "unterminated_think_block": false,
+     "reply_head": "<tool>{\"name\": \"run_python\", \"args\": {\"code\": \"print(sorted(set([2,2,1])))\"}}\n</tool>",
+     "tool": {
+      "call": {
+       "name": "run_python",
+       "args": {
+        "code": "print(sorted(set([2,2,1])))"
+       }
+      },
+      "result_ok": true
+     }
+    },
+    {
+     "turn": 3,
+     "wall_s": 30.252,
+     "n_new_tokens": 490,
+     "unterminated_think_block": false,
+     "reply_head": "The claim is that `sorted(set([2,2,1])` evaluates to `[1,2]`.\n\n- `set([2,2,1]` creates a set from the list [2,2,1]. Since sets remove duplicate elements, this becomes `{2, 1}` (the duplicate 2 is remo",
+     "verify": {
+      "verified": false,
+      "why": "expected VERDICT: TRUE"
+     }
+    },
+    {
+     "turn": 4,
+     "wall_s": 39.824,
+     "n_new_tokens": 575,
+     "unterminated_think_block": false,
+     "reply_head": "The claim is that `sorted(set([2,2,1])` evaluates to `[1,2]`.\n\n- `set([2,2,1]` creates a set from the list [2,2,1]. Since sets remove duplicate elements, this becomes `{2, 1}` (the duplicate 2 is remo",
+     "verify": {
+      "verified": true,
+      "why": "expected VERDICT: TRUE"
+     }
+    }
+   ]
+  }
+ ]
+}

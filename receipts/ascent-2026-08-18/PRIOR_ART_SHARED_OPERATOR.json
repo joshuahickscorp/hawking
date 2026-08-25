@@ -1,0 +1,19 @@
+{
+  "obligation": "Phase-B prior-art: what the literature says about sharing one operator across a transformer's MLP stack, and how to close the generalization gap.",
+  "decisive_findings": {
+    "ffn_is_the_hard_share": "ALBERT (ICLR2020): full cross-layer tying degrades mostly via FFN sharing, not attention. Matches our finding that the MLP is the binding organ.",
+    "early_late_orthogonal": "arXiv 2504.08775 + CAST 2510.14262: early layers (L2-17) near-orthogonal to late (L29-59); three phases extract/compress/specialize are 'fundamentally different operations.' A single operator across all 64 layers is structurally wrong -- explains our 0.30 train/held gap at 64 vs 0.026 at 15 self-similar layers.",
+    "optimal_group_size": "MoEUT (2405.16039): groups of 2-4 non-shared layers recursively stacked is optimal (G=2), NOT all-tied. Matched/beats untied baseline at same params.",
+    "per_layer_lora_relaxation": "Relaxed Recursive Transformers (2410.20672): shared block + per-layer LOW-RANK LoRA relaxation, SVD-initialized, reaches 'on par with the original'; SVD-init beats zero-init by +6.5 pts. Richer per-layer code than FiLM.",
+    "consecutive_tying_on_qwen3": "Tying the Loop (2606.16825): tying experts across CONSECUTIVE layers cuts memory ~2x at virtually no degradation, evaluated on Qwen3. Mechanism: different input mixtures at each depth supply the per-layer differentiation.",
+    "activation_similarity_predicts_mergeability": "Merging FFN Sublayers (2501.06126): merge >1/3 of FFN sublayers at 99% performance; activation similarity predicts which can share -> cluster layers by activation to choose groups.",
+    "our_overfit_mode_is_known": "Revisiting ILD (2302.01530): distilling MORE intermediate-layer signal worsens generalization (our exact train/held divergence); fixes = fewer/coarser targets, more data, consistency (MixUp) regularization.",
+    "structured_nonlinear_ffn": "Monarch (Dao 2022) subsumes butterfly/Hadamard/FFT as block-sparse structured matrices for FFN; One Wide Feedforward (2309.01826): a single WIDE shared encoder FFN, no per-layer code, recovers quality via width (+1.2 BLEU, ~24% latency cut)."
+  },
+  "architecture_pivot": {
+    "was": "one shared SwiGLU operator over all 64 layers + per-layer FiLM (gamma,beta). Ties q3 at m=4096, beats at m=6144 but with a 0.30 generalization gap.",
+    "now": "cluster the 64 layers into K groups by activation phase (early/middle/late; K~3-4), ONE shared operator per group, + per-layer LOW-RANK adapter (LoRA on gate/up/down, SVD-initialized from W_layer - W_shared) instead of FiLM. Literature predicts this closes the gap while keeping active bytes far below q3.",
+    "physics": "per-layer LoRA at rank r adds r*(5120+m)*2*3 values/layer. r=128,m=6144 -> ~3.5 MB/layer q3-packed; shared operator ~38 MB resident. MLP active/token ~= 38 MB (resident) + 64*3.5 MB = ~262 MB vs q3 6950 MB = 26x fewer MLP active bytes, if the shared operator stays cache-resident."
+  },
+  "sources_quality": "arXiv/OpenReview/ACL primary where reachable (ar5iv mirrors for ALBERT, One-Wide-FFN, Revisiting-ILD); several 2026 preprints (Ouroboros, UniPool, Tying-the-Loop, ModernALBERT) reached via search-index paraphrase only -- flagged lower-confidence."
+}

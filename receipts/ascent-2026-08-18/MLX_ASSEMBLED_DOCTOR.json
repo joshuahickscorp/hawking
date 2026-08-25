@@ -1,0 +1,48 @@
+{
+ "ckpt": "workspace/campaign/phaseB/ckpt/grouped_k4_stable.pt",
+ "true": {
+  "The capital of France is": {
+   "want": "Paris",
+   "got": "Paris.\nThe capital of Germany is Berlin.\nThe",
+   "hit": true
+  },
+  "17 times 19 equals": {
+   "want": "323",
+   "got": "323. To understand this, consider that ",
+   "hit": true
+  },
+  "The opposite of hot is": {
+   "want": "cold",
+   "got": "cold.\nA. True\nB. False\n\n<think>",
+   "hit": true
+  },
+  "Water is made of hydrogen and": {
+   "want": "oxygen",
+   "got": "oxygen.\n\nA. True\nB. False\n\n<think>",
+   "hit": true
+  }
+ },
+ "swap": {
+  "The capital of France is": {
+   "want": "Paris",
+   "got": "\uc871\uc871\uc871\uc871ukasukasroveroveawirove\uc871\u6070\u597d",
+   "hit": false
+  },
+  "17 times 19 equals": {
+   "want": "323",
+   "got": "ins\uc871\uc871\uc871\uc871ekaukas\u8d70\u904d insomenFiesson",
+   "hit": false
+  },
+  "The opposite of hot is": {
+   "want": "cold",
+   "got": "\uc871\uc871\uc871\uc871\uc871macher\uc871\uc871\uc871jus\ufffd\ufffd",
+   "hit": false
+  },
+  "Water is made of hydrogen and": {
+   "want": "oxygen",
+   "got": "ukas ne\uc871\uc871\uc871 Humph ANNDsessonense\uc871",
+   "hit": false
+  }
+ },
+ "swap_hits": 0
+}

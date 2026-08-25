@@ -1,0 +1,13 @@
+{
+  "obligation": "G24 native affine2 design (from Grok archaeology, verified against our decoder + mlx).",
+  "why_new_kernel": "Our geo_tpr64 kernels are SYMMETRIC (q*scale, no bias) and the unit test (qwen38_hybrid_decode.rs L4728) REFUSES group_size=32 (requires g64, bits 3/4). The SwiGLU family kernel is also q*scale. Affine needs a per-group fp16 BIAS and g32. So: new codec, new kernel -- do NOT edit HGRAVU01/geo_tpr64.",
+  "design": {
+    "codec": "HGRAVF01 (8-byte magic), schema hawking.gravity.affine_scale_bias.v1, representation affine_q2_group32_fp16_scale_bias, group_size 32, reconstruction w = float(q)*scale + bias, one fp16 scale + one fp16 bias per group.",
+    "container": "reuse the HQ38M20 v1 128-byte catalog envelope (qwen38_hybrid_decode.rs:32-37); new codec id 5 in the packer (tools/qwen38_sub15_pack.py:84-88).",
+    "kernel": "new affine2 g32 GEMV: unpack 2-bit codes from uint32 (16/word LSB-first), inline reconstruct w=q*scale+bias per group-32, accumulate. in-register dequant, no expand-to-dense.",
+    "integration": "new MixedMlpNativeKind::AffineScaleBias; new match arms in the catalog-lane->kind mapping, role check, dispatch_uniform; new GpuUniform-like buffer carrying codes+scales+BIASES."
+  },
+  "format_verified": "affine-2bit dequant reproduced bit-for-bit vs mlx (G23_AFFINE2_FORMAT.json, 0.0 diff).",
+  "blueprints": ["workspace/campaign/affine2_kernel_spec.md","workspace/campaign/decoder_affine_plan.md"],
+  "milestone_order": "S034: (1) native affine2 kernel + one-organ parity vs mlx dequant [exact replication G25]; (2) full-model native decode [G24]; (3) native TPS ~38 [G26]; (4) Doctor; (5) attention repair [G29]; (6) below-external [G31]."
+}

@@ -1,0 +1,126 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T12:06:25Z",
+ "experiment_class": "ACCEL-C2M",
+ "knowledge_level": "INSTANCE",
+ "git_head": "7260dec59f91d3cb54c956ad97edaf42db272ecd",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_C_P4",
+   "proof": "P4 \u2014 a translated CUDA kernel matches the reference",
+   "obligation": "G045",
+   "steer": "S015"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model; this grades kernel translation"
+  },
+  "representation": {
+   "name": "dense_f32",
+   "elements": 65536
+  },
+  "kernel": {
+   "origin": "CUDA C source -> C2M -> AIR -> MSL",
+   "compiler": "mlx.fast.metal_kernel JIT"
+  },
+  "runtime": {
+   "mlx": "0.32.1",
+   "python": "3.12.13"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device; no transport crossed"
+  }
+ },
+ "result": {
+  "kernels": [
+   {
+    "kernel": "vadd",
+    "air_op": "add",
+    "tier": "C2M-T0",
+    "max_abs_err": 0.0,
+    "matches_oracle": true
+   },
+   {
+    "kernel": "vmul",
+    "air_op": "mul",
+    "tier": "C2M-T0",
+    "max_abs_err": 0.0,
+    "matches_oracle": true
+   },
+   {
+    "kernel": "vsub",
+    "air_op": "sub",
+    "tier": "C2M-T0",
+    "max_abs_err": 0.0,
+    "matches_oracle": true
+   },
+   {
+    "kernel": "krelu",
+    "air_op": "relu",
+    "tier": "C2M-T0",
+    "max_abs_err": 0.0,
+    "matches_oracle": true
+   }
+  ],
+  "conformance": {
+   "tier_claimed": "C2M-T0",
+   "tier_definition": "T0 = trivial elementwise kernels",
+   "kernels_translated": 4,
+   "kernels_matching_oracle": 4,
+   "higher_tiers": {
+    "C2M-T1": "NOT CLAIMED: no runtime, memory API or stream semantics exist",
+    "C2M-T2": "NOT CLAIMED: no math/ML kernel corpus (no GEMM, no reduction)",
+    "C2M-T3": "NOT CLAIMED: no real open CUDA project has been run",
+    "C2M-T4": "NOT CLAIMED: no AI workload",
+    "C2M-T5": "NOT CLAIMED: nothing is production-supported"
+   },
+   "oracle": "numpy on CPU",
+   "is_a_cuda_differential": false,
+   "why_not": "no NVIDIA hardware is present, so nothing was compared against CUDA itself; P2 remains open"
+  },
+  "refusals": [
+   {
+    "case": "shared memory",
+    "refused": true,
+    "message": "shared memory is not in the C2M-T0 subset (found '__shared__'); refusing rather than mistranslating"
+   },
+   {
+    "case": "loops",
+    "refused": true,
+    "message": "loops is not in the C2M-T0 subset (found 'for'); refusing rather than mistranslating"
+   },
+   {
+    "case": "atomics",
+    "refused": true,
+    "message": "atomics is not in the C2M-T0 subset (found 'atomicAdd'); refusing rather than mistranslating"
+   },
+   {
+    "case": "expression outside pattern set",
+    "refused": true,
+    "message": "expression 'sinf(a[i])' is outside the C2M-T0 pattern set (supported: a+b, a*b, a-b, fmaxf(a,0))"
+   },
+   {
+    "case": "fp64",
+    "refused": true,
+    "message": "fp64 is not in the C2M-T0 subset (found 'double'); refusing rather than mistranslating"
+   },
+   {
+    "case": "missing thread index",
+    "refused": true,
+    "message": "no recognised global thread index (expected blockIdx.x * blockDim.x + threadIdx.x)"
+   }
+  ],
+  "tests": "tools/accelerator/test_c2m.py"
+ },
+ "claim_boundary": "C2M-T0 ONLY, and this is NOT a CUDA differential. Four trivial elementwise CUDA kernels were translated through AIR and executed on the Apple GPU, matching a NUMPY CPU ORACLE -- not CUDA. No NVIDIA hardware is present, so nothing here compares against real CUDA semantics, floating-point behaviour, ordering or errors, and P2 remains open. The frontend is a PATTERN MATCHER over four expression forms, not a C expression parser: no loops, no shared memory, no atomics, no synchronization, no fp64, no multi-statement kernels, no runtime or memory API, no streams. Tiers T1 through T5 are explicitly NOT CLAIMED. Nothing was timed, so no performance claim exists.",
+ "pass": true
+}

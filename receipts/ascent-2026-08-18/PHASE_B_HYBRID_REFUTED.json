@@ -1,0 +1,13 @@
+{
+  "schema": "hawking.nos.phase_b_hybrid.v1", "session": "f5169750", "date": "2026-08-18",
+  "obligation": "Phase B / S012 §26 -- pursue the representation frontier: does low-rank + correction reduce MLP active bytes below q3 at q3 quality (held-out)?",
+  "method": "down_proj L31; real post_swiglu activations, TRAIN/TEST split; base(qN absmax g64) + activation-aware low-rank correction of the residual (RRR on train residual-output, generalizes); output rel-Frobenius error held-out vs q3; total bytes = base + rank-k f16 factors.",
+  "results": {
+    "q3_baseline": {"err": 0.2216, "MB": 39.0, "b_per_elem": 3.5},
+    "q3_plus_correction": {"rank64": {"err": 0.1743, "pct_q3_bytes": 107}, "note": "GENERALIZES and beats q3 quality, but ADDS bytes -- a Matryoshka/quality lever (feeds G11), NOT a speed/byte-reduction lever"},
+    "q2_plus_correction": {"rank256": {"err": 0.3955, "pct_q3_bytes": 101}, "rank384": {"err": 0.3581, "pct_q3_bytes": 116}, "note": "q2 base (err 0.626) is too coarse -- correction CANNOT recover q3 quality (0.22) within a reasonable byte budget; still 0.36-0.40 at >=q3 bytes"}
+  },
+  "verdict": "MEASURED NEGATIVE for byte reduction. No low-rank + correction split beats q3's density-quality point: q2-base cannot be corrected back to q3 quality cheaply, and q3-base+correction is more bytes for better quality (Matryoshka, not speed). q3 is Pareto-optimal on the MLP density-quality frontier. The hybrid GENERALIZES (unlike pure low-rank) but does not move active bytes below q3 at q3 quality.",
+  "consequence": "The representation wall is now COMPREHENSIVE across compression families -- pure low-rank (overfits), function low-rank (overfits held-out), hybrid low-rank+correction (this: Pareto-dominated by q3), entropy (stored-not-active), sparsity (~2x marginal), bit-descent (3.34 coherent floor) are ALL refuted for reducing MLP active bytes below q3 while generalizing. The ONLY unexplored path to fewer active bytes is DISTILLATION (train a smaller operator to match the function) -- a large training arc, not a compression of existing weights. 100 TPS (G22) and the TPS ladder remain BLOCKED, now on distillation as the sole surviving representation avenue.",
+  "reopen_if": "a distilled/generated operator, trained to match the MLP function, achieves q3 quality at materially fewer active bytes held-out across layers, with Doctor holding."
+}

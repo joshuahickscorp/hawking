@@ -1,0 +1,197 @@
+{
+ "schema": "hawking.odyssey.device_profiles.v2",
+ "generated_at": "2026-08-25T10:16:24Z",
+ "generated_by": "tools/odyssey/device_profiles.py",
+ "obligation": "G023 acceptance clause 4 \u2014 device profiles qualified",
+ "hand_authored": false,
+ "git_head": "f294b92b9aad78ebe5094d70b9575a83915a524c",
+ "method": "three alternated reps per (body, level). Reproducibility is judged PER METRIC, not per level: a flat gate failed everything because c1 aggregate throughput carries model-load variance while TPOT repeats to 0.1%. A body is qualified for a profile only if the metric that profile is judged on repeats within 5.0% of its median.",
+ "reproducibility": {
+  "sealed-3.14": {
+   "c1": {
+    "aggregate_tps": 18.57,
+    "ttft_ms": 8.26,
+    "tpot_ms": 0.1
+   },
+   "c4": {
+    "aggregate_tps": 25.77,
+    "ttft_ms": 39.92,
+    "tpot_ms": 4.12
+   }
+  },
+  "variantB-2.76": {
+   "c1": {
+    "aggregate_tps": 17.06,
+    "ttft_ms": 4.37,
+    "tpot_ms": 0.13
+   },
+   "c4": {
+    "aggregate_tps": 2.45,
+    "ttft_ms": 1.68,
+    "tpot_ms": 1.57
+   }
+  }
+ },
+ "profiles": {
+  "INTERACTIVE": {
+   "level": "c1",
+   "headline_metric": "tpot_ms",
+   "why": "one stream: what a person waits on is steady-state token latency",
+   "per_body": {
+    "sealed-3.14": {
+     "aggregate_tps": {
+      "reps": [
+       4.5,
+       5.127,
+       5.452
+      ],
+      "median": 5.127,
+      "spread_pct": 18.57
+     },
+     "ttft_ms": {
+      "reps": [
+       1339.3,
+       1236.2,
+       1248.0
+      ],
+      "median": 1248.0,
+      "spread_pct": 8.26
+     },
+     "tpot_ms": {
+      "reps": [
+       29.38,
+       29.351,
+       29.364
+      ],
+      "median": 29.364,
+      "spread_pct": 0.1
+     }
+    },
+    "variantB-2.76": {
+     "aggregate_tps": {
+      "reps": [
+       5.146,
+       6.199,
+       6.174
+      ],
+      "median": 6.174,
+      "spread_pct": 17.06
+     },
+     "ttft_ms": {
+      "reps": [
+       1285.0,
+       1230.1,
+       1255.3
+      ],
+      "median": 1255.3,
+      "spread_pct": 4.37
+     },
+     "tpot_ms": {
+      "reps": [
+       30.232,
+       30.247,
+       30.271
+      ],
+      "median": 30.247,
+      "spread_pct": 0.13
+     }
+    }
+   },
+   "qualified": {
+    "sealed-3.14": true,
+    "variantB-2.76": true
+   },
+   "n_qualified": 2,
+   "winner": "sealed-3.14",
+   "margin_pct": 2.92,
+   "margin_is_decisive": true,
+   "note": null
+  },
+  "MAXX": {
+   "level": "c4",
+   "headline_metric": "aggregate_tps",
+   "why": "four streams: what a background fleet gets is aggregate tokens/second",
+   "per_body": {
+    "sealed-3.14": {
+     "aggregate_tps": {
+      "reps": [
+       5.698,
+       7.078,
+       7.522
+      ],
+      "median": 7.078,
+      "spread_pct": 25.77
+     },
+     "ttft_ms": {
+      "reps": [
+       9491.0,
+       7146.5,
+       6638.1
+      ],
+      "median": 7146.5,
+      "spread_pct": 39.92
+     },
+     "tpot_ms": {
+      "reps": [
+       91.639,
+       88.257,
+       92.031
+      ],
+      "median": 91.639,
+      "spread_pct": 4.12
+     }
+    },
+    "variantB-2.76": {
+     "aggregate_tps": {
+      "reps": [
+       10.851,
+       11.119,
+       11.123
+      ],
+      "median": 11.119,
+      "spread_pct": 2.45
+     },
+     "ttft_ms": {
+      "reps": [
+       3694.1,
+       3708.6,
+       3646.4
+      ],
+      "median": 3694.1,
+      "spread_pct": 1.68
+     },
+     "tpot_ms": {
+      "reps": [
+       95.279,
+       95.036,
+       96.532
+      ],
+      "median": 95.279,
+      "spread_pct": 1.57
+     }
+    }
+   },
+   "qualified": {
+    "sealed-3.14": false,
+    "variantB-2.76": true
+   },
+   "n_qualified": 1,
+   "winner": "variantB-2.76",
+   "margin_pct": null,
+   "margin_is_decisive": true,
+   "note": "only ['variantB-2.76'] reproduce on aggregate_tps at c4; the other body cannot be qualified for this profile because its behaviour does not repeat"
+  }
+ },
+ "clause_answer": {
+  "different_winners": true,
+  "finding": "DIFFERENT WINNERS. sealed-3.14 wins INTERACTIVE on steady-state TPOT (29.364 ms against 30.247 ms, 2.92%, against spreads of 0.10% and 0.13% so the margin is real). variantB-2.76 wins MAXX on aggregate throughput (11.119 against 7.078 tokens/s) -- and sealed is NOT QUALIFIED for MAXX at all, because its aggregate throughput swings 25.77% and its TTFT 39.92% across three reps while variantB repeats to 2.45% and 1.68%.",
+  "mechanism": "sealed is 10,554,328,856 payload bytes to variantB's 9,265,849,388. Four concurrent processes ask for roughly 39.3 GiB of Metal working set against 34.5 GiB, and sealed sits close enough to the admission ceiling that its behaviour stops repeating. This is the same working-set collapse G040 measured at higher concurrency, appearing earlier for the larger body."
+ },
+ "bearing_on_G040": {
+  "what_G040_selected": "sealed-3.14, on verified HCLI WUs/hour per GB resident",
+  "what_this_adds": "that composite was measured SINGLE-STREAM. Under four concurrent streams variantB produces 57% more aggregate throughput, halves TTFT, and is the only one of the two that reproduces.",
+  "does_it_overturn_the_selection": "NOT on this evidence. These are raw tokens, not verified WorkUnits, and G040's rule is verified work per resource. Settling it needs the HCLI bench run concurrently, which has not been done.",
+  "honest_status": "the single-stream selection stands; a multi-session selection would plausibly differ and is unmeasured"
+ },
+ "pass": true
+}

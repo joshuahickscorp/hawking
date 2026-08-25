@@ -1,0 +1,195 @@
+{
+ "role_summary": {
+  "embed": {
+   "src_elems": 1271398400,
+   "payload": 317849600,
+   "meta": 158924800,
+   "total": 476774400,
+   "count": 1,
+   "quantized": 1,
+   "bits": [
+    2.0
+   ],
+   "group": [
+    32
+   ]
+  },
+  "norm": {
+   "src_elems": 655360,
+   "payload": 1310720,
+   "meta": 0,
+   "total": 1310720,
+   "count": 128,
+   "quantized": 0,
+   "bits": [],
+   "group": []
+  },
+  "deltanet": {
+   "src_elems": 5562051072,
+   "payload": 1393972224,
+   "meta": 695009280,
+   "total": 2088981504,
+   "count": 432,
+   "quantized": 240,
+   "bits": [
+    2.0
+   ],
+   "group": [
+    32
+   ]
+  },
+  "mlp": {
+   "src_elems": 17112760320,
+   "payload": 4278190080,
+   "meta": 2139095040,
+   "total": 6417285120,
+   "count": 192,
+   "quantized": 192,
+   "bits": [
+    2.0
+   ],
+   "group": [
+    32
+   ]
+  },
+  "attention": {
+   "src_elems": 1677729792,
+   "payload": 419446784,
+   "meta": 209715200,
+   "total": 629161984,
+   "count": 96,
+   "quantized": 64,
+   "bits": [
+    2.0
+   ],
+   "group": [
+    32
+   ]
+  },
+  "other": {
+   "src_elems": 460735216,
+   "payload": 921470432,
+   "meta": 0,
+   "total": 921470432,
+   "count": 334,
+   "quantized": 0,
+   "bits": [],
+   "group": []
+  },
+  "lm_head": {
+   "src_elems": 1271398400,
+   "payload": 317849600,
+   "meta": 158924800,
+   "total": 476774400,
+   "count": 1,
+   "quantized": 1,
+   "bits": [
+    2.0
+   ],
+   "group": [
+    32
+   ]
+  }
+ },
+ "complete_effective_bpw": 3.2202,
+ "total_bytes": 11011758560,
+ "source_elems": 27356728560,
+ "disk_bytes": 11012038708,
+ "per_tensor_sample": [
+  {
+   "name": "language_model.model.embed_tokens",
+   "role": "embed",
+   "quantized": true,
+   "src_shape": [
+    248320,
+    5120
+   ],
+   "weight_dtype": "U32",
+   "payload": 317849600,
+   "meta": 158924800,
+   "total": 476774400,
+   "inferred_bits": 2.0,
+   "inferred_group": 32
+  },
+  {
+   "name": "language_model.model.layers.0.input_layernorm",
+   "role": "norm",
+   "quantized": false,
+   "src_shape": [
+    5120
+   ],
+   "weight_dtype": "BF16",
+   "payload": 10240,
+   "meta": 0,
+   "total": 10240,
+   "inferred_bits": null,
+   "inferred_group": null
+  },
+  {
+   "name": "language_model.model.layers.0.linear_attn.conv1d",
+   "role": "deltanet",
+   "quantized": false,
+   "src_shape": [
+    10240,
+    4,
+    1
+   ],
+   "weight_dtype": "BF16",
+   "payload": 81920,
+   "meta": 0,
+   "total": 81920,
+   "inferred_bits": null,
+   "inferred_group": null
+  },
+  {
+   "name": "language_model.model.layers.0.linear_attn.in_proj_a",
+   "role": "deltanet",
+   "quantized": true,
+   "src_shape": [
+    48,
+    5120
+   ],
+   "weight_dtype": "U32",
+   "payload": 61440,
+   "meta": 30720,
+   "total": 92160,
+   "inferred_bits": 2.0,
+   "inferred_group": 32
+  },
+  {
+   "name": "language_model.model.layers.0.linear_attn.in_proj_b",
+   "role": "deltanet",
+   "quantized": true,
+   "src_shape": [
+    48,
+    5120
+   ],
+   "weight_dtype": "U32",
+   "payload": 61440,
+   "meta": 30720,
+   "total": 92160,
+   "inferred_bits": 2.0,
+   "inferred_group": 32
+  },
+  {
+   "name": "language_model.model.layers.0.linear_attn.in_proj_qkv",
+   "role": "deltanet",
+   "quantized": true,
+   "src_shape": [
+    10240,
+    5120
+   ],
+   "weight_dtype": "U32",
+   "payload": 13107200,
+   "meta": 6553600,
+   "total": 19660800,
+   "inferred_bits": 2.0,
+   "inferred_group": 32
+  }
+ ],
+ "quant_config": {
+  "group_size": 32,
+  "bits": 2,
+  "mode": "affine"
+ }
+}

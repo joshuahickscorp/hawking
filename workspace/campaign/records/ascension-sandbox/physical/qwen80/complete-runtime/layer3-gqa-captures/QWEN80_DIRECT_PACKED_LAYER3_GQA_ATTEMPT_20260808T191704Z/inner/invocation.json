@@ -1,0 +1,14 @@
+{
+  "claim_boundary": {
+    "component_stage_only": true,
+    "not_a_complete_layer_decoder_generation_hcli_or_tps_result": true
+  },
+  "expected_manifest_seal_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+  "expected_source_audit_seal_sha256": "c572b2270b623b8677c374b43c89ddd729de135c25721488bb874b184ff8c3d4",
+  "expected_source_revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+  "manifest": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+  "mode": "metal",
+  "schema": "hawking.ascension.qwen80_direct_packed_layer3_gqa_capture.v1",
+  "started_unix_millis": 1786216650698,
+  "status": "STARTED_QWEN80_DIRECT_PACKED_LAYER3_GQA_COMPONENT_ATTEMPT"
+}

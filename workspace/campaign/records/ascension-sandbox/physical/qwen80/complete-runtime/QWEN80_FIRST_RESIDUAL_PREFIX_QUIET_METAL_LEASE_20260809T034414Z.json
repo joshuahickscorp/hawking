@@ -1,0 +1,58 @@
+{
+  "artifact_binding": {
+    "admission_receipt_seal_sha256": "939b41322363da3db774a2530b207bf380ed641d23cae671fc6438c0eecbf628",
+    "manifest_document_sha256": "a0fcac0401a7962402bb8cb87d5055c83667b39575f9e0f4c7470d080758aa10",
+    "manifest_seal_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b"
+  },
+  "claim_boundary": {
+    "no_true_moe_suffix_or_complete_layer": true,
+    "not_token_decoder_generation_hcli_tps_tg_or_tournament": true,
+    "source_input_l0_deltanet_prefix_component_only": true
+  },
+  "cpu_baseline_binding": {
+    "receipt_document_sha256": "69abcea06229764446249adb1b3f4c3b6366964c3699306ebdc1c95dec50b982",
+    "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_FIRST_RESIDUAL_CPU_CAPTURE_20260809T030653Z/receipt.json",
+    "schema": "hawking.ascension.qwen80_first_residual_bridge_inner.v1",
+    "status": "EARNED_CURRENT_ADMITTED_QWEN80_LAYER0_FIRST_RESIDUAL_CPU_ORACLE_BASELINE_METAL_LEASE_REQUIRED"
+  },
+  "execution_policy": {
+    "complete_layer_or_token_allowed": false,
+    "component": "qwen80_first_residual_bridge",
+    "quiet_qwen80_device_lease": true,
+    "strict_math": true,
+    "timing_or_benchmarking_allowed": false,
+    "tps_or_tg_claim_allowed": false
+  },
+  "implementation_binding": {
+    "prefix_dispatches": 9,
+    "probe_binary": {
+      "bytes": 11538080,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/debug/examples/ascension_qwen80_first_residual_bridge_device",
+      "present": true,
+      "sha256": "a28bdd1808f87941870daca278b5516c11020a7c561def994b7083c0cd7196b5"
+    },
+    "registered_qwen_next_prefix_kernels_only": true,
+    "same_command_buffer_fence_required": true
+  },
+  "lease_id": "591cf72bfa09b6b749c1bc5b5710ef6904eaf4be1e01c35ab58c445410bc6a0f",
+  "lifecycle": {
+    "automatic_retry_prohibited": true,
+    "fresh_for_this_exact_launch": true,
+    "lease_released_after_first_terminal_child": true,
+    "outer_reaped_capture_required": true
+  },
+  "recorded_at": "2026-08-09T03:44:15.661189Z",
+  "schema": "hawking.ascension.qwen80_first_residual_quiet_metal_lease.v1",
+  "seal_sha256": "e694724b70e6fe1ddbec166f047646f6b2529cd92bcb1b027853bc30ee98138a",
+  "status": "GRANTED_QWEN80_FIRST_RESIDUAL_NON_TIMED_DEVICE_PARITY_LEASE",
+  "watcher_coordination": {
+    "watcher_gpu_hold": {
+      "bytes": 2088,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_WATCHER_GPU_COORDINATION_HOLD_20260808T220751Z.json",
+      "present": true,
+      "sha256": "d3a010096476d1cd95a8764b19ba676aed3d4236bac3a7182e532d01724a7d3d"
+    },
+    "watcher_hold_must_remain_active": true,
+    "watcher_restart_or_transition_authorized": false
+  }
+}

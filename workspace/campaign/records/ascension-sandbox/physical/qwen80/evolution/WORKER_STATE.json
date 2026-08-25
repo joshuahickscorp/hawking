@@ -1,0 +1,49 @@
+{
+  "completed_candidate_count": 1002,
+  "created_at": "2026-08-08T07:00:26.505465Z",
+  "failed_candidate_count": 0,
+  "heartbeat": 7512,
+  "integrity_audit_cursor": 1002,
+  "last_material_progress_at": "2026-08-10T12:07:13.505132Z",
+  "material_progress_count": 1002,
+  "model": "qwen80",
+  "model_id": "Qwen3-Coder-Next-80B",
+  "next_proposal_index": 5847,
+  "representation_schedule": {
+    "claim_boundary": "schedule only; all representations remain source-region component artifacts until independent full-model gates are earned",
+    "expanded_representation_order": [
+      "binary_sign_scale128",
+      "uniform_q2_group64",
+      "uniform_q3_group64",
+      "ternary_threshold_group128",
+      "binary_outlier_residual",
+      "teacher_low_rank_q3",
+      "uniform_q4_group64",
+      "hadamard_lattice_q3_group128",
+      "additive_residual_codebook_q2x2",
+      "activation_corrected_rowwise_q3"
+    ],
+    "expanded_representation_schedule_version": "v2_expanded_ten_family",
+    "legacy_block_size": 126,
+    "legacy_representation_order": [
+      "binary_sign_scale128",
+      "uniform_q2_group64",
+      "uniform_q3_group64",
+      "ternary_threshold_group128",
+      "binary_outlier_residual",
+      "teacher_low_rank_q3",
+      "uniform_q4_group64"
+    ],
+    "legacy_representation_schedule_version": "v1_legacy_seven_family",
+    "pinned_from_next_proposal_index": 179,
+    "schema": "hawking.ascension.representation_schedule_migration.v1",
+    "status": "PINNED_FUTURE_EXPANSION_BOUNDARY",
+    "target_count": 18,
+    "v2_start_generation": 2,
+    "v2_start_sequence": 252
+  },
+  "schema": "hawking.ascension.dual_gravity_worker.v1",
+  "source_content_identity_sha256": "3a6c4816e885023cc6eaaf0521adb0be1a9a008ee5021116c1305b78a2745acc",
+  "source_identity_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/evolution/SOURCE_CONTENT_IDENTITY.json",
+  "updated_at": "2026-08-10T17:23:59.353012Z"
+}

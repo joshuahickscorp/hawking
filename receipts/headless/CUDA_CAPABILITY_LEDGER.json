@@ -1,0 +1,382 @@
+{
+ "schema": "hawking.accelerator.cuda_capability_ledger.v1",
+ "generated_at": "2026-08-25T12:20:46Z",
+ "entries": [
+  {
+   "capability_id": "MEMORY.host_device_copy",
+   "cuda_mechanism": "cudaMalloc + cudaMemcpy H2D/D2H around every kernel",
+   "why_it_exists": "a discrete GPU has its own physical memory the CPU cannot address",
+   "underlying_problem": "data must physically cross PCIe to be computed on",
+   "apple_equivalent": "none needed; CPU and GPU address the same physical memory",
+   "hawking_equivalent": "cuda_runtime.execute_host UNIFIED mode: cudaMalloc becomes an alias and both cudaMemcpy directions become no-ops, guarded by may_delete_copies()",
+   "semantic_gap": "DELETED_BY_UNIFIED_MEMORY",
+   "performance_gap": {
+    "measured": true,
+    "value": "eliminating the copies is worth 7.4x on the copy itself (P6 microbenchmark) and 1.7x inside a translated host program",
+    "receipt": "receipts/headless/ACCELERATOR_FRONT_G_P6.json + ACCELERATOR_C2M_T1_RUNTIME.json"
+   },
+   "priority": "P0",
+   "test_corpus": "vadd and vmul host programs at 4096 and 2^22 in both modes, plus a hazard program that writes its host buffer between the copy and the launch",
+   "current_winner": "Hawking resident-operand path",
+   "remaining_limitation": "THE DELETION IS CONDITIONAL, and calling this gap deleted without the condition would be wrong. A CUDA host-to-device copy is a SNAPSHOT; an alias is a LIVE REFERENCE. A program that writes the host buffer after the copy and before the launch DIVERGES -- demonstrated at 999.36 in exactly one element with every other element bit-identical. may_delete_copies() refuses those programs by name. Also unhandled: device-to-device copies, async copies, pinned and managed memory, all refused rather than emulated.",
+   "evidence": "receipts/headless/ACCELERATOR_FRONT_G_P6.json"
+  },
+  {
+   "capability_id": "MEMORY.quantized_weight_access",
+   "cuda_mechanism": "dequantize to dense then call cuBLAS, or a fused dequant-GEMM kernel",
+   "why_it_exists": "tensor cores consume dense formats; compact formats must be expanded",
+   "underlying_problem": "compact weights are not directly consumable by library GEMM",
+   "apple_equivalent": "none provided; MLX quantized ops cover its own formats only",
+   "hawking_equivalent": "representation-native matvec reading packed nibbles + f16 group scales",
+   "semantic_gap": "PARTIAL",
+   "performance_gap": {
+    "measured": true,
+    "value": "no advantage below ~64 MiB; 2.08x at 256 MiB where it becomes bandwidth-bound",
+    "receipt": "receipts/headless/ACCELERATOR_FRONT_D_P7.json"
+   },
+   "priority": "P0",
+   "test_corpus": "real Qwen3-30B-A3B expert tensor at ws_rtn_q4_g64",
+   "current_winner": "Hawking native kernel above the crossover; nothing below it",
+   "remaining_limitation": "matvec only; no GEMM, no batched form, and one expert sits BELOW the crossover so single-expert use gains nothing",
+   "evidence": "receipts/headless/ACCELERATOR_FRONT_D_P7.json"
+  },
+  {
+   "capability_id": "COMPILER.kernel_fusion",
+   "cuda_mechanism": "hand-fused kernels, or a compiler like Triton/torch.compile",
+   "why_it_exists": "each launch re-reads and re-writes memory an op chain need not touch",
+   "underlying_problem": "unfused chains are bandwidth-bound on intermediates",
+   "apple_equivalent": "MLX does not fuse an arbitrary elementwise chain automatically",
+   "hawking_equivalent": "AIR lowers a multi-op SSA chain into one kernel",
+   "semantic_gap": "PARTIAL",
+   "performance_gap": {
+    "measured": true,
+    "value": "1.71x over the naive 3-kernel translation, 2.62x over MLX",
+    "receipt": "receipts/headless/ACCELERATOR_FRONT_D_P5.json"
+   },
+   "priority": "P0",
+   "test_corpus": "mul->relu->silu chain, 2^24 f32",
+   "current_winner": "Hawking fused AIR program",
+   "remaining_limitation": "elementwise chains over one shape and dtype only",
+   "evidence": "receipts/headless/ACCELERATOR_FRONT_D_P5.json"
+  },
+  {
+   "capability_id": "COMPILER.jit_kernel_compilation",
+   "cuda_mechanism": "NVRTC / driver JIT of PTX at runtime",
+   "why_it_exists": "shapes and constants are not known until run time",
+   "underlying_problem": "AOT compilation cannot specialise on runtime values",
+   "apple_equivalent": "Metal runtime library compilation; MLX exposes it via metal_kernel",
+   "hawking_equivalent": "AIR emits MSL, MLX JIT-compiles it",
+   "semantic_gap": "PARTIAL",
+   "performance_gap": {
+    "measured": true,
+    "value": "36.8 ms per DISTINCT kernel on this machine, near-flat in source size (102 chars 36.8 ms, 5990 chars 43.6 ms) and CACHED on repeat: the same name+source recompiles in 0.24 ms. Compile is 23.2% of a WorkUnit's first-run excess; MLX's own first-use costs are 55.1%, dominated by the FIRST mx.array at 151 ms, which is device/allocator init and NOT compilation.",
+    "receipt": "receipts/headless/ACCELERATOR_JIT_COMPILE.json"
+   },
+   "priority": "P1",
+   "test_corpus": "the six AIR programs of P3",
+   "current_winner": "MLX JIT (retained; nothing here replaces it)",
+   "remaining_limitation": "measured on mx.fast.metal_kernel JIT only; xcrun metal AOT is ABSENT on this machine so an AOT metallib comparison cannot be made, and CUDA's own nvrtc latency is unmeasured because no NVIDIA hardware exists"
+  },
+  {
+   "capability_id": "COMPILER.specialization_constants",
+   "cuda_mechanism": "template parameters and __constant__ values baked at compile time",
+   "why_it_exists": "a constant known at compile time removes a load and enables unrolling",
+   "underlying_problem": "runtime values block optimisation",
+   "apple_equivalent": "Metal function constants",
+   "hawking_equivalent": "AirProgram.specialization emits const floats into the MSL",
+   "semantic_gap": "PARTIAL",
+   "performance_gap": {
+    "measured": true,
+    "value": "NO MEASURABLE BENEFIT on this backend. A literal scalar against a buffer read is INDISTINGUISHABLE (1.62% margin vs 7.95% noise); a compute-bound loop bound where unrolling should pay is INDISTINGUISHABLE with the literal 3.09% SLOWER, both arms clean at 5.25%/4.96%.",
+    "receipt": "receipts/headless/ACCELERATOR_SPEC_CONSTANTS.json"
+   },
+   "priority": "P2",
+   "test_corpus": "saxpy->relu with ALPHA as a specialization constant",
+   "current_winner": "UNKNOWN \u2014 never measured against a non-specialised variant",
+   "remaining_limitation": "two shapes on one machine; whether the literal loop is actually unrolled cannot be checked because xcrun metal is ABSENT so generated code cannot be inspected; and a constant that would enable BRANCH ELIMINATION or a different memory layout is untested"
+  },
+  {
+   "capability_id": "EXECUTION.grid_block_thread",
+   "cuda_mechanism": "blockIdx/blockDim/threadIdx and the launch configuration",
+   "why_it_exists": "a portable way to index a data-parallel launch",
+   "underlying_problem": "mapping work onto a hierarchy of parallel units",
+   "apple_equivalent": "thread_position_in_grid and threadgroup sizing",
+   "hawking_equivalent": "C2M recognises the canonical global index and maps it",
+   "semantic_gap": "PARTIAL",
+   "performance_gap": {
+    "measured": false,
+    "reason": "indexing is not independently measurable"
+   },
+   "priority": "P0",
+   "test_corpus": "the four translated kernels of P4",
+   "current_winner": "Hawking C2M for the canonical form",
+   "remaining_limitation": "ONLY the 1-D canonical form; no 2-D or 3-D grids, no block-relative indexing, no grid-stride loops"
+  },
+  {
+   "capability_id": "EXECUTION.shared_memory",
+   "cuda_mechanism": "__shared__ arrays with block-scoped lifetime",
+   "why_it_exists": "a software-managed scratchpad far faster than global memory",
+   "underlying_problem": "reuse within a block should not go to DRAM",
+   "apple_equivalent": "threadgroup address space",
+   "hawking_equivalent": "tools/accelerator/gemm.py tiled GEMM",
+   "semantic_gap": "PARTIAL",
+   "performance_gap": {
+    "measured": true,
+    "value": "MLX 12733 GFLOP/s vs ours 2683 at 2048^2 = 4.7x in MLX's favour",
+    "receipt": "receipts/headless/ACCELERATOR_GEMM.json"
+   },
+   "priority": "P0",
+   "test_corpus": "512/1024/2048 square f32 GEMM vs MLX, plus 2 negative controls",
+   "current_winner": "MLX, retained (\u00a7141) -- replacement is not justified by evidence",
+   "remaining_limitation": "threadgroup tiles execute; no double buffering, no bank-conflict work"
+  },
+  {
+   "capability_id": "EXECUTION.atomics",
+   "cuda_mechanism": "atomicAdd/atomicCAS on global and shared memory",
+   "why_it_exists": "concurrent accumulation without a separate reduction pass",
+   "underlying_problem": "many threads updating one location",
+   "apple_equivalent": "atomic_fetch_add_explicit in MSL",
+   "hawking_equivalent": "atomic_fetch_add_explicit in AIR's atomic reduction strategy",
+   "semantic_gap": "PARTIAL",
+   "performance_gap": {
+    "measured": true,
+    "value": "single-pass atomic sum is 3.05x/1.80x over two-stage; INDISTINGUISHABLE from MLX",
+    "receipt": "receipts/headless/ACCELERATOR_ATOMICS.json"
+   },
+   "priority": "P1",
+   "test_corpus": "sum at 2^20 and 2^24, atomic vs two-stage vs MLX, plus a refusal for max",
+   "current_winner": "MLX and AIR indistinguishable; MLX retained as incumbent",
+   "remaining_limitation": "float ADD only. No atomic max (Metal lacks it here, so the strategy refuses), no CAS, no integer atomics, no shared-memory atomics. Summation order is NONDETERMINISTIC and the result is 3.4x less exact than the two-stage form."
+  },
+  {
+   "capability_id": "EXECUTION.warp_primitives",
+   "cuda_mechanism": "__shfl_sync, __ballot_sync, warp-level reduction",
+   "why_it_exists": "intra-warp exchange without shared memory or barriers",
+   "underlying_problem": "lane-to-lane communication inside a scheduling unit",
+   "apple_equivalent": "simd_shuffle and friends over a 32-wide SIMD group",
+   "hawking_equivalent": "simdgroup_float8x8 matrix ops in AIR's simdgroup matmul strategy",
+   "semantic_gap": "PARTIAL",
+   "performance_gap": {
+    "measured": true,
+    "value": "1.6x over a scalar tile; 91-98% of MLX at 512/1024 but 36.7% at 2048",
+    "receipt": "receipts/headless/ACCELERATOR_SIMDGROUP_GEMM.json"
+   },
+   "priority": "P1",
+   "test_corpus": "512/1024/2048 f32 GEMM, simdgroup vs tiled vs MLX",
+   "current_winner": "MLX, retained",
+   "remaining_limitation": "simdgroup MATRIX ops work; shuffle, ballot and vote are still untouched, and Apple's divergence semantics remain uncompared to CUDA's"
+  },
+  {
+   "capability_id": "EXECUTION.synchronization",
+   "cuda_mechanism": "__syncthreads and cooperative groups",
+   "why_it_exists": "phase separation inside a block",
+   "underlying_problem": "ordering between cooperating threads",
+   "apple_equivalent": "threadgroup_barrier",
+   "hawking_equivalent": "tools/accelerator/gemm.py tiled GEMM",
+   "semantic_gap": "PARTIAL",
+   "performance_gap": {
+    "measured": true,
+    "value": "MLX 12733 GFLOP/s vs ours 2683 at 2048^2 = 4.7x in MLX's favour",
+    "receipt": "receipts/headless/ACCELERATOR_GEMM.json"
+   },
+   "priority": "P0",
+   "test_corpus": "512/1024/2048 square f32 GEMM vs MLX, plus 2 negative controls",
+   "current_winner": "MLX, retained (\u00a7141) -- replacement is not justified by evidence",
+   "remaining_limitation": "threadgroup_barrier executes; SIMDGROUP and DEVICE scope untested, and AIR can represent a barrier but cannot lower one"
+  },
+  {
+   "capability_id": "MATH.gemm",
+   "cuda_mechanism": "cuBLAS GEMM on tensor cores",
+   "why_it_exists": "matrix multiply is the dominant cost of a transformer",
+   "underlying_problem": "peak arithmetic needs tiling, blocking and hardware MMA units",
+   "apple_equivalent": "MLX matmul; Apple matrix coprocessor via MPS",
+   "hawking_equivalent": "AIR simdgroup matmul with 2x2 register blocking",
+   "semantic_gap": "PARTIAL",
+   "performance_gap": {
+    "measured": true,
+    "value": "parity with MLX at 1024 and 2048; MLX wins 1.24x at 4096",
+    "receipt": "receipts/headless/ACCELERATOR_REGISTER_BLOCKING.json"
+   },
+   "priority": "P0",
+   "test_corpus": "512/1024/2048 square f32 GEMM vs MLX, plus 2 negative controls",
+   "current_winner": "MLX at 4096 and above; parity below, so MLX is retained",
+   "remaining_limitation": "parity to 2048, then MLX pulls ahead 1.24x at 4096; no threadgroup-level staging, no double buffering, no batching, no transpose, f32 only"
+  },
+  {
+   "capability_id": "MATH.reduction_and_scan",
+   "cuda_mechanism": "CUB block/device reduce and scan",
+   "why_it_exists": "reductions are latency-critical and hard to write well",
+   "underlying_problem": "tree reduction across a hierarchy with correct synchronization",
+   "apple_equivalent": "MLX reductions; simd_sum",
+   "hawking_equivalent": "AIR two-stage reduction (sum, max) and three-phase scan (sum, max) with two strategies each",
+   "semantic_gap": "PARTIAL",
+   "performance_gap": {
+    "measured": true,
+    "value": "scan beats mx.cumsum 8.09x at 2^24 and 1.84x at 2^20; reduction loses 1.75x to mx.sum at 2^24 and is not distinguishable at 2^20. The earlier 'atomics win 3.05x on launch count' is REFUTED -- the cost was host round trips, not launches.",
+    "receipt": "receipts/headless/ACCELERATOR_SCAN.json + ACCELERATOR_SYNC_CORRECTION.json"
+   },
+   "priority": "P1",
+   "test_corpus": "sum/max reduce and inclusive/exclusive/max scan at 7, 256, 1000, non-power-of-two 4099, 2^16, 2^20, 2^22, 2^24, graded against an f64 oracle and cross-checked against mx.cumsum",
+   "current_winner": "SPLIT: Hawking for scan (mx.cumsum runs at 19 GB/s on a 589 GB/s machine here); MLX for reduction, retained",
+   "remaining_limitation": "f32 only, 1-D only. Scan is sum and max; exclusive is sum-only (derived as inclusive minus x) and the simd_prefix strategy is sum-only because Metal has no prefix max. No segmented scan, no scan-by-key, no multi-dimensional or strided axis. Nothing here has run inside a model."
+  },
+  {
+   "capability_id": "RUNTIME.streams_and_events",
+   "cuda_mechanism": "cudaStream_t, cudaEvent_t, async launch and dependency ordering",
+   "why_it_exists": "overlap of compute and transfer, and explicit dependency expression",
+   "underlying_problem": "serialising independent work wastes the device",
+   "apple_equivalent": "MTLCommandQueue, command buffers, MTLEvent",
+   "hawking_equivalent": "AirGraph expresses independence as DAG width; there are no named streams and no events",
+   "semantic_gap": "PARTIAL",
+   "performance_gap": {
+    "measured": true,
+    "value": "independent branches overlap only weakly: 1.09x at k=8 and 1.16x at k=16 over a serial chain of the same work at 2^20, and NO_CLAIM at 4096. Concurrency is the SMALLER half of what a graph buys here",
+    "receipt": "receipts/headless/ACCELERATOR_GRAPH_SUBMISSION.json"
+   },
+   "priority": "P1",
+   "test_corpus": "fan (depth 1, width k) vs chain (depth k, width 1), same total work",
+   "current_winner": "MLX's own scheduling, retained; we do not control it",
+   "remaining_limitation": "No named streams, no events, no cross-stream dependencies, no host callbacks, no priority. Only DAG width is expressed, and the runtime decides what to do with it."
+  },
+  {
+   "capability_id": "RUNTIME.graphs",
+   "cuda_mechanism": "CUDA Graphs: capture once, replay with minimal launch overhead",
+   "why_it_exists": "per-launch CPU cost dominates short kernels in a tight loop",
+   "underlying_problem": "re-encoding an unchanged command stream every iteration",
+   "apple_equivalent": "indirect command buffers; reusable command buffers",
+   "hawking_equivalent": "AIR AirGraph: a recorded dependency DAG executed as one command-buffer submission with one host sync",
+   "semantic_gap": "PARTIAL",
+   "performance_gap": {
+    "measured": true,
+    "value": "batching k dispatches into one submission cuts the marginal cost of an added dispatch 15.5x (0.168 -> 0.011 ms); total 2.9x at k=4, 4.8x at k=8, 8.0x at k=16",
+    "receipt": "receipts/headless/ACCELERATOR_GRAPH_SUBMISSION.json"
+   },
+   "priority": "P0",
+   "test_corpus": "chain and fan of k=1,2,4,8,16 elementwise dispatches at 4096 and 2^20",
+   "current_winner": "Hawking AirGraph (MLX's laziness supplies the batching; AirGraph makes it explicit and measurable)",
+   "remaining_limitation": "No graph instantiation or update reuse, no conditional or dynamic nodes, no cross-device nodes. The DAG is re-recorded per call; only the compiled kernels are cached."
+  },
+  {
+   "capability_id": "PROFILING.kernel_timing",
+   "cuda_mechanism": "cudaEventElapsedTime, Nsight Compute counters",
+   "why_it_exists": "optimisation without measurement is guessing",
+   "underlying_problem": "attributing time to a specific kernel on an async device",
+   "apple_equivalent": "Metal GPU counters; Instruments",
+   "hawking_equivalent": "bench.py wall-clock with warmup, IQR gate and an implausibility rejection",
+   "semantic_gap": "PARTIAL",
+   "performance_gap": {
+    "measured": false,
+    "reason": "the instrument is not itself benchmarked"
+   },
+   "priority": "P0",
+   "test_corpus": "every timed arm in P5, P6, P7",
+   "current_winner": "Hawking bench.py for comparisons",
+   "remaining_limitation": "WALL CLOCK ONLY \u2014 no DRAM byte counters, no occupancy, no stall reasons, so mechanism is inferred rather than observed"
+  },
+  {
+   "capability_id": "DEBUGGING.numerical_diagnostics",
+   "cuda_mechanism": "compute-sanitizer, device printf, cuda-gdb",
+   "why_it_exists": "silent numerical corruption is the worst failure mode",
+   "underlying_problem": "a wrong answer at speed looks like a right answer",
+   "apple_equivalent": "Metal shader validation, GPU frame capture",
+   "hawking_equivalent": "every candidate verified against an oracle BEFORE it is timed",
+   "semantic_gap": "PARTIAL",
+   "performance_gap": {
+    "measured": false,
+    "reason": "not a performance capability"
+   },
+   "priority": "P0",
+   "test_corpus": "P3 six programs, P4 four kernels, forge 15 variants",
+   "current_winner": "Hawking verify-before-time discipline",
+   "remaining_limitation": "oracle comparison only; no race detection, no OOB checking, no device-side assertion"
+  },
+  {
+   "capability_id": "MULTI_DEVICE.peer_access",
+   "cuda_mechanism": "cudaDeviceEnablePeerAccess, NVLink, NCCL collectives",
+   "why_it_exists": "multi-GPU training and inference need direct device-to-device paths",
+   "underlying_problem": "moving tensors between devices without a host bounce",
+   "apple_equivalent": "none on a single SoC; Thunderbolt/RDMA between machines",
+   "hawking_equivalent": "HUMF models the domains but only a MOCK external one exists",
+   "semantic_gap": "LARGE",
+   "performance_gap": {
+    "measured": false,
+    "reason": "no real second device exists; every transport number so far is SIMULATED and may not be cited as evidence"
+   },
+   "priority": "P2",
+   "test_corpus": "HUMF P8 across APPLE_UM and MOCK_EXTERNAL_VRAM",
+   "current_winner": "NOT APPLICABLE \u2014 no second physical device",
+   "remaining_limitation": "EGB-D0 has not been reached; no hardware is present"
+  },
+  {
+   "capability_id": "MATH.softmax",
+   "cuda_mechanism": "hand-fused softmax kernels, or cuDNN's",
+   "why_it_exists": "softmax is on the critical path of every attention layer and is bandwidth-bound, so its passes over memory dominate",
+   "underlying_problem": "three dependent reductions over the same row, naively three passes",
+   "apple_equivalent": "mx.softmax",
+   "hawking_equivalent": "AIR fused row softmax, one threadgroup per row, two barriers",
+   "semantic_gap": "PARTIAL",
+   "performance_gap": {
+    "measured": true,
+    "value": "1.46x/1.35x over the naive three-pass shape; INDISTINGUISHABLE from MLX",
+    "receipt": "receipts/headless/ACCELERATOR_SOFTMAX.json"
+   },
+   "priority": "P0",
+   "test_corpus": "64x128, 512x1024, 128x4099, 8x3, an overflow row, and a barrier-stripped negative control",
+   "current_winner": "MLX and AIR are indistinguishable; MLX retained as incumbent",
+   "remaining_limitation": "f32 only, last axis only, no masking, no causal variant. ATTENTION ITSELF REMAINS ABSENT -- this is a piece of it.",
+   "evidence": "receipts/headless/ACCELERATOR_SOFTMAX.json"
+  },
+  {
+   "capability_id": "MATH.attention",
+   "cuda_mechanism": "FlashAttention and cuDNN fused attention kernels",
+   "why_it_exists": "attention materialises an O(seq^2) score matrix that dominates memory traffic and capacity at long sequence",
+   "underlying_problem": "a chain of matmul, softmax and matmul where the intermediates are far larger than the inputs",
+   "apple_equivalent": "mx.fast.scaled_dot_product_attention",
+   "hawking_equivalent": "AIR fused single-head attention, score row in threadgroup memory",
+   "semantic_gap": "PARTIAL",
+   "performance_gap": {
+    "measured": true,
+    "value": "loses to naive 1.37x at 1024; a simdgroup rebuild is SLOWER still (0.70x)",
+    "receipt": "receipts/headless/ACCELERATOR_ATTENTION_SIMDGROUP_REFUTED.json"
+   },
+   "priority": "P0",
+   "test_corpus": "512/1024/2048 with head_dim 64 and 128, a causal variant, a non-power-of-two 37x40, and a refusal case at seq 100000",
+   "current_winner": "MLX, and at 2048 even the NAIVE three-call path beats ours",
+   "remaining_limitation": "not flash-attention: no online softmax, score row must fit threadgroup memory. Diagnosis history: 'scalar dot products' REFUTED; 'occupancy' DIRECTIONALLY CONFIRMED -- 4 simdgroups on the same query block take the simdgroup variant from 0.70x losing to INDISTINGUISHABLE from the scalar kernel. But the NAIVE three-MLX-call path STILL WINS 1.08x with clean arms, so fused attention is not useful here at these shapes. Single head, f32, no batching, no KV cache.",
+   "evidence": "receipts/headless/ACCELERATOR_ATTENTION.json"
+  },
+  {
+   "capability_id": "COMPILER.frontend_parsing",
+   "cuda_mechanism": "nvcc / clang CUDA frontend: a full C++ frontend for device and host code",
+   "why_it_exists": "CUDA's corpus is written in C++, so a compiler must accept C++",
+   "underlying_problem": "turning arbitrary source into an executable device program",
+   "apple_equivalent": "the Metal compiler accepts MSL, a different C++ dialect; nothing accepts CUDA",
+   "hawking_equivalent": "C2M's FOUR narrow doors: T0 expression matching over 4 elementwise forms, a PTX instruction subset, the T1 host runtime statement subset, and T2 algorithm-level IDIOM RECOGNITION over 2 kernels",
+   "semantic_gap": "LARGE",
+   "performance_gap": {
+    "measured": false,
+    "reason": "a frontend gap is about COVERAGE, not speed; measuring a translation rate would say nothing about how much of CUDA is reachable"
+   },
+   "priority": "P1",
+   "test_corpus": "4 elementwise kernels, the pinned seed's 291 .ptx files, 4 host programs, 2 recognised idioms and 12 near-miss kernels",
+   "current_winner": "the pinned seed Lulzx/cuda-metal, which has a REAL clang-based CUDA frontend and builds here; C2M does not compete with it on coverage and is not claimed to",
+   "remaining_limitation": "THIS IS THE LARGEST REMAINING SOFTWARE GAP AND IT IS NOT NARROWING QUICKLY. None of the four doors parses C++. PTX coverage measured 1.0% of the seed's own corpus. Idiom recognition covers exactly 2 textbook kernels and REFUSES the same algorithm written with different variable names or a different guard style. Adding doors widens what is reachable without widening what is COMPILABLE, and saying so keeps a tier number from reading as CUDA coverage."
+  }
+ ],
+ "count": 20,
+ "by_class": {
+  "MEMORY": 2,
+  "COMPILER": 4,
+  "EXECUTION": 5,
+  "MATH": 4,
+  "RUNTIME": 2,
+  "PROFILING": 1,
+  "DEBUGGING": 1,
+  "MULTI_DEVICE": 1
+ },
+ "classes_with_no_entry": [],
+ "performance_gaps_measured": 15,
+ "performance_gaps_unmeasured": 5,
+ "parity_claim": "NOT CLAIMED. This is a capability inventory, not a parity statement. No entry may report a semantic gap of NONE without evidence, and the steer forbids the phrase 'CUDA parity' unqualified.",
+ "coverage_honesty": "The CUDA surface is vastly larger than this. These are the capabilities reachable or relevant from what has actually been built here; absence from this ledger means NOT YET STUDIED, never NOT NEEDED."
+}

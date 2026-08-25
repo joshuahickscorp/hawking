@@ -1,0 +1,91 @@
+{
+  "binding": {
+    "admitted_tensor_count": 18867,
+    "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/QWEN30_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+    "manifest_seal_sha256": "3321a99d719e70499663b7bfebe14dd6c732bfc533bb05b9277eb398e44d6357",
+    "source_audit_seal_sha256": "00ed3e495416c2cbafbcdb7800528e15f243b1a13f5f4af13240109c8fc69f7b",
+    "source_revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120"
+  },
+  "candidate": {
+    "baseline_command_topology": {
+      "command_buffers": 1,
+      "compute_dispatches": 2,
+      "projection_pairs": 1
+    },
+    "candidate_command_topology": {
+      "command_buffers": 1,
+      "compute_dispatches": 1,
+      "projection_pairs": 1
+    },
+    "direct_packed_layout": "HQ30G1B1, group_size=128, FP16 scales plus sign bits",
+    "expert": 0,
+    "id": "qwen30-direct-packed-gate-up-pair-command-topology",
+    "layer": 0,
+    "shader": "crates/hawking-core/shaders/qwen_direct_packed_gate_up_pair.metal"
+  },
+  "claim_boundary": {
+    "cpu_oracle_is_only_same_packed_representation_parity": true,
+    "integration_requires_separate_runtime_parity_and_complete_token_reprofile": true,
+    "no_qwen_layer_token_generation_hcli_capability_or_tps": true,
+    "opens_only_admitted_direct_binary_qwen30_payloads": true,
+    "raw_bf16_and_mps_full_model_not_opened": true
+  },
+  "parity": {
+    "baseline_max_abs_error": 0.0,
+    "baseline_within_tolerance": true,
+    "cpu_oracle": "Rust f32 matvec over the exact admitted direct binary sign bits and FP16 scales",
+    "input": "deterministic f32 vector, no source BF16 input or weight fallback",
+    "paired_max_abs_error": 0.0,
+    "paired_within_tolerance": true,
+    "tolerance": 0.0020000000949949026
+  },
+  "schema": "hawking.ascension.qwen30_direct_packed_gate_up_pair_component.v1",
+  "status": "PASS_DIRECT_PACKED_QWEN30_GATE_UP_PAIR_COMPONENT_CPU_PARITY_NOT_MODEL_TPS",
+  "tensors": {
+    "gate": {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/tensors/807a624e59aeace90080f2c7dbe7686667b7c14f59d497ec529d1581b1da8f33.hq30g",
+      "artifact_sha256": "716e8c91035ca49116438b640a2e2aeb4a44ddbb6742bfbee56e2f49d04f04bd",
+      "name": "model.layers.0.mlp.experts.0.gate_proj.weight",
+      "scale_bytes": 24576,
+      "shape": [
+        768,
+        2048
+      ],
+      "sign_bytes": 196608
+    },
+    "up": {
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/tensors/f3a3a463c2de80adff64fc0400db3a59ff29a6ee0c9c3fc30c3d9db2ad2b6a7d.hq30g",
+      "artifact_sha256": "97e071afa8e9213f90067b2efac655e13e74d0c6d1285d9f5e67a893743dfff7",
+      "name": "model.layers.0.mlp.experts.0.up_proj.weight",
+      "scale_bytes": 24576,
+      "shape": [
+        768,
+        2048
+      ],
+      "sign_bytes": 196608
+    }
+  },
+  "timing": {
+    "baseline_two_dispatch": {
+      "host_wall_us_max": 1452.4589999999998,
+      "host_wall_us_min": 841.7919999999999,
+      "host_wall_us_p50": 1325.2920000000001,
+      "host_wall_us_p95": 1452.4589999999998,
+      "sample_count": 11,
+      "timing_authority": "host wall around one completed component command buffer; not GPU-only timing and not model/token timing"
+    },
+    "candidate_one_dispatch": {
+      "host_wall_us_max": 891.0409999999999,
+      "host_wall_us_min": 531.166,
+      "host_wall_us_p50": 831.917,
+      "host_wall_us_p95": 891.0409999999999,
+      "sample_count": 11,
+      "timing_authority": "host wall around one completed component command buffer; not GPU-only timing and not model/token timing"
+    },
+    "not_a_model_or_token_rate": true,
+    "p50_component_host_wall_delta_us": -493.3750000000001,
+    "p50_component_host_wall_speedup_ratio": 1.5930579613110443,
+    "trials": 11,
+    "warmups": 3
+  }
+}

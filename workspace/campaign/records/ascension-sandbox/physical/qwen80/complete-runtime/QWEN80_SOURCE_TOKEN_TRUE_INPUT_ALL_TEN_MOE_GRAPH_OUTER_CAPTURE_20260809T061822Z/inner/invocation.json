@@ -1,0 +1,13 @@
+{
+  "metal_execution_policy": {
+    "complete_layer_or_token_allowed": false,
+    "strict_math": true,
+    "timing_or_benchmarking_allowed": false,
+    "tps_or_tg_claim_allowed": false
+  },
+  "mode": "metal",
+  "outer_preflight": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SOURCE_TOKEN_TRUE_INPUT_ALL_TEN_CPU_PREFLIGHT_20260809T061742Z/outer-preflight.json",
+  "schema": "hawking.ascension.qwen80_source_token_all_ten_true_moe_graph_device.v1",
+  "status": "STARTED_QWEN80_SOURCE_TOKEN_ALL_TEN_TRUE_MOE_STRICT_MATH_COMPONENT",
+  "workers": 1
+}

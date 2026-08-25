@@ -1,0 +1,292 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T14:54:45Z",
+ "experiment_class": "ACCEL-SUSTAINED",
+ "knowledge_level": "INSTANCE",
+ "git_head": "605de2d758ed9bbf660af598e7112d90e196c41c",
+ "identities": {
+  "experiment": {
+   "id": "WORKUNIT_THROUGHPUT_77",
+   "obligation": "G046 + G049",
+   "steer": "S015 \u00a777 the metric that actually counts; \u00a773 performance claim gates"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "lake_volume": "/Volumes/corpdrive, USB, APFS, TIER 2 archive"
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "specimen": "Qwen3-30B-A3B",
+   "tensors": "expert gate_proj, 768x2048 bf16, 3.1 MiB each"
+  },
+  "representation": {
+   "name": "ws_rtn_q4_g64",
+   "bpw": 4.25
+  },
+  "kernel": {
+   "produced_by": "gravity_native.sources"
+  },
+  "runtime": {
+   "python": "3.12.6"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "WHAT_I_SET_OUT_TO_DO": "Three receipts (P5, sustained ADP, concurrency sweep) each closed with the same sentence: the result is a MICROBENCHMARK or a RAW KERNEL RATE and does not reach \u00a777. This measured \u00a777 on a real unit of work and then had it adversarially audited by 8 agents. THREE OF SIX ATTACKS WERE FATAL TO MY FRAMING.",
+  "THE_HEADLINE_IS_A_DEFECT_I_REBUILT": "My definition of ACCEPTED compared the GPU kernel against a numpy decode of THE SAME PACKED BYTES. The original tensor never enters that predicate. VERIFIED DIRECTLY, not taken from the audit: an ALL-ZEROS PACK IS ACCEPTED; so is a pack with scales 1000x too large, at relative error 1003.60 against the true tensor; so are swapped nibbles at 1.54. The tolerance derives from the same decode, so scaling both sides CANCELS EXACTLY. '12 of 12 accepted' certified NOTHING. THIS IS THE DEFECT THIS CAMPAIGN ALREADY SEALED ON 2026-08-17, when an adequacy gate scored 0.01*W at 1.000000 on every axis for a whole campaign because cosine is SCALE-INVARIANT. I rebuilt it in a new place.",
+  "THE_FIX_AND_ITS_DEMONSTRATION": "gravity_native.accept_pack applies TWO INDEPENDENT GATES. Kernel fidelity: the kernel implements the representation -- the only thing the old predicate checked. Representation fidelity: the decode resembles the TRUE tensor, with tolerances anchored on quantities THE PACK CANNOT INFLUENCE. Cosine is NEVER checked without a magnitude band, and the demonstration is exact: honest pack cos 0.9940 mag 1.0042 ACCEPTED; scales x1000 cos 0.9940 mag 1004.23 REJECTED; scales x0.5 cos 0.9940 mag 0.5021 REJECTED. THE COSINE IS IDENTICAL FOR ALL THREE. The band is the entire difference between catching that and not.",
+  "measured_four_conditions": {
+   "per_tensor_open": {
+    "contended": {
+     "condition": "CONTENDED (lake fill running -- the machine's real state)",
+     "units": 12,
+     "accepted": 12,
+     "wall_s": 130.507,
+     "accepted_workunits_per_hour": 331.0,
+     "seconds_per_unit": 10.8756,
+     "phase_seconds": {
+      "read_s": 130.002,
+      "pack_s": 0.096,
+      "gpu_s": 0.342,
+      "verify_s": 0.067
+     },
+     "phase_share_pct": {
+      "read_s": 99.61,
+      "pack_s": 0.07,
+      "gpu_s": 0.26,
+      "verify_s": 0.05
+     },
+     "bytes_read": 37748736,
+     "read_mb_s": 0.29
+    },
+    "quiesced": {
+     "condition": "QUIESCED (lake fill SIGSTOPped)",
+     "units": 12,
+     "accepted": 12,
+     "wall_s": 111.264,
+     "accepted_workunits_per_hour": 388.3,
+     "seconds_per_unit": 9.272,
+     "phase_seconds": {
+      "read_s": 110.944,
+      "pack_s": 0.095,
+      "gpu_s": 0.159,
+      "verify_s": 0.066
+     },
+     "phase_share_pct": {
+      "read_s": 99.71,
+      "pack_s": 0.09,
+      "gpu_s": 0.14,
+      "verify_s": 0.06
+     },
+     "bytes_read": 37748736,
+     "read_mb_s": 0.34
+    }
+   },
+   "amortised_one_open_per_shard": {
+    "contended": {
+     "condition": "AMORTISED, CONTENDED",
+     "shard": "model-00004-of-00016.safetensors",
+     "units": 64,
+     "accepted": 64,
+     "wall_s": 438.365,
+     "accepted_workunits_per_hour": 525.6,
+     "seconds_per_unit": 6.84945,
+     "phase_seconds": {
+      "open_s": 9.0694,
+      "read_s": 427.573,
+      "pack_s": 0.5051,
+      "gpu_s": 0.9034,
+      "verify_s": 0.3137
+     },
+     "phase_share_pct": {
+      "open_s": 2.07,
+      "read_s": 97.54,
+      "pack_s": 0.12,
+      "gpu_s": 0.21,
+      "verify_s": 0.07
+     },
+     "bytes_read": 201326592,
+     "read_mb_s": 0.5
+    },
+    "quiesced": {
+     "condition": "AMORTISED, QUIESCED",
+     "shard": "model-00004-of-00016.safetensors",
+     "units": 64,
+     "accepted": 64,
+     "wall_s": 177.758,
+     "accepted_workunits_per_hour": 1296.1,
+     "seconds_per_unit": 2.77746,
+     "phase_seconds": {
+      "open_s": 4.2604,
+      "read_s": 172.3823,
+      "pack_s": 0.5224,
+      "gpu_s": 0.2754,
+      "verify_s": 0.3165
+     },
+     "phase_share_pct": {
+      "open_s": 2.4,
+      "read_s": 96.98,
+      "pack_s": 0.29,
+      "gpu_s": 0.15,
+      "verify_s": 0.18
+     },
+     "bytes_read": 201326592,
+     "read_mb_s": 1.2
+    }
+   }
+  },
+  "WHAT_AMORTISATION_ACTUALLY_BOUGHT_AND_WHY_NOT_WHAT_I_EXPECTED": "Opening the shard ONCE and pulling 64 tensors through one handle: 331.0 -> 525.6 WU/h contended (1.59x) and 388.3 -> 1296.1 quiesced (3.34x). BUT NOT BY REMOVING THE OPEN, which is only 2.07-2.40% of wall. It worked by turning reopen+seek into SEQUENTIAL STREAMING: effective read went 0.34 -> 1.17 MB/s. One audit agent predicted the GPU share would rise to 2.01% under amortisation; it did NOT, it stayed at 0.15-0.21%, and the agent that ran the amortised pattern directly got that right while the one that reasoned about it did not.",
+  "QUIESCING_IS_WORTH_MUCH_MORE_THAN_I_FIRST_MEASURED": "The per-tensor run showed quiescing worth only 1.17x and I nearly published that as an indictment of the ProtectedWindow. In the AMORTISED regime it is worth 2.47x (525.6 -> 1296.1). The 1.17x was an artifact of an access pattern so starved that stopping the competing load barely helped.",
+  "A_DIAGNOSIS_I_WROTE_DOWN_AND_MY_OWN_PROBE_REFUTED": "I observed 6 of 15 fill processes in state UN (uninterruptible wait) and proposed that SIGSTOP cannot stop them, so the ProtectedWindow's quiescing guarantee was partial. TESTED IT: inside a window, 15 OF 15 WERE STOPPED and 0 remained uninterruptible, at every one of 6 samples over 12 seconds. REFUTED. They take the signal as soon as they leave the kernel. The guarantee holds.",
+  "THE_SENSITIVITY_CURVE_IS_THE_RESULT_NOT_THE_POINT_ESTIMATE": {
+   "measured_read_mb_s": 1.168,
+   "compute_s": 1.1143,
+   "io_s": 176.643,
+   "breakeven_gpu_10pct_mb_s": 122.8,
+   "curve": [
+    {
+     "read_mb_s": 1.17,
+     "wall_s": 173.497,
+     "gpu_share_pct": 0.16,
+     "wu_per_hour": 1328
+    },
+    {
+     "read_mb_s": 10,
+     "wall_s": 21.247,
+     "gpu_share_pct": 1.3,
+     "wu_per_hour": 10844
+    },
+    {
+     "read_mb_s": 50,
+     "wall_s": 5.141,
+     "gpu_share_pct": 5.36,
+     "wu_per_hour": 44818
+    },
+    {
+     "read_mb_s": 123,
+     "wall_s": 2.751,
+     "gpu_share_pct": 10.01,
+     "wu_per_hour": 83748
+    },
+    {
+     "read_mb_s": 500,
+     "wall_s": 1.517,
+     "gpu_share_pct": 18.15,
+     "wu_per_hour": 151883
+    },
+    {
+     "read_mb_s": 3000,
+     "wall_s": 1.181,
+     "gpu_share_pct": 23.31,
+     "wu_per_hour": 195021
+    },
+    {
+     "read_mb_s": null,
+     "wall_s": 1.114,
+     "gpu_share_pct": 24.72,
+     "wu_per_hour": 206767
+    }
+   ]
+  },
+  "SCOPE_CONDITIONS_THE_AUDIT_FORCED": "(1) WRONG STORAGE TIER. tools/odyssey/modellake.py declares SSD_STAGE = ~/noetic/stage as TIER 1, 'the SSD is the hot bench, not a second archive', and corpdrive as the TIER 2 rolling archive. Every read here came from TIER 2. I checked: ~/noetic/stage EXISTS AND IS EMPTY (0 B), so there was nothing to read from the declared hot bench -- which is itself a fact about the pipeline's state, not a defence of the measurement. (2) THE 0.29 MB/s IS NOT THE DEVICE. An audit agent found iostat showing the same drive at up to 44.77 MB/s during the window; the reader was starved behind a 7-repo download storm. (3) THE GPU COLUMN IS NOT PURE KERNEL TIME -- it moved 0.342 -> 0.159 s for byte-identical work, which GPU compute cannot do, so it is measuring wait, staging and MLX's one-time kernel compile as well.",
+  "THE_CONCLUSION_AS_IT_MUST_NOW_BE_STATED": "WITHDRAWN AS ORIGINALLY FRAMED. 'The GPU is 0.26% of the work so no accelerator win matters' is FALSE as a general statement and true only of one storage tier under one load. What stands: on THIS machine reading THIS archive tier, the GPU is 0.15-0.26% of wall across all four conditions measured, and the accelerator wins are worth under half a percent of throughput THERE. The GPU reaches 10% of wall at a read rate of 122.8 MB/s -- 105x the 1.17 MB/s measured -- and 24.7% with storage removed entirely. THE ACCELERATOR'S VALUE IS NOT REFUTED; IT IS SHOWN TO BE CONDITIONAL ON STORAGE THAT THIS PIPELINE IS NOT CURRENTLY USING.",
+  "audit_provenance": "8 agents, 813k tokens, 6 named attacks. Verdicts: chosen-unit REFUTED (fatal), storage-anomaly REFUTED (fatal), quiescing REFUTED (fatal), accepted-def SURVIVES_ONLY_IF_SCOPED (major), stat-power SURVIVES_ONLY_IF_SCOPED (major), amortisation SURVIVES_ONLY_IF_SCOPED (major, and its stated reason was wrong). ONE AUDIT CITATION DID NOT CHECK OUT: an agent cited tools/headless/performance_qualification.py:128 and perf_addendum.py:31 as omitting 'modellake.py acquire' from a pgrep pattern; NEITHER FILE EXISTS and my own scripts do include that pattern. Recorded because an audit's own errors count.",
+  "storage_probe_with_its_own_defect_named": {
+   "data": {
+    "contended": {
+     "condition": "CONTENDED (lake fill running)",
+     "cold_open_plus_130KB_header_s": [
+      4.298,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     "same_3MiB_cold_s": 4.04,
+     "same_3MiB_warm_s": 0.0005,
+     "warm_speedup": 7400.3,
+     "warm_mb_s": 5762.7,
+     "sequential_read_bytes": 268435456,
+     "sequential_read_s": 1659.465,
+     "sequential_mb_s": 0.2
+    },
+    "quiesced": {
+     "condition": "QUIESCED (lake fill SIGSTOPped)",
+     "cold_open_plus_130KB_header_s": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     "same_3MiB_cold_s": 0.001,
+     "same_3MiB_warm_s": 0.0005,
+     "warm_speedup": 1.1,
+     "warm_mb_s": 6170.1,
+     "sequential_read_bytes": 268435456,
+     "sequential_read_s": 0.029,
+     "sequential_mb_s": 9137.9
+    }
+   },
+   "defect": "the quiesced arm re-read files the contended arm had already touched, so its 9137.9 MB/s is PAGE CACHE, not disk. That arm measures nothing about the device and is not quoted. What survives: contended cold sequential 256 MiB at 0.2 MB/s, and page-cache reads at ~6000 MB/s."
+  },
+  "sigstop_probe": {
+   "verdict": "ProtectedWindow stopped 15 of 15, but 0 were in UNINTERRUPTIBLE WAIT and could NOT be stopped",
+   "before": {
+    "stopped": 0,
+    "uninterruptible": 6,
+    "other": 9,
+    "total": 15
+   },
+   "during": [
+    {
+     "stopped": 15,
+     "uninterruptible": 0,
+     "other": 0,
+     "total": 15
+    },
+    {
+     "stopped": 15,
+     "uninterruptible": 0,
+     "other": 0,
+     "total": 15
+    },
+    {
+     "stopped": 15,
+     "uninterruptible": 0,
+     "other": 0,
+     "total": 15
+    },
+    {
+     "stopped": 15,
+     "uninterruptible": 0,
+     "other": 0,
+     "total": 15
+    },
+    {
+     "stopped": 15,
+     "uninterruptible": 0,
+     "other": 0,
+     "total": 15
+    },
+    {
+     "stopped": 15,
+     "uninterruptible": 0,
+     "other": 0,
+     "total": 15
+    }
+   ]
+  },
+  "test_count": "161 accelerator tests pass"
+ },
+ "claim_boundary": "One specimen, one tensor class, one machine, TIER 2 USB storage under a live download storm. n=12 per condition unamortised and n=64 amortised, ONE run each, no repetition and no IQR -- FAR below this program's own 200-rep stability gate, so every throughput ratio here is DIRECTIONAL and none is admissible as a measured speedup. The sensitivity curve holds non-read time fixed while scaling read, which is an extrapolation, not a measurement. NOTHING here refutes any accelerator result; it bounds where those results can matter.",
+ "pass": true,
+ "amendment_mlx_compile_attribution": "AMENDED 2026-08-25 by ACCELERATOR_JIT_COMPILE.json: this receipt attributed a first-run cost to 'MLX kernel compile'. THAT ATTRIBUTION IS NOW MEASURED AND IT IS WRONG IN SCOPE TWICE. Compiling a distinct custom kernel costs 36.8 ms, so the WorkUnit's two kernels are 73.6 ms = 23.2% of its 0.3176 s first-run excess. The dominant term is MLX's first-use costs at 175 ms, and 151 ms of THAT is a single thing -- the FIRST mx.array from a numpy buffer, which is device and allocator initialisation, NOT compilation. The direction of every affected statement is unchanged (the first run really is slower and really should not be quoted as a baseline); only the named MECHANISM changes."
+}

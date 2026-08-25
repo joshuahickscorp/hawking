@@ -1,0 +1,62 @@
+{
+  "schema": "hawking.nos.dense_k1_ceiling.v1",
+  "session": "f5169750",
+  "date": "2026-08-18",
+  "basis": "fresh uniform-q4 anatomy (QWEN38_TOKEN_NS_FRESH.json) + weight_bytes budget (qwen38_token_ns_ledger)",
+  "peak_gb_s": 819.0,
+  "per_family_achieved_bandwidth": {
+    "MLP": {
+      "gb": 9.091,
+      "ms": 15.41,
+      "gb_s": 589.9,
+      "pct_peak": 72
+    },
+    "DeltaNet_gemv": {
+      "gb": 2.954,
+      "ms": 5.4,
+      "gb_s": 547.0,
+      "pct_peak": 67
+    },
+    "GQA_gemv": {
+      "gb": 0.891,
+      "ms": 1.73,
+      "gb_s": 515.0,
+      "pct_peak": 63
+    },
+    "lm_head": {
+      "gb": 0.675,
+      "ms": 1.01,
+      "gb_s": 668.3,
+      "pct_peak": 82
+    },
+    "GEMV_total": {
+      "gb": 13.611,
+      "ms": 23.55,
+      "gb_s": 578.0,
+      "pct_peak": 71
+    }
+  },
+  "non_gemv_ms": 5.33,
+  "dense_k1_ceiling": {
+    "current_ms": 28.88,
+    "current_tps": 34.6,
+    "all_gemv_at_peak_ms": 21.95,
+    "all_gemv_at_peak_tps": 45.6,
+    "mlp_alone_at_peak_ms": 24.57,
+    "mlp_alone_at_peak_tps": 40.7
+  },
+  "finding": "The token is GEMV-bandwidth-bound: GEMV families are 23.55 ms = 82% of the 28.88 ms token, at 71% of peak bandwidth; non-GEMV is only 5.33 ms. The Track A ALU/amortization wave did NOT touch this because the lever is MEMORY ACCESS PATTERN (coalescing/occupancy/vectorized loads), not inner-loop ALU. Closing MLP 72%->peak alone = 40.7 TPS (CLEARS G20); all GEMV at peak = 45.6 TPS (approaches G21). This is the unexhausted Phase-A lever.",
+  "open_question": "Is 578->819 GB/s achievable for strided single-vector decode GEMV, or is ~578-600 the real achievable ceiling for this access pattern? The honest ledger ceiling was 411 GB/s (already beaten at 578). adv-bandwidth Track C lane is measuring the real achievable. Do NOT dispatch an access-pattern kernel wave until the achievable ceiling is confirmed, else it may chase an unreachable target.",
+  "next_lever": "GEMV access-pattern / occupancy / coalescing optimization (Grok Track A wave 2), gated on adv-bandwidth confirming headroom exists above 578 GB/s.",
+  "organ_geometry_sweep": {
+    "probe": "ascension_qwen38_organ_geometry (G109/C01), currency ps/elem, R in {1,2,4,8}, max_err 0",
+    "results": {
+      "mlp.gate_proj": "R=1 0.883 -> BEST R=4 0.852 (3.5%)",
+      "mlp.down_proj": "R=1 0.994 -> BEST R=4 0.966 (2.8%)",
+      "dn.in_proj_qkv": "R=1 0.950 -> BEST R=2 0.927 (2.4%)",
+      "endpoint.lm_head": "R=1 0.798 -> BEST R=8 0.721 (9.6%, but only 3.5% of token)"
+    },
+    "verdict": "R-tiling geometry gives ~3% on the MLP (the dominant bucket), and the probe's ps/elem framing is the SYNTHETIC ALU-bound regime -- the real token is bandwidth-bound (scale-hoist ALU cut gave 1.6%), so even this ~3% will not fully materialize. R-tiling + inner-loop ALU are MEASURED NEGATIVE for the real MLP."
+  },
+  "narrowed_live_question": "R-tiling and ALU exhausted. UNTESTED: whether a memory-access kernel (coalescing / SIMD-width / memory layout / threadgroup staging) can move the MLP weights above 578 GB/s (71% of peak), or 578-600 is the real achievable ceiling for strided single-vector decode GEMV. adv-bandwidth (in-flight) measures the ceiling; a Track A wave-2 access-pattern kernel would test the implementation side. If BOTH say no headroom, the MLP is FLOORED and G20/G21/G22 require fewer active bytes = representation (Phase B, S012 \u00a726)."
+}

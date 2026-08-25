@@ -1,0 +1,53 @@
+{
+  "claim_boundary": {
+    "artifact_payload_open_or_scan_performed": false,
+    "future_joint_l0_to_l1_capture_authorized": false,
+    "lease_issued_or_released": false,
+    "metal_device_or_dispatch_performed": false,
+    "raw_schedule_rewritten_or_resealed": false,
+    "runtime_server_watcher_or_hcli_changed": false,
+    "token_generation_or_feedback_performed": false,
+    "tps_or_tg_measured": false,
+    "wrapper_is_read_only": true
+  },
+  "raw_schedule_authority": {
+    "bytes": 88551859,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_48_LAYER_PAYLOAD_SCHEDULE_AUTHORITY_20260809T033554Z.json",
+    "present": true,
+    "raw_schedule_is_static_and_unmodified": true,
+    "raw_schedule_seal_sha256": null,
+    "schema": "hawking.ascension.qwen80_48_layer_payload_schedule_authority.v1",
+    "sha256": "8302deb6beece8c04773ece19ae27baea67749014552b0b946516146b5e2282e",
+    "status": "PREPARED_QWEN80_48_LAYER_PAYLOAD_SCHEDULE_AUTHORITY_NOT_EXECUTED"
+  },
+  "recorded_at": "2026-08-09T08:45:41.871725Z",
+  "schedule_facts": {
+    "all_48_layers_scheduled": true,
+    "delta_net_layer_count": 36,
+    "delta_net_state_slot_count": 36,
+    "full_command_graph_item_count": 54,
+    "gqa_layer_count": 12,
+    "gqa_state_slot_count": 12,
+    "layer_1": {
+      "layer": 1,
+      "mixer": "delta_net",
+      "state_domain": "delta_net_conv_and_recurrent",
+      "state_slot": 1
+    },
+    "layer_count": 48
+  },
+  "schema": "hawking.ascension.qwen80_48_layer_schedule_sealed_wrapper.v1",
+  "seal_sha256": "5ed1367c4e5e0680967dde35ae583aec09f4417b5ecbae14d0d54184cd4a8554",
+  "source_authority": {
+    "descriptor_inventory_document_sha256": "a0fcac0401a7962402bb8cb87d5055c83667b39575f9e0f4c7470d080758aa10",
+    "descriptor_inventory_seal_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+    "model_id": "Qwen3-Coder-Next-80B",
+    "model_key": "qwen80",
+    "source_config_authority_document_sha256": "c21f5ac489d58d91ba2eb43c3daf34e2412f39925632b30e147e5de28780596b",
+    "source_config_authority_seal_sha256": "3d062ca5a8acdcc3c2c018e4ded049fd6647210b8161dfcedd37e99363c8fafd",
+    "source_config_sha256": "a7b8098d3b05777f12bb5677a26bf1240a1bb09def1b06b29e6be86cae2e84f8",
+    "source_repository": "Qwen/Qwen3-Coder-Next",
+    "source_revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb"
+  },
+  "status": "SEALED_QWEN80_48_LAYER_PAYLOAD_SCHEDULE_AUTHORITY_BOUND_NOT_EXECUTED"
+}

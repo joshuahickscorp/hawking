@@ -1,0 +1,9 @@
+{
+  "obligation": "G25/G24 -- native affine2 g32 GEMV kernel, exact-replication proven at kernel level (independently verified by Claude).",
+  "kernel": "crates/hawking-core/shaders/affine2_group32_matvec.metal -- in-register dequant (unpack 2-bit q in {0,1,2,3}, w = q*scale + bias per group-32), no dense-W expand on GEMV.",
+  "harness": "crates/hawking-core/examples/affine2_parity.rs -- loads a real tensor from the external 2bit safetensors, runs native kernel, compares to CPU oracle.",
+  "verified_by_claude": "CARGO_TARGET_DIR=workspace/ops/build/rust cargo build+run on language_model.model.layers.0.mlp.gate_proj [17408,5120]: max_abs_diff 0.000000e0 (reconstruction) AND max_abs_diff_matvec 0.000000e0 (GEMV). status PASS. Also in_proj_a [48,5120] = 0.0 per Grok. HGRAVU01/geo_tpr64 kernels NOT edited; mlx NOT called (FOREIGN-RUNTIME gate clean).",
+  "milestone": "The representation is reproduced NATIVELY, bit-for-bit -- the affine-grouped-quant-with-bias transplant works in Hawking Metal. This is the exact-replication core (S034 §7).",
+  "remaining_for_full_G24_G26": "register the shader in MetalContext/all_shader_sources; HGRAVF01 codec 5 + packer/transcoder of the external 2bit -> our catalog; MixedMlpNativeKind::AffineScaleBias + dispatch_affine + GpuAffine (codes+scales+biases); full-model native decode producing tokens; native TPS measurement (G26 target ~38).",
+  "still_owed_for_G25_full": "per-organ parity across ALL organ types + a greedy-trajectory match on probes (needs the full integration)."
+}

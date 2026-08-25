@@ -1,0 +1,17 @@
+{
+  "artifact_seal_sha256": "2198cce3aa1d8c72bb0c4cd8afd5bd458c9a7d572917ff35e50f4aa75f22ec9f",
+  "capability_claim": false,
+  "fabricated": false,
+  "gravity_seal_sha256": "5112ef0ecfeaf8b1ede6195925763f0cda886615e98902c6e73e871c091503db",
+  "loadable_artifact_written": true,
+  "module_pack_seal_sha256": "5dbb8f7e4dfbf8c7a61ab2a45890ac550cc3c941002b0ab122db03202c02aa63",
+  "name": "PROTO_FRANKENSTEIN_V0_ASSEMBLE",
+  "out_dir": "workspace/campaign/evidence/models/frankenstein/proto-v0-seal-refresh",
+  "recorded_at": "2026-08-06T19:40:07.641154Z",
+  "schema": "hawking.frankenstein.v0_assemble_receipt.v1",
+  "seal_sha256": "fa25bc9715da8fc10b68e99d11f0b1aaaa6ff6181107069c2e2deefedd2e7c04",
+  "status": "ASSEMBLED",
+  "terminal_endpoint": "PROTO_FRANKENSTEIN_V0_FULL_LATENT_SEALED",
+  "terminal_reached": false,
+  "verdict": "ASSEMBLED_AWAITING_INDEPENDENT_VERIFY"
+}

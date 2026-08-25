@@ -1,0 +1,155 @@
+{
+  "blocker": null,
+  "bridge_contract_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/child-baseline-v3/DSV4F_LATENT_BRIDGE_CONTRACT.json",
+  "capability_claim": false,
+  "contracts": {
+    "bridge_contract_present": true,
+    "bridges": [
+      "KIMI_STRATEGIC_BRIDGE",
+      "GLM_MATH_BRIDGE"
+    ],
+    "site_to_transplant": {
+      "GLM_DECOMPOSITION_BRIDGE": "pre_router_hidden_state",
+      "GLM_EARLY_CONTEXT_BRIDGE": "pre_norm_hidden_state",
+      "GLM_FORMALIZATION_BRIDGE": "post_moe_hidden_state",
+      "GLM_LATE_CONSOLIDATION_BRIDGE": "final_hidden_state",
+      "GLM_METHOD_BRIDGE": "post_attention_hidden_state",
+      "GLM_POST_MOE_BRIDGE": "post_moe_hidden_state",
+      "GLM_PRE_ROUTER_BRIDGE": "pre_router_hidden_state",
+      "GLM_REPAIR_BRIDGE": "final_hidden_state"
+    },
+    "transplant_points": [
+      "pre_norm_hidden_state",
+      "post_attention_hidden_state",
+      "pre_router_hidden_state",
+      "router_logits",
+      "selected_expert_ids",
+      "route_probabilities_and_margins",
+      "post_moe_hidden_state",
+      "mhc_state",
+      "attention_index_state",
+      "final_hidden_state",
+      "lm_head_logits",
+      "hcli_tool_action_decision"
+    ],
+    "transplant_points_present": true,
+    "v0_bridge_sites": [
+      "GLM_EARLY_CONTEXT_BRIDGE",
+      "GLM_METHOD_BRIDGE",
+      "GLM_DECOMPOSITION_BRIDGE",
+      "GLM_PRE_ROUTER_BRIDGE",
+      "GLM_POST_MOE_BRIDGE",
+      "GLM_FORMALIZATION_BRIDGE",
+      "GLM_REPAIR_BRIDGE",
+      "GLM_LATE_CONSOLIDATION_BRIDGE"
+    ]
+  },
+  "correspondence": {
+    "fabricated": false,
+    "geometries": {
+      "dsv4f_hidden": 4096,
+      "dsv4f_layers": 43,
+      "glm_hidden": 6144,
+      "glm_layers": 78
+    },
+    "present": true,
+    "source": "real_teacher_forced_and_fullseq_export",
+    "status": "OK"
+  },
+  "dsv4f": {
+    "dsv4f_hash_only": false,
+    "export_json": 43,
+    "hidden_size": 4096,
+    "npy_on_disk": 43,
+    "ready": true,
+    "shape_sample": [
+      32,
+      4096
+    ]
+  },
+  "dsv4f_export_dir": "/Users/scammermike/Downloads/hawking/receipts/dsv4f_fullseq_capture_L0_frozen_export",
+  "fabricated": false,
+  "geometry": {
+    "dsv4f_hidden": 4096,
+    "glm_hidden_full": 6144,
+    "glm_sample_width_default": 64,
+    "note": "Teacher-forced capture stores first N=64 dims of hidden samples (DEFAULT_SAMPLE_HIDDEN); full 6144 not retained in sample NPZ."
+  },
+  "glm": {
+    "json_receipts": 14,
+    "note": "GLM sample NPZs present.",
+    "npz_claim_sample": {
+      "layer_id": "L13",
+      "npz_bytes_claimed": 11882202,
+      "npz_present_on_disk": true,
+      "npz_sha256_claimed": "189ffb4a5d29ae676aac027aa16f6258e072110da5b0b983deb2b75e6e133f13"
+    },
+    "npz_on_disk": 14,
+    "ready": true
+  },
+  "glm_capture_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/glm-floats-safe/run",
+  "layer_correspondence_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/cartography/GLM_DSV4F_LAYER_CORRESPONDENCE.json",
+  "paired_ready": true,
+  "phase_alignment": {
+    "dsv4f_sources": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42
+    ],
+    "fabricated": false,
+    "glm_targets": [
+      13
+    ],
+    "many_to_one": true,
+    "monotonic": true,
+    "n_pairs": 43,
+    "present": true,
+    "score_max": 0.5652091246747242,
+    "score_min": 0.33186852781400145
+  },
+  "phase_alignment_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/cartography/GLM_DSV4F_PHASE_ALIGNMENT.json",
+  "recorded_at": "2026-08-06T20:54:43.172457Z",
+  "schema": "hawking.frankenstein.bridge_train_real_inventory.v1",
+  "seal_sha256": "2014626349fd9219a0095cfcb0d70df750cd7dfe38521e86519af3ad4a0a13bc",
+  "transplant_points_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/deepseek-v4/child-baseline-v3/DSV4F_TRANSPLANT_POINTS.json"
+}

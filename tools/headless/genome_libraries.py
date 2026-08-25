@@ -475,6 +475,9 @@ class Bundle:
         self.c5 = load_json("receipts/headless/C5STRUCTTRANSFORM_DESIGN.json")
         self.negative = load_json("receipts/headless/NOETIC_NEGATIVE_SCIENCE.json")
         self.frontiers = load_json("receipts/headless/ORGAN_FRONTIERS.json")
+        self.density_floors = load_json_optional(
+            "receipts/headless/ORGAN_DENSITY_FLOORS.json"
+        )
         self.parent = load_json("receipts/headless/NOETIC_PARENT_A.json")
         self.ops = load_json("receipts/headless/NOETIC_OPERATION_CENSUS.json")
         self.machine = load_json("receipts/headless/MACHINE_GENOME.json")
@@ -987,46 +990,78 @@ def organ_capability(b: Bundle, organ: str) -> dict[str, Any]:
     }
 
 
+def _composition_floor_extra(b: Bundle, organ: str) -> dict[str, Any]:
+    key = {
+        "gqa_attention": "gqa_attention",
+        "deltanet": "deltanet",
+        "embed": "embedding_output",
+        "lm_head": "embedding_output",
+    }.get(organ)
+    if not key:
+        return {}
+    floors = getattr(b, "density_floors", None) or {}
+    fl = ((floors.get("organs") or {}).get(key) or {}).get("floor") or {}
+    if fl.get("complete_ebpw") is None:
+        return {}
+    return {
+        "composition_density_floor": {
+            "complete_ebpw": qty(
+                fl.get("complete_ebpw"),
+                kind=CITED,
+                unit="EBPW",
+                command=f"ORGAN_DENSITY_FLOORS.organs.{key}.floor.complete_ebpw",
+                source="receipts/headless/ORGAN_DENSITY_FLOORS.json",
+            ),
+            "family": fl.get("family"),
+            "codec": fl.get("codec"),
+            "highest_rung_reached": fl.get("highest_rung_reached"),
+            "vs_current_q2f_class": fl.get("vs_current_q2f_class"),
+            "dense_w": fl.get("dense_w", 0),
+            "note": (
+                "N040 composition-bar coherent floor on real activations. "
+                "Distinct from ORGAN_FRONTIERS Q4-equivalent 0.990 bar."
+            ),
+            "source": "receipts/headless/ORGAN_DENSITY_FLOORS.json",
+        }
+    }
+
+
 def extra_organ_science(b: Bundle, organ: str) -> dict[str, Any]:
+    out: dict[str, Any] = {}
     if organ == "deltanet":
         meas = b.deltanet.get("measurement") or {}
         changes = meas.get("changes") or []
-        return {
-            "deltanet_organ": {
-                "one_line": b.deltanet.get("one_line"),
-                "changes": [
-                    {
-                        "change": c.get("change"),
-                        "kernel": c.get("kernel"),
-                        "recovered_isolated_ns": c.get("recovered_isolated_ns"),
-                        "token_ids_unchanged": c.get("token_ids_unchanged"),
-                        "parity_rec_out": c.get("parity_rec_out"),
-                    }
-                    for c in changes
-                    if isinstance(c, dict)
-                ],
-                "source": "receipts/headless/DELTANET_ORGAN.json",
-            }
+        out["deltanet_organ"] = {
+            "one_line": b.deltanet.get("one_line"),
+            "changes": [
+                {
+                    "change": c.get("change"),
+                    "kernel": c.get("kernel"),
+                    "recovered_isolated_ns": c.get("recovered_isolated_ns"),
+                    "token_ids_unchanged": c.get("token_ids_unchanged"),
+                    "parity_rec_out": c.get("parity_rec_out"),
+                }
+                for c in changes
+                if isinstance(c, dict)
+            ],
+            "source": "receipts/headless/DELTANET_ORGAN.json",
         }
     if organ == "mlp_gate_up":
-        return {
-            "mlp_gate_up": {
-                "answer": b.mlp_gate.get("answer"),
-                "ranking_metric": b.mlp_gate.get("ranking_metric"),
-                "n025_gap_share": b.mlp_gate.get("n025_mlp_gate_up_gap_share"),
-                "reduced_complete_token_ns": b.mlp_gate.get("reduced_complete_token_ns"),
-                "source": "receipts/headless/MLP_GATE_UP.json",
-            }
+        out["mlp_gate_up"] = {
+            "answer": b.mlp_gate.get("answer"),
+            "ranking_metric": b.mlp_gate.get("ranking_metric"),
+            "n025_gap_share": b.mlp_gate.get("n025_mlp_gate_up_gap_share"),
+            "reduced_complete_token_ns": b.mlp_gate.get("reduced_complete_token_ns"),
+            "source": "receipts/headless/MLP_GATE_UP.json",
         }
     if organ == "mlp_down":
-        return {
-            "mlp_down": {
-                "one_line": b.mlp_down.get("one_line"),
-                "reductions_kind": (b.mlp_down.get("reductions") or {}).get("kind"),
-                "source": "receipts/headless/MLP_DOWN.json",
-            }
+        out["mlp_down"] = {
+            "one_line": b.mlp_down.get("one_line"),
+            "reductions_kind": (b.mlp_down.get("reductions") or {}).get("kind"),
+            "source": "receipts/headless/MLP_DOWN.json",
         }
-    return {}
+    out.update(_composition_floor_extra(b, organ))
+    return out
 
 
 def build_organ_genome(b: Bundle, organ: str) -> dict[str, Any]:
@@ -1042,6 +1077,8 @@ def build_organ_genome(b: Bundle, organ: str) -> dict[str, Any]:
     ]
     if organ in ("gqa_attention", "deltanet", "embed", "lm_head"):
         citations.append("receipts/headless/ORGAN_FRONTIERS.json")
+        if getattr(b, "density_floors", None):
+            citations.append("receipts/headless/ORGAN_DENSITY_FLOORS.json")
     if organ == "deltanet":
         citations.append("receipts/headless/DELTANET_ORGAN.json")
     if organ == "mlp_gate_up":
@@ -1115,7 +1152,7 @@ def build_organ_library(b: Bundle) -> dict[str, Any]:
             "one_line": (
                 "Seven Qwen3.8 OrganGenomes seeded from ORGAN_BANDWIDTH, "
                 "ORGAN_ROOF_LEDGER, DELTANET_ORGAN, MLP_GATE_UP, MLP_DOWN, "
-                "ORGAN_FRONTIERS. Unmeasured capability is ABSENT."
+                "ORGAN_FRONTIERS, ORGAN_DENSITY_FLOORS. Unmeasured capability is ABSENT."
             ),
             "organs": organs,
             "n_organs": len(organs),

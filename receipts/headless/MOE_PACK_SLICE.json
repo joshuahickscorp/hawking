@@ -1,0 +1,343 @@
+{
+ "schema": "hawking.odyssey.moe_pack_slice.v1",
+ "generated_at": "2026-08-25T10:24:19Z",
+ "generated_by": "tools/odyssey/moe_pack_slice.py",
+ "obligation": "G023 step 1 \u2014 does the selected representation work on routed experts?",
+ "hand_authored": false,
+ "git_head": "0b019f24f688fba3700b23cf3b8354adc5647c53",
+ "representation_under_test": {
+  "selected_by": "receipts/headless/KERNEL_PLANNER_MODEL2.json",
+  "family": "conventional_low_bit",
+  "downgraded_from": "q2_affine",
+  "codec": "uniform q4, group 64, grouped absmax offset-binary, bound = 2^(bits-1) - 1",
+  "competent_kernels": 7
+ },
+ "result": {
+  "layer": 0,
+  "n_tensors_packed": 24,
+  "tensors": [
+   {
+    "tensor": "0.mlp.experts.0.down_proj.weight",
+    "shape": [
+     2048,
+     768
+    ],
+    "rel_fro_err": 0.109132,
+    "cosine": 0.994113,
+    "source_bytes": 3145728,
+    "packed_bytes": 835584,
+    "bpw": 4.25
+   },
+   {
+    "tensor": "0.mlp.experts.0.gate_proj.weight",
+    "shape": [
+     768,
+     2048
+    ],
+    "rel_fro_err": 0.110584,
+    "cosine": 0.993957,
+    "source_bytes": 3145728,
+    "packed_bytes": 835584,
+    "bpw": 4.25
+   },
+   {
+    "tensor": "0.mlp.experts.0.up_proj.weight",
+    "shape": [
+     768,
+     2048
+    ],
+    "rel_fro_err": 0.110479,
+    "cosine": 0.993968,
+    "source_bytes": 3145728,
+    "packed_bytes": 835584,
+    "bpw": 4.25
+   },
+   {
+    "tensor": "0.mlp.experts.1.down_proj.weight",
+    "shape": [
+     2048,
+     768
+    ],
+    "rel_fro_err": 0.111716,
+    "cosine": 0.993834,
+    "source_bytes": 3145728,
+    "packed_bytes": 835584,
+    "bpw": 4.25
+   },
+   {
+    "tensor": "0.mlp.experts.1.gate_proj.weight",
+    "shape": [
+     768,
+     2048
+    ],
+    "rel_fro_err": 0.115939,
+    "cosine": 0.993363,
+    "source_bytes": 3145728,
+    "packed_bytes": 835584,
+    "bpw": 4.25
+   },
+   {
+    "tensor": "0.mlp.experts.1.up_proj.weight",
+    "shape": [
+     768,
+     2048
+    ],
+    "rel_fro_err": 0.114046,
+    "cosine": 0.993575,
+    "source_bytes": 3145728,
+    "packed_bytes": 835584,
+    "bpw": 4.25
+   },
+   {
+    "tensor": "0.mlp.experts.10.down_proj.weight",
+    "shape": [
+     2048,
+     768
+    ],
+    "rel_fro_err": 0.113201,
+    "cosine": 0.993671,
+    "source_bytes": 3145728,
+    "packed_bytes": 835584,
+    "bpw": 4.25
+   },
+   {
+    "tensor": "0.mlp.experts.10.gate_proj.weight",
+    "shape": [
+     768,
+     2048
+    ],
+    "rel_fro_err": 0.118983,
+    "cosine": 0.993014,
+    "source_bytes": 3145728,
+    "packed_bytes": 835584,
+    "bpw": 4.25
+   },
+   {
+    "tensor": "0.mlp.experts.10.up_proj.weight",
+    "shape": [
+     768,
+     2048
+    ],
+    "rel_fro_err": 0.112682,
+    "cosine": 0.993729,
+    "source_bytes": 3145728,
+    "packed_bytes": 835584,
+    "bpw": 4.25
+   },
+   {
+    "tensor": "0.mlp.experts.100.down_proj.weight",
+    "shape": [
+     2048,
+     768
+    ],
+    "rel_fro_err": 0.110323,
+    "cosine": 0.993988,
+    "source_bytes": 3145728,
+    "packed_bytes": 835584,
+    "bpw": 4.25
+   },
+   {
+    "tensor": "0.mlp.experts.100.gate_proj.weight",
+    "shape": [
+     768,
+     2048
+    ],
+    "rel_fro_err": 0.115727,
+    "cosine": 0.993388,
+    "source_bytes": 3145728,
+    "packed_bytes": 835584,
+    "bpw": 4.25
+   },
+   {
+    "tensor": "0.mlp.experts.100.up_proj.weight",
+    "shape": [
+     768,
+     2048
+    ],
+    "rel_fro_err": 0.113275,
+    "cosine": 0.993661,
+    "source_bytes": 3145728,
+    "packed_bytes": 835584,
+    "bpw": 4.25
+   },
+   {
+    "tensor": "0.mlp.experts.101.down_proj.weight",
+    "shape": [
+     2048,
+     768
+    ],
+    "rel_fro_err": 0.109259,
+    "cosine": 0.994101,
+    "source_bytes": 3145728,
+    "packed_bytes": 835584,
+    "bpw": 4.25
+   },
+   {
+    "tensor": "0.mlp.experts.101.gate_proj.weight",
+    "shape": [
+     768,
+     2048
+    ],
+    "rel_fro_err": 0.111388,
+    "cosine": 0.993871,
+    "source_bytes": 3145728,
+    "packed_bytes": 835584,
+    "bpw": 4.25
+   },
+   {
+    "tensor": "0.mlp.experts.101.up_proj.weight",
+    "shape": [
+     768,
+     2048
+    ],
+    "rel_fro_err": 0.11032,
+    "cosine": 0.993986,
+    "source_bytes": 3145728,
+    "packed_bytes": 835584,
+    "bpw": 4.25
+   },
+   {
+    "tensor": "0.mlp.experts.102.down_proj.weight",
+    "shape": [
+     2048,
+     768
+    ],
+    "rel_fro_err": 0.111272,
+    "cosine": 0.993883,
+    "source_bytes": 3145728,
+    "packed_bytes": 835584,
+    "bpw": 4.25
+   },
+   {
+    "tensor": "0.mlp.experts.102.gate_proj.weight",
+    "shape": [
+     768,
+     2048
+    ],
+    "rel_fro_err": 0.115586,
+    "cosine": 0.993405,
+    "source_bytes": 3145728,
+    "packed_bytes": 835584,
+    "bpw": 4.25
+   },
+   {
+    "tensor": "0.mlp.experts.102.up_proj.weight",
+    "shape": [
+     768,
+     2048
+    ],
+    "rel_fro_err": 0.112219,
+    "cosine": 0.99378,
+    "source_bytes": 3145728,
+    "packed_bytes": 835584,
+    "bpw": 4.25
+   },
+   {
+    "tensor": "0.mlp.experts.103.down_proj.weight",
+    "shape": [
+     2048,
+     768
+    ],
+    "rel_fro_err": 0.110751,
+    "cosine": 0.99394,
+    "source_bytes": 3145728,
+    "packed_bytes": 835584,
+    "bpw": 4.25
+   },
+   {
+    "tensor": "0.mlp.experts.103.gate_proj.weight",
+    "shape": [
+     768,
+     2048
+    ],
+    "rel_fro_err": 0.11526,
+    "cosine": 0.99344,
+    "source_bytes": 3145728,
+    "packed_bytes": 835584,
+    "bpw": 4.25
+   },
+   {
+    "tensor": "0.mlp.experts.103.up_proj.weight",
+    "shape": [
+     768,
+     2048
+    ],
+    "rel_fro_err": 0.11095,
+    "cosine": 0.99392,
+    "source_bytes": 3145728,
+    "packed_bytes": 835584,
+    "bpw": 4.25
+   },
+   {
+    "tensor": "0.mlp.experts.104.down_proj.weight",
+    "shape": [
+     2048,
+     768
+    ],
+    "rel_fro_err": 0.111181,
+    "cosine": 0.993896,
+    "source_bytes": 3145728,
+    "packed_bytes": 835584,
+    "bpw": 4.25
+   },
+   {
+    "tensor": "0.mlp.experts.104.gate_proj.weight",
+    "shape": [
+     768,
+     2048
+    ],
+    "rel_fro_err": 0.120811,
+    "cosine": 0.992799,
+    "source_bytes": 3145728,
+    "packed_bytes": 835584,
+    "bpw": 4.25
+   },
+   {
+    "tensor": "0.mlp.experts.104.up_proj.weight",
+    "shape": [
+     768,
+     2048
+    ],
+    "rel_fro_err": 0.11657,
+    "cosine": 0.99329,
+    "source_bytes": 3145728,
+    "packed_bytes": 835584,
+    "bpw": 4.25
+   }
+  ],
+  "median_rel_fro_err": 0.111967,
+  "worst_rel_fro_err": 0.120811,
+  "median_cosine": 0.993807,
+  "worst_cosine": 0.992799,
+  "median_bpw": 4.25,
+  "total_source_bytes": 75497472,
+  "total_packed_bytes": 20054016
+ },
+ "why_this_is_the_first_bytes": "every AUTOMATIC stage before this emitted an analysis. The audit recorded that no stage produced bytes for model #2; this one does.",
+ "packer_gap_this_probes": {
+  "resolver": "tools/headless/whole_model_native.py::organ_role",
+  "why_experts_fall_through": "is_mlp_gemv matches names ENDING in `mlp.gate_proj.weight`, and an expert tensor is `mlp.experts.101.gate_proj.weight`, so every expert resolves to `leftover` and is kept f32",
+  "what_a_real_packer_needs": [
+   "is_moe_expert matching mlp.experts.<N>.{gate,up,down}_proj.weight",
+   "is_moe_router matching mlp.gate.weight",
+   "GENOME entries for both, using the representations already selected",
+   "per-expert segmentation in the catalog so the runtime can index by route id"
+  ]
+ },
+ "LOCAL_ADEQUACY_DOES_NOT_COMPOSE": {
+  "law": "a per-tensor cosine is a necessary condition, never a sufficient one",
+  "evidence_from_this_campaign": [
+   "the ternary whole-model bracket failed at 1.85 bpw with every organ locally validated",
+   "variantA-2.98 scored 0/43 with each organ measured adequate in isolation"
+  ],
+  "so_this_result_means": "the codec packs and decodes routed-expert weights at the expected rate and fidelity. It does NOT mean a model #2 body at this representation would be coherent, and nothing here should be quoted as if it did."
+ },
+ "scope": {
+  "tensors_packed": 24,
+  "tensors_in_the_layer": 384,
+  "layers_in_the_model": 48,
+  "fraction_of_the_organ": 0.001302,
+  "no_catalog_no_container": true
+ },
+ "pass": true
+}

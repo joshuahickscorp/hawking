@@ -37,7 +37,10 @@ import time
 import urllib.request
 from pathlib import Path
 
-REPO = Path(os.path.expanduser("~/Downloads/hawking-copy"))
+# Derived from this file, never a hardcoded home path: ~/Downloads/hawking-copy
+# exists on this machine, so the old constant silently wrote receipts into a
+# DIFFERENT repository whenever --out was omitted.
+REPO = Path(__file__).resolve().parents[2]
 
 
 # --------------------------------------------------------------- predicates
@@ -101,7 +104,13 @@ def python_compiles_and(pred=None, describe=""):
 
 def must_not_contain(*needles):
     def f(text, _):
-        low = (text or "").lower()
+        # An empty reply contains nothing forbidden, so this predicate used to PASS on a
+        # model that emitted nothing at all. The 2.5970-EBPW body scored 3/43 that way --
+        # every one of the 3 was this axis passing on empty output, while every axis
+        # requiring content scored 0. A check a dead model passes is not a check.
+        if not (text or "").strip():
+            return False, "empty reply: nothing was produced to be clean"
+        low = text.lower()
         hit = [n for n in needles if n.lower() in low]
         return (not hit), f"reply contained forbidden {hit}"
     return f
@@ -224,6 +233,86 @@ SUITE = [
 
 # --------------------------------------------------------------- backends
 
+_NOETIC_TOK = {}
+
+
+# A reasoning model spends budget on the reasoning before it writes a word of the answer.
+# The llama and mlx baselines answer inside the item's max_tokens because their replies are
+# the answer; the noetic backend must emit a whole <think> block first. Capping both at the
+# same number measures BUDGET, not capability -- code-compiles failed on the sealed body
+# with "unterminated string literal" at exactly 512 tokens, and passed at 544 when given
+# room. The multiplier restores the comparison rather than loosening it.
+NOETIC_BUDGET_MULTIPLIER = 3
+
+
+def call_noetic(binary, artifact_root, system, prompt, max_tokens, no_think, timeout,
+                tokenizer_dir=None):
+    """The rebuilt noetic executable: a greedy CLI over the sealed closure.
+
+    The closure carries its own tokenizer and chat template (that is what makes it
+    parent-free), so the template is applied from the ARTIFACT, never from the parent
+    directory -- applying the parent's would quietly reintroduce the dependency the
+    zero-parent gate exists to remove.
+    """
+    import subprocess, tempfile
+    root = Path(artifact_root)
+    # The tokenizer is decoupled from the artifact root on purpose: the SEALED artifact
+    # carries no tokenizer state at all (MIX_REPORT.json, catalog, segments -- nothing
+    # else), which is the closure gap the rebuild fixed. Scoring it requires pointing at a
+    # closure that does have one, and the two are byte-identical.
+    tdir = Path(tokenizer_dir or artifact_root)
+    if "tok" not in _NOETIC_TOK:
+        from transformers import AutoTokenizer
+        _NOETIC_TOK["tok"] = AutoTokenizer.from_pretrained(str(tdir))
+    _NOETIC_TOK["dir"] = str(tdir)
+    tok = _NOETIC_TOK["tok"]
+    msgs = ([{"role": "system", "content": system}] if system else []) + \
+           [{"role": "user", "content": prompt}]
+    try:
+        text = tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True,
+                                       enable_thinking=not no_think)
+    except TypeError:
+        text = tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
+    budget = max_tokens if no_think else max_tokens * NOETIC_BUDGET_MULTIPLIER
+    n_prompt = len(tok(text)["input_ids"])
+    with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
+        out_json = f.name
+    cmd = [str(binary), "--artifact-root", str(root),
+           "--tokenizer", str(tdir / "tokenizer.json"),
+           "--prompt", text, "--max-new-tokens", str(budget),
+           "--max-seq-len", str(n_prompt + budget + 16),
+           "--out", out_json, "--raw-prompt"]
+    t0 = time.time()
+    pr = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+    body = {}
+    try:
+        body = json.loads(Path(out_json).read_text())
+    except Exception:
+        pass
+    Path(out_json).unlink(missing_ok=True)
+    raw = body.get("generated_text") or ""
+    # A serving backend returns the reply, not the reasoning trace. The llama and mlx
+    # baselines this run is compared against are scored on post-</think> content, so the
+    # raw CLI output has to be cut the same way or the comparison measures the harness.
+    #
+    # The chat template ends the prompt with an OPEN <think>, so a generation that never
+    # emits </think> never left the reasoning block and never produced an answer. Scoring
+    # its raw reasoning prose as if it were the reply is what let the 2.5970-EBPW body pass
+    # a "must not leak </think>" check: it passed precisely BECAUSE it never finished
+    # thinking. An unterminated think block is no reply.
+    unterminated = not no_think and "</think>" not in raw and bool(raw.strip())
+    reply = raw.split("</think>", 1)[1] if "</think>" in raw else ("" if unterminated else raw)
+    return {"text": reply.strip(), "raw_text": raw,
+            "token_budget": budget, "budget_multiplier": NOETIC_BUDGET_MULTIPLIER,
+            "hit_budget_cap": len(body.get("new_token_ids") or []) >= budget,
+            "unterminated_think_block": unterminated,
+            "think_block_stripped": "</think>" in raw,
+            "wall_s": round(time.time() - t0, 3),
+            "exit_code": pr.returncode,
+            "n_new_tokens": len(body.get("new_token_ids") or []),
+            "stderr_tail": (pr.stderr or "")[-300:] if pr.returncode else ""}
+
+
 def call_llama(endpoint, system, prompt, max_tokens, no_think, timeout):
     payload = {
         "model": "local",
@@ -317,29 +406,45 @@ def score(responses):
     return per_item, per_axis
 
 
-def build_items():
+def build_items(default_system=None):
     out = []
     for spec in SUITE:
         for rep in range(spec.get("repeats", 1)):
-            out.append({"id": spec["id"], "rep": rep, "system": spec.get("system"),
+            out.append({"id": spec["id"], "rep": rep,
+                        "system": spec.get("system") or default_system,
+                        "system_was_default": not spec.get("system")
+                                              and bool(default_system),
                         "prompt": spec["prompt"], "max_tokens": spec.get("max_tokens", 512)})
     return out
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--backend", choices=["llama", "mlx"], required=True)
+    ap.add_argument("--backend", choices=["llama", "mlx", "noetic"], required=True)
+    ap.add_argument("--artifact-root", help="noetic backend only")
+    ap.add_argument("--noetic-binary", help="noetic backend only")
+    ap.add_argument("--tokenizer-dir", help="noetic backend only; defaults to --artifact-root")
     ap.add_argument("--endpoint", default="http://127.0.0.1:8080", help="llama backend only")
     ap.add_argument("--model-path", help="mlx backend only")
     ap.add_argument("--label", required=True, help="what this run identifies, e.g. 'llamacpp-q5k'")
     ap.add_argument("--mlx-py", default=os.path.expanduser(
         "~/.local/share/uv/tools/mlx-lm/bin/python"))
-    ap.add_argument("--no-think", action="store_true", default=True)
+    ap.add_argument("--no-think", dest="no_think", action="store_true", default=False,
+                    help="prefill an empty think block. On Qwen3.8 this makes the model "
+                         "emit <|im_end|> immediately, so it is OFF by default; the first "
+                         "noetic run scored 14/43 purely because it was on.")
+    ap.add_argument("--think", dest="no_think", action="store_false")
     ap.add_argument("--timeout", type=float, default=3600.0)
     ap.add_argument("--out", default=None)
+    # G042 adversary: some items carry a system prompt and some do not, and G039 showed
+    # the code items are decided by deliberation runaway under the no-system-prompt
+    # regime. This re-scores the suite with a default system prompt for items that lack
+    # one, to test whether the capability ranking is regime-dependent.
+    ap.add_argument("--default-system", default=None,
+                    help="system prompt applied ONLY to items that define none")
     args = ap.parse_args()
 
-    items = build_items()
+    items = build_items(args.default_system)
     print(f"suite: {len(SUITE)} items, {len(items)} calls, backend={args.backend}", flush=True)
 
     responses = []
@@ -348,6 +453,24 @@ def main() -> int:
             print("FAIL: --model-path required for the mlx backend")
             return 2
         responses = run_mlx(args.model_path, items, args.mlx_py, args.timeout)
+    elif args.backend == "noetic":
+        if not (args.artifact_root and args.noetic_binary):
+            print("FAIL: --artifact-root and --noetic-binary required for the noetic backend")
+            return 2
+        for it in items:
+            try:
+                r = call_noetic(args.noetic_binary, args.artifact_root, it.get("system"),
+                                it["prompt"], it["max_tokens"], args.no_think, args.timeout,
+                                tokenizer_dir=args.tokenizer_dir)
+                r["finish_reason"] = "stop" if r["exit_code"] == 0 else f"EXIT{r['exit_code']}"
+                r["completion_tokens"] = r.get("n_new_tokens")
+            except Exception as e:
+                r = {"text": "", "finish_reason": f"ERROR:{type(e).__name__}: {e}",
+                     "completion_tokens": None, "wall_s": None}
+            r.update({"id": it["id"], "rep": it["rep"]})
+            responses.append(r)
+            print(f"  {it['id']}[{it['rep']}] {r.get('finish_reason')} "
+                  f"{r.get('completion_tokens')}tok {r.get('wall_s')}s", flush=True)
     else:
         for it in items:
             try:

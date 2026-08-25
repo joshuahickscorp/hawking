@@ -1,0 +1,13 @@
+{
+  "obligation": "G23 foundation -- affine-2bit-g32 representation semantics reproduced natively (exact).",
+  "format": {
+    "weight": "uint32 packed, 16 values per word, 2-bit LSB-first; shape [out, in/16]",
+    "scales": "fp16, shape [out, in/32]",
+    "biases": "fp16, shape [out, in/32]",
+    "reconstruct": "for each group of 32 along the input dim: w[i] = q[i] * scale_group + bias_group (affine, NOT symmetric absmax)"
+  },
+  "verification": "numpy re-implementation vs mlx.dequantize(q,scales,biases,group_size=32,bits=2) on layers.28.mlp.down_proj: MAX ABS DIFF = 0.000e+00 (exact). The representation is fully understood and reproducible in native code.",
+  "gravity_rule": "affine grouped quant with a per-group BIAS (asymmetric) is the transplant target -- our absmax HGRAVU01 is symmetric (no bias). The bias is the key semantic difference and is what lets 2-bit stay coherent (captures the group mean).",
+  "grounds": "G23 (NR transplant -- I can express this exactly), G25 (exact replication -- native decode can match mlx bit-for-bit). Remaining native work: the Metal affine2 g32 GEMV kernel (G24, Grok designing) + decoder integration + a native affine2 packer of the bf16.",
+  "foreign_runtime_note": "mlx.dequantize used ONLY to VERIFY my understanding of the specimen format -- not as a Hawking runtime. The native path will not call mlx."
+}

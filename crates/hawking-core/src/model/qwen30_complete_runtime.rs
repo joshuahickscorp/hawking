@@ -102,6 +102,29 @@ pub const QWEN30_COMPLETE_NATIVE_MAX_CONTEXT: usize = 4096;
 
 const QWEN30_MODEL_ID: &str = "Qwen3-Coder-30B-A3B-Instruct";
 const QWEN30_REPOSITORY: &str = "Qwen/Qwen3-Coder-30B-A3B-Instruct";
+
+/// Repositories this runtime admits.
+///
+/// Admission was a string equality against a single repository. Every OTHER check this
+/// runtime makes is structural, and `Qwen/Qwen3-30B-A3B` satisfies all of them: the same
+/// architecture `Qwen3MoeForCausalLM`, the same `qwen3_moe` model type, and all ten exact
+/// config fields -- 48 layers, hidden 2048, 32 heads, 4 kv heads, head_dim 128, 128
+/// experts, top-k 8, moe_intermediate 768, decoder_sparse_step 1, vocab 151936 -- plus
+/// the same SiLU activation and the same 18,867 tensor count, which is 48 * (4 + 2 + 2 +
+/// 1 + 128*3) + 3 for both models.
+///
+/// The name was the only thing that differed, and a name is not a capability. Nothing
+/// else is relaxed: the tensor-name and shape validation, the revision binding and the
+/// payload integrity checks all still run, so an artifact that merely CLAIMS one of these
+/// repositories is still rejected on its contents.
+const QWEN30_ADMITTED_REPOSITORIES: [&str; 2] = [
+    QWEN30_REPOSITORY,
+    "Qwen/Qwen3-30B-A3B",
+];
+
+fn qwen30_repository_admitted(repository: &str) -> bool {
+    QWEN30_ADMITTED_REPOSITORIES.contains(&repository)
+}
 const QWEN30_ARCHITECTURE: &str = "Qwen3MoeForCausalLM";
 const QWEN30_MODEL_TYPE: &str = "qwen3_moe";
 const QWEN30_LAYERS: usize = 48;
@@ -599,9 +622,10 @@ impl Qwen30CompleteRuntimeConfig {
         if string_field(document, "model_type")? != QWEN30_MODEL_TYPE {
             return Err(model_error("config model_type is not qwen3_moe"));
         }
-        if source_repository != QWEN30_REPOSITORY {
+        if !qwen30_repository_admitted(&source_repository) {
             return Err(model_error(format!(
-                "artifact repository {source_repository:?} is not {QWEN30_REPOSITORY:?}"
+                "artifact repository {source_repository:?} is not one of \
+                 {QWEN30_ADMITTED_REPOSITORIES:?}"
             )));
         }
         if source_revision.is_empty() {
@@ -1224,14 +1248,14 @@ fn validate_mixed_activation_weighted_catalog(
     direct: &CompleteBinaryArtifact,
     config: &Qwen30CompleteRuntimeConfig,
 ) -> Result<()> {
-    if direct.model != QwenCompleteBinaryModel::Qwen30Coder {
+    if !direct.model.is_qwen30_family() {
         return Err(model_error(
             "mixed activation-weighted direct base is not the Qwen30 model family",
         ));
     }
     if direct.source_revision != config.source_revision
         || mixed.source_revision != config.source_revision
-        || config.source_repository != QWEN30_REPOSITORY
+        || !qwen30_repository_admitted(&config.source_repository)
     {
         return Err(model_error(
             "mixed activation-weighted artifact and source configuration revision binding disagrees",
@@ -1294,14 +1318,14 @@ fn validate_complete_catalog(
     artifact: &CompleteBinaryArtifact,
     config: &Qwen30CompleteRuntimeConfig,
 ) -> Result<()> {
-    if artifact.model != QwenCompleteBinaryModel::Qwen30Coder {
+    if !artifact.model.is_qwen30_family() {
         return Err(model_error(
             "complete artifact is not the Qwen30 model family",
         ));
     }
     if artifact.source_revision != config.source_revision
         || artifact.source_revision.is_empty()
-        || config.source_repository != QWEN30_REPOSITORY
+        || !qwen30_repository_admitted(&config.source_repository)
     {
         return Err(model_error(
             "artifact and source configuration revision binding disagrees",
@@ -6374,6 +6398,27 @@ mod tests {
         assert_eq!(QWEN30_DEVICE_EXPERT_KIND_BINARY, 1);
         assert_eq!(QWEN30_DEVICE_EXPERT_KIND_HGRAVS, 2);
         assert_eq!(QWEN30_DEVICE_EXPERT_KIND_UNIFORM_Q4, 3);
+    }
+
+    #[test]
+    fn repository_admission_is_an_allowlist_not_an_equality() {
+        // Qwen3-30B-A3B satisfies every structural check this runtime makes -- same
+        // architecture, same model type, all ten exact config fields, same SiLU, same
+        // 18,867 tensors. Only the repository NAME differed, and a name is not a
+        // capability.
+        assert!(qwen30_repository_admitted(QWEN30_REPOSITORY));
+        assert!(qwen30_repository_admitted("Qwen/Qwen3-30B-A3B"));
+    }
+
+    #[test]
+    fn repository_admission_still_refuses_anything_else() {
+        // The allowlist must not become a wildcard: an unrelated repository, a prefix,
+        // and an empty string all stay refused.
+        assert!(!qwen30_repository_admitted("Qwen/Qwen3-8B"));
+        assert!(!qwen30_repository_admitted("meta-llama/Llama-3-70B"));
+        assert!(!qwen30_repository_admitted("Qwen/Qwen3-30B"));
+        assert!(!qwen30_repository_admitted(""));
+        assert_eq!(QWEN30_ADMITTED_REPOSITORIES.len(), 2);
     }
 
     #[test]

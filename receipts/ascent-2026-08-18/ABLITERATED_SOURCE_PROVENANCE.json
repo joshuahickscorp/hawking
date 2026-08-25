@@ -1,0 +1,11 @@
+{
+  "obligation": "Source provenance of the abliterated bf16 + availability of a 1-bit variant (user steer).",
+  "source_repo": "PocketAiHub/Qwen3.8-27B-Abliterated-MLX",
+  "source_url": "https://huggingface.co/PocketAiHub/Qwen3.8-27B-Abliterated-MLX",
+  "our_bf16_from": "the bf16/ folder (11 shards) of that repo; confirmed by tools/qwen38_capture_v2.py:82 PARENT_REPO + capture-result.json parent_repo. Base = Qwen/Qwen3.8-27B @ 1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0, abliterated locally (refusal-direction orthogonal projection, layers 24-63, 80 tensors).",
+  "quants_available_in_source_repo": ["2bit (~10.9GB, 3 shards)", "4bit", "6bit", "8bit", "bf16 (~51GB)"],
+  "one_bit_exists": false,
+  "one_bit_search": "Exhaustive: the source repo bottoms out at 2bit; all ~100 Qwen3.8-27B HF repos go down to Q2_K/IQ2/NVFP4/TQ3 with NONE at 1-bit/IQ1/TQ1/bitnet; the abliterated GGUF repos (huihui-ai, Blackfrost-AI) bottom out at Q2_K (~10.8GB). No 1-bit abliterated Qwen3.8-27B exists anywhere found.",
+  "chosen_for_test": "PocketAiHub/Qwen3.8-27B-Abliterated-MLX 2bit/ (~2.5 bpw, ~10.9GB, MLX format, same abliterated source) -- the lowest real quant, downloaded to workspace/campaign/records/runs/qwen38-27b/abliterated-mlx-2bit for a bf16-vs-2bit Doctor+abliteration test.",
+  "relevance_to_goal": "A ready-made 2-bit (~2.5 bpw) sits BELOW the Phase-B coherence floor (~q3/3.25 bpw). If it stays coherent it challenges the density-wall finding; if it degrades it confirms it with an external artifact."
+}

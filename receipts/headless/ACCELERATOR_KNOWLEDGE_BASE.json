@@ -1,0 +1,108 @@
+{
+ "schema": "hawking.accelerator.knowledge_base.v1",
+ "kernels": {},
+ "representations": {},
+ "organ_shapes": {
+  "moe_expert:[768, 2048]": {
+   "first_seen_on": "Qwen3-30B-A3B",
+   "organ": "moe_expert",
+   "gemv_shape": [
+    768,
+    2048
+   ]
+  },
+  "moe_router:[128, 2048]": {
+   "first_seen_on": "Qwen3-30B-A3B",
+   "organ": "moe_router",
+   "gemv_shape": [
+    128,
+    2048
+   ]
+  },
+  "attention:[2048, 2048]": {
+   "first_seen_on": "Qwen3-30B-A3B",
+   "organ": "attention",
+   "gemv_shape": [
+    2048,
+    2048
+   ]
+  },
+  "embed:[151936, 2048]": {
+   "first_seen_on": "Qwen3-30B-A3B",
+   "organ": "embed",
+   "gemv_shape": [
+    151936,
+    2048
+   ]
+  },
+  "norm:[2048]": {
+   "first_seen_on": "Qwen3-30B-A3B",
+   "organ": "norm",
+   "gemv_shape": [
+    2048
+   ]
+  },
+  "mlp:[12288, 3072]": {
+   "first_seen_on": "Falcon-H1-7B-Instruct",
+   "organ": "mlp",
+   "gemv_shape": [
+    12288,
+    3072
+   ]
+  },
+  "attention:[3072, 3072]": {
+   "first_seen_on": "Falcon-H1-7B-Instruct",
+   "organ": "attention",
+   "gemv_shape": [
+    3072,
+    3072
+   ]
+  },
+  "embed:[130049, 3072]": {
+   "first_seen_on": "Falcon-H1-7B-Instruct",
+   "organ": "embed",
+   "gemv_shape": [
+    130049,
+    3072
+   ]
+  },
+  "norm:[3072]": {
+   "first_seen_on": "Falcon-H1-7B-Instruct",
+   "organ": "norm",
+   "gemv_shape": [
+    3072
+   ]
+  },
+  "moe_expert:[1408, 2048]": {
+   "first_seen_on": "Kimi-VL-A3B-Instruct",
+   "organ": "moe_expert",
+   "gemv_shape": [
+    1408,
+    2048
+   ]
+  },
+  "moe_router:[64, 2048]": {
+   "first_seen_on": "Kimi-VL-A3B-Instruct",
+   "organ": "moe_router",
+   "gemv_shape": [
+    64,
+    2048
+   ]
+  },
+  "embed:[163840, 2048]": {
+   "first_seen_on": "Kimi-VL-A3B-Instruct",
+   "organ": "embed",
+   "gemv_shape": [
+    163840,
+    2048
+   ]
+  }
+ },
+ "specimens_seen": [
+  "Qwen3-30B-A3B",
+  "Qwen3-VL-30B-A3B-Instruct",
+  "Falcon-H1-7B-Instruct",
+  "Kimi-VL-A3B-Instruct"
+ ],
+ "updated_at": "2026-08-25T12:22:58Z"
+}

@@ -1,0 +1,409 @@
+{
+  "artifact_binding": {
+    "admission_pointer_seal_sha256": "eb4ab014fcaadb8ff0a47a43b0525e3e4ddbf04abaa799c117c6a2882f4b6ea9",
+    "admission_receipt_seal_sha256": "939b41322363da3db774a2530b207bf380ed641d23cae671fc6438c0eecbf628",
+    "layer": 0,
+    "linear_state_slot": 0,
+    "manifest_document_sha256": "a0fcac0401a7962402bb8cb87d5055c83667b39575f9e0f4c7470d080758aa10",
+    "manifest_seal_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+    "native_device": "Apple M3 Ultra",
+    "source_audit_seal_sha256": "c572b2270b623b8677c374b43c89ddd729de135c25721488bb874b184ff8c3d4",
+    "source_revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb"
+  },
+  "claim_boundary": {
+    "no_complete_layer_token_decoder_generation_hcli_tps_tg_or_tournament_claim": true,
+    "no_watcher_or_server_started": true,
+    "source_token_l0_true_moe_component_only": true
+  },
+  "complete_artifact_scan_performed_once": true,
+  "complete_layer_or_token_performed": false,
+  "component_only": true,
+  "durable_capture": {
+    "capture_directory": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SOURCE_TOKEN_TRUE_INPUT_ALL_TEN_MOE_GRAPH_OUTER_CAPTURE_20260809T061822Z/inner",
+    "outer_reaped_capture_required": true,
+    "outer_reaper_binding": {
+      "lease_id": "0617957514355e50d2a50c8b9d406531302b9b8f6151f1cf9df9fc993dd5b702",
+      "outer_launch_authority": {
+        "document_sha256": "d16c712355c70d1340ff7b4fed9ea091fd5709653c201f52c6acbd376f112675",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SOURCE_TOKEN_TRUE_INPUT_ALL_TEN_MOE_GRAPH_OUTER_CAPTURE_20260809T061822Z/outer-launch-authority.json",
+        "seal_sha256": "ce68aea33b06cac859ae193f091ee2440f583e09126c3bf7dca0063df900b33a"
+      }
+    },
+    "receipt_written_last_is_completion_marker": true,
+    "replay_guarded": true
+  },
+  "execution_phase": {
+    "command_commit_attempted": true,
+    "command_fence_succeeded": true,
+    "device_dispatch_may_have_occurred": true,
+    "dispatches_encoded": 23,
+    "encoded_kernel_names": [
+      "qwen_next_direct_packed_input_rmsnorm",
+      "qwen_binary_sign_scale_matvec",
+      "qwen_binary_sign_scale_matvec",
+      "qwen_next_qkvz_rearrange_conv_l2",
+      "qwen_next_ba_to_decay_beta",
+      "qwen_next_gated_delta_decode_single",
+      "qwen_next_deltanet_gated_rmsnorm",
+      "qwen_binary_sign_scale_matvec",
+      "qwen_next_add_residual",
+      "qwen80_postnorm_router_top10_rmsnorm",
+      "qwen80_postnorm_router_top10_matvec",
+      "qwen80_postnorm_router_top10_select",
+      "qwen80_all_ten_routed_wave_route_guard",
+      "qwen80_all_ten_routed_wave_gate_up",
+      "qwen80_all_ten_routed_wave_swiglu",
+      "qwen80_all_ten_routed_wave_down_weighted",
+      "qwen80_shared_expert_wave_gate_up",
+      "qwen80_shared_expert_wave_swiglu",
+      "qwen80_shared_expert_wave_down",
+      "qwen80_shared_expert_wave_scalar_gate",
+      "qwen80_shared_expert_wave_apply_sigmoid_gate",
+      "qwen80_moe_wave_aggregate_second_residual_route_sum",
+      "qwen80_moe_wave_aggregate_second_residual_add_shared_residual"
+    ],
+    "encoded_kernel_order_matches_expected": true,
+    "metal_context_constructed": true,
+    "metal_context_construction_attempted": true,
+    "readback_started": true,
+    "strict_artifact_admission_started": true,
+    "strict_artifact_admission_succeeded": true,
+    "structural_kernel_trace_enabled": true
+  },
+  "first_residual_antecedent": {
+    "document_sha256": "2e189163c45daf10a10a7a44b749374c4f38ec25376951c4cb748bc6cf6237ce",
+    "output_sha256": "0170d2f6b38a85f14f39d2fa9b9dafca681687fac88b6040352468800949e7b7",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_FIRST_RESIDUAL_STRICT_METAL_OUTER_CAPTURE_20260809T034414Z/outer-terminal-receipt.json",
+    "seal_sha256": "1d29db9d1ef180eed105d4664be26b59facc666c596f4e453098e0f4faf3a3f1"
+  },
+  "fixed_suffix_contract_binding": {
+    "document_sha256": "12ff910c9c3299d5b82062d4a09ecfde69cfdcbbad5baa7c3367a35da60c1243",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SOURCE_TOKEN_L0_TRUE_MOE_FIXED_PAYLOAD_PLAN_20260809T052000Z.json",
+    "schema": "hawking.ascension.qwen80_l0_true_moe_fixed_payload_contract.v1",
+    "status": "PREPARED_QWEN80_L0_TRUE_MOE_FIXED_SUFFIX_PAYLOAD_PLAN_NOT_EXECUTED"
+  },
+  "metal_device_or_dispatch_performed": true,
+  "metal_execution_policy": {
+    "complete_layer_or_token_allowed": false,
+    "lease_binding": {
+      "document_sha256": "f6c270bd450fd7a6f42b319d41a1ea833af02ec1abad486ada0dbfc07d8a42ca",
+      "lease_id": "0617957514355e50d2a50c8b9d406531302b9b8f6151f1cf9df9fc993dd5b702",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SOURCE_TOKEN_TRUE_INPUT_ALL_TEN_MOE_GRAPH_LEASE_20260809T061822Z.json",
+      "seal_sha256": "9d5c885007909e5619eae2155533311a9f38adc6cc7186f67dfee28f8d6b8c34"
+    },
+    "outer_launch_authority_binding": {
+      "document_sha256": "d16c712355c70d1340ff7b4fed9ea091fd5709653c201f52c6acbd376f112675",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SOURCE_TOKEN_TRUE_INPUT_ALL_TEN_MOE_GRAPH_OUTER_CAPTURE_20260809T061822Z/outer-launch-authority.json",
+      "seal_sha256": "ce68aea33b06cac859ae193f091ee2440f583e09126c3bf7dca0063df900b33a"
+    },
+    "strict_math_required": true,
+    "timing_or_benchmarking_allowed": false,
+    "tps_or_tg_claim_allowed": false
+  },
+  "mode": "metal",
+  "outer_launch_authority_binding": {
+    "document_sha256": "d16c712355c70d1340ff7b4fed9ea091fd5709653c201f52c6acbd376f112675",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SOURCE_TOKEN_TRUE_INPUT_ALL_TEN_MOE_GRAPH_OUTER_CAPTURE_20260809T061822Z/outer-launch-authority.json",
+    "seal_sha256": "ce68aea33b06cac859ae193f091ee2440f583e09126c3bf7dca0063df900b33a"
+  },
+  "outer_preflight_binding": {
+    "document_sha256": "22194bc685016126f6460f0d78f81cc983885ee677e38b9a47c114ef75d8cf7e",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SOURCE_TOKEN_TRUE_INPUT_ALL_TEN_CPU_PREFLIGHT_20260809T061742Z/outer-preflight.json",
+    "seal_sha256": "319ae49f62a84071e3e65221600270a4c6e7cf90ad1d8f983e292cf4af6126d5"
+  },
+  "outer_reaper_binding": {
+    "lease_id": "0617957514355e50d2a50c8b9d406531302b9b8f6151f1cf9df9fc993dd5b702",
+    "outer_launch_authority": {
+      "document_sha256": "d16c712355c70d1340ff7b4fed9ea091fd5709653c201f52c6acbd376f112675",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SOURCE_TOKEN_TRUE_INPUT_ALL_TEN_MOE_GRAPH_OUTER_CAPTURE_20260809T061822Z/outer-launch-authority.json",
+      "seal_sha256": "ce68aea33b06cac859ae193f091ee2440f583e09126c3bf7dca0063df900b33a"
+    }
+  },
+  "prefix_parity": {
+    "bytes": 8192,
+    "conv_state_max_abs_error": 0.000010967254638671875,
+    "cpu_first_residual_f32le_sha256": "6af9e679c4723c5be23062e0ad3ac87bf27d73d8457d9d4be70a6c26a2028df4",
+    "device_first_residual_f32le_sha256": "0170d2f6b38a85f14f39d2fa9b9dafca681687fac88b6040352468800949e7b7",
+    "elements": 2048,
+    "first_residual_max_abs_error": 3.166496753692627e-8,
+    "initial_conv_state_f32le_sha256": "3a3ed164e42500a1c5b2d0093f0a813d27dc50d038f330cc100a7e70ece2e6e4",
+    "initial_recurrent_state_f32le_sha256": "5647f05ec18958947d32874eeb788fa396a05d0bab7c1b71f112ceb7e9b31eee",
+    "input_hidden_f32le_sha256": "55b11430b1cd283c30e424fb0ecce185fcfe6d624a521244d2a16c838674e8e6",
+    "recurrent_state_max_abs_error": 5.029141902923584e-8,
+    "source_token_id": 1
+  },
+  "raw_bf16_or_safetensors_opened": false,
+  "readback_parity": {
+    "all_ten_route_witness_count": 10,
+    "all_ten_route_witnesses": [
+      {
+        "elements": 2048,
+        "expert_id": 423,
+        "max_abs_error": 2.0489096641540527e-8,
+        "normalized_weight": 0.291953444480896,
+        "output_sha256": "e3a2d4f94e18fb46fee41e81f651bb1687d83778767b6007958998507c41f425",
+        "wave_index": 0
+      },
+      {
+        "elements": 2048,
+        "expert_id": 463,
+        "max_abs_error": 4.284083843231201e-8,
+        "normalized_weight": 0.1298169195652008,
+        "output_sha256": "9e4206c965572ef164b53de489aa3ac7b0239bbf5df652541c7039e088e18869",
+        "wave_index": 1
+      },
+      {
+        "elements": 2048,
+        "expert_id": 367,
+        "max_abs_error": 1.0244548320770264e-8,
+        "normalized_weight": 0.10554979741573334,
+        "output_sha256": "3e37d698ab35cf102977be2d07ef564b837ae604135c3732f89980597cbc3714",
+        "wave_index": 2
+      },
+      {
+        "elements": 2048,
+        "expert_id": 451,
+        "max_abs_error": 5.3551048040390015e-9,
+        "normalized_weight": 0.10270649194717407,
+        "output_sha256": "c2db99f9e9e099038c819cade777ad392e724ea0268c640eac3f6e1b79e168c2",
+        "wave_index": 3
+      },
+      {
+        "elements": 2048,
+        "expert_id": 379,
+        "max_abs_error": 1.5133991837501526e-9,
+        "normalized_weight": 0.06565224379301071,
+        "output_sha256": "4c7142504821d9022633da9d0bf184a304fcd8d3781be7f7de3bfc81d6352963",
+        "wave_index": 4
+      },
+      {
+        "elements": 2048,
+        "expert_id": 2,
+        "max_abs_error": 4.190951585769653e-9,
+        "normalized_weight": 0.06529171764850616,
+        "output_sha256": "ef00850a7e35553a62218ee9bb5fd8e793d97831225c6fc44646923f776e543c",
+        "wave_index": 5
+      },
+      {
+        "elements": 2048,
+        "expert_id": 444,
+        "max_abs_error": 1.5832483768463135e-8,
+        "normalized_weight": 0.06260598450899124,
+        "output_sha256": "6140d876a0fac8346c6491a49938f5c9c5266bd5b6dee38345d63dc3d16eeec3",
+        "wave_index": 6
+      },
+      {
+        "elements": 2048,
+        "expert_id": 237,
+        "max_abs_error": 4.0745362639427185e-9,
+        "normalized_weight": 0.06068083271384239,
+        "output_sha256": "40dc08ce393a81ed875ebc5f596e021f0fdf4cb6407f2928c09ae7f2c3e2979a",
+        "wave_index": 7
+      },
+      {
+        "elements": 2048,
+        "expert_id": 198,
+        "max_abs_error": 1.4435499906539917e-8,
+        "normalized_weight": 0.059149645268917084,
+        "output_sha256": "143ab57d0cce8a940056d5f1d5837b9675c0e26ec714b77726c42cdf3ed55f29",
+        "wave_index": 8
+      },
+      {
+        "elements": 2048,
+        "expert_id": 328,
+        "max_abs_error": 3.725290298461914e-9,
+        "normalized_weight": 0.056592922657728195,
+        "output_sha256": "21f1119d3337b7ce838645c4343cea6ce0acb5ac1ccfc89c7c63410cc0707030",
+        "wave_index": 9
+      }
+    ],
+    "postnorm": {
+      "elements": 2048,
+      "max_abs_error": 3.039836883544922e-6,
+      "output_sha256": "a4998d92bfec21408aa38ecd983ca3156ba4d84d6afb1d4b9c68c242b2779be4",
+      "tolerance": 0.0002
+    },
+    "postnorm_max_abs_error": 3.039836883544922e-6,
+    "routed_sum": {
+      "elements": 2048,
+      "max_abs_error": 5.587935447692871e-8,
+      "output_sha256": "91f5bcbe04c9a59df79305ef0954f8d043f37ee7cadaf9735e7a3a6b45fe871b",
+      "tolerance": 0.00003
+    },
+    "routed_sum_max_abs_error": 5.587935447692871e-8,
+    "router_logits": {
+      "elements": 512,
+      "max_abs_error": 7.152557373046875e-6,
+      "output_sha256": "b33b309b47bf47863a9ed493626337fa451efa9e1d5382edf329cb87b10841ef",
+      "tolerance": 0.0005
+    },
+    "router_logits_max_abs_error": 7.152557373046875e-6,
+    "second_residual": {
+      "elements": 2048,
+      "max_abs_error": 8.344650268554688e-7,
+      "output_sha256": "dae9e008fc5fb62ff3e10f8c89e2623b4c79c7b5fc44af5e1478923ec748f85c",
+      "tolerance": 0.00003
+    },
+    "second_residual_max_abs_error": 8.344650268554688e-7,
+    "shared_expert": {
+      "elements": 2048,
+      "max_abs_error": 8.344650268554688e-7,
+      "output_sha256": "45485eef8b16a6d3fd06cc442758677a7c0fcc24240e89e765f770f937f77454",
+      "tolerance": 0.0003
+    },
+    "shared_expert_max_abs_error": 8.344650268554688e-7
+  },
+  "route_guard_readback": {
+    "expected_ids": [
+      423,
+      463,
+      367,
+      451,
+      379,
+      2,
+      444,
+      237,
+      198,
+      328
+    ],
+    "expected_weights": [
+      0.291953444480896,
+      0.1298169195652008,
+      0.10554979741573334,
+      0.10270649194717407,
+      0.06565224379301071,
+      0.06529171764850616,
+      0.06260598450899124,
+      0.06068083271384239,
+      0.059149645268917084,
+      0.056592922657728195
+    ],
+    "observed_ids": [
+      423,
+      463,
+      367,
+      451,
+      379,
+      2,
+      444,
+      237,
+      198,
+      328
+    ],
+    "observed_weights": [
+      0.29195326566696167,
+      0.12981680035591125,
+      0.10554997622966766,
+      0.10270661115646362,
+      0.06565220654010773,
+      0.06529173254966736,
+      0.06260598450899124,
+      0.06068090349435806,
+      0.05914952978491783,
+      0.056592948734760284
+    ],
+    "passed": true,
+    "value": 1,
+    "weights_max_abs_error": 1.7881393432617188e-7
+  },
+  "same_command_graph": {
+    "command_buffer_fenced_once_after_prefix_and_suffix": true,
+    "encoded_kernel_names": [
+      "qwen_next_direct_packed_input_rmsnorm",
+      "qwen_binary_sign_scale_matvec",
+      "qwen_binary_sign_scale_matvec",
+      "qwen_next_qkvz_rearrange_conv_l2",
+      "qwen_next_ba_to_decay_beta",
+      "qwen_next_gated_delta_decode_single",
+      "qwen_next_deltanet_gated_rmsnorm",
+      "qwen_binary_sign_scale_matvec",
+      "qwen_next_add_residual",
+      "qwen80_postnorm_router_top10_rmsnorm",
+      "qwen80_postnorm_router_top10_matvec",
+      "qwen80_postnorm_router_top10_select",
+      "qwen80_all_ten_routed_wave_route_guard",
+      "qwen80_all_ten_routed_wave_gate_up",
+      "qwen80_all_ten_routed_wave_swiglu",
+      "qwen80_all_ten_routed_wave_down_weighted",
+      "qwen80_shared_expert_wave_gate_up",
+      "qwen80_shared_expert_wave_swiglu",
+      "qwen80_shared_expert_wave_down",
+      "qwen80_shared_expert_wave_scalar_gate",
+      "qwen80_shared_expert_wave_apply_sigmoid_gate",
+      "qwen80_moe_wave_aggregate_second_residual_route_sum",
+      "qwen80_moe_wave_aggregate_second_residual_add_shared_residual"
+    ],
+    "encoded_kernel_order_matches_expected": true,
+    "expected_kernel_names": [
+      "qwen_next_direct_packed_input_rmsnorm",
+      "qwen_binary_sign_scale_matvec",
+      "qwen_binary_sign_scale_matvec",
+      "qwen_next_qkvz_rearrange_conv_l2",
+      "qwen_next_ba_to_decay_beta",
+      "qwen_next_gated_delta_decode_single",
+      "qwen_next_deltanet_gated_rmsnorm",
+      "qwen_binary_sign_scale_matvec",
+      "qwen_next_add_residual",
+      "qwen80_postnorm_router_top10_rmsnorm",
+      "qwen80_postnorm_router_top10_matvec",
+      "qwen80_postnorm_router_top10_select",
+      "qwen80_all_ten_routed_wave_route_guard",
+      "qwen80_all_ten_routed_wave_gate_up",
+      "qwen80_all_ten_routed_wave_swiglu",
+      "qwen80_all_ten_routed_wave_down_weighted",
+      "qwen80_shared_expert_wave_gate_up",
+      "qwen80_shared_expert_wave_swiglu",
+      "qwen80_shared_expert_wave_down",
+      "qwen80_shared_expert_wave_scalar_gate",
+      "qwen80_shared_expert_wave_apply_sigmoid_gate",
+      "qwen80_moe_wave_aggregate_second_residual_route_sum",
+      "qwen80_moe_wave_aggregate_second_residual_add_shared_residual"
+    ],
+    "first_residual_matches_sealed_prefix_antecedent": true,
+    "prefix_dispatches": 9,
+    "same_command_graph_required": true,
+    "same_command_graph_retained": true,
+    "source_token_id": 1,
+    "structural_kernel_trace_non_timed": true,
+    "suffix_dispatches": 14,
+    "total_dispatches": 23
+  },
+  "schema": "hawking.ascension.qwen80_source_token_all_ten_true_moe_graph_device.v1",
+  "source_token_route_authority_binding": {
+    "document_sha256": "3f829bc0d218eca6ceefec389bc2293fa0928bd23e8e7b753b306e809c8c3ab6",
+    "normalized_weights": [
+      0.291953444480896,
+      0.1298169195652008,
+      0.10554979741573334,
+      0.10270649194717407,
+      0.06565224379301071,
+      0.06529171764850616,
+      0.06260598450899124,
+      0.06068083271384239,
+      0.059149645268917084,
+      0.056592922657728195
+    ],
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SOURCE_TOKEN_L0_ROUTE_PLAN_CPU_OUTER_CAPTURE_20260809T045052Z/inner/source-token-route-plan-authority.json",
+    "route_ids": [
+      423,
+      463,
+      367,
+      451,
+      379,
+      2,
+      444,
+      237,
+      198,
+      328
+    ],
+    "seal_sha256": "5b83ba2721d2cdfc8cb60b051a79ef9d69e434b5bf7eb1949c0d5117caaad692"
+  },
+  "status": "EARNED_CURRENT_ADMITTED_QWEN80_SOURCE_TOKEN_LAYER0_TRUE_INPUT_ALL_TEN_ROUTE_SHARED_SECOND_RESIDUAL_STRICT_MATH_METAL_COMPONENT_NOT_COMPLETE_LAYER_OR_TOKEN",
+  "typed_bridge_binding": {
+    "document_sha256": "cdf28f36ed1b4d278dbed4e7f8b4922360d0a25f399d635133dceb04c22c3556",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SOURCE_TOKEN_ALL_TEN_TYPED_BRIDGE_SEAL_20260809T051000Z/typed-source-token-bridge.json",
+    "schema": "hawking.ascension.qwen80_source_token_all_ten_true_moe_source_bridge.v1",
+    "seal_sha256": "329d3022e4319b9b08e3caada93f5ea6730c4bc77298343656cf4f99e2be5310",
+    "status": "SEALED_CURRENT_ADMITTED_QWEN80_SOURCE_TOKEN_ALL_TEN_TRUE_MOE_SOURCE_BRIDGE_READY_FOR_OUTER_PREFLIGHT"
+  }
+}

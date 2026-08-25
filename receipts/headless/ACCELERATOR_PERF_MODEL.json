@@ -1,0 +1,122 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T16:00:59Z",
+ "experiment_class": "ACCEL-AUTOTUNE",
+ "knowledge_level": "INSTANCE",
+ "git_head": "98a4edf884581038de4a9d95589ede766453ce28",
+ "identities": {
+  "experiment": {
+   "id": "LEARNED_PERFORMANCE_MODEL",
+   "obligation": "G047",
+   "steer": "S015 \u00a7113 a learned performance model; \u00a727 retune on material change"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal via MLX"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "kernel autotuning, no ML model involved"
+  },
+  "representation": {
+   "status": "ABSENT",
+   "reason": "dense f32 elementwise chain"
+  },
+  "kernel": {
+   "produced_by": "kernel_forge.fused_chain_source",
+   "primitive": "mul->relu->silu",
+   "n": 16777216
+  },
+  "runtime": {
+   "python": "3.12.6",
+   "model": "ridge on 4 features, closed form"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device"
+  }
+ },
+ "headline": "THE MODEL FAILED THE ONLY QUESTION THAT MATTERED, AND THEN THE PROBE SHOWED IT WAS THE DATA THAT WAS WRONG. Trained on 14 flat variants it predicted the held-out cliff at a 0.34% penalty against an actual 16.88% -- 14.15% error, NOT ranked last. Adding ONE measurement from the cliff region takes that to 2.78% and ranks it last. A performance model interpolates a landscape it has sampled; it cannot discover a cliff outside the sampled region.",
+ "why_this_landscape_makes_the_question_sharp": "the forge re-verdict measured the top cluster FLAT -- best 9 of 15 span 0.65% against ~4.5% arm noise -- and found the whole 20.19% spread driven by ONE configuration. On a flat landscape a model that predicts within 0.65% is not accurate, it is predicting a constant, and so is `predict the mean`. THE ONLY THING WORTH PREDICTING IS THE CLIFF, so the grader keeps the two questions apart; averaging them would let 14 easy points hide the failure on the one that decides.",
+ "prediction_written_before_the_run": {
+  "flat": "model will NOT meaningfully beat the mean baseline; both inside arm noise",
+  "cliff": "direction right (ranked slower than every flat point), MAGNITUDE undershot",
+  "falsifier": "if the cliff is not ranked last the model has no actionable content"
+ },
+ "prediction_verdict": {
+  "flat": "CONFIRMED and vacuous as predicted -- model 1.13% median error against the mean baseline's 1.68%, BOTH far inside 4.5% arm noise, so `beats the baseline` is not evidence of anything",
+  "cliff": "WRONG IN BOTH HALVES. I predicted direction right, magnitude undershot. The direction was not right either: predicted penalty 0.34% against an actual 16.88%, and the cliff was NOT ranked slower than every flat point. MY OWN FALSIFIER FIRED -- 'if the cliff is not ranked last the model has no actionable content on this landscape' -- and it is recorded as fired."
+ },
+ "grade": {
+  "n_flat": 14,
+  "n_cliff": 1,
+  "flat_median_abs_err_pct": 1.1343123922076968,
+  "flat_mean_baseline_err_pct": 1.6840779678334197,
+  "flat_model_beats_baseline": true,
+  "flat_both_inside_arm_noise": true,
+  "cliff_abs_err_pct": 14.15300901410138,
+  "cliff_predicted_slower_than_every_flat_point": false,
+  "means": "a model that beats the mean on the flat points by less than arm noise has NOT been shown to predict anything; the cliff row is the one that decides whether the model can avoid a bad configuration unmeasured"
+ },
+ "then_the_failure_was_diagnosed_rather_than_left_as_a_verdict": {
+  "the_question": "MODELLING failure or DATA failure? tg64_ept1 has 64 elements per threadgroup; the next smallest sampled points are 128 (tg64_ept2, tg128_ept1) and BOTH ARE FAST, so the training data contains NO GRADIENT pointing at the cliff.",
+  "the_test": "measure BELOW the grid: tg32_ept1 (per_tg 32) and tg32_ept2 (per_tg 64), 200 reps each, correctness checked before timing",
+  "measured": {
+   "tg32_ept1": {
+    "ms": 0.9559,
+    "iqr": 4.82,
+    "max_abs_err": 9.5367431640625e-07,
+    "correct": true
+   },
+   "tg32_ept2": {
+    "ms": 0.5954,
+    "iqr": 7.99,
+    "max_abs_err": 9.5367431640625e-07,
+    "correct": true
+   },
+   "tg64_ept1": {
+    "ms": 0.6002,
+    "iqr": 8.04,
+    "max_abs_err": 9.5367431640625e-07,
+    "correct": true
+   }
+  },
+  "prediction_A_confirmed": "the cliff is an OCCUPANCY THRESHOLD in elements per threadgroup: 32 -> 0.9559 ms, 64 -> 0.5954, 128 -> 0.512, >=256 -> 0.511-0.522",
+  "the_sharpest_evidence_is_a_collapse": "tg32_ept2 and tg64_ept1 have DIFFERENT threadgroup sizes and DIFFERENT elements per thread but the SAME per_tg of 64, and they measure 0.5954 and 0.5955 -- agreeing to 0.02%. Two configurations that differ in both parameters landing on the same time is much stronger than a correlation: per_tg is the controlling variable and the feature bet was right.",
+  "reproducibility_check": "tg64_ept1 re-measured here at 0.6002 ms against 0.5955 recorded on a different day, 0.8% apart"
+ },
+ "retraining_with_one_cliff_sample": {
+  "results": {
+   "tg32_ept1": {
+    "cliff_pred_ms": 0.6751,
+    "cliff_actual_ms": 0.5955,
+    "abs_err_pct": 13.37,
+    "ranked_slower_than_every_flat_point": true
+   },
+   "tg32_ept2": {
+    "cliff_pred_ms": 0.5789,
+    "cliff_actual_ms": 0.5955,
+    "abs_err_pct": 2.78,
+    "ranked_slower_than_every_flat_point": true
+   }
+  },
+  "reading": "adding tg32_ept2 (per_tg 64, the SAME as the target) gives 2.78% error and ranks the cliff last -- but that is INTERPOLATION AT A KNOWN POINT, not discovery. Adding tg32_ept1 (per_tg 32) still ranks it last but OVERSHOOTS by 13.37%, because the true relationship is STEEPER THAN LINEAR in 1/per_tg: the step 32->64 costs 0.361 ms while 64->128 costs 0.083, so a linear term captures the DIRECTION and not the CURVATURE.",
+  "the_actionable_conclusion": "the model becomes useful exactly once one sample from the cliff region exists -- which is the measurement autotuning would have made anyway. On THIS landscape a learned performance model does not replace search; it would only compress a search that has already been run once."
+ },
+ "what_this_licenses_in_the_forge": {
+  "change": "kernel_forge's THREADGROUP_PRIOR stops at 64, and that exclusion is now MEASURED rather than assumed -- the comment records the cliff shape",
+  "not_changed": "tg32 is NOT added to the prior. A prior's job is to skip known-bad configurations, and adding measured-bad points to it would be backwards. What changed is that tg64_ept1's badness is no longer an unexplained outlier but the visible edge of a measured occupancy cliff.",
+  "champion_unaffected": "every tg32 variant is slower than every point in the top cluster, so no champion anywhere moves"
+ },
+ "claim_boundary": {
+  "one_primitive": "a fused mul->relu->silu chain at 2^24 f32, MEMORY BOUND. A compute-bound or shape-sensitive primitive could have a landscape with real structure to learn, and nothing here says otherwise.",
+  "smallest_model_that_answers_the_question": "ridge on 4 features over 15 points. NOT a neural cost model, not Bayesian, no uncertainty estimates. 15 points does not support more, and a model with more parameters than the landscape has structure would be fitting the noise the forge spent 200 reps per candidate measuring.",
+  "arm_quality": "the new tg32_ept2 and tg64_ept1 arms carry 7.99% and 8.04% IQR, inside the 10% gate but noticeably above the flat cluster's ~4.5%; the 0.02% agreement between them is far inside both.",
+  "still_not_built": "\u00a7113's model in the sense of something that GENERALISES across primitives, shapes or machines. This one is fit per-landscape."
+ },
+ "pass": true
+}

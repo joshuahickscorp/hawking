@@ -1,0 +1,22 @@
+{
+  "claim_boundary": {
+    "component_uses_deterministic_oracle_inputs_not_model_weights": true,
+    "not_100_tps_or_tg3": true,
+    "not_full_model_or_manager_qualification": true,
+    "qkv_projection_rope_kv_write_moe_residual_and_decoder_not_run": true
+  },
+  "device": "Apple M3 Ultra",
+  "max_abs_output_error": 2.086162567138672e-7,
+  "official_config": {
+    "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/../../workspace/campaign/records/runs/qwen-30b/Qwen3-Coder-30B-A3B-Instruct/config.json",
+    "sha256": "e2c8d8eea39471785cd93379d8b48241ad7dcda299013155dd02526e34a0de62"
+  },
+  "official_qwen30_geometry": {
+    "head_dim": 128,
+    "kv_heads": 4,
+    "query_heads": 32,
+    "sequence_length": 64
+  },
+  "schema": "hawking.ascension.qwen30_gqa_metal_component_probe.v1",
+  "status": "PASS_DIRECT_METAL_QWEN30_GQA_ATTENTION_COMPONENT_NOT_FULL_MODEL_NOT_TPS_GATE"
+}

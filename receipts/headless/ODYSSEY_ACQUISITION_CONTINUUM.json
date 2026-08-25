@@ -1,0 +1,130 @@
+{
+ "schema": "hawking.odyssey.acquisition_continuum.v1",
+ "generated_at": "2026-08-25T07:43:33Z",
+ "generated_by": "tools/odyssey/acquisition_continuum.py",
+ "obligation": "G041 \u2014 ODYSSEY_ACQUISITION_CONTINUUM",
+ "hand_authored": false,
+ "git_head": "cc6381d36c7e2028f8134eccedde553cab1aed63",
+ "queue": {
+  "verified_resident": [
+   "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+   "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+   "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb"
+  ],
+  "n_verified_resident": 3,
+  "in_flight": [
+   {
+    "slug": "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471",
+    "gib": 40.62
+   },
+   {
+    "slug": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+    "gib": 32.92
+   },
+   {
+    "slug": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+    "gib": 30.57
+   },
+   {
+    "slug": "moonshotai--Kimi-K3@9f62e4e9fffb",
+    "gib": 23.86
+   },
+   {
+    "slug": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+    "gib": 20.72
+   },
+   {
+    "slug": "Qwen--Qwen2.5-72B-Instruct@495f39366efe",
+    "gib": 7.08
+   },
+   {
+    "slug": "zai-org--GLM-4.5@cbb2c7cfb52f",
+    "gib": 2.52
+   },
+   {
+    "slug": "zai-org--GLM-4.5-Air@a24ceef6ce4f",
+    "gib": 2.05
+   }
+  ],
+  "n_in_flight": 8,
+  "metadata_resolved": [
+   "Qwen--Qwen3-0.6B@c1899de289a0.json",
+   "Qwen--Qwen3-30B-A3B@ad44e777bcd1.json",
+   "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba.json",
+   "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb.json"
+  ],
+  "n_metadata_resolved": 4,
+  "depth_rule": "#2 verified, #3 downloading, #4+ resolved",
+  "depth_satisfied": true
+ },
+ "model_2": {
+  "repo": "Qwen/Qwen3-30B-A3B",
+  "verified_by": "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+  "what_it_proved": "cold vs transfer on real routed activations",
+  "resident": true
+ },
+ "capacity": {
+  "rule": "recompute physical free space before every acquisition; never trust a cached number (\u00a783)",
+  "tier2_budget_bytes": 3500000000000,
+  "protected_headroom_gib": 300,
+  "free_now_gib": 4251.1,
+  "lake_used_gib": 289.38,
+  "allocation_used_pct": 8.88,
+  "guard_exercised": {
+   "small_1_gib": {
+    "admitted": true,
+    "detail": {
+     "budget_ok": true,
+     "budget_reason": "tier2 ok: used 310568574976 + 1073741824 <= 3500000000000",
+     "free_bytes": 4564545286144,
+     "free_gib": 4251.1,
+     "headroom_after_gib": 4250.1,
+     "headroom_ok": true
+    }
+   },
+   "impossible_100_tb": {
+    "admitted": false,
+    "detail": {
+     "budget_ok": false,
+     "budget_reason": "tier2 budget: 107684818030592 would exceed 3500000000000 (used 310635630592, request 107374182400000)",
+     "free_bytes": 4564478230528,
+     "free_gib": 4251.0,
+     "headroom_after_gib": -95749.0,
+     "headroom_ok": false
+    }
+   },
+   "would_breach_headroom": {
+    "admitted": false,
+    "detail": {
+     "budget_ok": false,
+     "budget_reason": "tier2 budget: 4767806734336 would exceed 3500000000000 (used 310635630592, request 4457171103744)",
+     "free_bytes": 4564478230528,
+     "free_gib": 4251.0,
+     "headroom_after_gib": 99.9,
+     "headroom_ok": false
+    }
+   }
+  },
+  "guard_can_refuse": true,
+  "why_exercised": "a capacity gate that has never returned False is not known to work. Two refusals are forced here: an impossible size, and a size that fits the budget but would eat the protected headroom."
+ },
+ "census_before_gpu": {
+  "rule": "an architecture census exists before the GPU reaches a specimen",
+  "censused": [
+   "Qwen--Qwen3-30B-A3B",
+   "Qwen--Qwen3-VL-30B-A3B-Instruct",
+   "tiiuae--Falcon-H1-7B-Instruct"
+  ],
+  "resident_without_census": [],
+  "satisfied": true,
+  "receipt": "receipts/headless/ARCHITECTURE_RECOGNIZER.json"
+ },
+ "non_blocking": {
+  "rule": "downloads never wait for retirement",
+  "mechanism": "transfers are SUSPENDED for a protected GPU window and resumed immediately after, never cancelled and never waited out",
+  "resume_guarantees": "receipts/headless/GPU_CLEANLINESS_OVERRIDE.json \u2014 3/3",
+  "resumability_is_structural": "huggingface_hub file_download.py:1828 opens the .incomplete file in append mode and re-requests a byte Range, so a suspended transfer loses nothing",
+  "windows_survived": "G005 qualification and two concurrency sweeps ran inside protected windows; the fill resumed after each with zero processes left stopped"
+ },
+ "pass": true
+}

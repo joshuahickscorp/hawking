@@ -1,0 +1,30 @@
+{
+ "obligation": "G3 -- shared-program MLP, verified at FULL 64-layer scale",
+ "what": "One shared SwiGLU operator (gate/up/down) reused across ALL 64 layers + per-layer FiLM code (gamma,beta), trained on 64-layer pooled MLP teacher function, held-out on unseen tokens.",
+ "setup": "64 layers x 2000 tokens; 80/20 token split -> train 102400, held 25600. Teacher F(h)=down(silu(gate@h)*up@h). q3 control = group-64 absmax 3-level on each of gate/up/down.",
+ "result": {
+  "q3_control_held_out": 0.3844,
+  "shared_m4096_active25.6MB_24pct": {
+   "held": 0.3858,
+   "train": 0.077,
+   "gap": 0.31,
+   "verdict": "ties q3"
+  },
+  "shared_m6144_active38.3MB_35pct": {
+   "held": 0.371,
+   "train": 0.074,
+   "gap": 0.3,
+   "verdict": "BEATS q3 held-out"
+  }
+ },
+ "headline": "At full 64-layer scale a single shared operator (m=6144, 38.3 MB group-64 q3 + 1.6 MB codes) BEATS the q3 control held-out (0.371 vs 0.384) at 35% of q3 active MLP bytes = 2.8x fewer MLP DRAM bytes/token. The q3 active-byte wall is broken at FULL scale, not just the 15 self-similar layers of the first G3 preview.",
+ "honest_downgrade": "The 15-layer preview reported 24% active bytes and a 0.026 generalization gap. Those 15 layers (L4,8..60) are more self-similar than all 64. At full scale the operator needs m=6144 not 4096 (35% not 24%) and shows a large train/held gap (0.074 vs 0.371) = pure token-memorization, i.e. regularization headroom. The core claim (shared operator beats q3 held-out at far fewer active bytes) holds and is now proven at full scale.",
+ "physics_projection": "MLP is ~7 GB of the q3 token's ~11.7 GB active bytes. Shared-op MLP = 38.3 MB if cache-resident across 64 dispatches, or ~2.45 GB if re-read per layer. Cache-resident -> token active ~4.74 GB -> ~2.5x TPS -> ~75-85 TPS. Not cache-resident -> ~7.15 GB -> ~1.6x -> ~50 TPS. Either is a real successor; the Metal residency measurement (G10) decides which.",
+ "owes": [
+  "G11/G12 assembled-patient Doctor: 64 correlated-error MLP replacements (same operator) may compound differently than q3's independent errors -- the make-or-break rigor gate, needs the Metal one-layer swap.",
+  "regularization/mixture: the 0.30 train/held gap says weight-decay + early-stop (tuned run in flight, saving checkpoints) and possibly a K=2 operator split (mixture, G6) can push held-out below 0.371.",
+  "G2 task-family split: captures are prose-heavy; cross-task (code/reasoning) generalization untested."
+ ],
+ "next": "tuned checkpoint (in flight) -> G10 Metal shared-op kernel (blueprint lane in flight) -> G12 one-layer decode swap + Doctor -> G16/17/18 TPS ladder.",
+ "_REFUTED_2026-08-18": "The 'beats q3 held-out' headline in this receipt does NOT survive the adversarial methodology audit (see METHODOLOGY_AUDIT.json): held-set leakage (D3a), operator-vs-q3 aggregation mismatch (D5), and wrong MLP input (post_input_norm vs post_attn_norm) each swing more than the margin, all favoring the operator; and the eval never left the prose family (D3b). Re-testing honestly (cross-family, correct input, consistent aggregation) via honest_eval.py/honest_grouped.py on capture_diverse2. What survives: the active-byte accounting (operator 38.3MB vs q3 108.6MB/layer). Do NOT cite the beats-q3 numbers here."
+}

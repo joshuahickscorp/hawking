@@ -1,0 +1,349 @@
+{
+  "commit": "3a526bc8e755876e7a9ce44f5c132e66472abc18",
+  "controls": {
+    "per_position": "column k compared against a dedicated K=1 run on that position's activations (catches a kernel that collapses k)",
+    "uniform_position": "all K activation columns identical; every output column must equal the K=1 answer exactly (catches a kernel that writes one column K times)"
+  },
+  "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait",
+  "method": "Same thread map, launch geometry and per-weight arithmetic as qwen_uniform_q4_group64_matvec_geo_tpr64_tg128. Each decoded weight is multiplied into K accumulators instead of one. Timing is GPUEndTime-GPUStartTime on completed command buffers, median of 5.",
+  "question": "Does a K-column geo_tpr64 kernel move the same bytes in the same time?",
+  "reps": 5,
+  "results": [
+    {
+      "by_k": [
+        {
+          "achieved_gb_s": 632.9540979818391,
+          "amortization_x": 1.0,
+          "code_bytes_moved": 4294963200,
+          "gpu_ns_reps": [
+            10982125,
+            6785584,
+            6784834,
+            6794625,
+            6783250
+          ],
+          "k": 1,
+          "k1_serial_ns_for_same_k_positions": 6785584,
+          "kernel": "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
+          "median_gpu_ns": 6785584,
+          "ns_per_position": 6785584.0,
+          "per_position_control_holds": true,
+          "per_position_max_abs_err": 0.0,
+          "uniform_control_holds": true,
+          "uniform_position_max_abs_err": 0.0
+        },
+        {
+          "achieved_gb_s": 346.26442784170445,
+          "amortization_x": 1.094121766320058,
+          "code_bytes_moved": 4294963200,
+          "gpu_ns_reps": [
+            12408959,
+            12392375,
+            12403709,
+            12401625,
+            12421000
+          ],
+          "k": 2,
+          "k1_serial_ns_for_same_k_positions": 13571168,
+          "kernel": "qwen_uniform_q4_group64_matmul_k2_geo_tpr64_tg128",
+          "median_gpu_ns": 12403709,
+          "ns_per_position": 6201854.5,
+          "per_position_control_holds": true,
+          "per_position_max_abs_err": 0.0,
+          "uniform_control_holds": true,
+          "uniform_position_max_abs_err": 0.0
+        },
+        {
+          "achieved_gb_s": 188.09714567252422,
+          "amortization_x": 1.1886937537636175,
+          "code_bytes_moved": 4294963200,
+          "gpu_ns_reps": [
+            22838500,
+            22833750,
+            22870125,
+            22810625,
+            22796875
+          ],
+          "k": 4,
+          "k1_serial_ns_for_same_k_positions": 27142336,
+          "kernel": "qwen_uniform_q4_group64_matmul_k4_geo_tpr64_tg128",
+          "median_gpu_ns": 22833750,
+          "ns_per_position": 5708437.5,
+          "per_position_control_holds": true,
+          "per_position_max_abs_err": 0.0,
+          "uniform_control_holds": true,
+          "uniform_position_max_abs_err": 0.0
+        },
+        {
+          "achieved_gb_s": 65.79155540152149,
+          "amortization_x": 0.8315491516531323,
+          "code_bytes_moved": 4294963200,
+          "gpu_ns_reps": [
+            64642250,
+            65484916,
+            65483750,
+            65281375,
+            65202750
+          ],
+          "k": 8,
+          "k1_serial_ns_for_same_k_positions": 54284672,
+          "kernel": "qwen_uniform_q4_group64_matmul_k8_geo_tpr64_tg128",
+          "median_gpu_ns": 65281375,
+          "ns_per_position": 8160171.875,
+          "per_position_control_holds": true,
+          "per_position_max_abs_err": 0.0,
+          "uniform_control_holds": true,
+          "uniform_position_max_abs_err": 0.0
+        }
+      ],
+      "by_rk": [
+        {
+          "achieved_code_gb_s": 674.6678508668103,
+          "activation_bytes": 34359705600,
+          "activation_bytes_per_code_byte": 4.0,
+          "amortization_x": 1.0659032827466868,
+          "gpu_ns_reps": [
+            6504750,
+            6366041,
+            6360625,
+            6372666,
+            6359875
+          ],
+          "k": 1,
+          "kernel": "qwen_uniform_q4_group64_matmul_r2k1_geo_tpr64_tg128",
+          "median_gpu_ns": 6366041,
+          "ns_per_position": 6366041.0,
+          "per_position_control_holds": true,
+          "per_position_max_abs_err": 0.0,
+          "r": 2
+        },
+        {
+          "achieved_code_gb_s": 693.7290395525854,
+          "activation_bytes": 34359705600,
+          "activation_bytes_per_code_byte": 2.0,
+          "amortization_x": 1.0960179288901453,
+          "gpu_ns_reps": [
+            6267000,
+            6166791,
+            6186584,
+            6191750,
+            6191125
+          ],
+          "k": 1,
+          "kernel": "qwen_uniform_q4_group64_matmul_r4k1_geo_tpr64_tg128",
+          "median_gpu_ns": 6191125,
+          "ns_per_position": 6191125.0,
+          "per_position_control_holds": true,
+          "per_position_max_abs_err": 0.0,
+          "r": 4
+        },
+        {
+          "achieved_code_gb_s": 706.6651683152645,
+          "activation_bytes": 34359705600,
+          "activation_bytes_per_code_byte": 1.0,
+          "amortization_x": 1.1164556333049294,
+          "gpu_ns_reps": [
+            6092209,
+            6096750,
+            6074291,
+            6077791,
+            6066834
+          ],
+          "k": 1,
+          "kernel": "qwen_uniform_q4_group64_matmul_r8k1_geo_tpr64_tg128",
+          "median_gpu_ns": 6077791,
+          "ns_per_position": 6077791.0,
+          "per_position_control_holds": true,
+          "per_position_max_abs_err": 0.0,
+          "r": 8
+        },
+        {
+          "achieved_code_gb_s": 513.8335710506916,
+          "activation_bytes": 34359705600,
+          "activation_bytes_per_code_byte": 0.5,
+          "amortization_x": 0.811802266055373,
+          "gpu_ns_reps": [
+            8359125,
+            8355375,
+            8358875,
+            8356000,
+            8358666
+          ],
+          "k": 1,
+          "kernel": "qwen_uniform_q4_group64_matmul_r16k1_geo_tpr64_tg128",
+          "median_gpu_ns": 8358666,
+          "ns_per_position": 8358666.0,
+          "per_position_control_holds": true,
+          "per_position_max_abs_err": 0.0,
+          "r": 16
+        },
+        {
+          "achieved_code_gb_s": 562.0576064908722,
+          "activation_bytes": 68719411200,
+          "activation_bytes_per_code_byte": 8.0,
+          "amortization_x": 1.7759822024471634,
+          "gpu_ns_reps": [
+            7678209,
+            7641541,
+            7641500,
+            7632875,
+            7635250
+          ],
+          "k": 2,
+          "kernel": "qwen_uniform_q4_group64_matmul_r2k2_geo_tpr64_tg128",
+          "median_gpu_ns": 7641500,
+          "ns_per_position": 3820750.0,
+          "per_position_control_holds": true,
+          "per_position_max_abs_err": 0.0,
+          "r": 2
+        },
+        {
+          "achieved_code_gb_s": 278.65848309868295,
+          "activation_bytes": 137438822400,
+          "activation_bytes_per_code_byte": 16.0,
+          "amortization_x": 1.7610027898527216,
+          "gpu_ns_reps": [
+            15391959,
+            15413000,
+            15398875,
+            15431750,
+            15434916
+          ],
+          "k": 4,
+          "kernel": "qwen_uniform_q4_group64_matmul_r2k4_geo_tpr64_tg128",
+          "median_gpu_ns": 15413000,
+          "ns_per_position": 3853250.0,
+          "per_position_control_holds": true,
+          "per_position_max_abs_err": 0.0,
+          "r": 2
+        },
+        {
+          "achieved_code_gb_s": 648.6390092879257,
+          "activation_bytes": 68719411200,
+          "activation_bytes_per_code_byte": 4.0,
+          "amortization_x": 2.049560975609756,
+          "gpu_ns_reps": [
+            6621500,
+            6606875,
+            6733875,
+            6614000,
+            6628000
+          ],
+          "k": 2,
+          "kernel": "qwen_uniform_q4_group64_matmul_r4k2_geo_tpr64_tg128",
+          "median_gpu_ns": 6621500,
+          "ns_per_position": 3310750.0,
+          "per_position_control_holds": true,
+          "per_position_max_abs_err": 0.0,
+          "r": 4
+        },
+        {
+          "achieved_code_gb_s": 405.73700988060745,
+          "activation_bytes": 137438822400,
+          "activation_bytes_per_code_byte": 8.0,
+          "amortization_x": 2.5640848913012264,
+          "gpu_ns_reps": [
+            10577125,
+            10585584,
+            10587584,
+            10654916,
+            10583750
+          ],
+          "k": 4,
+          "kernel": "qwen_uniform_q4_group64_matmul_r4k4_geo_tpr64_tg128",
+          "median_gpu_ns": 10585584,
+          "ns_per_position": 2646396.0,
+          "per_position_control_holds": true,
+          "per_position_max_abs_err": 0.0,
+          "r": 4
+        },
+        {
+          "achieved_code_gb_s": 108.24739017590692,
+          "activation_bytes": 274877644800,
+          "activation_bytes_per_code_byte": 16.0,
+          "amortization_x": 1.3681546958435242,
+          "gpu_ns_reps": [
+            39677291,
+            39667416,
+            39684500,
+            39664334,
+            39776041
+          ],
+          "k": 8,
+          "kernel": "qwen_uniform_q4_group64_matmul_r4k8_geo_tpr64_tg128",
+          "median_gpu_ns": 39677291,
+          "ns_per_position": 4959661.375,
+          "per_position_control_holds": true,
+          "per_position_max_abs_err": 0.0,
+          "r": 4
+        },
+        {
+          "achieved_code_gb_s": 183.93583577862313,
+          "activation_bytes": 137438822400,
+          "activation_bytes_per_code_byte": 4.0,
+          "amortization_x": 1.1623960496667842,
+          "gpu_ns_reps": [
+            23350334,
+            23350875,
+            23463125,
+            23346500,
+            23349584
+          ],
+          "k": 4,
+          "kernel": "qwen_uniform_q4_group64_matmul_r8k4_geo_tpr64_tg128",
+          "median_gpu_ns": 23350334,
+          "ns_per_position": 5837583.5,
+          "per_position_control_holds": true,
+          "per_position_max_abs_err": 0.0,
+          "r": 8
+        },
+        {
+          "achieved_code_gb_s": 105.85440766003069,
+          "activation_bytes": 274877644800,
+          "activation_bytes_per_code_byte": 8.0,
+          "amortization_x": 1.337909437635939,
+          "gpu_ns_reps": [
+            40829584,
+            40574250,
+            41125541,
+            40567084,
+            40403916
+          ],
+          "k": 8,
+          "kernel": "qwen_uniform_q4_group64_matmul_r8k8_geo_tpr64_tg128",
+          "median_gpu_ns": 40574250,
+          "ns_per_position": 5071781.25,
+          "per_position_control_holds": true,
+          "per_position_max_abs_err": 0.0,
+          "r": 8
+        },
+        {
+          "achieved_code_gb_s": 187.51203667321545,
+          "activation_bytes": 137438822400,
+          "activation_bytes_per_code_byte": 2.0,
+          "amortization_x": 1.1849961143855055,
+          "gpu_ns_reps": [
+            22915500,
+            23046916,
+            22855500,
+            22905000,
+            22890375
+          ],
+          "k": 4,
+          "kernel": "qwen_uniform_q4_group64_matmul_r16k4_geo_tpr64_tg128",
+          "median_gpu_ns": 22905000,
+          "ns_per_position": 5726250.0,
+          "per_position_control_holds": true,
+          "per_position_max_abs_err": 0.0,
+          "r": 16
+        }
+      ],
+      "code_bytes": 4294963200,
+      "cols": 5120,
+      "payload_mib": 4096,
+      "rows": 1677720
+    }
+  ],
+  "schema": "hawking.nos.matmul_k_amortization.v1",
+  "why": "NX_TPS_FRONTIER.json: at K=1 no capability-preserving representation reaches 100 TPS on this machine. K>1 is the only axis that moves the weight-movement wall."
+}

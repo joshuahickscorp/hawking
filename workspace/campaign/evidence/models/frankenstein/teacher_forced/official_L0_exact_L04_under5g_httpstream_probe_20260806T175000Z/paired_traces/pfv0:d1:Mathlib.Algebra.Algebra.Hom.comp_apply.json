@@ -1,0 +1,331 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 232,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Formalize and prove the following Lean 4 statement.\n\nName: comp_apply\nStatement:\ncomp_apply (φ₁ : B →ₐ[R] C) (φ₂ : A →ₐ[R] B) (p : A) : φ₁.comp φ₂ p = φ₁ (φ₂ p)\n\nProvide a valid proof term or tactic script.",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.Hom.comp_apply",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "train",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Formalize and prove the following Lean 4 statement.\n\nName: comp_apply\nStatement:\ncomp_apply (φ₁ : B →ₐ[R] C) (φ₂ : A →ₐ[R] B) (p : A) : φ₁.comp φ₂ p = φ₁ (φ₂ p)\n\nProvide a valid proof term or tactic script.",
+  "proof_plan": null,
+  "recorded_at": "2026-08-06T17:05:03.669411Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "c1d23de869724c7397f94b134f46dc39954d55fbb8ccf9ee31d872d8c96270bd",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 5.400574207305908,
+          "rank": 0,
+          "token_id": 21
+        },
+        {
+          "logit": 4.882569789886475,
+          "rank": 1,
+          "token_id": 23
+        },
+        {
+          "logit": 4.85031795501709,
+          "rank": 2,
+          "token_id": 20
+        },
+        {
+          "logit": 4.20463752746582,
+          "rank": 3,
+          "token_id": 18
+        },
+        {
+          "logit": 3.8426270484924316,
+          "rank": 4,
+          "token_id": 60
+        },
+        {
+          "logit": 3.7813000679016113,
+          "rank": 5,
+          "token_id": 24
+        },
+        {
+          "logit": 3.7706141471862793,
+          "rank": 6,
+          "token_id": 2
+        },
+        {
+          "logit": 3.6378371715545654,
+          "rank": 7,
+          "token_id": 22
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.1839570552110672,
+          "l2": 3.5686938762664795,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "764f44d25e11f4604899b9eceba93c168de046ac6fb68489d1c4affd07c8043c",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.2288963347673416,
+          "l2": 3.309516668319702,
+          "layer": 1,
+          "mlp_type": "dense",
+          "sample_sha256": "cbc828a6990b8f0d47ea62f6b286a1a3ee49087fd3ac3f8018047067ceeefeea",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.2548713684082031,
+          "l2": 3.1726040840148926,
+          "layer": 2,
+          "mlp_type": "dense",
+          "sample_sha256": "3ea1ffbc7bc66754193ec548dcefeb7fb4a4dbe102125d4a752212b8e9c56b07",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.2849278748035431,
+          "l2": 3.2784950733184814,
+          "layer": 3,
+          "mlp_type": "sparse",
+          "sample_sha256": "be932b829b47cc21266fa8e7ee9c16c57ed2e60f28a8df65e6aeec71b4d134ad",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.3040565550327301,
+          "l2": 3.474677562713623,
+          "layer": 4,
+          "mlp_type": "sparse",
+          "sample_sha256": "c1fe2edff82f41098035776d07d31bb3f63301dca2d873c6eec529a6030e7d09",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": {
+        "expert_counts": {
+          "0": 2,
+          "100": 2,
+          "101": 2,
+          "102": 1,
+          "11": 4,
+          "110": 1,
+          "111": 1,
+          "114": 1,
+          "118": 1,
+          "126": 1,
+          "128": 2,
+          "129": 1,
+          "13": 5,
+          "130": 4,
+          "132": 1,
+          "133": 1,
+          "14": 4,
+          "140": 4,
+          "141": 1,
+          "142": 2,
+          "147": 1,
+          "148": 4,
+          "149": 3,
+          "15": 4,
+          "154": 1,
+          "155": 1,
+          "156": 2,
+          "157": 1,
+          "158": 2,
+          "163": 3,
+          "166": 3,
+          "167": 8,
+          "169": 1,
+          "170": 1,
+          "171": 1,
+          "172": 2,
+          "173": 1,
+          "176": 1,
+          "177": 2,
+          "183": 3,
+          "184": 2,
+          "185": 2,
+          "187": 1,
+          "19": 2,
+          "190": 1,
+          "193": 1,
+          "194": 1,
+          "197": 1,
+          "199": 2,
+          "2": 3,
+          "20": 1,
+          "200": 2,
+          "201": 6,
+          "203": 1,
+          "206": 3,
+          "21": 2,
+          "213": 2,
+          "214": 4,
+          "217": 1,
+          "218": 9,
+          "219": 2,
+          "220": 1,
+          "223": 2,
+          "224": 2,
+          "227": 1,
+          "229": 4,
+          "230": 2,
+          "231": 1,
+          "237": 1,
+          "238": 2,
+          "243": 1,
+          "248": 4,
+          "249": 1,
+          "250": 4,
+          "251": 1,
+          "252": 2,
+          "253": 1,
+          "254": 1,
+          "26": 9,
+          "27": 1,
+          "28": 6,
+          "3": 2,
+          "30": 1,
+          "32": 1,
+          "34": 2,
+          "37": 1,
+          "38": 2,
+          "41": 3,
+          "43": 2,
+          "47": 2,
+          "48": 1,
+          "5": 1,
+          "50": 1,
+          "53": 1,
+          "54": 2,
+          "56": 1,
+          "57": 2,
+          "58": 1,
+          "60": 5,
+          "61": 8,
+          "62": 4,
+          "63": 2,
+          "64": 1,
+          "66": 1,
+          "69": 1,
+          "7": 2,
+          "70": 2,
+          "72": 1,
+          "75": 2,
+          "77": 2,
+          "78": 1,
+          "8": 1,
+          "82": 2,
+          "83": 3,
+          "88": 2,
+          "90": 1,
+          "92": 1,
+          "95": 1,
+          "97": 2,
+          "98": 3
+        },
+        "load_balance_cv": null,
+        "note": "route stats are student-native; never copy GLM router weights",
+        "source_layer": 3,
+        "top_k": 8
+      },
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

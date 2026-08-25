@@ -1,0 +1,1149 @@
+{
+  "schema": "hawking.ascension.qwen30_packed_matvec_reduction_exactness_cpu.v1",
+  "status": "CPU_ONLY_SOURCE_BOUND_REDUCTION_CHARACTERIZATION_NOT_GPU_OR_RUNTIME_RECEIPT",
+  "source_binding": {
+    "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/QWEN30_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+    "manifest_document_sha256": "68f8371374bc7c836d7629ab29ee9ac01b2349e9d4bcd37d4941d50399e8f0fa",
+    "expected_manifest_document_sha256": "68f8371374bc7c836d7629ab29ee9ac01b2349e9d4bcd37d4941d50399e8f0fa",
+    "manifest_seal_sha256": "3321a99d719e70499663b7bfebe14dd6c732bfc533bb05b9277eb398e44d6357",
+    "expected_manifest_seal_sha256": "3321a99d719e70499663b7bfebe14dd6c732bfc533bb05b9277eb398e44d6357",
+    "manifest_schema": "hawking.ascension.qwen30_complete_binary_gravity.v1",
+    "source_body_audit_seal_sha256": "00ed3e495416c2cbafbcdb7800528e15f243b1a13f5f4af13240109c8fc69f7b",
+    "source_revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120"
+  },
+  "candidate_contract": {
+    "shader_path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen_binary_precision_safe_tiled_candidate.metal",
+    "shader_sha256": "6e1f389e834e5c455c3559f3c0ef398553f3c15e5c901ba3aeff29cd2026a7c8",
+    "shader_entry_point": "qwen_binary_sign_scale_matvec_tiled_neumaier_candidate",
+    "geometry": "one 32-lane SIMDgroup owns one row; lane N owns group N; eight rows per 256-thread threadgroup; admitted Qwen30 bound: group_size=128 and groups_per_row<=32",
+    "cpu_algorithm": "serial scalar within each 128-value group plus deterministic group-order Neumaier compensation; not bit-identical to scalar control by construction",
+    "unregistered": true,
+    "gpu_execution_performed": false
+  },
+  "cpu_precision_gate": {
+    "status": "CPU_PRECISION_GATE_PASSED_NOT_GPU_OR_RUNTIME_ADMISSION",
+    "projection_input_cases": 21,
+    "real_expert_chain_cases": 3,
+    "all_cases_passed": true,
+    "rule": "All source-bound cases must be finite and tiled-Neumaier max-absolute and relative-L2 error against the FP64 reference must be no worse than scalar control. This numerical CPU gate does not establish Metal parity or full-model token parity."
+  },
+  "projection_reports": [
+    {
+      "binding": {
+        "category": "attention_q",
+        "tensor_name": "model.layers.0.self_attn.q_proj.weight",
+        "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/tensors/25a11ec7e7ff11226b21fd98fb66b49f82731cfc425407135962753bfce1a169.hq30g",
+        "artifact_sha256": "57fe1eb8f3f1c5e77231507aba60154855df6324b1749cdd6d8f095d489e90f6",
+        "source_shard_sha256": "c8f4ee157c2bdb00521d0f422c08ef16f0f3f5f7e234786d829401d627d2e167",
+        "shape": [
+          4096,
+          2048
+        ],
+        "group_size": 128,
+        "groups_per_row": 16,
+        "layout_magic": "HQ30G1B1"
+      },
+      "input_reports": [
+        {
+          "input_family": "bounded_seeded_f32",
+          "sampled_rows": [
+            0,
+            1,
+            585,
+            1365,
+            2048,
+            2730,
+            4094,
+            4095
+          ],
+          "scalar_control": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 2.678425516933203e-7,
+            "max_abs_vs_scalar_control": 0.0,
+            "max_ulp_vs_scalar_control": 0,
+            "relative_l2_vs_fp64_reference": 4.938472467197883e-7
+          },
+          "rejected_simdgroup_balanced_tree_proxy": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 1.1883093975484371e-7,
+            "max_abs_vs_scalar_control": 2.086162567138672e-7,
+            "max_ulp_vs_scalar_control": 234,
+            "relative_l2_vs_fp64_reference": 2.10930900562785e-7
+          },
+          "tiled_neumaier_candidate": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 1.6792910173535347e-8,
+            "max_abs_vs_scalar_control": 2.682209014892578e-7,
+            "max_ulp_vs_scalar_control": 51,
+            "relative_l2_vs_fp64_reference": 3.179685016289429e-8
+          },
+          "tiled_precision_not_worse_than_scalar_control": true
+        },
+        {
+          "input_family": "wide_exponent_seeded_f32",
+          "sampled_rows": [
+            0,
+            1,
+            585,
+            1365,
+            2048,
+            2730,
+            4094,
+            4095
+          ],
+          "scalar_control": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 0.00039968596905737286,
+            "max_abs_vs_scalar_control": 0.0,
+            "max_ulp_vs_scalar_control": 0,
+            "relative_l2_vs_fp64_reference": 9.494485208925998e-7
+          },
+          "rejected_simdgroup_balanced_tree_proxy": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 0.00012941280726863624,
+            "max_abs_vs_scalar_control": 0.0003662109375,
+            "max_ulp_vs_scalar_control": 28,
+            "relative_l2_vs_fp64_reference": 3.729571902532691e-7
+          },
+          "tiled_neumaier_candidate": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 0.000022363109110301593,
+            "max_abs_vs_scalar_control": 0.000396728515625,
+            "max_ulp_vs_scalar_control": 58,
+            "relative_l2_vs_fp64_reference": 5.921382512986483e-8
+          },
+          "tiled_precision_not_worse_than_scalar_control": true
+        },
+        {
+          "input_family": "alternating_cancellation_seeded_f32",
+          "sampled_rows": [
+            0,
+            1,
+            585,
+            1365,
+            2048,
+            2730,
+            4094,
+            4095
+          ],
+          "scalar_control": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 2.2650056052953005e-6,
+            "max_abs_vs_scalar_control": 0.0,
+            "max_ulp_vs_scalar_control": 0,
+            "relative_l2_vs_fp64_reference": 6.013035314010054e-7
+          },
+          "rejected_simdgroup_balanced_tree_proxy": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 5.960173439234495e-7,
+            "max_abs_vs_scalar_control": 2.86102294921875e-6,
+            "max_ulp_vs_scalar_control": 38,
+            "relative_l2_vs_fp64_reference": 2.04415649347451e-7
+          },
+          "tiled_neumaier_candidate": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 1.2329110177233815e-7,
+            "max_abs_vs_scalar_control": 2.2649765014648438e-6,
+            "max_ulp_vs_scalar_control": 80,
+            "relative_l2_vs_fp64_reference": 2.676884253737237e-8
+          },
+          "tiled_precision_not_worse_than_scalar_control": true
+        }
+      ]
+    },
+    {
+      "binding": {
+        "category": "attention_o",
+        "tensor_name": "model.layers.24.self_attn.o_proj.weight",
+        "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/tensors/42d5f9052801da1b10ed50f77ff9f13a62ec3d2955a3f4126f4278d8c10ba615.hq30g",
+        "artifact_sha256": "baa9a8ce82c624dbf0312b5ad260123bcabaa94ac60b8f7dfd49e63e9ca8184a",
+        "source_shard_sha256": "cd2861625e1bd8a212151445072b9d826c9754fd4618f8b83c2857fc0854b778",
+        "shape": [
+          2048,
+          4096
+        ],
+        "group_size": 128,
+        "groups_per_row": 32,
+        "layout_magic": "HQ30G1B1"
+      },
+      "input_reports": [
+        {
+          "input_family": "bounded_seeded_f32",
+          "sampled_rows": [
+            0,
+            1,
+            292,
+            682,
+            1024,
+            1365,
+            2046,
+            2047
+          ],
+          "scalar_control": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 8.703500498086214e-7,
+            "max_abs_vs_scalar_control": 0.0,
+            "max_ulp_vs_scalar_control": 0,
+            "relative_l2_vs_fp64_reference": 4.884307182991209e-7
+          },
+          "rejected_simdgroup_balanced_tree_proxy": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 1.6560079529881477e-7,
+            "max_abs_vs_scalar_control": 7.152557373046875e-7,
+            "max_ulp_vs_scalar_control": 128,
+            "relative_l2_vs_fp64_reference": 1.390789776523345e-7
+          },
+          "tiled_neumaier_candidate": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 4.417961463332176e-8,
+            "max_abs_vs_scalar_control": 8.344650268554688e-7,
+            "max_ulp_vs_scalar_control": 602,
+            "relative_l2_vs_fp64_reference": 2.679927793343639e-8
+          },
+          "tiled_precision_not_worse_than_scalar_control": true
+        },
+        {
+          "input_family": "wide_exponent_seeded_f32",
+          "sampled_rows": [
+            0,
+            1,
+            292,
+            682,
+            1024,
+            1365,
+            2046,
+            2047
+          ],
+          "scalar_control": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 0.0023584797525018075,
+            "max_abs_vs_scalar_control": 0.0,
+            "max_ulp_vs_scalar_control": 0,
+            "relative_l2_vs_fp64_reference": 8.019477381161864e-7
+          },
+          "rejected_simdgroup_balanced_tree_proxy": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 0.00027531354248822026,
+            "max_abs_vs_scalar_control": 0.00244140625,
+            "max_ulp_vs_scalar_control": 38,
+            "relative_l2_vs_fp64_reference": 1.5347652399165864e-7
+          },
+          "tiled_neumaier_candidate": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 0.000039143815001807525,
+            "max_abs_vs_scalar_control": 0.0023193359375,
+            "max_ulp_vs_scalar_control": 27,
+            "relative_l2_vs_fp64_reference": 2.302328562281086e-8
+          },
+          "tiled_precision_not_worse_than_scalar_control": true
+        },
+        {
+          "input_family": "alternating_cancellation_seeded_f32",
+          "sampled_rows": [
+            0,
+            1,
+            292,
+            682,
+            1024,
+            1365,
+            2046,
+            2047
+          ],
+          "scalar_control": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 0.000011765892850235105,
+            "max_abs_vs_scalar_control": 0.0,
+            "max_ulp_vs_scalar_control": 0,
+            "relative_l2_vs_fp64_reference": 1.7359358106717506e-6
+          },
+          "rejected_simdgroup_balanced_tree_proxy": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 1.544831320643425e-6,
+            "max_abs_vs_scalar_control": 0.00001239776611328125,
+            "max_ulp_vs_scalar_control": 49,
+            "relative_l2_vs_fp64_reference": 3.356351972027589e-7
+          },
+          "tiled_neumaier_candidate": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 3.2180105336010456e-7,
+            "max_abs_vs_scalar_control": 0.000011444091796875,
+            "max_ulp_vs_scalar_control": 32,
+            "relative_l2_vs_fp64_reference": 5.38410690648576e-8
+          },
+          "tiled_precision_not_worse_than_scalar_control": true
+        }
+      ]
+    },
+    {
+      "binding": {
+        "category": "router",
+        "tensor_name": "model.layers.47.mlp.gate.weight",
+        "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/tensors/e06329a5c2ec5f5dd88dcbcd5f4c8692e1e58ce330dffd6f18b864a38423e668.hq30g",
+        "artifact_sha256": "ec93e33efeac2af51a5c8db2bca94348136ce2e6df2bf4f9db6afba20db3a4c8",
+        "source_shard_sha256": "778479fa2b8b766ba1c7bfc56a71ed9b060081e0fbc5eb4edafd19a1d6b4c116",
+        "shape": [
+          128,
+          2048
+        ],
+        "group_size": 128,
+        "groups_per_row": 16,
+        "layout_magic": "HQ30G1B1"
+      },
+      "input_reports": [
+        {
+          "input_family": "bounded_seeded_f32",
+          "sampled_rows": [
+            0,
+            1,
+            18,
+            42,
+            64,
+            85,
+            126,
+            127
+          ],
+          "scalar_control": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 6.3094194047153e-7,
+            "max_abs_vs_scalar_control": 0.0,
+            "max_ulp_vs_scalar_control": 0,
+            "relative_l2_vs_fp64_reference": 1.2627007308530322e-6
+          },
+          "rejected_simdgroup_balanced_tree_proxy": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 6.717164069414139e-8,
+            "max_abs_vs_scalar_control": 6.258487701416016e-7,
+            "max_ulp_vs_scalar_control": 45,
+            "relative_l2_vs_fp64_reference": 1.4345105312208591e-7
+          },
+          "tiled_neumaier_candidate": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 1.3445969671010971e-8,
+            "max_abs_vs_scalar_control": 6.258487701416016e-7,
+            "max_ulp_vs_scalar_control": 42,
+            "relative_l2_vs_fp64_reference": 3.072609977180317e-8
+          },
+          "tiled_precision_not_worse_than_scalar_control": true
+        },
+        {
+          "input_family": "wide_exponent_seeded_f32",
+          "sampled_rows": [
+            0,
+            1,
+            18,
+            42,
+            64,
+            85,
+            126,
+            127
+          ],
+          "scalar_control": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 0.0004349803755303583,
+            "max_abs_vs_scalar_control": 0.0,
+            "max_ulp_vs_scalar_control": 0,
+            "relative_l2_vs_fp64_reference": 7.86308479254663e-7
+          },
+          "rejected_simdgroup_balanced_tree_proxy": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 0.00006954588445751142,
+            "max_abs_vs_scalar_control": 0.0003662109375,
+            "max_ulp_vs_scalar_control": 62,
+            "relative_l2_vs_fp64_reference": 1.5200938278796379e-7
+          },
+          "tiled_neumaier_candidate": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 0.00001817825403804818,
+            "max_abs_vs_scalar_control": 0.00042724609375,
+            "max_ulp_vs_scalar_control": 50,
+            "relative_l2_vs_fp64_reference": 3.4923368827297555e-8
+          },
+          "tiled_precision_not_worse_than_scalar_control": true
+        },
+        {
+          "input_family": "alternating_cancellation_seeded_f32",
+          "sampled_rows": [
+            0,
+            1,
+            18,
+            42,
+            64,
+            85,
+            126,
+            127
+          ],
+          "scalar_control": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 4.049972631037235e-6,
+            "max_abs_vs_scalar_control": 0.0,
+            "max_ulp_vs_scalar_control": 0,
+            "relative_l2_vs_fp64_reference": 1.2073342017513372e-6
+          },
+          "rejected_simdgroup_balanced_tree_proxy": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 5.272304406389594e-7,
+            "max_abs_vs_scalar_control": 3.5762786865234375e-6,
+            "max_ulp_vs_scalar_control": 52,
+            "relative_l2_vs_fp64_reference": 2.0637307444341007e-7
+          },
+          "tiled_neumaier_candidate": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 1.023290678858757e-7,
+            "max_abs_vs_scalar_control": 4.0531158447265625e-6,
+            "max_ulp_vs_scalar_control": 34,
+            "relative_l2_vs_fp64_reference": 3.221087928724111e-8
+          },
+          "tiled_precision_not_worse_than_scalar_control": true
+        }
+      ]
+    },
+    {
+      "binding": {
+        "category": "expert_gate",
+        "tensor_name": "model.layers.0.mlp.experts.0.gate_proj.weight",
+        "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/tensors/807a624e59aeace90080f2c7dbe7686667b7c14f59d497ec529d1581b1da8f33.hq30g",
+        "artifact_sha256": "716e8c91035ca49116438b640a2e2aeb4a44ddbb6742bfbee56e2f49d04f04bd",
+        "source_shard_sha256": "c8f4ee157c2bdb00521d0f422c08ef16f0f3f5f7e234786d829401d627d2e167",
+        "shape": [
+          768,
+          2048
+        ],
+        "group_size": 128,
+        "groups_per_row": 16,
+        "layout_magic": "HQ30G1B1"
+      },
+      "input_reports": [
+        {
+          "input_family": "bounded_seeded_f32",
+          "sampled_rows": [
+            0,
+            1,
+            109,
+            256,
+            384,
+            512,
+            766,
+            767
+          ],
+          "scalar_control": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 8.591741789132357e-7,
+            "max_abs_vs_scalar_control": 0.0,
+            "max_ulp_vs_scalar_control": 0,
+            "relative_l2_vs_fp64_reference": 7.524662317546729e-7
+          },
+          "rejected_simdgroup_balanced_tree_proxy": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 1.3207318261265755e-7,
+            "max_abs_vs_scalar_control": 8.344650268554688e-7,
+            "max_ulp_vs_scalar_control": 386,
+            "relative_l2_vs_fp64_reference": 1.3825393317139353e-7
+          },
+          "tiled_neumaier_candidate": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 4.307366907596588e-8,
+            "max_abs_vs_scalar_control": 8.940696716308594e-7,
+            "max_ulp_vs_scalar_control": 194,
+            "relative_l2_vs_fp64_reference": 4.866292502600062e-8
+          },
+          "tiled_precision_not_worse_than_scalar_control": true
+        },
+        {
+          "input_family": "wide_exponent_seeded_f32",
+          "sampled_rows": [
+            0,
+            1,
+            109,
+            256,
+            384,
+            512,
+            766,
+            767
+          ],
+          "scalar_control": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 0.0023259947895439836,
+            "max_abs_vs_scalar_control": 0.0,
+            "max_ulp_vs_scalar_control": 0,
+            "relative_l2_vs_fp64_reference": 1.4609898522166127e-6
+          },
+          "rejected_simdgroup_balanced_tree_proxy": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 0.00012895118436517805,
+            "max_abs_vs_scalar_control": 0.0023193359375,
+            "max_ulp_vs_scalar_control": 154,
+            "relative_l2_vs_fp64_reference": 1.1162959888797603e-7
+          },
+          "tiled_neumaier_candidate": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 0.000040448896015732316,
+            "max_abs_vs_scalar_control": 0.0023193359375,
+            "max_ulp_vs_scalar_control": 153,
+            "relative_l2_vs_fp64_reference": 3.47812706964585e-8
+          },
+          "tiled_precision_not_worse_than_scalar_control": true
+        },
+        {
+          "input_family": "alternating_cancellation_seeded_f32",
+          "sampled_rows": [
+            0,
+            1,
+            109,
+            256,
+            384,
+            512,
+            766,
+            767
+          ],
+          "scalar_control": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 4.083092790096998e-6,
+            "max_abs_vs_scalar_control": 0.0,
+            "max_ulp_vs_scalar_control": 0,
+            "relative_l2_vs_fp64_reference": 8.192972240431622e-7
+          },
+          "rejected_simdgroup_balanced_tree_proxy": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 1.1663942132145166e-6,
+            "max_abs_vs_scalar_control": 3.814697265625e-6,
+            "max_ulp_vs_scalar_control": 21,
+            "relative_l2_vs_fp64_reference": 2.547270566653279e-7
+          },
+          "tiled_neumaier_candidate": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 2.5180634111166e-7,
+            "max_abs_vs_scalar_control": 4.291534423828125e-6,
+            "max_ulp_vs_scalar_control": 14,
+            "relative_l2_vs_fp64_reference": 6.861738987148846e-8
+          },
+          "tiled_precision_not_worse_than_scalar_control": true
+        }
+      ]
+    },
+    {
+      "binding": {
+        "category": "expert_up",
+        "tensor_name": "model.layers.0.mlp.experts.0.up_proj.weight",
+        "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/tensors/f3a3a463c2de80adff64fc0400db3a59ff29a6ee0c9c3fc30c3d9db2ad2b6a7d.hq30g",
+        "artifact_sha256": "97e071afa8e9213f90067b2efac655e13e74d0c6d1285d9f5e67a893743dfff7",
+        "source_shard_sha256": "c8f4ee157c2bdb00521d0f422c08ef16f0f3f5f7e234786d829401d627d2e167",
+        "shape": [
+          768,
+          2048
+        ],
+        "group_size": 128,
+        "groups_per_row": 16,
+        "layout_magic": "HQ30G1B1"
+      },
+      "input_reports": [
+        {
+          "input_family": "bounded_seeded_f32",
+          "sampled_rows": [
+            0,
+            1,
+            109,
+            256,
+            384,
+            512,
+            766,
+            767
+          ],
+          "scalar_control": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 7.69738107919693e-7,
+            "max_abs_vs_scalar_control": 0.0,
+            "max_ulp_vs_scalar_control": 0,
+            "relative_l2_vs_fp64_reference": 1.115721124752254e-6
+          },
+          "rejected_simdgroup_balanced_tree_proxy": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 1.4819670468568802e-7,
+            "max_abs_vs_scalar_control": 8.717179298400879e-7,
+            "max_ulp_vs_scalar_control": 117,
+            "relative_l2_vs_fp64_reference": 2.1947745237112987e-7
+          },
+          "tiled_neumaier_candidate": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 2.0721927285194397e-8,
+            "max_abs_vs_scalar_control": 7.674098014831543e-7,
+            "max_ulp_vs_scalar_control": 103,
+            "relative_l2_vs_fp64_reference": 4.0793991894021175e-8
+          },
+          "tiled_precision_not_worse_than_scalar_control": true
+        },
+        {
+          "input_family": "wide_exponent_seeded_f32",
+          "sampled_rows": [
+            0,
+            1,
+            109,
+            256,
+            384,
+            512,
+            766,
+            767
+          ],
+          "scalar_control": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 0.0017166025329515833,
+            "max_abs_vs_scalar_control": 0.0,
+            "max_ulp_vs_scalar_control": 0,
+            "relative_l2_vs_fp64_reference": 1.5676455560532315e-6
+          },
+          "rejected_simdgroup_balanced_tree_proxy": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 0.00011960017934598,
+            "max_abs_vs_scalar_control": 0.001708984375,
+            "max_ulp_vs_scalar_control": 121,
+            "relative_l2_vs_fp64_reference": 1.412784395048096e-7
+          },
+          "tiled_neumaier_candidate": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 0.000022189216451806715,
+            "max_abs_vs_scalar_control": 0.001708984375,
+            "max_ulp_vs_scalar_control": 57,
+            "relative_l2_vs_fp64_reference": 2.5703023413940104e-8
+          },
+          "tiled_precision_not_worse_than_scalar_control": true
+        },
+        {
+          "input_family": "alternating_cancellation_seeded_f32",
+          "sampled_rows": [
+            0,
+            1,
+            109,
+            256,
+            384,
+            512,
+            766,
+            767
+          ],
+          "scalar_control": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 3.0138908186927438e-6,
+            "max_abs_vs_scalar_control": 0.0,
+            "max_ulp_vs_scalar_control": 0,
+            "relative_l2_vs_fp64_reference": 6.300223614123436e-7
+          },
+          "rejected_simdgroup_balanced_tree_proxy": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 1.022737706080079e-6,
+            "max_abs_vs_scalar_control": 3.427267074584961e-6,
+            "max_ulp_vs_scalar_control": 320,
+            "relative_l2_vs_fp64_reference": 2.3603259580414226e-7
+          },
+          "tiled_neumaier_candidate": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 2.3962638806551695e-7,
+            "max_abs_vs_scalar_control": 2.9802322387695312e-6,
+            "max_ulp_vs_scalar_control": 1088,
+            "relative_l2_vs_fp64_reference": 4.8377763327208694e-8
+          },
+          "tiled_precision_not_worse_than_scalar_control": true
+        }
+      ]
+    },
+    {
+      "binding": {
+        "category": "expert_down",
+        "tensor_name": "model.layers.0.mlp.experts.0.down_proj.weight",
+        "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/tensors/4496e03786cd68b1acbc522cbb8912a4fa8c039277eeb70af688a0ed3eedbff3.hq30g",
+        "artifact_sha256": "133deb3890d53e19cc88633a622eebfb10a9725d34aa18f9c21083e99503b024",
+        "source_shard_sha256": "c8f4ee157c2bdb00521d0f422c08ef16f0f3f5f7e234786d829401d627d2e167",
+        "shape": [
+          2048,
+          768
+        ],
+        "group_size": 128,
+        "groups_per_row": 6,
+        "layout_magic": "HQ30G1B1"
+      },
+      "input_reports": [
+        {
+          "input_family": "bounded_seeded_f32",
+          "sampled_rows": [
+            0,
+            1,
+            292,
+            682,
+            1024,
+            1365,
+            2046,
+            2047
+          ],
+          "scalar_control": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 2.527376636862755e-7,
+            "max_abs_vs_scalar_control": 0.0,
+            "max_ulp_vs_scalar_control": 0,
+            "relative_l2_vs_fp64_reference": 6.641976620364223e-7
+          },
+          "rejected_simdgroup_balanced_tree_proxy": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 5.2619725465774536e-8,
+            "max_abs_vs_scalar_control": 2.682209014892578e-7,
+            "max_ulp_vs_scalar_control": 14,
+            "relative_l2_vs_fp64_reference": 1.4204130201091326e-7
+          },
+          "tiled_neumaier_candidate": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 1.4319084584712982e-8,
+            "max_abs_vs_scalar_control": 2.5331974029541016e-7,
+            "max_ulp_vs_scalar_control": 17,
+            "relative_l2_vs_fp64_reference": 2.6968603724428165e-8
+          },
+          "tiled_precision_not_worse_than_scalar_control": true
+        },
+        {
+          "input_family": "wide_exponent_seeded_f32",
+          "sampled_rows": [
+            0,
+            1,
+            292,
+            682,
+            1024,
+            1365,
+            2046,
+            2047
+          ],
+          "scalar_control": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 0.0002591142199435126,
+            "max_abs_vs_scalar_control": 0.0,
+            "max_ulp_vs_scalar_control": 0,
+            "relative_l2_vs_fp64_reference": 3.4582856719521013e-7
+          },
+          "rejected_simdgroup_balanced_tree_proxy": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 0.0001711887014153035,
+            "max_abs_vs_scalar_control": 0.000335693359375,
+            "max_ulp_vs_scalar_control": 11,
+            "relative_l2_vs_fp64_reference": 1.4254155692200996e-7
+          },
+          "tiled_neumaier_candidate": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 0.00004606156130648742,
+            "max_abs_vs_scalar_control": 0.00030517578125,
+            "max_ulp_vs_scalar_control": 8,
+            "relative_l2_vs_fp64_reference": 5.607139924404122e-8
+          },
+          "tiled_precision_not_worse_than_scalar_control": true
+        },
+        {
+          "input_family": "alternating_cancellation_seeded_f32",
+          "sampled_rows": [
+            0,
+            1,
+            292,
+            682,
+            1024,
+            1365,
+            2046,
+            2047
+          ],
+          "scalar_control": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 4.34272806160152e-6,
+            "max_abs_vs_scalar_control": 0.0,
+            "max_ulp_vs_scalar_control": 0,
+            "relative_l2_vs_fp64_reference": 5.929159192129641e-7
+          },
+          "rejected_simdgroup_balanced_tree_proxy": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 3.957538865506649e-7,
+            "max_abs_vs_scalar_control": 3.948807716369629e-6,
+            "max_ulp_vs_scalar_control": 265,
+            "relative_l2_vs_fp64_reference": 8.286358572450993e-8
+          },
+          "tiled_neumaier_candidate": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 1.9971048459410667e-7,
+            "max_abs_vs_scalar_control": 4.380941390991211e-6,
+            "max_ulp_vs_scalar_control": 294,
+            "relative_l2_vs_fp64_reference": 3.471421907296689e-8
+          },
+          "tiled_precision_not_worse_than_scalar_control": true
+        }
+      ]
+    },
+    {
+      "binding": {
+        "category": "lm_head",
+        "tensor_name": "lm_head.weight",
+        "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/tensors/7866b85ef9fdbeac35f2f699fd08c8b431545344f6f1cd1600c342dcec2a3a6e.hq30g",
+        "artifact_sha256": "238c89b533f4991df146bd9257b9e6ea4b6ca94fdbb41b5ba6e536022c3af3ee",
+        "source_shard_sha256": "778479fa2b8b766ba1c7bfc56a71ed9b060081e0fbc5eb4edafd19a1d6b4c116",
+        "shape": [
+          151936,
+          2048
+        ],
+        "group_size": 128,
+        "groups_per_row": 16,
+        "layout_magic": "HQ30G1B1"
+      },
+      "input_reports": [
+        {
+          "input_family": "bounded_seeded_f32",
+          "sampled_rows": [
+            0,
+            1,
+            21705,
+            50645,
+            75968,
+            101290,
+            151934,
+            151935
+          ],
+          "scalar_control": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 5.716574378311634e-7,
+            "max_abs_vs_scalar_control": 0.0,
+            "max_ulp_vs_scalar_control": 0,
+            "relative_l2_vs_fp64_reference": 4.6155092292055626e-7
+          },
+          "rejected_simdgroup_balanced_tree_proxy": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 1.1298106983304024e-7,
+            "max_abs_vs_scalar_control": 4.76837158203125e-7,
+            "max_ulp_vs_scalar_control": 16,
+            "relative_l2_vs_fp64_reference": 1.3614537846083624e-7
+          },
+          "tiled_neumaier_candidate": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 3.306195139884949e-8,
+            "max_abs_vs_scalar_control": 5.960464477539062e-7,
+            "max_ulp_vs_scalar_control": 20,
+            "relative_l2_vs_fp64_reference": 3.1414019663779105e-8
+          },
+          "tiled_precision_not_worse_than_scalar_control": true
+        },
+        {
+          "input_family": "wide_exponent_seeded_f32",
+          "sampled_rows": [
+            0,
+            1,
+            21705,
+            50645,
+            75968,
+            101290,
+            151934,
+            151935
+          ],
+          "scalar_control": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 0.0006721602708239516,
+            "max_abs_vs_scalar_control": 0.0,
+            "max_ulp_vs_scalar_control": 0,
+            "relative_l2_vs_fp64_reference": 4.6541950878032017e-7
+          },
+          "rejected_simdgroup_balanced_tree_proxy": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 0.00009655440112510405,
+            "max_abs_vs_scalar_control": 0.000732421875,
+            "max_ulp_vs_scalar_control": 32,
+            "relative_l2_vs_fp64_reference": 5.569349047328754e-8
+          },
+          "tiled_neumaier_candidate": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 0.00006026160417604842,
+            "max_abs_vs_scalar_control": 0.000732421875,
+            "max_ulp_vs_scalar_control": 31,
+            "relative_l2_vs_fp64_reference": 3.200589093951374e-8
+          },
+          "tiled_precision_not_worse_than_scalar_control": true
+        },
+        {
+          "input_family": "alternating_cancellation_seeded_f32",
+          "sampled_rows": [
+            0,
+            1,
+            21705,
+            50645,
+            75968,
+            101290,
+            151934,
+            151935
+          ],
+          "scalar_control": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 3.9852457121014595e-6,
+            "max_abs_vs_scalar_control": 0.0,
+            "max_ulp_vs_scalar_control": 0,
+            "relative_l2_vs_fp64_reference": 6.962805858488168e-7
+          },
+          "rejected_simdgroup_balanced_tree_proxy": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 7.630151230841875e-7,
+            "max_abs_vs_scalar_control": 4.0531158447265625e-6,
+            "max_ulp_vs_scalar_control": 34,
+            "relative_l2_vs_fp64_reference": 1.4058278154762663e-7
+          },
+          "tiled_neumaier_candidate": {
+            "values": 8,
+            "all_finite": true,
+            "max_abs_vs_fp64_reference": 2.0908191800117493e-7,
+            "max_abs_vs_scalar_control": 3.933906555175781e-6,
+            "max_ulp_vs_scalar_control": 40,
+            "relative_l2_vs_fp64_reference": 4.024276422289628e-8
+          },
+          "tiled_precision_not_worse_than_scalar_control": true
+        }
+      ]
+    }
+  ],
+  "real_expert_chain_error_amplification": {
+    "description": "Real admitted layer-0 expert-0 gate/up/SwiGLU/down chain on deterministic activation families. This is numerical amplification characterization only; it is not a complete layer, lm-head, sampled token, or generation test.",
+    "source_bound_organs": [
+      {
+        "category": "expert_gate",
+        "tensor_name": "model.layers.0.mlp.experts.0.gate_proj.weight",
+        "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/tensors/807a624e59aeace90080f2c7dbe7686667b7c14f59d497ec529d1581b1da8f33.hq30g",
+        "artifact_sha256": "716e8c91035ca49116438b640a2e2aeb4a44ddbb6742bfbee56e2f49d04f04bd",
+        "source_shard_sha256": "c8f4ee157c2bdb00521d0f422c08ef16f0f3f5f7e234786d829401d627d2e167",
+        "shape": [
+          768,
+          2048
+        ],
+        "group_size": 128,
+        "groups_per_row": 16,
+        "layout_magic": "HQ30G1B1"
+      },
+      {
+        "category": "expert_up",
+        "tensor_name": "model.layers.0.mlp.experts.0.up_proj.weight",
+        "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/tensors/f3a3a463c2de80adff64fc0400db3a59ff29a6ee0c9c3fc30c3d9db2ad2b6a7d.hq30g",
+        "artifact_sha256": "97e071afa8e9213f90067b2efac655e13e74d0c6d1285d9f5e67a893743dfff7",
+        "source_shard_sha256": "c8f4ee157c2bdb00521d0f422c08ef16f0f3f5f7e234786d829401d627d2e167",
+        "shape": [
+          768,
+          2048
+        ],
+        "group_size": 128,
+        "groups_per_row": 16,
+        "layout_magic": "HQ30G1B1"
+      },
+      {
+        "category": "expert_down",
+        "tensor_name": "model.layers.0.mlp.experts.0.down_proj.weight",
+        "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/tensors/4496e03786cd68b1acbc522cbb8912a4fa8c039277eeb70af688a0ed3eedbff3.hq30g",
+        "artifact_sha256": "133deb3890d53e19cc88633a622eebfb10a9725d34aa18f9c21083e99503b024",
+        "source_shard_sha256": "c8f4ee157c2bdb00521d0f422c08ef16f0f3f5f7e234786d829401d627d2e167",
+        "shape": [
+          2048,
+          768
+        ],
+        "group_size": 128,
+        "groups_per_row": 6,
+        "layout_magic": "HQ30G1B1"
+      }
+    ],
+    "input_reports": [
+      {
+        "input_family": "bounded_seeded_f32",
+        "swiglu_max_abs_delta_simd_vs_scalar": 9.5367431640625e-7,
+        "swiglu_max_abs_delta_tiled_vs_scalar": 9.5367431640625e-7,
+        "down_scalar_control": {
+          "values": 2048,
+          "all_finite": true,
+          "max_abs_vs_fp64_reference": 2.1707252782082742e-7,
+          "max_abs_vs_scalar_control": 0.0,
+          "max_ulp_vs_scalar_control": 0,
+          "relative_l2_vs_fp64_reference": 1.0501651816910672e-6
+        },
+        "down_rejected_simdgroup_balanced_tree_proxy": {
+          "values": 2048,
+          "all_finite": true,
+          "max_abs_vs_fp64_reference": 4.8529266119534675e-8,
+          "max_abs_vs_scalar_control": 2.2351741790771484e-7,
+          "max_ulp_vs_scalar_control": 90368,
+          "relative_l2_vs_fp64_reference": 2.4316590565923663e-7
+        },
+        "down_tiled_neumaier_candidate": {
+          "values": 2048,
+          "all_finite": true,
+          "max_abs_vs_fp64_reference": 1.7352908693313296e-8,
+          "max_abs_vs_scalar_control": 2.1606683731079102e-7,
+          "max_ulp_vs_scalar_control": 74240,
+          "relative_l2_vs_fp64_reference": 8.961130885902688e-8
+        },
+        "tiled_precision_not_worse_than_scalar_control": true,
+        "downstream_projection_argmax_not_lm_head_or_token": {
+          "rejected_simdgroup_proxy": 756,
+          "scalar_control": 756,
+          "tiled_neumaier_candidate": 756
+        },
+        "same_downstream_projection_argmax_as_scalar": {
+          "rejected_simdgroup_proxy": true,
+          "tiled_neumaier_candidate": true
+        }
+      },
+      {
+        "input_family": "wide_exponent_seeded_f32",
+        "swiglu_max_abs_delta_simd_vs_scalar": 5.0,
+        "swiglu_max_abs_delta_tiled_vs_scalar": 4.5,
+        "down_scalar_control": {
+          "values": 2048,
+          "all_finite": true,
+          "max_abs_vs_fp64_reference": 0.651756037492305,
+          "max_abs_vs_scalar_control": 0.0,
+          "max_ulp_vs_scalar_control": 0,
+          "relative_l2_vs_fp64_reference": 1.003883532410346e-6
+        },
+        "down_rejected_simdgroup_balanced_tree_proxy": {
+          "values": 2048,
+          "all_finite": true,
+          "max_abs_vs_fp64_reference": 0.15720960598082456,
+          "max_abs_vs_scalar_control": 0.671875,
+          "max_ulp_vs_scalar_control": 3184,
+          "relative_l2_vs_fp64_reference": 2.123635401058999e-7
+        },
+        "down_tiled_neumaier_candidate": {
+          "values": 2048,
+          "all_finite": true,
+          "max_abs_vs_fp64_reference": 0.04920664831297472,
+          "max_abs_vs_scalar_control": 0.671875,
+          "max_ulp_vs_scalar_control": 3412,
+          "relative_l2_vs_fp64_reference": 6.956755815419982e-8
+        },
+        "tiled_precision_not_worse_than_scalar_control": true,
+        "downstream_projection_argmax_not_lm_head_or_token": {
+          "rejected_simdgroup_proxy": 361,
+          "scalar_control": 361,
+          "tiled_neumaier_candidate": 361
+        },
+        "same_downstream_projection_argmax_as_scalar": {
+          "rejected_simdgroup_proxy": true,
+          "tiled_neumaier_candidate": true
+        }
+      },
+      {
+        "input_family": "alternating_cancellation_seeded_f32",
+        "swiglu_max_abs_delta_simd_vs_scalar": 0.00011444091796875,
+        "swiglu_max_abs_delta_tiled_vs_scalar": 0.00011444091796875,
+        "down_scalar_control": {
+          "values": 2048,
+          "all_finite": true,
+          "max_abs_vs_fp64_reference": 0.000020851434058499763,
+          "max_abs_vs_scalar_control": 0.0,
+          "max_ulp_vs_scalar_control": 0,
+          "relative_l2_vs_fp64_reference": 1.2643319495122305e-6
+        },
+        "down_rejected_simdgroup_balanced_tree_proxy": {
+          "values": 2048,
+          "all_finite": true,
+          "max_abs_vs_fp64_reference": 4.60589531980915e-6,
+          "max_abs_vs_scalar_control": 0.00002193450927734375,
+          "max_ulp_vs_scalar_control": 26944,
+          "relative_l2_vs_fp64_reference": 2.4691453357915466e-7
+        },
+        "down_tiled_neumaier_candidate": {
+          "values": 2048,
+          "all_finite": true,
+          "max_abs_vs_fp64_reference": 1.3665555886888114e-6,
+          "max_abs_vs_scalar_control": 0.0000209808349609375,
+          "max_ulp_vs_scalar_control": 22464,
+          "relative_l2_vs_fp64_reference": 9.050002944709413e-8
+        },
+        "tiled_precision_not_worse_than_scalar_control": true,
+        "downstream_projection_argmax_not_lm_head_or_token": {
+          "rejected_simdgroup_proxy": 809,
+          "scalar_control": 809,
+          "tiled_neumaier_candidate": 809
+        },
+        "same_downstream_projection_argmax_as_scalar": {
+          "rejected_simdgroup_proxy": true,
+          "tiled_neumaier_candidate": true
+        }
+      }
+    ]
+  },
+  "integration_criteria": {
+    "precision_gate": [
+      "The exact manifest raw digest, manifest seal, every selected payload digest, group_size=128, and expected Qwen30 shapes must match this report before a later GPU trial is comparable.",
+      "For every source-bound projection/input family and the real gate/up/down chain, the tiled candidate must stay finite and must not have worse FP64-reference relative-L2 or max-absolute error than the scalar control. A failure rejects the candidate before GPU use.",
+      "The rejected SIMD proxy is characterization only: no proxy metric may override the prior real prompt-B exact-token failure."
+    ],
+    "gpu_component_gate": [
+      "Under an exclusive Qwen30 GPU lease, compile this unregistered shader in an isolated test library and compare its output to the matching CPU tiled-Neumaier reference for all listed Qwen30 shapes and deterministic vectors.",
+      "GPU component parity must be finite for every output and within abs_error <= 5e-5 * max(1, abs(cpu_tiled_output)); any larger discrepancy rejects the shader implementation rather than relaxing the end-to-end gate.",
+      "The trial must record the candidate shader SHA, isolated host target SHA, current artifact manifest seal, runtime executable SHA, device name, and command topology."
+    ],
+    "full_model_gate": [
+      "A candidate that passes component parity must separately re-run all-layer BOS/control comparison and both source-template prompt A and prompt B feedback loops against the current scalar control.",
+      "Exact completion token identity for every tested feedback token is mandatory. Prompt B previously diverged for the rejected SIMD candidate, so matching prompt A is insufficient.",
+      "Only after the complete native runtime, HCLI, capability, restart, and clean-performance gates are independently re-earned may any TG/TPS gate consider the candidate. This laboratory cannot satisfy any of those gates."
+    ],
+    "disallowed_promotions": [
+      "No edit or registration of the live Qwen30 runtime, watcher, server, registry, canonical runtime receipt, HCLI receipt, TPS receipt, TG receipt, or tournament gate is authorized by this target.",
+      "No component timing, CPU timing, proxy argmax, or downstream-projection argmax in this report is BASE_TRUE_TPS or a generation/capability result."
+    ]
+  },
+  "claim_boundary": [
+    "CPU-only: no Metal context, GPU dispatch, runtime mutation, watcher mutation, or registry mutation occurred.",
+    "The complete Qwen30 native runtime remains controlled by its separate canonical receipt and scalar kernel unless a later candidate passes every listed gate.",
+    "This report does not claim coherent generation, HCLI, BASE_TRUE_TPS, TG10, TG3, Agent OS qualification, or tournament readiness."
+  ],
+  "unsealed_preimage_sha256": "3fb2e06aab92a40a1dd8c40d354043290022076a656e2c1d7b26b2781655b890"
+}

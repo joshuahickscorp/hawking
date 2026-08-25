@@ -1,0 +1,25 @@
+{
+  "claim_boundary": "raw HCLI command evidence; not a TPS receipt by itself",
+  "command": [
+    "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/debug/hcli",
+    "run",
+    "--prompt",
+    "Write a short Python function named add that returns a + b.",
+    "--session",
+    "base-true-tps-qwen30-6719d889329e-probe-3",
+    "--model-url",
+    "http://127.0.0.1:18430",
+    "--max-output-tokens",
+    "8",
+    "--workspace",
+    "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/hcli-workspace",
+    "--json"
+  ],
+  "elapsed_seconds": 12.47875212499639,
+  "fingerprint": "6719d889329e3c0ec8eea9714aa1b8e9a053ca2d32a6fe0f6371bf3a32b3a7c0",
+  "recorded_at": "2026-08-08T19:50:50.838118Z",
+  "returncode": 0,
+  "schema": "hawking.ascension.physical_base_true_tps_hcli_command_evidence.v1",
+  "stderr": "",
+  "stdout": "{\"command\":\"run\",\"result\":{\"model_url\":\"http://127.0.0.1:18430\",\"tps_note\":\"complete_forward_tps is null unless the runtime exposed both completed_decode_forwards and decode_ms\",\"turn\":{\"assistant_event_id\":\"evt_01KZHEV75YKMYP2VFCD6HAT0RG\",\"complete_forward_tps\":3.22944348211514,\"completion\":\"(av(avlinksVERSIONisslinksassiclinks\",\"generation_stats\":{\"completed_decode_forwards\":8,\"decode_ms\":2477.207,\"decode_tokens_per_second\":3.2294435501098633,\"input_tokens\":31,\"output_tokens\":8},\"intent_event_id\":\"evt_01KZHETV2XFYJYANMDVDDTBSYZ\",\"intent_event_seq\":9,\"session_id\":\"ses_01KZHETV2VRPT95WXBA3H18V3W\",\"stream_id\":\"11\"},\"workspace\":\"/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/hcli-workspace\"},\"schema\":\"hcli.command.v1\"}\n"
+}

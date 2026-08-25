@@ -1,0 +1,62 @@
+{
+  "candidate_id": "model_layers_0_mlp_experts_7_down_proj_weight__r96_b3",
+  "claim_boundary": {
+    "component_measurement_only": true,
+    "not_a_complete_model_bpw_result": true,
+    "not_a_full_model_artifact": true,
+    "not_a_native_direct_execution_plan": true,
+    "not_a_protected_manager_receipt": true,
+    "not_a_tg3_or_hcli_result": true
+  },
+  "elapsed_seconds": 0.38130791699222755,
+  "measurement": {
+    "cosine": 0.48580580949783325,
+    "relative_l2": 0.8757320642471313,
+    "rmse": 0.016519777476787567
+  },
+  "metal_component_probe": {
+    "claim_boundary": "component-only Metal smoke; not a complete-token TG measurement",
+    "device": "mps",
+    "elapsed_seconds": 0.003496165998512879,
+    "iterations": 20,
+    "matmul_per_second": 5720.552173010993,
+    "shape": [
+      2048,
+      768
+    ],
+    "status": "RAN"
+  },
+  "recorded_at": "2026-08-08T05:16:05.181893Z",
+  "representation": {
+    "artifact_bytes": 110547,
+    "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/artifacts/model_layers_0_mlp_experts_7_down_proj_weight__r96_b3.gravity",
+    "component_complete_bpw": 0.5622711181640625,
+    "factor_bits": 3,
+    "group_size": 64,
+    "kind": "randomized_low_rank_plus_group_quantized_factors",
+    "rank": 96
+  },
+  "schema": "hawking.ascension.qwen30_low_rank_gravity_candidate.v1",
+  "seal_sha256": "9affba223e350f8f3e2224af67b5e1b5b12f37d402b10e009f437cacf2c04cfa",
+  "source": {
+    "repository": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+    "revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+    "shape": [
+      2048,
+      768
+    ],
+    "source_body_audit_seal_sha256": "f90cfb83ad18706b8fe012c825bf14d1682d2ccabed0566cff2a536c43322c35",
+    "tensor_name": "model.layers.0.mlp.experts.7.down_proj.weight"
+  },
+  "status": "CANDIDATE_RESEARCH_ONLY",
+  "teacher_training": {
+    "claim_boundary": "component-only teacher distillation; not full-model QAT or capability training",
+    "device": "mps",
+    "elapsed_seconds": 0.24738699999579694,
+    "final_mse": 0.0002597167622298002,
+    "initial_mse": 0.0002738836919888854,
+    "kind": "teacher_distilled_low_rank_doctor",
+    "status": "RAN",
+    "steps": 16
+  }
+}

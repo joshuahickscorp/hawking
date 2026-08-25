@@ -1,0 +1,8 @@
+{
+ "{\"gpu_cores\": 60, \"mlx\": \"0.32.1\", \"os\": \"27.0\", \"primitive\": \"fused_mul_relu_silu_f32\", \"representation\": \"dense_f32\", \"shape\": [16777216], \"soc\": \"Apple M3 Ultra\"}": {
+  "champion": "tg256_ept2",
+  "median_ms": 0.5083750002086163,
+  "caveat": "selection is within noise; the landscape is flat and any of the top five candidates would serve equally",
+  "cached_at": "2026-08-25T12:10:54Z"
+ }
+}

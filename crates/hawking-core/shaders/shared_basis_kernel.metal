@@ -522,3 +522,423 @@ kernel void shared_binary_k4_fused_stream_c5120_tpr32_tg256(
         output[orow] = acc;
     }
 }
+
+// ── N035: K=4/8/16 fused stream on the N033-winning tpr64 geometry ─────────
+// Signs concatenated [k][row*col/8] with plane stride 17408*5120/8 = 11141120
+// (gate and down have the same element count). Scales [k][orow][g], k-stride
+// 1392640. K and group 64 are literals; shift not divide; no bind-time shape.
+// Inner k-loop bound is a literal so the compiler unrolls it.
+
+static inline float k1_mac8(
+    uchar p,
+    float a,
+    float x0, float x1, float x2, float x3,
+    float x4, float x5, float x6, float x7)
+{
+    float acc = 0.0f;
+    acc += ((p & 0x01u) != 0u ? a : -a) * x0;
+    acc += ((p & 0x02u) != 0u ? a : -a) * x1;
+    acc += ((p & 0x04u) != 0u ? a : -a) * x2;
+    acc += ((p & 0x08u) != 0u ? a : -a) * x3;
+    acc += ((p & 0x10u) != 0u ? a : -a) * x4;
+    acc += ((p & 0x20u) != 0u ? a : -a) * x5;
+    acc += ((p & 0x40u) != 0u ? a : -a) * x6;
+    acc += ((p & 0x80u) != 0u ? a : -a) * x7;
+    return acc;
+}
+
+kernel void shared_binary_k4_fused_stream_c5120_tpr64_tg128(
+    device const uchar* signs [[buffer(0)]],
+    device const half*  scales [[buffer(1)]],
+    device const float* input  [[buffer(2)]],
+    device float*       output [[buffer(3)]],
+    uint group_id              [[threadgroup_position_in_grid]],
+    uint simd_lane             [[thread_index_in_simdgroup]],
+    uint simd_id               [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[4];
+    const uint team = simd_id >> 1u;
+    const uint split = simd_id & 1u;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint orow = group_id * 2u + team;
+    float acc = 0.0f;
+    const uint sc0 = orow * 80u;
+    const uint kst = 1392640u;
+    const uint ps = 11141120u;
+    const uint row_base = orow * 5120u;
+    for (uint ocol = lane_in_row * 8u; ocol + 8u <= 5120u; ocol += 512u) {
+        const uint g = ocol >> 6u;
+        const uint sidx = (row_base + ocol) >> 3u;
+        const float x0 = input[ocol];
+        const float x1 = input[ocol + 1u];
+        const float x2 = input[ocol + 2u];
+        const float x3 = input[ocol + 3u];
+        const float x4 = input[ocol + 4u];
+        const float x5 = input[ocol + 5u];
+        const float x6 = input[ocol + 6u];
+        const float x7 = input[ocol + 7u];
+        for (uint k = 0u; k < 4u; ++k) {
+            acc += k1_mac8(
+                signs[k * ps + sidx], float(scales[k * kst + sc0 + g]),
+                x0, x1, x2, x3, x4, x5, x6, x7);
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u) {
+        red[simd_id] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u) {
+        const uint t = team * 2u;
+        output[orow] = red[t] + red[t + 1u];
+    }
+}
+
+kernel void shared_binary_k4_fused_stream_c17408_tpr64_tg128(
+    device const uchar* signs [[buffer(0)]],
+    device const half*  scales [[buffer(1)]],
+    device const float* input  [[buffer(2)]],
+    device float*       output [[buffer(3)]],
+    uint group_id              [[threadgroup_position_in_grid]],
+    uint simd_lane             [[thread_index_in_simdgroup]],
+    uint simd_id               [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[4];
+    const uint team = simd_id >> 1u;
+    const uint split = simd_id & 1u;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint orow = group_id * 2u + team;
+    float acc = 0.0f;
+    const uint sc0 = orow * 272u;
+    const uint kst = 1392640u;
+    const uint ps = 11141120u;
+    const uint row_base = orow * 17408u;
+    for (uint ocol = lane_in_row * 8u; ocol + 8u <= 17408u; ocol += 512u) {
+        const uint g = ocol >> 6u;
+        const uint sidx = (row_base + ocol) >> 3u;
+        const float x0 = input[ocol];
+        const float x1 = input[ocol + 1u];
+        const float x2 = input[ocol + 2u];
+        const float x3 = input[ocol + 3u];
+        const float x4 = input[ocol + 4u];
+        const float x5 = input[ocol + 5u];
+        const float x6 = input[ocol + 6u];
+        const float x7 = input[ocol + 7u];
+        for (uint k = 0u; k < 4u; ++k) {
+            acc += k1_mac8(
+                signs[k * ps + sidx], float(scales[k * kst + sc0 + g]),
+                x0, x1, x2, x3, x4, x5, x6, x7);
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u) {
+        red[simd_id] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u) {
+        const uint t = team * 2u;
+        output[orow] = red[t] + red[t + 1u];
+    }
+}
+
+kernel void shared_binary_k8_fused_stream_c5120_tpr64_tg128(
+    device const uchar* signs [[buffer(0)]],
+    device const half*  scales [[buffer(1)]],
+    device const float* input  [[buffer(2)]],
+    device float*       output [[buffer(3)]],
+    uint group_id              [[threadgroup_position_in_grid]],
+    uint simd_lane             [[thread_index_in_simdgroup]],
+    uint simd_id               [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[4];
+    const uint team = simd_id >> 1u;
+    const uint split = simd_id & 1u;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint orow = group_id * 2u + team;
+    float acc = 0.0f;
+    const uint sc0 = orow * 80u;
+    const uint kst = 1392640u;
+    const uint ps = 11141120u;
+    const uint row_base = orow * 5120u;
+    for (uint ocol = lane_in_row * 8u; ocol + 8u <= 5120u; ocol += 512u) {
+        const uint g = ocol >> 6u;
+        const uint sidx = (row_base + ocol) >> 3u;
+        const float x0 = input[ocol];
+        const float x1 = input[ocol + 1u];
+        const float x2 = input[ocol + 2u];
+        const float x3 = input[ocol + 3u];
+        const float x4 = input[ocol + 4u];
+        const float x5 = input[ocol + 5u];
+        const float x6 = input[ocol + 6u];
+        const float x7 = input[ocol + 7u];
+        for (uint k = 0u; k < 8u; ++k) {
+            acc += k1_mac8(
+                signs[k * ps + sidx], float(scales[k * kst + sc0 + g]),
+                x0, x1, x2, x3, x4, x5, x6, x7);
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u) {
+        red[simd_id] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u) {
+        const uint t = team * 2u;
+        output[orow] = red[t] + red[t + 1u];
+    }
+}
+
+kernel void shared_binary_k8_fused_stream_c17408_tpr64_tg128(
+    device const uchar* signs [[buffer(0)]],
+    device const half*  scales [[buffer(1)]],
+    device const float* input  [[buffer(2)]],
+    device float*       output [[buffer(3)]],
+    uint group_id              [[threadgroup_position_in_grid]],
+    uint simd_lane             [[thread_index_in_simdgroup]],
+    uint simd_id               [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[4];
+    const uint team = simd_id >> 1u;
+    const uint split = simd_id & 1u;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint orow = group_id * 2u + team;
+    float acc = 0.0f;
+    const uint sc0 = orow * 272u;
+    const uint kst = 1392640u;
+    const uint ps = 11141120u;
+    const uint row_base = orow * 17408u;
+    for (uint ocol = lane_in_row * 8u; ocol + 8u <= 17408u; ocol += 512u) {
+        const uint g = ocol >> 6u;
+        const uint sidx = (row_base + ocol) >> 3u;
+        const float x0 = input[ocol];
+        const float x1 = input[ocol + 1u];
+        const float x2 = input[ocol + 2u];
+        const float x3 = input[ocol + 3u];
+        const float x4 = input[ocol + 4u];
+        const float x5 = input[ocol + 5u];
+        const float x6 = input[ocol + 6u];
+        const float x7 = input[ocol + 7u];
+        for (uint k = 0u; k < 8u; ++k) {
+            acc += k1_mac8(
+                signs[k * ps + sidx], float(scales[k * kst + sc0 + g]),
+                x0, x1, x2, x3, x4, x5, x6, x7);
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u) {
+        red[simd_id] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u) {
+        const uint t = team * 2u;
+        output[orow] = red[t] + red[t + 1u];
+    }
+}
+
+kernel void shared_binary_k8_fused_stream_c5120_tpr32_tg256(
+    device const uchar* signs [[buffer(0)]],
+    device const half*  scales [[buffer(1)]],
+    device const float* input  [[buffer(2)]],
+    device float*       output [[buffer(3)]],
+    uint group_id              [[threadgroup_position_in_grid]],
+    uint simd_lane             [[thread_index_in_simdgroup]],
+    uint simd_id               [[simdgroup_index_in_threadgroup]])
+{
+    const uint orow = group_id * 8u + simd_id;
+    float acc = 0.0f;
+    const uint sc0 = orow * 80u;
+    const uint kst = 1392640u;
+    const uint ps = 11141120u;
+    const uint row_base = orow * 5120u;
+    for (uint ocol = simd_lane * 8u; ocol + 8u <= 5120u; ocol += 256u) {
+        const uint g = ocol >> 6u;
+        const uint sidx = (row_base + ocol) >> 3u;
+        const float x0 = input[ocol];
+        const float x1 = input[ocol + 1u];
+        const float x2 = input[ocol + 2u];
+        const float x3 = input[ocol + 3u];
+        const float x4 = input[ocol + 4u];
+        const float x5 = input[ocol + 5u];
+        const float x6 = input[ocol + 6u];
+        const float x7 = input[ocol + 7u];
+        for (uint k = 0u; k < 8u; ++k) {
+            acc += k1_mac8(
+                signs[k * ps + sidx], float(scales[k * kst + sc0 + g]),
+                x0, x1, x2, x3, x4, x5, x6, x7);
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u) {
+        output[orow] = acc;
+    }
+}
+
+kernel void shared_binary_k8_fused_serial_c5120(
+    device const uchar* signs [[buffer(0)]],
+    device const half*  scales [[buffer(1)]],
+    device const float* input  [[buffer(2)]],
+    device float*       output [[buffer(3)]],
+    uint orow                  [[thread_position_in_grid]])
+{
+    float acc = 0.0f;
+    const uint sc0 = orow * 80u;
+    const uint kst = 1392640u;
+    const uint ps = 11141120u;
+    const uint row_base = orow * 5120u;
+    for (uint ocol = 0u; ocol < 5120u; ++ocol) {
+        const uint g = ocol >> 6u;
+        const uint flat = row_base + ocol;
+        const uint bit = flat & 7u;
+        const uint sidx = flat >> 3u;
+        const float xv = input[ocol];
+        for (uint k = 0u; k < 8u; ++k) {
+            const float a = float(scales[k * kst + sc0 + g]);
+            acc += ((((signs[k * ps + sidx] >> bit) & 1u) != 0u) ? a : -a) * xv;
+        }
+    }
+    output[orow] = acc;
+}
+
+kernel void shared_binary_k8_fused_serial_c17408(
+    device const uchar* signs [[buffer(0)]],
+    device const half*  scales [[buffer(1)]],
+    device const float* input  [[buffer(2)]],
+    device float*       output [[buffer(3)]],
+    uint orow                  [[thread_position_in_grid]])
+{
+    float acc = 0.0f;
+    const uint sc0 = orow * 272u;
+    const uint kst = 1392640u;
+    const uint ps = 11141120u;
+    const uint row_base = orow * 17408u;
+    for (uint ocol = 0u; ocol < 17408u; ++ocol) {
+        const uint g = ocol >> 6u;
+        const uint flat = row_base + ocol;
+        const uint bit = flat & 7u;
+        const uint sidx = flat >> 3u;
+        const float xv = input[ocol];
+        for (uint k = 0u; k < 8u; ++k) {
+            const float a = float(scales[k * kst + sc0 + g]);
+            acc += ((((signs[k * ps + sidx] >> bit) & 1u) != 0u) ? a : -a) * xv;
+        }
+    }
+    output[orow] = acc;
+}
+
+kernel void shared_binary_k8_fused_stream_c5120_tpr64_tg128_noop(
+    device const uchar* signs [[buffer(0)]],
+    device const half*  scales [[buffer(1)]],
+    device const float* input  [[buffer(2)]],
+    device float*       output [[buffer(3)]],
+    uint group_id              [[threadgroup_position_in_grid]],
+    uint simd_lane             [[thread_index_in_simdgroup]],
+    uint simd_id               [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[4];
+    const uint team = simd_id >> 1u;
+    const uint split = simd_id & 1u;
+    const uint orow = group_id * 2u + team;
+    (void)scales;
+    float acc = input[0] * 0.0f + float(signs[0]) * 0.0f;
+    if (simd_lane == 0u) {
+        red[simd_id] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u) {
+        output[orow] = red[0] * 0.0f;
+    }
+}
+
+kernel void shared_binary_k16_fused_stream_c5120_tpr64_tg128(
+    device const uchar* signs [[buffer(0)]],
+    device const half*  scales [[buffer(1)]],
+    device const float* input  [[buffer(2)]],
+    device float*       output [[buffer(3)]],
+    uint group_id              [[threadgroup_position_in_grid]],
+    uint simd_lane             [[thread_index_in_simdgroup]],
+    uint simd_id               [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[4];
+    const uint team = simd_id >> 1u;
+    const uint split = simd_id & 1u;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint orow = group_id * 2u + team;
+    float acc = 0.0f;
+    const uint sc0 = orow * 80u;
+    const uint kst = 1392640u;
+    const uint ps = 11141120u;
+    const uint row_base = orow * 5120u;
+    for (uint ocol = lane_in_row * 8u; ocol + 8u <= 5120u; ocol += 512u) {
+        const uint g = ocol >> 6u;
+        const uint sidx = (row_base + ocol) >> 3u;
+        const float x0 = input[ocol];
+        const float x1 = input[ocol + 1u];
+        const float x2 = input[ocol + 2u];
+        const float x3 = input[ocol + 3u];
+        const float x4 = input[ocol + 4u];
+        const float x5 = input[ocol + 5u];
+        const float x6 = input[ocol + 6u];
+        const float x7 = input[ocol + 7u];
+        for (uint k = 0u; k < 16u; ++k) {
+            acc += k1_mac8(
+                signs[k * ps + sidx], float(scales[k * kst + sc0 + g]),
+                x0, x1, x2, x3, x4, x5, x6, x7);
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u) {
+        red[simd_id] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u) {
+        const uint t = team * 2u;
+        output[orow] = red[t] + red[t + 1u];
+    }
+}
+
+kernel void shared_binary_k16_fused_stream_c17408_tpr64_tg128(
+    device const uchar* signs [[buffer(0)]],
+    device const half*  scales [[buffer(1)]],
+    device const float* input  [[buffer(2)]],
+    device float*       output [[buffer(3)]],
+    uint group_id              [[threadgroup_position_in_grid]],
+    uint simd_lane             [[thread_index_in_simdgroup]],
+    uint simd_id               [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[4];
+    const uint team = simd_id >> 1u;
+    const uint split = simd_id & 1u;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint orow = group_id * 2u + team;
+    float acc = 0.0f;
+    const uint sc0 = orow * 272u;
+    const uint kst = 1392640u;
+    const uint ps = 11141120u;
+    const uint row_base = orow * 17408u;
+    for (uint ocol = lane_in_row * 8u; ocol + 8u <= 17408u; ocol += 512u) {
+        const uint g = ocol >> 6u;
+        const uint sidx = (row_base + ocol) >> 3u;
+        const float x0 = input[ocol];
+        const float x1 = input[ocol + 1u];
+        const float x2 = input[ocol + 2u];
+        const float x3 = input[ocol + 3u];
+        const float x4 = input[ocol + 4u];
+        const float x5 = input[ocol + 5u];
+        const float x6 = input[ocol + 6u];
+        const float x7 = input[ocol + 7u];
+        for (uint k = 0u; k < 16u; ++k) {
+            acc += k1_mac8(
+                signs[k * ps + sidx], float(scales[k * kst + sc0 + g]),
+                x0, x1, x2, x3, x4, x5, x6, x7);
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u) {
+        red[simd_id] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u) {
+        const uint t = team * 2u;
+        output[orow] = red[t] + red[t + 1u];
+    }
+}

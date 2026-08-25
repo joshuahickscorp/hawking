@@ -1,0 +1,127 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T13:10:16Z",
+ "experiment_class": "ACCEL-KERNEL",
+ "knowledge_level": "INSTANCE",
+ "git_head": "5936724e62bfdd3a7e9f690b9736bed6206947dd",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_D_ATTENTION_SIMDGROUP",
+   "obligation": "G046",
+   "steer": "S015 \u00a7112 negative science"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model"
+  },
+  "representation": {
+   "name": "dense_f32"
+  },
+  "kernel": {
+   "variant": "attention with simdgroup_multiply_accumulate for both Q@K^T and P@V",
+   "blocking": "one simdgroup per 8 query rows"
+  },
+  "runtime": {
+   "mlx": "0.32.1",
+   "python": "3.12.13"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "hypothesis": "the attention receipt diagnosed its loss as SCALAR DOT PRODUCTS -- every score computed as head_dim scalar multiply-adds instead of simdgroup matrix instructions. That was the third diagnosis this program wrote down, and like the other two it was tested rather than believed.",
+  "verdict": "REFUTED",
+  "measurements": [
+   {
+    "seq": 512,
+    "dim": 64,
+    "err": 3.725290298461914e-07,
+    "ms": {
+     "mlx_sdpa": 0.26445797993801534,
+     "naive": 0.23787500686012208,
+     "air_scalar": 0.24841600679792464,
+     "air_simdgroup": 0.357250013621524
+    },
+    "iqrs": {
+     "mlx_sdpa": 3.95,
+     "naive": 11.62,
+     "air_scalar": 4.63,
+     "air_simdgroup": 3.83
+    },
+    "sg_vs_scalar": {
+     "verdict": "BASELINE_WINS",
+     "speedup": 0.6954,
+     "margin_pct": 30.46,
+     "arm_noise_pct": 4.63
+    },
+    "sg_vs_naive": {
+     "verdict": "NO_CLAIM",
+     "reason": "an arm failed the 10.0% IQR gate (naive 11.62%, air_simdgroup 3.83%) and the margin 50.18% does not overwhelm that noise",
+     "speedup": null
+    },
+    "sg_vs_mlx": {
+     "verdict": "BASELINE_WINS",
+     "speedup": 0.7403,
+     "margin_pct": 25.97,
+     "arm_noise_pct": 3.95
+    }
+   },
+   {
+    "seq": 768,
+    "dim": 64,
+    "err": 4.172325134277344e-07,
+    "ms": {
+     "mlx_sdpa": 0.29075000202283263,
+     "naive": 0.2589590149000287,
+     "air_scalar": 0.2968749904539436,
+     "air_simdgroup": 0.40774999069981277
+    },
+    "iqrs": {
+     "mlx_sdpa": 5.11,
+     "naive": 7.62,
+     "air_scalar": 7.8,
+     "air_simdgroup": 4.7
+    },
+    "sg_vs_scalar": {
+     "verdict": "BASELINE_WINS",
+     "speedup": 0.7281,
+     "margin_pct": 27.19,
+     "arm_noise_pct": 7.8
+    },
+    "sg_vs_naive": {
+     "verdict": "BASELINE_WINS",
+     "speedup": 0.6351,
+     "margin_pct": 36.49,
+     "arm_noise_pct": 7.62
+    },
+    "sg_vs_mlx": {
+     "verdict": "BASELINE_WINS",
+     "speedup": 0.7131,
+     "margin_pct": 28.69,
+     "arm_noise_pct": 5.11
+    }
+   }
+  ],
+  "what_happened": "Rebuilding attention on simdgroup matrix ops for BOTH matmuls made it SLOWER, not faster: 0.70x against the scalar version at 512 and 0.73x at 768. It also lost to naive and to MLX. The correctness is fine at 3.7e-07, so this is a genuine performance refutation rather than a broken kernel.",
+  "the_real_mechanism": "OCCUPANCY, not instruction choice. The scalar kernel puts 256 threads on ONE query row, so every thread has work and the row's scores are computed in parallel. The simdgroup kernel puts 32 threads on EIGHT query rows to make the 8x8 matrix tiles line up -- four threads' worth of parallelism per row, an eighth of the scalar version's. The matrix units are faster per instruction and it does not matter, because the kernel is not issuing enough work to keep the GPU busy.\\nIt also needs 8x the threadgroup memory, since it holds 8 score rows rather than one, which caps it at seq 1016 and REFUSED 1024 outright at compile time -- the Metal limit is 32768 bytes and 8x1024 floats plus scratch is 32800.",
+  "why_this_matters_more_than_a_win": "GEMM taught that matrix units are worth 1.6x and operand reuse another 2.5x. Carrying that lesson to attention UNEXAMINED would have been reasonable and WRONG. The same instruction that dominates a large square GEMM loses here because the blocking it forces destroys occupancy at these shapes. A technique is not a property of a machine; it is a property of a technique-shape-machine triple.",
+  "diagnosis_scorecard": {
+   "MLX scale advantage was operand reuse": "CONFIRMED, register blocking, 2.48x",
+   "reduction loss was launch count": "CONFIRMED, atomics, 3.05x",
+   "attention loss was scalar dot products": "REFUTED \u2014 it is occupancy",
+   "note": "three diagnoses written down, three tested, two held and one did not. The one that did not is the reason for testing them."
+  }
+ },
+ "claim_boundary": "This is a NEGATIVE result and nothing else. Simdgroup matrix ops in attention are SLOWER here at both sizes measured, and the mechanism is occupancy rather than instruction throughput. It does NOT show that matrix ops are useless in attention -- a design with more simdgroups per threadgroup, or larger head_dim, or a flash-style online softmax that removes the memory cap, could well reverse it. It shows that THIS blocking loses, and that the reason the earlier receipt gave was wrong.",
+ "pass": true
+}

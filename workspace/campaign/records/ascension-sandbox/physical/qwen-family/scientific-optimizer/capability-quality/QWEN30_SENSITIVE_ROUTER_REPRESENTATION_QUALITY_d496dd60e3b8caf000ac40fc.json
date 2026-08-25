@@ -1,0 +1,135 @@
+{
+  "budget": {
+    "candidate_component_bpw_limit": 1.5,
+    "complete_artifact_bpw": 1.1303663832684598,
+    "rule": "only variants at or below 1.5 component physical BPW are eligible; this does not estimate a new full-artifact BPW"
+  },
+  "claim_boundary": "component source-router quality diagnostic only; not a full-model quality score, prompt coherence pass, HCLI, TPS, TG, or manager capability receipt",
+  "diagnosis": {
+    "distinguished_mechanisms": [
+      "binary_scale_projection_error_under_complete_bpw_budget",
+      "router_top_k_instability",
+      "misallocated_sparse_residual_budget"
+    ],
+    "mechanism_not_tested_here": "final_logit_path_sensitivity",
+    "next_discriminating_gate": "sealed multi-prompt coherence/capability evidence on a materially rebuilt exact artifact"
+  },
+  "fail_condition": "source binding, bounded codec, budget, or deterministic route control is unavailable",
+  "failure": null,
+  "pass_condition": "a source-bound <=1.5 component-BPW variant completes deterministic sensitive-router controls",
+  "prompt_trace_binding": {
+    "all_48_layers_executed": true,
+    "document_sha256": "31d563a36de75193887775e85fbf403ce4722902814d5c5d743de3a8a10a47e4",
+    "metal_only": true,
+    "observed_completion_text_unscored": " Wien Wien",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_DIRECT_PACKED_NATIVE_PROMPT_A_RESULT.json",
+    "raw_bf16_loader_not_opened": true
+  },
+  "quality_revision": "v2_source_loader_signature_repaired",
+  "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen-family/scientific-optimizer/capability-quality/QWEN30_SENSITIVE_ROUTER_REPRESENTATION_QUALITY_d496dd60e3b8caf000ac40fc.json",
+  "record_id": "qwen30-sensitive-router-quality:d496dd60e3b8caf000ac40fc818bf46055ee3402e1097a371df896d9958b69e6",
+  "recorded_at": "2026-08-08T17:24:07.217503Z",
+  "reopen_condition": "new exact source revalidation, a materially changed complete representation, or new router kernel/error evidence",
+  "schema": "hawking.ascension.qwen30_sensitive_router_representation_quality.v1",
+  "seal_sha256": "b3ec9ab7eb20f56e95136c499ce6586fdd8555ebaa50e1d65b5ac6958e8e0810",
+  "source_binding": {
+    "revalidation_receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/QWEN30_CURRENT_SOURCE_SHARD_REVALIDATION.json",
+    "revalidation_receipt_seal_sha256": "ac7208e11c31bbd035bd87fd62a80020b9d1d05970867576f4649f6bebe68123",
+    "source_content_identity_sha256": "dfc985ac9e293c271209742f33c694664ed67b30962dad769cc3f596c58a9bb9",
+    "source_shard": "model-00001-of-00016.safetensors",
+    "source_shard_sha256": "c8f4ee157c2bdb00521d0f422c08ef16f0f3f5f7e234786d829401d627d2e167",
+    "source_value_sha256": "744e732e7bb8b96e26de2b1be8a5a3bbe04df72b4a85ccc08e1d128d2fbc0025",
+    "tensor_name": "model.layers.0.mlp.gate.weight",
+    "tensor_shape": [
+      128,
+      2048
+    ]
+  },
+  "status": "PASS_SOURCE_BOUND_SENSITIVE_ROUTER_REPRESENTATION_QUALITY_DIAGNOSTIC_NOT_CAPABILITY",
+  "variants": [
+    {
+      "component_physical_bpw": 1.132598876953125,
+      "name": "binary_sign_scale_group128",
+      "physical_bytes": 37113,
+      "router_control": {
+        "claim_boundary": "deterministic source-router controls only; not prompt-dependent routing, generation, capability, HCLI, or TPS",
+        "control_count": 32,
+        "mean_router_logit_relative_l2": 0.753353837877512,
+        "mean_top_k_overlap": 0.30859375,
+        "minimum_top_k_overlap": 0.0,
+        "top1_agreement": 0.15625,
+        "top_k": 8
+      },
+      "weight_quality": {
+        "cosine": 0.7410624027252197,
+        "max_abs": 0.974365234375,
+        "relative_l2": 0.6714382171630859,
+        "rmse": 0.04349523410201073
+      },
+      "within_1_5_bpw_component_budget": true
+    },
+    {
+      "component_physical_bpw": 1.070098876953125,
+      "name": "binary_sign_scale_group256",
+      "physical_bytes": 35065,
+      "router_control": {
+        "claim_boundary": "deterministic source-router controls only; not prompt-dependent routing, generation, capability, HCLI, or TPS",
+        "control_count": 32,
+        "mean_router_logit_relative_l2": 0.755078767426312,
+        "mean_top_k_overlap": 0.29296875,
+        "minimum_top_k_overlap": 0.0,
+        "top1_agreement": 0.15625,
+        "top_k": 8
+      },
+      "weight_quality": {
+        "cosine": 0.7399627566337585,
+        "max_abs": 0.974853515625,
+        "relative_l2": 0.6726497411727905,
+        "rmse": 0.04357371851801872
+      },
+      "within_1_5_bpw_component_budget": true
+    },
+    {
+      "component_physical_bpw": 1.2574462890625,
+      "name": "binary_sign_scale_sparse_fp16_residual_0.0025",
+      "physical_bytes": 41204,
+      "router_control": {
+        "claim_boundary": "deterministic source-router controls only; not prompt-dependent routing, generation, capability, HCLI, or TPS",
+        "control_count": 32,
+        "mean_router_logit_relative_l2": 0.6838687807321548,
+        "mean_top_k_overlap": 0.35546875,
+        "minimum_top_k_overlap": 0.125,
+        "top1_agreement": 0.21875,
+        "top_k": 8
+      },
+      "weight_quality": {
+        "cosine": 0.797705352306366,
+        "max_abs": 0.256683349609375,
+        "relative_l2": 0.603203296661377,
+        "rmse": 0.03907502442598343
+      },
+      "within_1_5_bpw_component_budget": true
+    }
+  ],
+  "winner": {
+    "component_physical_bpw": 1.2574462890625,
+    "name": "binary_sign_scale_sparse_fp16_residual_0.0025",
+    "physical_bytes": 41204,
+    "router_control": {
+      "claim_boundary": "deterministic source-router controls only; not prompt-dependent routing, generation, capability, HCLI, or TPS",
+      "control_count": 32,
+      "mean_router_logit_relative_l2": 0.6838687807321548,
+      "mean_top_k_overlap": 0.35546875,
+      "minimum_top_k_overlap": 0.125,
+      "top1_agreement": 0.21875,
+      "top_k": 8
+    },
+    "weight_quality": {
+      "cosine": 0.797705352306366,
+      "max_abs": 0.256683349609375,
+      "relative_l2": 0.603203296661377,
+      "rmse": 0.03907502442598343
+    },
+    "within_1_5_bpw_component_budget": true
+  }
+}

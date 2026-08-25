@@ -1,0 +1,297 @@
+{
+  "armed": true,
+  "baseline_fingerprints": {
+    "qwen_complete_binary_admitted:qwen30": "02175ee7882bc2c8c83ccbb0e0a4f46e65d22a246fe1f87ccbfa6dd49b4ebb1b"
+  },
+  "created_at": "2026-08-08T14:40:02.162251Z",
+  "events": {
+    "078efaf5d7c5df1c48316e1e0f4a1a97f6e6a99d6455bd6036ab4ac30e1c9f6d": {
+      "event_id": "qwen_complete_native_runtime",
+      "fingerprint": "6e1bfc73bb26bb554bb10b1c0e7a7fb05953a79d71607b8c9e6b31295103b949",
+      "lifecycle": "DELIVERED",
+      "model": "qwen30",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/078efaf5d7c5df1c48316e1e0f4a1a97f6e6a99d6455bd6036ab4ac30e1c9f6d.json",
+      "recorded_at": "2026-08-08T17:35:02.545609Z"
+    },
+    "11770963131781c0978c37036e3ad403638177298fd1d763f56b134a3fae8ebd": {
+      "event_id": "qwen_complete_native_runtime",
+      "fingerprint": "9bb965cd0aa0c0403ddf3da00a201d9c4632920bc2254340620196c3ad2023b6",
+      "lifecycle": "DELIVERED",
+      "model": "qwen30",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/11770963131781c0978c37036e3ad403638177298fd1d763f56b134a3fae8ebd.json",
+      "recorded_at": "2026-08-08T22:21:56.021375Z"
+    },
+    "1b8b70133adaedb1e9fb9b2c7cd8b70506185862642741fe0c5efb3dfe03f936": {
+      "event_id": "qwen_native_runtime_revoked",
+      "fingerprint": "844ec3e2a03d02f93c3ee67ad8f5315c8f06b0f88b1acaa053cb7a893f724e7c",
+      "lifecycle": "DELIVERED",
+      "model": "qwen30",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/1b8b70133adaedb1e9fb9b2c7cd8b70506185862642741fe0c5efb3dfe03f936.json",
+      "recorded_at": "2026-08-08T17:13:53.326471Z"
+    },
+    "220ead45931be22434514f74250497fad5efa3cb314cfcfb52a792cf20bf2ba9": {
+      "event_id": "qwen_complete_native_runtime",
+      "fingerprint": "2d1922ee2314746ee3b5a77164933e7302e57101d82d638b57b03ccb576789ee",
+      "lifecycle": "DELIVERED",
+      "model": "qwen30",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/220ead45931be22434514f74250497fad5efa3cb314cfcfb52a792cf20bf2ba9.json",
+      "recorded_at": "2026-08-08T22:37:49.424847Z"
+    },
+    "2bf052daf68ae1c9223175c8c2fda63dfeeca7f91dd2fdae46a2762ead7a26b6": {
+      "event_id": "global_resource_emergency",
+      "fingerprint": "100b5fc7de6d88e4a5197d32bdb90d507083b1af8109819040c0ff4de6b74e0e",
+      "lifecycle": "DELIVERED",
+      "model": null,
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/2bf052daf68ae1c9223175c8c2fda63dfeeca7f91dd2fdae46a2762ead7a26b6.json",
+      "recorded_at": "2026-08-10T00:30:29.159875Z"
+    },
+    "34234bc5da3d365165b445b7d2922534f4c38da794bd48e12fab589314159bb2": {
+      "event_id": "qwen_complete_native_runtime",
+      "fingerprint": "d32d51a918e9afa6e43726a78a1d75c9357de2b966ccf03f1898217ed8ccce71",
+      "lifecycle": "DELIVERED",
+      "model": "qwen30",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/34234bc5da3d365165b445b7d2922534f4c38da794bd48e12fab589314159bb2.json",
+      "recorded_at": "2026-08-08T16:12:54.882486Z"
+    },
+    "34c90bbf2d75588102409b29a97e1b383893c7f077250edfd39727e752f46037": {
+      "event_id": "qwen_complete_native_runtime",
+      "fingerprint": "45664daf1089f4211e2443e9bf4a576a43cb7c91f75b31adfc001cd1d39d5363",
+      "lifecycle": "DELIVERED",
+      "model": "qwen30",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/34c90bbf2d75588102409b29a97e1b383893c7f077250edfd39727e752f46037.json",
+      "recorded_at": "2026-08-08T20:35:28.518458Z"
+    },
+    "38eb0fa7b1594d8fb10f76a0f6670c04c0e89e1e950fc89dc042adc7800c66c8": {
+      "event_id": "qwen_complete_native_runtime",
+      "fingerprint": "df0defc7dc9ada8008b51b9899caa4edaaa592ad6bd9647dab2ea861f4b7712f",
+      "lifecycle": "DELIVERED",
+      "model": "qwen30",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/38eb0fa7b1594d8fb10f76a0f6670c04c0e89e1e950fc89dc042adc7800c66c8.json",
+      "recorded_at": "2026-08-08T22:28:44.380191Z"
+    },
+    "3e845bdcac3b13d76ca9fcfea39eaabd8e4701b3345fdae7b69464f1d2b68bf7": {
+      "event_id": "global_resource_emergency",
+      "fingerprint": "f1e6f672c24de9f6d15bcb668b37c49f48c0e7c37a2b24e8b42097f53d907b64",
+      "lifecycle": "DELIVERED",
+      "model": null,
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/3e845bdcac3b13d76ca9fcfea39eaabd8e4701b3345fdae7b69464f1d2b68bf7.json",
+      "recorded_at": "2026-08-09T10:45:22.014251Z"
+    },
+    "40af00947ca56b47cf1561935c84e9622e14083f8943d2189b3f368545991944": {
+      "event_id": "qwen_worker_recovered",
+      "fingerprint": "d2ae9ce7b84a3070cd5873eaafac2b9eea486db53b0492d0c439fddbb1709b40",
+      "lifecycle": "DELIVERED",
+      "model": "qwen80",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/40af00947ca56b47cf1561935c84e9622e14083f8943d2189b3f368545991944.json",
+      "recorded_at": "2026-08-10T00:30:28.604859Z"
+    },
+    "41b31a3863c248bb7824e31c5154ffc1ed53b415b5b49b8ac02532ce93076300": {
+      "event_id": "qwen_native_runtime_revoked",
+      "fingerprint": "750acaaf04f51eece3d28093c97f5a4a42f488a34579aa228432aedd739c4677",
+      "lifecycle": "DELIVERED",
+      "model": "qwen30",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/41b31a3863c248bb7824e31c5154ffc1ed53b415b5b49b8ac02532ce93076300.json",
+      "recorded_at": "2026-08-08T18:09:47.449401Z"
+    },
+    "46fbfc1b9b42f3fb780a2cf1d9bb695c718773ca72b354244446336cf5530cbe": {
+      "event_id": "qwen_worker_stalled",
+      "fingerprint": "f7caccef801b3b24869ee6ea2d47addfcc1864c45a94dbd4b256c298d21b10a8",
+      "lifecycle": "DELIVERED",
+      "model": "qwen80",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/46fbfc1b9b42f3fb780a2cf1d9bb695c718773ca72b354244446336cf5530cbe.json",
+      "recorded_at": "2026-08-10T00:29:40.728648Z"
+    },
+    "5427654aca8ff3a56222698d38550bc1b7bdb219ba157095a69f8661dfc138cf": {
+      "event_id": "operator_path_test",
+      "fingerprint": "8bd0af4b5cbc2734e5b8aeef04982d9d1f821b93b89d65a737595360444e5449",
+      "lifecycle": "DELIVERED",
+      "model": null,
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/5427654aca8ff3a56222698d38550bc1b7bdb219ba157095a69f8661dfc138cf.json",
+      "recorded_at": "2026-08-08T14:40:15.429641Z"
+    },
+    "543ab4c3b1cdeb749e8c5d848ab3da5165524f3a7581ad913032cfb610a3833e": {
+      "event_id": "global_resource_emergency",
+      "fingerprint": "5c2dfb9297869b6ab1177b9a5c8cbc1f0ae6363bf0a924592812e372eae1e85d",
+      "lifecycle": "DELIVERED",
+      "model": null,
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/543ab4c3b1cdeb749e8c5d848ab3da5165524f3a7581ad913032cfb610a3833e.json",
+      "recorded_at": "2026-08-09T10:43:50.144407Z"
+    },
+    "685473b558860b5a0c918de5de96cb6d3c1d6899e81b070648a6dd344a66f9f1": {
+      "event_id": "qwen_complete_native_runtime",
+      "fingerprint": "ec673c790f2bf5440fde338ab7e1a6bd741e94b1155080263039342b10b2e03e",
+      "lifecycle": "DELIVERED",
+      "model": "qwen30",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/685473b558860b5a0c918de5de96cb6d3c1d6899e81b070648a6dd344a66f9f1.json",
+      "recorded_at": "2026-08-08T19:08:39.977386Z"
+    },
+    "7e59d66021b9813bc9cf7b8c999f61c7655c52b1aec3454e5c99fb2ad252874e": {
+      "event_id": "qwen_worker_recovered",
+      "fingerprint": "1dc5f542cc744bda4eaf32796c3f33c510308bf00fad16a96ac562196062d5e6",
+      "lifecycle": "DELIVERED",
+      "model": "qwen30",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/7e59d66021b9813bc9cf7b8c999f61c7655c52b1aec3454e5c99fb2ad252874e.json",
+      "recorded_at": "2026-08-10T00:30:28.059196Z"
+    },
+    "91a5a8b9571d162914d365ba9ffb0a8e2d04112fba41bf4219aea835d90d1077": {
+      "event_id": "qwen_worker_recovered",
+      "fingerprint": "1cf7c84d80ee0a38639c8fe0b6c2f535bb668300684479a4b39359bf1fc1ec5e",
+      "lifecycle": "DELIVERED",
+      "model": "qwen80",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/91a5a8b9571d162914d365ba9ffb0a8e2d04112fba41bf4219aea835d90d1077.json",
+      "recorded_at": "2026-08-10T08:28:45.634088Z"
+    },
+    "956fc1e9a0c439b16bc13d0fe1f6d2cf068a7dfcf2f90ce2a40d88ad0693ce10": {
+      "event_id": "qwen_native_runtime_revoked",
+      "fingerprint": "e6760e09d37cfeb523bd4d062fe5df284f69db94512aadbf8e6f362445c1908e",
+      "lifecycle": "DELIVERED",
+      "model": "qwen30",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/956fc1e9a0c439b16bc13d0fe1f6d2cf068a7dfcf2f90ce2a40d88ad0693ce10.json",
+      "recorded_at": "2026-08-08T20:12:48.624708Z"
+    },
+    "a2a02073786ae400fd6304c66b6ba671d3e3338e22b5ecf837e0f082705877be": {
+      "event_id": "qwen_worker_recovered",
+      "fingerprint": "59660a42ca84031183cb1a551de5a645d79d0b5cad4755aa63e9b62ea4bd111e",
+      "lifecycle": "DELIVERED",
+      "model": "qwen80",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/a2a02073786ae400fd6304c66b6ba671d3e3338e22b5ecf837e0f082705877be.json",
+      "recorded_at": "2026-08-10T10:30:02.966023Z"
+    },
+    "a3061a1881324246fa17ccb35114aa788e2c7abef848d1bfc74ef251ab93c0a6": {
+      "event_id": "global_resource_emergency",
+      "fingerprint": "95714470772913be8967ab3371bc7dcac289a3dfae7ad47509483f8443d45c7f",
+      "lifecycle": "DELIVERED",
+      "model": null,
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/a3061a1881324246fa17ccb35114aa788e2c7abef848d1bfc74ef251ab93c0a6.json",
+      "recorded_at": "2026-08-10T10:30:03.523651Z"
+    },
+    "a940d23a2dfa71d8fe74f775fded0d8a3c61492690afdaaed1e486ab836d73c5": {
+      "event_id": "global_campaign_resumed",
+      "fingerprint": "51d1184909172b5eda94e70be2726b5beca8b7633e7a1d895be6dddca6719f9e",
+      "lifecycle": "DELIVERED",
+      "model": null,
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/a940d23a2dfa71d8fe74f775fded0d8a3c61492690afdaaed1e486ab836d73c5.json",
+      "recorded_at": "2026-08-09T22:15:22.257747Z"
+    },
+    "bec75b32036295284aab5c1a03c96b533f73e7c7a6a515d463daf7648cfdc3b5": {
+      "event_id": "qwen_worker_recovered",
+      "fingerprint": "dd76f05b8b43aa47312fcd81f60903d47d2e6b6309c7eb30ed9aec962fb5ef98",
+      "lifecycle": "DELIVERED",
+      "model": "qwen30",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/bec75b32036295284aab5c1a03c96b533f73e7c7a6a515d463daf7648cfdc3b5.json",
+      "recorded_at": "2026-08-10T08:28:45.177919Z"
+    },
+    "c59698bf4af5af5e2167b2e08835159a845de2cae8abb449d2d99b5f3a3eddc5": {
+      "event_id": "global_detached_worker_failure",
+      "fingerprint": "2f717632f75811d14a3d7fa076fc9a8443a1213ae6f234e4b44d7329369cc485",
+      "lifecycle": "DELIVERED",
+      "model": null,
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/c59698bf4af5af5e2167b2e08835159a845de2cae8abb449d2d99b5f3a3eddc5.json",
+      "recorded_at": "2026-08-10T08:27:58.768906Z"
+    },
+    "caab2f5deaef102856f55103e0e0a57253433377d1d6f5106fdd6bb3587d2aaa": {
+      "event_id": "qwen_native_runtime_revoked",
+      "fingerprint": "143b0f9888735f5eae28e2a0724dba874e3c65a26286787c5f8376c9422c5c7c",
+      "lifecycle": "DELIVERED",
+      "model": "qwen30",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/caab2f5deaef102856f55103e0e0a57253433377d1d6f5106fdd6bb3587d2aaa.json",
+      "recorded_at": "2026-08-08T22:03:02.198991Z"
+    },
+    "cdf664706e0d506537f6c32c749d2fd1b7ec0c2bf6dde402d6fe2aea61628d1a": {
+      "event_id": "qwen_complete_native_runtime",
+      "fingerprint": "09b390a496d89ff7a1f0e155ed57f84b5a7955b6fbc5b7a8c904b8342fd6850c",
+      "lifecycle": "DELIVERED",
+      "model": "qwen30",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/cdf664706e0d506537f6c32c749d2fd1b7ec0c2bf6dde402d6fe2aea61628d1a.json",
+      "recorded_at": "2026-08-08T22:31:46.474600Z"
+    },
+    "cffff91af39809a5d9b84231b07f28043ee03f7832b2842bc6ee88f4565ccb68": {
+      "event_id": "global_detached_worker_failure",
+      "fingerprint": "1bb83b2b2ae5917b921b119e7dda1eb304c709805edcf49d5279f14d92712a62",
+      "lifecycle": "DELIVERED",
+      "model": null,
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/cffff91af39809a5d9b84231b07f28043ee03f7832b2842bc6ee88f4565ccb68.json",
+      "recorded_at": "2026-08-10T00:29:40.153378Z"
+    },
+    "d16c464e0f2de2a7e7c7272e0c8c4a4a5d1e2487659b82b937c32bd00e2a33e7": {
+      "event_id": "qwen_worker_stalled",
+      "fingerprint": "76b0ed6eed5a7e75d12303ee1e371ccb230ccbf099ecda4cd7160d8f7428622a",
+      "lifecycle": "DELIVERED",
+      "model": "qwen30",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/d16c464e0f2de2a7e7c7272e0c8c4a4a5d1e2487659b82b937c32bd00e2a33e7.json",
+      "recorded_at": "2026-08-10T00:29:39.594620Z"
+    },
+    "d1f4bb20c5eb6611ac5b6e1dd34b4b3cbedcaaf49b266ddb42048fb81b9623e5": {
+      "event_id": "qwen_worker_recovered",
+      "fingerprint": "ee8e1feb05887749dbc5ea332850702eac59370794b15a5b6e1bc415c496b788",
+      "lifecycle": "DELIVERED",
+      "model": "qwen30",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/d1f4bb20c5eb6611ac5b6e1dd34b4b3cbedcaaf49b266ddb42048fb81b9623e5.json",
+      "recorded_at": "2026-08-09T22:15:21.513734Z"
+    },
+    "d82bc05e69f2105213fe33de802369673c6c846ba2d8f99b66b27fe651cede13": {
+      "event_id": "qwen_worker_recovered",
+      "fingerprint": "6a807d6f28619bef1d81759fba0ca5b2fc6b61a304c0f409bcd1fd022cda55c0",
+      "lifecycle": "DELIVERED",
+      "model": "qwen80",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/d82bc05e69f2105213fe33de802369673c6c846ba2d8f99b66b27fe651cede13.json",
+      "recorded_at": "2026-08-10T11:53:44.329940Z"
+    },
+    "dbfcc9ac8364c505df563baec1c1bc158b3b0bfa6f77c983dc9eff801dad94dd": {
+      "event_id": "qwen_complete_binary_admitted",
+      "fingerprint": "26116a4d9f69351aa57bc17d825c47e0672130ed249e1b9b29212eaca842efa0",
+      "lifecycle": "DELIVERED",
+      "model": "qwen80",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/dbfcc9ac8364c505df563baec1c1bc158b3b0bfa6f77c983dc9eff801dad94dd.json",
+      "recorded_at": "2026-08-08T15:19:44.372362Z"
+    },
+    "dc963cc234920669f72117becc4108ac99c8d571d6a90e0fabd879deb6c97277": {
+      "event_id": "qwen_complete_native_runtime",
+      "fingerprint": "55e371383533b4d827ebd0a2dcce7f0b891a82eeefb803f287e1b3b7e22cf834",
+      "lifecycle": "DELIVERED",
+      "model": "qwen30",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/dc963cc234920669f72117becc4108ac99c8d571d6a90e0fabd879deb6c97277.json",
+      "recorded_at": "2026-08-08T22:29:30.188965Z"
+    },
+    "dfa2a661f63efdb19346b112d8166032894a180f5eeacc9a2575cebc5b3bfff7": {
+      "event_id": "qwen_worker_stalled",
+      "fingerprint": "8fcd85211b526bacd2994cd2699e728ec12864473a4c3afb0f6ef3abe14a4db8",
+      "lifecycle": "DELIVERED",
+      "model": "qwen80",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/dfa2a661f63efdb19346b112d8166032894a180f5eeacc9a2575cebc5b3bfff7.json",
+      "recorded_at": "2026-08-10T08:27:58.312896Z"
+    },
+    "eafffcfe69b455a1911226c51aee1a67c79638244704d572b8aea2841c7490b0": {
+      "event_id": "qwen_worker_recovered",
+      "fingerprint": "ebc25a67b8fe3398466f06d1987b437c7dc3d5471eadf6b9ac9b49c60540563f",
+      "lifecycle": "DELIVERED",
+      "model": "qwen30",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/eafffcfe69b455a1911226c51aee1a67c79638244704d572b8aea2841c7490b0.json",
+      "recorded_at": "2026-08-10T10:30:02.429259Z"
+    },
+    "ed40e402f57ccb65fd9977b92d717eec04fce49a7f385717cffff771fd73a3bc": {
+      "event_id": "global_detached_worker_failure",
+      "fingerprint": "f2197e647c7dd8afa544f90700aff53c1200d4a14234d9d03abf197c9dd5a7a1",
+      "lifecycle": "DELIVERED",
+      "model": null,
+      "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/ed40e402f57ccb65fd9977b92d717eec04fce49a7f385717cffff771fd73a3bc.json",
+      "recorded_at": "2026-08-10T00:29:41.440347Z"
+    }
+  },
+  "resource_emergency": true,
+  "schema": "hawking.ascension.physical_telegram_notifier_state.v1",
+  "seal_sha256": "2a162cd5b35308a7f52556c18500395dc45ef1ec8a3c77e96d975ce930062a0c",
+  "test_event": {
+    "event_id": "operator_path_test",
+    "fingerprint": "8bd0af4b5cbc2734e5b8aeef04982d9d1f821b93b89d65a737595360444e5449",
+    "lifecycle": "DELIVERED",
+    "model": null,
+    "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/notifications/telegram/deliveries/5427654aca8ff3a56222698d38550bc1b7bdb219ba157095a69f8661dfc138cf.json",
+    "recorded_at": "2026-08-08T14:40:15.429641Z"
+  },
+  "updated_at": "2026-08-10T17:23:20.154075Z",
+  "worker_health": {
+    "qwen30": true,
+    "qwen80": true
+  }
+}

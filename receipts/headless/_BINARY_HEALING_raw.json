@@ -1,0 +1,444 @@
+{
+  "compile_s": 0.095524125,
+  "dense_w_materialized": 0,
+  "device": "Apple M3 Ultra",
+  "elapsed_s": 18.716634166,
+  "git_head": "733aeb1c97f53bf4173c111f6d957985d6e05c32",
+  "graphs": [
+    {
+      "dense_w_materialized": 0,
+      "dispatches": 192,
+      "gpu_ns": {
+        "all": [
+          11716958,
+          11943541,
+          11517999,
+          11547500,
+          11799500,
+          11520583,
+          11827625
+        ],
+        "max": 11943541,
+        "median": 11716958,
+        "min": 11517999,
+        "n": 7
+      },
+      "id": "binary",
+      "layers": 64,
+      "mlp_payload_bytes": 2673868800,
+      "n_binary_gemvs": 192,
+      "n_q2f_gemvs": 0,
+      "serial": {
+        "gpu_ns": {
+          "all": [
+            46113624,
+            45578541,
+            45818500,
+            45943583,
+            45500875,
+            46036375,
+            45864333
+          ],
+          "max": 46113624,
+          "median": 45864333,
+          "min": 45500875,
+          "n": 7
+        },
+        "overlap_with_geo": false,
+        "wall_ns": {
+          "all": [
+            46459583,
+            45945583,
+            46151583,
+            46359916,
+            45902042,
+            46415083,
+            46292000
+          ],
+          "max": 46459583,
+          "median": 46292000,
+          "min": 45902042,
+          "n": 7
+        }
+      },
+      "unique_weight_tensors": 192,
+      "wall_ns": {
+        "all": [
+          12140917,
+          12358333,
+          11893500,
+          11925875,
+          12221709,
+          11928875,
+          12164083
+        ],
+        "max": 12358333,
+        "median": 12140917,
+        "min": 11893500,
+        "n": 7
+      }
+    },
+    {
+      "dense_w_materialized": 0,
+      "dispatches": 192,
+      "gpu_ns": {
+        "all": [
+          15787750,
+          15992916,
+          15731666,
+          16082500,
+          15674374,
+          16053833,
+          15686416
+        ],
+        "max": 16082500,
+        "median": 15787750,
+        "min": 15674374,
+        "n": 7
+      },
+      "id": "q2f",
+      "layers": 64,
+      "mlp_payload_bytes": 4812963840,
+      "n_binary_gemvs": 0,
+      "n_q2f_gemvs": 192,
+      "serial": null,
+      "unique_weight_tensors": 192,
+      "wall_ns": {
+        "all": [
+          16117292,
+          16324375,
+          16024625,
+          16410583,
+          16009166,
+          16395667,
+          16201834
+        ],
+        "max": 16410583,
+        "median": 16201834,
+        "min": 16009166,
+        "n": 7
+      }
+    },
+    {
+      "dense_w_materialized": 0,
+      "dispatches": 192,
+      "gpu_ns": {
+        "all": [
+          12954666,
+          13025874,
+          13219000,
+          12856708,
+          13309125,
+          12879124,
+          12997250
+        ],
+        "max": 13309125,
+        "median": 12997250,
+        "min": 12856708,
+        "n": 7
+      },
+      "id": "down_q2f",
+      "layers": 64,
+      "mlp_payload_bytes": 3386900480,
+      "n_binary_gemvs": 128,
+      "n_q2f_gemvs": 64,
+      "serial": {
+        "gpu_ns": {
+          "all": [
+            19142874,
+            19395333,
+            19203000,
+            19395541,
+            19383333,
+            19157500,
+            19495541
+          ],
+          "max": 19495541,
+          "median": 19383333,
+          "min": 19142874,
+          "n": 7
+        },
+        "overlap_with_geo": false,
+        "wall_ns": {
+          "all": [
+            19549125,
+            19779584,
+            19534792,
+            19753000,
+            19742834,
+            19520833,
+            19888500
+          ],
+          "max": 19888500,
+          "median": 19742834,
+          "min": 19520833,
+          "n": 7
+        }
+      },
+      "unique_weight_tensors": 192,
+      "wall_ns": {
+        "all": [
+          13324459,
+          13402500,
+          13621167,
+          13532541,
+          13703292,
+          13295000,
+          13366791
+        ],
+        "max": 13703292,
+        "median": 13402500,
+        "min": 13295000,
+        "n": 7
+      }
+    },
+    {
+      "dense_w_materialized": 0,
+      "dispatches": 192,
+      "gpu_ns": {
+        "all": [
+          13145874,
+          12934875,
+          13419041,
+          12898125,
+          13223291,
+          13028999,
+          12914624
+        ],
+        "max": 13419041,
+        "median": 13028999,
+        "min": 12898125,
+        "n": 7
+      },
+      "id": "gate_q2f",
+      "layers": 64,
+      "mlp_payload_bytes": 3386900480,
+      "n_binary_gemvs": 128,
+      "n_q2f_gemvs": 64,
+      "serial": null,
+      "unique_weight_tensors": 192,
+      "wall_ns": {
+        "all": [
+          13443500,
+          13289667,
+          13740542,
+          13301125,
+          13642375,
+          13368542,
+          13284500
+        ],
+        "max": 13740542,
+        "median": 13368542,
+        "min": 13284500,
+        "n": 7
+      }
+    },
+    {
+      "dense_w_materialized": 0,
+      "dispatches": 192,
+      "gpu_ns": {
+        "all": [
+          13016958,
+          12569624,
+          12673583,
+          12965625,
+          12556708,
+          12979916,
+          12564833
+        ],
+        "max": 13016958,
+        "median": 12673583,
+        "min": 12556708,
+        "n": 7
+      },
+      "id": "early16_q2f",
+      "layers": 64,
+      "mlp_payload_bytes": 3208642560,
+      "n_binary_gemvs": 144,
+      "n_q2f_gemvs": 48,
+      "serial": null,
+      "unique_weight_tensors": 192,
+      "wall_ns": {
+        "all": [
+          13378417,
+          12950125,
+          12981291,
+          13349083,
+          12903375,
+          13338917,
+          13003583
+        ],
+        "max": 13378417,
+        "median": 13003583,
+        "min": 12903375,
+        "n": 7
+      }
+    },
+    {
+      "dense_w_materialized": 0,
+      "dispatches": 192,
+      "gpu_ns": {
+        "all": [
+          12673583,
+          12964374,
+          12768249,
+          12698250,
+          13018875,
+          12648125,
+          13106250
+        ],
+        "max": 13106250,
+        "median": 12768249,
+        "min": 12648125,
+        "n": 7
+      },
+      "id": "late16_q2f",
+      "layers": 64,
+      "mlp_payload_bytes": 3208642560,
+      "n_binary_gemvs": 144,
+      "n_q2f_gemvs": 48,
+      "serial": null,
+      "unique_weight_tensors": 192,
+      "wall_ns": {
+        "all": [
+          13029625,
+          13316916,
+          13117834,
+          13071167,
+          13342000,
+          12991750,
+          13454500
+        ],
+        "max": 13454500,
+        "median": 13117834,
+        "min": 12991750,
+        "n": 7
+      }
+    },
+    {
+      "dense_w_materialized": 0,
+      "dispatches": 192,
+      "gpu_ns": {
+        "all": [
+          13366791,
+          13868208,
+          13385875,
+          13645750,
+          13511125,
+          13394749,
+          13854458
+        ],
+        "max": 13868208,
+        "median": 13511125,
+        "min": 13366791,
+        "n": 7
+      },
+      "id": "sparse_05",
+      "layers": 64,
+      "mlp_payload_bytes": 3189375744,
+      "nnz": 84213760,
+      "nnz_frac": 0.005,
+      "unique_weight_tensors": 192,
+      "wall_ns": {
+        "all": [
+          13751292,
+          14210250,
+          13748917,
+          13960875,
+          13875208,
+          13754125,
+          14184417
+        ],
+        "max": 14210250,
+        "median": 13875208,
+        "min": 13748917,
+        "n": 7
+      }
+    }
+  ],
+  "layers": 64,
+  "mlp_elements": 17112760320,
+  "n021_complete_gpu_ns_median": 27547874,
+  "occupancy": [
+    {
+      "kernel": "binary_g64_matvec_geo_c5120_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "binary_g64_matvec_geo_c17408_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "binary_g64_matvec_serial_c5120",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "binary_g64_matvec_serial_c17408",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "binary_sparse_fused_geo_c5120_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "binary_sparse_fused_geo_c17408_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "q2f_g64_matvec_geo_c5120_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "q2f_g64_matvec_geo_c17408_tpr64_tg128",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    },
+    {
+      "kernel": "q2f_g64_matvec_serial_c5120",
+      "max_total_threads_per_threadgroup": 1024,
+      "thread_execution_width": 32
+    }
+  ],
+  "parent_params": 26895998464,
+  "parity": [
+    {
+      "dense_w_materialized": 0,
+      "id": "binary_geo_c5120",
+      "kernel": "binary_g64_matvec_geo_c5120_tpr64_tg128",
+      "max_abs_diff": 0.0,
+      "must_match": true,
+      "ok": true,
+      "tolerance": 0.019999999552965164
+    },
+    {
+      "dense_w_materialized": 0,
+      "id": "q2f_geo_c5120",
+      "kernel": "q2f_g64_matvec_geo_c5120_tpr64_tg128",
+      "max_abs_diff": 0.0,
+      "must_match": true,
+      "ok": true,
+      "tolerance": 0.019999999552965164
+    },
+    {
+      "dense_w_materialized": 0,
+      "id": "residual_fused_c5120",
+      "kernel": "binary_sparse_fused_geo_c5120_tpr64_tg128",
+      "max_abs_diff": 0.0,
+      "must_match": true,
+      "ok": true,
+      "tolerance": 0.019999999552965164
+    }
+  ],
+  "q4_attn_f32_bytes": 5206533080,
+  "reps": 7,
+  "schema": "hawking.headless.binary_healing.raw.v1",
+  "skip_unique": false,
+  "warmup": 2
+}

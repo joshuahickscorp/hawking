@@ -1,0 +1,4133 @@
+{
+ "schema": "hawking.headless.doctor_technique_library.v1",
+ "generated_at": "2026-08-24T23:16:28Z",
+ "git_head": "5146decb939f7c6d61cf352eb45bd3e093b53c6c",
+ "generated_by": "tools/headless/doctor_technique_library.py",
+ "obligation": "N052 \u2014 HARDEN DOCTOR: general TechniqueLibrary (S026 \u00a75, \u00a764, \u00a775, \u00a7107; S028; CPU). Merge N043 (15) + N046 RECOMMENDED_ADDITIONS (24) into one hardened general Doctor toolkit. Applicability is per architecture class. A Qwen-MLP failure is not a prune.",
+ "docs": "docs/ultragoals/DOCTOR_TECHNIQUE_LIBRARY.md",
+ "hand_authored": false,
+ "literature_is": "HYPOTHESIS",
+ "literature_is_not_authority": true,
+ "doctor_is": "GENERAL_PHYSICIAN",
+ "not_qwen_only": true,
+ "s026": [
+  "\u00a75",
+  "\u00a764",
+  "\u00a775",
+  "\u00a7107",
+  "\u00a76",
+  "\u00a788",
+  "\u00a789"
+ ],
+ "s028": "Failing on Qwen's MLP != dead. e.g. ButterflyQuant: N044 rotation coordinate-robust on Qwen MLP \u2192 dense_mlp UNLIKELY, attention/other-arch UNKNOWN (keep). Binary: dead as Qwen final generator but KEEP as speculative-draft (N049). Shared basis: competent kernel, dead <2.25 on Qwen MLP, KEEP for MoE-expert / cross-layer sharing UNKNOWN.",
+ "did_not_load_a_model": true,
+ "did_not_touch_gpu": true,
+ "did_not_run_cargo_or_metal_benchmarks": true,
+ "did_not_mutate_parent": true,
+ "did_not_write_under_models": true,
+ "did_not_modify_ascent_or_campaign": true,
+ "architecture_classes": [
+  "dense_mlp",
+  "moe",
+  "attention_gqa",
+  "recurrent_deltanet",
+  "multimodal",
+  "kv_state",
+  "decoding",
+  "tokenizer"
+ ],
+ "applicability_grades": [
+  "PLAUSIBLE",
+  "UNKNOWN",
+  "UNLIKELY"
+ ],
+ "qwen_outcomes": [
+  "failed",
+  "untested",
+  "worked"
+ ],
+ "decisions": [
+  "KEEP",
+  "PRUNE"
+ ],
+ "prune_classes": [
+  "metal_infeasible",
+  "strictly_dominated",
+  "superseded"
+ ],
+ "n043_receipt": "receipts/headless/DOCTOR_TECHNIQUE_REGISTRY.json",
+ "n046_receipt": "receipts/headless/LITERATURE_FRONTIER.json",
+ "n043_ids": [
+  "spinquant",
+  "twla",
+  "cat_q",
+  "ptqtp",
+  "onebit",
+  "aqlm",
+  "vptq",
+  "caldera",
+  "squeezellm",
+  "kivi",
+  "minicache",
+  "h2o",
+  "mixture_of_depths",
+  "prosparse",
+  "medusa_mtp"
+ ],
+ "n043_seed_names": [
+  "SpinQuant",
+  "TWLA",
+  "CAT-Q",
+  "PTQTP",
+  "OneBit",
+  "AQLM",
+  "VPTQ",
+  "CALDERA",
+  "SqueezeLLM",
+  "KIVI",
+  "MiniCache",
+  "H2O",
+  "Mixture-of-Depths",
+  "ProSparse",
+  "Medusa"
+ ],
+ "n046_recommended_names": [
+  "HIGGS",
+  "Gloeckle MTP / Qwen-native MTP census",
+  "TEAL",
+  "LayerSkip",
+  "ButterflyQuant",
+  "QTIP",
+  "Quamba2",
+  "DFlash",
+  "OCTOPUS",
+  "OSCAR",
+  "TurboQuant",
+  "ParoQuant",
+  "ResQ",
+  "Sparse Delta Memory",
+  "HyperQuant",
+  "EAGLE-3",
+  "MagicDec",
+  "OSTQuant",
+  "Palu",
+  "PolarQuant",
+  "SuperBPE",
+  "FlatQuant",
+  "Mixture-of-Recursions",
+  "TransMLA"
+ ],
+ "n_n043": 15,
+ "n_n046_recommended": 24,
+ "n_deduplicated": 1,
+ "deduplicated": [
+  {
+   "from_n046_name": "Gloeckle MTP / Qwen-native MTP census",
+   "from_id": "gloeckle_mtp",
+   "into": "medusa_mtp",
+   "arxiv_id": "2404.19737",
+   "reason": "N043 medusa_mtp already registers Medusa (2401.10774) and Gloeckle MTP (2404.19737) as one S026 mechanism. N046's recommended MTP census is the same paper; keep the union of evidence."
+  }
+ ],
+ "n_campaign_mechanisms": 1,
+ "techniques": [
+  {
+   "id": "spinquant",
+   "name": "SpinQuant",
+   "sources": [
+    "N043"
+   ],
+   "merged_from": [],
+   "family": "DOC-COORDINATES",
+   "n043_seed": true,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Learned orthogonal rotations (Cayley-SGD, Hadamard-init) redistribute weight/activation outliers so a subsequent quantizer (RTN or GPTQ) sees a friendlier coordinate system. Rotations are function-preserving in full precision and preferably absorbed into adjacent weights (zero extra runtime matmul). S026 \u00a77-10: CoordinateTransformGenome. N046 restates: Learn a Cayley-parameterized orthogonal rotation that is absorbed into adjacent weights, reducing activation outliers before low-bit PTQ.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2405.16406",
+    "arxiv_ids": [
+     "2405.16406"
+    ],
+    "arxiv_date": "2024-05-26",
+    "license": "arXiv perpetual",
+    "authors": "Liu et al.",
+    "title": "SpinQuant: LLM quantization with learned rotations",
+    "venue": "ICLR 2025",
+    "url": "https://arxiv.org/abs/2405.16406",
+    "code_url": null,
+    "code_license_note": "facebookresearch/SpinQuant code is CC-BY-NC 4.0 \u2014 do not copy. Re-derive from the paper if N044 warrants an implementation.",
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "N044 ROTATION_MOVES_BARRIER=false on Qwen3.8 MLP (receipts/headless/COORDINATE_TRANSFORM_PROBE.json): Hadamard and learned block-orthogonal did not move held-out composition; the 2.25 floor is coordinate-robust. S028/\u00a764/\u00a7107: a Qwen-MLP failure is not global death."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Expert Linear maps are the same algebra; a Qwen dense-MLP result does not transfer (S028/\u00a764/\u00a7107)."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "GQA Q/O GEMVs were not the Qwen MLP composition probe; keep as a hypothesis."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "DeltaNet in_proj is a different organ (floor 3.26 EBPW) and was not this codec's Qwen test."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No vision/audio organ is in the Qwen3.8 hybrid census."
+    },
+    "kv_state": {
+     "grade": "UNKNOWN",
+     "reason": "Absorbed weight rotation is not a KV codec; OSCAR/TurboQuant are the KV-rotation family."
+    },
+    "decoding": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change accepted-tokens-per-forward; at best it cheapens a draft body."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology or tokenizer bytes."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "failed",
+    "receipt": "receipts/headless/COORDINATE_TRANSFORM_PROBE.json",
+    "scope": "Qwen3.8 MLP composition (layers 0 and 31 gate/up/down + SwiGLU); not a global-architecture verdict.",
+    "related_not_the_same": "N044 tested Hadamard + PCA-orthogonal, not every paper's parameterization."
+   },
+   "metal_feasibility": {
+    "class": "ZERO_RUNTIME_IF_ABSORBED",
+    "note": "If the rotation is fused into W (S026 \u00a79), decode sees only the existing q2f/q3 kernel. Online rotation at decode is extra GEMV traffic on a bandwidth-bound graph and is not free. CUDA PTQ quality is not a Metal token_ns (S026 \u00a789).",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-SPINQUANT",
+    "summary": "N044 COORDINATE_TRANSFORM_PROBE: Hadamard + one learned/structured orthogonal on L31.gate_proj real hold X; re-fit ternary ~1.58 and binary 1.25 vs unrotated; identity and random non-orthogonal controls; composition_local_survives bar (gain>=0.5, rel_fro<=0.5).",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null,
+    "n043_experiment_id": "HX-SPINQUANT-N044",
+    "n043_summary": "Coordinate transform discriminator on one MLP organ: Already queued as N044. CPU. Hadamard + one structured orthogonal vs identity vs random non-orthogonal; refit ternary ~1.58 and binary 1.25 in the rotated frame on real held-out X. Identity must reproduce the unrotated baseline.",
+    "union_of_evidence": true
+   },
+   "decision": "KEEP",
+   "decision_reason": "N044 closed the Qwen-MLP rotation reopen; KEEP because GQA/DeltaNet/MoE absorption is UNKNOWN and a purpose-rejection is not global death (S026 \u00a764, S028).",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n043_verdict_status": "UNTESTED",
+   "n043_campaign_verdict": null,
+   "n043_hawking_receipts": [],
+   "n046_rank_score": 12.5,
+   "n046_metal_feasibility": "ZERO_RUNTIME_IF_ABSORBED",
+   "n046_hawking_organ": "mlp_gate_up",
+   "codebase_citations": [
+    "receipts/headless/QWEN_COMPLETION_RECEIPT.json",
+    "receipts/headless/ORGAN_DENSITY_FLOORS.json",
+    "receipts/headless/FRACTIONAL_BIT_CANON.json",
+    "receipts/headless/ORGAN_LIBRARY.json"
+   ]
+  },
+  {
+   "id": "twla",
+   "name": "TWLA",
+   "sources": [
+    "N043"
+   ],
+   "merged_from": [],
+   "family": "DOC-COORDINATES",
+   "n043_seed": true,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "W1.58A4 PTQ: (1) Euclidean-to-manifold asymmetric ternary quantizer, (2) Kronecker orthogonal tri-modal shaping so weights become ternary-friendly and the shared rotation suppresses activation outliers, (3) inter-layer-aware mixed-precision activations. S026 mapping: ternary-friendly coordinates PLUS low-bit activations \u2014 not ternary weights alone. N046 restates: Ternary-friendly Kronecker orthogonal (KOTMS) plus manifold ternary quantizer and inter-layer-aware W1.58A4 activations.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2606.13054",
+    "arxiv_ids": [
+     "2606.13054"
+    ],
+    "arxiv_date": "2026-06-11",
+    "license": "arXiv non-exclusive; literature hypothesis only.",
+    "authors": "Zhao, Xu, Chen, Hu, Jiang, Yang",
+    "title": "TWLA: Achieving Ternary Weights and Low-Bit Activations for LLMs via Post-Training Quantization",
+    "venue": "2026 PTQ",
+    "url": "https://arxiv.org/abs/2606.13054",
+    "code_url": null,
+    "code_license_note": "Kishon-zzx/TWLA \u2014 check license before any port; re-derive.",
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "Ternary 5-in-8 on this body is slower + argmax-flip (receipts/headless/BYTES_FRONTIER.json, receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json); N044 did not move 1.58 in rotated coords. S028/\u00a764/\u00a7107: a Qwen-MLP failure is not global death."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Expert Linear maps are the same algebra; a Qwen dense-MLP result does not transfer (S028/\u00a764/\u00a7107)."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "GQA Q/O GEMVs were not the Qwen MLP composition probe; keep as a hypothesis."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "DeltaNet in_proj is a different organ (floor 3.26 EBPW) and was not this codec's Qwen test."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No vision/audio organ is in the Qwen3.8 hybrid census."
+    },
+    "kv_state": {
+     "grade": "UNLIKELY",
+     "reason": "This is a weight codec, not a KV/state codec."
+    },
+    "decoding": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change accepted-tokens-per-forward; at best it cheapens a draft body."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology or tokenizer bytes."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "failed",
+    "receipt": "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+    "scope": "Native ternary 5-in-8 g64 MLP flipped whole-model argmax; TWLA's Kronecker tri-modal + W1.58A4 activations were not in that measurement.",
+    "related_not_the_same": "BYTES_FRONTIER packing is not TWLA's KOTMS coordinate system."
+   },
+   "metal_feasibility": {
+    "class": "UNPROVEN_ON_METAL",
+    "note": "W1.58A4 CUDA kernels are not Metal kernels. Our ternary_5in8 geo (bytes_frontier.metal) is SUSPECT and compute-bound at fewer bytes. A native fused trit path is owed before any speed claim (S026 \u00a717, \u00a790).",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-TWLA",
+    "summary": "After N044: if rotation moves the barrier, re-fit TWLA-style ternary (not 5-in-8) on L31.gate_proj real X at ~1.58 bpw vs q2f 2.25 composition; if rotation does not move it, close TWLA on this parent.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null,
+    "n043_experiment_id": "HX-TWLA-AFTER-N044",
+    "n043_summary": "Ternary in rotated coords, then 4-bit activations on one block: N044 is the discriminator. If rotation does not move 1.58, stop. If it does, grouped-absmax INT4 activations on the same held-out SwiGLU vs f16 A, CPU, streamed parent tensors.",
+    "union_of_evidence": true
+   },
+   "decision": "KEEP",
+   "decision_reason": "Related ternary packing negative + N044 coordinate-robust 1.58 on Qwen MLP. KEEP: A4 activations and Kronecker shaping remain untested on other organs/arch (S028).",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n043_verdict_status": "RELATED_NEGATIVE",
+   "n043_campaign_verdict": "slower + argmax flip",
+   "n043_hawking_receipts": [
+    "receipts/headless/BYTES_FRONTIER.json",
+    "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+    "receipts/headless/FRACTIONAL_BIT_CANON.json"
+   ],
+   "n046_rank_score": 5.333333333333333,
+   "n046_metal_feasibility": "UNPROVEN_ON_METAL",
+   "n046_hawking_organ": "mlp_gate_up",
+   "codebase_citations": [
+    "receipts/headless/BYTES_FRONTIER.json",
+    "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+    "receipts/headless/C5STRUCTTRANSFORM_DESIGN.json",
+    "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+   ]
+  },
+  {
+   "id": "cat_q",
+   "name": "CAT-Q",
+   "sources": [
+    "N043"
+   ],
+   "merged_from": [],
+   "family": "DOC-HEALING",
+   "n043_seed": true,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "PTQ ternary via learnable modulation (LM) of the weight distribution and ternary threshold, plus softened ternarization (ST) with a differentiable transition. S026 mapping: nearby-weight ternary healing \u2014 move weights toward a ternary-friendly neighbourhood rather than snap in place. Calibration on 512 C4 samples; group size 128 in the paper. N046 restates: Learnable modulation of weight distribution + softened ternarization in a sliding-layer PTQ pipeline; nearby-weight healing without full QAT.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2606.26650",
+    "arxiv_ids": [
+     "2606.26650"
+    ],
+    "arxiv_date": "2026-06-25",
+    "license": "arXiv non-exclusive; ICML 2026 oral. Hypothesis only.",
+    "authors": "Wang, Li, Kang, Fan, Yao",
+    "title": "CAT-Q: Cost-efficient and Accurate Ternary Quantization for LLMs",
+    "venue": "ICML 2026 Oral",
+    "url": "https://arxiv.org/abs/2606.26650",
+    "code_url": "https://github.com/IntelChina-AI/BitTern",
+    "code_license_note": "IntelChina-AI/BitTern \u2014 check license; do not copy.",
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "Binary nearby-island healing restored coherent generation 0/4 (receipts/headless/BINARY_HEALING.json); ternary snap already flipped argmax. S028/\u00a764/\u00a7107: a Qwen-MLP failure is not global death."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Expert Linear maps are the same algebra; a Qwen dense-MLP result does not transfer (S028/\u00a764/\u00a7107)."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "GQA Q/O GEMVs were not the Qwen MLP composition probe; keep as a hypothesis."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "DeltaNet in_proj is a different organ (floor 3.26 EBPW) and was not this codec's Qwen test."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No vision/audio organ is in the Qwen3.8 hybrid census."
+    },
+    "kv_state": {
+     "grade": "UNLIKELY",
+     "reason": "This is a weight codec, not a KV/state codec."
+    },
+    "decoding": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change accepted-tokens-per-forward; at best it cheapens a draft body."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology or tokenizer bytes."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "failed",
+    "receipt": "receipts/headless/BINARY_HEALING.json",
+    "scope": "Nearby-weight island/sparse heals on the 1.25 binary body; CAT-Q's LM+ST ternary modulation was not run.",
+    "related_not_the_same": "BINARY_HEALING islands are not CAT-Q softened ternarization."
+   },
+   "metal_feasibility": {
+    "class": "UNPROVEN_ON_METAL",
+    "note": "Paper reports A100-hour PTQ, not M3 Ultra decode. Healing is a fit; native trit kernel still owed. Do not reconstruct-to-dense (S026 \u00a717).",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-CAT-Q",
+    "summary": "CPU CAT-Q-style softened ternary fit on L0.up_proj (BINARY_HEALING earliest organ) with 512 real-X rows; composition_local_survives vs unhealed ternary; no GPU.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null,
+    "n043_experiment_id": "HX-CATQ-ONE-TENSOR-LM",
+    "n043_summary": "Learnable modulation on one injured MLP tensor: Stream L0.up_proj (BINARY_HEALING earliest organ) or L0.down_proj. Fit a per-group scale+threshold (soft ternary) on real hold-set X vs snap 5-in-8. No GPU. No second 27B.",
+    "union_of_evidence": true
+   },
+   "decision": "KEEP",
+   "decision_reason": "Qwen nearby-heal analog died as a resident body. KEEP: LM+ST is a different calibrator, and MoE/other-arch Linears are UNKNOWN (S028).",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n043_verdict_status": "RELATED_NEGATIVE",
+   "n043_campaign_verdict": "slower + argmax flip",
+   "n043_hawking_receipts": [
+    "receipts/headless/BYTES_FRONTIER.json",
+    "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+    "receipts/headless/BINARY_HEALING.json"
+   ],
+   "n046_rank_score": 5.333333333333333,
+   "n046_metal_feasibility": "UNPROVEN_ON_METAL",
+   "n046_hawking_organ": "mlp_gate_up",
+   "codebase_citations": [
+    "receipts/headless/BINARY_HEALING.json",
+    "receipts/headless/QWEN_COMPLETION_RECEIPT.json",
+    "receipts/headless/HYBRID_OPERATOR.json"
+   ]
+  },
+  {
+   "id": "ptqtp",
+   "name": "PTQTP",
+   "sources": [
+    "N043"
+   ],
+   "merged_from": [],
+   "family": "DOC-REPRESENTATION",
+   "n043_seed": true,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Decompose each FP16 weight matrix into two structured ternary trit-planes plus scales: W \u2248 \u03b11 T1 + \u03b12 T2. Multiplication-free additive inference (same MAC shape as 1-bit, more expressiveness than one trit). Progressive approximation for global consistency. S026: structured trit planes, executed native (not reconstruct-to-dense). N046 restates: Decompose W into dual ternary trit-planes plus scales; additive multiplication-free inference at ~1.58 bpw without QAT.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2509.16989",
+    "arxiv_ids": [
+     "2509.16989"
+    ],
+    "arxiv_date": "2025-09-21",
+    "license": "CC BY 4.0",
+    "authors": "Xiao, Yang, Yang, Xu, Li, Su, Liu, Yang, Wong",
+    "title": "PTQTP: Post-Training Quantization to Trit-Planes for Large Language Models",
+    "venue": "2025 trit-plane PTQ",
+    "url": "https://arxiv.org/abs/2509.16989",
+    "code_url": null,
+    "code_license_note": "HeXiao-55/PTQTP \u2014 code 'to be released'; do not wait on it. Re-derive.",
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "Single trit-plane 5-in-8 is slower + argmax-flip; two planes were not run. S028/\u00a764/\u00a7107: a Qwen-MLP failure is not global death."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Expert Linear maps are the same algebra; a Qwen dense-MLP result does not transfer (S028/\u00a764/\u00a7107)."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "GQA Q/O GEMVs were not the Qwen MLP composition probe; keep as a hypothesis."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "DeltaNet in_proj is a different organ (floor 3.26 EBPW) and was not this codec's Qwen test."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No vision/audio organ is in the Qwen3.8 hybrid census."
+    },
+    "kv_state": {
+     "grade": "UNLIKELY",
+     "reason": "This is a weight codec, not a KV/state codec."
+    },
+    "decoding": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change accepted-tokens-per-forward; at best it cheapens a draft body."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology or tokenizer bytes."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "failed",
+    "receipt": "receipts/headless/BYTES_FRONTIER.json",
+    "scope": "Single-plane ternary packing on Qwen MLP. Dual structured trit-planes untested.",
+    "related_not_the_same": "5-in-8 is not PTQTP's additive dual-plane form."
+   },
+   "metal_feasibility": {
+    "class": "NATIVE_KERNEL_MISSING",
+    "note": "Must execute NATIVE (S026 \u00a717, \u00a727). Reconstruct-to-dense is forbidden. Our ternary geo is already compute-bound; a second plane doubles arithmetic unless fused.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-PTQTP",
+    "summary": "CPU dual-plane residual vs q2f on L31.down_proj real X at matched ~1.58 complete EBPW; if composition dies, stop before writing a Metal kernel (N003).",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null,
+    "n043_experiment_id": "HX-PTQTP-TWO-PLANE-ONE-TENSOR",
+    "n043_summary": "Two trit-planes vs 5-in-8 vs q2f on one streamed tensor: Fit T1 then T2 on L31.gate_proj against real X (function space, not Gaussian). Bill 2\u00d7trit + scales. Compare held-out rel_fro to 5-in-8 (1.85) and q2f (2.25).",
+    "union_of_evidence": true
+   },
+   "decision": "KEEP",
+   "decision_reason": "Single-plane packing negative is not a dual-plane refutation. KEEP and require native execution (S026 \u00a717) before any Metal kernel.",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n043_verdict_status": "RELATED_NEGATIVE",
+   "n043_campaign_verdict": "slower + argmax flip",
+   "n043_hawking_receipts": [
+    "receipts/headless/BYTES_FRONTIER.json",
+    "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+    "receipts/headless/ONEBIT_FAMILIES.json"
+   ],
+   "n046_rank_score": 6.0,
+   "n046_metal_feasibility": "NATIVE_KERNEL_MISSING",
+   "n046_hawking_organ": "mlp_down",
+   "codebase_citations": [
+    "receipts/headless/BYTES_FRONTIER.json",
+    "receipts/headless/REPRESENTATION_LIBRARY.json",
+    "receipts/headless/KERNEL_LIBRARY.json"
+   ]
+  },
+  {
+   "id": "onebit",
+   "name": "OneBit",
+   "sources": [
+    "N043"
+   ],
+   "merged_from": [],
+   "family": "DOC-REPRESENTATION",
+   "n043_seed": true,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Sign-Value-Independent Decomposition (SVID): a 1-bit sign matrix plus a compact value/magnitude factor, with a decomposition-based initialization and QAT to ~1 bit. S026 mapping: decomposition binary. This campaign's binary_g64 (sign + g64 f16 scale, no QAT) is the PTQ cousin of that body. N046 restates: Sign-decomposition binary quantization of LLM weights (W in {-1,+1} plus scales).",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2402.11295",
+    "arxiv_ids": [
+     "2402.11295"
+    ],
+    "arxiv_date": "2024-02-17",
+    "license": "arXiv non-exclusive; NeurIPS 2024.",
+    "authors": "Ma et al.",
+    "title": "OneBit: Towards Extremely Low-bit Large Language Models",
+    "venue": "NeurIPS 2024",
+    "url": "https://arxiv.org/abs/2402.11295",
+    "code_url": null,
+    "code_license_note": "xuyuzhuang11/OneBit \u2014 check license; do not copy QAT code.",
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "PTQ binary_g64 is faster than q2f and uniformly injured; died at coherent_generation (receipts/headless/BINARY_HEALING.json). Dead as a Qwen resident generator."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Expert Linear maps are the same algebra; a Qwen dense-MLP result does not transfer (S028/\u00a764/\u00a7107)."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "GQA Q/O GEMVs were not the Qwen MLP composition probe; keep as a hypothesis."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "DeltaNet in_proj is a different organ (floor 3.26 EBPW) and was not this codec's Qwen test."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No vision/audio organ is in the Qwen3.8 hybrid census."
+    },
+    "kv_state": {
+     "grade": "UNLIKELY",
+     "reason": "This is a weight codec, not a KV/state codec."
+    },
+    "decoding": {
+     "grade": "PLAUSIBLE",
+     "reason": "S026 \u00a763-64 / N049: the failed 1.25 body is a legal speculative-draft candidate (already faster; hawking-speculate can verify)."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology or tokenizer bytes."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "failed",
+    "receipt": "receipts/headless/BINARY_HEALING.json",
+    "scope": "Resident generator: mix_c emitted 16 copies of token 271; n_that_reached_coherent_generation=0. Token_ns moved toward the roof.",
+    "related_not_the_same": "Paper SVID+QAT is not binary_g64 PTQ; draft-acceptance is untested (N049)."
+   },
+   "metal_feasibility": {
+    "class": "NATIVE_KERNEL_EXISTS",
+    "note": "bytes_frontier.metal binary_g64_matvec_geo_* exists and is SUSPECT (row-branch). Speed may not be condemned until CLEAR (N003).",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-ONEBIT",
+    "summary": "Self-speculative: binary_g64 drafts, q2f verifies, on the 16-token compiler-prose prompt; measure accept length. Falsifies 'binary is globally dead'.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null,
+    "n043_experiment_id": "HX-ONEBIT-DO-NOT-RERUN-PTQ",
+    "n043_summary": "Do not re-run PTQ binary g64 as a promotion candidate: The PTQ body is measured. Reopen only if QAT/SVID or a coordinate transform changes the family (S026 \u00a711). The cheap next use is as a DRAFT head (see medusa_mtp).",
+    "union_of_evidence": true
+   },
+   "decision": "KEEP",
+   "decision_reason": "Dead as Qwen final generator (BINARY_HEALING) but KEEP as speculative-draft candidate (N049 / S026 \u00a763-64). A purpose-rejection is not global death.",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n043_verdict_status": "TESTED_NEGATIVE",
+   "n043_campaign_verdict": "fast, uniformly injured",
+   "n043_hawking_receipts": [
+    "receipts/headless/BYTES_FRONTIER.json",
+    "receipts/headless/BINARY_HEALING.json",
+    "receipts/headless/FIRST_NOETIC_EXECUTABLE.json"
+   ],
+   "n046_rank_score": 4.5,
+   "n046_metal_feasibility": "NATIVE_KERNEL_EXISTS",
+   "n046_hawking_organ": "mlp_gate_up",
+   "codebase_citations": [
+    "receipts/headless/BINARY_HEALING.json",
+    "receipts/headless/BYTES_FRONTIER.json",
+    "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+   ]
+  },
+  {
+   "id": "aqlm",
+   "name": "AQLM",
+   "sources": [
+    "N043"
+   ],
+   "merged_from": [],
+   "family": "DOC-REPRESENTATION",
+   "n043_seed": true,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Additive quantization: each weight group is a SUM of learned codebook lookups (input-adaptive AQ), with joint codebook optimization across a transformer block. Homogeneous format, no hybrid sparse-outlier split. N046 restates: Additive quantization: each group is a sum of codebook vectors, enabling 2-bit-class PTQ with multi-codebook lookups.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2401.06118",
+    "arxiv_ids": [
+     "2401.06118"
+    ],
+    "arxiv_date": "2024-01-11",
+    "license": "arXiv non-exclusive; ICML 2024.",
+    "authors": "Egiazarian, Panferov, Kuznedelev, Frantar, Babenko, Alistarh",
+    "title": "Extreme Compression of Large Language Models via Additive Quantization",
+    "venue": "ICML 2024",
+    "url": "https://arxiv.org/abs/2401.06118",
+    "code_url": null,
+    "code_license_note": "vahe1994/AQLM \u2014 typically research-permissive; still re-derive, do not vendor.",
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "C4 refused the Qwen3.8 gravity_pq LUT port (NOT_WORTH_BUILDING_THE_QWEN38_PORT). S028/\u00a764/\u00a7107: a Qwen-MLP failure is not global death."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Expert Linear maps are the same algebra; a Qwen dense-MLP result does not transfer (S028/\u00a764/\u00a7107)."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "GQA Q/O GEMVs were not the Qwen MLP composition probe; keep as a hypothesis."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "DeltaNet in_proj is a different organ (floor 3.26 EBPW) and was not this codec's Qwen test."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No vision/audio organ is in the Qwen3.8 hybrid census."
+    },
+    "kv_state": {
+     "grade": "UNLIKELY",
+     "reason": "This is a weight codec, not a KV/state codec."
+    },
+    "decoding": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change accepted-tokens-per-forward; at best it cheapens a draft body."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology or tokenizer bytes."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "failed",
+    "receipt": "receipts/headless/C4CODEBOOK_DESIGN.json",
+    "scope": "LUT+accumulate did not beat Q4 dequant+mul on this M3 Ultra for the Qwen3.8 port.",
+    "related_not_the_same": "C4 is gravity_pq VQ, not AQLM's additive multi-codebook fit."
+   },
+   "metal_feasibility": {
+    "class": "NATIVE_KERNEL_EXISTS_BUT_PORT_REFUSED",
+    "note": "gravity_pq.metal exists (C4). Qwen3.8 port was refused on this parent, not because Metal cannot LUT. CUDA AQLM kernels are irrelevant.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-AQLM",
+    "summary": "Do not rebuild the Qwen3.8 PQ port. If a new codec (QTIP/HIGGS) beats q2f on L31.gate_proj CPU composition, only then revisit LUT decode.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null,
+    "n043_experiment_id": "HX-AQLM-TWO-CODEBOOK-ONE-TENSOR",
+    "n043_summary": "Two additive codebooks vs q2f on one tensor, CPU: C4 already forbade the Qwen38 PQ port. The cheaper discriminator is function-space error of 2 learned additive codebooks on L31.gate_proj real X vs q2f, billing codebook+index bytes.",
+    "union_of_evidence": true
+   },
+   "decision": "KEEP",
+   "decision_reason": "Qwen3.8 PQ port refused; KEEP as the codebook baseline. QTIP/HIGGS are the cheaper next codebook probes. MoE/other-arch UNKNOWN (S028).",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n043_verdict_status": "RELATED_NEGATIVE",
+   "n043_campaign_verdict": "C4 NOT_WORTH_BUILDING_THE_QWEN38_PORT; ONEBIT B6 beats-null-but-unhealthy at matched 2.00 bpw",
+   "n043_hawking_receipts": [
+    "receipts/headless/C4CODEBOOK_DESIGN.json",
+    "receipts/headless/ONEBIT_FAMILIES.json"
+   ],
+   "n046_rank_score": 1.0,
+   "n046_metal_feasibility": "NATIVE_KERNEL_EXISTS_BUT_PORT_REFUSED",
+   "n046_hawking_organ": "mlp_gate_up",
+   "codebase_citations": [
+    "receipts/headless/C4CODEBOOK_DESIGN.json",
+    "crates/hawking-core/shaders/gravity_pq.metal",
+    "receipts/headless/BYTES_FRONTIER.json"
+   ]
+  },
+  {
+   "id": "vptq",
+   "name": "VPTQ",
+   "sources": [
+    "N043"
+   ],
+   "merged_from": [],
+   "family": "DOC-REPRESENTATION",
+   "n043_seed": true,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Second-order (Hessian-aware) vector quantization of weight subvectors plus an outlier/residual channel so extreme <2-bit still has a high-precision escape hatch. N046 restates: Vector PTQ with residual outlier channels kept at higher precision.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2409.17066",
+    "arxiv_ids": [
+     "2409.17066"
+    ],
+    "arxiv_date": "2024-09-25",
+    "license": "arXiv non-exclusive; EMNLP 2024.",
+    "authors": "Liu et al.",
+    "title": "VPTQ: Extreme Low-bit Vector Post-Training Quantization for Large Language Models",
+    "venue": "EMNLP 2024",
+    "url": "https://arxiv.org/abs/2409.17066",
+    "code_url": null,
+    "code_license_note": "microsoft/VPTQ \u2014 typically MIT; still re-derive, do not vendor.",
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "HYBRID_OPERATOR: weight residual never heals under 2.25 on Qwen MLP. S028/\u00a764/\u00a7107: a Qwen-MLP failure is not global death."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Expert Linear maps are the same algebra; a Qwen dense-MLP result does not transfer (S028/\u00a764/\u00a7107)."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "GQA Q/O GEMVs were not the Qwen MLP composition probe; keep as a hypothesis."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "DeltaNet in_proj is a different organ (floor 3.26 EBPW) and was not this codec's Qwen test."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No vision/audio organ is in the Qwen3.8 hybrid census."
+    },
+    "kv_state": {
+     "grade": "UNLIKELY",
+     "reason": "This is a weight codec, not a KV/state codec."
+    },
+    "decoding": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change accepted-tokens-per-forward; at best it cheapens a draft body."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology or tokenizer bytes."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "failed",
+    "receipt": "receipts/headless/HYBRID_OPERATOR.json",
+    "scope": "Distributed residual under 1.0 extra bpw did not restore held-out activations.",
+    "related_not_the_same": "VPTQ outlier-channels are a residual cousin, not the exact paper."
+   },
+   "metal_feasibility": {
+    "class": "UNPROVEN_ON_METAL",
+    "note": "Outlier residual in CUDA papers is usually a second pass and is not a Metal result (S026 \u00a789). N033: sparse indices cost more unless fused.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-VPTQ",
+    "summary": "None beyond HYBRID_OPERATOR. Treat VPTQ residual as already scoped by N038 unless a paper uses a different residual (activation-subspace ResQ, not weight LR).",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null,
+    "n043_experiment_id": "HX-VPTQ-VQ-PLUS-RESIDUAL-ONE-TENSOR",
+    "n043_summary": "Small VQ + residual vs q2f and vs HYBRID r=8: One streamed tensor, real X. Bill codebook+indices+residual. Compare to HYBRID r=8 (already dead) and q2f.",
+    "union_of_evidence": true
+   },
+   "decision": "KEEP",
+   "decision_reason": "Weight-residual heal is dead on Qwen MLP. KEEP: activation-subspace residuals (ResQ) and other-arch outlier splits remain UNKNOWN (S028).",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n043_verdict_status": "RELATED_NEGATIVE",
+   "n043_campaign_verdict": "never heals; indices cost more",
+   "n043_hawking_receipts": [
+    "receipts/headless/HYBRID_OPERATOR.json",
+    "receipts/headless/BYTES_FRONTIER.json",
+    "receipts/headless/C4CODEBOOK_DESIGN.json",
+    "receipts/headless/ONEBIT_FAMILIES.json"
+   ],
+   "n046_rank_score": 0.25,
+   "n046_metal_feasibility": "UNPROVEN_ON_METAL",
+   "n046_hawking_organ": "mlp_down",
+   "codebase_citations": [
+    "receipts/headless/HYBRID_OPERATOR.json",
+    "receipts/headless/C3LOWRANKSPARSE_DESIGN.json",
+    "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+   ]
+  },
+  {
+   "id": "caldera",
+   "name": "CALDERA",
+   "sources": [
+    "N043"
+   ],
+   "merged_from": [],
+   "family": "DOC-HEALING",
+   "n043_seed": true,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "W \u2248 Q + L R with Q, L, R all quantized (calibration-aware low-precision decomposition). Low-rank factors capture top energy; Q is a low-precision backbone for the residual. N046 restates: W \u2248 Q + LR with Q, L, R all low-precision; activation-aware calibration.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2405.18886",
+    "arxiv_ids": [
+     "2405.18886"
+    ],
+    "arxiv_date": "2024-05-29",
+    "license": "arXiv non-exclusive; NeurIPS 2024.",
+    "authors": "Saha, Sagan, Srivastava, Goldsmith, Pilanci",
+    "title": "Compressing Large Language Models using Low Rank and Low Precision Decomposition",
+    "venue": "NeurIPS 2024",
+    "url": "https://arxiv.org/abs/2405.18886",
+    "code_url": "https://github.com/pilancilab/caldera",
+    "code_license_note": "pilancilab/caldera \u2014 check license; re-derive.",
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "HYBRID_OPERATOR coherent_hybrid_beats_q2f=false; Q+LR never heals on Qwen MLP. S028/\u00a764/\u00a7107: a Qwen-MLP failure is not global death."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Expert Linear maps are the same algebra; a Qwen dense-MLP result does not transfer (S028/\u00a764/\u00a7107)."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "GQA Q/O GEMVs were not the Qwen MLP composition probe; keep as a hypothesis."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "DeltaNet in_proj is a different organ (floor 3.26 EBPW) and was not this codec's Qwen test."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No vision/audio organ is in the Qwen3.8 hybrid census."
+    },
+    "kv_state": {
+     "grade": "UNLIKELY",
+     "reason": "This is a weight codec, not a KV/state codec."
+    },
+    "decoding": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change accepted-tokens-per-forward; at best it cheapens a draft body."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology or tokenizer bytes."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "failed",
+    "receipt": "receipts/headless/HYBRID_OPERATOR.json",
+    "scope": "Binary + distributed low-rank under 2.25 and 27.55 ms: no. Kernel was CLEAR.",
+    "related_not_the_same": null
+   },
+   "metal_feasibility": {
+    "class": "NATIVE_KERNEL_EXISTS",
+    "note": "hybrid_operator.metal binary_lowrank_r{8,32}_fused_* is CLEAR. Competence did not save the idea.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-CALDERA",
+    "summary": "Do not rebuild. CALDERA on this parent is HYBRID_OPERATOR.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null,
+    "n043_experiment_id": "HX-CALDERA-DO-NOT-RERUN-HYBRID",
+    "n043_summary": "Do not re-run fused low-rank residual as a promotion: HYBRID_OPERATOR is the measurement. A quantized-Q variant is only in scope after N044 moves the barrier.",
+    "union_of_evidence": true
+   },
+   "decision": "KEEP",
+   "decision_reason": "Q+LR is dead as a Qwen-MLP byte lever (natively measured). KEEP for other organs/arch: purpose-scoped, not globally dead (S028).",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n043_verdict_status": "TESTED_NEGATIVE",
+   "n043_campaign_verdict": "never heals",
+   "n043_hawking_receipts": [
+    "receipts/headless/HYBRID_OPERATOR.json",
+    "receipts/headless/C3LOWRANKSPARSE_DESIGN.json"
+   ],
+   "n046_rank_score": 0.2,
+   "n046_metal_feasibility": "NATIVE_KERNEL_EXISTS",
+   "n046_hawking_organ": "mlp_gate_up",
+   "codebase_citations": [
+    "receipts/headless/HYBRID_OPERATOR.json",
+    "receipts/headless/C3LOWRANKSPARSE_DESIGN.json",
+    "receipts/headless/C1SHAREDBASIS_DESIGN.json"
+   ]
+  },
+  {
+   "id": "squeezellm",
+   "name": "SqueezeLLM",
+   "sources": [
+    "N043"
+   ],
+   "merged_from": [],
+   "family": "DOC-REPRESENTATION",
+   "n043_seed": true,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Sensitivity-weighted (Fisher/Hessian) bit assignment: a dense low-bit body plus a sparse high-precision hold-out of sensitive entries. Dense-and-sparse, not uniform quant. N046 restates: Sensitivity-based dense+sparse mix: keep sensitive weights in higher precision, squeeze the rest.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2306.07629",
+    "arxiv_ids": [
+     "2306.07629"
+    ],
+    "arxiv_date": "2023-06-13",
+    "license": "arXiv non-exclusive; ICML 2024.",
+    "authors": "Kim et al.",
+    "title": "SqueezeLLM: Dense-and-Sparse Quantization",
+    "venue": "ICML 2024",
+    "url": "https://arxiv.org/abs/2306.07629",
+    "code_url": null,
+    "code_license_note": "SqueezeLLM reference code \u2014 check license; re-derive the census.",
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "Sensitivity islands (early16/down/gate/sparse_05) reached coherent generation 0/4 (receipts/headless/BINARY_HEALING.json). Tax = full q2f body. S028/\u00a764/\u00a7107: a Qwen-MLP failure is not global death."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Expert Linear maps are the same algebra; a Qwen dense-MLP result does not transfer (S028/\u00a764/\u00a7107)."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "GQA Q/O GEMVs were not the Qwen MLP composition probe; keep as a hypothesis."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "DeltaNet in_proj is a different organ (floor 3.26 EBPW) and was not this codec's Qwen test."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No vision/audio organ is in the Qwen3.8 hybrid census."
+    },
+    "kv_state": {
+     "grade": "UNLIKELY",
+     "reason": "This is a weight codec, not a KV/state codec."
+    },
+    "decoding": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change accepted-tokens-per-forward; at best it cheapens a draft body."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology or tokenizer bytes."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "failed",
+    "receipt": "receipts/headless/BINARY_HEALING.json",
+    "scope": "SqueezeLLM-style mixed-precision islands on the injured binary body.",
+    "related_not_the_same": null
+   },
+   "metal_feasibility": {
+    "class": "UNPROVEN_ON_METAL",
+    "note": "Mixed-precision islands mean two kernels or a branch. On this graph, extra paths have not paid.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-SQUEEZELLM",
+    "summary": "Already run (BINARY_HEALING). Do not rerun SqueezeLLM-style islands on MLP.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null,
+    "n043_experiment_id": "HX-SQUEEZELLM-SENSITIVITY-CENSUS",
+    "n043_summary": "Per-weight sensitivity census on one MLP organ, CPU: From existing capture_diverse2 rows (no new 27B). Rank |W * X_rms| or a diagonal Fisher proxy. Protect top 0.5% in f16, quantize the rest binary, bill indices. Compare held-out to uniform 2% CSR.",
+    "union_of_evidence": true
+   },
+   "decision": "KEEP",
+   "decision_reason": "Island-heal failed as a Qwen resident body. KEEP: mixed-precision sensitivity on GQA/DeltaNet/MoE experts is UNKNOWN (S028).",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n043_verdict_status": "RELATED_NEGATIVE",
+   "n043_campaign_verdict": "indices cost more",
+   "n043_hawking_receipts": [
+    "receipts/headless/BYTES_FRONTIER.json",
+    "receipts/headless/BINARY_HEALING.json"
+   ],
+   "n046_rank_score": 0.2,
+   "n046_metal_feasibility": "UNPROVEN_ON_METAL",
+   "n046_hawking_organ": "mlp_gate_up",
+   "codebase_citations": [
+    "receipts/headless/BINARY_HEALING.json",
+    "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+   ]
+  },
+  {
+   "id": "kivi",
+   "name": "KIVI",
+   "sources": [
+    "N043"
+   ],
+   "merged_from": [],
+   "family": "DOC-STATE",
+   "n043_seed": true,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Asymmetric KV-cache quant: K and V get different bit-widths (paper: K 2-bit grouping-along-channel, V 2-bit grouping-along-token) because their outlier structure differs. Tuning-free PTQ on the cache, not the weights. N046 restates: Tuning-free asymmetric 2-bit KV: keys per-channel, values per-token.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2402.02750",
+    "arxiv_ids": [
+     "2402.02750"
+    ],
+    "arxiv_date": "2024-02-05",
+    "license": "arXiv non-exclusive; ICML 2024.",
+    "authors": "Liu, Zhao, Yu, Huang, Cohan, Zhao",
+    "title": "KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache",
+    "venue": "ICML 2024",
+    "url": "https://arxiv.org/abs/2402.02750",
+    "code_url": null,
+    "code_license_note": "KIVI reference impl \u2014 check license; do not copy into Metal.",
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "KV/state codec; does not compress MLP weights."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "MoE routing does not by itself change GQA KV algebra; untested on routed parents."
+    },
+    "attention_gqa": {
+     "grade": "PLAUSIBLE",
+     "reason": "Asymmetric 2-bit KV (K per-channel, V per-token) matches the GQA cache that exceeds MODEL_BYTES at 32K\u00d74 (receipts/headless/PREFILL_KV.json)."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNLIKELY",
+     "reason": "DeltaNet state is a recurrent summary, not a token KV cache (NOETIC_CANON law 14)."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "Cross-modal KV untested; no multimodal organ on this hybrid."
+    },
+    "kv_state": {
+     "grade": "PLAUSIBLE",
+     "reason": "Asymmetric 2-bit KV (K per-channel, V per-token) matches the GQA cache that exceeds MODEL_BYTES at 32K\u00d74 (receipts/headless/PREFILL_KV.json)."
+    },
+    "decoding": {
+     "grade": "UNKNOWN",
+     "reason": "Smaller session state can change long-context decode economics; unmeasured here."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "untested",
+    "receipt": "receipts/headless/PREFILL_KV.json",
+    "scope": "No Hawking receipt runs KIVI on a captured GQA K/V block. PREFILL_KV sizes the gap.",
+    "related_not_the_same": null
+   },
+   "metal_feasibility": {
+    "class": "UNPROVEN_ON_METAL",
+    "note": "KIVI CUDA kernels dequant K/V per step. On M3 Ultra unified memory the win is bytes moved, not VRAM capacity. Need a fused Metal attention that never materializes f16 KV.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-KIVI",
+    "summary": "Asymmetric 2-bit RTN on a captured GQA K/V block (one layer, real prefill) vs f16; needle/argmax on a 4K prefix. No CUDA port.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null,
+    "n043_experiment_id": "HX-KIVI-K-VS-V-RANGE",
+    "n043_summary": "K vs V outlier-axis census (CPU): PREFILL_KV already showed session state can exceed weights. The cheapest KIVI discriminator is whether K and V even HAVE different outlier axes on this GQA. No Metal re-bench. No model-wide decode.",
+    "union_of_evidence": true
+   },
+   "decision": "KEEP",
+   "decision_reason": "Untested on this hybrid; the session-state gap is real. KEEP. Not a Qwen-MLP codec.",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n043_verdict_status": "UNTESTED",
+   "n043_campaign_verdict": null,
+   "n043_hawking_receipts": [],
+   "n046_rank_score": 4.5,
+   "n046_metal_feasibility": "UNPROVEN_ON_METAL",
+   "n046_hawking_organ": "gqa_attention",
+   "codebase_citations": [
+    "receipts/headless/PREFILL_KV.json",
+    "receipts/headless/WHOLE_MODEL_RECOMPOSE.json",
+    "receipts/headless/ORGAN_LIBRARY.json"
+   ]
+  },
+  {
+   "id": "minicache",
+   "name": "MiniCache",
+   "sources": [
+    "N043"
+   ],
+   "merged_from": [],
+   "family": "DOC-STATE",
+   "n043_seed": true,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Cross-layer KV merging: adjacent-layer caches are similar enough to interpolate/merge, cutting KV depth. S026: depth state merge. ZERO_EXECUTION of redundant state, not of compute. N046 restates: Merge KV states across adjacent depth layers (depth-dimension compression).",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2405.14366",
+    "arxiv_ids": [
+     "2405.14366"
+    ],
+    "arxiv_date": "2024-05-23",
+    "license": "arXiv non-exclusive; ICML 2024.",
+    "authors": "Liu, Wang, Chen, Zhang",
+    "title": "MiniCache: KV Cache Compression via Depth-Wise Attention",
+    "venue": "ICML 2024",
+    "url": "https://arxiv.org/abs/2405.14366",
+    "code_url": null,
+    "code_license_note": "MiniCache code \u2014 check license; re-derive.",
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "KV/state codec; does not compress MLP weights."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "MoE routing does not by itself change GQA KV algebra; untested on routed parents."
+    },
+    "attention_gqa": {
+     "grade": "PLAUSIBLE",
+     "reason": "16 GQA layers can depth-merge KV; cosine of layer-\u2113 vs \u2113+4 is the cheap probe."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNLIKELY",
+     "reason": "DeltaNet recurrent state is a summary, not a cache; MiniCache does not transfer."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "Cross-modal KV untested; no multimodal organ on this hybrid."
+    },
+    "kv_state": {
+     "grade": "PLAUSIBLE",
+     "reason": "16 GQA layers can depth-merge KV; cosine of layer-\u2113 vs \u2113+4 is the cheap probe."
+    },
+    "decoding": {
+     "grade": "UNKNOWN",
+     "reason": "Smaller session state can change long-context decode economics; unmeasured here."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "untested",
+    "receipt": "receipts/headless/PREFILL_KV.json",
+    "scope": "Depth-merge cosine on GQA K unmeasured. DN transfer is predicted dead by organ type.",
+    "related_not_the_same": null
+   },
+   "metal_feasibility": {
+    "class": "UNPROVEN_ON_METAL",
+    "note": "Merge is a host/GPU copy policy, not a CUDA kernel family and not a Metal kernel family. Feasible. Do not merge DeltaNet states across layers without a state-equivalence probe.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-MINICACHE",
+    "summary": "Cosine of layer-\u2113 vs layer-\u2113+4 GQA K tensors on a 4K real prefix; if mean cosine < 0.9, depth-merge is dead on this hybrid.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null,
+    "n043_experiment_id": "HX-MINICACHE-ADJACENT-KV-COSINE",
+    "n043_summary": "Adjacent GQA-layer K/V cosine on a short prefix, CPU: If a 16-token K/V dump exists, use it. Else stream a short parent prefix (no second resident 27B) for the 16 GQA layers only. Cosine(K_i, K_{i+1}) and same for V.",
+    "union_of_evidence": true
+   },
+   "decision": "KEEP",
+   "decision_reason": "Cheap CPU cosine probe still open on the 16 GQA layers. KEEP.",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n043_verdict_status": "UNTESTED",
+   "n043_campaign_verdict": null,
+   "n043_hawking_receipts": [],
+   "n046_rank_score": 4.0,
+   "n046_metal_feasibility": "UNPROVEN_ON_METAL",
+   "n046_hawking_organ": "gqa_attention",
+   "codebase_citations": [
+    "receipts/headless/ORGAN_LIBRARY.json",
+    "receipts/headless/DELTANET_ORGAN.json",
+    "receipts/headless/PREFILL_KV.json"
+   ]
+  },
+  {
+   "id": "h2o",
+   "name": "H2O",
+   "sources": [
+    "N043"
+   ],
+   "merged_from": [],
+   "family": "DOC-STATE",
+   "n043_seed": true,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "KV eviction: keep a small set of heavy-hitter tokens (high cumulative attention) plus recent tokens; drop the rest. S026: heavy-hitter state. This is ZERO_EXECUTION of cold prefix state, not a weight codec. N046 restates: Heavy-hitter oracle: retain tokens with high cumulative attention, evict the rest.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2306.14048",
+    "arxiv_ids": [
+     "2306.14048"
+    ],
+    "arxiv_date": "2023-06-24",
+    "license": "arXiv non-exclusive; NeurIPS 2023.",
+    "authors": "Zhang, Sheng, Shen, Zheng, Chen, Liang, Chen, Song, Zhou",
+    "title": "H2O: Heavy-Hitter Oracle for Efficient Generative Inference of Large Language Models",
+    "venue": "NeurIPS 2023",
+    "url": "https://arxiv.org/abs/2306.14048",
+    "code_url": null,
+    "code_license_note": "H2O reference code \u2014 check license; re-derive the policy.",
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "KV/state codec; does not compress MLP weights."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "MoE routing does not by itself change GQA KV algebra; untested on routed parents."
+    },
+    "attention_gqa": {
+     "grade": "PLAUSIBLE",
+     "reason": "Heavy-hitter eviction applies to GQA token cache; attention-mass histogram is cheap."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNLIKELY",
+     "reason": "Eviction does not apply to DeltaNet state (not a token cache)."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "Cross-modal KV untested; no multimodal organ on this hybrid."
+    },
+    "kv_state": {
+     "grade": "PLAUSIBLE",
+     "reason": "Heavy-hitter eviction applies to GQA token cache; attention-mass histogram is cheap."
+    },
+    "decoding": {
+     "grade": "UNKNOWN",
+     "reason": "Smaller session state can change long-context decode economics; unmeasured here."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "untested",
+    "receipt": "receipts/headless/PREFILL_KV.json",
+    "scope": "No attention-mass histogram on a Qwen GQA layer is on disk.",
+    "related_not_the_same": null
+   },
+   "metal_feasibility": {
+    "class": "UNPROVEN_ON_METAL",
+    "note": "Eviction is index management. A data-dependent gather inside the GQA kernel will serialize SIMD (KERNEL_COMPETENCE dynamic_branch law).",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-H2O",
+    "summary": "Attention-mass histogram on one GQA layer, 4K real prefix: if heavy-hitters are not stable across positions, H2O is dead here.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null,
+    "n043_experiment_id": "HX-H2O-ATTENTION-MASS-HISTOGRAM",
+    "n043_summary": "Per-token attention-mass histogram on one GQA layer, CPU: Need a score tensor. If none on disk, a short CPU attention on streamed Q/K for one layer is the probe. Do not implement an eviction kernel.",
+    "union_of_evidence": true
+   },
+   "decision": "KEEP",
+   "decision_reason": "Untested GQA-KV policy, not a Qwen-MLP failure. KEEP.",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n043_verdict_status": "UNTESTED",
+   "n043_campaign_verdict": null,
+   "n043_hawking_receipts": [],
+   "n046_rank_score": 4.0,
+   "n046_metal_feasibility": "UNPROVEN_ON_METAL",
+   "n046_hawking_organ": "gqa_attention",
+   "codebase_citations": [
+    "receipts/headless/PREFILL_KV.json",
+    "receipts/headless/ORGAN_LIBRARY.json",
+    "receipts/headless/DELTANET_ORGAN.json"
+   ]
+  },
+  {
+   "id": "mixture_of_depths",
+   "name": "Mixture-of-Depths",
+   "sources": [
+    "N043"
+   ],
+   "merged_from": [],
+   "family": "DOC-CONDITIONAL",
+   "n043_seed": true,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Per-token routing over depth: some tokens skip blocks (identity residual), a learned router spends compute on hard tokens. S026: conditional depth / ZERO_EXECUTION of this token at this layer. Capacity is a static budget. N046 restates: Learn a token-level router that skips whole layers (dynamic depth).",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2404.02258",
+    "arxiv_ids": [
+     "2404.02258"
+    ],
+    "arxiv_date": "2024-04-02",
+    "license": "arXiv non-exclusive.",
+    "authors": "Raposo et al.",
+    "title": "Mixture-of-Depths: Dynamically allocating compute in transformer-based language models",
+    "venue": null,
+    "url": "https://arxiv.org/abs/2404.02258",
+    "code_url": null,
+    "code_license_note": "DeepMind paper; no in-tree impl. Do not vendor an MoD trainer.",
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "Skipping FLOPs without skipping weight reads does nothing on a load-bound decode."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Token-level layer skip on a routed parent is an Odyssey architecture hypothesis."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "Conditional GQA skip still pays residual/norm unless ZERO_EXECUTION is fused."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "Skipping a DN layer still leaves state updates unspecified."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No multimodal organ in this census."
+    },
+    "kv_state": {
+     "grade": "UNLIKELY",
+     "reason": "Does not compress KV; may skip writing it if a layer is skipped."
+    },
+    "decoding": {
+     "grade": "UNKNOWN",
+     "reason": "Conditional depth is not speculative decoding; TEAL is the cheaper skip probe."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "untested",
+    "receipt": "receipts/headless/DISPATCH_LEDGER.json",
+    "scope": "No MoD router was trained. Graph is organ-bound, not dispatch-bound (DISPATCH_LEDGER).",
+    "related_not_the_same": null
+   },
+   "metal_feasibility": {
+    "class": "ARCHITECTURE_CHANGE",
+    "note": "Requires training a router. Not a Metal kernel problem first. Conditional skip that still launches 64 layer graphs will not move token_ns.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-MIXTURE-OF-DEPTHS",
+    "summary": "Do not train MoD. Measure per-token MLP activation magnitude; if skipping high-magnitude tokens is required for quality, MoD is the wrong lever (TEAL is cheaper).",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null,
+    "n043_experiment_id": "HX-MOD-SKIP-LAYER-ABLATION",
+    "n043_summary": "Identity-skip ablation across layers on real X, CPU: Teacher-forced: replace layer i mixer+MLP with identity residual, score held-out rel_fro/gain vs the unskipped teacher. Stream weights. No router training.",
+    "union_of_evidence": true
+   },
+   "decision": "KEEP",
+   "decision_reason": "Architecture/conditional-compute hypothesis for Odyssey, not a Qwen-MLP prune. KEEP.",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n043_verdict_status": "UNTESTED",
+   "n043_campaign_verdict": null,
+   "n043_hawking_receipts": [],
+   "n046_rank_score": 0.8,
+   "n046_metal_feasibility": "ARCHITECTURE_CHANGE",
+   "n046_hawking_organ": "whole_model",
+   "codebase_citations": [
+    "receipts/headless/DISPATCH_LEDGER.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/MLP_GATE_UP.json"
+   ]
+  },
+  {
+   "id": "prosparse",
+   "name": "ProSparse",
+   "sources": [
+    "N043"
+   ],
+   "merged_from": [],
+   "family": "DOC-CONDITIONAL",
+   "n043_seed": true,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Replace ReLU/SwiGLU-like activations so the MLP hidden is intrinsically sparse, then exploit that sparsity at runtime. S026: activation sparsity; ZERO_EXECUTION of zero channels, only if STRUCTURED and it beats dense. N046 restates: Replace SwiGLU/Swish with ReLU and progressive sparsity regularization so activations become intrinsically sparse.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2402.13516",
+    "arxiv_ids": [
+     "2402.13516"
+    ],
+    "arxiv_date": "2024-02-21",
+    "license": "arXiv non-exclusive; COLM 2024.",
+    "authors": "Song et al.",
+    "title": "ProSparse: Introducing and Enhancing Intrinsic Activation Sparsity within Large Language Models",
+    "venue": "COLM 2024",
+    "url": "https://arxiv.org/abs/2402.13516",
+    "code_url": null,
+    "code_license_note": "ProSparse code \u2014 check license; a swap of SwiGLU is not a drop-in.",
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNKNOWN",
+     "reason": "SwiGLU sparsity histogram is the cheap probe and is still unrun; ReLU-fication is a training change, not PTQ."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Expert Linear maps are the same algebra; a Qwen dense-MLP result does not transfer (S028/\u00a764/\u00a7107)."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "GQA Q/O GEMVs were not the Qwen MLP composition probe; keep as a hypothesis."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "DeltaNet in_proj is a different organ (floor 3.26 EBPW) and was not this codec's Qwen test."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No vision/audio organ is in the Qwen3.8 hybrid census."
+    },
+    "kv_state": {
+     "grade": "UNLIKELY",
+     "reason": "This is a weight codec, not a KV/state codec."
+    },
+    "decoding": {
+     "grade": "UNLIKELY",
+     "reason": "Activation sparsity is not speculative decoding."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology or tokenizer bytes."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "untested",
+    "receipt": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+    "scope": "NNS-029 is a related negative on uniform activation-sparsity as a path, not a ProSparse measurement. TEAL is the training-free alternative.",
+    "related_not_the_same": "A SwiGLU histogram is not ProSparse training."
+   },
+   "metal_feasibility": {
+    "class": "ARCHITECTURE_CHANGE",
+    "note": "ReLU MLP would need a new fused kernel. Do not skip weights with CSR (BYTES_FRONTIER sparse 2% ate the byte win).",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-PROSPARSE",
+    "summary": "Skip ProSparse training. Run TEAL-style magnitude sparsity on real MLP activations first.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null,
+    "n043_experiment_id": "HX-PROSPARSE-SWIGLU-SPARSITY-HISTOGRAM",
+    "n043_summary": "SwiGLU activation sparsity histogram on real X, CPU: Existing capture preferred. Else stream L0 gate/up, compute silu(g)*u sparsity. Report fraction exactly-0 and near-0, structured (channel) vs scattered.",
+    "union_of_evidence": true
+   },
+   "decision": "KEEP",
+   "decision_reason": "Untested as ProSparse. KEEP. TEAL is the cheaper training-free cousin; do not prune ProSparse for an NNS-029 related note (S028).",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n043_verdict_status": "UNTESTED",
+   "n043_campaign_verdict": null,
+   "n043_hawking_receipts": [],
+   "n046_rank_score": 0.8,
+   "n046_metal_feasibility": "ARCHITECTURE_CHANGE",
+   "n046_hawking_organ": "mlp_gate_up",
+   "codebase_citations": [
+    "receipts/headless/MLP_GATE_UP.json",
+    "receipts/headless/ORGAN_LIBRARY.json",
+    "receipts/headless/KERNEL_BOTTLENECK.json"
+   ]
+  },
+  {
+   "id": "medusa_mtp",
+   "name": "Medusa/MTP",
+   "sources": [
+    "N043",
+    "N046"
+   ],
+   "merged_from": [
+    {
+     "n046_name": "Gloeckle MTP / Qwen-native MTP census",
+     "id_would_have_been": "gloeckle_mtp",
+     "arxiv_id": "2404.19737",
+     "reason": "N043 medusa_mtp already registers Medusa (2401.10774) and Gloeckle MTP (2404.19737) as one S026 mechanism. N046's recommended MTP census is the same paper; keep the union of evidence."
+    }
+   ],
+   "family": "DOC-DECODE",
+   "n043_seed": true,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Reduce PASSES per generated token, not bits per weight. Medusa: attach extra decoding heads to a frozen/finetuned backbone and verify a tree of draft tokens. MTP: train the model to predict several future tokens; at decode, use those heads as a same-model draft. S026 \u00a759-64, \u00a7121. S026 \u00a763: the failed 1.25 binary may be a useful DRAFT. N046 restates: Extra decoding heads on the last hidden state propose multiple future tokens; target verifies in one pass.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2401.10774",
+    "arxiv_ids": [
+     "2401.10774",
+     "2404.19737"
+    ],
+    "arxiv_date": "2024-01-19",
+    "license": "arXiv non-exclusive; Medusa ICML 2024.",
+    "authors": "Cai, Li, Chen, Zhang, Liu, Xing, Keutzer, Song",
+    "title": "Medusa: Simple LLM Inference Acceleration Framework with Multiple Decoding Heads; and Better & Faster Large Language Models via Multi-token Prediction",
+    "venue": "Medusa: ICML 2024; MTP: arXiv 2404.19737",
+    "url": "https://arxiv.org/abs/2401.10774",
+    "code_url": null,
+    "code_license_note": "FasterDecoding/Medusa and MTP training stacks \u2014 check licenses; census native Qwen heads before attaching any.",
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "Speculative/MTP changes passes-per-token, not the MLP byte wall."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Shared-expert draft is the in-tree MoE analogue (hawking-speculate); untested as this paper."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "Verify still pays GQA; draft may skip or reuse it. Untested."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "Draft/verify over a hybrid GQA+DeltaNet body is untested; DN state is not prefix-shareable."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No multimodal decode organ in this census."
+    },
+    "kv_state": {
+     "grade": "UNKNOWN",
+     "reason": "Speculation needs dual committed/provisional KV (in-tree); byte win is not the paper's claim."
+    },
+    "decoding": {
+     "grade": "PLAUSIBLE",
+     "reason": "Extra heads / native MTP reduce passes-per-token \u2014 the axis that bypasses the MLP byte wall."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "untested",
+    "receipt": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+    "scope": "N046 census: parent has no native MTP/Medusa heads (expected ABSENT). Head-training and binary-as-draft acceptance are untested (N049).",
+    "related_not_the_same": "Binary TARGET death (BINARY_HEALING) is not MTP acceptance."
+   },
+   "metal_feasibility": {
+    "class": "PARTIAL_IN_TREE",
+    "note": "Verify path exists (hawking-speculate). Draft heads need Metal. CUDA Medusa kernels are irrelevant. S026 \u00a789.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-MEDUSA-MTP",
+    "summary": "Census parent for extra lm_heads (expect ABSENT). Then LayerSkip / binary-as-draft, not a new Medusa training run.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null,
+    "n043_experiment_id": "HX-MTP-PARENT-WEIGHTMAP-CENSUS",
+    "n043_summary": "Census parent index for MTP/Medusa tensors (CPU, no weights): Read model.safetensors.index.json (and config.json) of the qualified parent. Count keys matching mtp/medusa/multi_token/aux_head. Stream the index only.",
+    "union_of_evidence": true
+   },
+   "decision": "KEEP",
+   "decision_reason": "Merged with N046 Gloeckle MTP census. Native heads ABSENT is a census, not a prune. KEEP as the decode-gravity toolkit entry; binary-as-draft remains a legal purpose (N049).",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n043_verdict_status": "UNTESTED",
+   "n043_campaign_verdict": null,
+   "n043_hawking_receipts": [],
+   "n046_rank_score": 7.5,
+   "n046_metal_feasibility": "PARTIAL_IN_TREE",
+   "n046_hawking_organ": "decode_loop",
+   "codebase_citations": [
+    "crates/hawking-speculate/src/lib.rs",
+    "receipts/headless/DISPATCH_LEDGER.json",
+    "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json"
+   ]
+  },
+  {
+   "id": "higgs",
+   "name": "HIGGS",
+   "sources": [
+    "N046"
+   ],
+   "merged_from": [],
+   "family": "learned/function-preserving rotations + incoherence processing",
+   "n043_seed": false,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Hadamard incoherence + MSE-optimal Gaussian grids (data-free); linearity theorem maps per-layer \u21132 to PPL for non-uniform bit allocation.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2411.17525",
+    "arxiv_ids": [
+     "2411.17525"
+    ],
+    "arxiv_date": "2024-11-26",
+    "license": "CC BY 4.0",
+    "authors": "Malinovskii, Panferov, Ilin, Guo, Richt\u00e1rik, Alistarh",
+    "title": "HIGGS",
+    "venue": "NAACL 2025",
+    "url": "https://arxiv.org/abs/2411.17525",
+    "code_url": null,
+    "code_license_note": null,
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "N044 ROTATION_MOVES_BARRIER=false on Qwen3.8 MLP (receipts/headless/COORDINATE_TRANSFORM_PROBE.json): Hadamard and learned block-orthogonal did not move held-out composition; the 2.25 floor is coordinate-robust. HIGGS's Hadamard arm is the N044 discriminator. MSE-grid remainder untested. S028/\u00a764/\u00a7107: a Qwen-MLP failure is not global death."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Expert Linear maps are the same algebra; a Qwen dense-MLP result does not transfer (S028/\u00a764/\u00a7107)."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "GQA Q/O GEMVs were not the Qwen MLP composition probe; keep as a hypothesis."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "DeltaNet in_proj is a different organ (floor 3.26 EBPW) and was not this codec's Qwen test."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No vision/audio organ is in the Qwen3.8 hybrid census."
+    },
+    "kv_state": {
+     "grade": "UNLIKELY",
+     "reason": "This is a weight codec, not a KV/state codec."
+    },
+    "decoding": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change accepted-tokens-per-forward; at best it cheapens a draft body."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology or tokenizer bytes."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "failed",
+    "receipt": "receipts/headless/COORDINATE_TRANSFORM_PROBE.json",
+    "scope": "Hadamard incoherence on Qwen MLP. HIGGS MSE-optimal Gaussian grid was not the N044 codec.",
+    "related_not_the_same": "N044 re-fit binary/ternary/q2f, not an MSE-optimal Gaussian grid."
+   },
+   "metal_feasibility": {
+    "class": "ZERO_RUNTIME_IF_ABSORBED",
+    "note": "Hadamard can be absorbed (S026 \u00a79) or applied online. Online FWHT on X is extra traffic. Grid lookup can reuse LUT paths; C4 refused VQ-PQ, not MSE-grid scalar. CUDA HIGGS kernels \u2260 Metal.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-HIGGS",
+    "summary": "CPU: apply sequency-Hadamard (or RHT from strand-quant) to L31.gate_proj, quantize with an MSE-optimal 2- or 3-bit Gaussian grid including scales in EBPW; score composition_local_survives on real hold X vs q2f. Identity and shuffled-Hadamard controls.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null
+   },
+   "decision": "KEEP",
+   "decision_reason": "Hadamard arm closed on Qwen MLP. KEEP: MSE-grid codebook and other-arch absorption are UNKNOWN (S028). Cheapest remaining is the grid, not another FWHT.",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n046_rank_score": 20.0,
+   "n046_metal_feasibility": "ZERO_RUNTIME_IF_ABSORBED",
+   "n046_hawking_organ": "mlp_gate_up",
+   "codebase_citations": [
+    "receipts/headless/QWEN_COMPLETION_RECEIPT.json",
+    "workspace/vendor/strand-quant/src/rht.rs",
+    "receipts/headless/ORGAN_DENSITY_FLOORS.json",
+    "receipts/headless/WHOLE_MODEL_RECOMPOSE.json"
+   ]
+  },
+  {
+   "id": "teal",
+   "name": "TEAL",
+   "sources": [
+    "N046"
+   ],
+   "merged_from": [],
+   "family": "activation sparsity + conditional compute",
+   "n043_seed": false,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Training-free magnitude pruning of hidden states (40\u201350% model-wide) so weight tiles whose activations are ~0 are not read.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2408.14690",
+    "arxiv_ids": [
+     "2408.14690"
+    ],
+    "arxiv_date": "2024-08-26",
+    "license": "CC BY 4.0",
+    "authors": "Liu, Ponnusamy, Cai, Guo, Kim, Athiwaratkun",
+    "title": "TEAL",
+    "venue": "ICLR 2025 Spotlight",
+    "url": "https://arxiv.org/abs/2408.14690",
+    "code_url": "https://github.com/FasterDecoding/TEAL",
+    "code_license_note": "code at https://github.com/FasterDecoding/TEAL \u2014 check license; do not copy (S026 \u00a76, \u00a788).",
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "PLAUSIBLE",
+     "reason": "Training-free magnitude skip of SwiGLU hidden channels; mlp_gate_up is memory-class. Histogram of |x| per channel is the cheap falsifier."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Expert Linear maps are the same algebra; a Qwen dense-MLP result does not transfer (S028/\u00a764/\u00a7107)."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "GQA Q/O GEMVs were not the Qwen MLP composition probe; keep as a hypothesis."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "DeltaNet in_proj is a different organ (floor 3.26 EBPW) and was not this codec's Qwen test."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No vision/audio organ is in the Qwen3.8 hybrid census."
+    },
+    "kv_state": {
+     "grade": "UNLIKELY",
+     "reason": "This is a weight codec, not a KV/state codec."
+    },
+    "decoding": {
+     "grade": "UNLIKELY",
+     "reason": "Activation skip is not speculative decoding."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology or tokenizer bytes."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "untested",
+    "receipt": "receipts/headless/BYTES_FRONTIER.json",
+    "scope": "CSR-sparse 2% residual was compute-bound (wrong sparsity). TEAL channel-magnitude skip unrun.",
+    "related_not_the_same": "BYTES_FRONTIER unstructured CSR is not TEAL structured skip."
+   },
+   "metal_feasibility": {
+    "class": "FUSED_SKIP_REQUIRED",
+    "note": "Unstructured skip = gather = N033 loss. Need a structured (channel/group) mask so the existing tpr64 kernel jumps tiles. CUDA sparse GEMM is not Metal.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-TEAL",
+    "summary": "Histogram |x| per channel on real post-attn-norm X (ORGAN_DENSITY_FLOORS capture). If 40% channels are not near-zero, TEAL is dead on this parent. CPU. No kernel.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null
+   },
+   "decision": "KEEP",
+   "decision_reason": "Not the CSR sparse already killed. KEEP. One activation histogram falsifies it. Fused skip required before any token_ns claim.",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n046_rank_score": 15.0,
+   "n046_metal_feasibility": "FUSED_SKIP_REQUIRED",
+   "n046_hawking_organ": "mlp_gate_up",
+   "codebase_citations": [
+    "receipts/headless/BYTES_FRONTIER.json",
+    "receipts/headless/MLP_GATE_UP.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/ORGAN_LIBRARY.json"
+   ]
+  },
+  {
+   "id": "layerskip",
+   "name": "LayerSkip",
+   "sources": [
+    "N046"
+   ],
+   "merged_from": [],
+   "family": "speculative / multi-token / self-speculative decoding",
+   "n043_seed": false,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Self-speculative decoding: early-exit draft with the same weights, remaining layers verify; no extra draft model.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2404.16710",
+    "arxiv_ids": [
+     "2404.16710"
+    ],
+    "arxiv_date": "2024-04-25",
+    "license": "CC BY 4.0",
+    "authors": "Elhoushi et al. (Meta FAIR / CMU)",
+    "title": "LayerSkip",
+    "venue": "v4 2024-10-18",
+    "url": "https://arxiv.org/abs/2404.16710",
+    "code_url": null,
+    "code_license_note": null,
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "Speculative/MTP changes passes-per-token, not the MLP byte wall."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Shared-expert draft is the in-tree MoE analogue (hawking-speculate); untested as this paper."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "Verify still pays GQA; draft may skip or reuse it. Untested."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "Draft/verify over a hybrid GQA+DeltaNet body is untested; DN state is not prefix-shareable."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No multimodal decode organ in this census."
+    },
+    "kv_state": {
+     "grade": "UNKNOWN",
+     "reason": "Speculation needs dual committed/provisional KV (in-tree); byte win is not the paper's claim."
+    },
+    "decoding": {
+     "grade": "PLAUSIBLE",
+     "reason": "Self-speculative: early-exit or binary_g64 drafts, remaining/q2f verifies. No extra draft model. Highest-EV decode probe after native-MTP census."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "untested",
+    "receipt": "receipts/headless/BINARY_HEALING.json",
+    "scope": "Binary is a measured fast injured TARGET, not a measured DRAFT. LayerSkip \u03c4 untested (N049).",
+    "related_not_the_same": null
+   },
+   "metal_feasibility": {
+    "class": "PARTIAL_IN_TREE",
+    "note": "Verify = existing q2f graph. Draft = existing binary graph or first k layers of q2f. No new CUDA kernel to port. Acceptance is the unknown, not Metal.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-LAYERSKIP",
+    "summary": "On the 16-token compiler-prose prompt: (a) binary_g64 draft / q2f verify; (b) first 16 layers q2f draft / remaining verify. Report mean accepted length. If \u03c4\u22481, self-speculation is dead on this body.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null
+   },
+   "decision": "KEEP",
+   "decision_reason": "Not Medusa (no extra heads). Maps onto injured binary + hawking-speculate. KEEP as N049.",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n046_rank_score": 12.5,
+   "n046_metal_feasibility": "PARTIAL_IN_TREE",
+   "n046_hawking_organ": "decode_loop",
+   "codebase_citations": [
+    "receipts/headless/BINARY_HEALING.json",
+    "crates/hawking-speculate/src/lib.rs",
+    "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+    "receipts/headless/QWEN_COMPLETION_RECEIPT.json",
+    "receipts/headless/DISPATCH_LEDGER.json"
+   ]
+  },
+  {
+   "id": "butterflyquant",
+   "name": "ButterflyQuant",
+   "sources": [
+    "N046"
+   ],
+   "merged_from": [],
+   "family": "learned/function-preserving rotations + incoherence processing",
+   "n043_seed": false,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Replace discrete Hadamard with learnable orthogonal butterfly (Givens angles); 128-sample calibration, minutes on one GPU.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2509.09679",
+    "arxiv_ids": [
+     "2509.09679"
+    ],
+    "arxiv_date": "2025-09-11",
+    "license": "arXiv perpetual non-exclusive license to distribute (default arXiv license; not a grant to ship)",
+    "authors": "Xu, Dong, Elachqar, Shang",
+    "title": "ButterflyQuant",
+    "venue": "v3 2026-02-10",
+    "url": "https://arxiv.org/abs/2509.09679",
+    "code_url": null,
+    "code_license_note": null,
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "N044 ROTATION_MOVES_BARRIER=false on Qwen3.8 MLP (receipts/headless/COORDINATE_TRANSFORM_PROBE.json): Hadamard and learned block-orthogonal did not move held-out composition; the 2.25 floor is coordinate-robust. Butterfly is a richer rotation family than Hadamard; N044's learned block-orthogonal is the overlapping discriminator. S028/\u00a764/\u00a7107: a Qwen-MLP failure is not global death."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Expert Linear maps are the same algebra; a Qwen dense-MLP result does not transfer (S028/\u00a764/\u00a7107)."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "GQA Q/O GEMVs were not the Qwen MLP composition probe; keep as a hypothesis."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "DeltaNet in_proj is a different organ (floor 3.26 EBPW) and was not this codec's Qwen test."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No vision/audio organ is in the Qwen3.8 hybrid census."
+    },
+    "kv_state": {
+     "grade": "UNLIKELY",
+     "reason": "This is a weight codec, not a KV/state codec."
+    },
+    "decoding": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change accepted-tokens-per-forward; at best it cheapens a draft body."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology or tokenizer bytes."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "failed",
+    "receipt": "receipts/headless/COORDINATE_TRANSFORM_PROBE.json",
+    "scope": "Qwen3.8 MLP composition (layers 0 and 31 gate/up/down + SwiGLU); not a global-architecture verdict.",
+    "related_not_the_same": "N044 tested Hadamard + PCA-orthogonal, not every paper's parameterization."
+   },
+   "metal_feasibility": {
+    "class": "ZERO_RUNTIME_IF_ABSORBED",
+    "note": "Absorb Q into W. Do not run butterfly at decode. Learning the angles is CUDA-or-CPU; inference is the existing Metal matvec. CUDA \u2260 Metal (S026 \u00a789).",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-BUTTERFLYQUANT",
+    "summary": "Fold into N044: one butterfly block (not full SpinQuant) vs Hadamard vs identity on L31.gate_proj; if butterfly \u2249 Hadamard on composition, add this row; if tied, do not.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null
+   },
+   "decision": "KEEP",
+   "decision_reason": "N044 showed rotation coordinate-robust on Qwen MLP \u2192 dense_mlp UNLIKELY, but attention/other-arch UNKNOWN. KEEP, do not prune (S028 explicit example).",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n046_rank_score": 10.0,
+   "n046_metal_feasibility": "ZERO_RUNTIME_IF_ABSORBED",
+   "n046_hawking_organ": "mlp_gate_up",
+   "codebase_citations": [
+    "receipts/headless/C5STRUCTTRANSFORM_DESIGN.json",
+    "receipts/headless/QWEN_COMPLETION_RECEIPT.json",
+    "receipts/headless/ORGAN_DENSITY_FLOORS.json"
+   ]
+  },
+  {
+   "id": "qtip",
+   "name": "QTIP",
+   "sources": [
+    "N046"
+   ],
+   "merged_from": [],
+   "family": "additive/vector codebooks",
+   "n043_seed": false,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Trellis-coded quantization after incoherence processing: stateful decoder gives ultra-high-dimensional codes without exponential codebooks; lookup or compute-based trellis.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2406.11235",
+    "arxiv_ids": [
+     "2406.11235"
+    ],
+    "arxiv_date": "2024-06-16",
+    "license": "CC BY 4.0",
+    "authors": "Tseng, Chee, Sun, Kuleshov, De Sa",
+    "title": "QTIP",
+    "venue": "NeurIPS 2024; v4 2025-06-18",
+    "url": "https://arxiv.org/abs/2406.11235",
+    "code_url": null,
+    "code_license_note": null,
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNKNOWN",
+     "reason": "Trellis+incoherence is not the C4 VQ-PQ that was refused; strand-quant already has trellis.rs."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Expert Linear maps are the same algebra; a Qwen dense-MLP result does not transfer (S028/\u00a764/\u00a7107)."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "GQA Q/O GEMVs were not the Qwen MLP composition probe; keep as a hypothesis."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "DeltaNet in_proj is a different organ (floor 3.26 EBPW) and was not this codec's Qwen test."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No vision/audio organ is in the Qwen3.8 hybrid census."
+    },
+    "kv_state": {
+     "grade": "UNLIKELY",
+     "reason": "This is a weight codec, not a KV/state codec."
+    },
+    "decoding": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change accepted-tokens-per-forward; at best it cheapens a draft body."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology or tokenizer bytes."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "untested",
+    "receipt": "receipts/headless/C4CODEBOOK_DESIGN.json",
+    "scope": "C4 refused gravity_pq VQ, not QTIP trellis. CPU trellis on L31.gate_proj unrun.",
+    "related_not_the_same": "AQLM/VQ dimension ceiling is QTIP's claim, not a Hawking measurement."
+   },
+   "metal_feasibility": {
+    "class": "PARTIAL_IN_TREE",
+    "note": "strand-quant has Metal RHT/trellis encode, not a decode GEMV fused into qwen hybrid. A paper CUDA kernel is not a Metal q2f replacement (S026 \u00a789). Bitshift trellis is the hardware-friendly variant to try first.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-QTIP",
+    "summary": "CPU QTIP-style bitshift trellis on one L31.gate_proj tile using strand-quant trellis, real X, complete EBPW including trellis state/scales; vs q2f composition. If rel_fro loses, stop; do not write a decode kernel.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null
+   },
+   "decision": "KEEP",
+   "decision_reason": "Distinct from AQLM. In-tree trellis/RHT makes this the cheapest codebook experiment C4 did not already refuse. KEEP.",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n046_rank_score": 10.0,
+   "n046_metal_feasibility": "PARTIAL_IN_TREE",
+   "n046_hawking_organ": "mlp_gate_up",
+   "codebase_citations": [
+    "workspace/vendor/strand-quant/src/trellis.rs",
+    "workspace/vendor/strand-quant/src/rht.rs",
+    "receipts/headless/C4CODEBOOK_DESIGN.json",
+    "receipts/headless/QWEN_COMPLETION_RECEIPT.json",
+    "receipts/headless/ORGAN_DENSITY_FLOORS.json"
+   ]
+  },
+  {
+   "id": "quamba2",
+   "name": "Quamba2",
+   "sources": [
+    "N046"
+   ],
+   "merged_from": [],
+   "family": "linear-attention / SSM / DeltaNet / gated-delta compression",
+   "n043_seed": false,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "SSM-specific PTQ: cluster/sort recurrence inputs, per-state-group quant of B/C, offline weight permute for compute-invariance; W4A8/W4A16 for Mamba/Mamba2.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2503.22879",
+    "arxiv_ids": [
+     "2503.22879"
+    ],
+    "arxiv_date": "2025-03-28",
+    "license": "arXiv perpetual non-exclusive license to distribute (default arXiv license; not a grant to ship)",
+    "authors": "Chiang, Chang, Frumkin, Wu, Abdelfattah, Marculescu",
+    "title": "Quamba2",
+    "venue": "ICML 2025",
+    "url": "https://arxiv.org/abs/2503.22879",
+    "code_url": null,
+    "code_license_note": null,
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "SSM/DeltaNet codec; does not target SwiGLU MLP."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Routed SSM experts are an Odyssey parent, not this dense hybrid."
+    },
+    "attention_gqa": {
+     "grade": "UNLIKELY",
+     "reason": "GQA is softmax attention, not a delta-rule recurrence."
+    },
+    "recurrent_deltanet": {
+     "grade": "PLAUSIBLE",
+     "reason": "SSM-specific PTQ (cluster/sort recurrence, per-state-group B/C). DeltaNet is 20.7% of params at 3.261 complete EBPW \u2014 largest non-MLP density lever."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No multimodal SSM organ in this census."
+    },
+    "kv_state": {
+     "grade": "UNKNOWN",
+     "reason": "State-group quant of B/C is the new part; leftover currently billed at 32 bpw."
+    },
+    "decoding": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change accepted-tokens-per-forward."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "untested",
+    "receipt": "receipts/headless/ORGAN_FRONTIERS.json",
+    "scope": "DeltaNet in_proj floor is grouped_absmax q3; Quamba2 clustered quant unrun.",
+    "related_not_the_same": null
+   },
+   "metal_feasibility": {
+    "class": "PARTIAL_IN_TREE",
+    "note": "We already have a Metal Gated-Delta decode (widen_f4). Quamba2's CUDA recurrence quant is not that kernel. in_proj GEMVs can reuse q3 g64 (already the floor codec). State-group quant of B/C is the new part (leftover currently billed at 32 bpw in ORGAN_DENSITY_FLOORS).",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-QUAMBA2",
+    "summary": "Grouped q3 vs Quamba2-style clustered quant on L0.in_proj_qkv real X (ORGAN_FRONTIERS per-tensor floor). If clustered \u2249 RTN, worth a kernel; if tied, DeltaNet floor stays grouped_absmax.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null
+   },
+   "decision": "KEEP",
+   "decision_reason": "No SSM/DeltaNet technique is in the N043 seed. KEEP. Not a Qwen-MLP prune.",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n046_rank_score": 10.0,
+   "n046_metal_feasibility": "PARTIAL_IN_TREE",
+   "n046_hawking_organ": "deltanet",
+   "codebase_citations": [
+    "receipts/headless/ORGAN_DENSITY_FLOORS.json",
+    "receipts/headless/ORGAN_FRONTIERS.json",
+    "receipts/headless/DELTANET_ORGAN.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/WHOLE_MODEL_RECOMPOSE.json"
+   ]
+  },
+  {
+   "id": "dflash",
+   "name": "DFlash",
+   "sources": [
+    "N046"
+   ],
+   "merged_from": [],
+   "family": "speculative / multi-token / self-speculative decoding",
+   "n043_seed": false,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Block-diffusion drafter emits a whole block of tokens in one parallel pass from target hidden states (not autoregressive draft).",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2602.06036",
+    "arxiv_ids": [
+     "2602.06036"
+    ],
+    "arxiv_date": "2026-02-06",
+    "license": "arXiv perpetual non-exclusive license to distribute (default arXiv license; not a grant to ship)",
+    "authors": "Inco / Z Lab",
+    "title": "DFlash",
+    "venue": "2026 block-diffusion drafting; DFlash 2 2026-08",
+    "url": "https://arxiv.org/abs/2602.06036",
+    "code_url": null,
+    "code_license_note": null,
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "Speculative/MTP changes passes-per-token, not the MLP byte wall."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Shared-expert draft is the in-tree MoE analogue (hawking-speculate); untested as this paper."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "Verify still pays GQA; draft may skip or reuse it. Untested."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "Draft/verify over a hybrid GQA+DeltaNet body is untested; DN state is not prefix-shareable."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No multimodal decode organ in this census."
+    },
+    "kv_state": {
+     "grade": "UNKNOWN",
+     "reason": "Speculation needs dual committed/provisional KV (in-tree); byte win is not the paper's claim."
+    },
+    "decoding": {
+     "grade": "PLAUSIBLE",
+     "reason": "Block-diffusion drafter with a Qwen3.8-27B public artifact; verify+rollback is in-tree."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "untested",
+    "receipt": "receipts/headless/QWEN_COMPLETION_RECEIPT.json",
+    "scope": "Public Qwen3.8-27B DFlash weights were not loaded here (GPU lock is not this lane).",
+    "related_not_the_same": null
+   },
+   "metal_feasibility": {
+    "class": "UNPROVEN_ON_METAL",
+    "note": "Drafter inference on M3 Ultra is unmeasured. Diffusion draft is a second graph. CUDA/SGLang 2.7\u20133.4\u00d7 is not Metal. Verify must stay lossless (hawking-speculate token_boundary).",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-DFLASH",
+    "summary": "Do not train. (1) Confirm the public Qwen3.8-27B DFlash weights exist locally or skip. (2) CPU/Metal: one block draft vs parent greedy on 16 compiler-prose tokens; if token agreement <2, dead. GPU lock is N042's \u2014 do not take it.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null
+   },
+   "decision": "KEEP",
+   "decision_reason": "Specimen-specific decode hypothesis, not a Qwen-MLP codec. KEEP. Do not take the GPU.",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n046_rank_score": 8.333333333333334,
+   "n046_metal_feasibility": "UNPROVEN_ON_METAL",
+   "n046_hawking_organ": "decode_loop",
+   "codebase_citations": [
+    "crates/hawking-speculate/src/lib.rs",
+    "receipts/headless/QWEN_COMPLETION_RECEIPT.json",
+    "receipts/headless/ORGAN_LIBRARY.json"
+   ]
+  },
+  {
+   "id": "octopus",
+   "name": "OCTOPUS",
+   "sources": [
+    "N046"
+   ],
+   "merged_from": [],
+   "family": "KV & state compression",
+   "n043_seed": false,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Rotate then jointly quantize coordinate triplets via octahedral direction+norm; fused reconstruction so decode adds no extra bandwidth vs dequant.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2605.21226",
+    "arxiv_ids": [
+     "2605.21226"
+    ],
+    "arxiv_date": "2026-05-20",
+    "license": "arXiv perpetual non-exclusive license to distribute (default arXiv license; not a grant to ship)",
+    "authors": "Boss, Voleti, Donn\u00e9, Vainer (Stability AI)",
+    "title": "OCTOPUS",
+    "venue": null,
+    "url": "https://arxiv.org/abs/2605.21226",
+    "code_url": null,
+    "code_license_note": null,
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "KV/state codec; does not compress MLP weights."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "MoE routing does not by itself change GQA KV algebra; untested on routed parents."
+    },
+    "attention_gqa": {
+     "grade": "PLAUSIBLE",
+     "reason": "Octahedral triplet KV after rotation; GQA head_dim=256 fits triplets. Best published 2-bit rotation KV as of N046."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNLIKELY",
+     "reason": "DeltaNet state is a recurrent summary, not a token KV cache (NOETIC_CANON law 14)."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "Cross-modal KV untested; no multimodal organ on this hybrid."
+    },
+    "kv_state": {
+     "grade": "PLAUSIBLE",
+     "reason": "Octahedral triplet KV after rotation; GQA head_dim=256 fits triplets. Best published 2-bit rotation KV as of N046."
+    },
+    "decoding": {
+     "grade": "UNKNOWN",
+     "reason": "Smaller session state can change long-context decode economics; unmeasured here."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "untested",
+    "receipt": "receipts/headless/PREFILL_KV.json",
+    "scope": "No octahedral triplet MSE on a captured Qwen GQA K head.",
+    "related_not_the_same": null
+   },
+   "metal_feasibility": {
+    "class": "UNPROVEN_ON_METAL",
+    "note": "Paper's fused Triton reconstruct-on-the-fly is the right shape (no materialize). That is a Metal attention rewrite, not a drop-in. CUDA \u2260 Metal.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-OCTOPUS",
+    "summary": "After TurboQuant K-head MSE: octahedral triplet on the same head at 2 bits. If MSE does not beat Polar/TurboQuant, skip the fused kernel.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null
+   },
+   "decision": "KEEP",
+   "decision_reason": "GQA-KV addition, not a Qwen-MLP prune. KEEP.",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n046_rank_score": 8.0,
+   "n046_metal_feasibility": "UNPROVEN_ON_METAL",
+   "n046_hawking_organ": "gqa_attention",
+   "codebase_citations": [
+    "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+    "receipts/headless/PREFILL_KV.json",
+    "receipts/headless/ORGAN_DENSITY_FLOORS.json"
+   ]
+  },
+  {
+   "id": "oscar",
+   "name": "OSCAR",
+   "sources": [
+    "N046"
+   ],
+   "merged_from": [],
+   "family": "KV & state compression",
+   "n043_seed": false,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Offline spectral covariance-aware rotation + clipping for 2-bit KV; attention-aligned, not generic Hadamard. Reports near-BF16 on Qwen3-32B / GLM-4.7 at 2.28 bits/KV.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2605.17757",
+    "arxiv_ids": [
+     "2605.17757"
+    ],
+    "arxiv_date": "2026-05-18",
+    "license": "CC BY 4.0",
+    "authors": "Zhou, Zhuang, Li, Chen, Song, Athiwaratkun, Wu",
+    "title": "OSCAR",
+    "venue": null,
+    "url": "https://arxiv.org/abs/2605.17757",
+    "code_url": null,
+    "code_license_note": null,
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "KV/state codec; does not compress MLP weights."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "MoE routing does not by itself change GQA KV algebra; untested on routed parents."
+    },
+    "attention_gqa": {
+     "grade": "PLAUSIBLE",
+     "reason": "Attention-aligned covariance rotation for 2-bit KV; Hadamard was weak as a weight bits lever (N044/C5) but KV may need a different rotation."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNLIKELY",
+     "reason": "DeltaNet state is a recurrent summary, not a token KV cache (NOETIC_CANON law 14)."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "Cross-modal KV untested; no multimodal organ on this hybrid."
+    },
+    "kv_state": {
+     "grade": "PLAUSIBLE",
+     "reason": "Attention-aligned covariance rotation for 2-bit KV; Hadamard was weak as a weight bits lever (N044/C5) but KV may need a different rotation."
+    },
+    "decoding": {
+     "grade": "UNKNOWN",
+     "reason": "Smaller session state can change long-context decode economics; unmeasured here."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "untested",
+    "receipt": "receipts/headless/COORDINATE_TRANSFORM_PROBE.json",
+    "scope": "N044 rotated MLP weights, not GQA K covariance. OSCAR's KV rotation unrun.",
+    "related_not_the_same": "Weight Hadamard \u2260 attention-aware KV rotation."
+   },
+   "metal_feasibility": {
+    "class": "ZERO_RUNTIME_IF_ABSORBED",
+    "note": "Offline R can be baked. 2-bit KV still needs a Metal dequant-attention. GLM-4.7 CUDA numbers are not ours.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-OSCAR",
+    "summary": "Estimate K-head covariance from 4K real prefix (one GQA layer); compare 2-bit RTN after (a) identity (b) Hadamard (c) top eigenvectors. CPU.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null
+   },
+   "decision": "KEEP",
+   "decision_reason": "2026 attention-aware KV rotation is not KIVI and not SpinQuant. KEEP. Cheap covariance probe.",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n046_rank_score": 8.0,
+   "n046_metal_feasibility": "ZERO_RUNTIME_IF_ABSORBED",
+   "n046_hawking_organ": "gqa_attention",
+   "codebase_citations": [
+    "receipts/headless/ORGAN_FRONTIERS.json",
+    "receipts/headless/PREFILL_KV.json",
+    "receipts/headless/ORGAN_DENSITY_FLOORS.json"
+   ]
+  },
+  {
+   "id": "turboquant",
+   "name": "TurboQuant",
+   "sources": [
+    "N046"
+   ],
+   "merged_from": [],
+   "family": "KV & state compression",
+   "n043_seed": false,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Random/structured rotation then PolarQuant + 1-bit QJL residual; data-free ~3-bit KV near the distortion bound.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2504.19874",
+    "arxiv_ids": [
+     "2504.19874"
+    ],
+    "arxiv_date": "2025-04-28",
+    "license": "arXiv perpetual non-exclusive license to distribute (default arXiv license; not a grant to ship)",
+    "authors": "Zandieh, Daliri, Hadian, Mirrokni (Google)",
+    "title": "TurboQuant",
+    "venue": "ICLR 2026",
+    "url": "https://arxiv.org/abs/2504.19874",
+    "code_url": null,
+    "code_license_note": null,
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "KV/state codec; does not compress MLP weights."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "MoE routing does not by itself change GQA KV algebra; untested on routed parents."
+    },
+    "attention_gqa": {
+     "grade": "PLAUSIBLE",
+     "reason": "Rotation + PolarQuant + 1-bit QJL residual; data-free ~3-bit KV. GQA KV is the compressible cache; DN state is not."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNLIKELY",
+     "reason": "DeltaNet state is a recurrent summary, not a token KV cache (NOETIC_CANON law 14)."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "Cross-modal KV untested; no multimodal organ on this hybrid."
+    },
+    "kv_state": {
+     "grade": "PLAUSIBLE",
+     "reason": "Rotation + PolarQuant + 1-bit QJL residual; data-free ~3-bit KV. GQA KV is the compressible cache; DN state is not."
+    },
+    "decoding": {
+     "grade": "UNKNOWN",
+     "reason": "Smaller session state can change long-context decode economics; unmeasured here."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "untested",
+    "receipt": "receipts/headless/PREFILL_KV.json",
+    "scope": "No Hadamard-rotate + Polar/Lloyd-Max on a captured GQA K head.",
+    "related_not_the_same": null
+   },
+   "metal_feasibility": {
+    "class": "UNPROVEN_ON_METAL",
+    "note": "Needs fused Metal attention over rotated+quantized K. mlx-lm has an open PolarQuant issue \u2014 community interest, no Hawking kernel. CUDA H100 8\u00d7 is not M3 Ultra.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-TURBOQUANT",
+    "summary": "Hadamard-rotate one GQA K head (d=256) from a 4K capture, Lloyd-Max 3-bit vs KIVI-style per-channel 2-bit; compare reconstruction MSE and a 32-token greedy continuation. CPU.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null
+   },
+   "decision": "KEEP",
+   "decision_reason": "ICLR 2026 KV rotation codec is not KIVI. KEEP. PolarQuant is an arm, not a duplicate prune.",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n046_rank_score": 8.0,
+   "n046_metal_feasibility": "UNPROVEN_ON_METAL",
+   "n046_hawking_organ": "gqa_attention",
+   "codebase_citations": [
+    "receipts/headless/PREFILL_KV.json",
+    "receipts/headless/ORGAN_LIBRARY.json",
+    "receipts/headless/DELTANET_ORGAN.json"
+   ]
+  },
+  {
+   "id": "paroquant",
+   "name": "ParoQuant",
+   "sources": [
+    "N046"
+   ],
+   "merged_from": [],
+   "family": "learned/function-preserving rotations + incoherence processing",
+   "n043_seed": false,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Independent pairwise Givens rotations + channel-wise scaling, co-designed so rotations stay cheap at decode; claims QTIP-level accuracy at ~25% faster.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2511.10645",
+    "arxiv_ids": [
+     "2511.10645"
+    ],
+    "arxiv_date": "2025-11-13",
+    "license": "arXiv perpetual non-exclusive license to distribute (default arXiv license; not a grant to ship)",
+    "authors": "Liang, Chen, Zhang, Han, Liu",
+    "title": "ParoQuant",
+    "venue": "ICLR 2026",
+    "url": "https://arxiv.org/abs/2511.10645",
+    "code_url": null,
+    "code_license_note": null,
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "N044 ROTATION_MOVES_BARRIER=false on Qwen3.8 MLP (receipts/headless/COORDINATE_TRANSFORM_PROBE.json): Hadamard and learned block-orthogonal did not move held-out composition; the 2.25 floor is coordinate-robust. Pairwise Givens is a cheaper structured rotation, still a rotation. S028/\u00a764/\u00a7107: a Qwen-MLP failure is not global death."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Expert Linear maps are the same algebra; a Qwen dense-MLP result does not transfer (S028/\u00a764/\u00a7107)."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "GQA Q/O GEMVs were not the Qwen MLP composition probe; keep as a hypothesis."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "DeltaNet in_proj is a different organ (floor 3.26 EBPW) and was not this codec's Qwen test."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No vision/audio organ is in the Qwen3.8 hybrid census."
+    },
+    "kv_state": {
+     "grade": "UNLIKELY",
+     "reason": "This is a weight codec, not a KV/state codec."
+    },
+    "decoding": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change accepted-tokens-per-forward; at best it cheapens a draft body."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology or tokenizer bytes."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "failed",
+    "receipt": "receipts/headless/COORDINATE_TRANSFORM_PROBE.json",
+    "scope": "Qwen3.8 MLP composition (layers 0 and 31 gate/up/down + SwiGLU); not a global-architecture verdict.",
+    "related_not_the_same": "N044 tested Hadamard + PCA-orthogonal, not every paper's parameterization."
+   },
+   "metal_feasibility": {
+    "class": "LOW_RUNTIME_OR_ABSORBED",
+    "note": "Paper's CUDA kernel co-design is not Metal. Pairwise rotations can be absorbed. If left online, two-element Givens is cheaper than a dense Q, but still extra bandwidth.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-PAROQUANT",
+    "summary": "N044 arm: independent 2\u00d72 Givens per pair vs full Hadamard; CPU, real X.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null
+   },
+   "decision": "KEEP",
+   "decision_reason": "ICLR 2026 pairwise rotation is not SpinQuant. N044 closed Qwen-MLP rotation; KEEP for other organs/arch (S028).",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n046_rank_score": 6.0,
+   "n046_metal_feasibility": "LOW_RUNTIME_OR_ABSORBED",
+   "n046_hawking_organ": "mlp_gate_up",
+   "codebase_citations": [
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/QWEN_COMPLETION_RECEIPT.json",
+    "receipts/headless/MLP_GATE_UP.json"
+   ]
+  },
+  {
+   "id": "resq",
+   "name": "ResQ",
+   "sources": [
+    "N046"
+   ],
+   "merged_from": [],
+   "family": "ultra-low-bit PTQ",
+   "n043_seed": false,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "PCA on activations: keep a 1/8 high-variance subspace in 8-bit, quantize the rest to 4-bit, with per-subspace random rotation (W4A4KV4).",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2412.14363",
+    "arxiv_ids": [
+     "2412.14363"
+    ],
+    "arxiv_date": "2024-12-19",
+    "license": "CC BY 4.0",
+    "authors": "Saxena, Alizadeh, Vemuri, Saha, De Sa, Alistarh",
+    "title": "ResQ",
+    "venue": "v2 2025-02-03",
+    "url": "https://arxiv.org/abs/2412.14363",
+    "code_url": null,
+    "code_license_note": null,
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNKNOWN",
+     "reason": "Activation-subspace mixed precision, not the weight-LR residual HYBRID_OPERATOR killed."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Expert Linear maps are the same algebra; a Qwen dense-MLP result does not transfer (S028/\u00a764/\u00a7107)."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "GQA Q/O GEMVs were not the Qwen MLP composition probe; keep as a hypothesis."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "DeltaNet in_proj is a different organ (floor 3.26 EBPW) and was not this codec's Qwen test."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No vision/audio organ is in the Qwen3.8 hybrid census."
+    },
+    "kv_state": {
+     "grade": "UNLIKELY",
+     "reason": "This is a weight codec, not a KV/state codec."
+    },
+    "decoding": {
+     "grade": "UNLIKELY",
+     "reason": "W4A4 helps compute-bound prefills more than load-bound decode token_ns."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology or tokenizer bytes."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "untested",
+    "receipt": "receipts/headless/HYBRID_OPERATOR.json",
+    "scope": "HYBRID killed WEIGHT low-rank residuals. ResQ PCA of real MLP activations unrun.",
+    "related_not_the_same": "CALDERA/HYBRID is weight LR, not activation subspace."
+   },
+   "metal_feasibility": {
+    "class": "UNPROVEN_ON_METAL",
+    "note": "W4A4 helps compute-bound prefills more than load-bound decode. Do not import CUDA W4A4 speedups as Metal token_ns (S026 \u00a789).",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-RESQ",
+    "summary": "PCA of real MLP activations (capture_diverse2 hold): if 1/8 channels do not dominate variance, ResQ's premise is false on this parent. CPU, no kernel.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null
+   },
+   "decision": "KEEP",
+   "decision_reason": "Not CALDERA. Register so Doctor does not conflate activation-subspace mixed precision with the killed weight LR residual. KEEP (S028).",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n046_rank_score": 6.0,
+   "n046_metal_feasibility": "UNPROVEN_ON_METAL",
+   "n046_hawking_organ": "mlp_gate_up",
+   "codebase_citations": [
+    "receipts/headless/HYBRID_OPERATOR.json",
+    "receipts/headless/C3LOWRANKSPARSE_DESIGN.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/MLP_GATE_UP.json"
+   ]
+  },
+  {
+   "id": "sparse_delta_memory",
+   "name": "Sparse Delta Memory",
+   "sources": [
+    "N046"
+   ],
+   "merged_from": [],
+   "family": "linear-attention / SSM / DeltaNet / gated-delta compression",
+   "n043_seed": false,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Replace dense GDN outer-product state with sparse reads/writes into a large explicit memory \u2014 scale state capacity without dense FLOPs.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2607.07386",
+    "arxiv_ids": [
+     "2607.07386"
+    ],
+    "arxiv_date": "2026-07-08",
+    "license": "CC BY 4.0",
+    "authors": "FAIR / Meta",
+    "title": "Sparse Delta Memory",
+    "venue": "2026",
+    "url": "https://arxiv.org/abs/2607.07386",
+    "code_url": "https://github.com/facebookresearch/sparse-delta-memory",
+    "code_license_note": "code at https://github.com/facebookresearch/sparse-delta-memory \u2014 check license; do not copy (S026 \u00a76, \u00a788).",
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "SSM/DeltaNet codec; does not target SwiGLU MLP."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Routed SSM experts are an Odyssey parent, not this dense hybrid."
+    },
+    "attention_gqa": {
+     "grade": "UNLIKELY",
+     "reason": "GQA is softmax attention, not a delta-rule recurrence."
+    },
+    "recurrent_deltanet": {
+     "grade": "PLAUSIBLE",
+     "reason": "Sparse reads/writes into explicit GDN memory; targets DN session state, not the 0.015 in_proj-irreducible law's weight side."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No multimodal SSM organ in this census."
+    },
+    "kv_state": {
+     "grade": "PLAUSIBLE",
+     "reason": "Directly targets DN state bytes (156.9 MB at seq 256), the larger session term."
+    },
+    "decoding": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change accepted-tokens-per-forward."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "untested",
+    "receipt": "receipts/headless/ORGAN_FRONTIERS.json",
+    "scope": "GDN state effective rank/sparsity on a real prefix unmeasured. Do not build a sparse kernel first.",
+    "related_not_the_same": null
+   },
+   "metal_feasibility": {
+    "class": "UNPROVEN_ON_METAL",
+    "note": "Sparse state is a new kernel family. N033 fused CSR lost on occupancy. Only try if the addressing is blocked/regular.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-SPARSE-DELTA-MEMORY",
+    "summary": "Do not build a sparse state kernel. Measure GDN state matrix effective rank / sparsity on a 1K real prefix; if dense, SDM's premise is false here.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null
+   },
+   "decision": "KEEP",
+   "decision_reason": "2026 GDN-state compression is not MiniCache/H2O. KEEP. Sparse addressing is a Metal hazard (N033) but that is a kernel gate, not a prune of the mechanism.",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n046_rank_score": 6.0,
+   "n046_metal_feasibility": "UNPROVEN_ON_METAL",
+   "n046_hawking_organ": "deltanet",
+   "codebase_citations": [
+    "receipts/headless/ORGAN_FRONTIERS.json",
+    "receipts/headless/PREFILL_KV.json",
+    "receipts/headless/BYTES_FRONTIER.json",
+    "receipts/headless/DELTANET_ORGAN.json"
+   ]
+  },
+  {
+   "id": "hyperquant",
+   "name": "HyperQuant",
+   "sources": [
+    "N046"
+   ],
+   "merged_from": [],
+   "family": "ultra-low-bit PTQ",
+   "n043_seed": false,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Unified data-free pipeline: per-tile RHT, lattice quantization, bit-stripping, Rice coding, subtractive dither \u2014 for both weights and KV.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2606.23406",
+    "arxiv_ids": [
+     "2606.23406"
+    ],
+    "arxiv_date": "2026-06-22",
+    "license": "CC BY 4.0",
+    "authors": "Domb, Sackstein, Solberg",
+    "title": "HyperQuant",
+    "venue": null,
+    "url": "https://arxiv.org/abs/2606.23406",
+    "code_url": null,
+    "code_license_note": null,
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNKNOWN",
+     "reason": "Unified RHT+lattice+Rice for weights and KV; HIGGS/TurboQuant probes first."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Expert Linear maps are the same algebra; a Qwen dense-MLP result does not transfer (S028/\u00a764/\u00a7107)."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "GQA Q/O GEMVs were not the Qwen MLP composition probe; keep as a hypothesis."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "DeltaNet in_proj is a different organ (floor 3.26 EBPW) and was not this codec's Qwen test."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No vision/audio organ is in the Qwen3.8 hybrid census."
+    },
+    "kv_state": {
+     "grade": "PLAUSIBLE",
+     "reason": "Same pipeline claims KV as well as weights; Rice on attention is a Gravity cousin."
+    },
+    "decoding": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change accepted-tokens-per-forward; at best it cheapens a draft body."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology or tokenizer bytes."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "untested",
+    "receipt": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+    "scope": "NNS-003: Gravity Rice families cannot carry Qwen3.8 \u22641.5. HyperQuant as a unified pipeline unrun.",
+    "related_not_the_same": "Gravity Rice is not HyperQuant's lattice+bit-strip pipeline."
+   },
+   "metal_feasibility": {
+    "class": "UNPROVEN_ON_METAL",
+    "note": "Entropy-coded weights need a decode that does not become CPU-bound. NNS-011: tpr64 recon was free for 32/33 variants \u2014 entropy coding may still be eligible on quality, not as a 10\u201325% speed myth.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-HYPERQUANT",
+    "summary": "Run HIGGS (weights) and TurboQuant (KV) probes separately; only unify if both pass composition. Do not implement Rice decode first.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null
+   },
+   "decision": "KEEP",
+   "decision_reason": "2026 unified RHT+lattice+Rice is not AQLM/HIGGS/KIVI. KEEP as a composition of those probes, not a first GPU build. Related Gravity Rice is not a prune (S028).",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n046_rank_score": 5.333333333333333,
+   "n046_metal_feasibility": "UNPROVEN_ON_METAL",
+   "n046_hawking_organ": "whole_model",
+   "codebase_citations": [
+    "receipts/headless/WHOLE_MODEL_RECOMPOSE.json",
+    "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+    "workspace/vendor/strand-quant/src/rht.rs",
+    "receipts/headless/PREFILL_KV.json"
+   ]
+  },
+  {
+   "id": "eagle3",
+   "name": "EAGLE-3",
+   "sources": [
+    "N046"
+   ],
+   "merged_from": [],
+   "family": "speculative / multi-token / self-speculative decoding",
+   "n043_seed": false,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Direct token prediction from multi-layer fused hidden states (training-time test); draft conditioned on the target, not a small independent LM.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2503.01840",
+    "arxiv_ids": [
+     "2503.01840"
+    ],
+    "arxiv_date": "2025-03-03",
+    "license": "arXiv perpetual non-exclusive license to distribute (default arXiv license; not a grant to ship)",
+    "authors": "Li, Wei, Zhang, Zhang",
+    "title": "EAGLE-3",
+    "venue": "NeurIPS 2025",
+    "url": "https://arxiv.org/abs/2503.01840",
+    "code_url": null,
+    "code_license_note": null,
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "Speculative/MTP changes passes-per-token, not the MLP byte wall."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Shared-expert draft is the in-tree MoE analogue (hawking-speculate); untested as this paper."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "Verify still pays GQA; draft may skip or reuse it. Untested."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "Draft/verify over a hybrid GQA+DeltaNet body is untested; DN state is not prefix-shareable."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No multimodal decode organ in this census."
+    },
+    "kv_state": {
+     "grade": "UNKNOWN",
+     "reason": "Speculation needs dual committed/provisional KV (in-tree); byte win is not the paper's claim."
+    },
+    "decoding": {
+     "grade": "PLAUSIBLE",
+     "reason": "2025 production draft (multi-layer fused hidden states). Train-cost is real; run after LayerSkip/binary-draft."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "untested",
+    "receipt": "receipts/headless/NOETIC_OPERATION_CENSUS.json",
+    "scope": "No EAGLE-3 draft net on this parent. Do not train until LayerSkip \u03c4 is measured.",
+    "related_not_the_same": null
+   },
+   "metal_feasibility": {
+    "class": "UNPROVEN_ON_METAL",
+    "note": "Needs a Metal draft net + verify. CUDA EAGLE-3 2\u20136\u00d7 is not an M3 Ultra number. Train-cost is real.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-EAGLE3",
+    "summary": "After LayerSkip/binary-draft. Only if \u03c4 stays ~1, consider a small EAGLE-3-style head on last hidden \u2014 not a 27B-scale training run.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null
+   },
+   "decision": "KEEP",
+   "decision_reason": "2025 successor of Medusa with a different draft. KEEP; do not train 27B first.",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n046_rank_score": 5.0,
+   "n046_metal_feasibility": "UNPROVEN_ON_METAL",
+   "n046_hawking_organ": "decode_loop",
+   "codebase_citations": [
+    "crates/hawking-speculate/src/lib.rs",
+    "receipts/headless/ORGAN_LIBRARY.json"
+   ]
+  },
+  {
+   "id": "magicdec",
+   "name": "MagicDec",
+   "sources": [
+    "N046"
+   ],
+   "merged_from": [],
+   "family": "speculative / multi-token / self-speculative decoding",
+   "n043_seed": false,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Show speculative decoding still wins at large batch/long context because target KV cost grows faster than draft cost.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2408.11049",
+    "arxiv_ids": [
+     "2408.11049"
+    ],
+    "arxiv_date": "2024-08-20",
+    "license": "arXiv perpetual non-exclusive license to distribute (default arXiv license; not a grant to ship)",
+    "authors": "Chen et al.",
+    "title": "MagicDec",
+    "venue": "ICLR 2025",
+    "url": "https://arxiv.org/abs/2408.11049",
+    "code_url": null,
+    "code_license_note": null,
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "Speculative/MTP changes passes-per-token, not the MLP byte wall."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Shared-expert draft is the in-tree MoE analogue (hawking-speculate); untested as this paper."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "Verify still pays GQA; draft may skip or reuse it. Untested."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "Draft/verify over a hybrid GQA+DeltaNet body is untested; DN state is not prefix-shareable."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No multimodal decode organ in this census."
+    },
+    "kv_state": {
+     "grade": "UNKNOWN",
+     "reason": "Speculation needs dual committed/provisional KV (in-tree); byte win is not the paper's claim."
+    },
+    "decoding": {
+     "grade": "PLAUSIBLE",
+     "reason": "Scheduling policy: speculative decoding at large batch/long context. No new kernel. Orthogonal to LayerSkip."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "untested",
+    "receipt": "receipts/headless/PREFILL_KV.json",
+    "scope": "Accept \u03c4 at seq 4K vs 256 unmeasured. DN state is not prefix-shareable, which may break the premise.",
+    "related_not_the_same": null
+   },
+   "metal_feasibility": {
+    "class": "POLICY_NOT_KERNEL",
+    "note": "Scheduling policy over existing draft/verify. No CUDA kernel to port; no new Metal kernel either.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-MAGICDEC",
+    "summary": "After a working draft (LayerSkip/binary). Measure accept \u03c4 at seq 4K vs 256. If \u03c4 collapses, MagicDec's premise fails on this hybrid (DN state not prefix-shareable).",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null
+   },
+   "decision": "KEEP",
+   "decision_reason": "ICLR 2025 long-context speculative policy is not Medusa. KEEP as production decode-gravity.",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n046_rank_score": 4.5,
+   "n046_metal_feasibility": "POLICY_NOT_KERNEL",
+   "n046_hawking_organ": "decode_loop",
+   "codebase_citations": [
+    "receipts/headless/PREFILL_KV.json",
+    "crates/hawking-speculate/src/lib.rs",
+    "receipts/headless/PRODUCTION_BENCH.json"
+   ]
+  },
+  {
+   "id": "ostquant",
+   "name": "OSTQuant",
+   "sources": [
+    "N046"
+   ],
+   "merged_from": [],
+   "family": "learned/function-preserving rotations + incoherence processing",
+   "n043_seed": false,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Learnable orthogonal + scaling (OST) with KL-Top loss on small calibration; W4 and W4A4KV4.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2501.13987",
+    "arxiv_ids": [
+     "2501.13987"
+    ],
+    "arxiv_date": "2025-01-23",
+    "license": "arXiv perpetual non-exclusive license to distribute (default arXiv license; not a grant to ship)",
+    "authors": "Hu, Cheng, Yang, Xu, Yuan, Yu, Xu, Jiang, Zhou",
+    "title": "OSTQuant",
+    "venue": "ICLR 2025",
+    "url": "https://arxiv.org/abs/2501.13987",
+    "code_url": "https://github.com/BrotherHappy/OSTQuant",
+    "code_license_note": "code at https://github.com/BrotherHappy/OSTQuant \u2014 check license; do not copy (S026 \u00a76, \u00a788).",
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "N044 ROTATION_MOVES_BARRIER=false on Qwen3.8 MLP (receipts/headless/COORDINATE_TRANSFORM_PROBE.json): Hadamard and learned block-orthogonal did not move held-out composition; the 2.25 floor is coordinate-robust. OST is SpinQuant + diagonal scale; N044 covers the rotation. S028/\u00a764/\u00a7107: a Qwen-MLP failure is not global death."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Expert Linear maps are the same algebra; a Qwen dense-MLP result does not transfer (S028/\u00a764/\u00a7107)."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "GQA Q/O GEMVs were not the Qwen MLP composition probe; keep as a hypothesis."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "DeltaNet in_proj is a different organ (floor 3.26 EBPW) and was not this codec's Qwen test."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No vision/audio organ is in the Qwen3.8 hybrid census."
+    },
+    "kv_state": {
+     "grade": "UNLIKELY",
+     "reason": "This is a weight codec, not a KV/state codec."
+    },
+    "decoding": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change accepted-tokens-per-forward; at best it cheapens a draft body."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology or tokenizer bytes."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "failed",
+    "receipt": "receipts/headless/COORDINATE_TRANSFORM_PROBE.json",
+    "scope": "Qwen3.8 MLP composition (layers 0 and 31 gate/up/down + SwiGLU); not a global-architecture verdict.",
+    "related_not_the_same": "N044 tested Hadamard + PCA-orthogonal, not every paper's parameterization."
+   },
+   "metal_feasibility": {
+    "class": "ZERO_RUNTIME_IF_ABSORBED",
+    "note": "Absorb R and S into W. CUDA W4A4KV4 numbers are not Metal token_ns.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-OSTQUANT",
+    "summary": "Covered by N044 if the learned rotation includes a diagonal scale. Do not start a separate OST GPU fit.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null
+   },
+   "decision": "KEEP",
+   "decision_reason": "ICLR 2025 orthogonal+scale is not in the N043 name list. Qwen-MLP rotation closed; KEEP as SpinQuant-adjacent for other organs (S028). Not a separate GPU fit.",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n046_rank_score": 4.5,
+   "n046_metal_feasibility": "ZERO_RUNTIME_IF_ABSORBED",
+   "n046_hawking_organ": "mlp_gate_up",
+   "codebase_citations": [
+    "receipts/headless/QWEN_COMPLETION_RECEIPT.json",
+    "receipts/headless/ORGAN_DENSITY_FLOORS.json"
+   ]
+  },
+  {
+   "id": "palu",
+   "name": "Palu",
+   "sources": [
+    "N046"
+   ],
+   "merged_from": [],
+   "family": "KV & state compression",
+   "n043_seed": false,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Low-rank factorization of K/V projections; cache the compressed latent, reconstruct on the fly; stacks with quantization.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2407.21118",
+    "arxiv_ids": [
+     "2407.21118"
+    ],
+    "arxiv_date": "2024-07-30",
+    "license": "arXiv perpetual non-exclusive license to distribute (default arXiv license; not a grant to ship)",
+    "authors": "Chang, Lin, Lin, Chen, Hu, Wang, Huang, Ceze, Abdelfattah, Wu",
+    "title": "Palu",
+    "venue": "ICLR 2025",
+    "url": "https://arxiv.org/abs/2407.21118",
+    "code_url": "https://github.com/shadowpa0327/Palu",
+    "code_license_note": "code at https://github.com/shadowpa0327/Palu \u2014 check license; do not copy (S026 \u00a76, \u00a788).",
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "KV/state codec; does not compress MLP weights."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "MoE routing does not by itself change GQA KV algebra; untested on routed parents."
+    },
+    "attention_gqa": {
+     "grade": "PLAUSIBLE",
+     "reason": "Low-rank factorization of K/V projections; cache the latent. Distinct from weight-LR (C1/C3 killed) and from H2O eviction."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNLIKELY",
+     "reason": "DeltaNet state is a recurrent summary, not a token KV cache (NOETIC_CANON law 14)."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "Cross-modal KV untested; no multimodal organ on this hybrid."
+    },
+    "kv_state": {
+     "grade": "PLAUSIBLE",
+     "reason": "Low-rank factorization of K/V projections; cache the latent. Distinct from weight-LR (C1/C3 killed) and from H2O eviction."
+    },
+    "decoding": {
+     "grade": "UNKNOWN",
+     "reason": "Smaller session state can change long-context decode economics; unmeasured here."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "untested",
+    "receipt": "receipts/headless/ORGAN_FRONTIERS.json",
+    "scope": "ORGAN_FRONTIERS aa_rank_256 survived locally at 1.47 bpw but was NOT q4-equivalent. Palu is KV-side SVD, unrun.",
+    "related_not_the_same": "Weight low-rank \u2260 KV hidden-dim factorization."
+   },
+   "metal_feasibility": {
+    "class": "UNPROVEN_ON_METAL",
+    "note": "Two-stage reconstruct+attention is extra dispatches unless fused. C1: missing kernel was not why sharing lost on fidelity. Palu is KV-side, untested here.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-PALU",
+    "summary": "SVD of one GQA k_proj on real X; reconstruct K at rank/2; if complete_token argmax flips on 16 tokens, Palu is dead at 50%. CPU.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null
+   },
+   "decision": "KEEP",
+   "decision_reason": "ICLR 2025 KV low-rank is not MiniCache/H2O/KIVI and not the weight-LR family C1/C3 killed. KEEP.",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n046_rank_score": 4.5,
+   "n046_metal_feasibility": "UNPROVEN_ON_METAL",
+   "n046_hawking_organ": "gqa_attention",
+   "codebase_citations": [
+    "receipts/headless/ORGAN_FRONTIERS.json",
+    "receipts/headless/ORGAN_DENSITY_FLOORS.json",
+    "receipts/headless/C1SHAREDBASIS_DESIGN.json"
+   ]
+  },
+  {
+   "id": "polarquant",
+   "name": "PolarQuant",
+   "sources": [
+    "N046"
+   ],
+   "merged_from": [],
+   "family": "KV & state compression",
+   "n043_seed": false,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Polar-angle parameterization of rotated unit vectors with analytic Lloyd-Max codebooks (TurboQuant stage 1).",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2502.02617",
+    "arxiv_ids": [
+     "2502.02617"
+    ],
+    "arxiv_date": "2025-02-04",
+    "license": "arXiv perpetual non-exclusive license to distribute (default arXiv license; not a grant to ship)",
+    "authors": "Zandieh et al.",
+    "title": "PolarQuant",
+    "venue": "AISTATS 2026",
+    "url": "https://arxiv.org/abs/2502.02617",
+    "code_url": null,
+    "code_license_note": null,
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "KV/state codec; does not compress MLP weights."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "MoE routing does not by itself change GQA KV algebra; untested on routed parents."
+    },
+    "attention_gqa": {
+     "grade": "PLAUSIBLE",
+     "reason": "Polar-angle Lloyd-Max codebook (TurboQuant stage 1). Keep as a distinct falsifying arm, not a second campaign."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNLIKELY",
+     "reason": "DeltaNet state is a recurrent summary, not a token KV cache (NOETIC_CANON law 14)."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "Cross-modal KV untested; no multimodal organ on this hybrid."
+    },
+    "kv_state": {
+     "grade": "PLAUSIBLE",
+     "reason": "Polar-angle Lloyd-Max codebook (TurboQuant stage 1). Keep as a distinct falsifying arm, not a second campaign."
+    },
+    "decoding": {
+     "grade": "UNKNOWN",
+     "reason": "Smaller session state can change long-context decode economics; unmeasured here."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "untested",
+    "receipt": "receipts/headless/PREFILL_KV.json",
+    "scope": "Polar vs scalar-after-Hadamard on a GQA K head unrun; share TurboQuant's CPU MSE.",
+    "related_not_the_same": null
+   },
+   "metal_feasibility": {
+    "class": "UNPROVEN_ON_METAL",
+    "note": "Same as TurboQuant. Polar decode is extra trig if not LUT-ized.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-POLARQUANT",
+    "summary": "Include as an arm of the TurboQuant K-head MSE (polar vs scalar-after-Hadamard).",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null
+   },
+   "decision": "KEEP",
+   "decision_reason": "AISTATS 2026 polar KV is not KIVI. Not superseded: it is the cheap arm of TurboQuant, not a Metal-infeasible or strictly-dominated dead end. KEEP (S028: do not prune a subset arm).",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n046_rank_score": 4.5,
+   "n046_metal_feasibility": "UNPROVEN_ON_METAL",
+   "n046_hawking_organ": "gqa_attention",
+   "codebase_citations": [
+    "receipts/headless/PREFILL_KV.json",
+    "receipts/headless/ORGAN_LIBRARY.json"
+   ]
+  },
+  {
+   "id": "superbpe",
+   "name": "SuperBPE",
+   "sources": [
+    "N046"
+   ],
+   "merged_from": [],
+   "family": "tokenizer / vocabulary reduction",
+   "n043_seed": false,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Two-stage BPE: subwords then superwords that cross whitespace; 33% fewer tokens at 200k vocab, +4% downstream at iso-compute (trained from scratch).",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2503.13423",
+    "arxiv_ids": [
+     "2503.13423"
+    ],
+    "arxiv_date": "2025-03-17",
+    "license": "arXiv perpetual non-exclusive license to distribute (default arXiv license; not a grant to ship)",
+    "authors": "Liu, Hayase, Hofmann, Oh, Smith, Choi",
+    "title": "SuperBPE",
+    "venue": "v2 2025-04-14",
+    "url": "https://arxiv.org/abs/2503.13423",
+    "code_url": null,
+    "code_license_note": null,
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "Tokenizer/vocab technique; does not change MLP codecs."
+    },
+    "moe": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change expert routing."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "Shorter sequences shrink GQA KV growth; only if the tokenizer is actually swapped."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNLIKELY",
+     "reason": "DeltaNet state does not grow with sequence (TOKENIZER_GRAVITY); vocab swap is not a DN codec."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "Multimodal tokenizers untested."
+    },
+    "kv_state": {
+     "grade": "UNKNOWN",
+     "reason": "Token inflation changes GQA KV positions; N045 showed inflation can erase a head cut."
+    },
+    "decoding": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change speculative draft/verify."
+    },
+    "tokenizer": {
+     "grade": "PLAUSIBLE",
+     "reason": "Two-stage BPE (subwords then superwords) is a VocabularyGenome option, distinct from N045 ASCII-prune."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "untested",
+    "receipt": "receipts/headless/TOKENIZER_GRAVITY.json",
+    "scope": "N045 measured ASCII-prune inflation, not SuperBPE. Do not retrain 27B.",
+    "related_not_the_same": "ASCII-prune CONTROL is not a from-scratch SuperBPE tokenizer."
+   },
+   "metal_feasibility": {
+    "class": "NOT_A_KERNEL",
+    "note": "Tokenizer is host-side. Changing vocab without retraining breaks the embed/lm_head. N045 prune is the experiment; SuperBPE is a different vocabulary genome.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-SUPERBPE",
+    "summary": "N045 ASCII-prune control with TOKEN_INFLATION_RATIO on English/code/JSON/paths. SuperBPE is not that control; do not retrain 27B.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null
+   },
+   "decision": "KEEP",
+   "decision_reason": "Tokenizer family is N045, not N043. KEEP as a vocab-genome hypothesis. N045 prune is the cheap experiment; SuperBPE is not that control.",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n046_rank_score": 4.5,
+   "n046_metal_feasibility": "NOT_A_KERNEL",
+   "n046_hawking_organ": "embed",
+   "codebase_citations": [
+    "receipts/headless/ORGAN_LIBRARY.json",
+    "receipts/headless/ORGAN_DENSITY_FLOORS.json",
+    "receipts/headless/WHOLE_MODEL_RECOMPOSE.json"
+   ]
+  },
+  {
+   "id": "flatquant",
+   "name": "FlatQuant",
+   "sources": [
+    "N046"
+   ],
+   "merged_from": [],
+   "family": "learned/function-preserving rotations + incoherence processing",
+   "n043_seed": false,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Learnable per-layer affine (Kronecker-factored) to flatten weights and activations; fused kernel to hide transform cost.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2410.09426",
+    "arxiv_ids": [
+     "2410.09426"
+    ],
+    "arxiv_date": "2024-10-12",
+    "license": "arXiv perpetual non-exclusive license to distribute (default arXiv license; not a grant to ship)",
+    "authors": "Sun et al.",
+    "title": "FlatQuant",
+    "venue": "ICML 2025",
+    "url": "https://arxiv.org/abs/2410.09426",
+    "code_url": null,
+    "code_license_note": null,
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "C5 generated Kronecker REFUTED (energy 0.015); FlatQuant's learned affine is different but W4A4 is below the current 2-bit question. N044-class. S028/\u00a764/\u00a7107: a Qwen-MLP failure is not global death."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Expert Linear maps are the same algebra; a Qwen dense-MLP result does not transfer (S028/\u00a764/\u00a7107)."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "GQA Q/O GEMVs were not the Qwen MLP composition probe; keep as a hypothesis."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "DeltaNet in_proj is a different organ (floor 3.26 EBPW) and was not this codec's Qwen test."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No vision/audio organ is in the Qwen3.8 hybrid census."
+    },
+    "kv_state": {
+     "grade": "UNLIKELY",
+     "reason": "This is a weight codec, not a KV/state codec."
+    },
+    "decoding": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change accepted-tokens-per-forward; at best it cheapens a draft body."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology or tokenizer bytes."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "failed",
+    "receipt": "receipts/headless/C5STRUCTTRANSFORM_DESIGN.json",
+    "scope": "Generated Kronecker as a bits lever died (C5). FlatQuant learned affine on Qwen MLP unrun; N044 rotations also did not move 2.25.",
+    "related_not_the_same": "C5 generated-W Kronecker is not FlatQuant's learned activation affine."
+   },
+   "metal_feasibility": {
+    "class": "UNPROVEN_ON_METAL",
+    "note": "Paper fuses the affine into a CUDA kernel; that is not a Metal kernel (S026 \u00a789). Online Kronecker at decode is extra bytes. Absorb or skip.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-FLATQUANT",
+    "summary": "Skip W4A4 replay. One Kronecker-affine (two small matrices) absorbed into W, then q2f re-fit; if composition \u2248 baseline, close.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null
+   },
+   "decision": "KEEP",
+   "decision_reason": "Not in N043; distinct from SpinQuant (affine/Kronecker, not orthogonal). Qwen-MLP W4A4 is not the bottleneck \u2014 KEEP as a N044 footnote, not a prune (S028).",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n046_rank_score": 3.0,
+   "n046_metal_feasibility": "UNPROVEN_ON_METAL",
+   "n046_hawking_organ": "mlp_gate_up",
+   "codebase_citations": [
+    "receipts/headless/C5STRUCTTRANSFORM_DESIGN.json",
+    "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+   ]
+  },
+  {
+   "id": "mixture_of_recursions",
+   "name": "Mixture-of-Recursions",
+   "sources": [
+    "N046"
+   ],
+   "merged_from": [],
+   "family": "activation sparsity + conditional compute",
+   "n043_seed": false,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Share layer parameters across recursion steps and route tokens to dynamic recursion depth; optional KV sharing from first recursion.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2507.10524",
+    "arxiv_ids": [
+     "2507.10524"
+    ],
+    "arxiv_date": "2025-07-14",
+    "license": "arXiv perpetual non-exclusive license to distribute (default arXiv license; not a grant to ship)",
+    "authors": "Bae, Kim, Bayat, Kim, Ha, Schuster, Fisch, Harutyunyan, Ji, Courville, Yun",
+    "title": "Mixture-of-Recursions",
+    "venue": null,
+    "url": "https://arxiv.org/abs/2507.10524",
+    "code_url": null,
+    "code_license_note": null,
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNKNOWN",
+     "reason": "Depth-tying of layer weights is a different axis than C1 coefficient-sharing."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Recursion + routing is an Odyssey architecture, not a Qwen GPU WU."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "Optional KV sharing from first recursion is untested on this hybrid."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "Recursion over GDN layers is a different parent."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No multimodal organ in this census."
+    },
+    "kv_state": {
+     "grade": "UNKNOWN",
+     "reason": "First-recursion KV sharing could cut session state; untested."
+    },
+    "decoding": {
+     "grade": "UNLIKELY",
+     "reason": "Adaptive depth is not speculative decoding (LayerSkip is the cheap cousin)."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "untested",
+    "receipt": "receipts/headless/C1SHAREDBASIS_DESIGN.json",
+    "scope": "C1 shared-basis died on coefficient fidelity, not on depth-tying. Layer-\u2113 vs \u2113+1 weight cosine is the cheap check.",
+    "related_not_the_same": "C1 codec sharing \u2260 MoR depth tying."
+   },
+   "metal_feasibility": {
+    "class": "ARCHITECTURE_CHANGE",
+    "note": "Requires training. Odyssey transfer, not current Qwen rebuild (S026 \u00a785 current-Qwen priority).",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-MIXTURE-OF-RECURSIONS",
+    "summary": "Do not train 27B MoR. Cosine between layer \u2113 and \u2113+1 MLP weights (already C1-adjacent). If still ~0, depth-tying is as dead as coefficient-sharing.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null
+   },
+   "decision": "KEEP",
+   "decision_reason": "2025 MoD successor. KEEP as Odyssey/architecture. C1's Qwen sharing negative is a different mechanism \u2014 not a prune (S028).",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n046_rank_score": 3.0,
+   "n046_metal_feasibility": "ARCHITECTURE_CHANGE",
+   "n046_hawking_organ": "whole_model",
+   "codebase_citations": [
+    "receipts/headless/C1SHAREDBASIS_DESIGN.json",
+    "receipts/headless/SHARED_BASIS_COHERENT.json",
+    "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+   ]
+  },
+  {
+   "id": "transmla",
+   "name": "TransMLA",
+   "sources": [
+    "N046"
+   ],
+   "merged_from": [],
+   "family": "KV & state compression",
+   "n043_seed": false,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Convert GQA checkpoints to DeepSeek MLA (latent KV) with short recovery fine-tune; 93% KV cut reported on LLaMA-2.",
+   "provenance": {
+    "kind": "paper",
+    "arxiv_id": "2502.07864",
+    "arxiv_ids": [
+     "2502.07864"
+    ],
+    "arxiv_date": "2025-02-11",
+    "license": "CC BY 4.0",
+    "authors": "Ji et al.",
+    "title": "TransMLA",
+    "venue": "v3 2025-05-27",
+    "url": "https://arxiv.org/abs/2502.07864",
+    "code_url": null,
+    "code_license_note": null,
+    "do_not_copy_third_party_code": true,
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation"
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "Attention latent conversion; does not compress MLP."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "MoE routing does not by itself change GQA KV algebra; untested on routed parents."
+    },
+    "attention_gqa": {
+     "grade": "PLAUSIBLE",
+     "reason": "GQA\u2192MLA conversion shrinks the KV that PREFILL_KV showed can exceed MODEL_BYTES. 6B-token recovery is Odyssey-cost; SVD of concatenated K/V is cheap."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNLIKELY",
+     "reason": "DeltaNet state is a recurrent summary, not a token KV cache (NOETIC_CANON law 14)."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "Cross-modal KV untested; no multimodal organ on this hybrid."
+    },
+    "kv_state": {
+     "grade": "PLAUSIBLE",
+     "reason": "GQA\u2192MLA conversion shrinks the KV that PREFILL_KV showed can exceed MODEL_BYTES. 6B-token recovery is Odyssey-cost; SVD of concatenated K/V is cheap."
+    },
+    "decoding": {
+     "grade": "UNKNOWN",
+     "reason": "Smaller session state can change long-context decode economics; unmeasured here."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "untested",
+    "receipt": "receipts/headless/PREFILL_KV.json",
+    "scope": "SVD of concatenated GQA K/V latents on a 4K prefix unrun. Do not fine-tune 27B.",
+    "related_not_the_same": null
+   },
+   "metal_feasibility": {
+    "class": "ARCHITECTURE_CHANGE",
+    "note": "MLA attention is a new Metal kernel (latent absorb). CUDA DeepSeek kernels are not ours. Do not take N042's GPU for a conversion train.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-TRANSMLA",
+    "summary": "Do not fine-tune 27B. SVD of concatenated GQA K/V latents on 4K prefix; if rank does not collapse, MLA conversion will need the 6B-token recovery and is Odyssey-cost.",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": null
+   },
+   "decision": "KEEP",
+   "decision_reason": "GQA\u2192MLA is not KIVI. KEEP as state-architecture; cheap SVD first.",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107).",
+   "n046_rank_score": 3.0,
+   "n046_metal_feasibility": "ARCHITECTURE_CHANGE",
+   "n046_hawking_organ": "gqa_attention",
+   "codebase_citations": [
+    "receipts/headless/PREFILL_KV.json",
+    "receipts/headless/WHOLE_MODEL_RECOMPOSE.json",
+    "receipts/headless/NOETIC_OPERATION_CENSUS.json"
+   ]
+  },
+  {
+   "id": "shared_basis",
+   "name": "shared_basis",
+   "sources": [
+    "campaign"
+   ],
+   "merged_from": [],
+   "family": "shared_basis / cross-layer coefficients",
+   "n043_seed": false,
+   "literature_status": "HYPOTHESIS",
+   "not_authority": true,
+   "mechanism": "Share a small set of binary/low-bit basis vectors across MLP layers and store per-layer coefficients. Fused K=2 kernel is competent; K=2 composition dies below q2f 2.25 on held-out activations.",
+   "provenance": {
+    "kind": "campaign_mechanism",
+    "arxiv_id": null,
+    "arxiv_date": "2026-08",
+    "license": "campaign-internal (not a paper; Hawking receipts are the provenance)",
+    "authors": "this campaign (C1 shared basis)",
+    "url": null,
+    "code_url": null,
+    "code_license_note": null,
+    "do_not_copy_third_party_code": true,
+    "receipts": [
+     "receipts/headless/SHARED_BASIS_KERNEL.json",
+     "receipts/headless/SHARED_BASIS_COHERENT.json",
+     "receipts/headless/C1SHAREDBASIS_DESIGN.json"
+    ]
+   },
+   "applicability": {
+    "dense_mlp": {
+     "grade": "UNLIKELY",
+     "reason": "Competent fused kernel but dead <2.25 on Qwen MLP (K=2 died at held-out activation). S028/\u00a764/\u00a7107: a Qwen-MLP failure is not global death."
+    },
+    "moe": {
+     "grade": "UNKNOWN",
+     "reason": "Cross-expert / MoE shared substrate is untested; NNS-004 Q80 pairwise cosine is a different parent. S028 explicit: KEEP for MoE-expert / cross-layer sharing UNKNOWN."
+    },
+    "attention_gqa": {
+     "grade": "UNKNOWN",
+     "reason": "Sharing Q/O bases across GQA layers untested; C1 was MLP coefficients."
+    },
+    "recurrent_deltanet": {
+     "grade": "UNKNOWN",
+     "reason": "Sharing in_proj bases across DN layers untested."
+    },
+    "multimodal": {
+     "grade": "UNKNOWN",
+     "reason": "No multimodal organ in this census."
+    },
+    "kv_state": {
+     "grade": "UNLIKELY",
+     "reason": "Shared basis is a weight-coefficient codec, not a KV codec."
+    },
+    "decoding": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change accepted-tokens-per-forward."
+    },
+    "tokenizer": {
+     "grade": "UNLIKELY",
+     "reason": "Does not change vocabulary topology."
+    }
+   },
+   "qwen_datapoint": {
+    "outcome": "failed",
+    "receipt": "receipts/headless/SHARED_BASIS_COHERENT.json",
+    "scope": "K=2 coherent_shared_basis_beats_q2f=false. Kernel competent (receipts/headless/SHARED_BASIS_KERNEL.json): byte win translated to token_ns.",
+    "related_not_the_same": null
+   },
+   "metal_feasibility": {
+    "class": "NATIVE_KERNEL_EXISTS",
+    "note": "shared_binary_k2 fused kernel is competent (byte win translated to token_ns). Competence did not save K=2 composition.",
+    "cuda_result_is_not_metal_result": true,
+    "s026_89": "A paper CUDA result is not a Metal result."
+   },
+   "cheapest_falsifying_experiment": {
+    "id": "HX-SHARED-BASIS-MOE-UNKNOWN",
+    "summary": "Do not rebuild K=2 on Qwen MLP. Cheap next: pairwise cosine of expert (or cross-layer) bases on a routed parent \u2014 MoE sharing is UNKNOWN (S028).",
+    "cpu_only": true,
+    "loads_model": false,
+    "touches_gpu": false,
+    "no_second_27b": true,
+    "real_x_not_gaussian": true,
+    "success_criterion": "If expert bases are ~orthogonal, MoE sharing is as dead as Qwen MLP K=2; if aligned, reopen that purpose."
+   },
+   "decision": "KEEP",
+   "decision_reason": "Competent kernel, dead <2.25 on Qwen MLP. KEEP for MoE-expert / cross-layer sharing UNKNOWN (S028 explicit example). Do not prune a purpose-scoped negative.",
+   "s028": "Failing on Qwen's MLP != dead. A candidate rejected for a purpose is not globally dead (S026 \u00a764, \u00a7107)."
+  }
+ ],
+ "n_techniques": 39,
+ "n_keep": 39,
+ "n_prune": 0,
+ "pruned": [],
+ "prune_list_reason": "Empty: none of the merged N043\u222aN046-recommended techniques is superseded, strictly-dominated, or Metal-infeasible. Qwen-MLP negatives stay KEEP with dense_mlp UNLIKELY and other architecture classes UNKNOWN/PLAUSIBLE (S028). PolarQuant is KEEP as TurboQuant's cheap polar arm, not a prune. CompactifAI / T-MAC / ShadowKV were already excluded from N046 RECOMMENDED_ADDITIONS.",
+ "campaign_scars": {
+  "shared_basis": {
+   "verdict": "competent kernel but dead <2.25",
+   "decision": "KEEP",
+   "receipts": [
+    "receipts/headless/SHARED_BASIS_KERNEL.json",
+    "receipts/headless/SHARED_BASIS_COHERENT.json"
+   ]
+  },
+  "binary": {
+   "verdict": "fast, uniformly injured",
+   "decision": "KEEP",
+   "as": "speculative-draft candidate (N049)",
+   "receipts": [
+    "receipts/headless/BYTES_FRONTIER.json",
+    "receipts/headless/BINARY_HEALING.json"
+   ]
+  },
+  "low_rank_residual": {
+   "verdict": "never heals",
+   "decision": "KEEP",
+   "receipts": [
+    "receipts/headless/HYBRID_OPERATOR.json"
+   ],
+   "note": "Dead on Qwen MLP as a byte lever; not a global prune (S028)."
+  },
+  "ternary": {
+   "verdict": "slower + argmax flip",
+   "decision": "KEEP",
+   "receipts": [
+    "receipts/headless/BYTES_FRONTIER.json",
+    "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json"
+   ]
+  },
+  "sparse_residual": {
+   "verdict": "indices cost more",
+   "decision": "KEEP",
+   "receipts": [
+    "receipts/headless/BYTES_FRONTIER.json"
+   ]
+  }
+ },
+ "one_line": "39 techniques in the general Doctor library (39 KEEP / 0 PRUNE); N043 15 + N046 24 merged with 1 N043\u2229N046 dedup (Medusa/MTP) and shared_basis KEEP; no Qwen-MLP prune."
+}

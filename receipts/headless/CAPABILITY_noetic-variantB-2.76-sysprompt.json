@@ -1,0 +1,527 @@
+{
+ "schema": "hawking.headless.capability_suite.v1",
+ "generated_at": "2026-08-25T09:27:39Z",
+ "label": "noetic-variantB-2.76-sysprompt",
+ "backend": "noetic",
+ "target": "http://127.0.0.1:8080",
+ "scoring": "every item scores through a deterministic predicate over the reply text \u2014 exact string, parsed JSON, compiled AST. No model grades any model, because that would make the gate inherit the unreliability it exists to detect.",
+ "overall": {
+  "passed": 27,
+  "total": 43,
+  "rate": 0.6279
+ },
+ "per_axis": {
+  "knowledge": {
+   "passed": 3,
+   "total": 3,
+   "rate": 1.0
+  },
+  "reasoning": {
+   "passed": 3,
+   "total": 6,
+   "rate": 0.5
+  },
+  "structured_output": {
+   "passed": 5,
+   "total": 15,
+   "rate": 0.333
+  },
+  "mutation": {
+   "passed": 10,
+   "total": 10,
+   "rate": 1.0
+  },
+  "coding": {
+   "passed": 3,
+   "total": 3,
+   "rate": 1.0
+  },
+  "self_correction": {
+   "passed": 0,
+   "total": 3,
+   "rate": 0.0
+  },
+  "hygiene": {
+   "passed": 3,
+   "total": 3,
+   "rate": 1.0
+  }
+ },
+ "per_item": {
+  "fact-capital": {
+   "axis": "knowledge",
+   "repeats": 3,
+   "passed": 3,
+   "rate": 1.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 37,
+     "wall_s": 6.984,
+     "reply_head": "Paris"
+    },
+    {
+     "rep": 1,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 37,
+     "wall_s": 5.946,
+     "reply_head": "Paris"
+    },
+    {
+     "rep": 2,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 37,
+     "wall_s": 5.813,
+     "reply_head": "Paris"
+    }
+   ]
+  },
+  "fact-arith": {
+   "axis": "reasoning",
+   "repeats": 3,
+   "passed": 3,
+   "rate": 1.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 131,
+     "wall_s": 8.986,
+     "reply_head": "323"
+    },
+    {
+     "rep": 1,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 131,
+     "wall_s": 8.94,
+     "reply_head": "323"
+    },
+    {
+     "rep": 2,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 131,
+     "wall_s": 8.942,
+     "reply_head": "323"
+    }
+   ]
+  },
+  "fact-multistep": {
+   "axis": "reasoning",
+   "repeats": 3,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "expected 21 among the numbers emitted, got []",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 62.757,
+     "reply_head": ""
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "expected 21 among the numbers emitted, got []",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 63.236,
+     "reply_head": ""
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "expected 21 among the numbers emitted, got []",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 62.976,
+     "reply_head": ""
+    }
+   ]
+  },
+  "json-answer": {
+   "axis": "structured_output",
+   "repeats": 5,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 62.462,
+     "reply_head": ""
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 62.506,
+     "reply_head": ""
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 62.521,
+     "reply_head": ""
+    },
+    {
+     "rep": 3,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 62.442,
+     "reply_head": ""
+    },
+    {
+     "rep": 4,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 62.408,
+     "reply_head": ""
+    }
+   ]
+  },
+  "json-kind-correct": {
+   "axis": "structured_output",
+   "repeats": 5,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1107,
+     "wall_s": 45.067,
+     "reply_head": ""
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1107,
+     "wall_s": 45.08,
+     "reply_head": ""
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1107,
+     "wall_s": 45.0,
+     "reply_head": ""
+    },
+    {
+     "rep": 3,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1107,
+     "wall_s": 45.051,
+     "reply_head": ""
+    },
+    {
+     "rep": 4,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1107,
+     "wall_s": 44.945,
+     "reply_head": ""
+    }
+   ]
+  },
+  "json-no-prose": {
+   "axis": "structured_output",
+   "repeats": 5,
+   "passed": 5,
+   "rate": 1.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 111,
+     "wall_s": 8.306,
+     "reply_head": "{\n  \"kind\": \"answer\",\n  \"content\": \"ok\",\n  \"operations\": [],\n  \"tests\": []\n}"
+    },
+    {
+     "rep": 1,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 111,
+     "wall_s": 8.279,
+     "reply_head": "{\n  \"kind\": \"answer\",\n  \"content\": \"ok\",\n  \"operations\": [],\n  \"tests\": []\n}"
+    },
+    {
+     "rep": 2,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 111,
+     "wall_s": 8.261,
+     "reply_head": "{\n  \"kind\": \"answer\",\n  \"content\": \"ok\",\n  \"operations\": [],\n  \"tests\": []\n}"
+    },
+    {
+     "rep": 3,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 111,
+     "wall_s": 8.327,
+     "reply_head": "{\n  \"kind\": \"answer\",\n  \"content\": \"ok\",\n  \"operations\": [],\n  \"tests\": []\n}"
+    },
+    {
+     "rep": 4,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 111,
+     "wall_s": 8.362,
+     "reply_head": "{\n  \"kind\": \"answer\",\n  \"content\": \"ok\",\n  \"operations\": [],\n  \"tests\": []\n}"
+    }
+   ]
+  },
+  "mutation-anchor-exact": {
+   "axis": "mutation",
+   "repeats": 5,
+   "passed": 5,
+   "rate": 1.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 440,
+     "wall_s": 21.534,
+     "reply_head": "{\"kind\": \"mutation\", \"content\": \"Fix the 'add' function so it returns the sum of its two arguments instead of the difference.\", \"operations\": [{\"op\": \"replace\", \"path\": \"calc.py\", \"old_text\": \"def add(a, b):\\n    return "
+    },
+    {
+     "rep": 1,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 440,
+     "wall_s": 21.56,
+     "reply_head": "{\"kind\": \"mutation\", \"content\": \"Fix the 'add' function so it returns the sum of its two arguments instead of the difference.\", \"operations\": [{\"op\": \"replace\", \"path\": \"calc.py\", \"old_text\": \"def add(a, b):\\n    return "
+    },
+    {
+     "rep": 2,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 440,
+     "wall_s": 21.566,
+     "reply_head": "{\"kind\": \"mutation\", \"content\": \"Fix the 'add' function so it returns the sum of its two arguments instead of the difference.\", \"operations\": [{\"op\": \"replace\", \"path\": \"calc.py\", \"old_text\": \"def add(a, b):\\n    return "
+    },
+    {
+     "rep": 3,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 440,
+     "wall_s": 21.521,
+     "reply_head": "{\"kind\": \"mutation\", \"content\": \"Fix the 'add' function so it returns the sum of its two arguments instead of the difference.\", \"operations\": [{\"op\": \"replace\", \"path\": \"calc.py\", \"old_text\": \"def add(a, b):\\n    return "
+    },
+    {
+     "rep": 4,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 440,
+     "wall_s": 21.556,
+     "reply_head": "{\"kind\": \"mutation\", \"content\": \"Fix the 'add' function so it returns the sum of its two arguments instead of the difference.\", \"operations\": [{\"op\": \"replace\", \"path\": \"calc.py\", \"old_text\": \"def add(a, b):\\n    return "
+    }
+   ]
+  },
+  "mutation-refuses-invention": {
+   "axis": "mutation",
+   "repeats": 5,
+   "passed": 5,
+   "rate": 1.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 922,
+     "wall_s": 37.898,
+     "reply_head": "{\n  \"kind\": \"answer\",\n  \"message\": \"I cannot rename the function in totally_unseen_module.py because I have not been shown the file's contents. Without knowing the current function name, its behavior, and the module cont"
+    },
+    {
+     "rep": 1,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 922,
+     "wall_s": 37.89,
+     "reply_head": "{\n  \"kind\": \"answer\",\n  \"message\": \"I cannot rename the function in totally_unseen_module.py because I have not been shown the file's contents. Without knowing the current function name, its behavior, and the module cont"
+    },
+    {
+     "rep": 2,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 922,
+     "wall_s": 38.048,
+     "reply_head": "{\n  \"kind\": \"answer\",\n  \"message\": \"I cannot rename the function in totally_unseen_module.py because I have not been shown the file's contents. Without knowing the current function name, its behavior, and the module cont"
+    },
+    {
+     "rep": 3,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 922,
+     "wall_s": 37.872,
+     "reply_head": "{\n  \"kind\": \"answer\",\n  \"message\": \"I cannot rename the function in totally_unseen_module.py because I have not been shown the file's contents. Without knowing the current function name, its behavior, and the module cont"
+    },
+    {
+     "rep": 4,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 922,
+     "wall_s": 37.819,
+     "reply_head": "{\n  \"kind\": \"answer\",\n  \"message\": \"I cannot rename the function in totally_unseen_module.py because I have not been shown the file's contents. Without knowing the current function name, its behavior, and the module cont"
+    }
+   ]
+  },
+  "code-compiles": {
+   "axis": "coding",
+   "repeats": 3,
+   "passed": 3,
+   "rate": 1.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 463,
+     "wall_s": 20.678,
+     "reply_head": "```python\ndef dedupe(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        if x not in seen:\n            seen.add(x)\n            result.append(x)\n    return result\n```"
+    },
+    {
+     "rep": 1,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 463,
+     "wall_s": 20.588,
+     "reply_head": "```python\ndef dedupe(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        if x not in seen:\n            seen.add(x)\n            result.append(x)\n    return result\n```"
+    },
+    {
+     "rep": 2,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 463,
+     "wall_s": 20.561,
+     "reply_head": "```python\ndef dedupe(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        if x not in seen:\n            seen.add(x)\n            result.append(x)\n    return result\n```"
+    }
+   ]
+  },
+  "code-self-correct": {
+   "axis": "self_correction",
+   "repeats": 3,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "no python code block in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 62.72,
+     "reply_head": ""
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "no python code block in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 62.827,
+     "reply_head": ""
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "no python code block in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 62.88,
+     "reply_head": ""
+    }
+   ]
+  },
+  "no-think-leak": {
+   "axis": "hygiene",
+   "repeats": 3,
+   "passed": 3,
+   "rate": 1.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 75,
+     "wall_s": 7.606,
+     "reply_head": "{\"kind\":\"answer\",\"content\":\"ok\",\"operations\":[,\"tests\":[]}"
+    },
+    {
+     "rep": 1,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 75,
+     "wall_s": 7.418,
+     "reply_head": "{\"kind\":\"answer\",\"content\":\"ok\",\"operations\":[,\"tests\":[]}"
+    },
+    {
+     "rep": 2,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 75,
+     "wall_s": 7.396,
+     "reply_head": "{\"kind\":\"answer\",\"content\":\"ok\",\"operations\":[,\"tests\":[]}"
+    }
+   ]
+  }
+ }
+}

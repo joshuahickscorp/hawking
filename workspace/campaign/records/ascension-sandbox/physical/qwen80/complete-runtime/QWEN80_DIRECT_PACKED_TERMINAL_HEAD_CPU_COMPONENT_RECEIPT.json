@@ -1,0 +1,129 @@
+{
+  "schema": "hawking.ascension.qwen80_direct_packed_terminal_head_cpu.v1",
+  "status": "EARNED_CURRENT_ADMITTED_QWEN80_DIRECT_PACKED_TERMINAL_COMPONENT_CPU_ONLY_NOT_RUNTIME_OR_TOKEN",
+  "component_only": true,
+  "complete_artifact_scan_performed": false,
+  "opened_exact_terminal_payloads_only": true,
+  "raw_bf16_or_safetensors_opened": false,
+  "metal_device_or_dispatch_performed": false,
+  "artifact_binding": {
+    "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+    "manifest_document_sha256": "a0fcac0401a7962402bb8cb87d5055c83667b39575f9e0f4c7470d080758aa10",
+    "manifest_seal_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+    "admission_current_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_ADMISSION_CURRENT.json",
+    "admission_pointer_seal_sha256": "af02b086e89433532a1e68142a8f9fd8d576cdfcdea2b7803ce984101e01c1b6",
+    "admission_receipt_seal_sha256": "939b41322363da3db774a2530b207bf380ed641d23cae671fc6438c0eecbf628",
+    "source_repository": "Qwen/Qwen3-Coder-Next",
+    "source_revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+    "source_body_audit_seal_sha256": "c572b2270b623b8677c374b43c89ddd729de135c25721488bb874b184ff8c3d4",
+    "source_revalidation_seal_sha256": "541b16fca1d4805ecba356face97b4e8de1accdeb21e98ee0c13b70ab0746c45",
+    "source_model_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-80b/Qwen3-Coder-Next",
+    "source_config_sha256": "a7b8098d3b05777f12bb5677a26bf1240a1bb09def1b06b29e6be86cae2e84f8",
+    "source_tokenizer_sha256": "19564a48c4f71a2a1b937cce34c737a1e662b171c5f5d7edf641a15cd896f07d",
+    "hidden_size": 2048,
+    "lm_head_vocab_size": 151936,
+    "tokenizer_vocab_size": 151669,
+    "reserved_lm_head_tail_rows": 267,
+    "rms_epsilon_bits": 897988541,
+    "final_norm": {
+      "name": "model.norm.weight",
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/tensors/4e709958f651ec86475062b76f4a263a85845361e019c63ff27c8ac63f56aec2.hq30g",
+      "artifact_sha256": "6306499804d27e48f0a041e94d366feae5cbf8436fac15815a559a15717ef36e",
+      "source_shard": "model-00040-of-00040.safetensors",
+      "source_shard_sha256": "9606cbc3a087efaba8e17cb97b9d91cd8d25e6cba6958079d58c19871d272053",
+      "header": {
+        "magic": "HQ30G1B1",
+        "version": 1,
+        "group_size": 128,
+        "shape": [
+          2048
+        ],
+        "elements": 2048,
+        "groups": 16,
+        "scale_offset": 36,
+        "sign_offset": 68,
+        "payload_bytes": 324
+      }
+    },
+    "lm_head": {
+      "name": "lm_head.weight",
+      "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/tensors/7866b85ef9fdbeac35f2f699fd08c8b431545344f6f1cd1600c342dcec2a3a6e.hq30g",
+      "artifact_sha256": "549c448be683ed00ec792329c5167f3f0cacfcb3af339a1fb064ed0a004d9998",
+      "source_shard": "model-00040-of-00040.safetensors",
+      "source_shard_sha256": "9606cbc3a087efaba8e17cb97b9d91cd8d25e6cba6958079d58c19871d272053",
+      "header": {
+        "magic": "HQ30G1B1",
+        "version": 1,
+        "group_size": 128,
+        "shape": [
+          151936,
+          2048
+        ],
+        "elements": 311164928,
+        "groups": 2430976,
+        "scale_offset": 40,
+        "sign_offset": 4861992,
+        "payload_bytes": 43757608
+      }
+    }
+  },
+  "final_norm_cpu_parity": {
+    "hidden_input_kind": "deterministic synthetic [2048] terminal-component fixture; not a Qwen80 layer or model-token output",
+    "hidden_input_sha256": "e6ad7eed22cdcc23f7df3a382f24c4adc0245194fc12c6cbec607616e02fdcd2",
+    "candidate_f32_vs_reference_f64_max_abs": 5.734669676904502e-7,
+    "direct_packed_norm_values_vs_library_decoder_max_abs": 0.0,
+    "tolerance_max_abs": 0.00001,
+    "all_outputs_finite": true
+  },
+  "lm_head_cpu_parity": {
+    "rows_evaluated": 151936,
+    "rows_per_direct_group": 16,
+    "candidate_cpu_workers": 4,
+    "candidate_grouped_f32_vs_reference_scalar_f64_max_abs": 1.1900629539596252e-6,
+    "candidate_grouped_f32_vs_reference_scalar_f64_max_relative": 9.711986264093753e-7,
+    "tolerance_max_abs": 0.00005,
+    "all_candidate_logits_finite_before_mask": true,
+    "candidate_duration_ms": 303.849584,
+    "reference_duration_ms": 311.85170899999997,
+    "timing_is_component_cpu_work_not_tps": true
+  },
+  "reserved_tail_mask_and_sampler": {
+    "first_reserved_id": 151669,
+    "last_reserved_id": 151935,
+    "reserved_rows_masked": 267,
+    "raw_direct_packed_argmax_id": 6111,
+    "raw_direct_packed_argmax_logit": 3.5616057,
+    "masked_direct_packed_argmax_id": 6111,
+    "masked_direct_packed_argmax_logit": 3.5616057,
+    "sampled_token_id": 6111,
+    "every_reserved_logit_negative_infinity": true,
+    "sampled_token_is_tokenizer_addressable": true
+  },
+  "rejection_tests": {
+    "malformed_direct_header_rejected": true,
+    "wrong_lm_head_shape_rejected": true,
+    "wrong_direct_group_size_rejected": true,
+    "wrong_tail_partition_rejected": true,
+    "tail_mask_wrong_cutoff_rejected": true,
+    "unmasked_sampler_api_unavailable": true,
+    "nonfinite_hidden_rejected": true
+  },
+  "integration_contract": {
+    "rawls_hybrid_scheduler_handoff": [
+      "After every Qwen80 hybrid layer, attention/DeltaNet state update, routed expert wave, residual, and final hidden state exists, pass that exact [2048] hidden vector to this terminal component.",
+      "Use the admission-verified direct HQ30G1B1 model.norm.weight, apply RMSNorm with source epsilon 1e-6, then evaluate every direct-packed lm_head.weight row [151936,2048].",
+      "Mask exactly IDs 151669..151935 to negative infinity before the selected sampler policy. Reject any sampled ID >=151669 before autoregressive embedding/state feedback.",
+      "The current component reads only the two named payloads. Integrate via Rawls's retained admitted catalog snapshots, not by reopening arbitrary paths in the live scheduler."
+    ],
+    "future_metal_lease_requirements": [
+      "Do not compile/dispatch this candidate on Metal until Rawls explicitly grants a Qwen80 quiet lease after the current runtime work releases it.",
+      "A future device path must preserve HQ30G1B1 LSB-first signs, FP16 scales, group_size=128, full 151936-row coverage, and this exact tail mask order; compare device output to a fresh source/artifact-bound CPU receipt.",
+      "No minimal selected-row GPU probe can substitute for the all-row lm_head or a complete native Qwen80 token."
+    ],
+    "claim_boundary": [
+      "The admitted manifest itself remains LOW_FIDELITY_BINARY_BASELINE_NOT_ELIGIBLE_FOR_RUNTIME_OR_CAPABILITY_PROMOTION. Packed-to-packed component parity cannot repair or hide that fact.",
+      "This receipt is CPU-only terminal-component evidence, not Qwen80 generation, HCLI, BASE_TRUE_TPS, TG10/TG3, capability, Agent OS, or tournament evidence."
+    ]
+  },
+  "unsealed_preimage_sha256": "d815c6bfff615a1c238ed56863b14ba61349f1c04824195448722a6a3e81372b"
+}

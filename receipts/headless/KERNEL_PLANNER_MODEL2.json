@@ -1,0 +1,349 @@
+{
+ "schema": "hawking.odyssey.kernel_planner_model2.v1",
+ "generated_at": "2026-08-25T10:10:48Z",
+ "generated_by": "tools/odyssey/kernel_planner_model2.py",
+ "obligation": "G023 \u2014 KernelPlanner stage, run for model #2",
+ "hand_authored": false,
+ "git_head": "961239f2426e9add9db78f6163784eb708b0defa",
+ "specimen": {
+  "repo": "Qwen/Qwen3-30B-A3B",
+  "revision": "ad44e777bcd18fa416d9da3bd8f70d33ebb85d39",
+  "organ_graph_source": "receipts/headless/ARCHITECTURE_RECOGNIZER.json"
+ },
+ "organ_plan": [
+  {
+   "organ": "embed",
+   "seeded_families_in_score_order": [
+    {
+     "family": "conventional_low_bit",
+     "score": 2.5,
+     "n_competent_kernels": 1,
+     "n_weight_bearing": 1,
+     "n_supporting_representation_independent": 0,
+     "needs_no_gemv_kernel": false,
+     "kernels": [
+      "qwen38_hgravu_embedding_lookup"
+     ],
+     "organ_mass_share": 0.010191,
+     "passthrough_rejected_as_too_large": false
+    },
+    {
+     "family": "q2_affine",
+     "score": 1.07,
+     "n_competent_kernels": 1,
+     "n_weight_bearing": 1,
+     "n_supporting_representation_independent": 0,
+     "needs_no_gemv_kernel": false,
+     "kernels": [
+      "qwen38_hgrafv_embedding_lookup"
+     ],
+     "organ_mass_share": 0.010191,
+     "passthrough_rejected_as_too_large": false
+    },
+    {
+     "family": "binary_sparse_residual",
+     "score": 1.069,
+     "n_competent_kernels": 0,
+     "n_weight_bearing": 0,
+     "n_supporting_representation_independent": 0,
+     "needs_no_gemv_kernel": false,
+     "kernels": [],
+     "organ_mass_share": 0.010191,
+     "passthrough_rejected_as_too_large": false
+    }
+   ],
+   "selected_representation": "conventional_low_bit",
+   "selection_reason": "highest-scoring seeded family with a competent kernel",
+   "n_kernels_for_organ": 2,
+   "n_competent_kernels": 1,
+   "downgraded_from_top_seed": false,
+   "status": "COVERED",
+   "may_be_evaluated": true,
+   "qualification": "COMPETENT_BUT_UNQUALIFIED: 1 of 1 have parity ABSENT"
+  },
+  {
+   "organ": "gqa_attention",
+   "seeded_families_in_score_order": [
+    {
+     "family": "conventional_low_bit",
+     "score": 2.5,
+     "n_competent_kernels": 1,
+     "n_weight_bearing": 1,
+     "n_supporting_representation_independent": 0,
+     "needs_no_gemv_kernel": false,
+     "kernels": [
+      "qwen80_add_residual_rmsnorm_tg"
+     ],
+     "organ_mass_share": 0.029673,
+     "passthrough_rejected_as_too_large": false
+    },
+    {
+     "family": "q2_affine",
+     "score": 1.07,
+     "n_competent_kernels": 0,
+     "n_weight_bearing": 0,
+     "n_supporting_representation_independent": 0,
+     "needs_no_gemv_kernel": false,
+     "kernels": [],
+     "organ_mass_share": 0.029673,
+     "passthrough_rejected_as_too_large": false
+    },
+    {
+     "family": "binary_sparse_residual",
+     "score": 1.069,
+     "n_competent_kernels": 0,
+     "n_weight_bearing": 0,
+     "n_supporting_representation_independent": 0,
+     "needs_no_gemv_kernel": false,
+     "kernels": [],
+     "organ_mass_share": 0.029673,
+     "passthrough_rejected_as_too_large": false
+    }
+   ],
+   "selected_representation": "conventional_low_bit",
+   "selection_reason": "highest-scoring seeded family with a competent kernel",
+   "n_kernels_for_organ": 1,
+   "n_competent_kernels": 1,
+   "downgraded_from_top_seed": false,
+   "status": "COVERED",
+   "may_be_evaluated": true,
+   "qualification": "COMPETENT_BUT_UNQUALIFIED: 1 of 1 have parity ABSENT"
+  },
+  {
+   "organ": "lm_head",
+   "seeded_families_in_score_order": [
+    {
+     "family": "conventional_low_bit",
+     "score": 2.5,
+     "n_competent_kernels": 1,
+     "n_weight_bearing": 1,
+     "n_supporting_representation_independent": 0,
+     "needs_no_gemv_kernel": false,
+     "kernels": [
+      "qwen_uniform_q4_group64_final_norm_lm_head_simdgroup8"
+     ],
+     "organ_mass_share": 0.010191,
+     "passthrough_rejected_as_too_large": false
+    },
+    {
+     "family": "q2_affine",
+     "score": 1.07,
+     "n_competent_kernels": 0,
+     "n_weight_bearing": 0,
+     "n_supporting_representation_independent": 0,
+     "needs_no_gemv_kernel": false,
+     "kernels": [],
+     "organ_mass_share": 0.010191,
+     "passthrough_rejected_as_too_large": false
+    },
+    {
+     "family": "binary_sparse_residual",
+     "score": 1.069,
+     "n_competent_kernels": 0,
+     "n_weight_bearing": 0,
+     "n_supporting_representation_independent": 0,
+     "needs_no_gemv_kernel": false,
+     "kernels": [],
+     "organ_mass_share": 0.010191,
+     "passthrough_rejected_as_too_large": false
+    }
+   ],
+   "selected_representation": "conventional_low_bit",
+   "selection_reason": "highest-scoring seeded family with a competent kernel",
+   "n_kernels_for_organ": 1,
+   "n_competent_kernels": 1,
+   "downgraded_from_top_seed": false,
+   "status": "COVERED",
+   "may_be_evaluated": true,
+   "qualification": "COMPETENT_BUT_UNQUALIFIED: 1 of 1 have parity ABSENT"
+  },
+  {
+   "organ": "moe_expert",
+   "seeded_families_in_score_order": [
+    {
+     "family": "q2_affine",
+     "score": 2.5,
+     "n_competent_kernels": 0,
+     "n_weight_bearing": 0,
+     "n_supporting_representation_independent": 0,
+     "needs_no_gemv_kernel": false,
+     "kernels": [],
+     "organ_mass_share": 0.949526,
+     "passthrough_rejected_as_too_large": false
+    },
+    {
+     "family": "leftover_f32",
+     "score": 0.785,
+     "n_competent_kernels": 0,
+     "n_weight_bearing": 0,
+     "n_supporting_representation_independent": 0,
+     "needs_no_gemv_kernel": true,
+     "kernels": [],
+     "organ_mass_share": 0.949526,
+     "passthrough_rejected_as_too_large": true
+    },
+    {
+     "family": "conventional_low_bit",
+     "score": 0.5,
+     "n_competent_kernels": 7,
+     "n_weight_bearing": 7,
+     "n_supporting_representation_independent": 0,
+     "needs_no_gemv_kernel": false,
+     "kernels": [
+      "qwen30_expert_table_uniform_q4_paired_gate_up_swiglu",
+      "qwen30_expert_table_uniform_q4_paired_gate_up_swiglu_simdgroup8",
+      "qwen30_expert_table_uniform_q4_matvec_rowblock",
+      "qwen30_expert_table_uniform_q4_matvec_serial",
+      "qwen30_expert_table_uniform_q4_matvec_simdgroup",
+      "qwen30_expert_table_uniform_q4_matvec_simdgroup_rowblock4",
+      "qwen30_expert_table_uniform_q4_matvec_simdgroup_rowblock8"
+     ],
+     "organ_mass_share": 0.949526,
+     "passthrough_rejected_as_too_large": false
+    }
+   ],
+   "selected_representation": "conventional_low_bit",
+   "selection_reason": "highest-scoring seeded family with a competent kernel",
+   "n_kernels_for_organ": 18,
+   "n_competent_kernels": 7,
+   "downgraded_from_top_seed": true,
+   "status": "COVERED",
+   "may_be_evaluated": true,
+   "downgrade_note": "the top seeded family 'q2_affine' has no competent kernel; the planner selected 'conventional_low_bit' instead. \u00a771: a representation with no competent kernel may not be evaluated.",
+   "qualification": "COMPETENT_BUT_UNQUALIFIED: 7 of 7 have parity ABSENT"
+  },
+  {
+   "organ": "moe_router",
+   "seeded_families_in_score_order": [
+    {
+     "family": "q2_affine",
+     "score": 1.07,
+     "n_competent_kernels": 0,
+     "n_weight_bearing": 0,
+     "n_supporting_representation_independent": 1,
+     "needs_no_gemv_kernel": false,
+     "kernels": [],
+     "organ_mass_share": 0.000412,
+     "passthrough_rejected_as_too_large": false
+    },
+    {
+     "family": "binary_sparse_residual",
+     "score": 1.069,
+     "n_competent_kernels": 0,
+     "n_weight_bearing": 0,
+     "n_supporting_representation_independent": 1,
+     "needs_no_gemv_kernel": false,
+     "kernels": [],
+     "organ_mass_share": 0.000412,
+     "passthrough_rejected_as_too_large": false
+    },
+    {
+     "family": "ternary",
+     "score": 1.058,
+     "n_competent_kernels": 0,
+     "n_weight_bearing": 0,
+     "n_supporting_representation_independent": 1,
+     "needs_no_gemv_kernel": false,
+     "kernels": [],
+     "organ_mass_share": 0.000412,
+     "passthrough_rejected_as_too_large": false
+    },
+    {
+     "family": "leftover_f32",
+     "score": 0.785,
+     "n_competent_kernels": 0,
+     "n_weight_bearing": 0,
+     "n_supporting_representation_independent": 1,
+     "needs_no_gemv_kernel": true,
+     "kernels": [],
+     "organ_mass_share": 0.000412,
+     "passthrough_rejected_as_too_large": false
+    }
+   ],
+   "selected_representation": "leftover_f32",
+   "selection_reason": "f32 passthrough: this organ is 0.0412% of model mass, at or under the 0.5% ceiling, so no GEMV kernel is required",
+   "n_kernels_for_organ": 3,
+   "n_competent_kernels": 0,
+   "downgraded_from_top_seed": true,
+   "status": "COVERED",
+   "may_be_evaluated": true,
+   "downgrade_note": "the top seeded family 'q2_affine' has no competent kernel; the planner selected 'leftover_f32' instead. \u00a771: a representation with no competent kernel may not be evaluated."
+  },
+  {
+   "organ": "rmsnorm",
+   "seeded_families_in_score_order": [
+    {
+     "family": "leftover_f32",
+     "score": 2.535,
+     "n_competent_kernels": 0,
+     "n_weight_bearing": 0,
+     "n_supporting_representation_independent": 0,
+     "needs_no_gemv_kernel": true,
+     "kernels": [],
+     "organ_mass_share": 6e-06,
+     "passthrough_rejected_as_too_large": false
+    },
+    {
+     "family": "q2_affine",
+     "score": 1.07,
+     "n_competent_kernels": 0,
+     "n_weight_bearing": 0,
+     "n_supporting_representation_independent": 0,
+     "needs_no_gemv_kernel": false,
+     "kernels": [],
+     "organ_mass_share": 6e-06,
+     "passthrough_rejected_as_too_large": false
+    },
+    {
+     "family": "binary_sparse_residual",
+     "score": 1.069,
+     "n_competent_kernels": 0,
+     "n_weight_bearing": 0,
+     "n_supporting_representation_independent": 0,
+     "needs_no_gemv_kernel": false,
+     "kernels": [],
+     "organ_mass_share": 6e-06,
+     "passthrough_rejected_as_too_large": false
+    }
+   ],
+   "selected_representation": "leftover_f32",
+   "selection_reason": "f32 passthrough: this organ is 0.0006% of model mass, at or under the 0.5% ceiling, so no GEMV kernel is required",
+   "n_kernels_for_organ": 0,
+   "n_competent_kernels": 0,
+   "downgraded_from_top_seed": false,
+   "status": "COVERED",
+   "may_be_evaluated": true
+  }
+ ],
+ "organ_mass_shares": {
+  "moe_expert": 0.949526,
+  "moe_router": 0.000412,
+  "gqa_attention": 0.029673,
+  "embed": 0.010191,
+  "lm_head": 0.010191,
+  "rmsnorm": 6e-06
+ },
+ "organ_param_counts": {
+  "moe_expert": 28991029248,
+  "moe_router": 12582912,
+  "gqa_attention": 905969664,
+  "embed": 311164928,
+  "lm_head": 311164928,
+  "rmsnorm": 196608
+ },
+ "passthrough_mass_ceiling": 0.005,
+ "passthrough_rule": "an organ may be kept as f32 passthrough only if its MEASURED share of model mass is at or under the ceiling. Organ type is not the test: moe_router is a GEMV organ and qualifies at 0.0434%, moe_expert is a GEMV organ and does not at 99.96%.",
+ "n_organs": 6,
+ "n_covered": 6,
+ "n_gaps": 0,
+ "gaps": [],
+ "section_71_rule": {
+  "rule": "representations are never evaluated with incompetent kernels",
+  "how_it_is_honoured": "an organ with no competent kernel is marked NO_KERNEL and may_be_evaluated=false, so no representation can be scored on it. Organs WITH kernels are marked COMPETENT_BUT_UNQUALIFIED because every registered expert kernel has parity and measurements ABSENT.",
+  "previously": "this rule could not be checked at all for model #2, because the library contained no kernel for any of its organs"
+ },
+ "stage_status": "RAN_COMPLETE",
+ "upstream_defects_found": [],
+ "honest_summary": "all 6 organs have a plannable representation with a competent kernel or a justified passthrough, so the KernelPlanner stage is COMPLETE for model #2. This does NOT mean model #2 can be compiled: DeviceCompiler and NoeticExecutable remain blocked, no bytes have been packed, and every competent kernel still carries parity ABSENT.",
+ "pass": true
+}

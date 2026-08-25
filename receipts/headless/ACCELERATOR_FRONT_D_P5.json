@@ -1,0 +1,115 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T12:08:57Z",
+ "experiment_class": "ACCEL-FUSION",
+ "knowledge_level": "INSTANCE",
+ "git_head": "8a08311877c145b35194397a23e7ca0928bf9e12",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_D_P5",
+   "proof": "P5 \u2014 Accelerator-native beats naive translation",
+   "obligation": "G046",
+   "steer": "S015"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "memory_bytes": 103079215104,
+   "measured_bandwidth_gb_s": 589.73
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model; this grades an operation chain"
+  },
+  "representation": {
+   "name": "dense_f32",
+   "elements": 16777216
+  },
+  "kernel": {
+   "naive": "3 separate AIR kernels, one per CUDA kernel",
+   "native": "1 fused AIR program",
+   "compiler": "mlx.fast.metal_kernel JIT"
+  },
+  "runtime": {
+   "mlx": "0.32.1",
+   "python": "3.12.13"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device; no transport crossed"
+  }
+ },
+ "result": {
+  "arms": {
+   "mlx_baseline": {
+    "median_s": 0.0013285829918459058,
+    "q1_s": 0.0013154580083210021,
+    "q3_s": 0.0013574589975178242,
+    "iqr_spread_pct": 3.19,
+    "full_range_pct": 29.15,
+    "reps": 40,
+    "warmup": 10,
+    "reliable": true
+   },
+   "c2m_naive_3_kernels": {
+    "median_s": 0.0008664159977342933,
+    "q1_s": 0.0008563330047763884,
+    "q3_s": 0.0009070409869309515,
+    "iqr_spread_pct": 5.92,
+    "full_range_pct": 21.21,
+    "reps": 40,
+    "warmup": 10,
+    "reliable": true
+   },
+   "accelerator_native_fused": {
+    "median_s": 0.0005067079910077155,
+    "q1_s": 0.0004980000085197389,
+    "q3_s": 0.0005183340108487755,
+    "iqr_spread_pct": 4.08,
+    "full_range_pct": 74.43,
+    "reps": 40,
+    "warmup": 10,
+    "reliable": true
+   }
+  },
+  "fused_vs_naive": {
+   "verdict": "CANDIDATE_WINS",
+   "speedup": 1.7099,
+   "margin_pct": 70.99,
+   "arm_noise_pct": 5.92
+  },
+  "fused_vs_mlx": {
+   "verdict": "CANDIDATE_WINS",
+   "speedup": 2.622,
+   "margin_pct": 162.2,
+   "arm_noise_pct": 4.08
+  },
+  "correctness_max_abs_err": 9.5367431640625e-07,
+  "metal_improvement_score": {
+   "semantic_coverage": {
+    "tier": "C2M-T0",
+    "kernels_translated_and_matching": 4,
+    "note": "coverage and improvement are tracked SEPARATELY per S015 \u00a786"
+   },
+   "native_improvement": {
+    "over_naive_translation": 1.7099,
+    "over_mlx_baseline": 2.622,
+    "what_produced_it": "FUSION -- three dispatches and three full passes over memory collapse into one dispatch and one pass. This is NOT evidence that our per-op kernel craft beats MLX's; MLX simply does not fuse this chain automatically, so it materialises two intermediates that the fused program never writes.",
+    "mechanism_is_bandwidth": "the operation is memory bound, so removing passes is the whole effect"
+   }
+  },
+  "measurement": {
+   "protected_window": true,
+   "lake_fill": "SIGSTOPped",
+   "iqr_gate_pct": 10.0,
+   "all_arms_reliable": true,
+   "margin_must_clear_arm_noise": true
+  }
+ },
+ "claim_boundary": "1.71x over naive translation and 2.62x over MLX, on ONE chain (mul->relu->silu), ONE shape (2^24 f32), ONE dtype, on ONE machine. Knowledge level INSTANCE. The win is FUSION, not kernel craft: MLX does not fuse this chain automatically and so materialises two intermediates the fused program never writes, and the operation is memory bound so removing passes is the entire mechanism. It is NOT a claim that Hawking kernels beat MLX kernels in general, and MLX remains the qualified winner wherever it wins. Correctness was checked first -- a faster wrong answer is not a result -- at 9.537e-07. This is a MICROBENCHMARK: no sustained or thermal evidence exists, and no HCLI WorkUnit throughput was measured, so it does not yet translate into the metric that actually counts.",
+ "pass": true
+}

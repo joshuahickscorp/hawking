@@ -1,0 +1,31 @@
+{
+  "array_names": [
+    "final_norm/absmax",
+    "final_norm/l2",
+    "final_norm/mean",
+    "final_norm/sample_width",
+    "final_norm/samples",
+    "final_norm/var",
+    "short_logits"
+  ],
+  "array_sha256": {
+    "final_norm/absmax": "984ec7a163be2a2e87bec6fd380ae985ec237e967e824a4da0f5c25968eb5694",
+    "final_norm/l2": "5483b7c85fef5099469d08ea5def54da15501dcc648fea9d567e53f81984a95a",
+    "final_norm/mean": "5d0f440e5ace8aedbb042716ba344194a876a2513ed5ba91fda93240cc441ad9",
+    "final_norm/sample_width": "0c0272fba629352c18526126f7624f68a8786a8bdce29ba38d852c5c63cb4afa",
+    "final_norm/samples": "6b3cf3d54dd411e096ab3bce1a2b0a15f3d09b256e1f038c4eac5225edcf2d4e",
+    "final_norm/var": "0b793bcf50af82ac2b75a412850ca0ac90abe3a6b9dfbb59a50053429e296ef7",
+    "short_logits": "f7c73b1643818aaebdaa0f4328c79f71f62742161bce0b5515327cd0a2198bb2"
+  },
+  "corpus_seal_sha256": "e9bf3a9fe9dd9dd2779ef84cb904ceb7366ae014810a4d9b24062a8e69db630c",
+  "layer_id": "final",
+  "meta": {
+    "short_vocab_rows": 64,
+    "site": "final_norm_and_short_logits"
+  },
+  "npz_bytes": 1861838,
+  "npz_sha256": "674da14c6c05a3b3091c0da42b25cea376b4198529c06ab9b49fac48f8321cf9",
+  "schema": "hawking.frankenstein.glm_layer_capture_shard.v1",
+  "seal_sha256": "8ea7dbb6a6c516c76ebdf4ce19fb1e32c7fa154136b912fc9a896dd0e5414555",
+  "sealed_at": "2026-08-06T16:39:48.679971Z"
+}

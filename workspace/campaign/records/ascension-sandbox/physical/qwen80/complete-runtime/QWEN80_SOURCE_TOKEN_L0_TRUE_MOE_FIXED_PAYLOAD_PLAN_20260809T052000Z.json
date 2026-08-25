@@ -1,0 +1,1620 @@
+{
+  "schema": "hawking.ascension.qwen80_l0_true_moe_fixed_payload_contract.v1",
+  "status": "PREPARED_QWEN80_L0_TRUE_MOE_FIXED_SUFFIX_PAYLOAD_PLAN_NOT_EXECUTED",
+  "source_binding": {
+    "model_id": "Qwen3-Coder-Next-80B",
+    "model_key": "qwen80",
+    "source_repository": "Qwen/Qwen3-Coder-Next",
+    "source_revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+    "source_config_sha256": "a7b8098d3b05777f12bb5677a26bf1240a1bb09def1b06b29e6be86cae2e84f8",
+    "source_shard": "model-00001-of-00040.safetensors",
+    "source_shard_sha256": "8e9a517133bfbdc6806cf8b61793055a260efeb68e6e019fd90e4bbb1b665d0a",
+    "manifest_schema": "hawking.ascension.qwen80_complete_binary_gravity.v1",
+    "manifest_seal_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+    "manifest_document_sha256": "a0fcac0401a7962402bb8cb87d5055c83667b39575f9e0f4c7470d080758aa10",
+    "admission_receipt_seal_sha256": "939b41322363da3db774a2530b207bf380ed641d23cae671fc6438c0eecbf628",
+    "source_body_audit_seal_sha256": "c572b2270b623b8677c374b43c89ddd729de135c25721488bb874b184ff8c3d4",
+    "source_revalidation_seal_sha256": "541b16fca1d4805ecba356face97b4e8de1accdeb21e98ee0c13b70ab0746c45"
+  },
+  "geometry": {
+    "layer": 0,
+    "hidden": 2048,
+    "intermediate": 512,
+    "experts": 512,
+    "top_k": 10,
+    "group_size": 128,
+    "rms_epsilon": "1e-6"
+  },
+  "fixed_payloads": [
+    {
+      "role": "post_attention_layernorm",
+      "tensor_name": "model.layers.0.post_attention_layernorm.weight",
+      "tensor_artifact_sha256": "a00ba60c88bd0d5dcf77e4c1fad05d83ddb6feec844ee3bbc65480fffd5a1fa7",
+      "source_shard": "model-00001-of-00040.safetensors",
+      "source_shard_sha256": "8e9a517133bfbdc6806cf8b61793055a260efeb68e6e019fd90e4bbb1b665d0a",
+      "shape": [
+        2048
+      ],
+      "elements": 2048,
+      "group_size": 128,
+      "group_count": 16,
+      "scale_element_type": "u16",
+      "scale_bytes": 32,
+      "sign_element_type": "u8",
+      "sign_bytes": 256
+    },
+    {
+      "role": "router_gate",
+      "tensor_name": "model.layers.0.mlp.gate.weight",
+      "tensor_artifact_sha256": "582725c1fa47c62b0f109216e8c2c40533b2931a583f4a41dfa34477deda45f4",
+      "source_shard": "model-00001-of-00040.safetensors",
+      "source_shard_sha256": "8e9a517133bfbdc6806cf8b61793055a260efeb68e6e019fd90e4bbb1b665d0a",
+      "shape": [
+        512,
+        2048
+      ],
+      "elements": 1048576,
+      "group_size": 128,
+      "group_count": 8192,
+      "scale_element_type": "u16",
+      "scale_bytes": 16384,
+      "sign_element_type": "u8",
+      "sign_bytes": 131072
+    },
+    {
+      "role": "shared_gate",
+      "tensor_name": "model.layers.0.mlp.shared_expert.gate_proj.weight",
+      "tensor_artifact_sha256": "92172dc4463a3a0610460ecf768427f6c9c8da04b43a73e904ca1fa36bc79aa6",
+      "source_shard": "model-00001-of-00040.safetensors",
+      "source_shard_sha256": "8e9a517133bfbdc6806cf8b61793055a260efeb68e6e019fd90e4bbb1b665d0a",
+      "shape": [
+        512,
+        2048
+      ],
+      "elements": 1048576,
+      "group_size": 128,
+      "group_count": 8192,
+      "scale_element_type": "u16",
+      "scale_bytes": 16384,
+      "sign_element_type": "u8",
+      "sign_bytes": 131072
+    },
+    {
+      "role": "shared_up",
+      "tensor_name": "model.layers.0.mlp.shared_expert.up_proj.weight",
+      "tensor_artifact_sha256": "9d76293fa8abf4ccc2611d77386060671107e83dfd4458b5fddd5e345f24b4c4",
+      "source_shard": "model-00001-of-00040.safetensors",
+      "source_shard_sha256": "8e9a517133bfbdc6806cf8b61793055a260efeb68e6e019fd90e4bbb1b665d0a",
+      "shape": [
+        512,
+        2048
+      ],
+      "elements": 1048576,
+      "group_size": 128,
+      "group_count": 8192,
+      "scale_element_type": "u16",
+      "scale_bytes": 16384,
+      "sign_element_type": "u8",
+      "sign_bytes": 131072
+    },
+    {
+      "role": "shared_down",
+      "tensor_name": "model.layers.0.mlp.shared_expert.down_proj.weight",
+      "tensor_artifact_sha256": "acf137a00b364f9c490e1282f18632465f05323b89903a5617162437b1ff500b",
+      "source_shard": "model-00001-of-00040.safetensors",
+      "source_shard_sha256": "8e9a517133bfbdc6806cf8b61793055a260efeb68e6e019fd90e4bbb1b665d0a",
+      "shape": [
+        2048,
+        512
+      ],
+      "elements": 1048576,
+      "group_size": 128,
+      "group_count": 8192,
+      "scale_element_type": "u16",
+      "scale_bytes": 16384,
+      "sign_element_type": "u8",
+      "sign_bytes": 131072
+    },
+    {
+      "role": "shared_expert_gate",
+      "tensor_name": "model.layers.0.mlp.shared_expert_gate.weight",
+      "tensor_artifact_sha256": "a40ff8a3f4e4b7e990a4672470cbd028b0c96b1cb15acd40aa3b8b2e2215096c",
+      "source_shard": "model-00001-of-00040.safetensors",
+      "source_shard_sha256": "8e9a517133bfbdc6806cf8b61793055a260efeb68e6e019fd90e4bbb1b665d0a",
+      "shape": [
+        1,
+        2048
+      ],
+      "elements": 2048,
+      "group_size": 128,
+      "group_count": 16,
+      "scale_element_type": "u16",
+      "scale_bytes": 32,
+      "sign_element_type": "u8",
+      "sign_bytes": 256
+    }
+  ],
+  "buffer_catalog": [
+    {
+      "name": "first_residual",
+      "element_type": "f32",
+      "shape": [
+        2048
+      ],
+      "byte_len": 8192,
+      "authority": "external_all_ten_route_bridge",
+      "purpose": "retained real [2048] DeltaNet first-residual buffer"
+    },
+    {
+      "name": "expected_route_ids",
+      "element_type": "u32",
+      "shape": [
+        10
+      ],
+      "byte_len": 40,
+      "authority": "external_all_ten_route_bridge",
+      "purpose": "retained source selected top-10 route IDs"
+    },
+    {
+      "name": "expected_route_weights",
+      "element_type": "f32",
+      "shape": [
+        10
+      ],
+      "byte_len": 40,
+      "authority": "external_all_ten_route_bridge",
+      "purpose": "retained source normalized top-10 route weights"
+    },
+    {
+      "name": "postnorm_signs",
+      "element_type": "u8",
+      "shape": [
+        256
+      ],
+      "byte_len": 256,
+      "authority": "fixed_payload",
+      "purpose": "direct-packed post-attention RMSNorm signs"
+    },
+    {
+      "name": "postnorm_scales",
+      "element_type": "u16",
+      "shape": [
+        16
+      ],
+      "byte_len": 32,
+      "authority": "fixed_payload",
+      "purpose": "direct-packed post-attention RMSNorm group scales"
+    },
+    {
+      "name": "postnorm_hidden",
+      "element_type": "f32",
+      "shape": [
+        2048
+      ],
+      "byte_len": 8192,
+      "authority": "command_scratch",
+      "purpose": "post-attention RMSNorm output"
+    },
+    {
+      "name": "router_signs",
+      "element_type": "u8",
+      "shape": [
+        131072
+      ],
+      "byte_len": 131072,
+      "authority": "fixed_payload",
+      "purpose": "direct-packed router gate signs"
+    },
+    {
+      "name": "router_scales",
+      "element_type": "u16",
+      "shape": [
+        8192
+      ],
+      "byte_len": 16384,
+      "authority": "fixed_payload",
+      "purpose": "direct-packed router gate group scales"
+    },
+    {
+      "name": "router_logits",
+      "element_type": "f32",
+      "shape": [
+        512
+      ],
+      "byte_len": 2048,
+      "authority": "command_scratch",
+      "purpose": "all 512 router logits"
+    },
+    {
+      "name": "router_probabilities",
+      "element_type": "f32",
+      "shape": [
+        512
+      ],
+      "byte_len": 2048,
+      "authority": "command_scratch",
+      "purpose": "all 512 router probabilities"
+    },
+    {
+      "name": "router_route_ids",
+      "element_type": "u32",
+      "shape": [
+        10
+      ],
+      "byte_len": 40,
+      "authority": "command_scratch",
+      "purpose": "computed top-10 route IDs for the route guard"
+    },
+    {
+      "name": "router_route_weights",
+      "element_type": "f32",
+      "shape": [
+        10
+      ],
+      "byte_len": 40,
+      "authority": "command_scratch",
+      "purpose": "computed normalized top-10 route weights"
+    },
+    {
+      "name": "route_guard",
+      "element_type": "u32",
+      "shape": [
+        1
+      ],
+      "byte_len": 4,
+      "authority": "command_scratch",
+      "purpose": "all-ten external route-plan equality witness"
+    },
+    {
+      "name": "route_gate_signs",
+      "element_type": "u8",
+      "shape": [
+        10,
+        131072
+      ],
+      "byte_len": 1310720,
+      "authority": "external_all_ten_route_bridge",
+      "purpose": "external direct-packed gate signs for exactly ten planned experts"
+    },
+    {
+      "name": "route_gate_scales",
+      "element_type": "u16",
+      "shape": [
+        10,
+        8192
+      ],
+      "byte_len": 163840,
+      "authority": "external_all_ten_route_bridge",
+      "purpose": "external direct-packed gate group scales for exactly ten planned experts"
+    },
+    {
+      "name": "route_up_signs",
+      "element_type": "u8",
+      "shape": [
+        10,
+        131072
+      ],
+      "byte_len": 1310720,
+      "authority": "external_all_ten_route_bridge",
+      "purpose": "external direct-packed up signs for exactly ten planned experts"
+    },
+    {
+      "name": "route_up_scales",
+      "element_type": "u16",
+      "shape": [
+        10,
+        8192
+      ],
+      "byte_len": 163840,
+      "authority": "external_all_ten_route_bridge",
+      "purpose": "external direct-packed up group scales for exactly ten planned experts"
+    },
+    {
+      "name": "route_down_signs",
+      "element_type": "u8",
+      "shape": [
+        10,
+        131072
+      ],
+      "byte_len": 1310720,
+      "authority": "external_all_ten_route_bridge",
+      "purpose": "external direct-packed down signs for exactly ten planned experts"
+    },
+    {
+      "name": "route_down_scales",
+      "element_type": "u16",
+      "shape": [
+        10,
+        8192
+      ],
+      "byte_len": 163840,
+      "authority": "external_all_ten_route_bridge",
+      "purpose": "external direct-packed down group scales for exactly ten planned experts"
+    },
+    {
+      "name": "route_gate",
+      "element_type": "f32",
+      "shape": [
+        10,
+        512
+      ],
+      "byte_len": 20480,
+      "authority": "command_scratch",
+      "purpose": "all-ten gate projection outputs"
+    },
+    {
+      "name": "route_up",
+      "element_type": "f32",
+      "shape": [
+        10,
+        512
+      ],
+      "byte_len": 20480,
+      "authority": "command_scratch",
+      "purpose": "all-ten up projection outputs"
+    },
+    {
+      "name": "route_activated",
+      "element_type": "f32",
+      "shape": [
+        10,
+        512
+      ],
+      "byte_len": 20480,
+      "authority": "command_scratch",
+      "purpose": "all-ten SiLU(gate) * up outputs"
+    },
+    {
+      "name": "route_weighted",
+      "element_type": "f32",
+      "shape": [
+        10,
+        2048
+      ],
+      "byte_len": 81920,
+      "authority": "command_scratch",
+      "purpose": "all-ten source-weighted down outputs"
+    },
+    {
+      "name": "shared_gate_signs",
+      "element_type": "u8",
+      "shape": [
+        131072
+      ],
+      "byte_len": 131072,
+      "authority": "fixed_payload",
+      "purpose": "direct-packed shared gate signs"
+    },
+    {
+      "name": "shared_gate_scales",
+      "element_type": "u16",
+      "shape": [
+        8192
+      ],
+      "byte_len": 16384,
+      "authority": "fixed_payload",
+      "purpose": "direct-packed shared gate group scales"
+    },
+    {
+      "name": "shared_up_signs",
+      "element_type": "u8",
+      "shape": [
+        131072
+      ],
+      "byte_len": 131072,
+      "authority": "fixed_payload",
+      "purpose": "direct-packed shared up signs"
+    },
+    {
+      "name": "shared_up_scales",
+      "element_type": "u16",
+      "shape": [
+        8192
+      ],
+      "byte_len": 16384,
+      "authority": "fixed_payload",
+      "purpose": "direct-packed shared up group scales"
+    },
+    {
+      "name": "shared_down_signs",
+      "element_type": "u8",
+      "shape": [
+        131072
+      ],
+      "byte_len": 131072,
+      "authority": "fixed_payload",
+      "purpose": "direct-packed shared down signs"
+    },
+    {
+      "name": "shared_down_scales",
+      "element_type": "u16",
+      "shape": [
+        8192
+      ],
+      "byte_len": 16384,
+      "authority": "fixed_payload",
+      "purpose": "direct-packed shared down group scales"
+    },
+    {
+      "name": "shared_scalar_signs",
+      "element_type": "u8",
+      "shape": [
+        256
+      ],
+      "byte_len": 256,
+      "authority": "fixed_payload",
+      "purpose": "direct-packed shared scalar gate signs"
+    },
+    {
+      "name": "shared_scalar_scales",
+      "element_type": "u16",
+      "shape": [
+        16
+      ],
+      "byte_len": 32,
+      "authority": "fixed_payload",
+      "purpose": "direct-packed shared scalar gate group scales"
+    },
+    {
+      "name": "shared_gate",
+      "element_type": "f32",
+      "shape": [
+        512
+      ],
+      "byte_len": 2048,
+      "authority": "command_scratch",
+      "purpose": "shared gate projection output"
+    },
+    {
+      "name": "shared_up",
+      "element_type": "f32",
+      "shape": [
+        512
+      ],
+      "byte_len": 2048,
+      "authority": "command_scratch",
+      "purpose": "shared up projection output"
+    },
+    {
+      "name": "shared_activated",
+      "element_type": "f32",
+      "shape": [
+        512
+      ],
+      "byte_len": 2048,
+      "authority": "command_scratch",
+      "purpose": "shared SiLU(gate) * up output"
+    },
+    {
+      "name": "shared_output",
+      "element_type": "f32",
+      "shape": [
+        2048
+      ],
+      "byte_len": 8192,
+      "authority": "command_scratch",
+      "purpose": "shared down projection output"
+    },
+    {
+      "name": "shared_scalar_logit",
+      "element_type": "f32",
+      "shape": [
+        1
+      ],
+      "byte_len": 4,
+      "authority": "command_scratch",
+      "purpose": "shared expert scalar gate logit"
+    },
+    {
+      "name": "gated_shared",
+      "element_type": "f32",
+      "shape": [
+        2048
+      ],
+      "byte_len": 8192,
+      "authority": "command_scratch",
+      "purpose": "sigmoid-gated shared expert output"
+    },
+    {
+      "name": "routed_sum",
+      "element_type": "f32",
+      "shape": [
+        2048
+      ],
+      "byte_len": 8192,
+      "authority": "command_scratch",
+      "purpose": "fixed source-order sum of ten route outputs"
+    },
+    {
+      "name": "second_residual",
+      "element_type": "f32",
+      "shape": [
+        2048
+      ],
+      "byte_len": 8192,
+      "authority": "command_scratch",
+      "purpose": "routed sum + gated shared + retained first residual"
+    }
+  ],
+  "fixed_14_dispatch_abi": [
+    {
+      "ordinal": 1,
+      "kernel": "qwen80_postnorm_router_top10_rmsnorm",
+      "grid": [
+        256,
+        1,
+        1
+      ],
+      "threadgroup": [
+        256,
+        1,
+        1
+      ],
+      "purpose": "post-attention RMSNorm(first_residual) -> postnorm_hidden",
+      "buffers": [
+        {
+          "index": 0,
+          "name": "first_residual",
+          "element_type": "f32",
+          "shape": [
+            2048
+          ],
+          "byte_len": 8192,
+          "authority": "external_all_ten_route_bridge"
+        },
+        {
+          "index": 1,
+          "name": "postnorm_signs",
+          "element_type": "u8",
+          "shape": [
+            256
+          ],
+          "byte_len": 256,
+          "authority": "fixed_payload"
+        },
+        {
+          "index": 2,
+          "name": "postnorm_scales",
+          "element_type": "u16",
+          "shape": [
+            16
+          ],
+          "byte_len": 32,
+          "authority": "fixed_payload"
+        },
+        {
+          "index": 3,
+          "name": "postnorm_hidden",
+          "element_type": "f32",
+          "shape": [
+            2048
+          ],
+          "byte_len": 8192,
+          "authority": "command_scratch"
+        }
+      ],
+      "scalars": [
+        {
+          "index": 4,
+          "element_type": "u32",
+          "literal": "2048"
+        },
+        {
+          "index": 5,
+          "element_type": "u32",
+          "literal": "128"
+        },
+        {
+          "index": 6,
+          "element_type": "f32",
+          "literal": "1e-6"
+        }
+      ]
+    },
+    {
+      "ordinal": 2,
+      "kernel": "qwen80_postnorm_router_top10_matvec",
+      "grid": [
+        256,
+        512,
+        1
+      ],
+      "threadgroup": [
+        256,
+        1,
+        1
+      ],
+      "purpose": "direct-packed router gate -> all 512 logits",
+      "buffers": [
+        {
+          "index": 0,
+          "name": "router_signs",
+          "element_type": "u8",
+          "shape": [
+            131072
+          ],
+          "byte_len": 131072,
+          "authority": "fixed_payload"
+        },
+        {
+          "index": 1,
+          "name": "router_scales",
+          "element_type": "u16",
+          "shape": [
+            8192
+          ],
+          "byte_len": 16384,
+          "authority": "fixed_payload"
+        },
+        {
+          "index": 2,
+          "name": "postnorm_hidden",
+          "element_type": "f32",
+          "shape": [
+            2048
+          ],
+          "byte_len": 8192,
+          "authority": "command_scratch"
+        },
+        {
+          "index": 3,
+          "name": "router_logits",
+          "element_type": "f32",
+          "shape": [
+            512
+          ],
+          "byte_len": 2048,
+          "authority": "command_scratch"
+        }
+      ],
+      "scalars": [
+        {
+          "index": 4,
+          "element_type": "u32",
+          "literal": "512"
+        },
+        {
+          "index": 5,
+          "element_type": "u32",
+          "literal": "2048"
+        },
+        {
+          "index": 6,
+          "element_type": "u32",
+          "literal": "128"
+        }
+      ]
+    },
+    {
+      "ordinal": 3,
+      "kernel": "qwen80_postnorm_router_top10_select",
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "threadgroup": [
+        1,
+        1,
+        1
+      ],
+      "purpose": "source tie-policy top-10 IDs and normalized weights",
+      "buffers": [
+        {
+          "index": 0,
+          "name": "router_logits",
+          "element_type": "f32",
+          "shape": [
+            512
+          ],
+          "byte_len": 2048,
+          "authority": "command_scratch"
+        },
+        {
+          "index": 1,
+          "name": "router_probabilities",
+          "element_type": "f32",
+          "shape": [
+            512
+          ],
+          "byte_len": 2048,
+          "authority": "command_scratch"
+        },
+        {
+          "index": 2,
+          "name": "router_route_ids",
+          "element_type": "u32",
+          "shape": [
+            10
+          ],
+          "byte_len": 40,
+          "authority": "command_scratch"
+        },
+        {
+          "index": 3,
+          "name": "router_route_weights",
+          "element_type": "f32",
+          "shape": [
+            10
+          ],
+          "byte_len": 40,
+          "authority": "command_scratch"
+        }
+      ],
+      "scalars": [
+        {
+          "index": 4,
+          "element_type": "u32",
+          "literal": "512"
+        },
+        {
+          "index": 5,
+          "element_type": "u32",
+          "literal": "10"
+        },
+        {
+          "index": 6,
+          "element_type": "f32",
+          "literal": "0.0"
+        }
+      ]
+    },
+    {
+      "ordinal": 4,
+      "kernel": "qwen80_all_ten_routed_wave_route_guard",
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "threadgroup": [
+        1,
+        1,
+        1
+      ],
+      "purpose": "reject a router result that differs from the retained all-ten plan",
+      "buffers": [
+        {
+          "index": 0,
+          "name": "router_route_ids",
+          "element_type": "u32",
+          "shape": [
+            10
+          ],
+          "byte_len": 40,
+          "authority": "command_scratch"
+        },
+        {
+          "index": 1,
+          "name": "router_route_weights",
+          "element_type": "f32",
+          "shape": [
+            10
+          ],
+          "byte_len": 40,
+          "authority": "command_scratch"
+        },
+        {
+          "index": 2,
+          "name": "expected_route_ids",
+          "element_type": "u32",
+          "shape": [
+            10
+          ],
+          "byte_len": 40,
+          "authority": "external_all_ten_route_bridge"
+        },
+        {
+          "index": 3,
+          "name": "expected_route_weights",
+          "element_type": "f32",
+          "shape": [
+            10
+          ],
+          "byte_len": 40,
+          "authority": "external_all_ten_route_bridge"
+        },
+        {
+          "index": 4,
+          "name": "route_guard",
+          "element_type": "u32",
+          "shape": [
+            1
+          ],
+          "byte_len": 4,
+          "authority": "command_scratch"
+        }
+      ],
+      "scalars": [
+        {
+          "index": 5,
+          "element_type": "u32",
+          "literal": "10"
+        },
+        {
+          "index": 6,
+          "element_type": "f32",
+          "literal": "2e-5"
+        }
+      ]
+    },
+    {
+      "ordinal": 5,
+      "kernel": "qwen80_all_ten_routed_wave_gate_up",
+      "grid": [
+        256,
+        512,
+        10
+      ],
+      "threadgroup": [
+        256,
+        1,
+        1
+      ],
+      "purpose": "all ten external direct-packed gate/up projections, route in Z",
+      "buffers": [
+        {
+          "index": 0,
+          "name": "route_gate_signs",
+          "element_type": "u8",
+          "shape": [
+            10,
+            131072
+          ],
+          "byte_len": 1310720,
+          "authority": "external_all_ten_route_bridge"
+        },
+        {
+          "index": 1,
+          "name": "route_gate_scales",
+          "element_type": "u16",
+          "shape": [
+            10,
+            8192
+          ],
+          "byte_len": 163840,
+          "authority": "external_all_ten_route_bridge"
+        },
+        {
+          "index": 2,
+          "name": "route_up_signs",
+          "element_type": "u8",
+          "shape": [
+            10,
+            131072
+          ],
+          "byte_len": 1310720,
+          "authority": "external_all_ten_route_bridge"
+        },
+        {
+          "index": 3,
+          "name": "route_up_scales",
+          "element_type": "u16",
+          "shape": [
+            10,
+            8192
+          ],
+          "byte_len": 163840,
+          "authority": "external_all_ten_route_bridge"
+        },
+        {
+          "index": 4,
+          "name": "postnorm_hidden",
+          "element_type": "f32",
+          "shape": [
+            2048
+          ],
+          "byte_len": 8192,
+          "authority": "command_scratch"
+        },
+        {
+          "index": 5,
+          "name": "route_gate",
+          "element_type": "f32",
+          "shape": [
+            10,
+            512
+          ],
+          "byte_len": 20480,
+          "authority": "command_scratch"
+        },
+        {
+          "index": 6,
+          "name": "route_up",
+          "element_type": "f32",
+          "shape": [
+            10,
+            512
+          ],
+          "byte_len": 20480,
+          "authority": "command_scratch"
+        }
+      ],
+      "scalars": [
+        {
+          "index": 7,
+          "element_type": "u32",
+          "literal": "10"
+        },
+        {
+          "index": 8,
+          "element_type": "u32",
+          "literal": "512"
+        },
+        {
+          "index": 9,
+          "element_type": "u32",
+          "literal": "2048"
+        },
+        {
+          "index": 10,
+          "element_type": "u32",
+          "literal": "128"
+        }
+      ]
+    },
+    {
+      "ordinal": 6,
+      "kernel": "qwen80_all_ten_routed_wave_swiglu",
+      "grid": [
+        512,
+        10,
+        1
+      ],
+      "threadgroup": [
+        256,
+        1,
+        1
+      ],
+      "purpose": "all ten SiLU(gate) * up activations",
+      "buffers": [
+        {
+          "index": 0,
+          "name": "route_gate",
+          "element_type": "f32",
+          "shape": [
+            10,
+            512
+          ],
+          "byte_len": 20480,
+          "authority": "command_scratch"
+        },
+        {
+          "index": 1,
+          "name": "route_up",
+          "element_type": "f32",
+          "shape": [
+            10,
+            512
+          ],
+          "byte_len": 20480,
+          "authority": "command_scratch"
+        },
+        {
+          "index": 2,
+          "name": "route_activated",
+          "element_type": "f32",
+          "shape": [
+            10,
+            512
+          ],
+          "byte_len": 20480,
+          "authority": "command_scratch"
+        }
+      ],
+      "scalars": [
+        {
+          "index": 3,
+          "element_type": "u32",
+          "literal": "10"
+        },
+        {
+          "index": 4,
+          "element_type": "u32",
+          "literal": "512"
+        }
+      ]
+    },
+    {
+      "ordinal": 7,
+      "kernel": "qwen80_all_ten_routed_wave_down_weighted",
+      "grid": [
+        256,
+        2048,
+        10
+      ],
+      "threadgroup": [
+        256,
+        1,
+        1
+      ],
+      "purpose": "all ten external direct-packed down projections and source route weights",
+      "buffers": [
+        {
+          "index": 0,
+          "name": "route_down_signs",
+          "element_type": "u8",
+          "shape": [
+            10,
+            131072
+          ],
+          "byte_len": 1310720,
+          "authority": "external_all_ten_route_bridge"
+        },
+        {
+          "index": 1,
+          "name": "route_down_scales",
+          "element_type": "u16",
+          "shape": [
+            10,
+            8192
+          ],
+          "byte_len": 163840,
+          "authority": "external_all_ten_route_bridge"
+        },
+        {
+          "index": 2,
+          "name": "route_activated",
+          "element_type": "f32",
+          "shape": [
+            10,
+            512
+          ],
+          "byte_len": 20480,
+          "authority": "command_scratch"
+        },
+        {
+          "index": 3,
+          "name": "router_route_weights",
+          "element_type": "f32",
+          "shape": [
+            10
+          ],
+          "byte_len": 40,
+          "authority": "command_scratch"
+        },
+        {
+          "index": 4,
+          "name": "route_weighted",
+          "element_type": "f32",
+          "shape": [
+            10,
+            2048
+          ],
+          "byte_len": 81920,
+          "authority": "command_scratch"
+        }
+      ],
+      "scalars": [
+        {
+          "index": 5,
+          "element_type": "u32",
+          "literal": "10"
+        },
+        {
+          "index": 6,
+          "element_type": "u32",
+          "literal": "2048"
+        },
+        {
+          "index": 7,
+          "element_type": "u32",
+          "literal": "512"
+        },
+        {
+          "index": 8,
+          "element_type": "u32",
+          "literal": "128"
+        }
+      ]
+    },
+    {
+      "ordinal": 8,
+      "kernel": "qwen80_shared_expert_wave_gate_up",
+      "grid": [
+        256,
+        512,
+        1
+      ],
+      "threadgroup": [
+        256,
+        1,
+        1
+      ],
+      "purpose": "direct-packed fixed shared gate/up projections",
+      "buffers": [
+        {
+          "index": 0,
+          "name": "shared_gate_signs",
+          "element_type": "u8",
+          "shape": [
+            131072
+          ],
+          "byte_len": 131072,
+          "authority": "fixed_payload"
+        },
+        {
+          "index": 1,
+          "name": "shared_gate_scales",
+          "element_type": "u16",
+          "shape": [
+            8192
+          ],
+          "byte_len": 16384,
+          "authority": "fixed_payload"
+        },
+        {
+          "index": 2,
+          "name": "shared_up_signs",
+          "element_type": "u8",
+          "shape": [
+            131072
+          ],
+          "byte_len": 131072,
+          "authority": "fixed_payload"
+        },
+        {
+          "index": 3,
+          "name": "shared_up_scales",
+          "element_type": "u16",
+          "shape": [
+            8192
+          ],
+          "byte_len": 16384,
+          "authority": "fixed_payload"
+        },
+        {
+          "index": 4,
+          "name": "postnorm_hidden",
+          "element_type": "f32",
+          "shape": [
+            2048
+          ],
+          "byte_len": 8192,
+          "authority": "command_scratch"
+        },
+        {
+          "index": 5,
+          "name": "shared_gate",
+          "element_type": "f32",
+          "shape": [
+            512
+          ],
+          "byte_len": 2048,
+          "authority": "command_scratch"
+        },
+        {
+          "index": 6,
+          "name": "shared_up",
+          "element_type": "f32",
+          "shape": [
+            512
+          ],
+          "byte_len": 2048,
+          "authority": "command_scratch"
+        }
+      ],
+      "scalars": [
+        {
+          "index": 7,
+          "element_type": "u32",
+          "literal": "512"
+        },
+        {
+          "index": 8,
+          "element_type": "u32",
+          "literal": "2048"
+        },
+        {
+          "index": 9,
+          "element_type": "u32",
+          "literal": "128"
+        }
+      ]
+    },
+    {
+      "ordinal": 9,
+      "kernel": "qwen80_shared_expert_wave_swiglu",
+      "grid": [
+        512,
+        1,
+        1
+      ],
+      "threadgroup": [
+        256,
+        1,
+        1
+      ],
+      "purpose": "fixed shared SiLU(gate) * up activation",
+      "buffers": [
+        {
+          "index": 0,
+          "name": "shared_gate",
+          "element_type": "f32",
+          "shape": [
+            512
+          ],
+          "byte_len": 2048,
+          "authority": "command_scratch"
+        },
+        {
+          "index": 1,
+          "name": "shared_up",
+          "element_type": "f32",
+          "shape": [
+            512
+          ],
+          "byte_len": 2048,
+          "authority": "command_scratch"
+        },
+        {
+          "index": 2,
+          "name": "shared_activated",
+          "element_type": "f32",
+          "shape": [
+            512
+          ],
+          "byte_len": 2048,
+          "authority": "command_scratch"
+        }
+      ],
+      "scalars": [
+        {
+          "index": 3,
+          "element_type": "u32",
+          "literal": "512"
+        }
+      ]
+    },
+    {
+      "ordinal": 10,
+      "kernel": "qwen80_shared_expert_wave_down",
+      "grid": [
+        256,
+        2048,
+        1
+      ],
+      "threadgroup": [
+        256,
+        1,
+        1
+      ],
+      "purpose": "direct-packed fixed shared down projection",
+      "buffers": [
+        {
+          "index": 0,
+          "name": "shared_down_signs",
+          "element_type": "u8",
+          "shape": [
+            131072
+          ],
+          "byte_len": 131072,
+          "authority": "fixed_payload"
+        },
+        {
+          "index": 1,
+          "name": "shared_down_scales",
+          "element_type": "u16",
+          "shape": [
+            8192
+          ],
+          "byte_len": 16384,
+          "authority": "fixed_payload"
+        },
+        {
+          "index": 2,
+          "name": "shared_activated",
+          "element_type": "f32",
+          "shape": [
+            512
+          ],
+          "byte_len": 2048,
+          "authority": "command_scratch"
+        },
+        {
+          "index": 3,
+          "name": "shared_output",
+          "element_type": "f32",
+          "shape": [
+            2048
+          ],
+          "byte_len": 8192,
+          "authority": "command_scratch"
+        }
+      ],
+      "scalars": [
+        {
+          "index": 4,
+          "element_type": "u32",
+          "literal": "2048"
+        },
+        {
+          "index": 5,
+          "element_type": "u32",
+          "literal": "512"
+        },
+        {
+          "index": 6,
+          "element_type": "u32",
+          "literal": "128"
+        }
+      ]
+    },
+    {
+      "ordinal": 11,
+      "kernel": "qwen80_shared_expert_wave_scalar_gate",
+      "grid": [
+        256,
+        1,
+        1
+      ],
+      "threadgroup": [
+        256,
+        1,
+        1
+      ],
+      "purpose": "direct-packed fixed shared scalar gate",
+      "buffers": [
+        {
+          "index": 0,
+          "name": "shared_scalar_signs",
+          "element_type": "u8",
+          "shape": [
+            256
+          ],
+          "byte_len": 256,
+          "authority": "fixed_payload"
+        },
+        {
+          "index": 1,
+          "name": "shared_scalar_scales",
+          "element_type": "u16",
+          "shape": [
+            16
+          ],
+          "byte_len": 32,
+          "authority": "fixed_payload"
+        },
+        {
+          "index": 2,
+          "name": "postnorm_hidden",
+          "element_type": "f32",
+          "shape": [
+            2048
+          ],
+          "byte_len": 8192,
+          "authority": "command_scratch"
+        },
+        {
+          "index": 3,
+          "name": "shared_scalar_logit",
+          "element_type": "f32",
+          "shape": [
+            1
+          ],
+          "byte_len": 4,
+          "authority": "command_scratch"
+        }
+      ],
+      "scalars": [
+        {
+          "index": 4,
+          "element_type": "u32",
+          "literal": "2048"
+        },
+        {
+          "index": 5,
+          "element_type": "u32",
+          "literal": "128"
+        }
+      ]
+    },
+    {
+      "ordinal": 12,
+      "kernel": "qwen80_shared_expert_wave_apply_sigmoid_gate",
+      "grid": [
+        2048,
+        1,
+        1
+      ],
+      "threadgroup": [
+        256,
+        1,
+        1
+      ],
+      "purpose": "sigmoid-gated fixed shared output",
+      "buffers": [
+        {
+          "index": 0,
+          "name": "shared_output",
+          "element_type": "f32",
+          "shape": [
+            2048
+          ],
+          "byte_len": 8192,
+          "authority": "command_scratch"
+        },
+        {
+          "index": 1,
+          "name": "shared_scalar_logit",
+          "element_type": "f32",
+          "shape": [
+            1
+          ],
+          "byte_len": 4,
+          "authority": "command_scratch"
+        },
+        {
+          "index": 2,
+          "name": "gated_shared",
+          "element_type": "f32",
+          "shape": [
+            2048
+          ],
+          "byte_len": 8192,
+          "authority": "command_scratch"
+        }
+      ],
+      "scalars": [
+        {
+          "index": 3,
+          "element_type": "u32",
+          "literal": "2048"
+        }
+      ]
+    },
+    {
+      "ordinal": 13,
+      "kernel": "qwen80_moe_wave_aggregate_second_residual_route_sum",
+      "grid": [
+        2048,
+        1,
+        1
+      ],
+      "threadgroup": [
+        256,
+        1,
+        1
+      ],
+      "purpose": "fixed source-order sum of route[0] through route[9]",
+      "buffers": [
+        {
+          "index": 0,
+          "name": "route_weighted",
+          "element_type": "f32",
+          "shape": [
+            10,
+            2048
+          ],
+          "byte_len": 81920,
+          "authority": "command_scratch"
+        },
+        {
+          "index": 1,
+          "name": "routed_sum",
+          "element_type": "f32",
+          "shape": [
+            2048
+          ],
+          "byte_len": 8192,
+          "authority": "command_scratch"
+        }
+      ],
+      "scalars": [
+        {
+          "index": 2,
+          "element_type": "u32",
+          "literal": "10"
+        },
+        {
+          "index": 3,
+          "element_type": "u32",
+          "literal": "2048"
+        }
+      ]
+    },
+    {
+      "ordinal": 14,
+      "kernel": "qwen80_moe_wave_aggregate_second_residual_add_shared_residual",
+      "grid": [
+        2048,
+        1,
+        1
+      ],
+      "threadgroup": [
+        256,
+        1,
+        1
+      ],
+      "purpose": "routed sum + fixed shared result + externally retained first residual",
+      "buffers": [
+        {
+          "index": 0,
+          "name": "routed_sum",
+          "element_type": "f32",
+          "shape": [
+            2048
+          ],
+          "byte_len": 8192,
+          "authority": "command_scratch"
+        },
+        {
+          "index": 1,
+          "name": "gated_shared",
+          "element_type": "f32",
+          "shape": [
+            2048
+          ],
+          "byte_len": 8192,
+          "authority": "command_scratch"
+        },
+        {
+          "index": 2,
+          "name": "first_residual",
+          "element_type": "f32",
+          "shape": [
+            2048
+          ],
+          "byte_len": 8192,
+          "authority": "external_all_ten_route_bridge"
+        },
+        {
+          "index": 3,
+          "name": "second_residual",
+          "element_type": "f32",
+          "shape": [
+            2048
+          ],
+          "byte_len": 8192,
+          "authority": "command_scratch"
+        }
+      ],
+      "scalars": [
+        {
+          "index": 4,
+          "element_type": "u32",
+          "literal": "2048"
+        }
+      ]
+    }
+  ],
+  "external_authority": {
+    "route_plan_schema": "hawking.ascension.qwen80_source_token_l0_all_ten_route_plan_authority.v1",
+    "route_plan_status": "SEALED_CURRENT_ADMITTED_QWEN80_SOURCE_TOKEN_L0_ALL_TEN_ROUTE_PLAN_READY_FOR_NEW_TYPED_BRIDGE",
+    "first_residual_schema": "hawking.ascension.qwen80_first_residual_outer_capture.v1",
+    "first_residual_status": "CAPTURED_QWEN80_FIRST_RESIDUAL_STRICT_MATH_COMPONENT_ONLY",
+    "typed_bridge_schema": "hawking.ascension.qwen80_source_token_all_ten_true_moe_source_bridge.v1",
+    "typed_bridge_status": "SEALED_CURRENT_ADMITTED_QWEN80_SOURCE_TOKEN_ALL_TEN_TRUE_MOE_SOURCE_BRIDGE_READY_FOR_OUTER_PREFLIGHT",
+    "required_external_buffers": [
+      "first_residual",
+      "expected_route_ids",
+      "expected_route_weights",
+      "route_gate_signs",
+      "route_gate_scales",
+      "route_up_signs",
+      "route_up_scales",
+      "route_down_signs",
+      "route_down_scales"
+    ],
+    "required_route_payload_buffers": [
+      "route_gate_signs",
+      "route_gate_scales",
+      "route_up_signs",
+      "route_up_scales",
+      "route_down_signs",
+      "route_down_scales"
+    ],
+    "route_payloads_materialized_here": false,
+    "first_residual_materialized_here": false,
+    "expected_topk_witness_materialized_here": false,
+    "route_tensor_sha256s_materialized_here": false,
+    "required_same_input_provenance": "source-token typed bridge must bind token 1, zero L0 DeltaNet state, retained [2048] first_residual, exact all-ten authority, and future command graph to one real input"
+  },
+  "claim_boundary": {
+    "artifact_scan_or_payload_open_performed": false,
+    "metal_context_or_dispatch_performed": false,
+    "runtime_watcher_server_registry_or_hcli_changed": false,
+    "token_or_tps_claim": false,
+    "execution_status": "PREPARED_NOT_EXECUTED"
+  }
+}

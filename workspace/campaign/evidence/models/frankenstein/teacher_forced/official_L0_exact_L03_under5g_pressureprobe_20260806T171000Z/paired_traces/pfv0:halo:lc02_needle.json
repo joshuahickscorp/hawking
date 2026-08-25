@@ -1,0 +1,305 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 3636,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Read the log below, then answer.\n\nLOG\nlorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit\nAUDIT_TOKEN=NIGHTINGALE-3\n amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet c\nEND LOG\n\nQuestion: What is the audit token? Reply with only the token.",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:halo:lc02_needle",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "train",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Read the log below, then answer.\n\nLOG\nlorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit\nAUDIT_TOKEN=NIGHTINGALE-3\n amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet consectetur adipiscing elit. lorem ipsum dolor sit amet c\nEND LOG\n\nQuestion: What is the audit token? Reply with only the token.",
+  "proof_plan": null,
+  "recorded_at": "2026-08-06T16:39:48.723009Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "7025e738fb38c087a149ca112491131c831620561073b729a39af8013982bdce",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 2.1441292762756348,
+          "rank": 0,
+          "token_id": 0
+        },
+        {
+          "logit": 1.7227647304534912,
+          "rank": 1,
+          "token_id": 1
+        },
+        {
+          "logit": 1.6058893203735352,
+          "rank": 2,
+          "token_id": 57
+        },
+        {
+          "logit": 1.594011902809143,
+          "rank": 3,
+          "token_id": 53
+        },
+        {
+          "logit": 1.4836342334747314,
+          "rank": 4,
+          "token_id": 56
+        },
+        {
+          "logit": 0.9115004539489746,
+          "rank": 5,
+          "token_id": 13
+        },
+        {
+          "logit": 0.7965403199195862,
+          "rank": 6,
+          "token_id": 31
+        },
+        {
+          "logit": 0.7907782196998596,
+          "rank": 7,
+          "token_id": 44
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.16676431894302368,
+          "l2": 3.683365821838379,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "79b24c52afbd2eebf1829993d97666eff7a166ceb9a07304f9803dec4f989770",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.20365123450756073,
+          "l2": 3.470918893814087,
+          "layer": 1,
+          "mlp_type": "dense",
+          "sample_sha256": "f3cf6135b343403938dc4dbf14223a1cf3fbb9adc474c7e00c4a45f88d13caba",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.21796618402004242,
+          "l2": 3.4673662185668945,
+          "layer": 2,
+          "mlp_type": "dense",
+          "sample_sha256": "babbb5846d30e72de0aaf6a0e415fb1721787fa8ab4cd8619fdda015c716ce96",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.23599840700626373,
+          "l2": 3.9005041122436523,
+          "layer": 3,
+          "mlp_type": "sparse",
+          "sample_sha256": "f072c9b0cfd6a5be4f517e7728d5ef31ab59bbc78fc3f3e9909921c66c5c2e8b",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": {
+        "expert_counts": {
+          "10": 1,
+          "100": 2,
+          "101": 1,
+          "102": 2,
+          "104": 1,
+          "108": 1,
+          "110": 1,
+          "111": 1,
+          "114": 3,
+          "117": 2,
+          "121": 1,
+          "13": 3,
+          "130": 5,
+          "133": 7,
+          "139": 1,
+          "14": 1,
+          "140": 3,
+          "141": 2,
+          "142": 1,
+          "145": 1,
+          "147": 2,
+          "148": 3,
+          "149": 2,
+          "15": 2,
+          "152": 4,
+          "157": 7,
+          "161": 1,
+          "163": 6,
+          "166": 2,
+          "167": 1,
+          "169": 1,
+          "170": 2,
+          "172": 2,
+          "174": 4,
+          "183": 6,
+          "185": 5,
+          "186": 2,
+          "187": 1,
+          "190": 1,
+          "191": 1,
+          "192": 1,
+          "193": 2,
+          "197": 2,
+          "199": 2,
+          "2": 1,
+          "201": 5,
+          "206": 3,
+          "210": 1,
+          "212": 2,
+          "213": 1,
+          "214": 6,
+          "217": 3,
+          "218": 4,
+          "219": 1,
+          "220": 2,
+          "222": 1,
+          "224": 2,
+          "227": 9,
+          "229": 2,
+          "230": 1,
+          "232": 1,
+          "236": 2,
+          "237": 6,
+          "238": 3,
+          "245": 3,
+          "247": 1,
+          "248": 1,
+          "25": 1,
+          "250": 3,
+          "251": 1,
+          "252": 1,
+          "26": 4,
+          "28": 3,
+          "3": 1,
+          "30": 3,
+          "34": 1,
+          "37": 1,
+          "38": 1,
+          "41": 4,
+          "43": 1,
+          "44": 2,
+          "46": 1,
+          "47": 1,
+          "48": 1,
+          "50": 11,
+          "52": 1,
+          "53": 1,
+          "57": 3,
+          "59": 1,
+          "6": 2,
+          "60": 5,
+          "62": 1,
+          "66": 2,
+          "68": 1,
+          "7": 5,
+          "70": 2,
+          "72": 2,
+          "73": 3,
+          "74": 2,
+          "80": 1,
+          "81": 3,
+          "82": 3,
+          "83": 1,
+          "89": 2,
+          "90": 3,
+          "93": 2,
+          "96": 1,
+          "97": 2,
+          "98": 3
+        },
+        "load_balance_cv": null,
+        "note": "route stats are student-native; never copy GLM router weights",
+        "source_layer": 3,
+        "top_k": 8
+      },
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

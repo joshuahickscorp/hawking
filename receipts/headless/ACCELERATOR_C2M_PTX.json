@@ -1,0 +1,112 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T12:46:18Z",
+ "experiment_class": "ACCEL-C2M",
+ "knowledge_level": "INSTANCE",
+ "git_head": "30874caff5bab9c77dec82de0a6b3f6daec51be6",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_C_PTX",
+   "obligation": "G045",
+   "steer": "S015 \u00a78 (PTX is a named C2M input)"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model; kernel translation"
+  },
+  "representation": {
+   "name": "dense_f32",
+   "elements": 4096
+  },
+  "kernel": {
+   "origin": "PTX -> C2M -> AIR -> MSL",
+   "corpus": "the pinned seed's own 291 .ptx files"
+  },
+  "runtime": {
+   "mlx": "0.32.1",
+   "python": "3.12.13"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "corpus": {
+   "source": "Lulzx/cuda-metal @ 19a70230, its own test corpus",
+   "files": 291,
+   "why_this_corpus": "the steer says to use the seed as a PTX corpus; this is PTX the project itself ships, not PTX I wrote to suit my own parser"
+  },
+  "coverage": {
+   "translated": 3,
+   "total": 291,
+   "fraction": 0.0103,
+   "executed_on_metal_and_matched": 3,
+   "detail": [
+    {
+     "file": "build2/tests/air_abi/cumetalc-ptx-default-output/vector_add.ptx",
+     "kernel": "vector_add",
+     "op": "add",
+     "max_abs_err": 0.0,
+     "matches": true
+    },
+    {
+     "file": "build2/tests/air_abi/ptx2llvm-positional-default/vector_add.ptx",
+     "kernel": "vector_add",
+     "op": "add",
+     "max_abs_err": 0.0,
+     "matches": true
+    },
+    {
+     "file": "tests/air_abi/reference/vector_add.ptx",
+     "kernel": "vector_add",
+     "op": "add",
+     "max_abs_err": 0.0,
+     "matches": true
+    }
+   ]
+  },
+  "conformance": {
+   "tier_claimed": "C2M-T0",
+   "tier_definition": "T0 = trivial elementwise kernels",
+   "kernels_translated": 3,
+   "kernels_matching_oracle": 3,
+   "higher_tiers": {
+    "C2M-T1": "NOT CLAIMED: no runtime, memory API or stream semantics exist",
+    "C2M-T2": "NOT CLAIMED: no math/ML kernel corpus (no GEMM, no reduction)",
+    "C2M-T3": "NOT CLAIMED: no real open CUDA project has been run",
+    "C2M-T4": "NOT CLAIMED: no AI workload",
+    "C2M-T5": "NOT CLAIMED: nothing is production-supported"
+   },
+   "oracle": "numpy on CPU",
+   "is_a_cuda_differential": false,
+   "why_not": "no NVIDIA hardware is present, so nothing was compared against CUDA itself; P2 remains open"
+  },
+  "an_increment_that_bought_nothing": {
+   "hypothesis": "cvta.to.global.u64 blocked 43 of 291 files -- the single most common refusal -- so supporting it should raise coverage substantially",
+   "action": "added cvta as a pointer-identity passthrough, plus mad.lo.u32, mul.wide.u32/s32 and cvt.s64.s32 index arithmetic",
+   "result": "coverage UNCHANGED at 3/291. The blocker simply MOVED to ld.global.u32 on the same 43 files.",
+   "what_it_means": "those files need integer loads AND more besides, so they were never one instruction away. Adding the most-frequent refusal reason is NOT the same as adding the binding constraint, and a refusal histogram ranks SYMPTOMS rather than causes. The honest read is that this subset is far from the corpus, not one step from it."
+  },
+  "top_remaining_refusals": {
+   "ld.global.u32": 43,
+   "no st.global.f32; the subset requires ": 7,
+   "%f2": 3,
+   "%rd1": 3,
+   "cvt.f64.f32": 2,
+   "mul.lo.u64": 2,
+   "shfl.sync.idx.b32": 2,
+   "vote.sync.ballot.b32": 2
+  }
+ },
+ "claim_boundary": "C2M translates 3 of the 291 PTX files the pinned seed ships -- ONE PERCENT -- and all 3 execute on the Apple GPU and match a numpy oracle. That is the whole claim. It is still C2M-T0: no runtime, no memory API, no streams, so T1 through T5 remain NOT CLAIMED. The oracle is numpy on CPU, NOT CUDA, so this is still not a differential and P2 stays open. And 288 files are refused, each with the instruction named.",
+ "pass": true
+}

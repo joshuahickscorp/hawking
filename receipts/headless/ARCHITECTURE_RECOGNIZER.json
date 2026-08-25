@@ -1,0 +1,1056 @@
+{
+ "schema": "hawking.headless.architecture_recognizer.v1",
+ "generated_at": "2026-08-25T07:43:27Z",
+ "generated_by": "tools/odyssey/arch_recognizer.py",
+ "obligation": "G016 \u2014 ARCHITECTURE_RECOGNIZER (directive \u00a747, \u00a746)",
+ "hand_authored": false,
+ "did_not_load_weights": true,
+ "unmeasured_is_absent": true,
+ "known_organs_from": "/Users/scammermike/Downloads/hawking/receipts/headless/ORGAN_FRONTIER_MATRIX.json",
+ "known_organs": [
+  "deltanet",
+  "embed",
+  "gqa_attention",
+  "mlp_down",
+  "mlp_gate_up"
+ ],
+ "declared_but_unmeasured": [
+  "activation",
+  "kv_state",
+  "latent_attention",
+  "lm_head",
+  "mha_attention",
+  "mm_projector",
+  "moe_expert",
+  "moe_router",
+  "normalization",
+  "recurrent_state",
+  "shared_expert",
+  "vision_encoder",
+  "vocabulary"
+ ],
+ "consumer_trace": "known_organs() reads receipts/headless/ORGAN_FRONTIER_MATRIX.json through the canonical library; MEASURED families are KNOWN, declared families with no measurement are DECLARED_UNMEASURED, anything else is NOVEL",
+ "organ_library_gaps": [],
+ "organ_library_gaps_note": "organs recognized here that the canonical OrganLibrary does not yet carry and which are NOT genuinely novel to Odyssey -- normalization is listed as a family in the directive but absent from the library, so it reports NOVEL",
+ "specimens": [
+  {
+   "oxx": "O005",
+   "model": "Qwen/Qwen3-30B-A3B",
+   "ground_truth": [
+    "embed",
+    "gqa_attention",
+    "lm_head",
+    "moe_expert",
+    "moe_router",
+    "rmsnorm"
+   ],
+   "ground_truth_source": "hand-checked from the fetched config.json and tensor index, recorded here for audit",
+   "result": {
+    "repo": "Qwen/Qwen3-30B-A3B",
+    "revision": "ad44e777bcd18fa416d9da3bd8f70d33ebb85d39",
+    "architectures": [
+     "Qwen3MoeForCausalLM"
+    ],
+    "model_type": "qwen3_moe",
+    "n_tensors": 18867,
+    "n_unmatched": 0,
+    "organs": [
+     {
+      "organ": "embed",
+      "status": "KNOWN",
+      "n_tensors": 1,
+      "n_layers": 0,
+      "confidence": 0.32,
+      "example": [
+       "model.embed_tokens.weight"
+      ]
+     },
+     {
+      "organ": "gqa_attention",
+      "status": "KNOWN",
+      "n_tensors": 192,
+      "n_layers": 48,
+      "confidence": 0.98,
+      "example": [
+       "model.layers.0.self_attn.k_proj.weight",
+       "model.layers.0.self_attn.o_proj.weight"
+      ]
+     },
+     {
+      "organ": "lm_head",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 1,
+      "n_layers": 0,
+      "confidence": 0.32,
+      "example": [
+       "lm_head.weight"
+      ]
+     },
+     {
+      "organ": "moe_expert",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 18432,
+      "n_layers": 48,
+      "confidence": 0.98,
+      "example": [
+       "model.layers.0.mlp.experts.0.down_proj.weight",
+       "model.layers.0.mlp.experts.0.gate_proj.weight"
+      ]
+     },
+     {
+      "organ": "moe_router",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 48,
+      "n_layers": 48,
+      "confidence": 0.98,
+      "example": [
+       "model.layers.0.mlp.gate.weight",
+       "model.layers.1.mlp.gate.weight"
+      ]
+     },
+     {
+      "organ": "rmsnorm",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 193,
+      "n_layers": 48,
+      "confidence": 0.98,
+      "example": [
+       "model.layers.0.input_layernorm.weight",
+       "model.layers.0.post_attention_layernorm.weight"
+      ]
+     }
+    ],
+    "unrecognized": [],
+    "folded_organ": null,
+    "novelty": {
+     "novel_organs": [
+      "lm_head",
+      "moe_expert",
+      "moe_router",
+      "rmsnorm"
+     ],
+     "novel_axes": [
+      "routing"
+     ],
+     "n_unrecognized_clusters": 0,
+     "new_scale_regime": 48,
+     "transfer_test_value": 0.8
+    },
+    "analysis_wall_s": 0.032,
+    "loaded_weights": false
+   }
+  },
+  {
+   "oxx": "O001",
+   "model": "tiiuae/Falcon-H1-7B-Instruct",
+   "ground_truth": [
+    "embed",
+    "gqa_attention",
+    "lm_head",
+    "mlp_down",
+    "mlp_gate_up",
+    "recurrent_state",
+    "rmsnorm"
+   ],
+   "ground_truth_source": "hand-checked from the fetched config.json and tensor index, recorded here for audit",
+   "result": {
+    "repo": "tiiuae/Falcon-H1-7B-Instruct",
+    "revision": "41e72f27effbab80cd45b6e884688452253a3686",
+    "architectures": [
+     "FalconH1ForCausalLM"
+    ],
+    "model_type": "falcon_h1",
+    "n_tensors": 751,
+    "n_unmatched": 0,
+    "organs": [
+     {
+      "organ": "embed",
+      "status": "KNOWN",
+      "n_tensors": 1,
+      "n_layers": 0,
+      "confidence": 0.32,
+      "example": [
+       "model.embed_tokens.weight"
+      ]
+     },
+     {
+      "organ": "gqa_attention",
+      "status": "KNOWN",
+      "n_tensors": 176,
+      "n_layers": 44,
+      "confidence": 0.98,
+      "example": [
+       "model.layers.0.self_attn.k_proj.weight",
+       "model.layers.0.self_attn.o_proj.weight"
+      ]
+     },
+     {
+      "organ": "lm_head",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 1,
+      "n_layers": 0,
+      "confidence": 0.32,
+      "example": [
+       "lm_head.weight"
+      ]
+     },
+     {
+      "organ": "mlp_down",
+      "status": "KNOWN",
+      "n_tensors": 44,
+      "n_layers": 44,
+      "confidence": 0.98,
+      "example": [
+       "model.layers.0.feed_forward.down_proj.weight",
+       "model.layers.1.feed_forward.down_proj.weight"
+      ]
+     },
+     {
+      "organ": "mlp_gate_up",
+      "status": "KNOWN",
+      "n_tensors": 88,
+      "n_layers": 44,
+      "confidence": 0.98,
+      "example": [
+       "model.layers.0.feed_forward.gate_proj.weight",
+       "model.layers.0.feed_forward.up_proj.weight"
+      ]
+     },
+     {
+      "organ": "recurrent_state",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 352,
+      "n_layers": 44,
+      "confidence": 0.98,
+      "example": [
+       "model.layers.0.mamba.A_log",
+       "model.layers.0.mamba.D"
+      ]
+     },
+     {
+      "organ": "rmsnorm",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 89,
+      "n_layers": 44,
+      "confidence": 0.98,
+      "example": [
+       "model.final_layernorm.weight",
+       "model.layers.0.input_layernorm.weight"
+      ]
+     }
+    ],
+    "unrecognized": [],
+    "folded_organ": null,
+    "novelty": {
+     "novel_organs": [
+      "lm_head",
+      "recurrent_state",
+      "rmsnorm"
+     ],
+     "novel_axes": [
+      "state"
+     ],
+     "n_unrecognized_clusters": 0,
+     "new_scale_regime": 44,
+     "transfer_test_value": 0.8
+    },
+    "analysis_wall_s": 0.003,
+    "loaded_weights": false
+   }
+  },
+  {
+   "oxx": "O003",
+   "model": "moonshotai/Kimi-VL-A3B-Instruct",
+   "ground_truth": [
+    "embed",
+    "latent_attention",
+    "lm_head",
+    "mlp_down",
+    "mlp_gate_up",
+    "mm_projector",
+    "moe_expert",
+    "moe_router",
+    "rmsnorm",
+    "shared_expert",
+    "vision_encoder"
+   ],
+   "ground_truth_source": "hand-checked from the fetched config.json and tensor index, recorded here for audit",
+   "result": {
+    "repo": "moonshotai/Kimi-VL-A3B-Instruct",
+    "revision": "398eede0903cd983a2bfa0cc634e9ac1d843f375",
+    "architectures": [
+     "KimiVLForConditionalGeneration"
+    ],
+    "model_type": "kimi_vl",
+    "n_tensors": 5679,
+    "n_unmatched": 53,
+    "organs": [
+     {
+      "organ": "embed",
+      "status": "KNOWN",
+      "n_tensors": 1,
+      "n_layers": 0,
+      "confidence": 0.32,
+      "example": [
+       "language_model.model.embed_tokens.weight"
+      ]
+     },
+     {
+      "organ": "latent_attention",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 135,
+      "n_layers": 27,
+      "confidence": 0.98,
+      "example": [
+       "language_model.model.layers.0.self_attn.kv_a_layernorm.weight",
+       "language_model.model.layers.0.self_attn.kv_a_proj_with_mqa.weight"
+      ]
+     },
+     {
+      "organ": "lm_head",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 1,
+      "n_layers": 0,
+      "confidence": 0.32,
+      "example": [
+       "language_model.lm_head.weight"
+      ]
+     },
+     {
+      "organ": "mlp_down",
+      "status": "KNOWN",
+      "n_tensors": 1,
+      "n_layers": 1,
+      "confidence": 0.552,
+      "example": [
+       "language_model.model.layers.0.mlp.down_proj.weight"
+      ]
+     },
+     {
+      "organ": "mlp_gate_up",
+      "status": "KNOWN",
+      "n_tensors": 2,
+      "n_layers": 1,
+      "confidence": 0.554,
+      "example": [
+       "language_model.model.layers.0.mlp.gate_proj.weight",
+       "language_model.model.layers.0.mlp.up_proj.weight"
+      ]
+     },
+     {
+      "organ": "mm_projector",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 5,
+      "n_layers": 0,
+      "confidence": 0.4,
+      "example": [
+       "multi_modal_projector.linear_1.bias",
+       "multi_modal_projector.linear_1.weight"
+      ]
+     },
+     {
+      "organ": "moe_expert",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 4992,
+      "n_layers": 26,
+      "confidence": 0.98,
+      "example": [
+       "language_model.model.layers.1.mlp.experts.0.down_proj.weight",
+       "language_model.model.layers.1.mlp.experts.0.gate_proj.weight"
+      ]
+     },
+     {
+      "organ": "moe_router",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 26,
+      "n_layers": 26,
+      "confidence": 0.98,
+      "example": [
+       "language_model.model.layers.1.mlp.gate.weight",
+       "language_model.model.layers.10.mlp.gate.weight"
+      ]
+     },
+     {
+      "organ": "rmsnorm",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 57,
+      "n_layers": 27,
+      "confidence": 0.98,
+      "example": [
+       "language_model.model.layers.0.input_layernorm.weight",
+       "language_model.model.layers.0.post_attention_layernorm.weight"
+      ]
+     },
+     {
+      "organ": "shared_expert",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 78,
+      "n_layers": 26,
+      "confidence": 0.98,
+      "example": [
+       "language_model.model.layers.1.mlp.shared_experts.down_proj.weight",
+       "language_model.model.layers.1.mlp.shared_experts.gate_proj.weight"
+      ]
+     },
+     {
+      "organ": "vision_encoder",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 328,
+      "n_layers": 27,
+      "confidence": 0.98,
+      "example": [
+       "vision_tower.encoder.blocks.0.mlp.fc0.bias",
+       "vision_tower.encoder.blocks.0.mlp.fc0.weight"
+      ]
+     }
+    ],
+    "unrecognized": [
+     {
+      "organ": "UNRECOGNIZED",
+      "status": "NOVEL",
+      "skeleton": "language_model.model.layers.N.self_attn.rotary_emb.inv_freq",
+      "n_tensors": 27,
+      "confidence": 0.5
+     },
+     {
+      "organ": "UNRECOGNIZED",
+      "status": "NOVEL",
+      "skeleton": "language_model.model.layers.N.mlp.gate.e_score_correction_bias",
+      "n_tensors": 26,
+      "confidence": 0.5
+     }
+    ],
+    "folded_organ": {
+     "from": "gqa_attention",
+     "into": "latent_attention",
+     "n_tensors": 54,
+     "why": "latent-attention markers present; the remaining q/o projections are part of that organ, not a separate GQA organ"
+    },
+    "novelty": {
+     "novel_organs": [
+      "latent_attention",
+      "lm_head",
+      "mm_projector",
+      "moe_expert",
+      "moe_router",
+      "rmsnorm",
+      "shared_expert",
+      "vision_encoder"
+     ],
+     "novel_axes": [
+      "attention",
+      "modality",
+      "routing"
+     ],
+     "n_unrecognized_clusters": 2,
+     "new_scale_regime": null,
+     "transfer_test_value": 0.4
+    },
+    "analysis_wall_s": 0.014,
+    "loaded_weights": false
+   }
+  },
+  {
+   "oxx": "O011",
+   "model": "Qwen/Qwen3-VL-30B-A3B-Instruct",
+   "ground_truth": [
+    "embed",
+    "gqa_attention",
+    "lm_head",
+    "mm_projector",
+    "moe_expert",
+    "moe_router",
+    "rmsnorm",
+    "vision_encoder"
+   ],
+   "ground_truth_source": "hand-checked from the fetched config.json and tensor index, recorded here for audit",
+   "result": {
+    "repo": "Qwen/Qwen3-VL-30B-A3B-Instruct",
+    "revision": "9c4b90e1e4ba",
+    "architectures": [
+     "Qwen3VLMoeForConditionalGeneration"
+    ],
+    "model_type": "qwen3_vl_moe",
+    "n_tensors": 882,
+    "n_unmatched": 0,
+    "organs": [
+     {
+      "organ": "embed",
+      "status": "KNOWN",
+      "n_tensors": 1,
+      "n_layers": 0,
+      "confidence": 0.32,
+      "example": [
+       "model.language_model.embed_tokens.weight"
+      ]
+     },
+     {
+      "organ": "gqa_attention",
+      "status": "KNOWN",
+      "n_tensors": 192,
+      "n_layers": 48,
+      "confidence": 0.98,
+      "example": [
+       "model.language_model.layers.0.self_attn.k_proj.weight",
+       "model.language_model.layers.0.self_attn.o_proj.weight"
+      ]
+     },
+     {
+      "organ": "lm_head",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 1,
+      "n_layers": 0,
+      "confidence": 0.32,
+      "example": [
+       "lm_head.weight"
+      ]
+     },
+     {
+      "organ": "mm_projector",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 20,
+      "n_layers": 0,
+      "confidence": 0.6,
+      "example": [
+       "model.visual.deepstack_merger_list.0.linear_fc1.bias",
+       "model.visual.deepstack_merger_list.0.linear_fc1.weight"
+      ]
+     },
+     {
+      "organ": "moe_expert",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 96,
+      "n_layers": 48,
+      "confidence": 0.98,
+      "example": [
+       "model.language_model.layers.0.mlp.experts.down_proj",
+       "model.language_model.layers.0.mlp.experts.gate_up_proj"
+      ]
+     },
+     {
+      "organ": "moe_router",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 48,
+      "n_layers": 48,
+      "confidence": 0.98,
+      "example": [
+       "model.language_model.layers.0.mlp.gate.weight",
+       "model.language_model.layers.1.mlp.gate.weight"
+      ]
+     },
+     {
+      "organ": "rmsnorm",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 197,
+      "n_layers": 48,
+      "confidence": 0.98,
+      "example": [
+       "model.language_model.layers.0.input_layernorm.weight",
+       "model.language_model.layers.0.post_attention_layernorm.weight"
+      ]
+     },
+     {
+      "organ": "vision_encoder",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 327,
+      "n_layers": 27,
+      "confidence": 0.98,
+      "example": [
+       "model.visual.blocks.0.attn.proj.bias",
+       "model.visual.blocks.0.attn.proj.weight"
+      ]
+     }
+    ],
+    "unrecognized": [],
+    "folded_organ": null,
+    "novelty": {
+     "novel_organs": [
+      "lm_head",
+      "mm_projector",
+      "moe_expert",
+      "moe_router",
+      "rmsnorm",
+      "vision_encoder"
+     ],
+     "novel_axes": [
+      "modality",
+      "routing"
+     ],
+     "n_unrecognized_clusters": 0,
+     "new_scale_regime": null,
+     "transfer_test_value": 0.6
+    },
+    "analysis_wall_s": 0.006,
+    "loaded_weights": false
+   }
+  }
+ ],
+ "heldout_specimens": [
+  {
+   "oxx": "O010",
+   "model": "zai-org/GLM-4.5-Air",
+   "ground_truth": [
+    "embed",
+    "gqa_attention",
+    "lm_head",
+    "mlp_down",
+    "mlp_gate_up",
+    "moe_expert",
+    "moe_router",
+    "rmsnorm",
+    "shared_expert"
+   ],
+   "ground_truth_source": "hand-checked from the fetched config.json and tensor index, recorded here for audit",
+   "result": {
+    "repo": "zai-org/GLM-4.5-Air",
+    "revision": "a24ceef6ce4f3536971efe9b778bdaa1bab18daa",
+    "architectures": [
+     "Glm4MoeForCausalLM"
+    ],
+    "model_type": "glm4_moe",
+    "n_tensors": 18329,
+    "n_unmatched": 189,
+    "organs": [
+     {
+      "organ": "embed",
+      "status": "KNOWN",
+      "n_tensors": 2,
+      "n_layers": 1,
+      "confidence": 0.554,
+      "example": [
+       "model.embed_tokens.weight",
+       "model.layers.46.embed_tokens.weight"
+      ]
+     },
+     {
+      "organ": "gqa_attention",
+      "status": "KNOWN",
+      "n_tensors": 188,
+      "n_layers": 47,
+      "confidence": 0.98,
+      "example": [
+       "model.layers.0.self_attn.k_proj.weight",
+       "model.layers.0.self_attn.o_proj.weight"
+      ]
+     },
+     {
+      "organ": "lm_head",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 1,
+      "n_layers": 0,
+      "confidence": 0.32,
+      "example": [
+       "lm_head.weight"
+      ]
+     },
+     {
+      "organ": "mlp_down",
+      "status": "KNOWN",
+      "n_tensors": 1,
+      "n_layers": 1,
+      "confidence": 0.552,
+      "example": [
+       "model.layers.0.mlp.down_proj.weight"
+      ]
+     },
+     {
+      "organ": "mlp_gate_up",
+      "status": "KNOWN",
+      "n_tensors": 2,
+      "n_layers": 1,
+      "confidence": 0.554,
+      "example": [
+       "model.layers.0.mlp.gate_proj.weight",
+       "model.layers.0.mlp.up_proj.weight"
+      ]
+     },
+     {
+      "organ": "moe_expert",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 17664,
+      "n_layers": 46,
+      "confidence": 0.98,
+      "example": [
+       "model.layers.1.mlp.experts.0.down_proj.weight",
+       "model.layers.1.mlp.experts.0.gate_proj.weight"
+      ]
+     },
+     {
+      "organ": "moe_router",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 46,
+      "n_layers": 46,
+      "confidence": 0.98,
+      "example": [
+       "model.layers.1.mlp.gate.weight",
+       "model.layers.10.mlp.gate.weight"
+      ]
+     },
+     {
+      "organ": "rmsnorm",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 98,
+      "n_layers": 47,
+      "confidence": 0.98,
+      "example": [
+       "model.layers.0.input_layernorm.weight",
+       "model.layers.0.post_attention_layernorm.weight"
+      ]
+     },
+     {
+      "organ": "shared_expert",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 138,
+      "n_layers": 46,
+      "confidence": 0.98,
+      "example": [
+       "model.layers.1.mlp.shared_experts.down_proj.weight",
+       "model.layers.1.mlp.shared_experts.gate_proj.weight"
+      ]
+     }
+    ],
+    "unrecognized": [
+     {
+      "organ": "UNRECOGNIZED",
+      "status": "NOVEL",
+      "skeleton": "model.layers.N.self_attn.k_proj.bias",
+      "n_tensors": 47,
+      "confidence": 0.5
+     },
+     {
+      "organ": "UNRECOGNIZED",
+      "status": "NOVEL",
+      "skeleton": "model.layers.N.self_attn.q_proj.bias",
+      "n_tensors": 47,
+      "confidence": 0.5
+     },
+     {
+      "organ": "UNRECOGNIZED",
+      "status": "NOVEL",
+      "skeleton": "model.layers.N.self_attn.v_proj.bias",
+      "n_tensors": 47,
+      "confidence": 0.5
+     },
+     {
+      "organ": "UNRECOGNIZED",
+      "status": "NOVEL",
+      "skeleton": "model.layers.N.mlp.gate.e_score_correction_bias",
+      "n_tensors": 46,
+      "confidence": 0.5
+     },
+     {
+      "organ": "UNRECOGNIZED",
+      "status": "NOVEL",
+      "skeleton": "model.layers.N.eh_proj.weight",
+      "n_tensors": 1,
+      "confidence": 0.26
+     },
+     {
+      "organ": "UNRECOGNIZED",
+      "status": "NOVEL",
+      "skeleton": "model.layers.N.shared_head.head.weight",
+      "n_tensors": 1,
+      "confidence": 0.26
+     }
+    ],
+    "folded_organ": null,
+    "novelty": {
+     "novel_organs": [
+      "lm_head",
+      "moe_expert",
+      "moe_router",
+      "rmsnorm",
+      "shared_expert"
+     ],
+     "novel_axes": [
+      "routing"
+     ],
+     "n_unrecognized_clusters": 6,
+     "new_scale_regime": 46,
+     "transfer_test_value": 0.8
+    },
+    "analysis_wall_s": 0.032,
+    "loaded_weights": false
+   }
+  },
+  {
+   "oxx": "O004",
+   "model": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+   "ground_truth": [
+    "embed",
+    "gqa_attention",
+    "lm_head",
+    "mlp_down",
+    "mlp_gate_up",
+    "mm_projector",
+    "rmsnorm",
+    "vision_encoder"
+   ],
+   "ground_truth_source": "hand-checked from the fetched config.json and tensor index, recorded here for audit",
+   "result": {
+    "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+    "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
+    "architectures": [
+     "Mistral3ForConditionalGeneration"
+    ],
+    "model_type": "mistral3",
+    "n_tensors": 585,
+    "n_unmatched": 0,
+    "organs": [
+     {
+      "organ": "embed",
+      "status": "KNOWN",
+      "n_tensors": 1,
+      "n_layers": 0,
+      "confidence": 0.32,
+      "example": [
+       "language_model.model.embed_tokens.weight"
+      ]
+     },
+     {
+      "organ": "gqa_attention",
+      "status": "KNOWN",
+      "n_tensors": 160,
+      "n_layers": 40,
+      "confidence": 0.98,
+      "example": [
+       "language_model.model.layers.0.self_attn.k_proj.weight",
+       "language_model.model.layers.0.self_attn.o_proj.weight"
+      ]
+     },
+     {
+      "organ": "lm_head",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 1,
+      "n_layers": 0,
+      "confidence": 0.32,
+      "example": [
+       "language_model.lm_head.weight"
+      ]
+     },
+     {
+      "organ": "mlp_down",
+      "status": "KNOWN",
+      "n_tensors": 64,
+      "n_layers": 40,
+      "confidence": 0.98,
+      "example": [
+       "language_model.model.layers.0.mlp.down_proj.weight",
+       "language_model.model.layers.1.mlp.down_proj.weight"
+      ]
+     },
+     {
+      "organ": "mlp_gate_up",
+      "status": "KNOWN",
+      "n_tensors": 128,
+      "n_layers": 40,
+      "confidence": 0.98,
+      "example": [
+       "language_model.model.layers.0.mlp.gate_proj.weight",
+       "language_model.model.layers.0.mlp.up_proj.weight"
+      ]
+     },
+     {
+      "organ": "mm_projector",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 3,
+      "n_layers": 0,
+      "confidence": 0.36,
+      "example": [
+       "multi_modal_projector.linear_1.weight",
+       "multi_modal_projector.linear_2.weight"
+      ]
+     },
+     {
+      "organ": "rmsnorm",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 130,
+      "n_layers": 40,
+      "confidence": 0.98,
+      "example": [
+       "language_model.model.layers.0.input_layernorm.weight",
+       "language_model.model.layers.0.post_attention_layernorm.weight"
+      ]
+     },
+     {
+      "organ": "vision_encoder",
+      "status": "DECLARED_UNMEASURED",
+      "n_tensors": 98,
+      "n_layers": 24,
+      "confidence": 0.98,
+      "example": [
+       "vision_tower.ln_pre.weight",
+       "vision_tower.patch_conv.weight"
+      ]
+     }
+    ],
+    "unrecognized": [],
+    "folded_organ": null,
+    "novelty": {
+     "novel_organs": [
+      "lm_head",
+      "mm_projector",
+      "rmsnorm",
+      "vision_encoder"
+     ],
+     "novel_axes": [
+      "modality"
+     ],
+     "n_unrecognized_clusters": 0,
+     "new_scale_regime": null,
+     "transfer_test_value": 0.8
+    },
+    "analysis_wall_s": 0.003,
+    "loaded_weights": false
+   }
+  }
+ ],
+ "fetch_errors": [],
+ "in_sample_warning": "the three `specimens` exposed two fingerprint bugs that were then fixed, so their calibration is IN-SAMPLE. `calibration_heldout` is the out-of-sample number and is the one that counts.",
+ "negative_control": {
+  "what": "every tensor name replaced by a nonsense token of the same length",
+  "result": {
+   "repo": "CONTROL/scrambled",
+   "revision": "n/a",
+   "architectures": [
+    "Qwen3MoeForCausalLM"
+   ],
+   "model_type": "qwen3_moe",
+   "n_tensors": 18867,
+   "n_unmatched": 18867,
+   "organs": [],
+   "unrecognized": [
+    {
+     "organ": "UNRECOGNIZED",
+     "status": "NOVEL",
+     "skeleton": "zzz5.zzz6.N.zzz3.zzz7.N.zzz9.zzz6",
+     "n_tensors": 12288,
+     "confidence": 0.5
+    },
+    {
+     "organ": "UNRECOGNIZED",
+     "status": "NOVEL",
+     "skeleton": "zzz5.zzz6.N.zzz3.zzz7.N.zzz7.zzz6",
+     "n_tensors": 6144,
+     "confidence": 0.5
+    },
+    {
+     "organ": "UNRECOGNIZED",
+     "status": "NOVEL",
+     "skeleton": "zzz5.zzz6.N.zzz9.zzz6.zzz6",
+     "n_tensors": 288,
+     "confidence": 0.5
+    },
+    {
+     "organ": "UNRECOGNIZED",
+     "status": "NOVEL",
+     "skeleton": "zzz5.zzz6.N.zzz15.zzz6",
+     "n_tensors": 48,
+     "confidence": 0.5
+    },
+    {
+     "organ": "UNRECOGNIZED",
+     "status": "NOVEL",
+     "skeleton": "zzz5.zzz6.N.zzz3.zzz4.zzz6",
+     "n_tensors": 48,
+     "confidence": 0.5
+    },
+    {
+     "organ": "UNRECOGNIZED",
+     "status": "NOVEL",
+     "skeleton": "zzz5.zzz6.N.zzz24.zzz6",
+     "n_tensors": 48,
+     "confidence": 0.5
+    },
+    {
+     "organ": "UNRECOGNIZED",
+     "status": "NOVEL",
+     "skeleton": "zzz7.zzz6",
+     "n_tensors": 1,
+     "confidence": 0.26
+    },
+    {
+     "organ": "UNRECOGNIZED",
+     "status": "NOVEL",
+     "skeleton": "zzz5.zzz12.zzz6",
+     "n_tensors": 1,
+     "confidence": 0.26
+    },
+    {
+     "organ": "UNRECOGNIZED",
+     "status": "NOVEL",
+     "skeleton": "zzz5.zzz4.zzz6",
+     "n_tensors": 1,
+     "confidence": 0.26
+    }
+   ],
+   "folded_organ": null,
+   "novelty": {
+    "novel_organs": [],
+    "novel_axes": [],
+    "n_unrecognized_clusters": 9,
+    "new_scale_regime": 48,
+    "transfer_test_value": 1.0
+   },
+   "analysis_wall_s": 0.138,
+   "loaded_weights": false
+  }
+ },
+ "calibration_in_sample": {
+  "precision": 1.0,
+  "recall": 1.0,
+  "per_confidence_bucket": {
+   "0.3": {
+    "n": 8,
+    "correct": 8,
+    "accuracy": 1.0
+   },
+   "0.4": {
+    "n": 1,
+    "correct": 1,
+    "accuracy": 1.0
+   },
+   "0.5": {
+    "n": 2,
+    "correct": 2,
+    "accuracy": 1.0
+   },
+   "0.6": {
+    "n": 1,
+    "correct": 1,
+    "accuracy": 1.0
+   },
+   "0.9": {
+    "n": 20,
+    "correct": 20,
+    "accuracy": 1.0
+   }
+  },
+  "high_confidence_buckets_below_80pct_accuracy": [],
+  "calibrated": true
+ },
+ "calibration_heldout": {
+  "precision": 1.0,
+  "recall": 1.0,
+  "per_confidence_bucket": {
+   "0.3": {
+    "n": 4,
+    "correct": 4,
+    "accuracy": 1.0
+   },
+   "0.5": {
+    "n": 3,
+    "correct": 3,
+    "accuracy": 1.0
+   },
+   "0.9": {
+    "n": 10,
+    "correct": 10,
+    "accuracy": 1.0
+   }
+  },
+  "high_confidence_buckets_below_80pct_accuracy": [],
+  "calibrated": true
+ },
+ "pass": true
+}

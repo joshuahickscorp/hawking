@@ -1,0 +1,174 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T12:41:46Z",
+ "experiment_class": "ACCEL-SCHEDULING",
+ "knowledge_level": "INSTANCE",
+ "git_head": "a6ae0f926c4286c94b5b54cb9be959fd98d133c3",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_G_CONCURRENCY",
+   "obligation": "G049",
+   "steer": "S015 \u00a723"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "memory_bytes": 103079215104,
+   "os_product": "27.0",
+   "measured_bandwidth_gb_s": 589.73
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model; a primitive under concurrent load"
+  },
+  "representation": {
+   "name": "dense_f32",
+   "elements": 4194304
+  },
+  "kernel": {
+   "champion": "tg256_ept2"
+  },
+  "runtime": {
+   "mlx": "0.32.1",
+   "python": "3.12.13"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "sweep": [
+   {
+    "processes": 1,
+    "aggregate_hz": 4008.97,
+    "scaling": 1.0,
+    "efficiency_per_process": 1.0
+   },
+   {
+    "processes": 2,
+    "aggregate_hz": 6406.15,
+    "scaling": 1.598,
+    "efficiency_per_process": 0.799
+   },
+   {
+    "processes": 4,
+    "aggregate_hz": 10764.56,
+    "scaling": 2.685,
+    "efficiency_per_process": 0.671
+   },
+   {
+    "processes": 8,
+    "aggregate_hz": 13564.39,
+    "scaling": 3.384,
+    "efficiency_per_process": 0.423
+   }
+  ],
+  "knee": "aggregate keeps rising to 8 processes but efficiency per process falls 1.0 -> 0.80 -> 0.67 -> 0.42; the sharpest fall is 4->8, which gains only 1.26x for twice the processes",
+  "adp_sustained": {
+   "adp": "ADP-AppleM3Ultra-SUSTAINED",
+   "profile": "SUSTAINED",
+   "config": {
+    "kernel": "tg256_ept2"
+   },
+   "knowledge_level": "EXACT_MACHINE",
+   "production_sealed": true,
+   "status": "SEALED",
+   "why": "sustained evidence present",
+   "stages_completed": [
+    "fingerprint",
+    "benchmark",
+    "roof_measurement",
+    "workload_census",
+    "kernel_selection",
+    "autotune",
+    "memory_plan",
+    "dispatch_plan",
+    "concurrency_sweep",
+    "sustained_qualification"
+   ],
+   "stages_not_run": [
+    "adp_seal"
+   ],
+   "sealed_at": "2026-08-25T12:41:46Z"
+  },
+  "adp_max_throughput": {
+   "adp": "ADP-AppleM3Ultra-MAX_THROUGHPUT",
+   "profile": "MAX_THROUGHPUT",
+   "config": {
+    "kernel": "tg256_ept2",
+    "concurrency": 8
+   },
+   "knowledge_level": "EXACT_MACHINE",
+   "production_sealed": true,
+   "status": "SEALED",
+   "why": "sustained evidence present",
+   "stages_completed": [
+    "fingerprint",
+    "benchmark",
+    "roof_measurement",
+    "workload_census",
+    "kernel_selection",
+    "autotune",
+    "memory_plan",
+    "dispatch_plan",
+    "concurrency_sweep",
+    "sustained_qualification"
+   ],
+   "stages_not_run": [
+    "adp_seal"
+   ],
+   "sealed_at": "2026-08-25T12:41:46Z"
+  },
+  "adp_min_latency": {
+   "adp": "ADP-AppleM3Ultra-MIN_LATENCY",
+   "profile": "MIN_LATENCY",
+   "config": {
+    "kernel": "tg256_ept2",
+    "concurrency": 1
+   },
+   "knowledge_level": "EXACT_MACHINE",
+   "production_sealed": true,
+   "status": "SEALED",
+   "why": "sustained evidence present",
+   "stages_completed": [
+    "fingerprint",
+    "benchmark",
+    "roof_measurement",
+    "workload_census",
+    "kernel_selection",
+    "autotune",
+    "memory_plan",
+    "dispatch_plan",
+    "concurrency_sweep",
+    "sustained_qualification"
+   ],
+   "stages_not_run": [
+    "adp_seal"
+   ],
+   "sealed_at": "2026-08-25T12:41:46Z"
+  },
+  "stages_completed": [
+   "fingerprint",
+   "benchmark",
+   "roof_measurement",
+   "workload_census",
+   "kernel_selection",
+   "autotune",
+   "memory_plan",
+   "dispatch_plan",
+   "concurrency_sweep",
+   "sustained_qualification"
+  ],
+  "stages_not_run": [
+   "adp_seal"
+  ],
+  "reconciles_with_prior_campaign_law": "This campaign previously measured that DECODE CONCURRENCY TOPS OUT AROUND 1.21x and that the Metal working set is the admission gate. This sweep reaches 3.38x, which looks like a contradiction and is NOT one. That law was measured on WHOLE MODEL BODIES, whose working sets are tens of GiB and which are BANDWIDTH- and ADMISSION-bound; this kernel touches 4 MiB and is LAUNCH-bound, so extra processes fill launch gaps rather than competing for bandwidth. The two results belong to different regimes, and the honest reading is that concurrency helps when launch-bound and does not when bandwidth-bound. The P7 size sweep already showed this kernel is launch-bound below ~64 MiB, so the regimes were separable in advance."
+ },
+ "claim_boundary": "A 4 MiB kernel at INSTANCE level. It does NOT overturn the whole-body concurrency law and must not be cited as if it did -- different working set, different bound. MAX_THROUGHPUT is now sealed at 8 processes because aggregate throughput is what that profile optimises, but per-process efficiency there is only 0.42, so a profile optimising WORK PER RESOURCE would choose differently. And this is raw kernel rate, not verified WorkUnits per hour.",
+ "pass": true
+}

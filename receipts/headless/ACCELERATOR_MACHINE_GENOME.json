@@ -1,0 +1,83 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T12:02:06Z",
+ "experiment_class": "ACCEL-DEVICE",
+ "knowledge_level": "INSTANCE",
+ "git_head": "3290dfeafe85094cbeb767f4b7924026827920a4",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_A_MACHINE_GENOME",
+   "obligation": "G043",
+   "steer": "S015 \u00a722"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "arch": "arm64",
+   "cpu_cores": 28,
+   "perf_cores": 20,
+   "efficiency_cores": 8,
+   "gpu_cores": 60,
+   "memory_bytes": 103079215104,
+   "os": "Darwin 27.0.0",
+   "os_product": "27.0"
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal",
+   "gpu_cores": 60
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model involved; this measures the machine itself"
+  },
+  "representation": {
+   "status": "ABSENT",
+   "reason": "dense f32; representation science is G046"
+  },
+  "kernel": {
+   "origin": "mlx elementwise add",
+   "pattern": "triad c = a + b, f32"
+  },
+  "runtime": {
+   "metal_compiler": {
+    "status": "ABSENT",
+    "reason": "xcrun metal is not installed; no Metal developer toolchain, so AOT metallib compilation is unavailable and kernels go through the MLX JIT"
+   },
+   "mlx": "0.32.1",
+   "python": "3.12.13"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device; no transport crossed"
+  }
+ },
+ "result": {
+  "measured_bandwidth": {
+   "pattern": "triad c = a + b, f32",
+   "elements": 67108864,
+   "bytes_moved_per_rep": 805306368,
+   "reps": 30,
+   "warmup": 8,
+   "median_gb_s": 589.73,
+   "q1_gb_s": 585.34,
+   "q3_gb_s": 596.41,
+   "iqr_spread_pct": 1.89,
+   "full_range_spread_pct": 13.9,
+   "reliable": true,
+   "is_theoretical_roof": false,
+   "note": "one access pattern on one dtype; not the SoC roof and not a workload-reachable roof"
+  },
+  "measurement_conditions": {
+   "contended": false,
+   "note": "lake fill SIGSTOPped for the window; downloads resumed after"
+  },
+  "first_attempt_rejected": {
+   "median_gb_s": 314.0,
+   "best_gb_s": 403.06,
+   "spread_pct": 286.08,
+   "why": "a 286% spread is a distribution with a fast tail, not a roof; larger buffers, real warmup and an IQR gate replaced it"
+  }
+ },
+ "claim_boundary": "589.73 GB/s is a MEASURED median for ONE access pattern (f32 triad) on this exact machine with the lake fill SIGSTOPped. It is NOT the SoC theoretical roof, NOT a workload-reachable roof, and NOT a sustained figure -- no thermal campaign has been run, so thermal_envelope and sustained_behaviour are both ABSENT with reasons. Knowledge level is INSTANCE: nothing here is promoted to SOC_FAMILY, because one M3 Ultra is not evidence about M3 Ultras.",
+ "pass": true
+}

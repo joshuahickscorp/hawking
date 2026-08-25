@@ -1,0 +1,2562 @@
+{
+  "schema": "hawking.headless.organ_density_floors.v1",
+  "generated_at": "2026-08-24T21:44:58Z",
+  "git_head": "c87cd589aa4250aec27004c556aea63ee2e9354f",
+  "generated_by": "tools/headless/organ_density_floors.py",
+  "obligation": "N040 \u2014 ORGAN_DENSITY_FLOORS (S024 \u00a718, \u00a732, \u00a735, \u00a798). The MLP coherent floor is 2.25 bpw; that is the MLP's floor, not the model's. Descend GQA attention, DeltaNet, and embedding/output on REAL activations with complete EBPW, composition ladder, dense_w=0.",
+  "hand_authored": false,
+  "python": "/Users/scammermike/.grok-vision/bin/python",
+  "torch": "2.13.0 mps=True",
+  "parent": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
+  "did_not_load_second_27b": true,
+  "did_not_write_under_models": true,
+  "did_not_mutate_noetic_parent_a": true,
+  "did_not_rederive_roofs": true,
+  "dense_w": 0,
+  "dense_w_materialized": 0,
+  "token_ns": {
+    "kind": "ABSENT",
+    "value": null,
+    "unit": "ns/token",
+    "absent_reason": "Density-first lane (S024 \u00a720). Kernel autopsy is recorded; a speed verdict is forbidden until the native kernel is CLEAR (N003) and a >=7-rep COMPLETE_TOKEN_NS is measured. Not claimed."
+  },
+  "mlp_not_extrapolated": {
+    "do_not_transfer": true,
+    "fail_bpw": 1.85,
+    "survive_bpw": 2.25,
+    "fail_source": "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+    "survive_source": "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_Q2F_G64.json",
+    "bar": "composition local_survives / complete_token argmax, NOT the mixer Q4 0.990 bar"
+  },
+  "current_q2f_class_from_organ_frontiers": {
+    "gqa_attention": 4.25,
+    "deltanet": 4.125,
+    "embedding_output": 4.125
+  },
+  "quality_bar": {
+    "name": "composition_local_survives",
+    "gain_min": 0.5,
+    "rel_fro_max": 0.5,
+    "not_q4_equivalent_0p990": true,
+    "rejects_0p01W": true,
+    "null": "constant-mean of the teacher reference"
+  },
+  "scale_trap": {
+    "scaled_0p01": {
+      "rel_fro": 0.9900000691413879,
+      "cosine": 1.0,
+      "cosine_min_row": 0.9999998211860657,
+      "gain": 0.009999998845160007,
+      "scale_aware": 0.009999998845160007,
+      "null": 0.18495488166809082,
+      "beats_null": true,
+      "surplus_over_null": 0.8150451183319092,
+      "n_rows": 32,
+      "dim": 64
+    },
+    "local_survives": false,
+    "rejects_scaled_artifact": true,
+    "identity_survives": true,
+    "reason": "gain 0.010000 < 0.5"
+  },
+  "capture": {
+    "path": "/Users/scammermike/Downloads/hawking-copy/workspace/campaign/phaseB/capture_diverse2",
+    "site": "post_attn_norm (real distribution; mixer in-proj site is input_layernorm \u2014 stated)",
+    "n_tokens": 11269,
+    "n_fit": 9057,
+    "n_hold": 2212,
+    "not_gaussian": true,
+    "tokenizer_alignment": {
+      "aligned_families": [
+        "prose",
+        "math",
+        "multilingual",
+        "instruction",
+        "dialogue"
+      ],
+      "n_hold_ids": 952,
+      "n_rare_hold": 397
+    }
+  },
+  "accounting": {
+    "scales_counted": true,
+    "header_bytes_not_in_ebpw": 64,
+    "gqa_gemv_n": 1677721600,
+    "gqa_leftover_n": 90112,
+    "dn_gemv_n": 5560074240,
+    "dn_leftover_n": 2222592,
+    "leftover_bpw": 32.0,
+    "rule": "Complete EBPW = (GEMV_n * codec_bpw + leftover_n * 32) / census_n. Leftover is A_log/conv/dt_bias/norms in the gravity f32 packing. Embed active is one gathered row; lm_head streams the table.",
+    "census_source": "receipts/headless/NOETIC_ORGAN_CENSUS.json"
+  },
+  "roofs_cited_not_rederived": {
+    "DEVICE_THEORETICAL": 819.0,
+    "DEVICE_MEASURED_SUSTAINED": 778.8,
+    "MODEL_REACHABLE": 729.6978633780673,
+    "source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "not_rederived": true
+  },
+  "cited_structural_families": {
+    "status": "CITED",
+    "source": "receipts/headless/ORGAN_FRONTIERS.json",
+    "gqa_attention": {
+      "n_structural": 48,
+      "n_local_survives": 10,
+      "cheapest_local": {
+        "name": "aa_rank_256",
+        "family": "activation_aware_lowrank",
+        "storage_bpw": 1.4666666666666666,
+        "local_survives": true,
+        "q4_equivalent": false,
+        "cosine": 0.8630616068840027,
+        "rel_fro": 0.4879884123802185,
+        "gain": 0.7340632081031799
+      },
+      "note": "Structural families (shared basis / codebook / low-rank / hot-cold) were measured on real hold X in ORGAN_FRONTIERS. This lane cites them and measures the grouped density descent + composition rungs.",
+      "q_head_mean_pairwise_cosine": null,
+      "q_heads_not_copies": true
+    },
+    "deltanet": {
+      "n_structural": 44,
+      "n_local_survives": 5,
+      "cheapest_local": {
+        "name": "aa_rank_512",
+        "family": "activation_aware_lowrank",
+        "storage_bpw": 2.933333333333333,
+        "local_survives": true,
+        "q4_equivalent": false,
+        "cosine": 0.7245694398880005,
+        "rel_fro": 0.47726064920425415,
+        "gain": 0.6105443239212036
+      },
+      "note": "Structural families (shared basis / codebook / low-rank / hot-cold) were measured on real hold X in ORGAN_FRONTIERS. This lane cites them and measures the grouped density descent + composition rungs.",
+      "state_over_in_proj": 0.015,
+      "state_cannot_replace_in_proj": true
+    },
+    "embedding_output": {
+      "n_structural": 8,
+      "n_local_survives": 0,
+      "cheapest_local": null,
+      "note": "Structural families (shared basis / codebook / low-rank / hot-cold) were measured on real hold X in ORGAN_FRONTIERS. This lane cites them and measures the grouped density descent + composition rungs."
+    }
+  },
+  "native_kernels_autopsied": {
+    "gqa_attention": {
+      "shader": "crates/hawking-core/shaders/qwen_uniform_qn.metal",
+      "kernel": "qwen_uniform_qn_matvec",
+      "present": true,
+      "verdict": "SUSPECT",
+      "findings": [
+        {
+          "check": "runtime_sized_loop",
+          "severity": "med",
+          "token": "cols",
+          "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+          "snippet": "const uint row_base = row * cols;\n    for (uint col = 0u; col < cols; ++col) {\n        const uint element ="
+        },
+        {
+          "check": "dynamic_branch_in_loop",
+          "severity": "med",
+          "token": "row",
+          "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+          "snippet": "{\n    if (row >= rows) return;\n    float sum = 0.0f;\n    const"
+        }
+      ],
+      "dense_w_written": false,
+      "may_not_condemn_speed_unless_clear": true,
+      "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+    },
+    "deltanet": {
+      "shader": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+      "kernel": "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128",
+      "present": true,
+      "verdict": "SUSPECT",
+      "findings": [
+        {
+          "check": "dynamic_branch_in_loop",
+          "severity": "med",
+          "token": "row",
+          "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+          "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows && bits == 3u && group_size == 64u && (cols & 63u) == 0u) {\n        const uint groups_"
+        }
+      ],
+      "dense_w_written": false,
+      "may_not_condemn_speed_unless_clear": true,
+      "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+    },
+    "embedding_output": {
+      "shader": "crates/hawking-core/shaders/qwen_uniform_qn.metal",
+      "kernel": "qwen_uniform_qn_embedding_lookup",
+      "present": true,
+      "verdict": "CLEAR",
+      "findings": [],
+      "dense_w_written": false,
+      "may_not_condemn_speed_unless_clear": false,
+      "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+    }
+  },
+  "composition_walk": {
+    "status": "RUN",
+    "reason": null,
+    "prompt": "Explain, in ordinary prose, how a compiler turns a for-loop into basic blocks and then into machine code.",
+    "n_tokens": 16,
+    "teacher_argmax": 9714,
+    "resumed_extra": {
+      "deltanet": [
+        "ws_rtn_q3_g64",
+        "ws_rtn_q4_g128",
+        "fs_diagH_q3_g64"
+      ]
+    }
+  },
+  "organs": {
+    "gqa_attention": {
+      "status": "MEASURED",
+      "mlp_not_used_as_prior": true,
+      "current_q2f_class_bpw": 4.25,
+      "candidates": [
+        {
+          "codec": "ws_rtn_q4_g64",
+          "family": "grouped_absmax",
+          "gemv_storage_bpw": 4.25,
+          "complete_ebpw": 4.251490398464926,
+          "active_bytes_per_token": 891650048.0,
+          "leftover_n": 90112,
+          "leftover_bpw": 32.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.0191650390625,
+            "rel_fro_vs_teacher": 0.14611490070819855,
+            "mean_abs_what": 0.009865473955869675,
+            "mean_abs_w": 0.010003210976719856
+          },
+          "held_out": {
+            "survives": true,
+            "reason": "both probe layers",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+            "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+            "present": true,
+            "verdict": "SUSPECT",
+            "findings": [
+              {
+                "check": "runtime_sized_loop",
+                "severity": "med",
+                "token": "cols",
+                "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+                "snippet": "nt rgb0 = row * groups_per_row;\n        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {\n            const uint"
+              },
+              {
+                "check": "dynamic_branch_in_loop",
+                "severity": "med",
+                "token": "row",
+                "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+                "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows) {\n        const uint rgb0 = row * group"
+              }
+            ],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": true,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": "complete_token",
+            "died_at": null,
+            "unreached_above": "coherent_generation",
+            "status": "UNTESTED_ABOVE",
+            "complete_organ": {
+              "survives": true,
+              "mixer_out": [
+                {
+                  "layer": 3,
+                  "survives": true,
+                  "rel_l2": 0.05383159592747688,
+                  "cosine": 0.9987698793411255,
+                  "gain": 0.9804531335830688
+                },
+                {
+                  "layer": 63,
+                  "survives": true,
+                  "rel_l2": 0.11533601582050323,
+                  "cosine": 0.993232250213623,
+                  "gain": 0.9960666298866272
+                }
+              ]
+            },
+            "complete_token": {
+              "survives": true,
+              "argmax_agree": true,
+              "teacher_argmax": 9714,
+              "student_argmax": 9714,
+              "first_fail_layer": null
+            }
+          },
+          "below_current_q2f_class": "above",
+          "current_q2f_class_bpw": 4.25,
+          "transition_program": false,
+          "probe_layers": [
+            {
+              "layer": 3,
+              "survives": true,
+              "reason": "all required tensors/functions local_survive"
+            },
+            {
+              "layer": 63,
+              "survives": true,
+              "reason": "all required tensors/functions local_survive"
+            }
+          ]
+        },
+        {
+          "codec": "ws_rtn_q4_g128",
+          "family": "grouped_absmax",
+          "gemv_storage_bpw": 4.125,
+          "complete_ebpw": 4.126497111971525,
+          "active_bytes_per_token": 865435648.0,
+          "leftover_n": 90112,
+          "leftover_bpw": 32.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.019378662109375,
+            "rel_fro_vs_teacher": 0.17217768728733063,
+            "mean_abs_what": 0.009811269119381905,
+            "mean_abs_w": 0.010003210976719856
+          },
+          "held_out": {
+            "survives": true,
+            "reason": "both probe layers",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+            "kernel": "qwen_uniform_q4_group128_matvec_geo_tpr64_tg128",
+            "present": true,
+            "verdict": "SUSPECT",
+            "findings": [
+              {
+                "check": "runtime_sized_loop",
+                "severity": "med",
+                "token": "cols",
+                "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+                "snippet": "ng)row * (ulong)groups_per_row;\n        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {\n            const uint"
+              },
+              {
+                "check": "dynamic_branch_in_loop",
+                "severity": "med",
+                "token": "row",
+                "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+                "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows) {\n        const ulong rgb0 = (ulong)row"
+              }
+            ],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": true,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": "held_out_activation",
+            "died_at": null,
+            "unreached_above": "adjacent_layers",
+            "status": "UNTESTED_ABOVE"
+          },
+          "below_current_q2f_class": "below",
+          "current_q2f_class_bpw": 4.25,
+          "transition_program": false,
+          "probe_layers": [
+            {
+              "layer": 3,
+              "survives": true,
+              "reason": "all required tensors/functions local_survive"
+            },
+            {
+              "layer": 63,
+              "survives": true,
+              "reason": "all required tensors/functions local_survive"
+            }
+          ]
+        },
+        {
+          "codec": "fs_diagH_q4_g64",
+          "family": "grouped_absmax",
+          "gemv_storage_bpw": 4.25,
+          "complete_ebpw": 4.251490398464926,
+          "active_bytes_per_token": 891650048.0,
+          "leftover_n": 90112,
+          "leftover_bpw": 32.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.109710693359375,
+            "rel_fro_vs_teacher": 0.1601688414812088,
+            "mean_abs_what": 0.009746411815285683,
+            "mean_abs_w": 0.010003210976719856
+          },
+          "held_out": {
+            "survives": true,
+            "reason": "both probe layers",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+            "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+            "present": true,
+            "verdict": "SUSPECT",
+            "findings": [
+              {
+                "check": "runtime_sized_loop",
+                "severity": "med",
+                "token": "cols",
+                "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+                "snippet": "nt rgb0 = row * groups_per_row;\n        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {\n            const uint"
+              },
+              {
+                "check": "dynamic_branch_in_loop",
+                "severity": "med",
+                "token": "row",
+                "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+                "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows) {\n        const uint rgb0 = row * group"
+              }
+            ],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": true,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": "held_out_activation",
+            "died_at": null,
+            "unreached_above": "adjacent_layers",
+            "status": "UNTESTED_ABOVE"
+          },
+          "below_current_q2f_class": "above",
+          "current_q2f_class_bpw": 4.25,
+          "transition_program": false,
+          "probe_layers": [
+            {
+              "layer": 3,
+              "survives": true,
+              "reason": "all required tensors/functions local_survive"
+            },
+            {
+              "layer": 63,
+              "survives": true,
+              "reason": "all required tensors/functions local_survive"
+            }
+          ]
+        },
+        {
+          "codec": "ws_rtn_q3_g64",
+          "family": "grouped_absmax",
+          "gemv_storage_bpw": 3.25,
+          "complete_ebpw": 3.2515441065177164,
+          "active_bytes_per_token": 681934848.0,
+          "leftover_n": 90112,
+          "leftover_bpw": 32.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.040283203125,
+            "rel_fro_vs_teacher": 0.3321278393268585,
+            "mean_abs_what": 0.00917911808937788,
+            "mean_abs_w": 0.010003210976719856
+          },
+          "held_out": {
+            "survives": true,
+            "reason": "both probe layers",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+            "kernel": "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128",
+            "present": true,
+            "verdict": "SUSPECT",
+            "findings": [
+              {
+                "check": "dynamic_branch_in_loop",
+                "severity": "med",
+                "token": "row",
+                "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+                "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows && bits == 3u && group_size == 64u && (cols & 63u) == 0u) {\n        const uint groups_"
+              }
+            ],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": true,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": "held_out_activation",
+            "died_at": null,
+            "unreached_above": "adjacent_layers",
+            "status": "UNTESTED_ABOVE"
+          },
+          "below_current_q2f_class": "below",
+          "current_q2f_class_bpw": 4.25,
+          "transition_program": false,
+          "probe_layers": [
+            {
+              "layer": 3,
+              "survives": true,
+              "reason": "all required tensors/functions local_survive"
+            },
+            {
+              "layer": 63,
+              "survives": true,
+              "reason": "all required tensors/functions local_survive"
+            }
+          ]
+        },
+        {
+          "codec": "fs_diagH_q3_g64",
+          "family": "grouped_absmax",
+          "gemv_storage_bpw": 3.25,
+          "complete_ebpw": 3.2515441065177164,
+          "active_bytes_per_token": 681934848.0,
+          "leftover_n": 90112,
+          "leftover_bpw": 32.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.109710693359375,
+            "rel_fro_vs_teacher": 0.26418307423591614,
+            "mean_abs_what": 0.009476379491388798,
+            "mean_abs_w": 0.010003210976719856
+          },
+          "held_out": {
+            "survives": true,
+            "reason": "both probe layers",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+            "kernel": "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128",
+            "present": true,
+            "verdict": "SUSPECT",
+            "findings": [
+              {
+                "check": "dynamic_branch_in_loop",
+                "severity": "med",
+                "token": "row",
+                "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+                "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows && bits == 3u && group_size == 64u && (cols & 63u) == 0u) {\n        const uint groups_"
+              }
+            ],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": true,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": "held_out_activation",
+            "died_at": null,
+            "unreached_above": "adjacent_layers",
+            "status": "UNTESTED_ABOVE"
+          },
+          "below_current_q2f_class": "below",
+          "current_q2f_class_bpw": 4.25,
+          "transition_program": false,
+          "probe_layers": [
+            {
+              "layer": 3,
+              "survives": true,
+              "reason": "all required tensors/functions local_survive"
+            },
+            {
+              "layer": 63,
+              "survives": true,
+              "reason": "all required tensors/functions local_survive"
+            }
+          ]
+        },
+        {
+          "codec": "ws_rtn_q3_g128",
+          "family": "grouped_absmax",
+          "gemv_storage_bpw": 3.125,
+          "complete_ebpw": 3.126550820024315,
+          "active_bytes_per_token": 655720448.0,
+          "leftover_n": 90112,
+          "leftover_bpw": 32.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.044677734375,
+            "rel_fro_vs_teacher": 0.3871347904205322,
+            "mean_abs_what": 0.008836370892822742,
+            "mean_abs_w": 0.010003210976719856
+          },
+          "held_out": {
+            "survives": true,
+            "reason": "both probe layers",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/qwen_uniform_qn.metal",
+            "kernel": "qwen_uniform_qn_matvec",
+            "present": true,
+            "verdict": "SUSPECT",
+            "findings": [
+              {
+                "check": "runtime_sized_loop",
+                "severity": "med",
+                "token": "cols",
+                "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+                "snippet": "const uint row_base = row * cols;\n    for (uint col = 0u; col < cols; ++col) {\n        const uint element ="
+              },
+              {
+                "check": "dynamic_branch_in_loop",
+                "severity": "med",
+                "token": "row",
+                "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+                "snippet": "{\n    if (row >= rows) return;\n    float sum = 0.0f;\n    const"
+              }
+            ],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": true,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": "complete_token",
+            "died_at": null,
+            "unreached_above": "coherent_generation",
+            "status": "UNTESTED_ABOVE",
+            "complete_organ": {
+              "survives": true,
+              "mixer_out": [
+                {
+                  "layer": 3,
+                  "survives": true,
+                  "rel_l2": 0.11730111390352249,
+                  "cosine": 0.9934318661689758,
+                  "gain": 0.97175133228302
+                },
+                {
+                  "layer": 63,
+                  "survives": true,
+                  "rel_l2": 0.30720582604408264,
+                  "cosine": 0.953189492225647,
+                  "gain": 0.9808298349380493
+                }
+              ]
+            },
+            "complete_token": {
+              "survives": true,
+              "argmax_agree": true,
+              "teacher_argmax": 9714,
+              "student_argmax": 9714,
+              "first_fail_layer": null
+            }
+          },
+          "below_current_q2f_class": "below",
+          "current_q2f_class_bpw": 4.25,
+          "transition_program": false,
+          "probe_layers": [
+            {
+              "layer": 3,
+              "survives": true,
+              "reason": "all required tensors/functions local_survive"
+            },
+            {
+              "layer": 63,
+              "survives": true,
+              "reason": "all required tensors/functions local_survive"
+            }
+          ]
+        },
+        {
+          "codec": "q2f_g64",
+          "family": "fourlevel_fitted",
+          "gemv_storage_bpw": 2.25,
+          "complete_ebpw": 2.2515978145705065,
+          "active_bytes_per_token": 472219648.0,
+          "leftover_n": 90112,
+          "leftover_bpw": 32.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.203887939453125,
+            "rel_fro_vs_teacher": 0.4621407389640808,
+            "mean_abs_what": 0.01198459230363369,
+            "mean_abs_w": 0.010003210976719856
+          },
+          "held_out": {
+            "survives": false,
+            "reason": "1/5 failed; worst L3.q_proj gain 0.428165 < 0.5",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+            "kernel": "affine2_group32_matvec_geo_tpr64_tg128",
+            "present": true,
+            "verdict": "SUSPECT",
+            "findings": [
+              {
+                "check": "dynamic_branch_in_loop",
+                "severity": "med",
+                "token": "row",
+                "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+                "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows && affine2_group_ok(group_size, cols)) {\n        if (group_size == 32u) {"
+              }
+            ],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": true,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": null,
+            "died_at": "held_out_activation",
+            "unreached_above": null,
+            "status": "FAILED"
+          },
+          "below_current_q2f_class": "below",
+          "current_q2f_class_bpw": 4.25,
+          "transition_program": false,
+          "probe_layers": [
+            {
+              "layer": 3,
+              "survives": false,
+              "reason": "1/5 failed; worst L3.q_proj gain 0.428165 < 0.5"
+            },
+            {
+              "layer": 63,
+              "survives": false,
+              "reason": "2/5 failed; worst L63.q_proj gain 0.364484 < 0.5"
+            }
+          ]
+        },
+        {
+          "codec": "ws_rtn_q2_g64",
+          "family": "grouped_absmax",
+          "gemv_storage_bpw": 2.25,
+          "complete_ebpw": 2.2515978145705065,
+          "active_bytes_per_token": 472219648.0,
+          "leftover_n": 90112,
+          "leftover_bpw": 32.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.12060546875,
+            "rel_fro_vs_teacher": 0.742434561252594,
+            "mean_abs_what": 0.004570270888507366,
+            "mean_abs_w": 0.010003210976719856
+          },
+          "held_out": {
+            "survives": false,
+            "reason": "5/5 failed; worst L3.q_proj rel_fro 0.554257 > 0.5",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/qwen_uniform_qn.metal",
+            "kernel": "qwen_uniform_qn_matvec",
+            "present": true,
+            "verdict": "SUSPECT",
+            "findings": [
+              {
+                "check": "runtime_sized_loop",
+                "severity": "med",
+                "token": "cols",
+                "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+                "snippet": "const uint row_base = row * cols;\n    for (uint col = 0u; col < cols; ++col) {\n        const uint element ="
+              },
+              {
+                "check": "dynamic_branch_in_loop",
+                "severity": "med",
+                "token": "row",
+                "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+                "snippet": "{\n    if (row >= rows) return;\n    float sum = 0.0f;\n    const"
+              }
+            ],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": true,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": null,
+            "died_at": "held_out_activation",
+            "unreached_above": null,
+            "status": "FAILED"
+          },
+          "below_current_q2f_class": "below",
+          "current_q2f_class_bpw": 4.25,
+          "transition_program": false,
+          "probe_layers": [
+            {
+              "layer": 3,
+              "survives": false,
+              "reason": "5/5 failed; worst L3.q_proj rel_fro 0.554257 > 0.5"
+            },
+            {
+              "layer": 63,
+              "survives": false,
+              "reason": "5/5 failed; worst L63.q_proj gain 0.351878 < 0.5"
+            }
+          ]
+        },
+        {
+          "codec": "ternary_5in8_g64",
+          "family": "ternary",
+          "gemv_storage_bpw": 1.85,
+          "complete_ebpw": 1.8516192977916226,
+          "active_bytes_per_token": 388333568.0,
+          "leftover_n": 90112,
+          "leftover_bpw": 32.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.232635498046875,
+            "rel_fro_vs_teacher": 0.5100783109664917,
+            "mean_abs_what": 0.008237968198955059,
+            "mean_abs_w": 0.010003210976719856
+          },
+          "held_out": {
+            "survives": false,
+            "reason": "2/5 failed; worst L3.q_proj gain 0.324508 < 0.5",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/bytes_frontier.metal",
+            "kernel": "ternary_5in8_g64_matvec_geo_c5120_tpr64_tg128",
+            "present": true,
+            "verdict": "SUSPECT",
+            "findings": [
+              {
+                "check": "dynamic_branch_in_loop",
+                "severity": "med",
+                "token": "row",
+                "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+                "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows) {\n        acc = ternary_acc_c5120(codes"
+              }
+            ],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": true,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": null,
+            "died_at": "held_out_activation",
+            "unreached_above": null,
+            "status": "FAILED"
+          },
+          "below_current_q2f_class": "below",
+          "current_q2f_class_bpw": 4.25,
+          "transition_program": false,
+          "probe_layers": [
+            {
+              "layer": 3,
+              "survives": false,
+              "reason": "2/5 failed; worst L3.q_proj gain 0.324508 < 0.5"
+            },
+            {
+              "layer": 63,
+              "survives": false,
+              "reason": "2/5 failed; worst L63.q_proj gain 0.296746 < 0.5"
+            }
+          ]
+        },
+        {
+          "codec": "binary_g64",
+          "family": "binary",
+          "gemv_storage_bpw": 1.25,
+          "complete_ebpw": 1.2516515226232967,
+          "active_bytes_per_token": 262504448.0,
+          "leftover_n": 90112,
+          "leftover_bpw": 32.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.2530670166015625,
+            "rel_fro_vs_teacher": 0.6640880703926086,
+            "mean_abs_what": 0.010003216564655304,
+            "mean_abs_w": 0.010003210976719856
+          },
+          "held_out": {
+            "survives": false,
+            "reason": "5/5 failed; worst L3.q_proj gain 0.235609 < 0.5",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/qwen_binary.metal",
+            "kernel": "qwen_binary_sign_scale_matvec",
+            "present": true,
+            "verdict": "SUSPECT",
+            "findings": [
+              {
+                "check": "dynamic_branch_in_loop",
+                "severity": "med",
+                "token": "row",
+                "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+                "snippet": "{\n    if (row >= rows) return;\n    output[row] = qwen_binary_s"
+              }
+            ],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": true,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": null,
+            "died_at": "held_out_activation",
+            "unreached_above": null,
+            "status": "FAILED"
+          },
+          "below_current_q2f_class": "below",
+          "current_q2f_class_bpw": 4.25,
+          "transition_program": false,
+          "probe_layers": [
+            {
+              "layer": 3,
+              "survives": false,
+              "reason": "5/5 failed; worst L3.q_proj gain 0.235609 < 0.5"
+            },
+            {
+              "layer": 63,
+              "survives": false,
+              "reason": "5/5 failed; worst L63.q_proj gain 0.215051 < 0.5"
+            }
+          ]
+        }
+      ],
+      "floor": {
+        "status": "MEASURED",
+        "organ": "gqa_attention",
+        "complete_ebpw": 3.126550820024315,
+        "gemv_storage_bpw": 3.125,
+        "family": "grouped_absmax",
+        "codec": "ws_rtn_q3_g128",
+        "active_bytes_per_token": 655720448.0,
+        "parity": {
+          "reconstruct_finite": true,
+          "dense_w": 0.0,
+          "max_abs_vs_teacher": 0.044677734375,
+          "rel_fro_vs_teacher": 0.3871347904205322,
+          "mean_abs_what": 0.008836370892822742,
+          "mean_abs_w": 0.010003210976719856
+        },
+        "dense_w": 0,
+        "dense_w_materialized": 0,
+        "highest_rung_reached": "complete_token",
+        "died_at": null,
+        "unreached_above": "coherent_generation",
+        "vs_current_q2f_class": "below",
+        "current_q2f_class_bpw": 4.25,
+        "because": "gqa_attention floors at 3.1266 complete EBPW (grouped_absmax / ws_rtn_q3_g128), below its current q2f-class density 4.250, because that is the cheapest matched-density packing whose organ function survives the composition bar through complete_token on real activations; denser ladder rungs die at held_out or a later tested rung. Leftover state/norm tensors stay in the complete bill (dense_w=0).",
+        "scales_counted": true,
+        "native_kernel": {
+          "shader": "crates/hawking-core/shaders/qwen_uniform_qn.metal",
+          "kernel": "qwen_uniform_qn_matvec",
+          "present": true,
+          "verdict": "SUSPECT",
+          "findings": [
+            {
+              "check": "runtime_sized_loop",
+              "severity": "med",
+              "token": "cols",
+              "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+              "snippet": "const uint row_base = row * cols;\n    for (uint col = 0u; col < cols; ++col) {\n        const uint element ="
+            },
+            {
+              "check": "dynamic_branch_in_loop",
+              "severity": "med",
+              "token": "row",
+              "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+              "snippet": "{\n    if (row >= rows) return;\n    float sum = 0.0f;\n    const"
+            }
+          ],
+          "dense_w_written": false,
+          "may_not_condemn_speed_unless_clear": true,
+          "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+        },
+        "transition_program": false
+      },
+      "why": [
+        "GQA Q heads are near-orthogonal (mean pairwise cosine 0.022, ORGAN_FRONTIERS); a shared-head operator is not a free lunch.",
+        "Whole-organ matched density: q/k/v/o get the SAME codec. The organ dies if the worst required tensor or the gated-V proxy dies.",
+        "Composition on real tokens (teacher BF16 MLP/norms, quantized GQA) is the gate above held_out. MLP 2.25 is not transferred."
+      ]
+    },
+    "deltanet": {
+      "status": "MEASURED",
+      "mlp_not_used_as_prior": true,
+      "current_q2f_class_bpw": 4.125,
+      "candidates": [
+        {
+          "codec": "ws_rtn_q4_g64",
+          "family": "grouped_absmax",
+          "gemv_storage_bpw": 4.25,
+          "complete_ebpw": 4.26108839205509,
+          "active_bytes_per_token": 2962679808.0,
+          "leftover_n": 2222592,
+          "leftover_bpw": 32.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.016357421875,
+            "rel_fro_vs_teacher": 0.11347067356109619,
+            "mean_abs_what": 0.012615851126611233,
+            "mean_abs_w": 0.012701716274023056
+          },
+          "held_out": {
+            "survives": true,
+            "reason": "both probe layers",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+            "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+            "present": true,
+            "verdict": "SUSPECT",
+            "findings": [
+              {
+                "check": "runtime_sized_loop",
+                "severity": "med",
+                "token": "cols",
+                "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+                "snippet": "nt rgb0 = row * groups_per_row;\n        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {\n            const uint"
+              },
+              {
+                "check": "dynamic_branch_in_loop",
+                "severity": "med",
+                "token": "row",
+                "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+                "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows) {\n        const uint rgb0 = row * group"
+              }
+            ],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": true,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": "complete_token",
+            "died_at": null,
+            "unreached_above": "coherent_generation",
+            "status": "UNTESTED_ABOVE",
+            "complete_organ": {
+              "survives": true,
+              "mixer_out": [
+                {
+                  "layer": 0,
+                  "survives": true,
+                  "rel_l2": 0.03642728924751282,
+                  "cosine": 0.9993205070495605,
+                  "gain": 0.9962685108184814
+                },
+                {
+                  "layer": 32,
+                  "survives": true,
+                  "rel_l2": 0.19977404177188873,
+                  "cosine": 0.9742004871368408,
+                  "gain": 0.961586594581604
+                }
+              ]
+            },
+            "complete_token": {
+              "survives": true,
+              "argmax_agree": true,
+              "teacher_argmax": 9714,
+              "student_argmax": 9714,
+              "first_fail_layer": null
+            }
+          },
+          "below_current_q2f_class": "above",
+          "current_q2f_class_bpw": 4.125,
+          "transition_program": true,
+          "probe_layers": [
+            {
+              "layer": 0,
+              "survives": true,
+              "reason": "all required tensors/functions local_survive"
+            },
+            {
+              "layer": 32,
+              "survives": true,
+              "reason": "all required tensors/functions local_survive"
+            }
+          ],
+          "recurrent_not_dense_matrix": true
+        },
+        {
+          "codec": "ws_rtn_q4_g128",
+          "family": "grouped_absmax",
+          "gemv_storage_bpw": 4.125,
+          "complete_ebpw": 4.13613833976705,
+          "active_bytes_per_token": 2875803648.0,
+          "leftover_n": 2222592,
+          "leftover_bpw": 32.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.0166015625,
+            "rel_fro_vs_teacher": 0.1254272162914276,
+            "mean_abs_what": 0.012595321983098984,
+            "mean_abs_w": 0.012701716274023056
+          },
+          "held_out": {
+            "survives": true,
+            "reason": "both probe layers",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+            "kernel": "qwen_uniform_q4_group128_matvec_geo_tpr64_tg128",
+            "present": true,
+            "verdict": "SUSPECT",
+            "findings": [
+              {
+                "check": "runtime_sized_loop",
+                "severity": "med",
+                "token": "cols",
+                "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+                "snippet": "ng)row * (ulong)groups_per_row;\n        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {\n            const uint"
+              },
+              {
+                "check": "dynamic_branch_in_loop",
+                "severity": "med",
+                "token": "row",
+                "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+                "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows) {\n        const ulong rgb0 = (ulong)row"
+              }
+            ],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": true,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": "complete_token",
+            "died_at": null,
+            "unreached_above": "coherent_generation",
+            "status": "UNTESTED_ABOVE",
+            "complete_organ": {
+              "survives": true,
+              "mixer_out": [
+                {
+                  "layer": 0,
+                  "survives": true,
+                  "rel_l2": 0.03907771036028862,
+                  "cosine": 0.9992585778236389,
+                  "gain": 0.990757167339325
+                },
+                {
+                  "layer": 32,
+                  "survives": true,
+                  "rel_l2": 0.21922847628593445,
+                  "cosine": 0.9702539443969727,
+                  "gain": 0.9557417631149292
+                }
+              ]
+            },
+            "complete_token": {
+              "survives": true,
+              "argmax_agree": true,
+              "teacher_argmax": 9714,
+              "student_argmax": 9714,
+              "first_fail_layer": null
+            }
+          },
+          "below_current_q2f_class": "above",
+          "current_q2f_class_bpw": 4.125,
+          "transition_program": true,
+          "probe_layers": [
+            {
+              "layer": 0,
+              "survives": true,
+              "reason": "all required tensors/functions local_survive"
+            },
+            {
+              "layer": 32,
+              "survives": true,
+              "reason": "all required tensors/functions local_survive"
+            }
+          ],
+          "recurrent_not_dense_matrix": true
+        },
+        {
+          "codec": "fs_diagH_q4_g64",
+          "family": "grouped_absmax",
+          "gemv_storage_bpw": 4.25,
+          "complete_ebpw": 4.26108839205509,
+          "active_bytes_per_token": 2962679808.0,
+          "leftover_n": 2222592,
+          "leftover_bpw": 32.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.08243560791015625,
+            "rel_fro_vs_teacher": 0.11573966592550278,
+            "mean_abs_what": 0.012482319958508015,
+            "mean_abs_w": 0.012701716274023056
+          },
+          "held_out": {
+            "survives": true,
+            "reason": "both probe layers",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+            "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+            "present": true,
+            "verdict": "SUSPECT",
+            "findings": [
+              {
+                "check": "runtime_sized_loop",
+                "severity": "med",
+                "token": "cols",
+                "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+                "snippet": "nt rgb0 = row * groups_per_row;\n        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {\n            const uint"
+              },
+              {
+                "check": "dynamic_branch_in_loop",
+                "severity": "med",
+                "token": "row",
+                "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+                "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows) {\n        const uint rgb0 = row * group"
+              }
+            ],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": true,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": "held_out_activation",
+            "died_at": null,
+            "unreached_above": "adjacent_layers",
+            "status": "UNTESTED_ABOVE"
+          },
+          "below_current_q2f_class": "above",
+          "current_q2f_class_bpw": 4.125,
+          "transition_program": true,
+          "probe_layers": [
+            {
+              "layer": 0,
+              "survives": true,
+              "reason": "all required tensors/functions local_survive"
+            },
+            {
+              "layer": 32,
+              "survives": true,
+              "reason": "all required tensors/functions local_survive"
+            }
+          ],
+          "recurrent_not_dense_matrix": true
+        },
+        {
+          "codec": "ws_rtn_q3_g64",
+          "family": "grouped_absmax",
+          "gemv_storage_bpw": 3.25,
+          "complete_ebpw": 3.2614879737507687,
+          "active_bytes_per_token": 2267670528.0,
+          "leftover_n": 2222592,
+          "leftover_bpw": 32.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.03533935546875,
+            "rel_fro_vs_teacher": 0.2644454836845398,
+            "mean_abs_what": 0.012213672511279583,
+            "mean_abs_w": 0.012701716274023056
+          },
+          "held_out": {
+            "survives": true,
+            "reason": "both probe layers",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+            "kernel": "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128",
+            "present": true,
+            "verdict": "SUSPECT",
+            "findings": [
+              {
+                "check": "dynamic_branch_in_loop",
+                "severity": "med",
+                "token": "row",
+                "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+                "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows && bits == 3u && group_size == 64u && (cols & 63u) == 0u) {\n        const uint groups_"
+              }
+            ],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": true,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": "complete_token",
+            "died_at": null,
+            "unreached_above": "coherent_generation",
+            "status": "UNTESTED_ABOVE",
+            "complete_organ": {
+              "survives": true,
+              "mixer_out": [
+                {
+                  "layer": 0,
+                  "survives": true,
+                  "rel_l2": 0.05137848109006882,
+                  "cosine": 0.9988340735435486,
+                  "gain": 0.9884709119796753
+                },
+                {
+                  "layer": 32,
+                  "survives": true,
+                  "rel_l2": 0.4724997282028198,
+                  "cosine": 0.8542963266372681,
+                  "gain": 0.9044070243835449
+                }
+              ]
+            },
+            "complete_token": {
+              "survives": true,
+              "argmax_agree": true,
+              "teacher_argmax": 9714,
+              "student_argmax": 9714,
+              "first_fail_layer": null
+            }
+          },
+          "below_current_q2f_class": "below",
+          "current_q2f_class_bpw": 4.125,
+          "transition_program": true,
+          "probe_layers": [
+            {
+              "layer": 0,
+              "survives": true,
+              "reason": "all required tensors/functions local_survive"
+            },
+            {
+              "layer": 32,
+              "survives": true,
+              "reason": "all required tensors/functions local_survive"
+            }
+          ],
+          "recurrent_not_dense_matrix": true
+        },
+        {
+          "codec": "fs_diagH_q3_g64",
+          "family": "grouped_absmax",
+          "gemv_storage_bpw": 3.25,
+          "complete_ebpw": 3.2614879737507687,
+          "active_bytes_per_token": 2267670528.0,
+          "leftover_n": 2222592,
+          "leftover_bpw": 32.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.0824432373046875,
+            "rel_fro_vs_teacher": 0.21611954271793365,
+            "mean_abs_what": 0.012298972345888615,
+            "mean_abs_w": 0.012701716274023056
+          },
+          "held_out": {
+            "survives": true,
+            "reason": "both probe layers",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+            "kernel": "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128",
+            "present": true,
+            "verdict": "SUSPECT",
+            "findings": [
+              {
+                "check": "dynamic_branch_in_loop",
+                "severity": "med",
+                "token": "row",
+                "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+                "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows && bits == 3u && group_size == 64u && (cols & 63u) == 0u) {\n        const uint groups_"
+              }
+            ],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": true,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": "held_out_activation",
+            "died_at": null,
+            "unreached_above": "adjacent_layers",
+            "status": "UNTESTED_ABOVE"
+          },
+          "below_current_q2f_class": "below",
+          "current_q2f_class_bpw": 4.125,
+          "transition_program": true,
+          "probe_layers": [
+            {
+              "layer": 0,
+              "survives": true,
+              "reason": "all required tensors/functions local_survive"
+            },
+            {
+              "layer": 32,
+              "survives": true,
+              "reason": "all required tensors/functions local_survive"
+            }
+          ],
+          "recurrent_not_dense_matrix": true
+        },
+        {
+          "codec": "ws_rtn_q3_g128",
+          "family": "grouped_absmax",
+          "gemv_storage_bpw": 3.125,
+          "complete_ebpw": 3.1365379214627285,
+          "active_bytes_per_token": 2180794368.0,
+          "leftover_n": 2222592,
+          "leftover_bpw": 32.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.03790283203125,
+            "rel_fro_vs_teacher": 0.2920784056186676,
+            "mean_abs_what": 0.012094425968825817,
+            "mean_abs_w": 0.012701716274023056
+          },
+          "held_out": {
+            "survives": true,
+            "reason": "both probe layers",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/qwen_uniform_qn.metal",
+            "kernel": "qwen_uniform_qn_matvec",
+            "present": true,
+            "verdict": "SUSPECT",
+            "findings": [
+              {
+                "check": "runtime_sized_loop",
+                "severity": "med",
+                "token": "cols",
+                "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+                "snippet": "const uint row_base = row * cols;\n    for (uint col = 0u; col < cols; ++col) {\n        const uint element ="
+              },
+              {
+                "check": "dynamic_branch_in_loop",
+                "severity": "med",
+                "token": "row",
+                "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+                "snippet": "{\n    if (row >= rows) return;\n    float sum = 0.0f;\n    const"
+              }
+            ],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": true,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": "held_out_activation",
+            "died_at": "complete_organ",
+            "unreached_above": null,
+            "status": "FAILED"
+          },
+          "below_current_q2f_class": "below",
+          "current_q2f_class_bpw": 4.125,
+          "transition_program": true,
+          "probe_layers": [
+            {
+              "layer": 0,
+              "survives": true,
+              "reason": "all required tensors/functions local_survive"
+            },
+            {
+              "layer": 32,
+              "survives": true,
+              "reason": "all required tensors/functions local_survive"
+            }
+          ],
+          "recurrent_not_dense_matrix": true
+        },
+        {
+          "codec": "q2f_g64",
+          "family": "fourlevel_fitted",
+          "gemv_storage_bpw": 2.25,
+          "complete_ebpw": 2.2618875554464477,
+          "active_bytes_per_token": 1572661248.0,
+          "leftover_n": 2222592,
+          "leftover_bpw": 32.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.1717681884765625,
+            "rel_fro_vs_teacher": 0.40900030732154846,
+            "mean_abs_what": 0.014757521450519562,
+            "mean_abs_w": 0.012701716274023056
+          },
+          "held_out": {
+            "survives": false,
+            "reason": "1/6 failed; worst L0.transition_out gain 0.481244 < 0.5",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+            "kernel": "affine2_group32_matvec_geo_tpr64_tg128",
+            "present": true,
+            "verdict": "SUSPECT",
+            "findings": [
+              {
+                "check": "dynamic_branch_in_loop",
+                "severity": "med",
+                "token": "row",
+                "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+                "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows && affine2_group_ok(group_size, cols)) {\n        if (group_size == 32u) {"
+              }
+            ],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": true,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": null,
+            "died_at": "held_out_activation",
+            "unreached_above": null,
+            "status": "FAILED"
+          },
+          "below_current_q2f_class": "below",
+          "current_q2f_class_bpw": 4.125,
+          "transition_program": true,
+          "probe_layers": [
+            {
+              "layer": 0,
+              "survives": false,
+              "reason": "1/6 failed; worst L0.transition_out gain 0.481244 < 0.5"
+            },
+            {
+              "layer": 32,
+              "survives": false,
+              "reason": "3/6 failed; worst L32.in_proj_qkv gain 0.385542 < 0.5"
+            }
+          ],
+          "recurrent_not_dense_matrix": true
+        },
+        {
+          "codec": "ws_rtn_q2_g64",
+          "family": "grouped_absmax",
+          "gemv_storage_bpw": 2.25,
+          "complete_ebpw": 2.2618875554464477,
+          "active_bytes_per_token": 1572661248.0,
+          "leftover_n": 2222592,
+          "leftover_bpw": 32.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.09423828125,
+            "rel_fro_vs_teacher": 0.725836455821991,
+            "mean_abs_what": 0.007547043729573488,
+            "mean_abs_w": 0.012701716274023056
+          },
+          "held_out": {
+            "survives": false,
+            "reason": "6/6 failed; worst L0.in_proj_qkv rel_fro 0.637955 > 0.5",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/qwen_uniform_qn.metal",
+            "kernel": "qwen_uniform_qn_matvec",
+            "present": true,
+            "verdict": "SUSPECT",
+            "findings": [
+              {
+                "check": "runtime_sized_loop",
+                "severity": "med",
+                "token": "cols",
+                "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+                "snippet": "const uint row_base = row * cols;\n    for (uint col = 0u; col < cols; ++col) {\n        const uint element ="
+              },
+              {
+                "check": "dynamic_branch_in_loop",
+                "severity": "med",
+                "token": "row",
+                "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+                "snippet": "{\n    if (row >= rows) return;\n    float sum = 0.0f;\n    const"
+              }
+            ],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": true,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": null,
+            "died_at": "held_out_activation",
+            "unreached_above": null,
+            "status": "FAILED"
+          },
+          "below_current_q2f_class": "below",
+          "current_q2f_class_bpw": 4.125,
+          "transition_program": true,
+          "probe_layers": [
+            {
+              "layer": 0,
+              "survives": false,
+              "reason": "6/6 failed; worst L0.in_proj_qkv rel_fro 0.637955 > 0.5"
+            },
+            {
+              "layer": 32,
+              "survives": false,
+              "reason": "6/6 failed; worst L32.in_proj_qkv rel_fro 0.556586 > 0.5"
+            }
+          ],
+          "recurrent_not_dense_matrix": true
+        },
+        {
+          "codec": "ternary_5in8_g64",
+          "family": "ternary",
+          "gemv_storage_bpw": 1.85,
+          "complete_ebpw": 1.8620473881247193,
+          "active_bytes_per_token": 1294657536.0,
+          "leftover_n": 2222592,
+          "leftover_bpw": 32.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.20123291015625,
+            "rel_fro_vs_teacher": 0.4427902102470398,
+            "mean_abs_what": 0.010686950758099556,
+            "mean_abs_w": 0.012701716274023056
+          },
+          "held_out": {
+            "survives": false,
+            "reason": "4/6 failed; worst L0.in_proj_qkv gain 0.477788 < 0.5",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/bytes_frontier.metal",
+            "kernel": "ternary_5in8_g64_matvec_geo_c5120_tpr64_tg128",
+            "present": true,
+            "verdict": "SUSPECT",
+            "findings": [
+              {
+                "check": "dynamic_branch_in_loop",
+                "severity": "med",
+                "token": "row",
+                "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+                "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows) {\n        acc = ternary_acc_c5120(codes"
+              }
+            ],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": true,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": null,
+            "died_at": "held_out_activation",
+            "unreached_above": null,
+            "status": "FAILED"
+          },
+          "below_current_q2f_class": "below",
+          "current_q2f_class_bpw": 4.125,
+          "transition_program": true,
+          "probe_layers": [
+            {
+              "layer": 0,
+              "survives": false,
+              "reason": "4/6 failed; worst L0.in_proj_qkv gain 0.477788 < 0.5"
+            },
+            {
+              "layer": 32,
+              "survives": false,
+              "reason": "5/6 failed; worst L32.in_proj_qkv gain 0.224250 < 0.5"
+            }
+          ],
+          "recurrent_not_dense_matrix": true
+        },
+        {
+          "codec": "binary_g64",
+          "family": "binary",
+          "gemv_storage_bpw": 1.25,
+          "complete_ebpw": 1.2622871371421265,
+          "active_bytes_per_token": 877651968.0,
+          "leftover_n": 2222592,
+          "leftover_bpw": 32.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.21694183349609375,
+            "rel_fro_vs_teacher": 0.6116514801979065,
+            "mean_abs_what": 0.01270171720534563,
+            "mean_abs_w": 0.012701716274023056
+          },
+          "held_out": {
+            "survives": false,
+            "reason": "6/6 failed; worst L0.in_proj_qkv gain 0.361977 < 0.5",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/qwen_binary.metal",
+            "kernel": "qwen_binary_sign_scale_matvec",
+            "present": true,
+            "verdict": "SUSPECT",
+            "findings": [
+              {
+                "check": "dynamic_branch_in_loop",
+                "severity": "med",
+                "token": "row",
+                "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+                "snippet": "{\n    if (row >= rows) return;\n    output[row] = qwen_binary_s"
+              }
+            ],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": true,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": null,
+            "died_at": "held_out_activation",
+            "unreached_above": null,
+            "status": "FAILED"
+          },
+          "below_current_q2f_class": "below",
+          "current_q2f_class_bpw": 4.125,
+          "transition_program": true,
+          "probe_layers": [
+            {
+              "layer": 0,
+              "survives": false,
+              "reason": "6/6 failed; worst L0.in_proj_qkv gain 0.361977 < 0.5"
+            },
+            {
+              "layer": 32,
+              "survives": false,
+              "reason": "6/6 failed; worst L32.in_proj_qkv gain 0.153732 < 0.5"
+            }
+          ],
+          "recurrent_not_dense_matrix": true
+        }
+      ],
+      "floor": {
+        "status": "MEASURED",
+        "organ": "deltanet",
+        "complete_ebpw": 3.2614879737507687,
+        "gemv_storage_bpw": 3.25,
+        "family": "grouped_absmax",
+        "codec": "ws_rtn_q3_g64",
+        "active_bytes_per_token": 2267670528.0,
+        "parity": {
+          "reconstruct_finite": true,
+          "dense_w": 0.0,
+          "max_abs_vs_teacher": 0.03533935546875,
+          "rel_fro_vs_teacher": 0.2644454836845398,
+          "mean_abs_what": 0.012213672511279583,
+          "mean_abs_w": 0.012701716274023056
+        },
+        "dense_w": 0,
+        "dense_w_materialized": 0,
+        "highest_rung_reached": "complete_token",
+        "died_at": null,
+        "unreached_above": "coherent_generation",
+        "vs_current_q2f_class": "below",
+        "current_q2f_class_bpw": 4.125,
+        "because": "deltanet floors at 3.2615 complete EBPW (grouped_absmax / ws_rtn_q3_g64), below its current q2f-class density 4.125, because that is the cheapest matched-density packing whose organ function survives the composition bar through complete_token on real activations; denser ladder rungs die at held_out or a later tested rung. Leftover state/norm tensors stay in the complete bill (dense_w=0).",
+        "scales_counted": true,
+        "native_kernel": {
+          "shader": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+          "kernel": "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128",
+          "present": true,
+          "verdict": "SUSPECT",
+          "findings": [
+            {
+              "check": "dynamic_branch_in_loop",
+              "severity": "med",
+              "token": "row",
+              "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+              "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows && bits == 3u && group_size == 64u && (cols & 63u) == 0u) {\n        const uint groups_"
+            }
+          ],
+          "dense_w_written": false,
+          "may_not_condemn_speed_unless_clear": true,
+          "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+        },
+        "transition_program": true
+      },
+      "transition_program": true,
+      "why": [
+        "DeltaNet is recurrent, not a dense matrix (S024 \u00a732/\u00a798). in_proj is the information consumer (state/in_proj \u2248 0.015, N026); state cannot replace in_proj wholesale.",
+        "The candidate is a compact transition program: static in_proj/out_proj packed, A_log/conv/dt_bias/norm left at leftover f32 and billed in complete EBPW.",
+        "Organ function is v*silu(z) on fused QKVZ plus the required GEMVs, then HF linear_attn mixer_out / complete_token where run."
+      ]
+    },
+    "embedding_output": {
+      "status": "MEASURED",
+      "mlp_not_used_as_prior": true,
+      "current_q2f_class_bpw": 4.125,
+      "candidates": [
+        {
+          "codec": "ws_rtn_q4_g64",
+          "family": "grouped_absmax",
+          "gemv_storage_bpw": 4.25,
+          "complete_ebpw": 4.25,
+          "active_bytes_per_token": 2720.0,
+          "leftover_n": 0,
+          "leftover_bpw": 0.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.038330078125,
+            "rel_fro_vs_teacher": 0.12450926005840302,
+            "mean_abs_what": 0.010989170521497726,
+            "mean_abs_w": 0.011117652989923954
+          },
+          "held_out": {
+            "survives": true,
+            "reason": "embed+lm_head both local_survive",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+            "kernel": "qwen_uniform_q4_embedding_lookup",
+            "present": true,
+            "verdict": "CLEAR",
+            "findings": [],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": false,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": "complete_token",
+            "died_at": null,
+            "unreached_above": "coherent_generation",
+            "status": "UNTESTED_ABOVE",
+            "complete_organ": {
+              "survives": true,
+              "mixer_out": [
+                {
+                  "layer": "embed",
+                  "survives": true,
+                  "rel_l2": 0.12768304347991943,
+                  "cosine": 0.9919042587280273,
+                  "gain": 0.9940506815910339
+                }
+              ]
+            },
+            "complete_token": {
+              "survives": true,
+              "argmax_agree": true,
+              "teacher_argmax": 9714,
+              "student_argmax": 9714,
+              "first_fail_layer": null
+            }
+          },
+          "below_current_q2f_class": "above",
+          "current_q2f_class_bpw": 4.125,
+          "transition_program": false,
+          "embed": {
+            "storage_bpw": 4.25,
+            "active_bytes_per_token": 2720.0,
+            "survives": true,
+            "n_rare": 397
+          },
+          "lm_head": {
+            "storage_bpw": 4.25,
+            "active_bytes_per_token": 675433120.0,
+            "survives": true,
+            "argmax_mix_agree": 1.0
+          },
+          "active_bytes_note": "embed gather is one row; lm_head streams the table. Do not quote one number."
+        },
+        {
+          "codec": "ws_rtn_q4_g128",
+          "family": "grouped_absmax",
+          "gemv_storage_bpw": 4.125,
+          "complete_ebpw": 4.125,
+          "active_bytes_per_token": 2640.0,
+          "leftover_n": 0,
+          "leftover_bpw": 0.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.038330078125,
+            "rel_fro_vs_teacher": 0.14176951348781586,
+            "mean_abs_what": 0.010936479084193707,
+            "mean_abs_w": 0.011117652989923954
+          },
+          "held_out": {
+            "survives": true,
+            "reason": "embed+lm_head both local_survive",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+            "kernel": "qwen_uniform_q4_embedding_lookup",
+            "present": true,
+            "verdict": "CLEAR",
+            "findings": [],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": false,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": "held_out_activation",
+            "died_at": null,
+            "unreached_above": "adjacent_layers",
+            "status": "UNTESTED_ABOVE"
+          },
+          "below_current_q2f_class": "at",
+          "current_q2f_class_bpw": 4.125,
+          "transition_program": false,
+          "embed": {
+            "storage_bpw": 4.125,
+            "active_bytes_per_token": 2640.0,
+            "survives": true,
+            "n_rare": 397
+          },
+          "lm_head": {
+            "storage_bpw": 4.125,
+            "active_bytes_per_token": 655567440.0,
+            "survives": true,
+            "argmax_mix_agree": 1.0
+          },
+          "active_bytes_note": "embed gather is one row; lm_head streams the table. Do not quote one number."
+        },
+        {
+          "codec": "ws_rtn_q3_g64",
+          "family": "grouped_absmax",
+          "gemv_storage_bpw": 3.25,
+          "complete_ebpw": 3.25,
+          "active_bytes_per_token": 2080.0,
+          "leftover_n": 0,
+          "leftover_bpw": 0.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.0625,
+            "rel_fro_vs_teacher": 0.2777208983898163,
+            "mean_abs_what": 0.010498706251382828,
+            "mean_abs_w": 0.011117652989923954
+          },
+          "held_out": {
+            "survives": true,
+            "reason": "embed+lm_head both local_survive",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/qwen_uniform_qn.metal",
+            "kernel": "qwen_uniform_qn_embedding_lookup",
+            "present": true,
+            "verdict": "CLEAR",
+            "findings": [],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": false,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": "held_out_activation",
+            "died_at": null,
+            "unreached_above": "adjacent_layers",
+            "status": "UNTESTED_ABOVE"
+          },
+          "below_current_q2f_class": "below",
+          "current_q2f_class_bpw": 4.125,
+          "transition_program": false,
+          "embed": {
+            "storage_bpw": 3.25,
+            "active_bytes_per_token": 2080.0,
+            "survives": true,
+            "n_rare": 397
+          },
+          "lm_head": {
+            "storage_bpw": 3.25,
+            "active_bytes_per_token": 516507680.0,
+            "survives": true,
+            "argmax_mix_agree": 0.9375
+          },
+          "active_bytes_note": "embed gather is one row; lm_head streams the table. Do not quote one number."
+        },
+        {
+          "codec": "ws_rtn_q3_g128",
+          "family": "grouped_absmax",
+          "gemv_storage_bpw": 3.125,
+          "complete_ebpw": 3.125,
+          "active_bytes_per_token": 2000.0,
+          "leftover_n": 0,
+          "leftover_bpw": 0.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.0625,
+            "rel_fro_vs_teacher": 0.31034043431282043,
+            "mean_abs_what": 0.010313557460904121,
+            "mean_abs_w": 0.011117652989923954
+          },
+          "held_out": {
+            "survives": true,
+            "reason": "embed+lm_head both local_survive",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/qwen_uniform_qn.metal",
+            "kernel": "qwen_uniform_qn_embedding_lookup",
+            "present": true,
+            "verdict": "CLEAR",
+            "findings": [],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": false,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": "complete_token",
+            "died_at": null,
+            "unreached_above": "coherent_generation",
+            "status": "UNTESTED_ABOVE",
+            "complete_organ": {
+              "survives": true,
+              "mixer_out": [
+                {
+                  "layer": "embed",
+                  "survives": true,
+                  "rel_l2": 0.2965587377548218,
+                  "cosine": 0.9597734808921814,
+                  "gain": 0.9718724489212036
+                }
+              ]
+            },
+            "complete_token": {
+              "survives": true,
+              "argmax_agree": true,
+              "teacher_argmax": 9714,
+              "student_argmax": 9714,
+              "first_fail_layer": null
+            }
+          },
+          "below_current_q2f_class": "below",
+          "current_q2f_class_bpw": 4.125,
+          "transition_program": false,
+          "embed": {
+            "storage_bpw": 3.125,
+            "active_bytes_per_token": 2000.0,
+            "survives": true,
+            "n_rare": 397
+          },
+          "lm_head": {
+            "storage_bpw": 3.125,
+            "active_bytes_per_token": 496642000.0,
+            "survives": true,
+            "argmax_mix_agree": 0.875
+          },
+          "active_bytes_note": "embed gather is one row; lm_head streams the table. Do not quote one number."
+        },
+        {
+          "codec": "q2f_g64",
+          "family": "fourlevel_fitted",
+          "gemv_storage_bpw": 2.25,
+          "complete_ebpw": 2.25,
+          "active_bytes_per_token": 1440.0,
+          "leftover_n": 0,
+          "leftover_bpw": 0.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.467315673828125,
+            "rel_fro_vs_teacher": 0.4416712820529938,
+            "mean_abs_what": 0.013012245297431946,
+            "mean_abs_w": 0.011117652989923954
+          },
+          "held_out": {
+            "survives": false,
+            "reason": "embed=1/2 failed; worst embed.hold_gather gain 0.175839 < 0.5; lm=gain 0.327998 < 0.5",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/qwen_uniform_qn.metal",
+            "kernel": "qwen_uniform_qn_embedding_lookup",
+            "present": true,
+            "verdict": "CLEAR",
+            "findings": [],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": false,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": null,
+            "died_at": "held_out_activation",
+            "unreached_above": null,
+            "status": "FAILED"
+          },
+          "below_current_q2f_class": "below",
+          "current_q2f_class_bpw": 4.125,
+          "transition_program": false,
+          "embed": {
+            "storage_bpw": 2.25,
+            "active_bytes_per_token": 1440.0,
+            "survives": false,
+            "n_rare": 397
+          },
+          "lm_head": {
+            "storage_bpw": 2.25,
+            "active_bytes_per_token": 357582240.0,
+            "survives": false,
+            "argmax_mix_agree": 0.8125
+          },
+          "active_bytes_note": "embed gather is one row; lm_head streams the table. Do not quote one number."
+        },
+        {
+          "codec": "ws_rtn_q2_g64",
+          "family": "grouped_absmax",
+          "gemv_storage_bpw": 2.25,
+          "complete_ebpw": 2.25,
+          "active_bytes_per_token": 1440.0,
+          "leftover_n": 0,
+          "leftover_bpw": 0.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.140625,
+            "rel_fro_vs_teacher": 0.7129698395729065,
+            "mean_abs_what": 0.006412150803953409,
+            "mean_abs_w": 0.011117652989923954
+          },
+          "held_out": {
+            "survives": false,
+            "reason": "embed=2/2 failed; worst embed.hold_gather rel_fro 0.661020 > 0.5; lm=surplus 0.037978 < 0.05",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/qwen_uniform_qn.metal",
+            "kernel": "qwen_uniform_qn_embedding_lookup",
+            "present": true,
+            "verdict": "CLEAR",
+            "findings": [],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": false,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": null,
+            "died_at": "held_out_activation",
+            "unreached_above": null,
+            "status": "FAILED"
+          },
+          "below_current_q2f_class": "below",
+          "current_q2f_class_bpw": 4.125,
+          "transition_program": false,
+          "embed": {
+            "storage_bpw": 2.25,
+            "active_bytes_per_token": 1440.0,
+            "survives": false,
+            "n_rare": 397
+          },
+          "lm_head": {
+            "storage_bpw": 2.25,
+            "active_bytes_per_token": 357582240.0,
+            "survives": false,
+            "argmax_mix_agree": 0.75
+          },
+          "active_bytes_note": "embed gather is one row; lm_head streams the table. Do not quote one number."
+        },
+        {
+          "codec": "ternary_5in8_g64",
+          "family": "ternary",
+          "gemv_storage_bpw": 1.85,
+          "complete_ebpw": 1.85,
+          "active_bytes_per_token": 1184.0,
+          "leftover_n": 0,
+          "leftover_bpw": 0.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.28106689453125,
+            "rel_fro_vs_teacher": 0.46379733085632324,
+            "mean_abs_what": 0.009284280240535736,
+            "mean_abs_w": 0.011117652989923954
+          },
+          "held_out": {
+            "survives": false,
+            "reason": "embed=1/2 failed; worst embed.hold_gather gain 0.420757 < 0.5; lm=gain 0.207150 < 0.5",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/qwen_uniform_qn.metal",
+            "kernel": "qwen_uniform_qn_embedding_lookup",
+            "present": true,
+            "verdict": "CLEAR",
+            "findings": [],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": false,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": null,
+            "died_at": "held_out_activation",
+            "unreached_above": null,
+            "status": "FAILED"
+          },
+          "below_current_q2f_class": "below",
+          "current_q2f_class_bpw": 4.125,
+          "transition_program": false,
+          "embed": {
+            "storage_bpw": 1.85,
+            "active_bytes_per_token": 1184.0,
+            "survives": false,
+            "n_rare": 397
+          },
+          "lm_head": {
+            "storage_bpw": 1.85,
+            "active_bytes_per_token": 294012064.0,
+            "survives": false,
+            "argmax_mix_agree": 0.75
+          },
+          "active_bytes_note": "embed gather is one row; lm_head streams the table. Do not quote one number."
+        },
+        {
+          "codec": "binary_g64",
+          "family": "binary",
+          "gemv_storage_bpw": 1.25,
+          "complete_ebpw": 1.25,
+          "active_bytes_per_token": 800.0,
+          "leftover_n": 0,
+          "leftover_bpw": 0.0,
+          "scales_counted": true,
+          "dense_w": 0,
+          "dense_w_materialized": 0,
+          "parity": {
+            "reconstruct_finite": true,
+            "dense_w": 0.0,
+            "max_abs_vs_teacher": 0.5341339111328125,
+            "rel_fro_vs_teacher": 0.6373051404953003,
+            "mean_abs_what": 0.011117639020085335,
+            "mean_abs_w": 0.011117652989923954
+          },
+          "held_out": {
+            "survives": false,
+            "reason": "embed=2/2 failed; worst embed.hold_gather gain 0.062129 < 0.5; lm=gain 0.128720 < 0.5",
+            "real_activations": true,
+            "not_gaussian": true
+          },
+          "native_kernel": {
+            "shader": "crates/hawking-core/shaders/qwen_uniform_qn.metal",
+            "kernel": "qwen_uniform_qn_embedding_lookup",
+            "present": true,
+            "verdict": "CLEAR",
+            "findings": [],
+            "dense_w_written": false,
+            "may_not_condemn_speed_unless_clear": false,
+            "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+          },
+          "composition": {
+            "highest_rung_reached": null,
+            "died_at": "held_out_activation",
+            "unreached_above": null,
+            "status": "FAILED"
+          },
+          "below_current_q2f_class": "below",
+          "current_q2f_class_bpw": 4.125,
+          "transition_program": false,
+          "embed": {
+            "storage_bpw": 1.25,
+            "active_bytes_per_token": 800.0,
+            "survives": false,
+            "n_rare": 397
+          },
+          "lm_head": {
+            "storage_bpw": 1.25,
+            "active_bytes_per_token": 198656800.0,
+            "survives": false,
+            "argmax_mix_agree": 0.6875
+          },
+          "active_bytes_note": "embed gather is one row; lm_head streams the table. Do not quote one number."
+        }
+      ],
+      "floor": {
+        "status": "MEASURED",
+        "organ": "embedding_output",
+        "complete_ebpw": 3.125,
+        "gemv_storage_bpw": 3.125,
+        "family": "grouped_absmax",
+        "codec": "ws_rtn_q3_g128",
+        "active_bytes_per_token": 2000.0,
+        "parity": {
+          "reconstruct_finite": true,
+          "dense_w": 0.0,
+          "max_abs_vs_teacher": 0.0625,
+          "rel_fro_vs_teacher": 0.31034043431282043,
+          "mean_abs_what": 0.010313557460904121,
+          "mean_abs_w": 0.011117652989923954
+        },
+        "dense_w": 0,
+        "dense_w_materialized": 0,
+        "highest_rung_reached": "complete_token",
+        "died_at": null,
+        "unreached_above": "coherent_generation",
+        "vs_current_q2f_class": "below",
+        "current_q2f_class_bpw": 4.125,
+        "because": "embedding_output floors at 3.1250 complete EBPW (grouped_absmax / ws_rtn_q3_g128), below its current q2f-class density 4.125, because that is the cheapest matched-density packing whose organ function survives the composition bar through complete_token on real activations; denser ladder rungs die at held_out or a later tested rung. Leftover state/norm tensors stay in the complete bill (dense_w=0).",
+        "scales_counted": true,
+        "native_kernel": {
+          "shader": "crates/hawking-core/shaders/qwen_uniform_qn.metal",
+          "kernel": "qwen_uniform_qn_embedding_lookup",
+          "present": true,
+          "verdict": "CLEAR",
+          "findings": [],
+          "dense_w_written": false,
+          "may_not_condemn_speed_unless_clear": false,
+          "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+        },
+        "transition_program": false
+      },
+      "why": [
+        "Embedding is a gather (active = one row); lm_head streams the table. Complete EBPW of the combined organ is the mix of both tables.",
+        "Floor is rare-gated on embed gathers AND local_survives on lm_head mix. Codebook/hot-cold/tying destroy rare/unseen (ORGAN_FRONTIERS, cited).",
+        "tie_word_embeddings is false; tying is not a free bit."
+      ]
+    }
+  },
+  "verdict": {
+    "gqa_attention": {
+      "status": "MEASURED",
+      "organ": "gqa_attention",
+      "complete_ebpw": 3.126550820024315,
+      "gemv_storage_bpw": 3.125,
+      "family": "grouped_absmax",
+      "codec": "ws_rtn_q3_g128",
+      "active_bytes_per_token": 655720448.0,
+      "parity": {
+        "reconstruct_finite": true,
+        "dense_w": 0.0,
+        "max_abs_vs_teacher": 0.044677734375,
+        "rel_fro_vs_teacher": 0.3871347904205322,
+        "mean_abs_what": 0.008836370892822742,
+        "mean_abs_w": 0.010003210976719856
+      },
+      "dense_w": 0,
+      "dense_w_materialized": 0,
+      "highest_rung_reached": "complete_token",
+      "died_at": null,
+      "unreached_above": "coherent_generation",
+      "vs_current_q2f_class": "below",
+      "current_q2f_class_bpw": 4.25,
+      "because": "gqa_attention floors at 3.1266 complete EBPW (grouped_absmax / ws_rtn_q3_g128), below its current q2f-class density 4.250, because that is the cheapest matched-density packing whose organ function survives the composition bar through complete_token on real activations; denser ladder rungs die at held_out or a later tested rung. Leftover state/norm tensors stay in the complete bill (dense_w=0).",
+      "scales_counted": true,
+      "native_kernel": {
+        "shader": "crates/hawking-core/shaders/qwen_uniform_qn.metal",
+        "kernel": "qwen_uniform_qn_matvec",
+        "present": true,
+        "verdict": "SUSPECT",
+        "findings": [
+          {
+            "check": "runtime_sized_loop",
+            "severity": "med",
+            "token": "cols",
+            "why": "A loop bound the compiler cannot see blocks unrolling and vectorization.",
+            "snippet": "const uint row_base = row * cols;\n    for (uint col = 0u; col < cols; ++col) {\n        const uint element ="
+          },
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "{\n    if (row >= rows) return;\n    float sum = 0.0f;\n    const"
+          }
+        ],
+        "dense_w_written": false,
+        "may_not_condemn_speed_unless_clear": true,
+        "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+      },
+      "transition_program": false
+    },
+    "deltanet": {
+      "status": "MEASURED",
+      "organ": "deltanet",
+      "complete_ebpw": 3.2614879737507687,
+      "gemv_storage_bpw": 3.25,
+      "family": "grouped_absmax",
+      "codec": "ws_rtn_q3_g64",
+      "active_bytes_per_token": 2267670528.0,
+      "parity": {
+        "reconstruct_finite": true,
+        "dense_w": 0.0,
+        "max_abs_vs_teacher": 0.03533935546875,
+        "rel_fro_vs_teacher": 0.2644454836845398,
+        "mean_abs_what": 0.012213672511279583,
+        "mean_abs_w": 0.012701716274023056
+      },
+      "dense_w": 0,
+      "dense_w_materialized": 0,
+      "highest_rung_reached": "complete_token",
+      "died_at": null,
+      "unreached_above": "coherent_generation",
+      "vs_current_q2f_class": "below",
+      "current_q2f_class_bpw": 4.125,
+      "because": "deltanet floors at 3.2615 complete EBPW (grouped_absmax / ws_rtn_q3_g64), below its current q2f-class density 4.125, because that is the cheapest matched-density packing whose organ function survives the composition bar through complete_token on real activations; denser ladder rungs die at held_out or a later tested rung. Leftover state/norm tensors stay in the complete bill (dense_w=0).",
+      "scales_counted": true,
+      "native_kernel": {
+        "shader": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+        "kernel": "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128",
+        "present": true,
+        "verdict": "SUSPECT",
+        "findings": [
+          {
+            "check": "dynamic_branch_in_loop",
+            "severity": "med",
+            "token": "row",
+            "why": "A data-dependent branch inside the inner loop serializes a SIMD group.",
+            "snippet": "* 2u + team;\n    float acc = 0.0f;\n    if (row < rows && bits == 3u && group_size == 64u && (cols & 63u) == 0u) {\n        const uint groups_"
+          }
+        ],
+        "dense_w_written": false,
+        "may_not_condemn_speed_unless_clear": true,
+        "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+      },
+      "transition_program": true
+    },
+    "embedding_output": {
+      "status": "MEASURED",
+      "organ": "embedding_output",
+      "complete_ebpw": 3.125,
+      "gemv_storage_bpw": 3.125,
+      "family": "grouped_absmax",
+      "codec": "ws_rtn_q3_g128",
+      "active_bytes_per_token": 2000.0,
+      "parity": {
+        "reconstruct_finite": true,
+        "dense_w": 0.0,
+        "max_abs_vs_teacher": 0.0625,
+        "rel_fro_vs_teacher": 0.31034043431282043,
+        "mean_abs_what": 0.010313557460904121,
+        "mean_abs_w": 0.011117652989923954
+      },
+      "dense_w": 0,
+      "dense_w_materialized": 0,
+      "highest_rung_reached": "complete_token",
+      "died_at": null,
+      "unreached_above": "coherent_generation",
+      "vs_current_q2f_class": "below",
+      "current_q2f_class_bpw": 4.125,
+      "because": "embedding_output floors at 3.1250 complete EBPW (grouped_absmax / ws_rtn_q3_g128), below its current q2f-class density 4.125, because that is the cheapest matched-density packing whose organ function survives the composition bar through complete_token on real activations; denser ladder rungs die at held_out or a later tested rung. Leftover state/norm tensors stay in the complete bill (dense_w=0).",
+      "scales_counted": true,
+      "native_kernel": {
+        "shader": "crates/hawking-core/shaders/qwen_uniform_qn.metal",
+        "kernel": "qwen_uniform_qn_embedding_lookup",
+        "present": true,
+        "verdict": "CLEAR",
+        "findings": [],
+        "dense_w_written": false,
+        "may_not_condemn_speed_unless_clear": false,
+        "note": "N003: a representation cannot be condemned on speed until its native kernel is competent. This lane is density-first; token_ns is ABSENT."
+      },
+      "transition_program": false
+    },
+    "one_line": "GQA 3.126550820024315 EBPW (below 4.25) via ws_rtn_q3_g128; DeltaNet 3.2614879737507687 EBPW (below 4.125) via ws_rtn_q3_g64; embed/output 3.125 EBPW (below 4.125) via ws_rtn_q3_g128."
+  },
+  "feeds": {
+    "ORGAN_LIBRARY": "composition floors are the coherent density numbers to seed",
+    "ORGAN_DENSITY_FRONTIER": "per-organ coherence axis of DENSITY_DESCENT_FRONTIER"
+  },
+  "what_i_watched_fail": [
+    "gqa q2f_g64 died at held_out: 1/5 failed; worst L3.q_proj gain 0.428165 < 0.5",
+    "gqa ws_rtn_q2_g64 died at held_out: 5/5 failed; worst L3.q_proj rel_fro 0.554257 > 0.5",
+    "gqa ternary_5in8_g64 died at held_out: 2/5 failed; worst L3.q_proj gain 0.324508 < 0.5",
+    "gqa binary_g64 died at held_out: 5/5 failed; worst L3.q_proj gain 0.235609 < 0.5",
+    "deltanet q2f_g64 died at held_out: 1/6 failed; worst L0.transition_out gain 0.481244 < 0.5",
+    "deltanet ws_rtn_q2_g64 died at held_out: 6/6 failed; worst L0.in_proj_qkv rel_fro 0.637955 > 0.5",
+    "deltanet ternary_5in8_g64 died at held_out: 4/6 failed; worst L0.in_proj_qkv gain 0.477788 < 0.5",
+    "deltanet binary_g64 died at held_out: 6/6 failed; worst L0.in_proj_qkv gain 0.361977 < 0.5",
+    "embedding_output q2f_g64 died at held_out: embed=1/2 failed; worst embed.hold_gather gain 0.175839 < 0.5; lm=gain 0.327998 < 0.5",
+    "embedding_output ws_rtn_q2_g64 died at held_out: embed=2/2 failed; worst embed.hold_gather rel_fro 0.661020 > 0.5; lm=surplus 0.037978 < 0.05",
+    "embedding_output ternary_5in8_g64 died at held_out: embed=1/2 failed; worst embed.hold_gather gain 0.420757 < 0.5; lm=gain 0.207150 < 0.5",
+    "embedding_output binary_g64 died at held_out: embed=2/2 failed; worst embed.hold_gather gain 0.062129 < 0.5; lm=gain 0.128720 < 0.5"
+  ],
+  "wall_s": 1564.6399869918823,
+  "citations": [
+    "receipts/headless/ORGAN_FRONTIERS.json",
+    "receipts/headless/ORGAN_ROOF_LEDGER.json",
+    "receipts/headless/NOETIC_ORGAN_CENSUS.json",
+    "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_Q2F_G64.json",
+    "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+    "receipts/headless/COMPOSITION_LADDER.json",
+    "receipts/headless/ORGAN_LIBRARY.json"
+  ]
+}

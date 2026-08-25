@@ -1,0 +1,288 @@
+{
+  "fabricated": false,
+  "membership": {
+    "assignments": {
+      "pfv0:d1:Mathlib.Algebra.AddConstMap.Basic.map_const_add": "train",
+      "pfv0:d1:Mathlib.Algebra.Algebra.Hom.comp_apply": "train",
+      "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalHom.restrictScalars_apply": "train",
+      "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalSubalgebra.mem_carrier": "train",
+      "pfv0:d2:Mathlib.Algebra.Algebra.Epi.injective_lift_lsmul:step1": "train",
+      "pfv0:d2:Mathlib.Algebra.Algebra.Epi.isEpi_of_surjective_algebraMap:step2": "train",
+      "pfv0:d3:Mathlib.Algebra.Algebra.Defs.algebraMap.coe_smul'": "train",
+      "pfv0:d3:Mathlib.Algebra.Algebra.Defs.commute_algebraMap_left": "train",
+      "pfv0:d3:Mathlib.Algebra.Algebra.Equiv.symm_trans_apply": "train",
+      "pfv0:d4:Mathlib.Algebra.AddConstMap.Basic.map_sub_nat':flip_eq_goal": "train",
+      "pfv0:d4:Mathlib.Algebra.Algebra.Basic.End.algebraMap_isUnit_inv_apply_eq_iff':wrong_rw_lemma": "train",
+      "pfv0:d4:Mathlib.Algebra.Algebra.Basic.coe_algebraMap_ofSubsemiring:flip_eq_goal": "train",
+      "pfv0:d6:enum:83:9578a4c57d": "train",
+      "pfv0:d6:mathlib_ce:SeparableNotSecondCountable": "train",
+      "pfv0:d7:checkpoint:extra2": "retention",
+      "pfv0:d7:checkpoint:extra5": "retention",
+      "pfv0:d7:checkpoint:extra8": "retention",
+      "pfv0:d7:checkpoint:extra9": "retention",
+      "pfv0:d7:search:extra19:7621061d:ea73": "retention",
+      "pfv0:expert:fix:power": "train",
+      "pfv0:expert:fix:two_plus_two": "train",
+      "pfv0:halo:cd04_gcd": "retention",
+      "pfv0:halo:gr01_wolves": "retention",
+      "pfv0:halo:lc01_needle": "train",
+      "pfv0:halo:lc02_needle": "train",
+      "pfv0:halo:rt03_table": "train",
+      "pfv0:halo:rt04_multi": "retention",
+      "pfv0:thesis:r04_reverse_words": "retention",
+      "pfv0:thesis:r11_count_words": "retention",
+      "pfv0:thesis:t01_add": "train",
+      "pfv0:thesis:t09_flatten": "retention",
+      "pfv0:thesis:t15_word_count": "train"
+    },
+    "counts": {
+      "calibration": 0,
+      "hidden_test": 0,
+      "public_test": 0,
+      "retention": 11,
+      "train": 21
+    },
+    "disjoint": true,
+    "note": "train/calibration/public_test/hidden_test/retention must never share example_ids (PROTO_FRANKENSTEIN_V0 disjoint memberships)",
+    "recorded_at": "2026-08-06T16:46:37.900040Z",
+    "schema": "hawking.frankenstein.evidence_membership.v1",
+    "seal_sha256": "6cd342b2b3c1140bffc711fc5b7e217ae7d5a0466c09263513ca2f5823783d3b",
+    "splits": [
+      "train",
+      "calibration",
+      "public_test",
+      "hidden_test",
+      "retention"
+    ]
+  },
+  "n_traces": 32,
+  "recorded_at": "2026-08-06T16:46:37.900034Z",
+  "rows": [
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:d3:Mathlib.Algebra.Algebra.Equiv.symm_trans_apply",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "fca3381176eec28588d1146ba1c0224573d4348406a3a88aae8a604ad790a896"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:d3:Mathlib.Algebra.Algebra.Defs.algebraMap.coe_smul'",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "e63b10bd0a98165285d9eb3b95a2efeea2a5cab41a304809ee265563e506f1cd"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:d3:Mathlib.Algebra.Algebra.Defs.commute_algebraMap_left",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "1fa4e2d8454f27b0d2340e872df5f63a04ec1445570cc0ca7577730e186477f1"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:d2:Mathlib.Algebra.Algebra.Epi.isEpi_of_surjective_algebraMap:step2",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "fb0338e5df6b7c3842df812b0a52d4c057411f1683356e4c577d6d8f184fd8fd"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.Hom.comp_apply",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "78ac203388dc94db50f65150e555069b944afb58f9768d06a1039d4ea37bff06"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:d2:Mathlib.Algebra.Algebra.Epi.injective_lift_lsmul:step1",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "8ff78034bd456912e66239c2a884fba1e3e872f7814bd14d9ecc809f912b6cb3"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalHom.restrictScalars_apply",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "ec21b52da10c60748278230b6c096e3c6232200c1579a73e8a4d8e8f4564901f"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:d1:Mathlib.Algebra.AddConstMap.Basic.map_const_add",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "af0e6ace65e2851b928747ff3bcf46d8bd3b86d4c941e6cb391787f7362ec339"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:d1:Mathlib.Algebra.Algebra.NonUnitalSubalgebra.mem_carrier",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "e64f9066187a17bb247a902c55f341fdc42e683af545b0080c5fad8cdf5e5dc4"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:d4:Mathlib.Algebra.AddConstMap.Basic.map_sub_nat':flip_eq_goal",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "36e4e0f59eee258f6194582c08db7542999a6bf2ae2c49bc412c005fee87490d"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:d4:Mathlib.Algebra.Algebra.Basic.End.algebraMap_isUnit_inv_apply_eq_iff':wrong_rw_lemma",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "aa780ab85b34ec6752686ca82daa864efe85fb4577a87030bf922595ddbfc6c3"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:d4:Mathlib.Algebra.Algebra.Basic.coe_algebraMap_ofSubsemiring:flip_eq_goal",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "8483215b8aa21b75fe13d62278250220f60d1501e0b2601e22e5bea7876752b8"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:d6:mathlib_ce:SeparableNotSecondCountable",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "94703af9a77e65f318bf8aa732da41ca7853afad21279fb56653e6cf1c4d0c2d"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:d6:enum:83:9578a4c57d",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "64a4895fd5b762ee0b57e8e4b02841345fbc2129c9ec209dfc0e10630f8c207c"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:expert:fix:two_plus_two",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "f3f735a6b717a4a47b74262a8800fcbc71a2ab729517788950395bf8345cf14d"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:expert:fix:power",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "46f121a5d037be7ad893cd16fd7eec92b73fc78a44e5495b975bae204dc2c80d"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:thesis:t09_flatten",
+      "glm_present": true,
+      "membership": "retention",
+      "seal_sha256": "66e577db4d3e58ef6aea2bdba8fc103c76ca4d03d9876ae9a0c2a67e93ff9362"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:halo:cd04_gcd",
+      "glm_present": true,
+      "membership": "retention",
+      "seal_sha256": "c8d95d609068112fe9fbb1b508d60e43b724384a40e8764b8229a86efbe6a093"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:thesis:t01_add",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "b41e3e13d089b7d960850137d473362873a85370400df7fbd0671cff82eb8d4a"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:thesis:t15_word_count",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "f16f6e59509f532954721f610059ecf3258afb8058c5155c3809501504bdccc8"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:thesis:r04_reverse_words",
+      "glm_present": true,
+      "membership": "retention",
+      "seal_sha256": "34a8ab0e8525d22e1b7e42cb5ffa3bba6188e1d4cb2666bfe95b2de147992923"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:thesis:r11_count_words",
+      "glm_present": true,
+      "membership": "retention",
+      "seal_sha256": "30df769211d004517437a69b04a95d64e5324138e45bf3c6969e0326ed275818"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:d7:checkpoint:extra5",
+      "glm_present": true,
+      "membership": "retention",
+      "seal_sha256": "1d2a4d0e7d96c3c9e719aeed573241d1902847ea67c7d8b4a4ecbc083c0f03e7"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:d7:checkpoint:extra9",
+      "glm_present": true,
+      "membership": "retention",
+      "seal_sha256": "e93b59ee9f9fe30c2d75a5d00e20f05a86a732789c1d36a7018c704c682bc5dc"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:d7:search:extra19:7621061d:ea73",
+      "glm_present": true,
+      "membership": "retention",
+      "seal_sha256": "6a19881987a8b5d0a288cb7069dce24580f02e57ccbcef636f8f45b76871fb45"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:d7:checkpoint:extra2",
+      "glm_present": true,
+      "membership": "retention",
+      "seal_sha256": "b6a268e4068279f36f02cd8e4b878b3fa5a784df7531723f682e9b537f55572c"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:d7:checkpoint:extra8",
+      "glm_present": true,
+      "membership": "retention",
+      "seal_sha256": "6ea4869e9fac620519bb870077c215996208057cf5715eb39ce4b3cdaec8d675"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:halo:lc02_needle",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "0b261c7031beffbf97e688ac90d1d0e6d7b0972a6ec033ebf1c4892ed097bca4"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:halo:lc01_needle",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "ab535badcf66a89b227347bbe785b886267936678415c0ec2a03f7fc3ec94df7"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:halo:rt04_multi",
+      "glm_present": true,
+      "membership": "retention",
+      "seal_sha256": "c6f2f7deb92d65ba3392285ea62b7a71e69e75207114b7bb38a8ac13a8126c12"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:halo:gr01_wolves",
+      "glm_present": true,
+      "membership": "retention",
+      "seal_sha256": "2ecf3006c4f204d9539b8ea9366adae70c29705e01e876598cc656bf946cd20f"
+    },
+    {
+      "dsv4f_present": false,
+      "example_id": "pfv0:halo:rt03_table",
+      "glm_present": true,
+      "membership": "train",
+      "seal_sha256": "2fb729f4d36b6b70671560457327f09f2aecc4fde528baead816e201a540635e"
+    }
+  ],
+  "schema": "hawking.frankenstein.evidence_corpus_index.v1",
+  "seal_sha256": "c66b2b0ef30ff4f8b4b69d3fbdd591af731330050ba276a3bef2d65240c80a3d"
+}

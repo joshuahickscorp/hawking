@@ -1,0 +1,25 @@
+{
+  "schema": "hawking.nos.storage_reclaim.v1",
+  "obligation": "G28 -- storage reclaimed safely, no needed data deleted",
+  "session": "f5169750", "date": "2026-08-18",
+  "action": "removed 16 orphaned .git/objects/pack/tmp_pack_* files",
+  "why_safe": "abandoned temporary packs from an interrupted repack/filter-repo on 2026-08-16 04:03-05:00; no live git process; no matching .idx; git count-objects itself reported them as 'garbage found'; git gc would delete them automatically. Not reachable objects, not working-tree files, not the preserved stash, not any registered worktree.",
+  "reclaimed_bytes": 92341796864,
+  "reclaimed_human": "86 GB",
+  "df_before_free": "123Gi (87% used)",
+  "df_after_free": "209Gi (77% used)",
+  "git_dir_before": "111 GB", "git_dir_after": "26 GB",
+  "integrity_after": {"HEAD": "3a526bc8e", "head_tree_readable": true, "stash_preserved": "stash@{0} parent uncommitted resident/body work"},
+  "KEEP_LIST_untouched": [
+    "workspace/campaign/records/runs/qwen38-27b/bf16 (51 GB, SOURCE patient)",
+    "champion 3.3448 BPW artifacts (mixed-q3mlp-q3attn-v1, c-q3r1p22)",
+    "uniform-q4-v1 baseline artifact",
+    "activation-capture-v1/v2 (may still feed fits/Doctor)",
+    "all receipts/, all registered grok worktrees, the preserved stash",
+    "the 26 GB of real git packs (reachable history)"
+  ],
+  "deferred_optional_reclaim_NOT_executed": {
+    "redundant_rANS_ladder": "c-q3r1p15/25/3/35/5 share byte-identical payload segments with c-q3r1p22 (only catalogs differ); ~50 GB reclaimable by keeping c-q3r1p22 + one contrast r, but they are packed research artifacts (~470s each to regenerate), not garbage -> deferred pending explicit supersession, per operator 'do not delete anything you will need'",
+    "superseded_candidate_packs": "several mixed-* variants may be superseded; requires per-candidate supersession confirmation before removal"
+  }
+}

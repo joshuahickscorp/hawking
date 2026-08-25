@@ -1,0 +1,1503 @@
+{
+  "claim_boundary": {
+    "not_a_capability_or_tournament_receipt": true,
+    "not_a_controller": true,
+    "not_a_runtime_or_hcli_receipt": true,
+    "not_a_tps_or_tg_receipt": true,
+    "raw_bf16_is_teacher_only": true
+  },
+  "evidence_fingerprint_sha256": "2b31a7860fc605c00d6df07928c8fefca59886dde35feb9fdfc46e09a4090edd",
+  "execution_policy": {
+    "after_native_runtime": "publish a profile handoff; the runtime owner must perform exact full-token measurement",
+    "before_native_runtime": "only packed-artifact I/O/header profile may execute; it is never model TPS",
+    "no_superficial_rerun": "same evidence fingerprint and component artifact never execute twice; a material seal/artifact change is required",
+    "run_only_if": "sealed candidate record + regular bounded artifact + source-bound artifact SHA-256"
+  },
+  "experiment_kind": "bounded_component_profile_then_native_runtime_handoff",
+  "model": "qwen30",
+  "model_family": "qwen3_moe",
+  "reasoning": {
+    "blocker_category": "capability",
+    "cheapest_discriminating_test": {
+      "distinguishes": "direct sign-scale error, router route instability, and residual-allocation benefit before changing the complete artifact",
+      "does_not_claim": "prompt coherence, capability, HCLI, clean TPS, TG10, TG3, or tournament qualification",
+      "test": "run a source-bound Qwen30 sensitive-router control experiment comparing pack-compatible binary grouping and sparse-residual variants, with deterministic top-8 route stability controls"
+    },
+    "conditions": {
+      "FAIL": "no compatible variant improves route controls, or source binding fails; seal a narrow negative result and keep the final-logit mechanism open",
+      "PASS": "the bounded control identifies a <=1.5-BPW-compatible sensitive-organ representation with materially better deterministic route fidelity; update a transfer prior only",
+      "REOPEN_LATER": "the full artifact representation, source revalidation, router kernel, or exact direct-runtime trace materially changes"
+    },
+    "mechanisms": [
+      {
+        "mechanism": "binary_scale_projection_error_under_complete_bpw_budget",
+        "physical_cause": "sign-plus-group-scale packing can accumulate projection error across the 48-layer residual path even while the complete artifact remains <=1.5 BPW"
+      },
+      {
+        "mechanism": "router_top_k_instability",
+        "physical_cause": "small packed router-logit errors can alter top-8 expert selection, changing the entire routed expert wave for a token"
+      },
+      {
+        "mechanism": "misallocated_sparse_residual_budget",
+        "physical_cause": "a <=1.5 COMPLETE BPW residual allowance may be spent on low-leverage weights rather than sensitive router/gate/up/down organs"
+      },
+      {
+        "mechanism": "final_logit_path_sensitivity",
+        "physical_cause": "final norm/lm_head representation error can collapse otherwise usable hidden states into poor greedy tokens"
+      }
+    ],
+    "prior_initialization": {
+      "complete_bpw": 1.1303663832684598,
+      "direct_packed_generation": {
+        "all_layers_executed": true,
+        "claim_boundary": "observed direct packed execution is not a sealed capability, HCLI, clean TPS, TG, or tournament result",
+        "completion_text_unscored": " Wien Wien",
+        "completion_token_ids": [
+          98886,
+          98886
+        ],
+        "full_model_forward_count": 17,
+        "full_token_receipt": {
+          "bytes": 3071,
+          "document_sha256": "738a329bb7ccc99fe3c17692060d19aa07197cc1974c242526ae6d362eded325",
+          "error": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_DIRECT_PACKED_NATIVE_FULL_TOKEN_RESULT.json seal mismatch: recorded=None expected=738a329bb7ccc99fe3c17692060d19aa07197cc1974c242526ae6d362eded325",
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_DIRECT_PACKED_NATIVE_FULL_TOKEN_RESULT.json",
+          "phase": null,
+          "present": true,
+          "recorded_at": null,
+          "schema": "hawking.ascension.qwen30_complete_native_runtime_result.v1",
+          "sealed": false,
+          "state": "OBSERVED_UNSEALED",
+          "status": "EARNED_QWEN30_DIRECT_PACKED_NATIVE_METAL_FULL_TOKEN_EXECUTED_UNQUALIFIED"
+        },
+        "metal_only": true,
+        "raw_bf16_loader_not_opened": true,
+        "receipt": {
+          "bytes": 4735,
+          "document_sha256": "31d563a36de75193887775e85fbf403ce4722902814d5c5d743de3a8a10a47e4",
+          "error": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_DIRECT_PACKED_NATIVE_PROMPT_A_RESULT.json seal mismatch: recorded=None expected=31d563a36de75193887775e85fbf403ce4722902814d5c5d743de3a8a10a47e4",
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_DIRECT_PACKED_NATIVE_PROMPT_A_RESULT.json",
+          "phase": null,
+          "present": true,
+          "recorded_at": null,
+          "schema": "hawking.ascension.qwen30_complete_native_runtime_result.v1",
+          "sealed": false,
+          "state": "OBSERVED_UNSEALED",
+          "status": "EARNED_QWEN30_DIRECT_PACKED_NATIVE_GREEDY_AUTOREGRESSIVE_EXECUTED_UNQUALIFIED"
+        },
+        "state": "OBSERVED_UNSEALED_DIRECT_PACKED_AUTOREGRESSIVE_TRACE_REQUIRES_CAPABILITY_QUALITY_GATE"
+      },
+      "source_authority": {
+        "current_revalidation": {
+          "bytes": 9227,
+          "document": {
+            "claim_boundary": {
+              "every_index_referenced_source_shard_was_full_sha256_revalidated": true,
+              "receipt_is_reused_only_while_audit_index_and_file_identity_match": true,
+              "revalidation_is_source_integrity_not_model_capability_or_runtime_evidence": true
+            },
+            "index_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-30b/Qwen3-Coder-30B-A3B-Instruct/model.safetensors.index.json",
+            "index_sha256": "8dde190b862c7c80ec7403c6495de00c60bbaf246ed479cee4506284989c584c",
+            "observed_total_bytes": 61066575656,
+            "recorded_at": "2026-08-08T07:04:27.417473Z",
+            "schema": "hawking.ascension.complete_binary_source_revalidation.v1",
+            "seal_sha256": "ac7208e11c31bbd035bd87fd62a80020b9d1d05970867576f4649f6bebe68123",
+            "sealed_audit_index_sha256": null,
+            "sealed_shard_count": 16,
+            "sealed_shard_hashes_sha256": "aa8187f9a41254bcd8484a646dc520881d89b187fa6b2ae5a45ee5246bfdc9d7",
+            "shards": {
+              "model-00001-of-00016.safetensors": {
+                "expected_bytes": 3998893112,
+                "expected_sha256": "c8f4ee157c2bdb00521d0f422c08ef16f0f3f5f7e234786d829401d627d2e167",
+                "file_identity": {
+                  "bytes": 3998893112,
+                  "ctime_ns": 1786064136063525177,
+                  "device": 16777234,
+                  "inode": 197011751,
+                  "mtime_ns": 1786064136014875545
+                },
+                "observed_sha256": "c8f4ee157c2bdb00521d0f422c08ef16f0f3f5f7e234786d829401d627d2e167"
+              },
+              "model-00002-of-00016.safetensors": {
+                "expected_bytes": 3999974192,
+                "expected_sha256": "8cf85f0e5a0ea8d8cd3fd1f411175d811ca735571210873fd42bb5eec0b35406",
+                "file_identity": {
+                  "bytes": 3999974192,
+                  "ctime_ns": 1786064135951347306,
+                  "device": 16777234,
+                  "inode": 197011766,
+                  "mtime_ns": 1786064135879359488
+                },
+                "observed_sha256": "8cf85f0e5a0ea8d8cd3fd1f411175d811ca735571210873fd42bb5eec0b35406"
+              },
+              "model-00003-of-00016.safetensors": {
+                "expected_bytes": 3997360832,
+                "expected_sha256": "4fa5cc233e965c8671d32a335045697fc4317c8d2939d8ca5fb9ef62d0233207",
+                "file_identity": {
+                  "bytes": 3997360832,
+                  "ctime_ns": 1786064134976208830,
+                  "device": 16777234,
+                  "inode": 197011771,
+                  "mtime_ns": 1786064134955529571
+                },
+                "observed_sha256": "4fa5cc233e965c8671d32a335045697fc4317c8d2939d8ca5fb9ef62d0233207"
+              },
+              "model-00004-of-00016.safetensors": {
+                "expected_bytes": 3999975056,
+                "expected_sha256": "c10ff15f08abea0ff60b2fc345dcc34191bc8049d05d3bece6b081a99cbfc4c8",
+                "file_identity": {
+                  "bytes": 3999975056,
+                  "ctime_ns": 1786064136600389549,
+                  "device": 16777234,
+                  "inode": 197011772,
+                  "mtime_ns": 1786064136585475816
+                },
+                "observed_sha256": "c10ff15f08abea0ff60b2fc345dcc34191bc8049d05d3bece6b081a99cbfc4c8"
+              },
+              "model-00005-of-00016.safetensors": {
+                "expected_bytes": 3999975400,
+                "expected_sha256": "65d3701e2354a8cf6e5afa3f84520bf81effcdc29b0c481dbbeb089f80349100",
+                "file_identity": {
+                  "bytes": 3999975400,
+                  "ctime_ns": 1786064135236370063,
+                  "device": 16777234,
+                  "inode": 197011773,
+                  "mtime_ns": 1786064135185305629
+                },
+                "observed_sha256": "65d3701e2354a8cf6e5afa3f84520bf81effcdc29b0c481dbbeb089f80349100"
+              },
+              "model-00006-of-00016.safetensors": {
+                "expected_bytes": 3999975400,
+                "expected_sha256": "7c832bf9e527b7b6f3184b561de05f30981bdcfdffe9c69e69064cdaa97071b5",
+                "file_identity": {
+                  "bytes": 3999975400,
+                  "ctime_ns": 1786064136018223310,
+                  "device": 16777234,
+                  "inode": 197011778,
+                  "mtime_ns": 1786064136001820904
+                },
+                "observed_sha256": "7c832bf9e527b7b6f3184b561de05f30981bdcfdffe9c69e69064cdaa97071b5"
+              },
+              "model-00007-of-00016.safetensors": {
+                "expected_bytes": 3999975472,
+                "expected_sha256": "71a710c3ff52e85d22ae3f5b10b9a4dd49821c9533460fb1d4bb21593f71b585",
+                "file_identity": {
+                  "bytes": 3999975472,
+                  "ctime_ns": 1786064136486243169,
+                  "device": 16777234,
+                  "inode": 197011782,
+                  "mtime_ns": 1786064136357191225
+                },
+                "observed_sha256": "71a710c3ff52e85d22ae3f5b10b9a4dd49821c9533460fb1d4bb21593f71b585"
+              },
+              "model-00008-of-00016.safetensors": {
+                "expected_bytes": 3997362064,
+                "expected_sha256": "cd2861625e1bd8a212151445072b9d826c9754fd4618f8b83c2857fc0854b778",
+                "file_identity": {
+                  "bytes": 3997362064,
+                  "ctime_ns": 1786064136689398526,
+                  "device": 16777234,
+                  "inode": 197011789,
+                  "mtime_ns": 1786064136581406923
+                },
+                "observed_sha256": "cd2861625e1bd8a212151445072b9d826c9754fd4618f8b83c2857fc0854b778"
+              },
+              "model-00009-of-00016.safetensors": {
+                "expected_bytes": 3999975408,
+                "expected_sha256": "8335225fd61c0fe283a83463a8d9c5c19e211ea8048925b031a088f274eb9c4e",
+                "file_identity": {
+                  "bytes": 3999975408,
+                  "ctime_ns": 1786064182683734050,
+                  "device": 16777234,
+                  "inode": 197013482,
+                  "mtime_ns": 1786064182483571873
+                },
+                "observed_sha256": "8335225fd61c0fe283a83463a8d9c5c19e211ea8048925b031a088f274eb9c4e"
+              },
+              "model-00010-of-00016.safetensors": {
+                "expected_bytes": 3999975400,
+                "expected_sha256": "421481c42e8d85891c9d88492d7530d6b6d8b15c23a6db6a9b7438e0b6161330",
+                "file_identity": {
+                  "bytes": 3999975400,
+                  "ctime_ns": 1786064235847770302,
+                  "device": 16777234,
+                  "inode": 197013490,
+                  "mtime_ns": 1786064235737900192
+                },
+                "observed_sha256": "421481c42e8d85891c9d88492d7530d6b6d8b15c23a6db6a9b7438e0b6161330"
+              },
+              "model-00011-of-00016.safetensors": {
+                "expected_bytes": 3999975408,
+                "expected_sha256": "d7dd447928ddec67a3ec06d5bc4fd99dde9ac5bdf0b6ab500faca5dfdfb963b4",
+                "file_identity": {
+                  "bytes": 3999975408,
+                  "ctime_ns": 1786064248810154673,
+                  "device": 16777234,
+                  "inode": 197013511,
+                  "mtime_ns": 1786064248770671915
+                },
+                "observed_sha256": "d7dd447928ddec67a3ec06d5bc4fd99dde9ac5bdf0b6ab500faca5dfdfb963b4"
+              },
+              "model-00012-of-00016.safetensors": {
+                "expected_bytes": 3987924896,
+                "expected_sha256": "349a0b0247d244ffef34bc23b403ce756f515242323f024a5f8028c109a798af",
+                "file_identity": {
+                  "bytes": 3987924896,
+                  "ctime_ns": 1786064248896009220,
+                  "device": 16777234,
+                  "inode": 197013518,
+                  "mtime_ns": 1786064248883531248
+                },
+                "observed_sha256": "349a0b0247d244ffef34bc23b403ce756f515242323f024a5f8028c109a798af"
+              },
+              "model-00013-of-00016.safetensors": {
+                "expected_bytes": 3999975088,
+                "expected_sha256": "52e7f570649b27bc35b8cd27ac643d2158c02a5c76078c80a8afc449377b508e",
+                "file_identity": {
+                  "bytes": 3999975088,
+                  "ctime_ns": 1786064247773915552,
+                  "device": 16777234,
+                  "inode": 197013519,
+                  "mtime_ns": 1786064247709330766
+                },
+                "observed_sha256": "52e7f570649b27bc35b8cd27ac643d2158c02a5c76078c80a8afc449377b508e"
+              },
+              "model-00014-of-00016.safetensors": {
+                "expected_bytes": 3999975400,
+                "expected_sha256": "0b30aed1b55b3f25fbf2c5e81784438d0a08461c9518e26e11987eb10d80ebd7",
+                "file_identity": {
+                  "bytes": 3999975400,
+                  "ctime_ns": 1786064248743990381,
+                  "device": 16777234,
+                  "inode": 197013525,
+                  "mtime_ns": 1786064248677384045
+                },
+                "observed_sha256": "0b30aed1b55b3f25fbf2c5e81784438d0a08461c9518e26e11987eb10d80ebd7"
+              },
+              "model-00015-of-00016.safetensors": {
+                "expected_bytes": 3999975400,
+                "expected_sha256": "cb8b3b13c0519874ed0cbe6832ab57e51476e3821c83f0ffe4ec83a8d23fc5f4",
+                "file_identity": {
+                  "bytes": 3999975400,
+                  "ctime_ns": 1786064248861078565,
+                  "device": 16777234,
+                  "inode": 197013529,
+                  "mtime_ns": 1786064248702472239
+                },
+                "observed_sha256": "cb8b3b13c0519874ed0cbe6832ab57e51476e3821c83f0ffe4ec83a8d23fc5f4"
+              },
+              "model-00016-of-00016.safetensors": {
+                "expected_bytes": 1085307128,
+                "expected_sha256": "778479fa2b8b766ba1c7bfc56a71ed9b060081e0fbc5eb4edafd19a1d6b4c116",
+                "file_identity": {
+                  "bytes": 1085307128,
+                  "ctime_ns": 1786064204153146185,
+                  "device": 16777234,
+                  "inode": 197013533,
+                  "mtime_ns": 1786064204038548887
+                },
+                "observed_sha256": "778479fa2b8b766ba1c7bfc56a71ed9b060081e0fbc5eb4edafd19a1d6b4c116"
+              }
+            },
+            "source_audit_document_sha256": "db7a53e7e7d272501793acc35ba9e8ac9797b5e8853fc8887841df5eb11873a6",
+            "source_audit_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/QWEN30_SOURCE_BODY_AUDIT_CANDIDATE.json",
+            "source_audit_seal_sha256": "00ed3e495416c2cbafbcdb7800528e15f243b1a13f5f4af13240109c8fc69f7b",
+            "source_model_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-30b/Qwen3-Coder-30B-A3B-Instruct",
+            "source_repository": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+            "source_revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+            "status": "EARNED_CURRENT_SOURCE_SHARDS_REVALIDATED",
+            "weight_map_sha256": "9e8b77a0bd8bc61928e78e5c5c5e4b0ffa03b489ab040f9d660ff5e42a056cbd"
+          },
+          "document_sha256": "89184ef7eaea1a91391f0ec30977e04f4e3320ab4eff460665d865bbbd70eae5",
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/QWEN30_CURRENT_SOURCE_SHARD_REVALIDATION.json",
+          "phase": null,
+          "present": true,
+          "recorded_at": "2026-08-08T07:04:27.417473Z",
+          "schema": "hawking.ascension.complete_binary_source_revalidation.v1",
+          "seal_sha256": "ac7208e11c31bbd035bd87fd62a80020b9d1d05970867576f4649f6bebe68123",
+          "sealed": true,
+          "state": "SEALED",
+          "status": "EARNED_CURRENT_SOURCE_SHARDS_REVALIDATED"
+        },
+        "identity": {
+          "bytes": 5698,
+          "document": {
+            "claim_boundary": {
+              "content_identity_is_stable_across_status_heartbeats": true,
+              "shard_full_revalidation_is_owned_by_the_complete_artifact_compiler": true,
+              "source_body_is_teacher_authority_not_a_runtime_participant": true
+            },
+            "content_identity_sha256": "dfc985ac9e293c271209742f33c694664ed67b30962dad769cc3f596c58a9bb9",
+            "model": {
+              "architecture": "Qwen3MoeForCausalLM",
+              "id": "Qwen3-Coder-30B-A3B-Instruct",
+              "repository": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+              "revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+              "source_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-30b/Qwen3-Coder-30B-A3B-Instruct"
+            },
+            "recorded_at": "2026-08-08T06:59:48.654533Z",
+            "schema": "hawking.ascension.qwen_source_content_identity.v1",
+            "seal_sha256": "816648bae17f2688a04161a4f921debfe6697386f6078f069dc7e594b99930a5",
+            "source_content": {
+              "architecture": "Qwen3MoeForCausalLM",
+              "control_files": [
+                {
+                  "bytes": 1699758,
+                  "path": "model.safetensors.index.json",
+                  "sha256": "8dde190b862c7c80ec7403c6495de00c60bbaf246ed479cee4506284989c584c"
+                },
+                {
+                  "bytes": 963,
+                  "path": "config.json",
+                  "sha256": "e2c8d8eea39471785cd93379d8b48241ad7dcda299013155dd02526e34a0de62"
+                },
+                {
+                  "bytes": 180,
+                  "path": "generation_config.json",
+                  "sha256": "c99723ab3ba28630d26ae23def77603b540a46924895af5cf234740d3b27b51d"
+                },
+                {
+                  "bytes": 7032399,
+                  "path": "tokenizer.json",
+                  "sha256": "19564a48c4f71a2a1b937cce34c737a1e662b171c5f5d7edf641a15cd896f07d"
+                },
+                {
+                  "bytes": 13055,
+                  "path": "tokenizer_config.json",
+                  "sha256": "60f6e8cb15c98dd07300a3cc465ea662de245d2095e4245616af21b2324db3fc"
+                },
+                {
+                  "bytes": 6211,
+                  "path": "chat_template.jinja",
+                  "sha256": "5a38bfa05833266240066aedc497decc9b00cc0d3e3b8cceea98cf530196ab06"
+                },
+                {
+                  "bytes": 1671839,
+                  "path": "merges.txt",
+                  "sha256": "599bab54075088774b1733fde865d5bd747cbcc7a547c5bc12610e874e26f5e3"
+                },
+                {
+                  "bytes": 2776833,
+                  "path": "vocab.json",
+                  "sha256": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910"
+                }
+              ],
+              "repository": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+              "revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+              "verified_weight_shards": [
+                {
+                  "bytes": 3998893112,
+                  "path": "model-00001-of-00016.safetensors",
+                  "sha256": "c8f4ee157c2bdb00521d0f422c08ef16f0f3f5f7e234786d829401d627d2e167"
+                },
+                {
+                  "bytes": 3999974192,
+                  "path": "model-00002-of-00016.safetensors",
+                  "sha256": "8cf85f0e5a0ea8d8cd3fd1f411175d811ca735571210873fd42bb5eec0b35406"
+                },
+                {
+                  "bytes": 3997360832,
+                  "path": "model-00003-of-00016.safetensors",
+                  "sha256": "4fa5cc233e965c8671d32a335045697fc4317c8d2939d8ca5fb9ef62d0233207"
+                },
+                {
+                  "bytes": 3999975056,
+                  "path": "model-00004-of-00016.safetensors",
+                  "sha256": "c10ff15f08abea0ff60b2fc345dcc34191bc8049d05d3bece6b081a99cbfc4c8"
+                },
+                {
+                  "bytes": 3999975400,
+                  "path": "model-00005-of-00016.safetensors",
+                  "sha256": "65d3701e2354a8cf6e5afa3f84520bf81effcdc29b0c481dbbeb089f80349100"
+                },
+                {
+                  "bytes": 3999975400,
+                  "path": "model-00006-of-00016.safetensors",
+                  "sha256": "7c832bf9e527b7b6f3184b561de05f30981bdcfdffe9c69e69064cdaa97071b5"
+                },
+                {
+                  "bytes": 3999975472,
+                  "path": "model-00007-of-00016.safetensors",
+                  "sha256": "71a710c3ff52e85d22ae3f5b10b9a4dd49821c9533460fb1d4bb21593f71b585"
+                },
+                {
+                  "bytes": 3997362064,
+                  "path": "model-00008-of-00016.safetensors",
+                  "sha256": "cd2861625e1bd8a212151445072b9d826c9754fd4618f8b83c2857fc0854b778"
+                },
+                {
+                  "bytes": 3999975408,
+                  "path": "model-00009-of-00016.safetensors",
+                  "sha256": "8335225fd61c0fe283a83463a8d9c5c19e211ea8048925b031a088f274eb9c4e"
+                },
+                {
+                  "bytes": 3999975400,
+                  "path": "model-00010-of-00016.safetensors",
+                  "sha256": "421481c42e8d85891c9d88492d7530d6b6d8b15c23a6db6a9b7438e0b6161330"
+                },
+                {
+                  "bytes": 3999975408,
+                  "path": "model-00011-of-00016.safetensors",
+                  "sha256": "d7dd447928ddec67a3ec06d5bc4fd99dde9ac5bdf0b6ab500faca5dfdfb963b4"
+                },
+                {
+                  "bytes": 3987924896,
+                  "path": "model-00012-of-00016.safetensors",
+                  "sha256": "349a0b0247d244ffef34bc23b403ce756f515242323f024a5f8028c109a798af"
+                },
+                {
+                  "bytes": 3999975088,
+                  "path": "model-00013-of-00016.safetensors",
+                  "sha256": "52e7f570649b27bc35b8cd27ac643d2158c02a5c76078c80a8afc449377b508e"
+                },
+                {
+                  "bytes": 3999975400,
+                  "path": "model-00014-of-00016.safetensors",
+                  "sha256": "0b30aed1b55b3f25fbf2c5e81784438d0a08461c9518e26e11987eb10d80ebd7"
+                },
+                {
+                  "bytes": 3999975400,
+                  "path": "model-00015-of-00016.safetensors",
+                  "sha256": "cb8b3b13c0519874ed0cbe6832ab57e51476e3821c83f0ffe4ec83a8d23fc5f4"
+                },
+                {
+                  "bytes": 1085307128,
+                  "path": "model-00016-of-00016.safetensors",
+                  "sha256": "778479fa2b8b766ba1c7bfc56a71ed9b060081e0fbc5eb4edafd19a1d6b4c116"
+                }
+              ]
+            },
+            "status": "IMMUTABLE_SOURCE_CONTENT_IDENTITY_BOUND",
+            "weight_body_audit_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/QWEN30_SOURCE_BODY_AUDIT_CANDIDATE.json",
+            "weight_body_audit_seal_sha256": "f752bb1ff016431f199cd4f106d7b2dffb170c544afaab1f40a6241f9a73cef1"
+          },
+          "document_sha256": "fcd948ebde506c32f26b4d352499832d467442d1a99303048ba065768a29cdce",
+          "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/evolution/SOURCE_CONTENT_IDENTITY.json",
+          "phase": null,
+          "present": true,
+          "recorded_at": "2026-08-08T06:59:48.654533Z",
+          "schema": "hawking.ascension.qwen_source_content_identity.v1",
+          "seal_sha256": "816648bae17f2688a04161a4f921debfe6697386f6078f069dc7e594b99930a5",
+          "sealed": true,
+          "state": "SEALED",
+          "status": "IMMUTABLE_SOURCE_CONTENT_IDENTITY_BOUND"
+        }
+      },
+      "state_kv_evidence": {
+        "bytes": 3840,
+        "document_sha256": "656e20c3add42479b58f1df9c3fed32b67575b84f83456f8752a4e1de23c1d4a",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/state-kv/QWEN30_STATE_KV_STATUS.json",
+        "phase": "COMPLETE_SOURCE_BOUND_STATE_TRAFFIC_AND_SEALED_RESTART_RECOVERY_VERIFIED",
+        "present": true,
+        "recorded_at": "2026-08-08T07:31:54.487584Z",
+        "schema": "hawking.ascension.qwen_state_kv_status.v1",
+        "seal_sha256": "268b4fdf4662d85fb7735d901dafc2ff8c4aad6b528ac41538baf5470f38ff6f",
+        "sealed": true,
+        "state": "SEALED",
+        "status": null
+      }
+    },
+    "stage": "BLOCKED_CAPABILITY_COHERENCE_AFTER_DIRECT_PACKED_GENERATION",
+    "status": "BLOCKED_CAPABILITY_COHERENCE_AFTER_DIRECT_PACKED_GENERATION",
+    "what_currently_prevents_next_gate": "a direct packed Metal-only autoregressive trace reached all 48 layers without opening the BF16 loader, but its completion is unscored/incoherent and therefore cannot establish prompt dependence, manager capability, HCLI, or TPS"
+  },
+  "record_id": "scientific-optimizer:qwen30-blocked_capability_coherence_after_direct_packed_generation-2b31a7860fc605c00d6d",
+  "recorded_at": "2026-08-08T18:09:30.426352Z",
+  "required_pre_experiment_reads": {
+    "canonical_template_runtime_kernel_evidence": {
+      "claim_boundary": "evidence inventory only: SSE transport remains unqualified, rejected SIMD remains excluded, and gate/up timing is component-only rather than model TPS",
+      "direct_packed_gate_up_pair": {
+        "bytes": 4435,
+        "document_sha256": "3d5cc437662d33ea8bcc7ad8bb0d5c6a0dd46e5c30e905eab274dd5d1923d398",
+        "integration_state": "UNINTEGRATED_COMPONENT_ONLY",
+        "p50_component_host_wall_speedup_ratio": 1.5930579613110443,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-token-profiler/QWEN30_DIRECT_PACKED_GATE_UP_PAIR_COMPONENT_RECEIPT.json",
+        "phase": null,
+        "present": true,
+        "recorded_at": "2026-08-08T17:34:19.842874Z",
+        "schema": "hawking.ascension.qwen30_direct_packed_gate_up_pair_component_receipt.v1",
+        "seal_sha256": "f7c680f2d4631f7947a78e3675951e7cb216533d4f6cd1819f5b0fd53b92122f",
+        "sealed": true,
+        "state": "SEALED",
+        "status": "EARNED_SOURCE_BOUND_DIRECT_PACKED_GATE_UP_PAIR_COMPONENT_NOT_MODEL_TPS"
+      },
+      "direct_packed_gate_up_swiglu_raw_observation": {
+        "bytes": 7044,
+        "document_sha256": "84934a6f4dd9d2524241b4084e94ac0a2fd2f63cf3cf785f13946300a3844b2a",
+        "error": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-token-profiler/QWEN30_DIRECT_PACKED_GATE_UP_SWIGLU_FUSED_COMPONENT_RAW_RESULT.json seal mismatch: recorded=None expected=84934a6f4dd9d2524241b4084e94ac0a2fd2f63cf3cf785f13946300a3844b2a",
+        "observation_state": "UNSEALED_SUPPORTING_OBSERVATION_NOT_FRONTIER_AUTHORITY",
+        "p50_component_host_wall_speedup_ratio": 1.6600408072177766,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-token-profiler/QWEN30_DIRECT_PACKED_GATE_UP_SWIGLU_FUSED_COMPONENT_RAW_RESULT.json",
+        "phase": null,
+        "present": true,
+        "recorded_at": null,
+        "schema": "hawking.ascension.qwen30_direct_packed_gate_up_swiglu_fused_component.v1",
+        "sealed": false,
+        "state": "OBSERVED_UNSEALED",
+        "status": "PASS_DIRECT_PACKED_QWEN30_GATE_UP_SWIGLU_FUSED_COMPONENT_BENCHMARK_NOT_MODEL_TPS"
+      },
+      "exact_native_runtime": {
+        "bytes": 2772,
+        "document_sha256": "9e44a63060f2e379d14480f248667a4b7d4b003297b408794d480450260641ac",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_EXACT_FULL_TOKEN_RUNTIME_RECEIPT.json",
+        "phase": null,
+        "present": true,
+        "recorded_at": "2026-08-08T18:09:19.270492Z",
+        "schema": "hawking.ascension.physical_exact_full_token_runtime.v1",
+        "seal_sha256": "4ba6da3e5c3d3eee076321e1da8a587a342c48ed940494179da3599da7ca9408",
+        "sealed": true,
+        "state": "SEALED",
+        "status": "REVOKED_RUNTIME_EXECUTABLE_TRANSITION_TO_VALIDATED_ONCE_PAYLOAD_CATALOG"
+      },
+      "partial_gpu_profile_negative": {
+        "bytes": 62109,
+        "document_sha256": "30d6e21039827cc9d969738b1b849caeb37d1a9814d644f316ef3dcf8e2402ff",
+        "error": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_DIRECT_PACKED_NATIVE_KERNEL_PROFILE_REJECTED_PARTIAL_GPU_TRACE.json seal mismatch: recorded=None expected=30d6e21039827cc9d969738b1b849caeb37d1a9814d644f316ef3dcf8e2402ff",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_DIRECT_PACKED_NATIVE_KERNEL_PROFILE_REJECTED_PARTIAL_GPU_TRACE.json",
+        "phase": null,
+        "present": true,
+        "recorded_at": "2026-08-08T15:28:01.307864Z",
+        "schema": "hawking.ascension.qwen30_complete_native_profile_negative.v1",
+        "sealed": false,
+        "state": "OBSERVED_UNSEALED",
+        "status": "REJECTED_QWEN30_PARTIAL_GPU_PRODUCTION_TRACE_REOPENED"
+      },
+      "rejected_template_simdgroup_candidate": {
+        "bytes": 6689,
+        "document_sha256": "4455470a32fbb30be5451d04cfdfc0ad2158cb775d3b9c1caf9d6de7869ecbe6",
+        "failures": [
+          "prompt B exact token/template parity differs from scalar control"
+        ],
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_PACKED_BINARY_SIMDGROUP_TEMPLATE_PARITY_RECEIPT.json",
+        "phase": null,
+        "present": true,
+        "recorded_at": "2026-08-08T17:51:39.277160Z",
+        "schema": "hawking.ascension.qwen30_packed_binary_simdgroup_template_parity.v1",
+        "seal_sha256": "7803bb793be9c7d43f19f38d08cbd9dd113917dcd88a4d857024a863247e9830",
+        "sealed": true,
+        "state": "SEALED",
+        "status": "REJECTED_QWEN30_PACKED_BINARY_SIMDGROUP_TEMPLATE_PARITY"
+      },
+      "unqualified_chat_sse_transport": {
+        "bytes": 8717,
+        "clean_tps": "NOT_MEASURED",
+        "coherence": "UNSCORED_NOT_A_CAPABILITY_EVALUATION",
+        "document_sha256": "84532e5fd22120f7d46b7d7b0bd45ecf28729ff3add9645f6663a71d708ae439",
+        "openai_chat_sse_framing_verified": true,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_HCLI_UNQUALIFIED_CHAT_SSE_TRANSPORT_RECEIPT.json",
+        "phase": null,
+        "present": true,
+        "recorded_at": "2026-08-08T16:30:50.658117Z",
+        "schema": "hawking.ascension.qwen30_direct_packed_hcli_transport_smoke.v1",
+        "seal_sha256": "b27de6f0a0bb42c509542fd2d946426b9dffb5ff752fb0d67106d1f0bf7feb56",
+        "sealed": true,
+        "state": "SEALED",
+        "status": "EARNED_DIRECT_PACKED_NATIVE_CHAT_SSE_TRANSPORT_HCLI_UNQUALIFIED",
+        "uses_exact_native_runtime": true
+      }
+    },
+    "current_bpw_frontier": {
+      "complete_physical_bpw": 1.1303663832684598,
+      "component_frontier": {
+        "bytes": 31458,
+        "document_sha256": "af07cf3e1aa84c0cbfdab6ede10e567b567ac19a03790e0e839630da4fe2de38",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/evolution/PARETO_FRONTIER.json",
+        "phase": null,
+        "present": true,
+        "recorded_at": "2026-08-08T18:09:14.742046Z",
+        "schema": "hawking.ascension.gravity_pareto_frontier.v1",
+        "seal_sha256": "d930a1879ec72eaf6c4d9fd5a8fb4c7379c0d86c7ed4033b920233ea0318988f",
+        "sealed": true,
+        "state": "SEALED",
+        "status": "COMPONENT_PHYSICAL_PARETO_FRONTIER_NOT_FULL_MODEL_SELECTION"
+      },
+      "component_lowest_bpw": 0.11738204956054688,
+      "manifest": {
+        "bytes": 19726976,
+        "document_sha256": "089cc4d394cd1b05b4b263932d8ffa16252fe19b4af0b601af916e856f8a4bbb",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/QWEN30_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+        "phase": null,
+        "present": true,
+        "recorded_at": "2026-08-08T08:29:30.085950Z",
+        "schema": "hawking.ascension.qwen30_complete_binary_gravity.v1",
+        "seal_sha256": "3321a99d719e70499663b7bfebe14dd6c732bfc533bb05b9277eb398e44d6357",
+        "sealed": true,
+        "state": "SEALED",
+        "status": "CANDIDATE_COMPLETE_BINARY_ARTIFACT_LOW_FIDELITY_UNQUALIFIED"
+      }
+    },
+    "current_capability_frontier": {
+      "capability_receipt": {
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/evaluation/QWEN30_CAPABILITY_EVALUATION_RECEIPT.json",
+        "present": false,
+        "sealed": false,
+        "state": "MISSING"
+      },
+      "claim_boundary": "no component candidate becomes capable without the sealed capability receipt",
+      "current_capable_component_field": {
+        "candidate": null,
+        "status": "UNSET_BLOCKED_NO_NATIVE_COMPLETE_TOKEN_RUNTIME_OR_CAPABILITY_EVIDENCE"
+      }
+    },
+    "current_complete_champion": {
+      "admission": {
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/QWEN30_COMPLETE_BINARY_GRAVITY_ADMISSION_RECEIPT.json",
+        "seal_sha256": "89d3c531d5638757bf0c0348df4f11e45a4f1c0cf87d27a7f3afcb675247301a",
+        "sealed": true,
+        "status": "EARNED_COMPLETE_BINARY_ARTIFACT_ADMITTED_NOT_RUNTIME_OR_CAPABILITY_QUALIFIED"
+      },
+      "claim_boundary": "complete artifact evidence is separate from native runtime and capability",
+      "manifest": {
+        "complete_physical_bpw": 1.1303663832684598,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/QWEN30_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+        "seal_sha256": "3321a99d719e70499663b7bfebe14dd6c732bfc533bb05b9277eb398e44d6357",
+        "sealed": true,
+        "status": "CANDIDATE_COMPLETE_BINARY_ARTIFACT_LOW_FIDELITY_UNQUALIFIED"
+      }
+    },
+    "current_complete_token_profile": {
+      "exact_runtime_receipt": {
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_EXACT_FULL_TOKEN_RUNTIME_RECEIPT.json",
+        "runtime": null,
+        "schema": "hawking.ascension.physical_exact_full_token_runtime.v1",
+        "seal_sha256": "4ba6da3e5c3d3eee076321e1da8a587a342c48ed940494179da3599da7ca9408",
+        "sealed": true,
+        "status": "REVOKED_RUNTIME_EXECUTABLE_TRANSITION_TO_VALIDATED_ONCE_PAYLOAD_CATALOG"
+      },
+      "profile_state": "BLOCKED_NO_SEALED_EXACT_FULL_TOKEN_RUNTIME",
+      "watchdog": {
+        "heartbeat": 980,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_COMPLETE_RUNTIME_STATUS.json",
+        "phase": "NATIVE_DIRECT_PACKED_STAGE_RUNNING",
+        "pid": 39017
+      }
+    },
+    "direct_packed_generation": {
+      "all_layers_executed": true,
+      "claim_boundary": "observed direct packed execution is not a sealed capability, HCLI, clean TPS, TG, or tournament result",
+      "completion_text_unscored": " Wien Wien",
+      "completion_token_ids": [
+        98886,
+        98886
+      ],
+      "full_model_forward_count": 17,
+      "full_token_receipt": {
+        "bytes": 3071,
+        "document_sha256": "738a329bb7ccc99fe3c17692060d19aa07197cc1974c242526ae6d362eded325",
+        "error": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_DIRECT_PACKED_NATIVE_FULL_TOKEN_RESULT.json seal mismatch: recorded=None expected=738a329bb7ccc99fe3c17692060d19aa07197cc1974c242526ae6d362eded325",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_DIRECT_PACKED_NATIVE_FULL_TOKEN_RESULT.json",
+        "phase": null,
+        "present": true,
+        "recorded_at": null,
+        "schema": "hawking.ascension.qwen30_complete_native_runtime_result.v1",
+        "sealed": false,
+        "state": "OBSERVED_UNSEALED",
+        "status": "EARNED_QWEN30_DIRECT_PACKED_NATIVE_METAL_FULL_TOKEN_EXECUTED_UNQUALIFIED"
+      },
+      "metal_only": true,
+      "raw_bf16_loader_not_opened": true,
+      "receipt": {
+        "bytes": 4735,
+        "document_sha256": "31d563a36de75193887775e85fbf403ce4722902814d5c5d743de3a8a10a47e4",
+        "error": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_DIRECT_PACKED_NATIVE_PROMPT_A_RESULT.json seal mismatch: recorded=None expected=31d563a36de75193887775e85fbf403ce4722902814d5c5d743de3a8a10a47e4",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_DIRECT_PACKED_NATIVE_PROMPT_A_RESULT.json",
+        "phase": null,
+        "present": true,
+        "recorded_at": null,
+        "schema": "hawking.ascension.qwen30_complete_native_runtime_result.v1",
+        "sealed": false,
+        "state": "OBSERVED_UNSEALED",
+        "status": "EARNED_QWEN30_DIRECT_PACKED_NATIVE_GREEDY_AUTOREGRESSIVE_EXECUTED_UNQUALIFIED"
+      },
+      "state": "OBSERVED_UNSEALED_DIRECT_PACKED_AUTOREGRESSIVE_TRACE_REQUIRES_CAPABILITY_QUALITY_GATE"
+    },
+    "kernel_genome": {
+      "bytes": 3823591,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_KERNEL_GENOME.jsonl",
+      "present": true,
+      "record_count": 885,
+      "sha256": "bc377fd8e5cf2beafcaadbaa062ec5e014874a59e328b26fff16f9202b477608",
+      "state": "OBSERVED",
+      "tail": [
+        {
+          "mechanism": null,
+          "mechanism_key": null,
+          "model": null,
+          "model_family": "qwen3_moe",
+          "record_id": "kernel:qwen30-1c13e2e1fbcb076ebebbddea7138d914",
+          "recorded_at": "2026-08-08T17:40:53.664645Z",
+          "representation": "activation_corrected_rowwise_q3",
+          "schema": "hawking.ascension.knowledge_kernel_genome.v1",
+          "seal_sha256": "775fb946d60873889eac5f18182651039ff0547e72892e5f1785431c8fd07df5",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": null,
+          "model": null,
+          "model_family": "qwen3_moe",
+          "record_id": "kernel:qwen30-3d3497f8092ec29a889afdc842756881",
+          "recorded_at": "2026-08-08T17:43:34.174220Z",
+          "representation": "uniform_q4_group64",
+          "schema": "hawking.ascension.knowledge_kernel_genome.v1",
+          "seal_sha256": "e65cc6c60a39bed9a00f7c090af2635044704f39c47c34ca86a9c45ea77e48aa",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": null,
+          "model": null,
+          "model_family": "qwen3_moe",
+          "record_id": "kernel:qwen30-898cd6c6bcb43b6160a1fd9b426205d4",
+          "recorded_at": "2026-08-08T17:44:21.621479Z",
+          "representation": "additive_residual_codebook_q2x2",
+          "schema": "hawking.ascension.knowledge_kernel_genome.v1",
+          "seal_sha256": "7ae1d482141f478b16071eda6dd01de9d9e8df0b41239cf1ee46517f6f7533f3",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": null,
+          "model": null,
+          "model_family": "qwen3_next_hybrid",
+          "record_id": "kernel:qwen80-571b15fa14eebb31c4f3ee4c1cc87aab",
+          "recorded_at": "2026-08-08T17:54:48.235687Z",
+          "representation": "uniform_q4_group64",
+          "schema": "hawking.ascension.knowledge_kernel_genome.v1",
+          "seal_sha256": "94055eebe871a0879e9b42ab60254fcdf1eeca6e2b39e5c1c5ae697a36c3ca02",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": null,
+          "model": null,
+          "model_family": "qwen3_next_hybrid",
+          "record_id": "kernel:qwen80-b99e185d1ccf5c4ad92a840915e96bff",
+          "recorded_at": "2026-08-08T17:55:41.648553Z",
+          "representation": "additive_residual_codebook_q2x2",
+          "schema": "hawking.ascension.knowledge_kernel_genome.v1",
+          "seal_sha256": "9fc699ea39ad1aaf64cf2991424b427b42130e03cd629fa2f102f697de75625a",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": null,
+          "model": null,
+          "model_family": "qwen3_next_hybrid",
+          "record_id": "kernel:qwen80-85f5f07f8e3b5de5d249a1fc24801a84",
+          "recorded_at": "2026-08-08T17:59:01.211331Z",
+          "representation": "uniform_q4_group64",
+          "schema": "hawking.ascension.knowledge_kernel_genome.v1",
+          "seal_sha256": "b2eee64995606c51f3042424dca76fae3ca6af5ecab78cb4a028ae119b1c88ce",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": null,
+          "model": null,
+          "model_family": "qwen3_next_hybrid",
+          "record_id": "kernel:qwen80-75ca6ee3dfd099bcd1a1877c40e19bcc",
+          "recorded_at": "2026-08-08T17:59:30.874327Z",
+          "representation": "hadamard_lattice_q3_group128",
+          "schema": "hawking.ascension.knowledge_kernel_genome.v1",
+          "seal_sha256": "d1446ca9371ef3c14284c3b08ca86e9b586d77a1e5ee028ef32493337a4f58ae",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": null,
+          "model": null,
+          "model_family": "qwen3_next_hybrid",
+          "record_id": "kernel:qwen80-4dfeba1888e068aa73f6608bb0c2274b",
+          "recorded_at": "2026-08-08T18:00:00.905612Z",
+          "representation": "additive_residual_codebook_q2x2",
+          "schema": "hawking.ascension.knowledge_kernel_genome.v1",
+          "seal_sha256": "75a9de016f16a52ee14192c718318786851fa7412b626d475ddff88b9871c2c8",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": null,
+          "model": null,
+          "model_family": "qwen3_next_hybrid",
+          "record_id": "kernel:qwen80-6d2d24b87b86123968d24415ff6dc0da",
+          "recorded_at": "2026-08-08T18:03:18.377681Z",
+          "representation": "uniform_q4_group64",
+          "schema": "hawking.ascension.knowledge_kernel_genome.v1",
+          "seal_sha256": "1e53caf27ee3214e7f20a6d87b2af11e40c26a96e3de32ce6a62126df2365fd3",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": null,
+          "model": null,
+          "model_family": "qwen3_moe",
+          "record_id": "kernel:qwen30-53f8068e75f2c25fb4f361b701633fd0",
+          "recorded_at": "2026-08-08T18:06:08.944813Z",
+          "representation": "uniform_q4_group64",
+          "schema": "hawking.ascension.knowledge_kernel_genome.v1",
+          "seal_sha256": "ce0e1bc0d5c4f015913e56c9fa19f0168304fbdbcaec0798b3bd5961027431ff",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": null,
+          "model": null,
+          "model_family": "qwen3_moe",
+          "record_id": "kernel:qwen30-3852e1835a2fea4a4e1ef227c2817045",
+          "recorded_at": "2026-08-08T18:06:33.986401Z",
+          "representation": "hadamard_lattice_q3_group128",
+          "schema": "hawking.ascension.knowledge_kernel_genome.v1",
+          "seal_sha256": "9bf818a0d248b5a0e63f8649a7eff60a4be12f02c42e264d6675f56879989222",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": null,
+          "model": null,
+          "model_family": "qwen3_moe",
+          "record_id": "kernel:qwen30-f571a708b2294c4ed99d123af6698959",
+          "recorded_at": "2026-08-08T18:06:58.763323Z",
+          "representation": "additive_residual_codebook_q2x2",
+          "schema": "hawking.ascension.knowledge_kernel_genome.v1",
+          "seal_sha256": "85f7ae7ec8d5b554376983412fe70acfe5bc7d874c71d9098c660d1f1b731b3a",
+          "sealed": true,
+          "status": null
+        }
+      ]
+    },
+    "negative_science": {
+      "bytes": 429161,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl",
+      "present": true,
+      "record_count": 247,
+      "sha256": "adf6222180a471be3d78a9defde73b092faee6ee3de4c8f8a21f666b1e34d5c4",
+      "state": "OBSERVED",
+      "tail": [
+        {
+          "mechanism": "hadamard_lattice_q3_group128",
+          "mechanism_key": "hadamard_lattice_q3_group128:gated_deltanet_projection:qwen3_next_hybrid:c7b1aa8859b20242",
+          "model": null,
+          "model_family": null,
+          "record_id": "negative:qwen80-6eca88c9d64d551600a8c1169a2c41df",
+          "recorded_at": "2026-08-08T11:21:10.940384Z",
+          "representation": null,
+          "schema": "hawking.ascension.negative_science.v1",
+          "seal_sha256": "bc7194dec0507a99449a9fb0c30936167411aeff71db750cfabb40f1899b223f",
+          "sealed": true,
+          "status": "BURIED"
+        },
+        {
+          "mechanism": "activation_corrected_rowwise_q3",
+          "mechanism_key": "activation_corrected_rowwise_q3:hybrid_attention_q:qwen3_next_hybrid:a30723461e8d0986",
+          "model": null,
+          "model_family": null,
+          "record_id": "negative:qwen80-9c25799df6c9f34f6b328fd7310ce8c0",
+          "recorded_at": "2026-08-08T11:36:28.153121Z",
+          "representation": null,
+          "schema": "hawking.ascension.negative_science.v1",
+          "seal_sha256": "0c8ac1120bfa697a492f6349345421e15d7b769d81506db48fafe4688bcc2b80",
+          "sealed": true,
+          "status": "BURIED"
+        },
+        {
+          "mechanism": "hadamard_lattice_q3_group128",
+          "mechanism_key": "hadamard_lattice_q3_group128:routed_expert_gate:qwen3_moe:2d3fc9271a0d70c3",
+          "model": null,
+          "model_family": null,
+          "record_id": "negative:qwen30-2efb9b4d4c7af4d6a03f9bb60395f9ee",
+          "recorded_at": "2026-08-08T11:56:04.332069Z",
+          "representation": null,
+          "schema": "hawking.ascension.negative_science.v1",
+          "seal_sha256": "ab7ea5e33c469fb77b6b993030f5882c5f8633087ae60cd646dd00d0ca15e422",
+          "sealed": true,
+          "status": "BURIED"
+        },
+        {
+          "mechanism": "activation_corrected_rowwise_q3",
+          "mechanism_key": "activation_corrected_rowwise_q3:shared_expert:qwen3_next_hybrid:af93fce6141739e7",
+          "model": null,
+          "model_family": null,
+          "record_id": "negative:qwen80-b5623d851f611b056ba889c403dbf350",
+          "recorded_at": "2026-08-08T12:05:40.796888Z",
+          "representation": null,
+          "schema": "hawking.ascension.negative_science.v1",
+          "seal_sha256": "a512b06a792c70ee015fcbbe2eba60308c0aed14b962b5840e02837f119262b0",
+          "sealed": true,
+          "status": "BURIED"
+        },
+        {
+          "mechanism": "additive_residual_codebook_q2x2",
+          "mechanism_key": "additive_residual_codebook_q2x2:gated_deltanet_projection:qwen3_next_hybrid:552aa0e7a19ccc72",
+          "model": null,
+          "model_family": null,
+          "record_id": "negative:qwen80-cb09976cec26566de572ab799ee40006",
+          "recorded_at": "2026-08-08T12:12:38.182743Z",
+          "representation": null,
+          "schema": "hawking.ascension.negative_science.v1",
+          "seal_sha256": "d108403985fde783f5c804ac04971c1780660e775193f06a8f3cbf1e5578cc34",
+          "sealed": true,
+          "status": "BURIED"
+        },
+        {
+          "mechanism": "uniform_q3_group64",
+          "mechanism_key": "uniform_q3_group64:shared_expert:qwen3_next_hybrid:3c6384c1a9a14cff",
+          "model": null,
+          "model_family": null,
+          "record_id": "negative:qwen80-22534a21a2c3c9253a947f42dd5e322c",
+          "recorded_at": "2026-08-08T12:17:46.362010Z",
+          "representation": null,
+          "schema": "hawking.ascension.negative_science.v1",
+          "seal_sha256": "0d57ae7bc4e4812684f13a5f487b9ea6280f01a55362fe7ee28bbefc8ea742be",
+          "sealed": true,
+          "status": "BURIED"
+        },
+        {
+          "mechanism": "activation_corrected_rowwise_q3",
+          "mechanism_key": "activation_corrected_rowwise_q3:routed_expert_gate:qwen3_next_hybrid:a214ef1ace59a099",
+          "model": null,
+          "model_family": null,
+          "record_id": "negative:qwen80-f9590d1300c092b7718c192fef28e45f",
+          "recorded_at": "2026-08-08T13:15:41.122464Z",
+          "representation": null,
+          "schema": "hawking.ascension.negative_science.v1",
+          "seal_sha256": "401f971676f93963354234ff65efb26292b9284b9744299041dab4567419b3c1",
+          "sealed": true,
+          "status": "BURIED"
+        },
+        {
+          "mechanism": "activation_corrected_rowwise_q3",
+          "mechanism_key": "activation_corrected_rowwise_q3:gqa_attention_q:qwen3_moe:af93fce6141739e7",
+          "model": null,
+          "model_family": null,
+          "record_id": "negative:qwen30-3c09d7c985e64c43d069d2624f9ddf3d",
+          "recorded_at": "2026-08-08T13:48:52.751625Z",
+          "representation": null,
+          "schema": "hawking.ascension.negative_science.v1",
+          "seal_sha256": "69cb1cea8e5a4702573f19bf26cc9bbce140db50a22581ab353e49c494f2a159",
+          "sealed": true,
+          "status": "BURIED"
+        },
+        {
+          "mechanism": "activation_corrected_rowwise_q3",
+          "mechanism_key": "activation_corrected_rowwise_q3:routed_expert_gate:qwen3_moe:a214ef1ace59a099",
+          "model": null,
+          "model_family": null,
+          "record_id": "negative:qwen30-8c7a2518d8c10d053dc33f589ec82758",
+          "recorded_at": "2026-08-08T14:56:30.177634Z",
+          "representation": null,
+          "schema": "hawking.ascension.negative_science.v1",
+          "seal_sha256": "6e26486cf36c186d0aa6cbda60d386e8eddb49b068a247a4506c8c0e16c91cfd",
+          "sealed": true,
+          "status": "BURIED"
+        },
+        {
+          "mechanism": "uniform_q3_group64",
+          "mechanism_key": "uniform_q3_group64:routed_expert_gate:qwen3_next_hybrid:3c6384c1a9a14cff",
+          "model": null,
+          "model_family": null,
+          "record_id": "negative:qwen80-5f9a4d32babce9b73ddcdfb8b5a0e05c",
+          "recorded_at": "2026-08-08T15:27:00.200113Z",
+          "representation": null,
+          "schema": "hawking.ascension.negative_science.v1",
+          "seal_sha256": "4249fb214c422c3b3f858b4d67eb65296b9dfdb8091dcef01dcb7cb3e6777b66",
+          "sealed": true,
+          "status": "BURIED"
+        },
+        {
+          "mechanism": "packed_binary_simdgroup_template_parity",
+          "mechanism_key": "optimizer:qwen30-packed-binary-simdgroup-template:e489c977c4bbfb884fc1b52958becd7edda20facc1cc61ac32ca507a423fc26f",
+          "model": null,
+          "model_family": null,
+          "record_id": "negative-optimizer:qwen30-template-simdgroup:e489c977c4bbfb884fc1b52958becd7edda20facc1cc61ac32ca507a423fc26f",
+          "recorded_at": "2026-08-08T16:51:48.736819Z",
+          "representation": null,
+          "schema": "hawking.ascension.negative_science.v1",
+          "seal_sha256": "eb49076e4be85c4a6bd3fb57ee0bdfbd3663d3f79f686e99886cc7aa8766fbd0",
+          "sealed": true,
+          "status": "BURIED"
+        },
+        {
+          "mechanism": "packed_binary_simdgroup_template_parity",
+          "mechanism_key": "optimizer:qwen30-packed-binary-simdgroup-template:7803bb793be9c7d43f19f38d08cbd9dd113917dcd88a4d857024a863247e9830",
+          "model": null,
+          "model_family": null,
+          "record_id": "negative-optimizer:qwen30-template-simdgroup:7803bb793be9c7d43f19f38d08cbd9dd113917dcd88a4d857024a863247e9830",
+          "recorded_at": "2026-08-08T17:51:48.445666Z",
+          "representation": null,
+          "schema": "hawking.ascension.negative_science.v1",
+          "seal_sha256": "3761aa31b5fbe5e7728722bcee63db4a17b38a0cdf082b98592e90901a285629",
+          "sealed": true,
+          "status": "BURIED"
+        }
+      ]
+    },
+    "peer_complete_champion": {
+      "admission": {
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_ADMISSION_RECEIPT.json",
+        "seal_sha256": "431593e986626a7349b697b2f033d128436d62ca2dced05901814502ac5c4545",
+        "sealed": true,
+        "status": "EARNED_COMPLETE_BINARY_ARTIFACT_ADMITTED_NOT_RUNTIME_OR_CAPABILITY_QUALIFIED"
+      },
+      "claim_boundary": "complete artifact evidence is separate from native runtime and capability",
+      "manifest": {
+        "complete_physical_bpw": null,
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+        "seal_sha256": null,
+        "sealed": false,
+        "status": null
+      }
+    },
+    "peer_latest_results": {
+      "candidate_count": 437,
+      "completed_candidate_count": 437,
+      "current_experiment_id": "qwen80-b654ee9e1e9c1e05ff7d1515523ff776",
+      "current_representation": "uniform_q2_group64",
+      "heartbeat": 1784,
+      "last_material_progress_at": "2026-08-08T18:03:18.451650Z",
+      "phase": "NEGATIVE_SCIENCE_SKIP_ADVANCED_TO_NEXT_GENOME",
+      "pid": 72359,
+      "ppid": 1,
+      "worker_status_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/QWEN80_PHYSICAL_CAMPAIGN_STATUS.json",
+      "worker_status_sealed": false
+    },
+    "representation_genome": {
+      "bytes": 4408507,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_REPRESENTATION_GENOME.jsonl",
+      "present": true,
+      "record_count": 900,
+      "sha256": "46611e6223b0b5847965730d6c6711ff6421640dbb446cd5a512a4eaf83494d6",
+      "state": "OBSERVED",
+      "tail": [
+        {
+          "mechanism": null,
+          "mechanism_key": "activation_corrected_rowwise_q3:routed_expert_up:qwen3_moe:a214ef1ace59a099",
+          "model": null,
+          "model_family": "qwen3_moe",
+          "record_id": "representation:qwen30-1c13e2e1fbcb076ebebbddea7138d914",
+          "recorded_at": "2026-08-08T17:40:53.599700Z",
+          "representation": "activation_corrected_rowwise_q3",
+          "schema": "hawking.ascension.knowledge_representation_genome.v1",
+          "seal_sha256": "c03b0a793d224b9c56232c435f8e57c03fef595b9b5eeb4d7a875d5d3cec5e7d",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": "uniform_q4_group64:gqa_attention_q:qwen3_moe:4952fcd6b27eda69",
+          "model": null,
+          "model_family": "qwen3_moe",
+          "record_id": "representation:qwen30-3d3497f8092ec29a889afdc842756881",
+          "recorded_at": "2026-08-08T17:43:34.119825Z",
+          "representation": "uniform_q4_group64",
+          "schema": "hawking.ascension.knowledge_representation_genome.v1",
+          "seal_sha256": "49a15e027f7da3e30e36e05a9d1463783157f7824efc8bbb29d628523ff89484",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": "additive_residual_codebook_q2x2:gqa_attention_q:qwen3_moe:e178a65ef1e23a8f",
+          "model": null,
+          "model_family": "qwen3_moe",
+          "record_id": "representation:qwen30-898cd6c6bcb43b6160a1fd9b426205d4",
+          "recorded_at": "2026-08-08T17:44:21.558764Z",
+          "representation": "additive_residual_codebook_q2x2",
+          "schema": "hawking.ascension.knowledge_representation_genome.v1",
+          "seal_sha256": "e2fdb2c22b7cb853212f04c5d8ee932c394db12da800fd3da6767ce285fc2f44",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": "uniform_q4_group64:shared_expert:qwen3_next_hybrid:757a3ac989858f35",
+          "model": null,
+          "model_family": "qwen3_next_hybrid",
+          "record_id": "representation:qwen80-571b15fa14eebb31c4f3ee4c1cc87aab",
+          "recorded_at": "2026-08-08T17:54:48.167690Z",
+          "representation": "uniform_q4_group64",
+          "schema": "hawking.ascension.knowledge_representation_genome.v1",
+          "seal_sha256": "34944a6035cdc1ebf067ac8e6680df761d6818e12c63d624c51841cc9fecbdae",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": "additive_residual_codebook_q2x2:shared_expert:qwen3_next_hybrid:05b0460e386e3020",
+          "model": null,
+          "model_family": "qwen3_next_hybrid",
+          "record_id": "representation:qwen80-b99e185d1ccf5c4ad92a840915e96bff",
+          "recorded_at": "2026-08-08T17:55:41.580051Z",
+          "representation": "additive_residual_codebook_q2x2",
+          "schema": "hawking.ascension.knowledge_representation_genome.v1",
+          "seal_sha256": "bdd8b9ea7d15c93b84d3f4e9ba8b17a659e64db3b021fa91fb8a330672fb1e03",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": "uniform_q4_group64:routed_expert_gate:qwen3_next_hybrid:757a3ac989858f35",
+          "model": null,
+          "model_family": "qwen3_next_hybrid",
+          "record_id": "representation:qwen80-85f5f07f8e3b5de5d249a1fc24801a84",
+          "recorded_at": "2026-08-08T17:59:01.083341Z",
+          "representation": "uniform_q4_group64",
+          "schema": "hawking.ascension.knowledge_representation_genome.v1",
+          "seal_sha256": "bff1c054f8a671a84e46de1300be10db6cf2d9ae423c8443cec45266baa4ad40",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": "hadamard_lattice_q3_group128:routed_expert_gate:qwen3_next_hybrid:c7b1aa8859b20242",
+          "model": null,
+          "model_family": "qwen3_next_hybrid",
+          "record_id": "representation:qwen80-75ca6ee3dfd099bcd1a1877c40e19bcc",
+          "recorded_at": "2026-08-08T17:59:30.797278Z",
+          "representation": "hadamard_lattice_q3_group128",
+          "schema": "hawking.ascension.knowledge_representation_genome.v1",
+          "seal_sha256": "195ec1fdcec5100bed0c3f77c9ba3e9c10b8d178c5e6904803f4fea1e1d1572b",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": "additive_residual_codebook_q2x2:routed_expert_gate:qwen3_next_hybrid:05b0460e386e3020",
+          "model": null,
+          "model_family": "qwen3_next_hybrid",
+          "record_id": "representation:qwen80-4dfeba1888e068aa73f6608bb0c2274b",
+          "recorded_at": "2026-08-08T18:00:00.833752Z",
+          "representation": "additive_residual_codebook_q2x2",
+          "schema": "hawking.ascension.knowledge_representation_genome.v1",
+          "seal_sha256": "70c46f9c7fa867ea906ee0e3fecbdc53c4e73dac15b519a3399d13eefb13e7ff",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": "uniform_q4_group64:gated_deltanet_projection:qwen3_next_hybrid:757a3ac989858f35",
+          "model": null,
+          "model_family": "qwen3_next_hybrid",
+          "record_id": "representation:qwen80-6d2d24b87b86123968d24415ff6dc0da",
+          "recorded_at": "2026-08-08T18:03:18.321199Z",
+          "representation": "uniform_q4_group64",
+          "schema": "hawking.ascension.knowledge_representation_genome.v1",
+          "seal_sha256": "f4b815a28cc21c2be9f64ea68ba4a5d4c157907dd168d2e9756b9438103ccf8b",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": "uniform_q4_group64:routed_expert_gate:qwen3_moe:757a3ac989858f35",
+          "model": null,
+          "model_family": "qwen3_moe",
+          "record_id": "representation:qwen30-53f8068e75f2c25fb4f361b701633fd0",
+          "recorded_at": "2026-08-08T18:06:08.871614Z",
+          "representation": "uniform_q4_group64",
+          "schema": "hawking.ascension.knowledge_representation_genome.v1",
+          "seal_sha256": "3146c3247e604fbc119b6348f909135e8063b76c5997578d0dd9d82a46c7c699",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": "hadamard_lattice_q3_group128:routed_expert_gate:qwen3_moe:c7b1aa8859b20242",
+          "model": null,
+          "model_family": "qwen3_moe",
+          "record_id": "representation:qwen30-3852e1835a2fea4a4e1ef227c2817045",
+          "recorded_at": "2026-08-08T18:06:33.906633Z",
+          "representation": "hadamard_lattice_q3_group128",
+          "schema": "hawking.ascension.knowledge_representation_genome.v1",
+          "seal_sha256": "5d6e06a9565c066e169f4fd58726c233098b3bf6ce246775bb735d106f785e32",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": "additive_residual_codebook_q2x2:routed_expert_gate:qwen3_moe:05b0460e386e3020",
+          "model": null,
+          "model_family": "qwen3_moe",
+          "record_id": "representation:qwen30-f571a708b2294c4ed99d123af6698959",
+          "recorded_at": "2026-08-08T18:06:58.688983Z",
+          "representation": "additive_residual_codebook_q2x2",
+          "schema": "hawking.ascension.knowledge_representation_genome.v1",
+          "seal_sha256": "6ee8b47c61ac3eff39d0fa4702722c891940875f5af63d14f9e0f0b04fcabed8",
+          "sealed": true,
+          "status": null
+        }
+      ]
+    },
+    "scheduler_genome": {
+      "bytes": 1242834,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_SCHEDULER_GENOME.jsonl",
+      "present": true,
+      "record_count": 870,
+      "sha256": "bb93385d28e217773332cbe317a0441332b44178b87e35ebd94bb1b5f9dad701",
+      "state": "OBSERVED",
+      "tail": [
+        {
+          "mechanism": null,
+          "mechanism_key": null,
+          "model": null,
+          "model_family": "qwen3_moe",
+          "record_id": "scheduler:qwen30-1c13e2e1fbcb076ebebbddea7138d914",
+          "recorded_at": "2026-08-08T17:40:53.721405Z",
+          "representation": "activation_corrected_rowwise_q3",
+          "schema": "hawking.ascension.knowledge_scheduler_genome.v1",
+          "seal_sha256": "51dbc816776bc5240dceeccf3a0967f93a8b451b5aef771e8b0bcbd92521befe",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": null,
+          "model": null,
+          "model_family": "qwen3_moe",
+          "record_id": "scheduler:qwen30-3d3497f8092ec29a889afdc842756881",
+          "recorded_at": "2026-08-08T17:43:34.216600Z",
+          "representation": "uniform_q4_group64",
+          "schema": "hawking.ascension.knowledge_scheduler_genome.v1",
+          "seal_sha256": "a9e56bf973f2f8bc4a0ca2619967a17bbd0d9c6c3d89aec9b967425540ac9b24",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": null,
+          "model": null,
+          "model_family": "qwen3_moe",
+          "record_id": "scheduler:qwen30-898cd6c6bcb43b6160a1fd9b426205d4",
+          "recorded_at": "2026-08-08T17:44:21.673987Z",
+          "representation": "additive_residual_codebook_q2x2",
+          "schema": "hawking.ascension.knowledge_scheduler_genome.v1",
+          "seal_sha256": "6629cd6418d0f0d25b05918ab441aae71d7774114992be0e0de7fd13625cda05",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": null,
+          "model": null,
+          "model_family": "qwen3_next_hybrid",
+          "record_id": "scheduler:qwen80-571b15fa14eebb31c4f3ee4c1cc87aab",
+          "recorded_at": "2026-08-08T17:54:48.290901Z",
+          "representation": "uniform_q4_group64",
+          "schema": "hawking.ascension.knowledge_scheduler_genome.v1",
+          "seal_sha256": "d63326ad2148ccbaeef327b1f310e02532c4c24a245eeb3c55c84d6fdd85aebd",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": null,
+          "model": null,
+          "model_family": "qwen3_next_hybrid",
+          "record_id": "scheduler:qwen80-b99e185d1ccf5c4ad92a840915e96bff",
+          "recorded_at": "2026-08-08T17:55:41.696652Z",
+          "representation": "additive_residual_codebook_q2x2",
+          "schema": "hawking.ascension.knowledge_scheduler_genome.v1",
+          "seal_sha256": "4087ec6052fc239e85f90acff80c316669b204ddb1dd0ea386acf9cfd4ba01f6",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": null,
+          "model": null,
+          "model_family": "qwen3_next_hybrid",
+          "record_id": "scheduler:qwen80-85f5f07f8e3b5de5d249a1fc24801a84",
+          "recorded_at": "2026-08-08T17:59:01.283074Z",
+          "representation": "uniform_q4_group64",
+          "schema": "hawking.ascension.knowledge_scheduler_genome.v1",
+          "seal_sha256": "88b1e7c22fd729df22d066e4dd9771e4995376c98893945841a8ec6d20789529",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": null,
+          "model": null,
+          "model_family": "qwen3_next_hybrid",
+          "record_id": "scheduler:qwen80-75ca6ee3dfd099bcd1a1877c40e19bcc",
+          "recorded_at": "2026-08-08T17:59:30.934403Z",
+          "representation": "hadamard_lattice_q3_group128",
+          "schema": "hawking.ascension.knowledge_scheduler_genome.v1",
+          "seal_sha256": "6f7ed61d122813388b10d6e895736b21831689534c590c385831039a10440ecf",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": null,
+          "model": null,
+          "model_family": "qwen3_next_hybrid",
+          "record_id": "scheduler:qwen80-4dfeba1888e068aa73f6608bb0c2274b",
+          "recorded_at": "2026-08-08T18:00:00.967437Z",
+          "representation": "additive_residual_codebook_q2x2",
+          "schema": "hawking.ascension.knowledge_scheduler_genome.v1",
+          "seal_sha256": "b9df13fb4f4d8541924c4d14d10a1020b4c9f4ea06e33dbff6a8d04af3f23c3c",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": null,
+          "model": null,
+          "model_family": "qwen3_next_hybrid",
+          "record_id": "scheduler:qwen80-6d2d24b87b86123968d24415ff6dc0da",
+          "recorded_at": "2026-08-08T18:03:18.423825Z",
+          "representation": "uniform_q4_group64",
+          "schema": "hawking.ascension.knowledge_scheduler_genome.v1",
+          "seal_sha256": "dd0a9b5e9d1cc8c0e2fc307d14ab56e556d9774b2235e33bb0807fd6aab595f2",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": null,
+          "model": null,
+          "model_family": "qwen3_moe",
+          "record_id": "scheduler:qwen30-53f8068e75f2c25fb4f361b701633fd0",
+          "recorded_at": "2026-08-08T18:06:09.013195Z",
+          "representation": "uniform_q4_group64",
+          "schema": "hawking.ascension.knowledge_scheduler_genome.v1",
+          "seal_sha256": "006069d23f3de5db807fa6e56f8189c23b40e07278f4e8ff2df367496afad663",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": null,
+          "model": null,
+          "model_family": "qwen3_moe",
+          "record_id": "scheduler:qwen30-3852e1835a2fea4a4e1ef227c2817045",
+          "recorded_at": "2026-08-08T18:06:34.045451Z",
+          "representation": "hadamard_lattice_q3_group128",
+          "schema": "hawking.ascension.knowledge_scheduler_genome.v1",
+          "seal_sha256": "b083540c8bb1b8e193e67fb735fa67bb5a0f962cbdd58d3b9ef5f8c5b6342084",
+          "sealed": true,
+          "status": null
+        },
+        {
+          "mechanism": null,
+          "mechanism_key": null,
+          "model": null,
+          "model_family": "qwen3_moe",
+          "record_id": "scheduler:qwen30-f571a708b2294c4ed99d123af6698959",
+          "recorded_at": "2026-08-08T18:06:58.809977Z",
+          "representation": "additive_residual_codebook_q2x2",
+          "schema": "hawking.ascension.knowledge_scheduler_genome.v1",
+          "seal_sha256": "f34fba9d1eead0da6c40170771d6d4c6bb1b5115b166cdfdc9f42983dabdfcd8",
+          "sealed": true,
+          "status": null
+        }
+      ]
+    },
+    "source_authority": {
+      "current_revalidation": {
+        "bytes": 9227,
+        "document_sha256": "89184ef7eaea1a91391f0ec30977e04f4e3320ab4eff460665d865bbbd70eae5",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/QWEN30_CURRENT_SOURCE_SHARD_REVALIDATION.json",
+        "phase": null,
+        "present": true,
+        "recorded_at": "2026-08-08T07:04:27.417473Z",
+        "schema": "hawking.ascension.complete_binary_source_revalidation.v1",
+        "seal_sha256": "ac7208e11c31bbd035bd87fd62a80020b9d1d05970867576f4649f6bebe68123",
+        "sealed": true,
+        "state": "SEALED",
+        "status": "EARNED_CURRENT_SOURCE_SHARDS_REVALIDATED"
+      },
+      "identity": {
+        "bytes": 5698,
+        "document_sha256": "fcd948ebde506c32f26b4d352499832d467442d1a99303048ba065768a29cdce",
+        "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/evolution/SOURCE_CONTENT_IDENTITY.json",
+        "phase": null,
+        "present": true,
+        "recorded_at": "2026-08-08T06:59:48.654533Z",
+        "schema": "hawking.ascension.qwen_source_content_identity.v1",
+        "seal_sha256": "816648bae17f2688a04161a4f921debfe6697386f6078f069dc7e594b99930a5",
+        "sealed": true,
+        "state": "SEALED",
+        "status": "IMMUTABLE_SOURCE_CONTENT_IDENTITY_BOUND"
+      }
+    },
+    "state_kv": {
+      "bytes": 3840,
+      "document_sha256": "656e20c3add42479b58f1df9c3fed32b67575b84f83456f8752a4e1de23c1d4a",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/state-kv/QWEN30_STATE_KV_STATUS.json",
+      "phase": "COMPLETE_SOURCE_BOUND_STATE_TRAFFIC_AND_SEALED_RESTART_RECOVERY_VERIFIED",
+      "present": true,
+      "recorded_at": "2026-08-08T07:31:54.487584Z",
+      "schema": "hawking.ascension.qwen_state_kv_status.v1",
+      "seal_sha256": "268b4fdf4662d85fb7735d901dafc2ff8c4aad6b528ac41538baf5470f38ff6f",
+      "sealed": true,
+      "state": "SEALED",
+      "status": null
+    },
+    "worker_liveness": {
+      "activity_marker": {
+        "candidate_count": 460,
+        "current_experiment_id": "qwen30-877fdeca0818ee7d4dcc46af74058ec9",
+        "current_representation": "binary_outlier_residual"
+      },
+      "claim_boundary": "heartbeat refreshes and candidate-selection churn are explicitly not treated as physical frontier movement",
+      "heartbeat": 1801,
+      "material_marker": {
+        "admission_seal": "89d3c531d5638757bf0c0348df4f11e45a4f1c0cf87d27a7f3afcb675247301a",
+        "complete_manifest_seal": "3321a99d719e70499663b7bfebe14dd6c732bfc533bb05b9277eb398e44d6357",
+        "completed_candidate_count": 460,
+        "last_material_progress_at": "2026-08-08T18:06:58.842351Z",
+        "pack_completed_tensors": 18867,
+        "pack_phase": "EARNED_COMPLETE_PHYSICAL_BINARY_CANDIDATE_UNQUALIFIED",
+        "runtime_phase": "NATIVE_DIRECT_PACKED_STAGE_RUNNING",
+        "runtime_receipt_seal": "4ba6da3e5c3d3eee076321e1da8a587a342c48ed940494179da3599da7ca9408"
+      },
+      "prior_activity_marker": {
+        "candidate_count": 460,
+        "current_experiment_id": "qwen30-8a596901177813d092da1a5fa60c292c",
+        "current_representation": "uniform_q3_group64"
+      },
+      "prior_heartbeat": 1799,
+      "prior_material_marker": {
+        "admission_seal": "89d3c531d5638757bf0c0348df4f11e45a4f1c0cf87d27a7f3afcb675247301a",
+        "complete_manifest_seal": "3321a99d719e70499663b7bfebe14dd6c732bfc533bb05b9277eb398e44d6357",
+        "completed_candidate_count": 460,
+        "last_material_progress_at": "2026-08-08T18:06:58.842351Z",
+        "pack_completed_tensors": 18867,
+        "pack_phase": "EARNED_COMPLETE_PHYSICAL_BINARY_CANDIDATE_UNQUALIFIED",
+        "runtime_phase": "NATIVE_DIRECT_PACKED_STAGE_RUNNING",
+        "runtime_receipt_seal": "8cbb803dd963a6f05927606b06a36c0f6ff41e8427fdb59923fa60a00df8cd00"
+      },
+      "state": "LIVE_MATERIAL_PROGRESS",
+      "worker_pid": {
+        "alive": true,
+        "pid": 72358,
+        "state": "PID_ALIVE"
+      }
+    }
+  },
+  "safe_component_profile_candidate": {
+    "artifact_codec": "hawking.gravity.uniform_group.v1",
+    "artifact_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/evolution/artifacts/qwen30-0a88465b62ae72661887a5e321eca7f7.gravity",
+    "artifact_sha256": "a9a1e016ff99eeeb819a84d8402065fcf64c8d918d64bbc34c94d701f4519293",
+    "candidate_id": "qwen30-0a88465b62ae72661887a5e321eca7f7",
+    "candidate_record_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/evolution/candidates/qwen30-0a88465b62ae72661887a5e321eca7f7.json",
+    "candidate_record_seal_sha256": "d1c988fff1bc2ee57028b8946ecb5f27bcad5144786a76f9846aef0dfb20225d",
+    "representation": "uniform_q2_group64"
+  },
+  "schema": "hawking.ascension.qwen_scientific_optimizer_experiment.v1",
+  "seal_sha256": "a61963e423d24948335f01aeec05459d8fb9e1b8e0eacd18b96cddb6424f7d4a",
+  "status": "BLOCKED_CAPABILITY_COHERENCE_AFTER_DIRECT_PACKED_GENERATION",
+  "task_id": "qwen30-blocked_capability_coherence_after_direct_packed_generation-2b31a7860fc605c00d6d"
+}

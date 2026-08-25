@@ -1,0 +1,458 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 1489,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Repair the broken Lean proof.\n\nSignature:\n{x : R}\n    (h : IsUnit (algebraMap R (Module.End S M) x)) (m m' : M) :\n    m' = (↑h.unit⁻¹ : Module.End S M) m ↔ m = x • m' where\n  mp H\n\nBroken proof:\nH ▸ (isUnit_apply_inv_apply_of_isUnit h m).symm\n  mpr H := by\n    apply_fun (↑h.unit : M → M) using ((isUnit_iff _).mp h).injective\n    rw [ThisLemmaDoesNotExist, H]\n    simpa using isUnit_apply_inv_apply_of_isUnit h (x • m') |>.symm\n\nLean error:\nBroken.lean:5:31: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  Semiring S\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nBroken.lean:6:22: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  Semiring S\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nBroken.lean:6:46: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  HSMul R M ?m.23\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nBroken.lean:9:2: error: `H` is not a field of structure `Iff`\nBroken.lean:6:53: error: Fields missing: `mpr`\nBroken.lean:8:0: error: unsolved goals\nR : Type u_1\nS : Type u_2\nM : Type u_3\nx : R\nh : sorry\nm m' : M\nH : m' = sorry\n⊢ sorry\nBroken.lean:9:4: error: unexpected token '▸'; expected command\n\nProvide a corrected proof.",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:d4:Mathlib.Algebra.Algebra.Basic.End.algebraMap_isUnit_inv_apply_eq_iff':wrong_rw_lemma",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "train",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Repair the broken Lean proof.\n\nSignature:\n{x : R}\n    (h : IsUnit (algebraMap R (Module.End S M) x)) (m m' : M) :\n    m' = (↑h.unit⁻¹ : Module.End S M) m ↔ m = x • m' where\n  mp H\n\nBroken proof:\nH ▸ (isUnit_apply_inv_apply_of_isUnit h m).symm\n  mpr H := by\n    apply_fun (↑h.unit : M → M) using ((isUnit_iff _).mp h).injective\n    rw [ThisLemmaDoesNotExist, H]\n    simpa using isUnit_apply_inv_apply_of_isUnit h (x • m') |>.symm\n\nLean error:\nBroken.lean:5:31: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  Semiring S\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nBroken.lean:6:22: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  Semiring S\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nBroken.lean:6:46: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  HSMul R M ?m.23\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nBroken.lean:9:2: error: `H` is not a field of structure `Iff`\nBroken.lean:6:53: error: Fields missing: `mpr`\nBroken.lean:8:0: error: unsolved goals\nR : Type u_1\nS : Type u_2\nM : Type u_3\nx : R\nh : sorry\nm m' : M\nH : m' = sorry\n⊢ sorry\nBroken.lean:9:4: error: unexpected token '▸'; expected command\n\nProvide a corrected proof.",
+  "proof_plan": null,
+  "recorded_at": "2026-08-06T17:58:08.327365Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "0563196e843d356925a8d4512405843f558854c552ffc6c3904baa7315ef211c",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 3.9495911598205566,
+          "rank": 0,
+          "token_id": 44
+        },
+        {
+          "logit": 3.525156021118164,
+          "rank": 1,
+          "token_id": 55
+        },
+        {
+          "logit": 3.20654296875,
+          "rank": 2,
+          "token_id": 0
+        },
+        {
+          "logit": 2.7493155002593994,
+          "rank": 3,
+          "token_id": 53
+        },
+        {
+          "logit": 2.6487948894500732,
+          "rank": 4,
+          "token_id": 62
+        },
+        {
+          "logit": 2.5384559631347656,
+          "rank": 5,
+          "token_id": 14
+        },
+        {
+          "logit": 2.142531633377075,
+          "rank": 6,
+          "token_id": 47
+        },
+        {
+          "logit": 2.1418673992156982,
+          "rank": 7,
+          "token_id": 39
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.1903948187828064,
+          "l2": 3.3814070224761963,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "843f20b8aa86b716c5e152fb110504174e2e8d8ee18ca6dd726a7cc45fe3b2db",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.2485431283712387,
+          "l2": 3.183119297027588,
+          "layer": 1,
+          "mlp_type": "dense",
+          "sample_sha256": "9244c09701371c37ffbc54680a8d9d5f914a410d92247f5531eee54db6e45af6",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.27233144640922546,
+          "l2": 3.110352039337158,
+          "layer": 2,
+          "mlp_type": "dense",
+          "sample_sha256": "72a278c650abf5449cf7290abf1dee14d9d76b38c915606f628ced5b155e3f7c",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.3013264536857605,
+          "l2": 3.2305331230163574,
+          "layer": 3,
+          "mlp_type": "sparse",
+          "sample_sha256": "7a75009eb2824d3d40bd091084bf06ba2b93142cc8b53b4f4644c3fc6285ae88",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.3073154389858246,
+          "l2": 3.4023494720458984,
+          "layer": 4,
+          "mlp_type": "sparse",
+          "sample_sha256": "b52cc2c5e9f518b75806eb8668aec19d4fea9371750f53a0ec5e7e1dd5c5d624",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.3400123417377472,
+          "l2": 3.79402494430542,
+          "layer": 5,
+          "mlp_type": "sparse",
+          "sample_sha256": "07cae0e620b3b705bdc913bd90c6a42b87797cca5e65532ab481031fd0468a22",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.42435967922210693,
+          "l2": 4.9544453620910645,
+          "layer": 6,
+          "mlp_type": "sparse",
+          "sample_sha256": "568bd8fe73d9bbb91a1f1b9eb4f2445398efab000b31c5d3bcbc3105a919d391",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.9960577487945557,
+          "l2": 5.972677707672119,
+          "layer": 7,
+          "mlp_type": "sparse",
+          "sample_sha256": "b434ee2b1a4a2a3e04f6c1809ca9fcd8443e1330413d13ec01fd35d53b42e6bb",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 39.37154006958008,
+          "l2": 95.58737182617188,
+          "layer": 8,
+          "mlp_type": "sparse",
+          "sample_sha256": "4925080b5eb7c0795c8e3c9b532d003c1e221f08370a0a9d9210486e6ad6ddc9",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 80.42811584472656,
+          "l2": 628.279296875,
+          "layer": 9,
+          "mlp_type": "sparse",
+          "sample_sha256": "f15fcda76ec2ce12a97089e79665fe6d1de8f82573cea73b7e35fc76c44c7130",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 82.54072570800781,
+          "l2": 634.7572021484375,
+          "layer": 10,
+          "mlp_type": "sparse",
+          "sample_sha256": "e345758b83f692a697c041d9ac3d8d33fe8f2cb81a7207a1cde0506f921cb430",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 83.0357894897461,
+          "l2": 634.8203125,
+          "layer": 11,
+          "mlp_type": "sparse",
+          "sample_sha256": "ee6c22d2dcc968896ce1eef0159e3fd9ef0a2fc4dd62921c0397ac43d3a1794c",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 86.50298309326172,
+          "l2": 635.480712890625,
+          "layer": 12,
+          "mlp_type": "sparse",
+          "sample_sha256": "fe7e7af3bf7b496bb2ce7d0a91bdea6f50f38e35190e61f500e9d34d7a6d95d4",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 87.23737335205078,
+          "l2": 635.6788330078125,
+          "layer": 13,
+          "mlp_type": "sparse",
+          "sample_sha256": "37bd06cf78859325ebcffdd90217c2cfea6eff2debbb08da60c71c1ff92748fd",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": {
+        "expert_counts": {
+          "0": 5,
+          "100": 1,
+          "101": 1,
+          "102": 2,
+          "105": 1,
+          "106": 1,
+          "108": 1,
+          "11": 4,
+          "110": 1,
+          "111": 3,
+          "112": 1,
+          "114": 1,
+          "115": 1,
+          "117": 2,
+          "122": 3,
+          "128": 2,
+          "129": 3,
+          "13": 8,
+          "130": 2,
+          "135": 2,
+          "136": 1,
+          "139": 1,
+          "14": 6,
+          "140": 4,
+          "142": 2,
+          "144": 1,
+          "145": 2,
+          "148": 5,
+          "149": 1,
+          "15": 5,
+          "152": 1,
+          "154": 2,
+          "156": 2,
+          "158": 2,
+          "160": 1,
+          "161": 4,
+          "163": 4,
+          "164": 2,
+          "166": 1,
+          "167": 6,
+          "172": 1,
+          "177": 3,
+          "179": 2,
+          "18": 5,
+          "180": 2,
+          "184": 1,
+          "185": 3,
+          "186": 1,
+          "190": 1,
+          "193": 2,
+          "195": 1,
+          "196": 1,
+          "197": 1,
+          "199": 3,
+          "2": 2,
+          "201": 2,
+          "202": 1,
+          "204": 1,
+          "205": 1,
+          "206": 4,
+          "21": 1,
+          "211": 2,
+          "213": 2,
+          "214": 2,
+          "215": 2,
+          "217": 1,
+          "218": 3,
+          "22": 1,
+          "220": 3,
+          "223": 3,
+          "229": 3,
+          "23": 1,
+          "230": 1,
+          "232": 2,
+          "235": 1,
+          "237": 4,
+          "238": 1,
+          "239": 3,
+          "240": 2,
+          "242": 2,
+          "248": 5,
+          "250": 3,
+          "252": 2,
+          "26": 7,
+          "27": 1,
+          "28": 5,
+          "3": 3,
+          "32": 1,
+          "34": 3,
+          "35": 1,
+          "37": 2,
+          "4": 1,
+          "41": 5,
+          "53": 1,
+          "61": 8,
+          "62": 3,
+          "65": 1,
+          "70": 1,
+          "71": 1,
+          "72": 3,
+          "76": 1,
+          "77": 1,
+          "78": 1,
+          "81": 1,
+          "82": 4,
+          "83": 2,
+          "88": 1,
+          "90": 6,
+          "93": 1,
+          "95": 2,
+          "97": 1,
+          "98": 2
+        },
+        "load_balance_cv": null,
+        "note": "route stats are student-native; never copy GLM router weights",
+        "source_layer": 3,
+        "top_k": 8
+      },
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

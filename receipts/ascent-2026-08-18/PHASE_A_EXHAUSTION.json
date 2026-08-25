@@ -1,0 +1,20 @@
+{
+  "schema": "hawking.nos.phase_a_exhaustion.v1", "session": "f5169750", "date": "2026-08-18",
+  "obligation": "G31 Phase-A exhaustion + G18/G20 -- is the 3.3448 patient at the practical floor?",
+  "correction": "The 6 Grok lanes were mis-diagnosed as dead (0-byte stdout, 0% CPU) -- they had COMPLETED and written findings to files; the swgrok landing was killed by a foreground timeout so reports were not captured. preserve-then-cleanup saved the work; findings read from the worktrees.",
+  "kernel_front_EXHAUSTED": {
+    "alu_scale_hoist": "1.6% real token (14.6% synthetic) -- MEASURED NEGATIVE",
+    "k_amortization_prefill": "1.03x real (2.56x synthetic) -- MEASURED NEGATIVE",
+    "r_tiling_geometry": "~3% (organ-geometry probe) -- MEASURED NEGATIVE",
+    "access_pattern_variants": "simdgroup/vecgroup/wide-load ALL slower than geo_tpr64 (best challenger 0.77-0.87x); none reach 600 GB/s -- MEASURED NEGATIVE (mlp-access-pattern lane, max_abs_err 0)",
+    "verdict": "geo_tpr64 is the OPTIMAL MLP GEMV kernel. Every kernel axis is exhausted. The MLP is a measured bandwidth floor."
+  },
+  "representation_front": {
+    "low_rank_TT_kronecker": "REFUTED. down_proj/gate_proj near-full-rank (my SVD: 99% energy needs 92-95% of ranks; low-rank costs MORE params than full). Function-space matched 3.25 b/elem is 2.93x Q3 error (G033/G034 + struct-mlp lane). Comprehensively refuted at the coherent point.",
+    "entropy_coding": "0.696 bits/symbol of exploitable redundancy EXISTS -> a lossless recode could cut STORED BPW below 3.3448 (residency/worker-count win). NOT a TPS lever: rANS refuted on-disk (byte-identical ladder), no native register-decodable path; cuts stored not active-bytes/token.",
+    "activation_sparsity": "~2x MLP max, dynamic + Doctor-risky (compounds over 62 layers) -- marginal, not a clean lever.",
+    "uniform_bit_descent": "3.3448 complete BPW is the coherent floor; sub-1.5 dead; Q2 MLP dead."
+  },
+  "CONCLUSION": "The 3.3448 BPW patient at ~30 TPS is at the PRACTICAL FLOOR for conventional representation AND execution on this machine. Kernel front exhausted (geo_tpr64 optimal), structural representation refuted (near-full-rank), entropy is a stored-not-active lever, sparsity marginal, bit-descent floored. G20 (40 TPS) is NOT reachable by kernel work at 3.3448 BPW. Breaking below requires the FUNCTIONAL-representation frontier (fit the block's function with a fundamentally different operator, Phase B) -- genuinely open, unproven, expensive. Near-term stored-density option: lossless entropy recode (~0.696 bits/symbol) for residency, not TPS.",
+  "next": "Phase A execution is exhausted on measurement. The honest path to more TPS is either (a) accept ~30-35 TPS as the M3 Ultra floor for a coherent 27B dense-hybrid at 3.34 BPW, or (b) the functional-representation frontier (Phase B research). G20/G21/G22 are representation-gated, not kernel-gated."
+}

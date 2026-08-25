@@ -1,0 +1,223 @@
+{
+  "ablation_ag": {
+    "arms": [
+      {
+        "arm": "A_BASE_DSV4F",
+        "description": "Base DSV4F only; no donor inheritance",
+        "status": "BASE",
+        "verdict": "BASE"
+      },
+      {
+        "ablation_seal_sha256": "33c46fe7f14aca73731474f062617f6ff99f87109ba772028dd0ed59eacf8ab0",
+        "arm": "B_LINEAR_SUBSPACE_INITIALIZATION",
+        "description": "LINEAR_SUBSPACE_INITIALIZATION only (cartography init; not inheritance)",
+        "math_mean_gain": 0.09061695874386866,
+        "reject_rule_fired": false,
+        "status": "EVALUATED",
+        "synthetic_proxy": false,
+        "verdict": "ACCEPT"
+      },
+      {
+        "ablation_seal_sha256": "d5be99a9b7e3f6221292c0435cb3c715d48882e66b9f0a96af6edfbad97a5e76",
+        "arm": "C_LATENT_BRIDGES",
+        "description": "Latent bridges only (projectors + interventions)",
+        "math_mean_gain": 0.020000000000000018,
+        "reject_rule_fired": false,
+        "status": "EVALUATED",
+        "synthetic_proxy": false,
+        "verdict": "ACCEPT"
+      },
+      {
+        "ablation_seal_sha256": "09033fee76ba2b11af15ba9a6deff91b9685eff9dd8eef03b7c91db383215330",
+        "arm": "D_BEHAVIOR_HEADS",
+        "description": "Behavior heads only (method/decomp/formal/repair/value)",
+        "math_mean_gain": 0.09510065235638365,
+        "reject_rule_fired": false,
+        "status": "EVALUATED",
+        "synthetic_proxy": false,
+        "verdict": "ACCEPT"
+      },
+      {
+        "ablation_seal_sha256": "06a542c3af50531a6c674839b9dfcead618ddc5c07b0197b76e17dece21e9066",
+        "arm": "E_LATENT_BEHAVIOR",
+        "description": "Latent bridges + behavior heads",
+        "math_mean_gain": 0.020000000000000018,
+        "reject_rule_fired": false,
+        "status": "EVALUATED",
+        "synthetic_proxy": false,
+        "verdict": "ACCEPT"
+      },
+      {
+        "ablation_seal_sha256": "01fafc00a3352f90d976b1dd82a049396e8335fa739b3bcca835acac9e610f7e",
+        "arm": "F_LATENT_ROUTE_RESIDUAL",
+        "description": "Latent bridges + semantic route residual",
+        "math_mean_gain": 0.020000000000000018,
+        "reject_rule_fired": false,
+        "status": "EVALUATED",
+        "synthetic_proxy": false,
+        "verdict": "ACCEPT"
+      },
+      {
+        "ablation_seal_sha256": "48a1d59bd3fc67df36c8ce167515ad2e1a8c4947cdb4f66cb6e997d95ce5d9d1",
+        "arm": "G_COMPLETE_V0",
+        "description": "Complete V0 (latent + behavior + route + retention)",
+        "math_mean_gain": 0.020000000000000018,
+        "reject_rule_fired": false,
+        "status": "EVALUATED",
+        "synthetic_proxy": false,
+        "verdict": "ACCEPT"
+      }
+    ],
+    "reject_rule_fired": false,
+    "schema": "hawking.frankenstein.latent_v0_ag_ablation.v1",
+    "seal_sha256": "1670a18fbc1affde47c9170114e44e779141227a22b69db43178dc5b1e9a4a5c",
+    "status": "EVALUATED",
+    "verdict": "ACCEPT"
+  },
+  "capability_claim": false,
+  "challenger": {
+    "matrix": "latent_v0",
+    "schema": "hawking.frankenstein.independent_challenger.v1",
+    "seal_sha256": "0b437bcc44d4f8c07e3e638c1f5c8e6c176527d7ad5006d860f2ac43501dffa1",
+    "verdict": "ACCEPT"
+  },
+  "claim_boundary": {
+    "does_not_trust_training_lane_caches": true,
+    "independent_challenger": true,
+    "pending_is_not_accept": true,
+    "rejects_contamination": true,
+    "rejects_teacher_memorization": true
+  },
+  "contamination": {
+    "barrier_pass": true,
+    "clean": true,
+    "contamination_detected": false,
+    "fabricated": false,
+    "membership_present": true,
+    "overlap_ids": [],
+    "pass": true,
+    "reason": "no train/eval contamination detected",
+    "recorded_at": "2026-08-06T19:49:04.385476Z",
+    "schema": "hawking.frankenstein.contamination_audit.v1",
+    "seal_sha256": "a8600555219ab064bf825f66ed611a9a690c484fd8e131141e1656d17e5a56ac",
+    "status": "PASS"
+  },
+  "fabricated_scores": false,
+  "independent_of_training_lane": true,
+  "name": "PROTO_FRANKENSTEIN_V0_INDEPENDENT_VERIFY",
+  "note": "Independent re-run of latent/functional A–G, retention gate, and promotion gate. Rejects contamination and teacher-answer memorization.",
+  "pass": false,
+  "promotion_gate": {
+    "checks": [
+      {
+        "detail": "gap_recovery=0.7 min=0.7",
+        "name": "math_gap_recovery",
+        "status": "PASS"
+      },
+      {
+        "detail": "all provided secondaries held",
+        "name": "secondary_non_regression",
+        "status": "PASS"
+      },
+      {
+        "detail": "{'pass': True}",
+        "name": "hidden_eval",
+        "status": "PASS"
+      },
+      {
+        "detail": "ok",
+        "name": "proof_computation_repair",
+        "status": "PASS"
+      },
+      {
+        "detail": "provenance.complete=true",
+        "name": "exact_provenance",
+        "status": "PASS"
+      },
+      {
+        "detail": "accounting present",
+        "name": "gravity_byte_tps_p99",
+        "status": "PASS"
+      },
+      {
+        "detail": "{'stable': True}",
+        "name": "routing_stability",
+        "status": "PASS"
+      },
+      {
+        "detail": "{'pass': True, 'verdict': 'ACCEPT', 'seal_sha256': '0b437bcc44d4f8c07e3e638c1f5c8e6c176527d7ad5006d860f2ac43501dffa1'}",
+        "name": "independent_challenge",
+        "status": "PASS"
+      },
+      {
+        "detail": "ACCEPT",
+        "name": "ablation_ag",
+        "status": "PASS"
+      },
+      {
+        "detail": "PASS",
+        "name": "retention_gate",
+        "status": "PASS"
+      },
+      {
+        "detail": "trained modules admitted",
+        "name": "trained_modules",
+        "status": "PASS"
+      },
+      {
+        "detail": "{'schema': 'hawking.frankenstein.contamination_audit.v1', 'recorded_at': '2026-08-06T19:49:04.385476Z', 'status': 'PASS', 'pass': True, 'clean': True, 'contamination_detected': False, 'overlap_ids': [], 'barrier_pass': True, 'membership_present': True, 'fabricated': False, 'reason': 'no train/eval contamination detected', 'seal_sha256': 'a8600555219ab064bf825f66ed611a9a690c484fd8e131141e1656d17e5a56ac'}",
+        "name": "contamination_barrier",
+        "status": "PASS"
+      },
+      {
+        "detail": "{'schema': 'hawking.frankenstein.teacher_memorization_audit.v1', 'recorded_at': '2026-08-06T19:49:04.385484Z', 'status': 'PASS', 'pass': True, 'memorization_detected': False, 'hidden_exact_match_rate': 0.0, 'teacher_answer_replay_rate': 0.0, 'thresholds': {'max_exact_match': 0.05, 'max_replay': 0.1}, 'fabricated': False, 'reason': 'within memorization thresholds', 'seal_sha256': '9b3ca62e9ddf0cb2aff055b0fa2040e97d040da2758f28cd4b43566e76cce466'}",
+        "name": "teacher_memorization",
+        "status": "PASS"
+      },
+      {
+        "detail": "complete_beats_linear=False",
+        "name": "complete_beats_linear_init",
+        "status": "FAIL"
+      },
+      {
+        "detail": "reversible_loadable=True",
+        "name": "reversible_loadable",
+        "status": "PASS"
+      },
+      {
+        "detail": "kimi_bridge_intact=True",
+        "name": "kimi_bridge_intact",
+        "status": "PASS"
+      }
+    ],
+    "reason": "one or more hard promotion checks failed",
+    "seal_sha256": "4cfa96d68403c6a64243573a5dd8bc246557bd2a0964f08fc6c7ae54de002ee9",
+    "verdict": "REJECT"
+  },
+  "recorded_at": "2026-08-06T19:49:04.385630Z",
+  "retention_gate": {
+    "reject_rule_fired": false,
+    "seal_sha256": "dcb7f0abb1a73729779e7203979fa12174be1f65d884842560f8faa8b84edb87",
+    "verdict": "PASS"
+  },
+  "schema": "hawking.frankenstein.v0_independent_verify.v1",
+  "seal_sha256": "f358eb8bf26e04bcf8fd50bb69147ca25b9d6e81765acffe2289172a37ec1ad9",
+  "status": "EVALUATED",
+  "teacher_memorization": {
+    "fabricated": false,
+    "hidden_exact_match_rate": 0.0,
+    "memorization_detected": false,
+    "pass": true,
+    "reason": "within memorization thresholds",
+    "recorded_at": "2026-08-06T19:49:04.385484Z",
+    "schema": "hawking.frankenstein.teacher_memorization_audit.v1",
+    "seal_sha256": "9b3ca62e9ddf0cb2aff055b0fa2040e97d040da2758f28cd4b43566e76cce466",
+    "status": "PASS",
+    "teacher_answer_replay_rate": 0.0,
+    "thresholds": {
+      "max_exact_match": 0.05,
+      "max_replay": 0.1
+    }
+  },
+  "verdict": "REJECT"
+}

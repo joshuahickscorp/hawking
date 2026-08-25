@@ -1,0 +1,20 @@
+{
+  "claim_boundary": {
+    "does_not_execute_ten_route_shared_expert_or_complete_layer": true,
+    "does_not_generate_tokens_expose_hcli_or_measure_tps": true,
+    "no_cpu_or_metal_parity_is_claimed": true,
+    "one_selected_expert_only": true
+  },
+  "durable_capture": {
+    "directory": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_ROUTED_EXPERT_65_CPU_CAPTURE_20260808T000002Z",
+    "invocation_file": "invocation.json",
+    "receipt_file": "receipt.json",
+    "receipt_written_last_is_completion_marker": true,
+    "stderr_file": "stderr.log",
+    "stdout_file": "stdout.jsonl"
+  },
+  "error": "routed expert rejection suite did not fail closed",
+  "mode": "cpu-oracle",
+  "schema": "hawking.ascension.qwen80_direct_packed_routed_expert_wave.v1",
+  "status": "REFUSED_QWEN80_ROUTED_EXPERT_COMPONENT_ATTEMPT_ERROR"
+}

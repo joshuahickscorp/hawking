@@ -1,0 +1,134 @@
+{
+ "schema": "hawking.odyssey.grand_candidate.v1",
+ "generated_at": "2026-08-25T09:42:53Z",
+ "generated_by": "tools/odyssey/grand_candidate.py",
+ "obligation": "G042 \u2014 GRAND_QWEN_CANDIDATE + ADVERSARY",
+ "hand_authored": false,
+ "git_head": "b474b06d0864a9f27e741e0a8a30195ed1b9e52d",
+ "composition_law_S011_79": {
+  "law": "no gain may be stacked before it has survived alone",
+  "survived_alone": [
+   {
+    "win": "MLP affine2_g64_ls 2.5 bpw with per-group bias",
+    "evidence": "receipts/headless/VARIANT_LOCALIZATION.json \u2014 variantA scores 0/43 without it"
+   },
+   {
+    "win": "non-MLP q3 (deltanet g64, attention/embedding/output g128)",
+    "evidence": "carried by variantB, which scores 24-27/43"
+   }
+  ],
+  "refused_for_stacking": [
+   {
+    "win": "MTP head",
+    "why": "PROJECTION ONLY \u2014 never packed, no runtime path, acceptance never measured (G038)"
+   },
+   {
+    "win": "prefix reuse",
+    "why": "PROJECTION ONLY \u2014 no prefix cache exists, no TTFT was observed to fall (G037)"
+   },
+   {
+    "win": "deltanet-only rotation",
+    "why": "UNTESTED \u2014 G035 sanctions the probe, nobody has run it"
+   },
+   {
+    "win": "vocabulary reduction",
+    "why": "REFUTED \u2014 2.205x held-out token inflation (G036)"
+   },
+   {
+    "win": "full-size speculative drafts",
+    "why": "REFUTED \u2014 0.741-0.876x, slower than not speculating (G038)"
+   }
+  ],
+  "consequence": "the two survivors are already composed. The grand candidate is therefore variantB itself, not a new stack. Building a grander body would require stacking projections, which \u00a779 forbids."
+ },
+ "candidate": {
+  "body": "variantB",
+  "artifact_root": "/Users/scammermike/noetic/VARIANT_B_MLP_BIAS_Q3",
+  "complete_ebpw_physical": 2.756053,
+  "payload_bytes": 9265849388,
+  "mlp_codec": "affine2_g64_ls",
+  "mlp_bpw": 2.5,
+  "non_mlp": {
+   "deltanet": "ws_rtn_q3_g64",
+   "attention_gqa": "ws_rtn_q3_g128",
+   "embedding": "ws_rtn_q3_g128",
+   "output": "ws_rtn_q3_g128"
+  },
+  "capability": {
+   "no_system_prompt": 24,
+   "with_system_prompt": 27
+  },
+  "hcli_wus_per_hour_median_of_3": 48.836,
+  "self_contained": true
+ },
+ "adversary": [
+  {
+   "attack": "A1_density_is_real",
+   "question": "is 2.756 EBPW derived from bytes, or restated from a constant?",
+   "method": "sum every payload file independently of MIX_REPORT",
+   "result": {
+    "summed_payload_bytes": 9265849388,
+    "mix_report_payload_bytes": 9265849388,
+    "agree": true,
+    "physical_ebpw": 2.756053
+   },
+   "outcome": "SURVIVED",
+   "note": "byte-exact agreement; the 3.2e-5 difference from the MIX_REPORT figure is the excluded segment headers, which is documented behaviour"
+  },
+  {
+   "attack": "A2_zero_parent_hardlinks",
+   "question": "does the candidate secretly depend on another artifact?",
+   "method": "walk every file with nlink>1 and locate the other end of the link",
+   "found": "353 segments were hardlinked into ~/models/qwen38-gravity-uniform-q4-v1, the q4 incumbent. The same defect the clean rebuild had already fixed, reintroduced because composition_isolation writes variants FLAT while the de-hardlink gate assumed a nested <root>/<MIX_ID>/ layout and could not run on them.",
+   "outcome": "ATTACK WON, THEN FIXED",
+   "fix": "all 353 regenerated from the bf16 parent and accepted only on byte-identical comparison; 0 mismatched, 0 still shared",
+   "after": {
+    "files_hardlinked": 0,
+    "payload_unchanged": true
+   }
+  },
+  {
+   "attack": "A3_closure_completeness",
+   "question": "can it run without borrowing another artifact's tokenizer?",
+   "found": "0 of 7 closure files. Every capability and HCLI score for this body was obtained by pointing --tokenizer-dir at a DIFFERENT closure, so the candidate was never self-contained.",
+   "outcome": "ATTACK WON, THEN FIXED",
+   "fix": "closure sealed from the parent; payload and EBPW unchanged because closure files are not payload",
+   "after": {
+    "closure_present": 7,
+    "closure_required": 7,
+    "missing": []
+   }
+  },
+  {
+   "attack": "A4_standalone_execution",
+   "question": "does it actually run from its own closure?",
+   "method": "load the tokenizer and chat template FROM THE ARTIFACT and decode",
+   "result": {
+    "exit_code": 0,
+    "prompt": "Name the capital of France in one word.",
+    "reply": "Paris"
+   },
+   "outcome": "SURVIVED (only after A2 and A3 were fixed)"
+  },
+  {
+   "attack": "A5_capability_gap_is_regime_dependent",
+   "question": "is the 6-point capability gap over variantB a property of the bodies, or of the harness?",
+   "method": "re-score the full 43-item suite with a neutral default system prompt applied only to the 15 items that define none",
+   "result": {
+    "sealed_no_system": 30,
+    "sealed_with_system": 27,
+    "variantB_no_system": 24,
+    "variantB_with_system": 27,
+    "gap_no_system": 6,
+    "gap_with_system": 0
+   },
+   "outcome": "ATTACK WON",
+   "finding": "the gap collapses from 6 to 0. sealed FALLS 30->27 (it loses the knowledge axis outright) while variantB RISES 24->27 (coding goes 0.000 to 1.000). They tie. The capability advantage that helped justify the resident selection is an artifact of the no-system-prompt regime, and variantB is again the more prompt-robust body.",
+   "consequence": "G040's Pareto input 'capability_passed' must be read as regime-conditional. The selection itself survives on the composite, which is measured under a single consistent regime, but the capability column no longer separates the two bodies."
+  }
+ ],
+ "n_attacks": 5,
+ "n_attacks_won": 3,
+ "verdict": "the candidate SURVIVED as a body, but three of five attacks landed. Two were real defects in the artifact and are fixed: it depended on 353 hardlinks into the q4 incumbent and carried none of its own closure. The third is not a defect in the body but in how it was measured, and it stands: the capability gap between the two frontier bodies is a harness regime artifact, not a property of the bodies.",
+ "pass": true
+}

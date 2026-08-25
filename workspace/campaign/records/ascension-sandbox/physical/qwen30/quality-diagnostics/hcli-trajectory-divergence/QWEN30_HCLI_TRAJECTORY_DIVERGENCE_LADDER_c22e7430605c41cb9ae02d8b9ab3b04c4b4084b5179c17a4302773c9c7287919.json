@@ -1,0 +1,245 @@
+{
+  "assessment": {
+    "embedding_attention_router_moe_final_norm_lm_head_logit_and_top_k_comparisons": "NOT_RUN_FAIL_CLOSED",
+    "exact_historical_compiled_prefix_reconstructed": false,
+    "exact_visible_user_prompt_bodies_reconstructed": true,
+    "first_unisolated_stage_for_all_three": "template_tokenizer",
+    "reason": "Each context.compiled record retained two memory spans and an estimated nine-token count, but persisted neither selected text nor token IDs."
+  },
+  "binding": {
+    "historical_hcli_negative_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/negative-science/QWEN30_HCLI_COHERENCE_6959979797825d3cedf17b073e7c7a6071b23292c6b490c439daa41a0afda79e.json",
+    "historical_hcli_negative_seal_sha256": "c22e7430605c41cb9ae02d8b9ab3b04c4b4084b5179c17a4302773c9c7287919",
+    "source_bound_admitted_artifact": {
+      "admission_receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/QWEN30_COMPLETE_BINARY_GRAVITY_ADMISSION_RECEIPT.json",
+      "admission_receipt_seal_sha256": "89d3c531d5638757bf0c0348df4f11e45a4f1c0cf87d27a7f3afcb675247301a",
+      "artifact_scope": "ADMITTED_DIRECT_PACKED_ARTIFACT_BOUND_ONLY_NO_PAYLOAD_OR_RUNTIME_EXECUTION",
+      "complete_manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/QWEN30_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+      "complete_manifest_seal_sha256": "3321a99d719e70499663b7bfebe14dd6c732bfc533bb05b9277eb398e44d6357",
+      "source_content_identity_sha256": "dfc985ac9e293c271209742f33c694664ed67b30962dad769cc3f596c58a9bb9",
+      "source_repository": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+      "source_revalidation_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/QWEN30_CURRENT_SOURCE_SHARD_REVALIDATION.json",
+      "source_revalidation_seal_sha256": "ac7208e11c31bbd035bd87fd62a80020b9d1d05970867576f4649f6bebe68123",
+      "source_revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120"
+    },
+    "source_prompt_catalog_path": "/Users/scammermike/Downloads/hawking/lab/operators/ascension_base_true_tps_gate.py",
+    "source_prompt_catalog_sha256": "802d3ea1da267785ff13750b558889467973fc00b1ea6384ae479f496d901d14"
+  },
+  "claim_boundary": {
+    "cpu_only": true,
+    "does_not_claim_a_causal_quality_defect_or_any_hcli_tps_generation_capability_or_tournament_result": true,
+    "does_not_duplicate_route_membership_or_cross_depth_gate_up_checks": true,
+    "no_model_payload_loaded": true,
+    "no_runtime_server_watcher_endpoint_or_gpu_touched": true,
+    "no_source_forward_or_packed_forward_executed": true,
+    "visible_user_only_or_guessed_context_is_not_treated_as_historical_hcli_trajectory": true
+  },
+  "recorded_at": "2026-08-08T23:17:26.545496Z",
+  "reopen_condition": {
+    "requires_for_each_probe": [
+      "immutable exact compiled prefix text or token IDs",
+      "binding from that prefix to the historical HCLI request/session",
+      "source tokenizer/template authority for text-only prefix reconstruction"
+    ],
+    "then": "run a separate source-versus-admitted-direct-packed CPU ladder from tokenizer through logits/top-k"
+  },
+  "schema": "hawking.ascension.qwen30_hcli_trajectory_divergence_ladder.v1",
+  "seal_sha256": "217b6dff178f4bac153c70844eeb96f1be1b2281c77a2bcdd998d22c0f6b2b06",
+  "status": "BLOCKED_HISTORICAL_HCLI_TRAJECTORY_PREFIX_NOT_RECONSTRUCTABLE",
+  "trajectories": [
+    {
+      "compiled_context": {
+        "event_chain_hash": "b0ff4e804bc2d94e439ddfefb95582eeba1b1ba458120c2ec0a8ee395dfe36ff",
+        "event_id": "evt_01KZHS24D57F735WGH1TVYM96Q",
+        "event_log_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/hcli-workspace/.hide/log/events.jsonl",
+        "event_log_sha256": "b6aad000dec9a31115a6ed9eb5bf2dc2b61f78478892884ff616dcd1a4c19f85",
+        "event_seq": 14,
+        "replayability": "BLOCKED_PREFIX_TEXT_AND_TOKEN_IDS_NOT_PERSISTED",
+        "retained_span_count": 2,
+        "selected_prefix_text_or_token_ids_persisted": false,
+        "used_tokens": 9,
+        "used_tokens_estimated": true
+      },
+      "first_unisolated_historical_stage": "template_tokenizer",
+      "first_unisolated_reason": "compiled context retained span count/estimated count but no selected span text or token IDs",
+      "ladder": [
+        {
+          "reason": "Exact template input cannot be formed without the selected retained span text/token IDs.",
+          "stage": "template_tokenizer",
+          "status": "NOT_EXECUTED_FAIL_CLOSED_EXACT_HISTORICAL_COMPILED_PREFIX_UNAVAILABLE"
+        },
+        {
+          "reason": "Source-versus-direct-packed embedding comparison would use a guessed prefix.",
+          "stage": "embedding",
+          "status": "NOT_EXECUTED_FAIL_CLOSED_EXACT_HISTORICAL_COMPILED_PREFIX_UNAVAILABLE"
+        },
+        {
+          "reason": "No exact historical prefix means no source-bound activation trajectory.",
+          "stage": "attention_router",
+          "status": "NOT_EXECUTED_FAIL_CLOSED_EXACT_HISTORICAL_COMPILED_PREFIX_UNAVAILABLE"
+        },
+        {
+          "reason": "No exact historical prefix means no source-bound routed-expert trajectory.",
+          "stage": "moe",
+          "status": "NOT_EXECUTED_FAIL_CLOSED_EXACT_HISTORICAL_COMPILED_PREFIX_UNAVAILABLE"
+        },
+        {
+          "reason": "No exact historical prefix means no comparable final logits.",
+          "stage": "final_norm_lm_head",
+          "status": "NOT_EXECUTED_FAIL_CLOSED_EXACT_HISTORICAL_COMPILED_PREFIX_UNAVAILABLE"
+        },
+        {
+          "reason": "No exact historical prefix means no top-k divergence can be attributed to the failed trajectory.",
+          "stage": "logit_top_k",
+          "status": "NOT_EXECUTED_FAIL_CLOSED_EXACT_HISTORICAL_COMPILED_PREFIX_UNAVAILABLE"
+        }
+      ],
+      "probe": {
+        "acceptance": "contains_hawking",
+        "completion_sha256": "d876212971a98d15ff03a751544a5cfa3457c6ff89a6387aadfda94f7dcae430",
+        "completion_utf8_bytes": 34,
+        "historical_input_tokens": 29,
+        "historical_output_tokens": 8,
+        "named_session": "base-true-tps-qwen30-695997979782-probe-1",
+        "named_session_mapping_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/hcli-workspace/.hide/kv/sessions/base-true-tps-qwen30-695997979782-probe-1.json",
+        "named_session_mapping_sha256": "8b8c1a4bd3c0c800cc1789e41caade6f74a36f494609db1d1996d9de2f671655",
+        "probe_id": "literal_hawking",
+        "prompt_reconstruction": "EXACT_RAW_COMMAND_SOURCE_PROBE_AND_NEGATIVE_RECEIPT_MATCH",
+        "prompt_sha256": "b7cd626f844d937768c916bc3a7bdea625e7d84fcbbc74be89ba3e1551427e30",
+        "prompt_utf8_bytes": 43,
+        "raw_hcli_evidence_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/evidence/6959979797825d3cedf17b073e7c7a6071b23292c6b490c439daa41a0afda79e/probe-01-literal_hawking.json",
+        "raw_hcli_evidence_sha256": "8482abe489c97477036858c57459648a1fe528799595c97c3c56d92e3884d615",
+        "session_id": "ses_01KZHS24BR82Z0P8CKEMDE4QZ8"
+      }
+    },
+    {
+      "compiled_context": {
+        "event_chain_hash": "73142bd63452c4b98cb51ab8c5f83c75744bdfab8308ca3e4a4223f0f179dad1",
+        "event_id": "evt_01KZHS2HD57P5T0S79TPDT3RVB",
+        "event_log_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/hcli-workspace/.hide/log/events.jsonl",
+        "event_log_sha256": "b6aad000dec9a31115a6ed9eb5bf2dc2b61f78478892884ff616dcd1a4c19f85",
+        "event_seq": 18,
+        "replayability": "BLOCKED_PREFIX_TEXT_AND_TOKEN_IDS_NOT_PERSISTED",
+        "retained_span_count": 2,
+        "selected_prefix_text_or_token_ids_persisted": false,
+        "used_tokens": 9,
+        "used_tokens_estimated": true
+      },
+      "first_unisolated_historical_stage": "template_tokenizer",
+      "first_unisolated_reason": "compiled context retained span count/estimated count but no selected span text or token IDs",
+      "ladder": [
+        {
+          "reason": "Exact template input cannot be formed without the selected retained span text/token IDs.",
+          "stage": "template_tokenizer",
+          "status": "NOT_EXECUTED_FAIL_CLOSED_EXACT_HISTORICAL_COMPILED_PREFIX_UNAVAILABLE"
+        },
+        {
+          "reason": "Source-versus-direct-packed embedding comparison would use a guessed prefix.",
+          "stage": "embedding",
+          "status": "NOT_EXECUTED_FAIL_CLOSED_EXACT_HISTORICAL_COMPILED_PREFIX_UNAVAILABLE"
+        },
+        {
+          "reason": "No exact historical prefix means no source-bound activation trajectory.",
+          "stage": "attention_router",
+          "status": "NOT_EXECUTED_FAIL_CLOSED_EXACT_HISTORICAL_COMPILED_PREFIX_UNAVAILABLE"
+        },
+        {
+          "reason": "No exact historical prefix means no source-bound routed-expert trajectory.",
+          "stage": "moe",
+          "status": "NOT_EXECUTED_FAIL_CLOSED_EXACT_HISTORICAL_COMPILED_PREFIX_UNAVAILABLE"
+        },
+        {
+          "reason": "No exact historical prefix means no comparable final logits.",
+          "stage": "final_norm_lm_head",
+          "status": "NOT_EXECUTED_FAIL_CLOSED_EXACT_HISTORICAL_COMPILED_PREFIX_UNAVAILABLE"
+        },
+        {
+          "reason": "No exact historical prefix means no top-k divergence can be attributed to the failed trajectory.",
+          "stage": "logit_top_k",
+          "status": "NOT_EXECUTED_FAIL_CLOSED_EXACT_HISTORICAL_COMPILED_PREFIX_UNAVAILABLE"
+        }
+      ],
+      "probe": {
+        "acceptance": "json_status_ok",
+        "completion_sha256": "21b3fb5b4c556387f64291a8410ea9fdc615770cc5e14220b42ecd961a3af08d",
+        "completion_utf8_bytes": 60,
+        "historical_input_tokens": 33,
+        "historical_output_tokens": 8,
+        "named_session": "base-true-tps-qwen30-695997979782-probe-2",
+        "named_session_mapping_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/hcli-workspace/.hide/kv/sessions/base-true-tps-qwen30-695997979782-probe-2.json",
+        "named_session_mapping_sha256": "f122af3adb7370f40a21ac6b73b9dc22e27d187248561c1a25ad741acbc59d2d",
+        "probe_id": "json_status",
+        "prompt_reconstruction": "EXACT_RAW_COMMAND_SOURCE_PROBE_AND_NEGATIVE_RECEIPT_MATCH",
+        "prompt_sha256": "b48b7f872a92ae7e6fec79750515e25c24a2deeeccd25d2d5507e59490ad08df",
+        "prompt_utf8_bytes": 62,
+        "raw_hcli_evidence_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/evidence/6959979797825d3cedf17b073e7c7a6071b23292c6b490c439daa41a0afda79e/probe-02-json_status.json",
+        "raw_hcli_evidence_sha256": "82f83ddf3899508fd7d1cc1daacd0a07cdaa03b5de3834d3b02fcf2f3afedecb",
+        "session_id": "ses_01KZHS2HC7C71SKD5FDG61NZPM"
+      }
+    },
+    {
+      "compiled_context": {
+        "event_chain_hash": "afe58ad68f9e2eae122fc314b5b6c65035f4c542865644aec4d8a51b1d416072",
+        "event_id": "evt_01KZHS2XTNB3GH3G26MFZHV110",
+        "event_log_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/hcli-workspace/.hide/log/events.jsonl",
+        "event_log_sha256": "b6aad000dec9a31115a6ed9eb5bf2dc2b61f78478892884ff616dcd1a4c19f85",
+        "event_seq": 22,
+        "replayability": "BLOCKED_PREFIX_TEXT_AND_TOKEN_IDS_NOT_PERSISTED",
+        "retained_span_count": 2,
+        "selected_prefix_text_or_token_ids_persisted": false,
+        "used_tokens": 9,
+        "used_tokens_estimated": true
+      },
+      "first_unisolated_historical_stage": "template_tokenizer",
+      "first_unisolated_reason": "compiled context retained span count/estimated count but no selected span text or token IDs",
+      "ladder": [
+        {
+          "reason": "Exact template input cannot be formed without the selected retained span text/token IDs.",
+          "stage": "template_tokenizer",
+          "status": "NOT_EXECUTED_FAIL_CLOSED_EXACT_HISTORICAL_COMPILED_PREFIX_UNAVAILABLE"
+        },
+        {
+          "reason": "Source-versus-direct-packed embedding comparison would use a guessed prefix.",
+          "stage": "embedding",
+          "status": "NOT_EXECUTED_FAIL_CLOSED_EXACT_HISTORICAL_COMPILED_PREFIX_UNAVAILABLE"
+        },
+        {
+          "reason": "No exact historical prefix means no source-bound activation trajectory.",
+          "stage": "attention_router",
+          "status": "NOT_EXECUTED_FAIL_CLOSED_EXACT_HISTORICAL_COMPILED_PREFIX_UNAVAILABLE"
+        },
+        {
+          "reason": "No exact historical prefix means no source-bound routed-expert trajectory.",
+          "stage": "moe",
+          "status": "NOT_EXECUTED_FAIL_CLOSED_EXACT_HISTORICAL_COMPILED_PREFIX_UNAVAILABLE"
+        },
+        {
+          "reason": "No exact historical prefix means no comparable final logits.",
+          "stage": "final_norm_lm_head",
+          "status": "NOT_EXECUTED_FAIL_CLOSED_EXACT_HISTORICAL_COMPILED_PREFIX_UNAVAILABLE"
+        },
+        {
+          "reason": "No exact historical prefix means no top-k divergence can be attributed to the failed trajectory.",
+          "stage": "logit_top_k",
+          "status": "NOT_EXECUTED_FAIL_CLOSED_EXACT_HISTORICAL_COMPILED_PREFIX_UNAVAILABLE"
+        }
+      ],
+      "probe": {
+        "acceptance": "python_add",
+        "completion_sha256": "df3eec785d54ec2efbf1b295c3ced2015c9838354755cb32c354b6bebb709b00",
+        "completion_utf8_bytes": 34,
+        "historical_input_tokens": 31,
+        "historical_output_tokens": 8,
+        "named_session": "base-true-tps-qwen30-695997979782-probe-3",
+        "named_session_mapping_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/hcli-workspace/.hide/kv/sessions/base-true-tps-qwen30-695997979782-probe-3.json",
+        "named_session_mapping_sha256": "32c5ea042435a64285020e66925546c9c106f6e2239d774ebda06dcb9f2ac114",
+        "probe_id": "python_add",
+        "prompt_reconstruction": "EXACT_RAW_COMMAND_SOURCE_PROBE_AND_NEGATIVE_RECEIPT_MATCH",
+        "prompt_sha256": "4a84d367e375949e6c5c2293547da4dd28282be13169c8d2957ae259051fd982",
+        "prompt_utf8_bytes": 59,
+        "raw_hcli_evidence_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/evidence/6959979797825d3cedf17b073e7c7a6071b23292c6b490c439daa41a0afda79e/probe-03-python_add.json",
+        "raw_hcli_evidence_sha256": "cbb07346de89a8ff39afdae60a250baaa9dc7741ee270fd16556fcb5717439ce",
+        "session_id": "ses_01KZHS2XSWZT5FK27H6P5D4PH3"
+      }
+    }
+  ]
+}

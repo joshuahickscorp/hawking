@@ -1,0 +1,1482 @@
+{
+  "claim_boundary": {
+    "automatic_retry_authorized": false,
+    "catalog_or_payload_scan_performed": false,
+    "complete_layer_or_token_decoder_claim_earned": false,
+    "cpu_build_preflight_only": true,
+    "future_capture_component_only": true,
+    "lease_issued_or_consumed": false,
+    "metal_context_or_dispatch_performed": false,
+    "tps_tg_or_tournament_claim_earned": false,
+    "watcher_server_hcli_or_runtime_changed": false
+  },
+  "completion_preflight": {
+    "bytes": 19039,
+    "document_seal_sha256": "1e486c1b4f35f6c246073169a65d2b6144df70e5080d369b7c97963b65767f45",
+    "document_sha256": "1e486c1b4f35f6c246073169a65d2b6144df70e5080d369b7c97963b65767f45",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L1_FULL_LAYER_HOST_CPU_PREFLIGHT_1MIndj9u/l1-moe-completion-preflight.json",
+    "present": true,
+    "sha256": "269490c3819756f0b59ec884e39aca244a95a3fbe232efe2aac81a7351de2d83"
+  },
+  "future_inner_receipt_contract": {
+    "outer_schema": "hawking.ascension.qwen80_source_token_l0_l1_full_layer_same_runtime_outer_capture.v1",
+    "outer_status": "CAPTURED_QWEN80_SOURCE_TOKEN_L0_L1_COMPLETE_LAYER_SAME_RUNTIME_OUTER_TERMINAL_COMPONENT_ONLY",
+    "release_schema": "hawking.ascension.qwen80_source_token_l0_l1_full_layer_same_runtime_quiet_metal_lease_release.v1",
+    "release_status": "RELEASED_QWEN80_SOURCE_TOKEN_L0_L1_COMPLETE_LAYER_COMPONENT_QUIET_METAL_LEASE_AFTER_TERMINAL_CAPTURE",
+    "requires_distinct_cpu_and_device_hashes_with_bounded_numeric_parity": true,
+    "requires_l0_and_l1_active_rollback_state_witnesses": true,
+    "requires_l1_route_guard_all_ten_shared_routed_sum_and_second_residual_readbacks": true,
+    "schema": "hawking.ascension.qwen80_source_token_l0_l1_full_layer_same_runtime_capture.v1",
+    "status": "CAPTURED_QWEN80_SOURCE_TOKEN_L0_REENCODE_AND_L1_COMPLETE_MOE_LAYER_SAME_RUNTIME_COMPONENT_ONLY"
+  },
+  "future_joint_command_graph": {
+    "exact_kernel_trace": [
+      {
+        "kernel": "qwen_next_direct_packed_input_rmsnorm",
+        "ordinal": 0,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen_binary_sign_scale_matvec",
+        "ordinal": 1,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen_binary_sign_scale_matvec",
+        "ordinal": 2,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen_next_qkvz_rearrange_conv_l2",
+        "ordinal": 3,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen_next_ba_to_decay_beta",
+        "ordinal": 4,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen_next_gated_delta_decode_single",
+        "ordinal": 5,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen_next_deltanet_gated_rmsnorm",
+        "ordinal": 6,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen_binary_sign_scale_matvec",
+        "ordinal": 7,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen_next_add_residual",
+        "ordinal": 8,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_postnorm_router_top10_rmsnorm",
+        "ordinal": 9,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_postnorm_router_top10_matvec",
+        "ordinal": 10,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_postnorm_router_top10_select",
+        "ordinal": 11,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_all_ten_routed_wave_route_guard",
+        "ordinal": 12,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_all_ten_routed_wave_gate_up",
+        "ordinal": 13,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_all_ten_routed_wave_swiglu",
+        "ordinal": 14,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_all_ten_routed_wave_down_weighted",
+        "ordinal": 15,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_shared_expert_wave_gate_up",
+        "ordinal": 16,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_shared_expert_wave_swiglu",
+        "ordinal": 17,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_shared_expert_wave_down",
+        "ordinal": 18,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_shared_expert_wave_scalar_gate",
+        "ordinal": 19,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_shared_expert_wave_apply_sigmoid_gate",
+        "ordinal": 20,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_moe_wave_aggregate_second_residual_route_sum",
+        "ordinal": 21,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen80_moe_wave_aggregate_second_residual_add_shared_residual",
+        "ordinal": 22,
+        "phase": "fresh_l0_reencode"
+      },
+      {
+        "kernel": "qwen_next_direct_packed_input_rmsnorm",
+        "ordinal": 23,
+        "phase": "fresh_l1_deltanet_prefix"
+      },
+      {
+        "kernel": "qwen_binary_sign_scale_matvec",
+        "ordinal": 24,
+        "phase": "fresh_l1_deltanet_prefix"
+      },
+      {
+        "kernel": "qwen_binary_sign_scale_matvec",
+        "ordinal": 25,
+        "phase": "fresh_l1_deltanet_prefix"
+      },
+      {
+        "kernel": "qwen_next_qkvz_rearrange_conv_l2",
+        "ordinal": 26,
+        "phase": "fresh_l1_deltanet_prefix"
+      },
+      {
+        "kernel": "qwen_next_ba_to_decay_beta",
+        "ordinal": 27,
+        "phase": "fresh_l1_deltanet_prefix"
+      },
+      {
+        "kernel": "qwen_next_gated_delta_decode_single",
+        "ordinal": 28,
+        "phase": "fresh_l1_deltanet_prefix"
+      },
+      {
+        "kernel": "qwen_next_deltanet_gated_rmsnorm",
+        "ordinal": 29,
+        "phase": "fresh_l1_deltanet_prefix"
+      },
+      {
+        "kernel": "qwen_binary_sign_scale_matvec",
+        "ordinal": 30,
+        "phase": "fresh_l1_deltanet_prefix"
+      },
+      {
+        "kernel": "qwen_next_add_residual",
+        "ordinal": 31,
+        "phase": "fresh_l1_deltanet_prefix"
+      },
+      {
+        "kernel": "qwen80_postnorm_router_top10_rmsnorm",
+        "ordinal": 32,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_postnorm_router_top10_matvec",
+        "ordinal": 33,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_postnorm_router_top10_select",
+        "ordinal": 34,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_all_ten_routed_wave_route_guard",
+        "ordinal": 35,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_all_ten_routed_wave_gate_up",
+        "ordinal": 36,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_all_ten_routed_wave_swiglu",
+        "ordinal": 37,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_all_ten_routed_wave_down_weighted",
+        "ordinal": 38,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_shared_expert_wave_gate_up",
+        "ordinal": 39,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_shared_expert_wave_swiglu",
+        "ordinal": 40,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_shared_expert_wave_down",
+        "ordinal": 41,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_shared_expert_wave_scalar_gate",
+        "ordinal": 42,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_shared_expert_wave_apply_sigmoid_gate",
+        "ordinal": 43,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_moe_wave_aggregate_second_residual_route_sum",
+        "ordinal": 44,
+        "phase": "fresh_l1_moe_suffix"
+      },
+      {
+        "kernel": "qwen80_moe_wave_aggregate_second_residual_add_shared_residual",
+        "ordinal": 45,
+        "phase": "fresh_l1_moe_suffix"
+      }
+    ],
+    "l0_reencode_dispatches": 23,
+    "l1_moe_suffix_dispatches": 14,
+    "l1_prefix_dispatches": 9,
+    "non_timed_structural_trace_required": true,
+    "single_fence_after_all_dispatches_required": true,
+    "source_token_id": 1,
+    "total_dispatches": 46
+  },
+  "future_metal_entrypoint": {
+    "capture_body_wired": true,
+    "default_execution_disabled": true,
+    "explicit_mode_required": true,
+    "no_device_execution_in_this_cpu_preflight": true,
+    "requires_fresh_outer_and_inner_capture_directories": true,
+    "requires_new_full_l1_lease": true,
+    "requires_sealed_outer_launch_authority": true,
+    "self_hashes_current_executable": true
+  },
+  "future_same_runtime_host_interface": {
+    "consuming_finalizer": "Qwen80SameRuntimeLayer1DeltaNetPrefixEncoder::finalize_after_exact_l1_moe_completion_fence_with_readbacks",
+    "cross_process_pinned_buffer_or_state_import_allowed": false,
+    "entrypoint": "encode_source_token_l0_l1_full_layer_same_runtime",
+    "fresh_runtime_required": true,
+    "l0_encoder": "ascension_qwen80_first_residual_bridge_device::encode_source_input_l0_true_moe_capture",
+    "l1_fixed_allocator": "Qwen80CompleteNativeRuntime::upload_canonical_linear_moe_fixed_device_buffers",
+    "l1_moe_suffix_encoder": "ascension_qwen80_all_ten_true_moe_graph_device::encode_all_ten_true_moe_from_first_residual",
+    "l1_prefix_encoder": "Qwen80CompleteNativeRuntime::encode_source_token_l1_deltanet_prefix_from_canonical_l0_continuation_into",
+    "l1_route_bridge_builder": "Qwen80CompleteArtifactCatalog::build_source_token_l1_all_ten_true_moe_source_bridge_from_validated_authority",
+    "opaque_l0_continuation_factory": "Qwen80CompleteNativeRuntime::certify_source_token_l0_true_moe_continuation",
+    "readbacks_after_fence_required": true,
+    "receipt_last_required": true,
+    "same_runtime_required": true,
+    "same_token_command_buffer_required": true,
+    "single_fence_required": true
+  },
+  "host_binary": {
+    "bytes": 13477232,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/debug/examples/ascension_qwen80_source_token_l0_l1_full_layer_same_runtime_device",
+    "present": true,
+    "sha256": "53ca6faa9dde8dadfb7dcf440532a1244838ab190a81542bbb85490928f52574"
+  },
+  "joint_assessment": {
+    "bytes": 3163,
+    "document_seal_sha256": "d1b2893135287e282987e7d35609db3d44cd6c42846f79518f58f7ed5684829d",
+    "document_sha256": "d1b2893135287e282987e7d35609db3d44cd6c42846f79518f58f7ed5684829d",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_L0_L1_JOINT_POST_CAPTURE_ASSESSMENT_20260809T115059Z.json",
+    "present": true,
+    "sha256": "deb9c613041dd7b44e5a65d1ead19429249499192f86baa6a471aafa657476c6"
+  },
+  "l0_source_outer_preflight": {
+    "bytes": 5541,
+    "document_seal_sha256": "129fb3c123b8b1c6c5a2232ed6cdb62d1b3bc2067e306259035e6374b1e8f671",
+    "document_sha256": "129fb3c123b8b1c6c5a2232ed6cdb62d1b3bc2067e306259035e6374b1e8f671",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SOURCE_TOKEN_TRUE_INPUT_ALL_TEN_CPU_PREFLIGHT_20260809T060500Z/outer-preflight.json",
+    "present": true,
+    "sha256": "2953d41eb6b7a44a0cbd1c0f0a0eed2d79c363d82620737047f7428ee0b7b3eb"
+  },
+  "l1_route_payload_authority": {
+    "binding": {
+      "bytes": 56883,
+      "document_seal_sha256": "1be012d736659b4c0d761c6643be590e43dde495a2d05a3ad715928bac642722",
+      "document_sha256": "1be012d736659b4c0d761c6643be590e43dde495a2d05a3ad715928bac642722",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SOURCE_TOKEN_L1_ROUTE_AUTHORITY_CPU_SCAN_20260809T130548Z/inner/l1-source-token-route-authority.json",
+      "present": true,
+      "sha256": "6dda93d40d1379bfaf5d728cc4b30434e8c61193c55e9ff632809885d90e7d22"
+    },
+    "distinct_payload_bindings": 36,
+    "original_inner_authority_required": true,
+    "raw_authority_embedded_in_future_device_receipt": false,
+    "recovery_wrapper_is_provenance_only": true,
+    "route_guard_required_value": 1,
+    "schema": "hawking.ascension.qwen80_source_token_l1_all_ten_route_authority.v1",
+    "six_fixed_payloads": [
+      {
+        "artifact_sha256": "8cc1791fed93b90802ab8785744e29b56b351b324a872a8da97e5c3e23e26c28",
+        "direct_packed_payload_sha256": "8cc1791fed93b90802ab8785744e29b56b351b324a872a8da97e5c3e23e26c28",
+        "group_size": 128,
+        "header_sha256": "5fd63b577062895d00f60c1e0394d41d0e259fb529c12579f8638d4b0301980f",
+        "layout": {
+          "elements": 2048,
+          "group_size": 128,
+          "groups": 16,
+          "magic": "HQ30G1B1",
+          "payload_bytes": 324,
+          "scale_dtype": "float16",
+          "scale_offset": 36,
+          "shape": [
+            2048
+          ],
+          "sign_bit_order": "little",
+          "sign_offset": 68,
+          "version": 1
+        },
+        "payload_bytes": 324,
+        "role": "post_attention_layernorm",
+        "shape": [
+          2048
+        ],
+        "tensor_name": "model.layers.1.post_attention_layernorm.weight"
+      },
+      {
+        "artifact_sha256": "34195bfc1b650a867b8547c6bf443cdcf4a53e0f3a60a1c379dfabb879f60363",
+        "direct_packed_payload_sha256": "34195bfc1b650a867b8547c6bf443cdcf4a53e0f3a60a1c379dfabb879f60363",
+        "group_size": 128,
+        "header_sha256": "5bc2815583a5fb81e0ae498b86cb99234009ed979a9d830585627668d2feeea3",
+        "layout": {
+          "elements": 1048576,
+          "group_size": 128,
+          "groups": 8192,
+          "magic": "HQ30G1B1",
+          "payload_bytes": 147496,
+          "scale_dtype": "float16",
+          "scale_offset": 40,
+          "shape": [
+            512,
+            2048
+          ],
+          "sign_bit_order": "little",
+          "sign_offset": 16424,
+          "version": 1
+        },
+        "payload_bytes": 147496,
+        "role": "router",
+        "shape": [
+          512,
+          2048
+        ],
+        "tensor_name": "model.layers.1.mlp.gate.weight"
+      },
+      {
+        "artifact_sha256": "69f816b52a0073ae1c6fb5242c85320ddc22d5ddf1ce84f307677e211cd5a7f1",
+        "direct_packed_payload_sha256": "69f816b52a0073ae1c6fb5242c85320ddc22d5ddf1ce84f307677e211cd5a7f1",
+        "group_size": 128,
+        "header_sha256": "5bc2815583a5fb81e0ae498b86cb99234009ed979a9d830585627668d2feeea3",
+        "layout": {
+          "elements": 1048576,
+          "group_size": 128,
+          "groups": 8192,
+          "magic": "HQ30G1B1",
+          "payload_bytes": 147496,
+          "scale_dtype": "float16",
+          "scale_offset": 40,
+          "shape": [
+            512,
+            2048
+          ],
+          "sign_bit_order": "little",
+          "sign_offset": 16424,
+          "version": 1
+        },
+        "payload_bytes": 147496,
+        "role": "shared_gate_proj",
+        "shape": [
+          512,
+          2048
+        ],
+        "tensor_name": "model.layers.1.mlp.shared_expert.gate_proj.weight"
+      },
+      {
+        "artifact_sha256": "b16426b9db2e974235539db7c5359466503f29626e4084d6ab5e1f8350d1c4c9",
+        "direct_packed_payload_sha256": "b16426b9db2e974235539db7c5359466503f29626e4084d6ab5e1f8350d1c4c9",
+        "group_size": 128,
+        "header_sha256": "5bc2815583a5fb81e0ae498b86cb99234009ed979a9d830585627668d2feeea3",
+        "layout": {
+          "elements": 1048576,
+          "group_size": 128,
+          "groups": 8192,
+          "magic": "HQ30G1B1",
+          "payload_bytes": 147496,
+          "scale_dtype": "float16",
+          "scale_offset": 40,
+          "shape": [
+            512,
+            2048
+          ],
+          "sign_bit_order": "little",
+          "sign_offset": 16424,
+          "version": 1
+        },
+        "payload_bytes": 147496,
+        "role": "shared_up_proj",
+        "shape": [
+          512,
+          2048
+        ],
+        "tensor_name": "model.layers.1.mlp.shared_expert.up_proj.weight"
+      },
+      {
+        "artifact_sha256": "caaa0d3215087bddcaeda5e168de9e5e0044304884db16853f002d6ec9926412",
+        "direct_packed_payload_sha256": "caaa0d3215087bddcaeda5e168de9e5e0044304884db16853f002d6ec9926412",
+        "group_size": 128,
+        "header_sha256": "80dbd929b1d3fa8adf58be69639ca9a32ebfe2ff5cddddc02d59ed1c6e1b8f4b",
+        "layout": {
+          "elements": 1048576,
+          "group_size": 128,
+          "groups": 8192,
+          "magic": "HQ30G1B1",
+          "payload_bytes": 147496,
+          "scale_dtype": "float16",
+          "scale_offset": 40,
+          "shape": [
+            2048,
+            512
+          ],
+          "sign_bit_order": "little",
+          "sign_offset": 16424,
+          "version": 1
+        },
+        "payload_bytes": 147496,
+        "role": "shared_down_proj",
+        "shape": [
+          2048,
+          512
+        ],
+        "tensor_name": "model.layers.1.mlp.shared_expert.down_proj.weight"
+      },
+      {
+        "artifact_sha256": "ab145ea89ff902edba07acba2e9290c45a618fef4af4a14aae5328da2bd61116",
+        "direct_packed_payload_sha256": "ab145ea89ff902edba07acba2e9290c45a618fef4af4a14aae5328da2bd61116",
+        "group_size": 128,
+        "header_sha256": "7dbce5fa5cb41e295fba0104d17bbed2e7b9dd3839a5ecb855ddf4caa64e4b43",
+        "layout": {
+          "elements": 2048,
+          "group_size": 128,
+          "groups": 16,
+          "magic": "HQ30G1B1",
+          "payload_bytes": 328,
+          "scale_dtype": "float16",
+          "scale_offset": 40,
+          "shape": [
+            1,
+            2048
+          ],
+          "sign_bit_order": "little",
+          "sign_offset": 72,
+          "version": 1
+        },
+        "payload_bytes": 328,
+        "role": "shared_expert_gate",
+        "shape": [
+          1,
+          2048
+        ],
+        "tensor_name": "model.layers.1.mlp.shared_expert_gate.weight"
+      }
+    ],
+    "source_stable_normalized_weights": [
+      0.17634427547454834,
+      0.1229451596736908,
+      0.10592018067836761,
+      0.10414616763591766,
+      0.08903803676366806,
+      0.08700032532215118,
+      0.08052818477153778,
+      0.0798434466123581,
+      0.07950463145971298,
+      0.07472962141036987
+    ],
+    "source_stable_route_ids": [
+      397,
+      450,
+      304,
+      428,
+      313,
+      411,
+      34,
+      216,
+      218,
+      474
+    ],
+    "status": "SEALED_CURRENT_ADMITTED_QWEN80_SOURCE_TOKEN_L1_ALL_TEN_ROUTE_AUTHORITY_READY_FOR_SAME_RUNTIME_MOE_SUFFIX",
+    "ten_ordered_waves": [
+      {
+        "down": {
+          "artifact_sha256": "acdeb609b8ceb67459d1e8ac4fb6c726222cbea6dabf446e9ccb2257e5a922d9",
+          "direct_packed_payload_sha256": "acdeb609b8ceb67459d1e8ac4fb6c726222cbea6dabf446e9ccb2257e5a922d9",
+          "group_size": 128,
+          "header_sha256": "80dbd929b1d3fa8adf58be69639ca9a32ebfe2ff5cddddc02d59ed1c6e1b8f4b",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              2048,
+              512
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "down",
+          "shape": [
+            2048,
+            512
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.397.down_proj.weight"
+        },
+        "expert_id": 397,
+        "gate": {
+          "artifact_sha256": "175464ef2bbc1f0bc50b0bdf162d2752710f43e65f6a8b0d7a9399be730cadf9",
+          "direct_packed_payload_sha256": "175464ef2bbc1f0bc50b0bdf162d2752710f43e65f6a8b0d7a9399be730cadf9",
+          "group_size": 128,
+          "header_sha256": "5bc2815583a5fb81e0ae498b86cb99234009ed979a9d830585627668d2feeea3",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              512,
+              2048
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "gate",
+          "shape": [
+            512,
+            2048
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.397.gate_proj.weight"
+        },
+        "layer": 1,
+        "normalized_weight": 0.17634427547454834,
+        "normalized_weight_bits_hex": "0x3fc6927300000000",
+        "up": {
+          "artifact_sha256": "afece4704d19c670c2a11c7d9a0fdb38d574483dded175590221bc0a09577141",
+          "direct_packed_payload_sha256": "afece4704d19c670c2a11c7d9a0fdb38d574483dded175590221bc0a09577141",
+          "group_size": 128,
+          "header_sha256": "5bc2815583a5fb81e0ae498b86cb99234009ed979a9d830585627668d2feeea3",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              512,
+              2048
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "up",
+          "shape": [
+            512,
+            2048
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.397.up_proj.weight"
+        },
+        "wave_index": 0
+      },
+      {
+        "down": {
+          "artifact_sha256": "ac5ef87424eb00c1dd42f24af314d2dd76ca84fce5acddd845dbb9cd2db5f63d",
+          "direct_packed_payload_sha256": "ac5ef87424eb00c1dd42f24af314d2dd76ca84fce5acddd845dbb9cd2db5f63d",
+          "group_size": 128,
+          "header_sha256": "80dbd929b1d3fa8adf58be69639ca9a32ebfe2ff5cddddc02d59ed1c6e1b8f4b",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              2048,
+              512
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "down",
+          "shape": [
+            2048,
+            512
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.450.down_proj.weight"
+        },
+        "expert_id": 450,
+        "gate": {
+          "artifact_sha256": "54f6115800a595d968c36309677bcb1c44b5db805aa119a9d231e592dd24b80b",
+          "direct_packed_payload_sha256": "54f6115800a595d968c36309677bcb1c44b5db805aa119a9d231e592dd24b80b",
+          "group_size": 128,
+          "header_sha256": "5bc2815583a5fb81e0ae498b86cb99234009ed979a9d830585627668d2feeea3",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              512,
+              2048
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "gate",
+          "shape": [
+            512,
+            2048
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.450.gate_proj.weight"
+        },
+        "layer": 1,
+        "normalized_weight": 0.1229451596736908,
+        "normalized_weight_bits_hex": "0x3fbf795580000000",
+        "up": {
+          "artifact_sha256": "8fef7640ce5fa279e9f36eab4953aa6d28c3c96c210f9939d123a63c5cea7d37",
+          "direct_packed_payload_sha256": "8fef7640ce5fa279e9f36eab4953aa6d28c3c96c210f9939d123a63c5cea7d37",
+          "group_size": 128,
+          "header_sha256": "5bc2815583a5fb81e0ae498b86cb99234009ed979a9d830585627668d2feeea3",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              512,
+              2048
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "up",
+          "shape": [
+            512,
+            2048
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.450.up_proj.weight"
+        },
+        "wave_index": 1
+      },
+      {
+        "down": {
+          "artifact_sha256": "4e27a64ffa69746316003d4c705ae1ad096aaeacca983cd5a0ec86439afe1b13",
+          "direct_packed_payload_sha256": "4e27a64ffa69746316003d4c705ae1ad096aaeacca983cd5a0ec86439afe1b13",
+          "group_size": 128,
+          "header_sha256": "80dbd929b1d3fa8adf58be69639ca9a32ebfe2ff5cddddc02d59ed1c6e1b8f4b",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              2048,
+              512
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "down",
+          "shape": [
+            2048,
+            512
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.304.down_proj.weight"
+        },
+        "expert_id": 304,
+        "gate": {
+          "artifact_sha256": "7910fc69c7a387d3f3873f835cd7276c2c6226dfe77d0c207a9f31515aa674ce",
+          "direct_packed_payload_sha256": "7910fc69c7a387d3f3873f835cd7276c2c6226dfe77d0c207a9f31515aa674ce",
+          "group_size": 128,
+          "header_sha256": "5bc2815583a5fb81e0ae498b86cb99234009ed979a9d830585627668d2feeea3",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              512,
+              2048
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "gate",
+          "shape": [
+            512,
+            2048
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.304.gate_proj.weight"
+        },
+        "layer": 1,
+        "normalized_weight": 0.10592018067836761,
+        "normalized_weight_bits_hex": "0x3fbb1d95c0000000",
+        "up": {
+          "artifact_sha256": "b640dacbc0ddf1987a874468dcb2117184384179d2d659dbbbf6ff7e742ff654",
+          "direct_packed_payload_sha256": "b640dacbc0ddf1987a874468dcb2117184384179d2d659dbbbf6ff7e742ff654",
+          "group_size": 128,
+          "header_sha256": "5bc2815583a5fb81e0ae498b86cb99234009ed979a9d830585627668d2feeea3",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              512,
+              2048
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "up",
+          "shape": [
+            512,
+            2048
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.304.up_proj.weight"
+        },
+        "wave_index": 2
+      },
+      {
+        "down": {
+          "artifact_sha256": "9557cea1e88c85243c094985069aac46fbf80c7327ab631cc0f355b8439e4a6a",
+          "direct_packed_payload_sha256": "9557cea1e88c85243c094985069aac46fbf80c7327ab631cc0f355b8439e4a6a",
+          "group_size": 128,
+          "header_sha256": "80dbd929b1d3fa8adf58be69639ca9a32ebfe2ff5cddddc02d59ed1c6e1b8f4b",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              2048,
+              512
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "down",
+          "shape": [
+            2048,
+            512
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.428.down_proj.weight"
+        },
+        "expert_id": 428,
+        "gate": {
+          "artifact_sha256": "af2e540c4bbfa7c7f7a41291e2fd32c8b123b58c2067965125356a21b298e79b",
+          "direct_packed_payload_sha256": "af2e540c4bbfa7c7f7a41291e2fd32c8b123b58c2067965125356a21b298e79b",
+          "group_size": 128,
+          "header_sha256": "5bc2815583a5fb81e0ae498b86cb99234009ed979a9d830585627668d2feeea3",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              512,
+              2048
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "gate",
+          "shape": [
+            512,
+            2048
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.428.gate_proj.weight"
+        },
+        "layer": 1,
+        "normalized_weight": 0.10414616763591766,
+        "normalized_weight_bits_hex": "0x3fbaa952c0000000",
+        "up": {
+          "artifact_sha256": "7ca227e2329fc959941750ee71e5e2e9117f5233493cd1d57bc8884f0ee1418f",
+          "direct_packed_payload_sha256": "7ca227e2329fc959941750ee71e5e2e9117f5233493cd1d57bc8884f0ee1418f",
+          "group_size": 128,
+          "header_sha256": "5bc2815583a5fb81e0ae498b86cb99234009ed979a9d830585627668d2feeea3",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              512,
+              2048
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "up",
+          "shape": [
+            512,
+            2048
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.428.up_proj.weight"
+        },
+        "wave_index": 3
+      },
+      {
+        "down": {
+          "artifact_sha256": "56772fc89173d91f94d204403f5d71f80dcced415a2cb1596dcba932f0cf4c01",
+          "direct_packed_payload_sha256": "56772fc89173d91f94d204403f5d71f80dcced415a2cb1596dcba932f0cf4c01",
+          "group_size": 128,
+          "header_sha256": "80dbd929b1d3fa8adf58be69639ca9a32ebfe2ff5cddddc02d59ed1c6e1b8f4b",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              2048,
+              512
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "down",
+          "shape": [
+            2048,
+            512
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.313.down_proj.weight"
+        },
+        "expert_id": 313,
+        "gate": {
+          "artifact_sha256": "31614e7782dca7911536cc769573197784ec932c6fb87c2396e4ded099b48d5d",
+          "direct_packed_payload_sha256": "31614e7782dca7911536cc769573197784ec932c6fb87c2396e4ded099b48d5d",
+          "group_size": 128,
+          "header_sha256": "5bc2815583a5fb81e0ae498b86cb99234009ed979a9d830585627668d2feeea3",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              512,
+              2048
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "gate",
+          "shape": [
+            512,
+            2048
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.313.gate_proj.weight"
+        },
+        "layer": 1,
+        "normalized_weight": 0.08903803676366806,
+        "normalized_weight_bits_hex": "0x3fb6cb3260000000",
+        "up": {
+          "artifact_sha256": "e5f383dbe39f72f5c478961366ac47ae77f086466af19c039823c3ed4a53241c",
+          "direct_packed_payload_sha256": "e5f383dbe39f72f5c478961366ac47ae77f086466af19c039823c3ed4a53241c",
+          "group_size": 128,
+          "header_sha256": "5bc2815583a5fb81e0ae498b86cb99234009ed979a9d830585627668d2feeea3",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              512,
+              2048
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "up",
+          "shape": [
+            512,
+            2048
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.313.up_proj.weight"
+        },
+        "wave_index": 4
+      },
+      {
+        "down": {
+          "artifact_sha256": "54ba9b50c35852d546bbe6bf4e576dd4ca5d1ec86bb2a931c6d298d3e35762bb",
+          "direct_packed_payload_sha256": "54ba9b50c35852d546bbe6bf4e576dd4ca5d1ec86bb2a931c6d298d3e35762bb",
+          "group_size": 128,
+          "header_sha256": "80dbd929b1d3fa8adf58be69639ca9a32ebfe2ff5cddddc02d59ed1c6e1b8f4b",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              2048,
+              512
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "down",
+          "shape": [
+            2048,
+            512
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.411.down_proj.weight"
+        },
+        "expert_id": 411,
+        "gate": {
+          "artifact_sha256": "f2e4d3501eb229a1079feb1ee5ef9e674358430f3e7eb0da3a42d7e989234962",
+          "direct_packed_payload_sha256": "f2e4d3501eb229a1079feb1ee5ef9e674358430f3e7eb0da3a42d7e989234962",
+          "group_size": 128,
+          "header_sha256": "5bc2815583a5fb81e0ae498b86cb99234009ed979a9d830585627668d2feeea3",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              512,
+              2048
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "gate",
+          "shape": [
+            512,
+            2048
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.411.gate_proj.weight"
+        },
+        "layer": 1,
+        "normalized_weight": 0.08700032532215118,
+        "normalized_weight_bits_hex": "0x3fb645a740000000",
+        "up": {
+          "artifact_sha256": "fd586c340b1cb878868dc0a60c968d69213e4811a4518a06a9b5adc6454dc20a",
+          "direct_packed_payload_sha256": "fd586c340b1cb878868dc0a60c968d69213e4811a4518a06a9b5adc6454dc20a",
+          "group_size": 128,
+          "header_sha256": "5bc2815583a5fb81e0ae498b86cb99234009ed979a9d830585627668d2feeea3",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              512,
+              2048
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "up",
+          "shape": [
+            512,
+            2048
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.411.up_proj.weight"
+        },
+        "wave_index": 5
+      },
+      {
+        "down": {
+          "artifact_sha256": "5128d4cae6dbf9461022df0cd9dffb7def5678acae65eeb79ece6b8de66697d7",
+          "direct_packed_payload_sha256": "5128d4cae6dbf9461022df0cd9dffb7def5678acae65eeb79ece6b8de66697d7",
+          "group_size": 128,
+          "header_sha256": "80dbd929b1d3fa8adf58be69639ca9a32ebfe2ff5cddddc02d59ed1c6e1b8f4b",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              2048,
+              512
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "down",
+          "shape": [
+            2048,
+            512
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.34.down_proj.weight"
+        },
+        "expert_id": 34,
+        "gate": {
+          "artifact_sha256": "d8b4106074773831d97b4ac93237b8d6cecd97dd613bda5d21d2529911600485",
+          "direct_packed_payload_sha256": "d8b4106074773831d97b4ac93237b8d6cecd97dd613bda5d21d2529911600485",
+          "group_size": 128,
+          "header_sha256": "5bc2815583a5fb81e0ae498b86cb99234009ed979a9d830585627668d2feeea3",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              512,
+              2048
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "gate",
+          "shape": [
+            512,
+            2048
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.34.gate_proj.weight"
+        },
+        "layer": 1,
+        "normalized_weight": 0.08052818477153778,
+        "normalized_weight_bits_hex": "0x3fb49d7ec0000000",
+        "up": {
+          "artifact_sha256": "e5d0f03de7be490fd12dc90c38e5809413e9e098db0e062e7b07b6b07e02b2d2",
+          "direct_packed_payload_sha256": "e5d0f03de7be490fd12dc90c38e5809413e9e098db0e062e7b07b6b07e02b2d2",
+          "group_size": 128,
+          "header_sha256": "5bc2815583a5fb81e0ae498b86cb99234009ed979a9d830585627668d2feeea3",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              512,
+              2048
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "up",
+          "shape": [
+            512,
+            2048
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.34.up_proj.weight"
+        },
+        "wave_index": 6
+      },
+      {
+        "down": {
+          "artifact_sha256": "b6da459b41766db7d6b5b2df07d58e5e8bf045599b2a44427f694f974d8b8a55",
+          "direct_packed_payload_sha256": "b6da459b41766db7d6b5b2df07d58e5e8bf045599b2a44427f694f974d8b8a55",
+          "group_size": 128,
+          "header_sha256": "80dbd929b1d3fa8adf58be69639ca9a32ebfe2ff5cddddc02d59ed1c6e1b8f4b",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              2048,
+              512
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "down",
+          "shape": [
+            2048,
+            512
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.216.down_proj.weight"
+        },
+        "expert_id": 216,
+        "gate": {
+          "artifact_sha256": "8cb695ad27e6749067a2a05635256a09fc3e04b90402c4a64f835793072d2b14",
+          "direct_packed_payload_sha256": "8cb695ad27e6749067a2a05635256a09fc3e04b90402c4a64f835793072d2b14",
+          "group_size": 128,
+          "header_sha256": "5bc2815583a5fb81e0ae498b86cb99234009ed979a9d830585627668d2feeea3",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              512,
+              2048
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "gate",
+          "shape": [
+            512,
+            2048
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.216.gate_proj.weight"
+        },
+        "layer": 1,
+        "normalized_weight": 0.0798434466123581,
+        "normalized_weight_bits_hex": "0x3fb4709ec0000000",
+        "up": {
+          "artifact_sha256": "e503759693d315842047959a89efd298bf54ca6039fa542a617017cfd0473eb8",
+          "direct_packed_payload_sha256": "e503759693d315842047959a89efd298bf54ca6039fa542a617017cfd0473eb8",
+          "group_size": 128,
+          "header_sha256": "5bc2815583a5fb81e0ae498b86cb99234009ed979a9d830585627668d2feeea3",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              512,
+              2048
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "up",
+          "shape": [
+            512,
+            2048
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.216.up_proj.weight"
+        },
+        "wave_index": 7
+      },
+      {
+        "down": {
+          "artifact_sha256": "806597ec210fad0822b19ea678fa9777f9468fbdc6a504ec1491dc9048ded952",
+          "direct_packed_payload_sha256": "806597ec210fad0822b19ea678fa9777f9468fbdc6a504ec1491dc9048ded952",
+          "group_size": 128,
+          "header_sha256": "80dbd929b1d3fa8adf58be69639ca9a32ebfe2ff5cddddc02d59ed1c6e1b8f4b",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              2048,
+              512
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "down",
+          "shape": [
+            2048,
+            512
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.218.down_proj.weight"
+        },
+        "expert_id": 218,
+        "gate": {
+          "artifact_sha256": "22d4b4342e3d71f1557273f06b4e0cfe024b63483bd54ff2cb2fffe8c8e86b21",
+          "direct_packed_payload_sha256": "22d4b4342e3d71f1557273f06b4e0cfe024b63483bd54ff2cb2fffe8c8e86b21",
+          "group_size": 128,
+          "header_sha256": "5bc2815583a5fb81e0ae498b86cb99234009ed979a9d830585627668d2feeea3",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              512,
+              2048
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "gate",
+          "shape": [
+            512,
+            2048
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.218.gate_proj.weight"
+        },
+        "layer": 1,
+        "normalized_weight": 0.07950463145971298,
+        "normalized_weight_bits_hex": "0x3fb45a6a60000000",
+        "up": {
+          "artifact_sha256": "91ee6d56b15a4e20b35006aa04d89fea4b584930fe8badb35e6061f2b2690deb",
+          "direct_packed_payload_sha256": "91ee6d56b15a4e20b35006aa04d89fea4b584930fe8badb35e6061f2b2690deb",
+          "group_size": 128,
+          "header_sha256": "5bc2815583a5fb81e0ae498b86cb99234009ed979a9d830585627668d2feeea3",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              512,
+              2048
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "up",
+          "shape": [
+            512,
+            2048
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.218.up_proj.weight"
+        },
+        "wave_index": 8
+      },
+      {
+        "down": {
+          "artifact_sha256": "1cb9b9c776924fde7230d73cb162b67c1fd225abcbe13b98e88f82b513425d69",
+          "direct_packed_payload_sha256": "1cb9b9c776924fde7230d73cb162b67c1fd225abcbe13b98e88f82b513425d69",
+          "group_size": 128,
+          "header_sha256": "80dbd929b1d3fa8adf58be69639ca9a32ebfe2ff5cddddc02d59ed1c6e1b8f4b",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              2048,
+              512
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "down",
+          "shape": [
+            2048,
+            512
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.474.down_proj.weight"
+        },
+        "expert_id": 474,
+        "gate": {
+          "artifact_sha256": "d56de461ea1c403c246a8415d3ebc4770aa6bfbe8a2d2d0b1e72683467d2438c",
+          "direct_packed_payload_sha256": "d56de461ea1c403c246a8415d3ebc4770aa6bfbe8a2d2d0b1e72683467d2438c",
+          "group_size": 128,
+          "header_sha256": "5bc2815583a5fb81e0ae498b86cb99234009ed979a9d830585627668d2feeea3",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              512,
+              2048
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "gate",
+          "shape": [
+            512,
+            2048
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.474.gate_proj.weight"
+        },
+        "layer": 1,
+        "normalized_weight": 0.07472962141036987,
+        "normalized_weight_bits_hex": "0x3fb3217b00000000",
+        "up": {
+          "artifact_sha256": "64520d04eb279e9d7d4c1f257fa21e9999f49e9f1bd55a7b4a79c66786e8ffaa",
+          "direct_packed_payload_sha256": "64520d04eb279e9d7d4c1f257fa21e9999f49e9f1bd55a7b4a79c66786e8ffaa",
+          "group_size": 128,
+          "header_sha256": "5bc2815583a5fb81e0ae498b86cb99234009ed979a9d830585627668d2feeea3",
+          "layout": {
+            "elements": 1048576,
+            "group_size": 128,
+            "groups": 8192,
+            "magic": "HQ30G1B1",
+            "payload_bytes": 147496,
+            "scale_dtype": "float16",
+            "scale_offset": 40,
+            "shape": [
+              512,
+              2048
+            ],
+            "sign_bit_order": "little",
+            "sign_offset": 16424,
+            "version": 1
+          },
+          "payload_bytes": 147496,
+          "role": "up",
+          "shape": [
+            512,
+            2048
+          ],
+          "tensor_name": "model.layers.1.mlp.experts.474.up_proj.weight"
+        },
+        "wave_index": 9
+      }
+    ]
+  },
+  "schema": "hawking.ascension.qwen80_source_token_l0_l1_full_layer_same_runtime_host_preflight.v1",
+  "seal_sha256": "09674dff49e250f7b7ed8c589b59e03a95165ff4fb1b4f29e99f8ae9a0ae56ee",
+  "status": "COMPILED_QWEN80_SOURCE_TOKEN_L0_REENCODE_AND_L1_COMPLETE_MOE_LAYER_SAME_RUNTIME_HOST_CPU_ONLY_NOT_LEASED_OR_EXECUTED"
+}

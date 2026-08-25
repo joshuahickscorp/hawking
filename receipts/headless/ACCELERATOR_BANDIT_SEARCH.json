@@ -1,0 +1,68 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T13:15:51Z",
+ "experiment_class": "ACCEL-KERNEL",
+ "knowledge_level": "INSTANCE",
+ "git_head": "bb434b8e020ecac4099a4d9aaf038ce8984f3604",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_E_BANDIT",
+   "obligation": "G047",
+   "steer": "S015 \u00a728 search by priors and bandits"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model"
+  },
+  "representation": {
+   "name": "dense_f32",
+   "elements": 16777216
+  },
+  "kernel": {
+   "space": "15 generated fused-chain variants, threadgroup x elements-per-thread"
+  },
+  "runtime": {
+   "mlx": "0.32.1",
+   "python": "3.12.13"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "closes_the_unbuilt_half": "G047 asks for search by priors AND BANDITS. Priors existed from the start; the search itself timed all 15 variants equally, which is the brute force the obligation names. Successive halving now gives every candidate a cheap look, keeps the better half and doubles the reps on survivors.",
+  "budget": {
+   "bandit_reps": 245,
+   "exhaustive_reps": 600,
+   "saving": 2.45
+  },
+  "a_defect_the_first_bandit_had": {
+   "what": "it ranked on median time alone and crowned tg512_ept1 -- a candidate that had FAILED the forge's own 10% reliability gate at 13.56% IQR in the original exhaustive run",
+   "why_it_matters": "a bandit inherits every blind spot of its objective. Correctness was already excluded by construction; reliability was not, so the search was free to converge on an unrepeatable kernel that happened to look fast.",
+   "fix": "the final round now applies the reliability gate and BARS an unreliable survivor from winning, with a test that gives the bandit a fast jittery candidate and a slower steady one and requires it to pick the steady one"
+  },
+  "agreement_is_the_wrong_success_metric": {
+   "bandit_champion": "tg512_ept1",
+   "exhaustive_champion": "tg64_ept2",
+   "agree": false,
+   "bandit_pick_slower_by_pct": 0.114,
+   "why": "the two searches DISAGREE, and that is not a failure. The forge already measured this landscape as FLAT at the top -- the champion beat its runner-up by 0.38% against ~5% noise. On a flat landscape two honest searches will name different winners, and the question worth asking is not whether they agree but whether the bandit's pick is close: it is +0.11%, which is far inside the noise. Requiring agreement would have declared a working search broken."
+  },
+  "a_reliability_measurement_is_itself_noisy": {
+   "tg512_ept1_iqr_original_run": 13.56,
+   "tg512_ept1_iqr_this_run": 3.1862859518560245,
+   "meaning": "the same candidate failed the gate in one run and passed it at 3.19% in another, so a single reliability sample is not a stable property of a kernel. That weakens the gate rather than the kernel, and it is recorded rather than smoothed over."
+  }
+ },
+ "claim_boundary": "Successive halving finds a champion within 0.11% of the exhaustive winner using 2.45x fewer timed reps, on ONE candidate space of 15 variants for ONE primitive at ONE size. It is not UCB, not Bayesian, and not the learned performance model \u00a7113 asks for. The saving is in REPS, and wall-clock saving is smaller because warmup is paid per candidate per round. On a flat landscape the champion it names is arbitrary within noise, which is a property of the landscape, not a fault in the search.",
+ "pass": true
+}

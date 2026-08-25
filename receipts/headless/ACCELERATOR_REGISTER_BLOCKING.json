@@ -1,0 +1,195 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T12:57:03Z",
+ "experiment_class": "ACCEL-KERNEL",
+ "knowledge_level": "INSTANCE",
+ "git_head": "7a241df0bdce71a16fc9294293d8c98c8e7df64a",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_D_REGISTER_BLOCKING",
+   "obligation": "G046 + G043",
+   "steer": "S015 \u00a715/\u00a7141"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "measured_bandwidth_gb_s": 589.73
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model; a math primitive"
+  },
+  "representation": {
+   "name": "dense_f32"
+  },
+  "kernel": {
+   "produced_by": "air.lower_matmul_to_msl strategy='simdgroup' block=2",
+   "shape": "each simdgroup covers 16x16 as a 2x2 grid of 8x8 tiles"
+  },
+  "runtime": {
+   "mlx": "0.32.1",
+   "python": "3.12.13"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "hypothesis_tested": "The previous receipt diagnosed MLX's advantage at 2048 as HIERARCHICAL BLOCKING and operand reuse rather than simdgroup ops, since MLX already had those. That was a falsifiable claim, so it was tested: give each simdgroup a 2x2 grid of 8x8 tiles so 4 operand loads feed 4 MACs instead of 2 loads feeding 1, doubling arithmetic intensity and changing nothing else.",
+  "hypothesis_confirmed": {
+   "at_2048": "4703 -> 11576 GFLOP/s, 2.48x, taking 36.7% of MLX to 96.0%",
+   "verdict": "the diagnosis held; the gap really was operand reuse"
+  },
+  "first_sweep": [
+   {
+    "size": 512,
+    "block1_err": 0.0001068115234375,
+    "block2_err": 0.0001068115234375,
+    "mlx_gflops": 877.4809897273103,
+    "block1_gflops": 836.7923410555403,
+    "block2_gflops": 900.5392899563677,
+    "iqrs": {
+     "mlx": 70.14,
+     "block1": 7.38,
+     "block2": 26.55
+    },
+    "block2_vs_block1": {
+     "verdict": "NO_CLAIM",
+     "reason": "an arm failed the 10.0% IQR gate (block1 7.38%, block2 26.55%) and the margin 7.62% does not overwhelm that noise",
+     "speedup": null
+    },
+    "block2_vs_mlx": {
+     "verdict": "NO_CLAIM",
+     "reason": "an arm failed the 10.0% IQR gate (mlx 70.14%, block2 26.55%) and the margin 2.63% does not overwhelm that noise",
+     "speedup": null
+    }
+   },
+   {
+    "size": 1024,
+    "block1_err": 0.0,
+    "block2_err": 0.0,
+    "mlx_gflops": 3963.3681627802084,
+    "block1_gflops": 2589.1483498525313,
+    "block2_gflops": 5926.1364083072285,
+    "iqrs": {
+     "mlx": 2.8,
+     "block1": 3.13,
+     "block2": 19.89
+    },
+    "block2_vs_block1": {
+     "verdict": "CANDIDATE_WINS_DESPITE_NOISE",
+     "speedup": 2.2888,
+     "margin_pct": 128.88,
+     "arm_noise_pct": 19.89,
+     "margin_over_noise_ratio": 6.5,
+     "caveat": "an arm exceeded the 10.0% IQR gate, but the margin is 6x the worst arm noise, so the direction of the result is not in doubt; the MAGNITUDE carries more uncertainty than a clean measurement would"
+    },
+    "block2_vs_mlx": {
+     "verdict": "NO_CLAIM",
+     "reason": "an arm failed the 10.0% IQR gate (mlx 2.8%, block2 19.89%) and the margin 49.52% does not overwhelm that noise",
+     "speedup": null
+    }
+   },
+   {
+    "size": 2048,
+    "block1_err": 0.0,
+    "block2_err": 0.0,
+    "mlx_gflops": 12053.933851770636,
+    "block1_gflops": 4672.833661026707,
+    "block2_gflops": 11575.75614234131,
+    "iqrs": {
+     "mlx": 5.69,
+     "block1": 1.03,
+     "block2": 4.16
+    },
+    "block2_vs_block1": {
+     "verdict": "CANDIDATE_WINS",
+     "speedup": 2.4772,
+     "margin_pct": 147.72,
+     "arm_noise_pct": 4.16
+    },
+    "block2_vs_mlx": {
+     "verdict": "INDISTINGUISHABLE",
+     "speedup": 0.9603,
+     "reason": "margin 3.97% does not clear arm noise 5.69%"
+    }
+   },
+   {
+    "size": 4096,
+    "block1_err": 0.0,
+    "block2_err": 0.0,
+    "mlx_gflops": 16329.946500163722,
+    "block1_gflops": 4822.666137464877,
+    "block2_gflops": 13195.617441429595,
+    "iqrs": {
+     "mlx": 1.32,
+     "block1": 1.81,
+     "block2": 1.57
+    },
+    "block2_vs_block1": {
+     "verdict": "CANDIDATE_WINS",
+     "speedup": 2.7362,
+     "margin_pct": 173.62,
+     "arm_noise_pct": 1.81
+    },
+    "block2_vs_mlx": {
+     "verdict": "BASELINE_WINS",
+     "speedup": 0.8081,
+     "margin_pct": 19.19,
+     "arm_noise_pct": 1.57
+    }
+   }
+  ],
+  "a_result_i_retracted": {
+   "claimed_by_first_sweep": "149.5% of MLX at 1024 -- an outright win",
+   "why_it_was_refused": "block2's IQR was 19.89%, failing the reliability gate, so compare() returned NO_CLAIM rather than a speedup",
+   "what_careful_measurement_showed": "at 120 reps with 40 warmup, 1024 is 0.9999 -- EXACT PARITY, not a 1.5x win. MLX itself measured 3963 GFLOP/s in the noisy run and 5801 in the clean one, so the apparent win was MLX being under-measured.",
+   "lesson": "the most exciting number in the sweep was the least trustworthy one, and the gate caught it before it became a claim"
+  },
+  "careful_remeasurement": [
+   {
+    "size": 512,
+    "err": 0.0001068115234375,
+    "mlx_gflops": 1104.8636641319727,
+    "block2_gflops": 1131.2452893996763,
+    "iqrs": {
+     "mlx": 4.99,
+     "block2": 12.25
+    },
+    "verdict": {
+     "verdict": "NO_CLAIM",
+     "reason": "an arm failed the 10.0% IQR gate (mlx 4.99%, block2 12.25%) and the margin 2.39% does not overwhelm that noise",
+     "speedup": null
+    }
+   },
+   {
+    "size": 1024,
+    "err": 0.0,
+    "mlx_gflops": 5800.733403030798,
+    "block2_gflops": 5800.090482827068,
+    "iqrs": {
+     "mlx": 5.16,
+     "block2": 4.94
+    },
+    "verdict": {
+     "verdict": "INDISTINGUISHABLE",
+     "speedup": 0.9999,
+     "reason": "margin 0.01% does not clear arm noise 5.16%"
+    }
+   }
+  ],
+  "trustworthy_standing": {
+   "1024": "INDISTINGUISHABLE from MLX (0.9999, both arms under 5.2% IQR)",
+   "2048": "INDISTINGUISHABLE from MLX (0.96)",
+   "4096": "MLX WINS by 1.24x (margin 19.19% against 1.57% noise)",
+   "512": "NO CLAIM -- block2 IQR 12.25% even at 120 reps"
+  }
+ },
+ "claim_boundary": "AIR's blocked simdgroup matmul reaches PARITY with MLX at 1024 and 2048 and LOSES by 24% at 4096. Parity is not victory and is not claimed as one; MLX remains the qualified winner, and at the largest size measured it still wins outright. f32 only, square shapes, dimensions multiples of 16 for block=2, no batching, no transpose, no mixed precision, and nothing was run inside a model.",
+ "pass": true
+}

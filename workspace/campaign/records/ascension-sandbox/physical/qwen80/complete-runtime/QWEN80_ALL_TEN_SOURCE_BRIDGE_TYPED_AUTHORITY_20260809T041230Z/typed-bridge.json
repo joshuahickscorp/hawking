@@ -1,0 +1,83 @@
+{
+  "bridge_material": {
+    "catalog_reused_for_all_ten_source_bridge": true,
+    "complete_artifact_admission_performed_once": true,
+    "raw_bf16_or_safetensors_opened": false,
+    "schema": "hawking.ascension.qwen80_all_ten_true_moe_source_bridge_material.v1",
+    "status": "CURRENT_ADMITTED_QWEN80_ALL_TEN_TRUE_MOE_SOURCE_BRIDGE_MATERIAL_READY_FOR_SEAL"
+  },
+  "claim_boundary": {
+    "does_not_execute_a_complete_layer_token_decoder_generation_hcli_tps_tg_or_tournament": true,
+    "no_metal_device_or_dispatch_performed_by_this_wrapper": true,
+    "requires_fresh_component_only_quiet_lease_and_outer_reaped_capture": true,
+    "sealed_source_authority_only": true
+  },
+  "recorded_at": "2026-08-09T04:07:54.950778Z",
+  "schema": "hawking.ascension.qwen80_all_ten_true_moe_source_bridge.v1",
+  "seal_sha256": "2b4372893f13bc2c94228481dacbcb4f921c86f9f3b21efb47a96170b3b60dc1",
+  "source_binding": {
+    "admission_current": {
+      "bytes": 2224,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_ADMISSION_CURRENT.json",
+      "present": true,
+      "sha256": "cb08e205776edaa3bdbc6878633b5463b0752a8f8d9a25416228dd6faaec1ace"
+    },
+    "admission_pointer_seal_sha256": "88f4aefe416b14487fa8a0319cc0f07f38e1632f8113d17dbac62bb6ec0dac5d",
+    "admission_receipt_seal_sha256": "939b41322363da3db774a2530b207bf380ed641d23cae671fc6438c0eecbf628",
+    "bridge_material": {
+      "bytes": 5284,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_ALL_TEN_SOURCE_BRIDGE_CPU_OUTER_CAPTURE_20260809T040300Z/inner/bridge-material.json",
+      "present": true,
+      "sha256": "66b239c9c674856d05d3058e0014531b236ed945725f9e63413e96fff2167ae1"
+    },
+    "first_residual_receipt": {
+      "bytes": 7204,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_FIRST_RESIDUAL_STRICT_METAL_OUTER_CAPTURE_20260809T034414Z/outer-terminal-receipt.json",
+      "present": true,
+      "sha256": "2e189163c45daf10a10a7a44b749374c4f38ec25376951c4cb748bc6cf6237ce"
+    },
+    "manifest": {
+      "bytes": 77842421,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+      "present": true,
+      "sha256": "a0fcac0401a7962402bb8cb87d5055c83667b39575f9e0f4c7470d080758aa10"
+    },
+    "manifest_seal_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+    "route_plan": {
+      "bytes": 38337,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_ALL_TEN_ROUTED_EXPERT_BINDING_PLAN_20260809T010114Z.json",
+      "present": true,
+      "sha256": "b59a062fc5636e46de6baed151f139ccbb42be2fa9a8b5813b132ebd7c42da51"
+    },
+    "router_outer_receipt": {
+      "bytes": 5522,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_POSTNORM_ROUTER_TOP10_OUTER_METAL_FINAL_LANE_FIX_CAPTURE_20260808T232524Z/outer-terminal-receipt.json",
+      "present": true,
+      "sha256": "0a9c2c57acef64e9f4c0fcb050f47a8f7792026bf05a6f8a73e4fa3d3786d87f"
+    },
+    "router_outer_receipt_seal_sha256": "1bd9af3b6baf4d583f77bbfc02c25f0f1740cd8110c74fb6e55520758256c835",
+    "router_receipt": {
+      "bytes": 14456,
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_POSTNORM_ROUTER_TOP10_OUTER_METAL_FINAL_LANE_FIX_CAPTURE_20260808T232524Z/inner/receipt.json",
+      "present": true,
+      "sha256": "31d2e06aae10695d25f445ff50661f6c63ec42c74f617e637b62e56c4f7ac343"
+    }
+  },
+  "status": "SEALED_CURRENT_ADMITTED_QWEN80_ALL_TEN_TRUE_MOE_SOURCE_BRIDGE_READY_FOR_DEVICE_LEASE",
+  "typed_bridge": {
+    "compact_section_sha256": {
+      "down_scales": "5a75dccbca256cc58e45087d626c27e23836f519802e940e42ff33fbe6867dd9",
+      "down_signs": "4527409a586e2cb13c03104a5b0b86cf9101eb657e550096d0a426cfd333245b",
+      "gate_scales": "11d2b2b48a4ec745299ba528b2664a11bc683bfd7904102254d97d4b1863cde7",
+      "gate_signs": "bdfc2312ba461235d3033aab682d3891530ab56c4df72c838727437a2ec72812",
+      "up_scales": "14712dbd1a6c3dd60201a47aa82cb68996892c3e756ad9c05fc21925f398faf6",
+      "up_signs": "997127f3ea153a49394939cd897c9ba21c6a85ba2f541ad02a05f12793c086ac"
+    },
+    "first_residual_elements": 2048,
+    "first_residual_output_sha256": "0170d2f6b38a85f14f39d2fa9b9dafca681687fac88b6040352468800949e7b7",
+    "first_residual_receipt_seal_sha256": "1d29db9d1ef180eed105d4664be26b59facc666c596f4e453098e0f4faf3a3f1",
+    "layer": 0,
+    "route_count": 10,
+    "same_command_graph_required": true
+  }
+}

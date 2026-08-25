@@ -1,0 +1,167 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T12:18:29Z",
+ "experiment_class": "ACCEL-REPRESENTATION",
+ "knowledge_level": "INSTANCE",
+ "git_head": "ed45da3e197b53cd977dd04bd84163a797879ade",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_D_P7",
+   "proof": "P7 \u2014 a Gravity representation executes natively",
+   "obligation": "G046",
+   "steer": "S015 \u00a719/\u00a770/\u00a771"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "measured_bandwidth_gb_s": 589.73
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "repository": "Qwen/Qwen3-30B-A3B",
+   "tensor": "model.layers.0.mlp.experts.0.gate_proj.weight",
+   "shape": [
+    768,
+    2048
+   ],
+   "source_dtype": "bfloat16",
+   "note": "a REAL routed-expert tensor, not a synthetic stand-in"
+  },
+  "representation": {
+   "name": "ws_rtn_q4_g64",
+   "bits": 4,
+   "group": 64,
+   "bpw": 4.25,
+   "weight_cosine": 0.9939517974853516,
+   "why_this_one": "it is the representation the KernelPlanner actually selected for model #2's experts"
+  },
+  "kernel": {
+   "native": "matvec reading packed nibbles + f16 group scales directly",
+   "control": "dequantize kernel writes the full dense f32 tensor, then a dense matvec"
+  },
+  "runtime": {
+   "mlx": "0.32.1",
+   "python": "3.12.13"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "correctness_on_real_weights": {
+   "tensor": "model.layers.0.mlp.experts.0.gate_proj.weight",
+   "native_max_abs_err": 2.86102294921875e-06,
+   "dense_max_abs_err": 4.291534423828125e-06,
+   "tolerance": 0.003815860748291016,
+   "dense_bytes": 6291456,
+   "packed_bytes": 835584,
+   "byte_ratio": 7.53,
+   "verdict": "PROVEN \u2014 the dense tensor is never materialised anywhere in the native path"
+  },
+  "performance_crossover": {
+   "measured_points": [
+    {
+     "rows": 768,
+     "cols": 2048,
+     "dense_mib": 6.0,
+     "packed_mib": 0.796875,
+     "native_us": 324.7499989811331,
+     "dense_us": 401.5830054413527,
+     "native_iqr": 19.03,
+     "dense_iqr": 5.13,
+     "correct": true,
+     "max_abs_err": 0.0001220703125,
+     "verdict": {
+      "verdict": "NO_CLAIM",
+      "reason": "an arm failed the 10.0% IQR gate (dense_remat 5.13%, native 19.03%) and the margin 23.66% does not overwhelm that noise",
+      "speedup": null
+     }
+    },
+    {
+     "rows": 4096,
+     "cols": 4096,
+     "dense_mib": 64.0,
+     "packed_mib": 8.5,
+     "native_us": 455.5420018732548,
+     "dense_us": 600.7499760016799,
+     "native_iqr": 15.8,
+     "dense_iqr": 19.01,
+     "correct": true,
+     "max_abs_err": 0.0003814697265625,
+     "verdict": {
+      "verdict": "NO_CLAIM",
+      "reason": "an arm failed the 10.0% IQR gate (dense_remat 19.01%, native 15.8%) and the margin 31.88% does not overwhelm that noise",
+      "speedup": null
+     }
+    },
+    {
+     "rows": 8192,
+     "cols": 8192,
+     "dense_mib": 256.0,
+     "packed_mib": 34.0,
+     "native_us": 697.0410177018493,
+     "dense_us": 1449.4999777525663,
+     "native_iqr": 8.42,
+     "dense_iqr": 9.55,
+     "correct": true,
+     "max_abs_err": 0.0007171630859375,
+     "verdict": {
+      "verdict": "CANDIDATE_WINS",
+      "speedup": 2.0795,
+      "margin_pct": 107.95,
+      "arm_noise_pct": 9.55
+     }
+    },
+    {
+     "rows": 16384,
+     "cols": 8192,
+     "dense_mib": 512.0,
+     "packed_mib": 68.0,
+     "native_us": 605.1250093150884,
+     "dense_us": 2154.2920148931444,
+     "native_iqr": 44.11,
+     "dense_iqr": 4.11,
+     "correct": true,
+     "max_abs_err": 0.00091552734375,
+     "verdict": {
+      "verdict": "CANDIDATE_WINS_DESPITE_NOISE",
+      "speedup": 3.5601,
+      "margin_pct": 256.01,
+      "arm_noise_pct": 44.11,
+      "margin_over_noise_ratio": 5.8,
+      "caveat": "an arm exceeded the 10.0% IQR gate, but the margin is 6x the worst arm noise, so the direction of the result is not in doubt; the MAGNITUDE carries more uncertainty than a clean measurement would"
+     }
+    }
+   ],
+   "trustworthy_points": [
+    {
+     "shape": [
+      8192,
+      8192
+     ],
+     "dense_mib": 256.0,
+     "verdict": "CANDIDATE_WINS",
+     "speedup": 2.0795
+    }
+   ],
+   "finding": "NO advantage at 6 MiB or 64 MiB -- both arms are launch- and occupancy-bound there, so reading 7.5x fewer bytes buys nothing. At 256 MiB the operation becomes bandwidth-bound and the native path wins 2.08x with both arms inside the reliability gate.",
+   "why_not_7_5x": "the byte ratio is 7.5x but the win is 2.08x: the native kernel does more work per thread (unpacking nibbles and applying group scales), so it trades arithmetic for traffic rather than getting the traffic reduction for free"
+  },
+  "a_point_i_rejected": {
+   "shape": [
+    16384,
+    8192
+   ],
+   "reported_speedup": 3.56,
+   "native_iqr_pct": 44.11,
+   "why_rejected": "PHYSICALLY IMPLAUSIBLE. It reads 68 MiB against the 34 MiB of the next point down, yet reported a SHORTER native time (605.1us vs 697.0us). A bandwidth-bound kernel cannot read twice the bytes in less time, so that median is an artifact -- and its 44.11% IQR says so directly. My margin-over-noise escape hatch ADMITTED it because 256% margin cleared 5x the 44% noise, which means that hatch is necessary but not sufficient: a large margin on an impossible result is evidence the measurement is broken, not that the effect is strong. bench.compare now carries an explicit implausibility rejection."
+  },
+  "what_this_means_for_model_2": "One expert tensor is 6 MiB and sits BELOW the crossover, so representation-native execution does not pay for a single expert in isolation. The advantage appears only when enough of the expert table is in flight to become bandwidth-bound, which is an argument about BATCHING experts, not about the representation itself."
+ },
+ "claim_boundary": "P7's CORRECTNESS half is proven on a real Qwen3-30B-A3B expert tensor: a 4.25 bpw grouped-absmax representation executes directly on the GPU with the dense tensor never written. Its PERFORMANCE half is conditional and measured: no advantage below roughly 64 MiB, 2.08x at 256 MiB. One representation, one operation (matvec), one machine, INSTANCE level. Nothing here says the representation is ADEQUATE -- weight cosine is 0.9940 per tensor and this campaign's own law is that LOCAL ADEQUACY DOES NOT COMPOSE. No model was executed.",
+ "pass": true
+}

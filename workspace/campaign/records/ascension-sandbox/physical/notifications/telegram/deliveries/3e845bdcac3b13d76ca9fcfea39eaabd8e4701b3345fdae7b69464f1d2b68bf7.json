@@ -1,0 +1,19 @@
+{
+  "dedupe_key": "3e845bdcac3b13d76ca9fcfea39eaabd8e4701b3345fdae7b69464f1d2b68bf7",
+  "delivery": {
+    "bot_api_http_status": 200,
+    "message_date": 1786272321,
+    "message_id": 7365
+  },
+  "event_fingerprint": "f1e6f672c24de9f6d15bcb668b37c49f48c0e7c37a2b24e8b42097f53d907b64",
+  "event_id": "global_resource_emergency",
+  "evidence_path": "lifecycle/ASCENSION_DUAL_MANAGER_PHYSICAL_STATUS.json",
+  "message_sha256": "fe5709ce617214fd042587579fcfae97c7661ce765815d5a42d401bf932d47a2",
+  "model": null,
+  "reason": null,
+  "recorded_at": "2026-08-09T10:45:22.012612Z",
+  "schema": "hawking.ascension.physical_telegram_delivery_receipt.v1",
+  "seal_sha256": "e61640e569fae61f1ec6b849d1296110b3ae10d3d44a0c1d353b56ca181a3592",
+  "secret_boundary": "no token or chat identifier is persisted",
+  "status": "DELIVERED"
+}

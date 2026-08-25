@@ -1,0 +1,476 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 295,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Write a Python function `word_count(text)` that returns a dict mapping each whitespace-separated word to its count. Return only the function in a code block.\n\nTests (must pass):\n```\nassert word_count('a b a') == {'a': 2, 'b': 1}\nassert word_count('') == {}\nassert word_count('x') == {'x': 1}\n```",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:thesis:t15_word_count",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "train",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Write a Python function `word_count(text)` that returns a dict mapping each whitespace-separated word to its count. Return only the function in a code block.\n\nTests (must pass):\n```\nassert word_count('a b a') == {'a': 2, 'b': 1}\nassert word_count('') == {}\nassert word_count('x') == {'x': 1}\n```",
+  "proof_plan": null,
+  "recorded_at": "2026-08-06T17:58:08.332391Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "eb3317a0e4bf44bf4b394067d86570e8d47222126f8ac721995b39e50f82b7db",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 4.872225761413574,
+          "rank": 0,
+          "token_id": 22
+        },
+        {
+          "logit": 4.852671146392822,
+          "rank": 1,
+          "token_id": 24
+        },
+        {
+          "logit": 3.8826029300689697,
+          "rank": 2,
+          "token_id": 15
+        },
+        {
+          "logit": 3.5207393169403076,
+          "rank": 3,
+          "token_id": 16
+        },
+        {
+          "logit": 3.3192782402038574,
+          "rank": 4,
+          "token_id": 23
+        },
+        {
+          "logit": 3.0751986503601074,
+          "rank": 5,
+          "token_id": 19
+        },
+        {
+          "logit": 3.0059256553649902,
+          "rank": 6,
+          "token_id": 17
+        },
+        {
+          "logit": 2.906114339828491,
+          "rank": 7,
+          "token_id": 18
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.1962476521730423,
+          "l2": 3.66560435295105,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "8fe968a477f690a0855d8a01bd8783fe0edd4cb267ef93e0574e9b0aa1446579",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.25400957465171814,
+          "l2": 3.408447265625,
+          "layer": 1,
+          "mlp_type": "dense",
+          "sample_sha256": "18d2aaa591e8339dd9dae4d425a672f7f34856bc9da04a6b502e63b2f64ec1f6",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.2861531674861908,
+          "l2": 3.323474884033203,
+          "layer": 2,
+          "mlp_type": "dense",
+          "sample_sha256": "f8b268a649ac09ca9817f07e62ed341339e0674cc4bc0bddd2b07f579f455397",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.2949363887310028,
+          "l2": 3.4200711250305176,
+          "layer": 3,
+          "mlp_type": "sparse",
+          "sample_sha256": "ff2f323ae552136d4b240069ae4769835ffb1b3e89d611cbfb110e818ea4c757",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.27369967103004456,
+          "l2": 3.6459882259368896,
+          "layer": 4,
+          "mlp_type": "sparse",
+          "sample_sha256": "c094ff5c1c8ad424388c299198139eed0897a8b4a42cc89a4fcdf8c090dc7c88",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.30136486887931824,
+          "l2": 4.01900577545166,
+          "layer": 5,
+          "mlp_type": "sparse",
+          "sample_sha256": "0a54231bfd9b6a2f6598fc855e7f4aa9ef52055b6dc1ec69fff23657f73f4451",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.5283594131469727,
+          "l2": 5.3267717361450195,
+          "layer": 6,
+          "mlp_type": "sparse",
+          "sample_sha256": "2ed17f9b119af7828cfe60be0646be1344b7c8dfb30708864e3f3d68d5ea9726",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 1.0858168601989746,
+          "l2": 6.274141788482666,
+          "layer": 7,
+          "mlp_type": "sparse",
+          "sample_sha256": "a17a9db9eb419cb903ade05ae1cad1a56d26b1d8581b42a1f7baaf28e6d356f6",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 40.37380599975586,
+          "l2": 98.63184356689453,
+          "layer": 8,
+          "mlp_type": "sparse",
+          "sample_sha256": "64d5e70ad29e92662f1d12f01ca19df2f3c3d2ed8ef9b9497100c00b5221b49d",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 81.34175109863281,
+          "l2": 635.6696166992188,
+          "layer": 9,
+          "mlp_type": "sparse",
+          "sample_sha256": "87ee7efd165240544eabdf72af46180d9d36b673652560b0339827a5d34a8325",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 83.34971618652344,
+          "l2": 641.8168334960938,
+          "layer": 10,
+          "mlp_type": "sparse",
+          "sample_sha256": "e282fe9cbde78d43ed2bbcf81757321fe27dd5b516a3d5487be24ed7f45b0db3",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 83.84764099121094,
+          "l2": 641.8810424804688,
+          "layer": 11,
+          "mlp_type": "sparse",
+          "sample_sha256": "fd3fee6965cc8943349823fb4f18b1f18be653789461849f68255bd93318d6c8",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 87.35700988769531,
+          "l2": 642.5482788085938,
+          "layer": 12,
+          "mlp_type": "sparse",
+          "sample_sha256": "7bc24094dc708ab04a02334da178de522b9149fb06b00a9f79437aa5e4fe74a1",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 88.10165405273438,
+          "l2": 642.7552490234375,
+          "layer": 13,
+          "mlp_type": "sparse",
+          "sample_sha256": "687543df1defa91d3ba230140254d9591dbdba9a2cd27982fdda872d418b8dd0",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": {
+        "expert_counts": {
+          "0": 1,
+          "1": 1,
+          "10": 2,
+          "100": 2,
+          "101": 3,
+          "108": 4,
+          "110": 1,
+          "111": 1,
+          "112": 1,
+          "114": 1,
+          "115": 1,
+          "116": 3,
+          "123": 1,
+          "126": 1,
+          "128": 1,
+          "129": 2,
+          "13": 1,
+          "130": 7,
+          "131": 2,
+          "135": 1,
+          "136": 1,
+          "137": 1,
+          "138": 2,
+          "14": 4,
+          "140": 5,
+          "141": 1,
+          "144": 1,
+          "145": 1,
+          "146": 1,
+          "148": 7,
+          "150": 1,
+          "153": 1,
+          "154": 1,
+          "159": 1,
+          "163": 2,
+          "166": 1,
+          "167": 2,
+          "168": 1,
+          "169": 1,
+          "17": 5,
+          "175": 1,
+          "177": 1,
+          "18": 1,
+          "181": 1,
+          "183": 1,
+          "184": 1,
+          "185": 1,
+          "19": 1,
+          "190": 2,
+          "191": 2,
+          "193": 1,
+          "195": 3,
+          "197": 1,
+          "198": 2,
+          "199": 2,
+          "2": 1,
+          "200": 1,
+          "201": 1,
+          "203": 1,
+          "204": 1,
+          "205": 1,
+          "206": 3,
+          "207": 1,
+          "208": 1,
+          "210": 1,
+          "211": 2,
+          "213": 5,
+          "214": 1,
+          "217": 2,
+          "218": 2,
+          "219": 2,
+          "22": 1,
+          "221": 2,
+          "222": 1,
+          "224": 1,
+          "227": 3,
+          "229": 3,
+          "230": 1,
+          "231": 1,
+          "236": 1,
+          "237": 5,
+          "238": 4,
+          "240": 4,
+          "242": 2,
+          "243": 4,
+          "244": 1,
+          "245": 1,
+          "247": 1,
+          "248": 2,
+          "249": 1,
+          "250": 3,
+          "26": 2,
+          "27": 4,
+          "28": 5,
+          "3": 1,
+          "30": 1,
+          "31": 1,
+          "34": 1,
+          "37": 3,
+          "4": 3,
+          "41": 4,
+          "42": 3,
+          "44": 2,
+          "5": 2,
+          "50": 3,
+          "52": 3,
+          "55": 1,
+          "56": 1,
+          "57": 1,
+          "60": 4,
+          "61": 11,
+          "62": 3,
+          "63": 3,
+          "64": 1,
+          "7": 1,
+          "70": 5,
+          "72": 1,
+          "74": 1,
+          "76": 1,
+          "78": 2,
+          "8": 3,
+          "80": 1,
+          "82": 1,
+          "83": 4,
+          "84": 1,
+          "87": 1,
+          "90": 1,
+          "95": 1,
+          "98": 2,
+          "99": 1
+        },
+        "load_balance_cv": null,
+        "note": "route stats are student-native; never copy GLM router weights",
+        "source_layer": 3,
+        "top_k": 8
+      },
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

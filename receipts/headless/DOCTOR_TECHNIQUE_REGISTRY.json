@@ -1,0 +1,1543 @@
+{
+ "schema": "hawking.headless.doctor_technique_registry.v1",
+ "generated_at": "2026-08-24T22:40:56Z",
+ "git_head": "f6a4fe7c9ee4ec3a3f5763bf020e7abe29f6bb94",
+ "generated_by": "tools/headless/doctor_technique_registry.py",
+ "obligation": "N043 \u2014 DOCTOR_TECHNIQUE_REGISTRY (S026 \u00a75, \u00a776; DOC-DIAGNOSIS family, PHASE A; CPU). Register the paper mechanisms as HYPOTHESES with provenance + Hawking experiment mapping + CURRENT VERDICT, seeded from this campaign's negative science. Literature is not authority.",
+ "s026": [
+  "\u00a75",
+  "\u00a776",
+  "\u00a76",
+  "\u00a788",
+  "\u00a790",
+  "\u00a7113"
+ ],
+ "phase": "A",
+ "family": "DOC-DIAGNOSIS",
+ "hand_authored": false,
+ "literature_is": "HYPOTHESIS",
+ "literature_is_not_authority": true,
+ "did_not_load_a_model": true,
+ "did_not_touch_gpu": true,
+ "did_not_run_cargo_or_metal_benchmarks": true,
+ "did_not_mutate_parent": true,
+ "did_not_write_under_models": true,
+ "did_not_modify_ascent_or_campaign": true,
+ "this_is_the_registry_not_the_experiments": true,
+ "one_line": "Fifteen external techniques registered as HYPOTHESES; campaign scars (shared-basis / binary / low-rank / ternary / sparse) seed the verdicts that have Hawking receipts; the rest are UNTESTED with a cheapest CPU probe.",
+ "laws": [
+  {
+   "id": "S026_\u00a75",
+   "law": "Literature is hypothesis, not authority."
+  },
+  {
+   "id": "S026_\u00a76",
+   "law": "No blind implementation."
+  },
+  {
+   "id": "S026_\u00a776",
+   "law": "Register paper mechanisms before implementing them."
+  },
+  {
+   "id": "S026_\u00a788",
+   "law": "Provenance preserved."
+  },
+  {
+   "id": "S026_\u00a790",
+   "law": "Condemn the kernel, not the representation, until competence is screened."
+  },
+  {
+   "id": "verdict_rule",
+   "law": "No CURRENT VERDICT other than UNTESTED without a cited Hawking receipt (receipts/**/*.json that exists on disk or in git)."
+  },
+  {
+   "id": "S026_\u00a7117",
+   "law": "The information floor of a parameterization is not necessarily the floor of the function; a moved floor must be physically demonstrated."
+  }
+ ],
+ "required_technique_ids": [
+  "spinquant",
+  "twla",
+  "cat_q",
+  "ptqtp",
+  "onebit",
+  "aqlm",
+  "vptq",
+  "caldera",
+  "squeezellm",
+  "kivi",
+  "minicache",
+  "h2o",
+  "mixture_of_depths",
+  "prosparse",
+  "medusa_mtp"
+ ],
+ "techniques": [
+  {
+   "technique_identity": {
+    "id": "spinquant",
+    "short_name": "SpinQuant",
+    "s026_name": "SpinQuant (learned/function-preserving rotations)",
+    "s026_family": "DOC-COORDINATES",
+    "literature_status": "HYPOTHESIS",
+    "not_authority": true,
+    "s026": [
+     "\u00a75",
+     "\u00a776"
+    ]
+   },
+   "source_paper": {
+    "title": "SpinQuant: LLM quantization with learned rotations",
+    "authors": "Zechun Liu, Changsheng Zhao, Igor Fedorov, Bilge Soran, Dhruv Choudhary, Raghuraman Krishnamoorthi, Vikas Chandra, Yuandong Tian, Tijmen Blankevoort",
+    "approx_date": "2024-05",
+    "venue": "ICLR 2025",
+    "arxiv": "2405.16406",
+    "url": "https://arxiv.org/abs/2405.16406",
+    "note": null,
+    "status_in_this_registry": "HYPOTHESIS"
+   },
+   "claimed_mechanism": "Learned orthogonal rotations (Cayley-SGD, Hadamard-init) redistribute weight/activation outliers so a subsequent quantizer (RTN or GPTQ) sees a friendlier coordinate system. Rotations are function-preserving in full precision and preferably absorbed into adjacent weights (zero extra runtime matmul). S026 \u00a77-10: CoordinateTransformGenome.",
+   "architecture_assumptions": "Dense transformer with residual Linear maps that can absorb an orthogonal Q: RMSNorm-Linear sandwiches, GQA QKV, SwiGLU MLP. Online (not absorbed) rotations cost a GEMV per site. Qwen3.8 also has 48 DeltaNet layers whose recurrent state is not a Linear sandwich \u2014 absorption is not free there.",
+   "training_calibration_runtime": "PTQ calibration: ~100 Cayley steps on ~128-800 C4 samples in the paper. No full QAT. Runtime: zero if absorbed into weights; otherwise an extra orthogonal matmul per rotated activation. Completeness (S026 \u00a793) must count any unabsorbed rotation bytes.",
+   "storage_vs_execution": "Storage: rotation is either fused into the quantized weights (zero extra bytes) or stored as orthogonal factors. Execution: identity in the rotated frame; do not reconstruct W_fp16 to apply Q at runtime.",
+   "expected_useful_organs": [
+    "mlp_gate_up",
+    "mlp_down",
+    "gqa_attention"
+   ],
+   "expected_physical_win": "Paper claim (hypothesis): W4A4 / W4A8 closer to FP16 by outlier spreading. Campaign hope (S026 \u00a778, \u00a7117): a function-preserving rotation might MOVE the 2.25 MLP composition barrier for ternary (~1.58) or binary (1.25). That move must be physically demonstrated; the 2.25 floor stays CLOSED for the unrotated family.",
+   "risks": [
+    "C5 already REFUTED Walsh-Hadamard / butterfly as the EXECUTABLE operator (NOT_WORTH_BUILDING). That is not SpinQuant: C5 is 'the transform IS the code'; SpinQuant is 'rotate, then quantize in the new frame'. Conflating them would re-kill a different idea.",
+    "Unabsorbed rotations hide bytes (S026 \u00a793).",
+    "Random non-orthogonal 'rotations' are a control, not a method.",
+    "A floor that does not move under rotation stays closed (S026 \u00a711)."
+   ],
+   "licensing_provenance": {
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation",
+    "paper_license_note": "arXiv non-exclusive distribution; paper is a citation, not a grant to ship.",
+    "code_license_note": "facebookresearch/SpinQuant code is CC-BY-NC 4.0 \u2014 do not copy. Re-derive from the paper if N044 warrants an implementation.",
+    "do_not_copy_third_party_code": true,
+    "rederive_from_paper_if_implementing": true,
+    "campaign_provenance": "S026 \u00a75/\u00a776; related-but-different C5STRUCTTRANSFORM_DESIGN.",
+    "this_registry_imports_no_third_party_impl": true
+   },
+   "hawking_experiment_mapping": {
+    "campaign_mechanism_overlap": "None measured as SpinQuant. C5 tested structured transforms as the operator, not as an absorbed quantizer rotation.",
+    "related_receipts": [
+     "receipts/headless/C5STRUCTTRANSFORM_DESIGN.json"
+    ],
+    "related_but_not_the_same": "C5 Walsh-Hadamard / Monarch-Hadamard as implicit operator (verdict NOT_WORTH_BUILDING) is NOT a learned absorbed rotation.",
+    "next_phase_if_probe_promises": "N044 COORDINATE_TRANSFORM_PROBE (S026 \u00a778). If ROTATION_MOVES_BARRIER, bounded reopening of QWEN_MLP_ROTATED_TERNARY; else 2.25 stays closed.",
+    "native_execution_required": "Trit-plane / codebook / sparse MUST execute native (S026 \u00a717, \u00a727, \u00a728). No reconstruct-to-dense. Sparse only with a competent fused path (N033/CSR lesson).",
+    "competency_gate": "S026 \u00a790 / N003: condemn the KERNEL not the representation until the competence screen passes."
+   },
+   "current_verdict": {
+    "status": "UNTESTED",
+    "literature_is": "HYPOTHESIS",
+    "campaign_verdict": null,
+    "hawking_receipts": [],
+    "measured_numbers": {},
+    "scope_of_measurement": "No Hawking receipt measures a learned or structured rotation absorbed into Qwen3.8 MLP then re-quantized.",
+    "untested_remainder": "The whole technique.",
+    "cheapest_hawking_experiment": {
+     "id": "HX-SPINQUANT-N044",
+     "name": "Coordinate transform discriminator on one MLP organ",
+     "why_cheapest": "Already queued as N044. CPU. Hadamard + one structured orthogonal vs identity vs random non-orthogonal; refit ternary ~1.58 and binary 1.25 in the rotated frame on real held-out X. Identity must reproduce the unrotated baseline.",
+     "cpu_only": true,
+     "loads_model": false,
+     "touches_gpu": false,
+     "stream_parent_tensors_if_needed": true,
+     "no_second_27b": true,
+     "real_x_not_gaussian": true,
+     "depends_on": [
+      "N044"
+     ],
+     "success_criterion": "ROTATION_MOVES_BARRIER true/false with deltas. If false, close SpinQuant's reopening claim for this body."
+    },
+    "citation_rule": "no CURRENT VERDICT other than UNTESTED without a cited Hawking receipt"
+   }
+  },
+  {
+   "technique_identity": {
+    "id": "twla",
+    "short_name": "TWLA",
+    "s026_name": "TWLA (ternary-friendly coords + low-bit activations)",
+    "s026_family": "DOC-COORDINATES",
+    "literature_status": "HYPOTHESIS",
+    "not_authority": true,
+    "s026": [
+     "\u00a75",
+     "\u00a776"
+    ]
+   },
+   "source_paper": {
+    "title": "TWLA: Achieving Ternary Weights and Low-Bit Activations for LLMs via Post-Training Quantization",
+    "authors": "Z. Zhao et al.",
+    "approx_date": "2026-06",
+    "venue": "ICML 2026 (submission)",
+    "arxiv": "2606.13054",
+    "url": "https://arxiv.org/abs/2606.13054",
+    "note": null,
+    "status_in_this_registry": "HYPOTHESIS"
+   },
+   "claimed_mechanism": "W1.58A4 PTQ: (1) Euclidean-to-manifold asymmetric ternary quantizer, (2) Kronecker orthogonal tri-modal shaping so weights become ternary-friendly and the shared rotation suppresses activation outliers, (3) inter-layer-aware mixed-precision activations. S026 mapping: ternary-friendly coordinates PLUS low-bit activations \u2014 not ternary weights alone.",
+   "architecture_assumptions": "Standard dense Linear stacks that accept a shared Kronecker orthogonal. Heavy-tailed activations are the paper's motive for keeping A high-precision in prior work; TWLA claims to remove that. Qwen3.8 SwiGLU intermediates (17408) and GQA head_dim=256 are in-scope; DeltaNet recurrent state is not an activation the paper quantized.",
+   "training_calibration_runtime": "PTQ, not from-scratch 1.58-bit training. Needs calibration activations for the manifold ternary fit and the rotation. Runtime: ternary weight matvec + 4-bit activations. Native trit unpack + low-bit A kernel required; reconstruct-to-f16 is a fail (S026 \u00a717).",
+   "storage_vs_execution": "Storage: ~1.58 bpw weights + rotation (absorb if possible) + 4-bit activation codebook/scales. Execution must stream packed trits and packed activations; 5-in-8 still reads every byte (BYTES_FRONTIER ternary note).",
+   "expected_useful_organs": [
+    "mlp_gate_up",
+    "mlp_down"
+   ],
+   "expected_physical_win": "Paper claim: W1.58A4 with high accuracy and end-to-end speedup from low-bit activations. Campaign: even if weight ternary is dead in the original frame, a ternary-friendly rotation plus cheap activations is a DIFFERENT condition (S026 \u00a711, \u00a7117).",
+   "risks": [
+    "Ternary 5-in-8 on this body is already slower + argmax flip (active_bpw=1.85, complete_token_ns=59417374 vs q2f 27547874; argmax 10895 vs teacher 9714).",
+    "Activation quant is untested here; GQA is the quality floor and cannot cheaply go below Q4 *weights* \u2014 KV/activation quant is a different axis (PREFILL_KV).",
+    "Kronecker orthogonal may fail the same way C5/G034 energy tests failed if it is used as an implicit operator."
+   ],
+   "licensing_provenance": {
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation",
+    "paper_license_note": "arXiv non-exclusive; literature hypothesis only.",
+    "code_license_note": "Kishon-zzx/TWLA \u2014 check license before any port; re-derive.",
+    "do_not_copy_third_party_code": true,
+    "rederive_from_paper_if_implementing": true,
+    "campaign_provenance": "S026 \u00a776; ternary scar on receipts/headless/BYTES_FRONTIER.json + receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json.",
+    "this_registry_imports_no_third_party_impl": true
+   },
+   "hawking_experiment_mapping": {
+    "campaign_mechanism_overlap": "Ternary WEIGHT body (5-in-8 + g64 scale) was executed natively.",
+    "related_receipts": [
+     "receipts/headless/BYTES_FRONTIER.json",
+     "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+     "receipts/headless/FRACTIONAL_BIT_CANON.json",
+     "receipts/headless/REPRESENTATION_LIBRARY.json"
+    ],
+    "related_but_not_the_same": "TWLA's Kronecker tri-modal shaping and 4-bit activations were not in the 5-in-8 experiment.",
+    "next_phase_if_probe_promises": "N044 first (does a rotation move 1.58?). If no, TWLA's coordinate claim closes with SpinQuant. If yes, one-block W1.58A4 on real X.",
+    "native_execution_required": "Trit-plane / codebook / sparse MUST execute native (S026 \u00a717, \u00a727, \u00a728). No reconstruct-to-dense. Sparse only with a competent fused path (N033/CSR lesson).",
+    "competency_gate": "S026 \u00a790 / N003: condemn the KERNEL not the representation until the competence screen passes."
+   },
+   "current_verdict": {
+    "status": "RELATED_NEGATIVE",
+    "literature_is": "HYPOTHESIS",
+    "campaign_verdict": "slower + argmax flip",
+    "hawking_receipts": [
+     "receipts/headless/BYTES_FRONTIER.json",
+     "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+     "receipts/headless/FRACTIONAL_BIT_CANON.json"
+    ],
+    "measured_numbers": {
+     "ternary_5in8_active_bpw": 1.85,
+     "ternary_complete_token_ns": 59417374,
+     "q2f_complete_token_ns": 27547874,
+     "delta_ns": -31869500,
+     "moved_toward_roof": false,
+     "teacher_argmax": 9714,
+     "student_argmax": 10895,
+     "argmax_agree": false,
+     "died_at": "complete_token"
+    },
+    "scope_of_measurement": "Native ternary 5-in-8 g64 MLP. Organ-local CANON (ONEBIT B3 rel_fro 0.321) flipped whole-model argmax. Fewer bytes, worse token_ns. Coordinate transform and low-bit activations were not in that measurement.",
+    "untested_remainder": "Kronecker orthogonal tri-modal shaping + W1.58A4 activations. Untested.",
+    "cheapest_hawking_experiment": {
+     "id": "HX-TWLA-AFTER-N044",
+     "name": "Ternary in rotated coords, then 4-bit activations on one block",
+     "why_cheapest": "N044 is the discriminator. If rotation does not move 1.58, stop. If it does, grouped-absmax INT4 activations on the same held-out SwiGLU vs f16 A, CPU, streamed parent tensors.",
+     "cpu_only": true,
+     "loads_model": false,
+     "touches_gpu": false,
+     "stream_parent_tensors_if_needed": true,
+     "no_second_27b": true,
+     "real_x_not_gaussian": true,
+     "depends_on": [
+      "N044"
+     ],
+     "success_criterion": "Held-out rel_fro/gain vs unrotated ternary and vs q2f; argmax on a 16-token complete-token loop."
+    },
+    "citation_rule": "no CURRENT VERDICT other than UNTESTED without a cited Hawking receipt"
+   }
+  },
+  {
+   "technique_identity": {
+    "id": "cat_q",
+    "short_name": "CAT-Q",
+    "s026_name": "CAT-Q (nearby-weight ternary healing)",
+    "s026_family": "DOC-HEALING",
+    "literature_status": "HYPOTHESIS",
+    "not_authority": true,
+    "s026": [
+     "\u00a75",
+     "\u00a776"
+    ]
+   },
+   "source_paper": {
+    "title": "CAT-Q: Cost-efficient and Accurate Ternary Quantization for LLMs",
+    "authors": "Shigeng Wang, Chao Li, Yangyuxuan Kang, Jiawei Fan, Anbang Yao",
+    "approx_date": "2026-06",
+    "venue": "ICML 2026 oral",
+    "arxiv": "2606.26650",
+    "url": "https://arxiv.org/abs/2606.26650",
+    "note": null,
+    "status_in_this_registry": "HYPOTHESIS"
+   },
+   "claimed_mechanism": "PTQ ternary via learnable modulation (LM) of the weight distribution and ternary threshold, plus softened ternarization (ST) with a differentiable transition. S026 mapping: nearby-weight ternary healing \u2014 move weights toward a ternary-friendly neighbourhood rather than snap in place. Calibration on 512 C4 samples; group size 128 in the paper.",
+   "architecture_assumptions": "Architecture-agnostic PTQ claimed on 1.7B\u2013235B dense/MoE LLMs. Group-wise ternary W \u2248 \u03b1 T, no residual \u03bc. Assumes a calibration set and that LM+ST converge without QAT.",
+   "training_calibration_runtime": "PTQ with a short LM+ST optimization (hours on A100s in the paper, 512 samples). Not BitNet-from-scratch. Runtime is a ternary matvec; healing is a CALIBRATION cost, not a decode cost, if absorbed.",
+   "storage_vs_execution": "Storage: ternary codes + per-group scale (and any unfused modulation). Execution: packed trit matvec. Healing coefficients must not hide in a second copy of W.",
+   "expected_useful_organs": [
+    "mlp_gate_up",
+    "mlp_down"
+   ],
+   "expected_physical_win": "Paper claim: ternary LLMs matching or beating BitNet 1.58 without 100B-token QAT. Campaign hope: healing could reopen the ternary argmax death if the injury is a snap-threshold artifact rather than missing information.",
+   "risks": [
+    "BINARY_HEALING: 1.25-bit binary is uniformly injured across 64/64 layers; 0/4 island/sparse heals reached coherent generation. Nearby-weight islands did not restore the binary body.",
+    "Ternary already flipped argmax. Healing a dead body can spend bytes without climbing the composition ladder.",
+    "LM+ST that stores a dense modulation at runtime is a second copy of W (S026 \u00a793)."
+   ],
+   "licensing_provenance": {
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation",
+    "paper_license_note": "arXiv non-exclusive; ICML 2026 oral. Hypothesis only.",
+    "code_license_note": "IntelChina-AI/BitTern \u2014 check license; do not copy.",
+    "do_not_copy_third_party_code": true,
+    "rederive_from_paper_if_implementing": true,
+    "campaign_provenance": "S026 \u00a776 nearby-weight mapping; binary analog receipts/headless/BINARY_HEALING.json.",
+    "this_registry_imports_no_third_party_impl": true
+   },
+   "hawking_experiment_mapping": {
+    "campaign_mechanism_overlap": "Ternary snap is dead on composition. Binary nearby-island healing was tried and did not restore generation.",
+    "related_receipts": [
+     "receipts/headless/BYTES_FRONTIER.json",
+     "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+     "receipts/headless/BINARY_HEALING.json"
+    ],
+    "related_but_not_the_same": "CAT-Q's LM+ST is not the binary q2f-island / 0.5% CSR heal.",
+    "next_phase_if_probe_promises": "CPU LM-style scale+threshold fit on one injured MLP tensor vs unmodulated 5-in-8, real X, then a 16-token argmax.",
+    "native_execution_required": "Trit-plane / codebook / sparse MUST execute native (S026 \u00a717, \u00a727, \u00a728). No reconstruct-to-dense. Sparse only with a competent fused path (N033/CSR lesson).",
+    "competency_gate": "S026 \u00a790 / N003: condemn the KERNEL not the representation until the competence screen passes."
+   },
+   "current_verdict": {
+    "status": "RELATED_NEGATIVE",
+    "literature_is": "HYPOTHESIS",
+    "campaign_verdict": "slower + argmax flip",
+    "hawking_receipts": [
+     "receipts/headless/BYTES_FRONTIER.json",
+     "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+     "receipts/headless/BINARY_HEALING.json"
+    ],
+    "measured_numbers": {
+     "ternary_argmax_agree": false,
+     "teacher_argmax": 9714,
+     "student_argmax": 10895,
+     "binary_uniformly_injured": true,
+     "binary_heals_that_reached_coherent_generation": 0
+    },
+    "scope_of_measurement": "Ternary 5-in-8 composition death + binary island healing as the nearby-weight analog. CAT-Q's specific LM+ST was not run.",
+    "untested_remainder": "Learnable modulation + softened ternarization on this parent.",
+    "cheapest_hawking_experiment": {
+     "id": "HX-CATQ-ONE-TENSOR-LM",
+     "name": "Learnable modulation on one injured MLP tensor",
+     "why_cheapest": "Stream L0.up_proj (BINARY_HEALING earliest organ) or L0.down_proj. Fit a per-group scale+threshold (soft ternary) on real hold-set X vs snap 5-in-8. No GPU. No second 27B.",
+     "cpu_only": true,
+     "loads_model": false,
+     "touches_gpu": false,
+     "stream_parent_tensors_if_needed": true,
+     "no_second_27b": true,
+     "real_x_not_gaussian": true,
+     "depends_on": [],
+     "success_criterion": "Held-out rel_fro/gain vs snap-ternary and vs q2f. If it does not beat snap, close CAT-Q for this body."
+    },
+    "citation_rule": "no CURRENT VERDICT other than UNTESTED without a cited Hawking receipt"
+   }
+  },
+  {
+   "technique_identity": {
+    "id": "ptqtp",
+    "short_name": "PTQTP",
+    "s026_name": "PTQTP (structured trit planes)",
+    "s026_family": "DOC-REPRESENTATION",
+    "literature_status": "HYPOTHESIS",
+    "not_authority": true,
+    "s026": [
+     "\u00a75",
+     "\u00a776"
+    ]
+   },
+   "source_paper": {
+    "title": "PTQTP: Post-Training Quantization to Trit-Planes for Large Language Models",
+    "authors": "He Xiao, Runming Yang, Qingyao Yang, Wendong Xu, Zhen Li, Yupeng Su, Zhengwu Liu, Hongxia Yang, Ngai Wong",
+    "approx_date": "2025-09",
+    "venue": null,
+    "arxiv": "2509.16989",
+    "url": "https://arxiv.org/abs/2509.16989",
+    "note": null,
+    "status_in_this_registry": "HYPOTHESIS"
+   },
+   "claimed_mechanism": "Decompose each FP16 weight matrix into two structured ternary trit-planes plus scales: W \u2248 \u03b11 T1 + \u03b12 T2. Multiplication-free additive inference (same MAC shape as 1-bit, more expressiveness than one trit). Progressive approximation for global consistency. S026: structured trit planes, executed native (not reconstruct-to-dense).",
+   "architecture_assumptions": "Model-agnostic PTQ claimed on LLaMA3.x and Qwen3 families 0.6B\u201370B. Two-plane additive reconstruction assumes the second plane carries residual magnitude the first cannot.",
+   "training_calibration_runtime": "PTQ, ~1 hour in the paper vs 10\u201314 GPU-days QAT. Runtime: two ternary accumulations per output (or a fused dual-plane kernel). Two-pass reconstruct-then-GEMV is illegal here.",
+   "storage_vs_execution": "Storage: 2 \u00d7 ~1.58-bit planes + scales (~3.16 bpw before amortizing scales). Execution: additive trit MACs. BYTES_FRONTIER 5-in-8 is ONE plane packed; PTQTP is TWO structured planes.",
+   "expected_useful_organs": [
+    "mlp_gate_up",
+    "mlp_down"
+   ],
+   "expected_physical_win": "Paper claim: 1.58-class quality with binary-class arithmetic. Campaign: a second plane is a residual. HYBRID_OPERATOR already found distributed residuals do not heal binary under 2.25 bpw; PTQTP's residual is ternary-structured, which is a different code.",
+   "risks": [
+    "Single-plane ternary is slower + argmax flip.",
+    "Two planes at ~3.16 bpw may exceed the 2.25 MLP floor they are trying to beat; bill both planes + scales.",
+    "Without a fused dual-plane kernel the second plane is a second dispatch (N033)."
+   ],
+   "licensing_provenance": {
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation",
+    "paper_license_note": "arXiv non-exclusive; hypothesis only.",
+    "code_license_note": "HeXiao-55/PTQTP \u2014 code 'to be released'; do not wait on it. Re-derive.",
+    "do_not_copy_third_party_code": true,
+    "rederive_from_paper_if_implementing": true,
+    "campaign_provenance": "S026 \u00a776; single-plane ternary scar receipts/headless/BYTES_FRONTIER.json.",
+    "this_registry_imports_no_third_party_impl": true
+   },
+   "hawking_experiment_mapping": {
+    "campaign_mechanism_overlap": "One trit-plane (5-in-8) was natively executed.",
+    "related_receipts": [
+     "receipts/headless/BYTES_FRONTIER.json",
+     "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+     "receipts/headless/FRACTIONAL_BIT_CANON.json",
+     "receipts/headless/ONEBIT_FAMILIES.json"
+    ],
+    "related_but_not_the_same": "PTQTP's dual structured planes + progressive fit are not 5-in-8.",
+    "next_phase_if_probe_promises": "CPU two-plane decomposition of one MLP tensor vs 5-in-8 and vs q2f.",
+    "native_execution_required": "Trit-plane / codebook / sparse MUST execute native (S026 \u00a717, \u00a727, \u00a728). No reconstruct-to-dense. Sparse only with a competent fused path (N033/CSR lesson).",
+    "competency_gate": "S026 \u00a790 / N003: condemn the KERNEL not the representation until the competence screen passes."
+   },
+   "current_verdict": {
+    "status": "RELATED_NEGATIVE",
+    "literature_is": "HYPOTHESIS",
+    "campaign_verdict": "slower + argmax flip",
+    "hawking_receipts": [
+     "receipts/headless/BYTES_FRONTIER.json",
+     "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+     "receipts/headless/ONEBIT_FAMILIES.json"
+    ],
+    "measured_numbers": {
+     "single_plane_active_bpw": 1.85,
+     "single_plane_complete_token_ns": 59417374,
+     "onebit_best_survivor": "B3",
+     "onebit_n_survive_at_matched_bytes": 1
+    },
+    "scope_of_measurement": "Single ternary plane. Dual trit-planes untested.",
+    "untested_remainder": "Structured two-plane decomposition + native additive kernel.",
+    "cheapest_hawking_experiment": {
+     "id": "HX-PTQTP-TWO-PLANE-ONE-TENSOR",
+     "name": "Two trit-planes vs 5-in-8 vs q2f on one streamed tensor",
+     "why_cheapest": "Fit T1 then T2 on L31.gate_proj against real X (function space, not Gaussian). Bill 2\u00d7trit + scales. Compare held-out rel_fro to 5-in-8 (1.85) and q2f (2.25).",
+     "cpu_only": true,
+     "loads_model": false,
+     "touches_gpu": false,
+     "stream_parent_tensors_if_needed": true,
+     "no_second_27b": true,
+     "real_x_not_gaussian": true,
+     "depends_on": [],
+     "success_criterion": "If two planes do not beat 5-in-8 at matched extra bytes, close PTQTP. Do not write a Metal kernel first."
+    },
+    "citation_rule": "no CURRENT VERDICT other than UNTESTED without a cited Hawking receipt"
+   }
+  },
+  {
+   "technique_identity": {
+    "id": "onebit",
+    "short_name": "OneBit",
+    "s026_name": "OneBit (decomposition binary)",
+    "s026_family": "DOC-REPRESENTATION",
+    "literature_status": "HYPOTHESIS",
+    "not_authority": true,
+    "s026": [
+     "\u00a75",
+     "\u00a776"
+    ]
+   },
+   "source_paper": {
+    "title": "OneBit: Towards Extremely Low-bit Large Language Models",
+    "authors": "Yuzhuang Xu, Xu Han, Zonghan Yang, Shuo Wang, Qingfu Zhu, Zhiyuan Liu, Weidong Liu, Wanxiang Che",
+    "approx_date": "2024-02",
+    "venue": "NeurIPS 2024",
+    "arxiv": "2402.11295",
+    "url": "https://arxiv.org/abs/2402.11295",
+    "note": null,
+    "status_in_this_registry": "HYPOTHESIS"
+   },
+   "claimed_mechanism": "Sign-Value-Independent Decomposition (SVID): a 1-bit sign matrix plus a compact value/magnitude factor, with a decomposition-based initialization and QAT to ~1 bit. S026 mapping: decomposition binary. This campaign's binary_g64 (sign + g64 f16 scale, no QAT) is the PTQ cousin of that body.",
+   "architecture_assumptions": "Linear layers replaced by a OneBit Linear (sign \u2297 value). Paper used QAT on LLaMA-class dense models. Qwen3.8 GQA + DeltaNet hybrid is a different vehicle; MLP Linear maps are the overlapping organ.",
+   "training_calibration_runtime": "Paper: QAT from a decomposed init. This campaign did NOT QAT: native binary g64 is a post-hoc sign+scale. Runtime: 1-bit matvec + per-group scale. Binary geo kernel exists and is competent enough to MOVE token_ns.",
+   "storage_vs_execution": "Storage: 1 sign bit + f16 mean-abs / 64 = 1.25 bpw (scales counted). Execution: packed sign matvec, dense_w=0. SVID's extra value factors, if not the group scale, must be billed.",
+   "expected_useful_organs": [
+    "mlp_gate_up",
+    "mlp_down"
+   ],
+   "expected_physical_win": "Paper claim: usable 1-bit LLMs via SVID+QAT. Campaign measurement: the PTQ binary body is the only family that moved COMPLETE_TOKEN_NS toward the roof, and it is dead for promotion (generation degenerates).",
+   "risks": [
+    "Speed without coherent generation is not a promotion (S022 \u00a738).",
+    "QAT SVID is untested; it is a different training regime (S026 \u00a711 reopen condition) and still not a reason to ignore the PTQ injury map.",
+    "Signed-symmetric absmax at 1 bit is the ZERO TENSOR (ONEBIT_FAMILIES / Doctor v2). A miss of that instrument is not '1-bit is impossible'."
+   ],
+   "licensing_provenance": {
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation",
+    "paper_license_note": "arXiv non-exclusive; NeurIPS 2024.",
+    "code_license_note": "xuyuzhuang11/OneBit \u2014 check license; do not copy QAT code.",
+    "do_not_copy_third_party_code": true,
+    "rederive_from_paper_if_implementing": true,
+    "campaign_provenance": "S026 \u00a776; measured PTQ cousin receipts/headless/BYTES_FRONTIER.json + receipts/headless/BINARY_HEALING.json.",
+    "this_registry_imports_no_third_party_impl": true
+   },
+   "hawking_experiment_mapping": {
+    "campaign_mechanism_overlap": "Binary sign+scale MLP, natively executed, then healing islands.",
+    "related_receipts": [
+     "receipts/headless/BYTES_FRONTIER.json",
+     "receipts/headless/BINARY_HEALING.json",
+     "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+     "receipts/headless/ONEBIT_FAMILIES.json"
+    ],
+    "related_but_not_the_same": "OneBit SVID+QAT is not binary_g64 PTQ. The 1-bit BODY is the overlap.",
+    "next_phase_if_probe_promises": "Do not re-run the dead PTQ body. S026 \u00a763: the failed 1.25 binary may still be a DRAFT for Medusa/MTP (separate technique).",
+    "native_execution_required": "Trit-plane / codebook / sparse MUST execute native (S026 \u00a717, \u00a727, \u00a728). No reconstruct-to-dense. Sparse only with a competent fused path (N033/CSR lesson).",
+    "competency_gate": "S026 \u00a790 / N003: condemn the KERNEL not the representation until the competence screen passes."
+   },
+   "current_verdict": {
+    "status": "TESTED_NEGATIVE",
+    "literature_is": "HYPOTHESIS",
+    "campaign_verdict": "fast, uniformly injured",
+    "hawking_receipts": [
+     "receipts/headless/BYTES_FRONTIER.json",
+     "receipts/headless/BINARY_HEALING.json",
+     "receipts/headless/FIRST_NOETIC_EXECUTABLE.json"
+    ],
+    "measured_numbers": {
+     "binary_g64_active_bpw": 1.25,
+     "binary_complete_token_ns": 23431791,
+     "q2f_complete_token_ns": 27547874,
+     "delta_ns": 4116083,
+     "moved_toward_roof": true,
+     "died_at": "coherent_generation",
+     "uniformly_injured": true,
+     "heals_that_reached_coherent_generation": 0,
+     "injured_complete_token_ns": 23431791
+    },
+    "scope_of_measurement": "PTQ binary g64 on Qwen3.8 MLP, native geo kernel, dense_w=0. Faster than q2f (delta_ns 4116083). mix_c emitted 16 copies of token 271. Injury is uniform across 64 layers. No tested island restored coherent generation while staying faster than q2f.",
+    "untested_remainder": "SVID+QAT (paper training). S026 \u00a711: a new training regime may reopen, but the PTQ body is closed for promotion.",
+    "cheapest_hawking_experiment": {
+     "id": "HX-ONEBIT-DO-NOT-RERUN-PTQ",
+     "name": "Do not re-run PTQ binary g64 as a promotion candidate",
+     "why_cheapest": "The PTQ body is measured. Reopen only if QAT/SVID or a coordinate transform changes the family (S026 \u00a711). The cheap next use is as a DRAFT head (see medusa_mtp).",
+     "cpu_only": true,
+     "loads_model": false,
+     "touches_gpu": false,
+     "stream_parent_tensors_if_needed": true,
+     "no_second_27b": true,
+     "real_x_not_gaussian": true,
+     "depends_on": [],
+     "success_criterion": "No new promotion experiment. Draft-acceptance is Medusa/MTP."
+    },
+    "citation_rule": "no CURRENT VERDICT other than UNTESTED without a cited Hawking receipt"
+   }
+  },
+  {
+   "technique_identity": {
+    "id": "aqlm",
+    "short_name": "AQLM",
+    "s026_name": "AQLM (additive codebooks)",
+    "s026_family": "DOC-REPRESENTATION",
+    "literature_status": "HYPOTHESIS",
+    "not_authority": true,
+    "s026": [
+     "\u00a75",
+     "\u00a776"
+    ]
+   },
+   "source_paper": {
+    "title": "Extreme Compression of Large Language Models via Additive Quantization",
+    "authors": "Vage Egiazarian, Andrei Panferov, Denis Kuznedelev, Elias Frantar, Artem Babenko, Dan Alistarh",
+    "approx_date": "2024-01",
+    "venue": "ICML 2024",
+    "arxiv": "2401.06118",
+    "url": "https://arxiv.org/abs/2401.06118",
+    "note": null,
+    "status_in_this_registry": "HYPOTHESIS"
+   },
+   "claimed_mechanism": "Additive quantization: each weight group is a SUM of learned codebook lookups (input-adaptive AQ), with joint codebook optimization across a transformer block. Homogeneous format, no hybrid sparse-outlier split.",
+   "architecture_assumptions": "Dense Linear weights grouped into subvectors. Codebooks fit in registers/TG memory. Paper is LLaMA/Mistral PTQ. A kernel that dequantizes to dense then GEMVs has already lost (C4).",
+   "training_calibration_runtime": "PTQ codebook learning (block-wise). Runtime MUST be fused ADC (lookup-plus-accumulate), not reconstruct-to-GEMV. gravity_pq_matvec already exists in this tree and is not on the Qwen3.8 path.",
+   "storage_vs_execution": "Storage: codebooks + indices (bill both; S026 \u00a793). Execution: additive codebook accumulate. ONEBIT B6 is a routed PQ cousin at matched 2.00 bpw.",
+   "expected_useful_organs": [
+    "mlp_gate_up",
+    "mlp_down"
+   ],
+   "expected_physical_win": "Paper claim: SOTA extreme compression via additive codebooks. Campaign C4: do not port gravity_pq_matvec onto Qwen3.8 (NOT_WORTH_BUILDING_THE_QWEN38_PORT) \u2014 the existing kernel still pays GEMV. ONEBIT B6 beat the null on function-space error but was UNHEALTHY at matched bytes.",
+   "risks": [
+    "C4: reconstruct-then-GEMV PQ does not beat q4 on this box.",
+    "Codebook bytes hide behind a 2.00 headline if not billed.",
+    "Joint block codebooks can couple layers the composition ladder must still climb independently."
+   ],
+   "licensing_provenance": {
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation",
+    "paper_license_note": "arXiv non-exclusive; ICML 2024.",
+    "code_license_note": "vahe1994/AQLM \u2014 typically research-permissive; still re-derive, do not vendor.",
+    "do_not_copy_third_party_code": true,
+    "rederive_from_paper_if_implementing": true,
+    "campaign_provenance": "S026 \u00a776; C4 NOT_WORTH_BUILDING_THE_QWEN38_PORT; ONEBIT B6 related.",
+    "this_registry_imports_no_third_party_impl": true
+   },
+   "hawking_experiment_mapping": {
+    "campaign_mechanism_overlap": "PQ / routed codebook (ONEBIT B6) and gravity_pq (C4).",
+    "related_receipts": [
+     "receipts/headless/C4CODEBOOK_DESIGN.json",
+     "receipts/headless/ONEBIT_FAMILIES.json",
+     "receipts/headless/REPRESENTATION_LIBRARY.json"
+    ],
+    "related_but_not_the_same": "AQLM additive residual codebooks with block-joint fit are not GLM residual-PQ and not B6 k-means fragments.",
+    "next_phase_if_probe_promises": "CPU additive 2-codebook reconstruction vs q2f on one streamed MLP tensor, real X. Only if that beats q2f at matched bytes is an ADC microbench in scope (C4 already named that as the cheapest remaining).",
+    "native_execution_required": "Trit-plane / codebook / sparse MUST execute native (S026 \u00a717, \u00a727, \u00a728). No reconstruct-to-dense. Sparse only with a competent fused path (N033/CSR lesson).",
+    "competency_gate": "S026 \u00a790 / N003: condemn the KERNEL not the representation until the competence screen passes."
+   },
+   "current_verdict": {
+    "status": "RELATED_NEGATIVE",
+    "literature_is": "HYPOTHESIS",
+    "campaign_verdict": "C4 NOT_WORTH_BUILDING_THE_QWEN38_PORT; ONEBIT B6 beats-null-but-unhealthy at matched 2.00 bpw",
+    "hawking_receipts": [
+     "receipts/headless/C4CODEBOOK_DESIGN.json",
+     "receipts/headless/ONEBIT_FAMILIES.json"
+    ],
+    "measured_numbers": {
+     "c4_answer": "NOT_WORTH_BUILDING_THE_QWEN38_PORT",
+     "onebit_best_survivor": "B3",
+     "onebit_n_survive_at_matched_bytes": 1
+    },
+    "scope_of_measurement": "Existing PQ kernel + B6 routed codebook on Qwen3.8 MLP. AQLM's additive multi-codebook joint block fit was not run.",
+    "untested_remainder": "Additive residual codebooks with fused ADC on this parent.",
+    "cheapest_hawking_experiment": {
+     "id": "HX-AQLM-TWO-CODEBOOK-ONE-TENSOR",
+     "name": "Two additive codebooks vs q2f on one tensor, CPU",
+     "why_cheapest": "C4 already forbade the Qwen38 PQ port. The cheaper discriminator is function-space error of 2 learned additive codebooks on L31.gate_proj real X vs q2f, billing codebook+index bytes.",
+     "cpu_only": true,
+     "loads_model": false,
+     "touches_gpu": false,
+     "stream_parent_tensors_if_needed": true,
+     "no_second_27b": true,
+     "real_x_not_gaussian": true,
+     "depends_on": [],
+     "success_criterion": "If worse than q2f at matched bytes, close AQLM for this body. Do not bind gravity_pq_matvec."
+    },
+    "citation_rule": "no CURRENT VERDICT other than UNTESTED without a cited Hawking receipt"
+   }
+  },
+  {
+   "technique_identity": {
+    "id": "vptq",
+    "short_name": "VPTQ",
+    "s026_name": "VPTQ (vector quant + outlier residual)",
+    "s026_family": "DOC-REPRESENTATION",
+    "literature_status": "HYPOTHESIS",
+    "not_authority": true,
+    "s026": [
+     "\u00a75",
+     "\u00a776"
+    ]
+   },
+   "source_paper": {
+    "title": "VPTQ: Extreme Low-bit Vector Post-Training Quantization for Large Language Models",
+    "authors": "Yifei Liu, Jicheng Wen, Yang Wang, Shengyu Ye, Li Lyna Zhang, Ting Cao, Cheng Li, Mao Yang",
+    "approx_date": "2024-09",
+    "venue": "EMNLP 2024",
+    "arxiv": "2409.17066",
+    "url": "https://arxiv.org/abs/2409.17066",
+    "note": null,
+    "status_in_this_registry": "HYPOTHESIS"
+   },
+   "claimed_mechanism": "Second-order (Hessian-aware) vector quantization of weight subvectors plus an outlier/residual channel so extreme <2-bit still has a high-precision escape hatch.",
+   "architecture_assumptions": "Dense Linear weights, Hessian from calibration. Outlier residual is a sparse or high-precision sidecar. CSR-style sidecars have already been billed on this body.",
+   "training_calibration_runtime": "PTQ with Hessian / second-order proxy. Runtime: VQ lookup + residual add. Residual MUST be fused (HYBRID_OPERATOR / C3 lesson) or it is two passes.",
+   "storage_vs_execution": "Storage: codebook + indices + outlier residual (indices are not free: BYTES_FRONTIER 2% CSR). Execution: fused VQ+residual. Dequant-to-dense is a fail.",
+   "expected_useful_organs": [
+    "mlp_gate_up",
+    "mlp_down"
+   ],
+   "expected_physical_win": "Paper claim: <2-bit with high accuracy via VQ+outliers. Campaign: VQ cousin (B6) unhealthy; residual cousins (HYBRID low-rank, 2% CSR) did not heal under 2.25.",
+   "risks": [
+    "Sparse residual indices cost more.",
+    "Low-rank residual never heals.",
+    "Hessian from too few rows is NNS-007 (undersampled fits)."
+   ],
+   "licensing_provenance": {
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation",
+    "paper_license_note": "arXiv non-exclusive; EMNLP 2024.",
+    "code_license_note": "microsoft/VPTQ \u2014 typically MIT; still re-derive, do not vendor.",
+    "do_not_copy_third_party_code": true,
+    "rederive_from_paper_if_implementing": true,
+    "campaign_provenance": "S026 \u00a776; residual scars receipts/headless/HYBRID_OPERATOR.json + receipts/headless/BYTES_FRONTIER.json.",
+    "this_registry_imports_no_third_party_impl": true
+   },
+   "hawking_experiment_mapping": {
+    "campaign_mechanism_overlap": "Vector codebook (B6/C4) + outlier residual (HYBRID / CSR).",
+    "related_receipts": [
+     "receipts/headless/C4CODEBOOK_DESIGN.json",
+     "receipts/headless/ONEBIT_FAMILIES.json",
+     "receipts/headless/HYBRID_OPERATOR.json",
+     "receipts/headless/BYTES_FRONTIER.json"
+    ],
+    "related_but_not_the_same": "VPTQ's Hessian-aware VQ + named outlier channel is not B6 k-means and not binary+lowrank r=8.",
+    "next_phase_if_probe_promises": "CPU VQ (small M) + residual on one tensor vs q2f and vs HYBRID r=8.",
+    "native_execution_required": "Trit-plane / codebook / sparse MUST execute native (S026 \u00a717, \u00a727, \u00a728). No reconstruct-to-dense. Sparse only with a competent fused path (N033/CSR lesson).",
+    "competency_gate": "S026 \u00a790 / N003: condemn the KERNEL not the representation until the competence screen passes."
+   },
+   "current_verdict": {
+    "status": "RELATED_NEGATIVE",
+    "literature_is": "HYPOTHESIS",
+    "campaign_verdict": "never heals; indices cost more",
+    "hawking_receipts": [
+     "receipts/headless/HYBRID_OPERATOR.json",
+     "receipts/headless/BYTES_FRONTIER.json",
+     "receipts/headless/C4CODEBOOK_DESIGN.json",
+     "receipts/headless/ONEBIT_FAMILIES.json"
+    ],
+    "measured_numbers": {
+     "hybrid_beats_q2f": false,
+     "hybrid_died_at": "held_out_activation",
+     "sparse_csr_bytes": 2066901350.4,
+     "sparse_binary_bytes": 2673868800.0,
+     "sparse_active_bpw": 2.216250359030331,
+     "sparse_complete_token_ns": 37147375,
+     "c4_answer": "NOT_WORTH_BUILDING_THE_QWEN38_PORT"
+    },
+    "scope_of_measurement": "VQ and residual families as implemented here. VPTQ's Hessian-aware codebook was not run.",
+    "untested_remainder": "Hessian-aware VQ + fused outlier residual on this parent.",
+    "cheapest_hawking_experiment": {
+     "id": "HX-VPTQ-VQ-PLUS-RESIDUAL-ONE-TENSOR",
+     "name": "Small VQ + residual vs q2f and vs HYBRID r=8",
+     "why_cheapest": "One streamed tensor, real X. Bill codebook+indices+residual. Compare to HYBRID r=8 (already dead) and q2f.",
+     "cpu_only": true,
+     "loads_model": false,
+     "touches_gpu": false,
+     "stream_parent_tensors_if_needed": true,
+     "no_second_27b": true,
+     "real_x_not_gaussian": true,
+     "depends_on": [],
+     "success_criterion": "If it does not beat HYBRID r=8 held-out, close VPTQ. Do not write a kernel."
+    },
+    "citation_rule": "no CURRENT VERDICT other than UNTESTED without a cited Hawking receipt"
+   }
+  },
+  {
+   "technique_identity": {
+    "id": "caldera",
+    "short_name": "CALDERA",
+    "s026_name": "CALDERA (low-rank + low-precision)",
+    "s026_family": "DOC-HEALING",
+    "literature_status": "HYPOTHESIS",
+    "not_authority": true,
+    "s026": [
+     "\u00a75",
+     "\u00a776"
+    ]
+   },
+   "source_paper": {
+    "title": "Compressing Large Language Models using Low Rank and Low Precision Decomposition",
+    "authors": "Rajarshi Saha, Naomi Sagan, Varun Srivastava, Andrea J. Goldsmith, Mert Pilanci",
+    "approx_date": "2024-05",
+    "venue": "NeurIPS 2024",
+    "arxiv": "2405.18886",
+    "url": "https://arxiv.org/abs/2405.18886",
+    "note": null,
+    "status_in_this_registry": "HYPOTHESIS"
+   },
+   "claimed_mechanism": "W \u2248 Q + L R with Q, L, R all quantized (calibration-aware low-precision decomposition). Low-rank factors capture top energy; Q is a low-precision backbone for the residual.",
+   "architecture_assumptions": "Weight matrices with usable low-rank energy in function space (not just SVD of W). Qwen3.8 MLP down_proj inverted some Q80 rankings; G034 matched-bit low-rank was 2.93\u00d7 q3 error. Activation-aware rank on real X is the only legal screen (NNS-001, NNS-014).",
+   "training_calibration_runtime": "PTQ iterative LPLR factorization on calibration X. Runtime: low-rank GEMVs + quantized residual. Two unfused passes were slower (NS-030 5\u201313\u00d7). HYBRID_OPERATOR fused the binary+lowrank cousin natively.",
+   "storage_vs_execution": "Storage: quantized Q + L + R (all billed). Execution: fused (Q x + L (R x)), dense_w=0. Reconstructing W is a fail.",
+   "expected_useful_organs": [
+    "mlp_down",
+    "mlp_gate_up"
+   ],
+   "expected_physical_win": "Paper claim: sub-2.5 bpw competitive with QuIP# via Q+LR. Campaign measurement: binary + distributed low-rank correction never restored held-out activations under the 2.25 bpw / 27.55 ms joint constraint.",
+   "risks": [
+    "HYBRID_OPERATOR: even r=256 (body 2.285 > 2.25) rel_fro=0.4798.",
+    "C3: fusion of low-rank+sparse NOT_WORTH_BUILDING on accounting.",
+    "G034 / NNS-014: activation-aware low-rank has its own closed doors."
+   ],
+   "licensing_provenance": {
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation",
+    "paper_license_note": "arXiv non-exclusive; NeurIPS 2024.",
+    "code_license_note": "pilancilab/caldera \u2014 check license; re-derive.",
+    "do_not_copy_third_party_code": true,
+    "rederive_from_paper_if_implementing": true,
+    "campaign_provenance": "S026 \u00a776; measured cousin receipts/headless/HYBRID_OPERATOR.json; design receipts/headless/C3LOWRANKSPARSE_DESIGN.json.",
+    "this_registry_imports_no_third_party_impl": true
+   },
+   "hawking_experiment_mapping": {
+    "campaign_mechanism_overlap": "Low-rank residual on a cheap binary backbone, fused native.",
+    "related_receipts": [
+     "receipts/headless/HYBRID_OPERATOR.json",
+     "receipts/headless/C3LOWRANKSPARSE_DESIGN.json"
+    ],
+    "related_but_not_the_same": "CALDERA quantizes Q, L and R; HYBRID used binary Q plus f16 low-rank. Same family, not the same codec.",
+    "next_phase_if_probe_promises": "Do not re-run the dead fused hybrid as a promotion. Reopen only if Q/L/R are all low-precision AND a coordinate transform changed the energy (S026 \u00a711) \u2014 that is N044 then a one-tensor CALDERA fit, not a new kernel.",
+    "native_execution_required": "Trit-plane / codebook / sparse MUST execute native (S026 \u00a717, \u00a727, \u00a728). No reconstruct-to-dense. Sparse only with a competent fused path (N033/CSR lesson).",
+    "competency_gate": "S026 \u00a790 / N003: condemn the KERNEL not the representation until the competence screen passes."
+   },
+   "current_verdict": {
+    "status": "TESTED_NEGATIVE",
+    "literature_is": "HYPOTHESIS",
+    "campaign_verdict": "never heals",
+    "hawking_receipts": [
+     "receipts/headless/HYBRID_OPERATOR.json",
+     "receipts/headless/C3LOWRANKSPARSE_DESIGN.json"
+    ],
+    "measured_numbers": {
+     "coherent_hybrid_beats_q2f": false,
+     "died_at": "held_out_activation",
+     "finding": "No distributed correction under the 1.0 bpw budget restored held-out activations on real X. Even r=256 (1.035 extra bpw, body 2.285 > 2.25) rel_fro=0.4798. Shared K=2 (extra 0.531 bpw) mean rel_fro=0.49895017594099045. Composition died at held_out_activation. This confirms the 2.25 MLP floor: binary's physical speed cannot keep a distributed correction that actually restores generation under both 2.25 bpw and 27.55 ms.",
+     "c3_answer": "NOT_WORTH_BUILDING. Fusion guaranteed save is 1,310,720 B = 2199.6 ns at 595.9 GB/s (0.0072% of 30.606 ms). The approximation family is already refuted as a byte/quality lever except as a Q80 down_proj COMPONENT; the novel fusion claim is dead on accounting. Do not write the shader."
+    },
+    "scope_of_measurement": "Fused native binary + distributed low-rank on Qwen3.8 MLP, real X, dense_w=0. No correction under the 1.0 extra-bpw budget restored held-out activations. C3 independently closed low-rank+sparse fusion on accounting.",
+    "untested_remainder": "CALDERA's jointly-quantized Q+LR (all low-precision) is a codec variant. The residual-healing claim is what HYBRID already killed.",
+    "cheapest_hawking_experiment": {
+     "id": "HX-CALDERA-DO-NOT-RERUN-HYBRID",
+     "name": "Do not re-run fused low-rank residual as a promotion",
+     "why_cheapest": "HYBRID_OPERATOR is the measurement. A quantized-Q variant is only in scope after N044 moves the barrier.",
+     "cpu_only": true,
+     "loads_model": false,
+     "touches_gpu": false,
+     "stream_parent_tensors_if_needed": true,
+     "no_second_27b": true,
+     "real_x_not_gaussian": true,
+     "depends_on": [
+      "N044"
+     ],
+     "success_criterion": "No promotion experiment until a reopen condition holds."
+    },
+    "citation_rule": "no CURRENT VERDICT other than UNTESTED without a cited Hawking receipt"
+   }
+  },
+  {
+   "technique_identity": {
+    "id": "squeezellm",
+    "short_name": "SqueezeLLM",
+    "s026_name": "SqueezeLLM (sensitivity dense+sparse)",
+    "s026_family": "DOC-REPRESENTATION",
+    "literature_status": "HYPOTHESIS",
+    "not_authority": true,
+    "s026": [
+     "\u00a75",
+     "\u00a776"
+    ]
+   },
+   "source_paper": {
+    "title": "SqueezeLLM: Dense-and-Sparse Quantization",
+    "authors": "Sehoon Kim, Coleman Hooper, Amir Gholami, Zhen Dong, Xiuyu Li, Sheng Shen, Michael W. Mahoney, Kurt Keutzer",
+    "approx_date": "2023-06",
+    "venue": "ICML 2024",
+    "arxiv": "2306.07629",
+    "url": "https://arxiv.org/abs/2306.07629",
+    "note": null,
+    "status_in_this_registry": "HYPOTHESIS"
+   },
+   "claimed_mechanism": "Sensitivity-weighted (Fisher/Hessian) bit assignment: a dense low-bit body plus a sparse high-precision hold-out of sensitive entries. Dense-and-sparse, not uniform quant.",
+   "architecture_assumptions": "A meaningful per-weight sensitivity from calibration. Sparse sidecar is CSR-class. This campaign already billed CSR: 2% nnz on binary cost ~2.07e9 index bytes and SLOWED the graph.",
+   "training_calibration_runtime": "PTQ sensitivity census + threshold. Runtime: dense low-bit matvec + sparse gather. Unfused gather lost (G070 / N033). BINARY_HEALING sparse_05 was one of the island candidates.",
+   "storage_vs_execution": "Storage: dense codes + sparse values + INDICES (bill indices). Execution: fused dense+sparse or it is two passes. BYTES_FRONTIER fused 2% CSR still lost on ns.",
+   "expected_useful_organs": [
+    "mlp_gate_up",
+    "mlp_down"
+   ],
+   "expected_physical_win": "Paper claim: better perplexity at the same bpw by protecting sensitive weights. Campaign: index-carrying sparsity cost more than the byte win on this MLP graph.",
+   "risks": [
+    "indices cost more: csr_bytes=2066901350.4 vs binary_bytes=2673868800.0 at nnz=0.02; complete_token_ns=37147375 vs q2f 27547874.",
+    "Sensitivity from too few tokens is NNS-007.",
+    "GQA quality floor: sensitivity-sparse attention is a different, more expensive organ."
+   ],
+   "licensing_provenance": {
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation",
+    "paper_license_note": "arXiv non-exclusive; ICML 2024.",
+    "code_license_note": "SqueezeLLM reference code \u2014 check license; re-derive the census.",
+    "do_not_copy_third_party_code": true,
+    "rederive_from_paper_if_implementing": true,
+    "campaign_provenance": "S026 \u00a776; sparse scar receipts/headless/BYTES_FRONTIER.json.",
+    "this_registry_imports_no_third_party_impl": true
+   },
+   "hawking_experiment_mapping": {
+    "campaign_mechanism_overlap": "Fused binary + 2% CSR residual; BINARY_HEALING sparse_05 island.",
+    "related_receipts": [
+     "receipts/headless/BYTES_FRONTIER.json",
+     "receipts/headless/BINARY_HEALING.json",
+     "receipts/headless/C3LOWRANKSPARSE_DESIGN.json"
+    ],
+    "related_but_not_the_same": "SqueezeLLM's Fisher-weighted choice of WHICH entries are dense is not a uniform 2% CSR of the residual.",
+    "next_phase_if_probe_promises": "CPU sensitivity census on one organ from existing capture, then dense-body + sparse-outliers vs uniform 2% CSR.",
+    "native_execution_required": "Trit-plane / codebook / sparse MUST execute native (S026 \u00a717, \u00a727, \u00a728). No reconstruct-to-dense. Sparse only with a competent fused path (N033/CSR lesson).",
+    "competency_gate": "S026 \u00a790 / N003: condemn the KERNEL not the representation until the competence screen passes."
+   },
+   "current_verdict": {
+    "status": "RELATED_NEGATIVE",
+    "literature_is": "HYPOTHESIS",
+    "campaign_verdict": "indices cost more",
+    "hawking_receipts": [
+     "receipts/headless/BYTES_FRONTIER.json",
+     "receipts/headless/BINARY_HEALING.json"
+    ],
+    "measured_numbers": {
+     "sparse_active_bpw": 2.216250359030331,
+     "sparse_complete_token_ns": 37147375,
+     "sparse_delta_ns": -9599501,
+     "sparse_moved_toward_roof": false,
+     "csr_bytes": 2066901350.4,
+     "binary_bytes": 2673868800.0,
+     "nnz_frac": 0.02,
+     "binary_heals_coherent": 0
+    },
+    "scope_of_measurement": "Uniform 2% CSR on a binary body, fused native, plus sparse_05 as a healing island. Fisher-weighted selection of the dense/sparse split was not run.",
+    "untested_remainder": "Sensitivity-chosen dense+sparse split on this parent.",
+    "cheapest_hawking_experiment": {
+     "id": "HX-SQUEEZELLM-SENSITIVITY-CENSUS",
+     "name": "Per-weight sensitivity census on one MLP organ, CPU",
+     "why_cheapest": "From existing capture_diverse2 rows (no new 27B). Rank |W * X_rms| or a diagonal Fisher proxy. Protect top 0.5% in f16, quantize the rest binary, bill indices. Compare held-out to uniform 2% CSR.",
+     "cpu_only": true,
+     "loads_model": false,
+     "touches_gpu": false,
+     "stream_parent_tensors_if_needed": true,
+     "no_second_27b": true,
+     "real_x_not_gaussian": true,
+     "depends_on": [],
+     "success_criterion": "If the sensitivity split does not beat uniform CSR held-out, close SqueezeLLM. Do not write a gather kernel."
+    },
+    "citation_rule": "no CURRENT VERDICT other than UNTESTED without a cited Hawking receipt"
+   }
+  },
+  {
+   "technique_identity": {
+    "id": "kivi",
+    "short_name": "KIVI",
+    "s026_name": "KIVI (asymmetric KV)",
+    "s026_family": "DOC-STATE",
+    "literature_status": "HYPOTHESIS",
+    "not_authority": true,
+    "s026": [
+     "\u00a75",
+     "\u00a776"
+    ]
+   },
+   "source_paper": {
+    "title": "KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache",
+    "authors": "Zirui Liu, Jiayi Yuan, Hongye Jin, Shaochen Zhong, Zhaozhuo Xu, Braverman, Beidi Chen, Cong Liu",
+    "approx_date": "2024-02",
+    "venue": "ICML 2024",
+    "arxiv": "2402.02750",
+    "url": "https://arxiv.org/abs/2402.02750",
+    "note": null,
+    "status_in_this_registry": "HYPOTHESIS"
+   },
+   "claimed_mechanism": "Asymmetric KV-cache quant: K and V get different bit-widths (paper: K 2-bit grouping-along-channel, V 2-bit grouping-along-token) because their outlier structure differs. Tuning-free PTQ on the cache, not the weights.",
+   "architecture_assumptions": "Prefill/decode KV cache for MHA/GQA. Qwen3.8: 16 GQA layers (KV grows with seq) + 48 DeltaNet layers (recurrent state, constant in seq). KIVI does not apply to DeltaNet state. Production GQA KV is f32 today.",
+   "training_calibration_runtime": "Tuning-free; per-cache grouping at runtime. A kernel exists in-tree for int4 KV (mha_decode_flash_int4kv_parity) and is NOT wired into production. Capability cost is ABSENT.",
+   "storage_vs_execution": "Storage: quantized K and V plus per-group scales (session state, not model EBPW \u2014 but S026 \u00a793 still counts it in the production footprint). Execution: dequant-on-read inside MHA, not a second copy in f32.",
+   "expected_useful_organs": [
+    "gqa_attention"
+   ],
+   "expected_physical_win": "Paper claim: 2-bit KV with negligible quality loss, large memory cut. Campaign: at q4 c=4 32K, SESSION_STATE_x_c already exceeds MODEL_BYTES (PREFILL_KV). Asymmetric KV is the first state lever that is not a weight-floor fight. Unmeasured on this body.",
+   "risks": [
+    "GQA is the quality floor (NOETIC_GQA_DESIGN / ORGAN_FRONTIERS). KV quant is a different axis but not a free one.",
+    "int4 KV kernel exists; wiring it is not a measurement of KIVI.",
+    "DeltaNet state (156.9 MiB, const in seq) is a separate organ."
+   ],
+   "licensing_provenance": {
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation",
+    "paper_license_note": "arXiv non-exclusive; ICML 2024.",
+    "code_license_note": "KIVI reference impl \u2014 check license; do not copy into Metal.",
+    "do_not_copy_third_party_code": true,
+    "rederive_from_paper_if_implementing": true,
+    "campaign_provenance": "S026 \u00a750-58; related census receipts/headless/PREFILL_KV.json.",
+    "this_registry_imports_no_third_party_impl": true
+   },
+   "hawking_experiment_mapping": {
+    "campaign_mechanism_overlap": "KV precision candidates (f16, int4) were CENSUSED, not measured for capability. Symmetric int4 \u2260 KIVI asymmetric 2-bit.",
+    "related_receipts": [
+     "receipts/headless/PREFILL_KV.json",
+     "receipts/headless/NOETIC_GQA_DESIGN.json",
+     "receipts/headless/ORGAN_FRONTIERS.json"
+    ],
+    "related_but_not_the_same": "PREFILL_KV int4 candidate is a flash-MHA test kernel, not KIVI.",
+    "next_phase_if_probe_promises": "CPU K-vs-V dynamic-range census on any existing GQA dump; if absent, stream 128 tokens of parent K/V (no second 27B) and report per-channel vs per-token outlier stats. That discriminator decides whether K2V4 or K4V2 is even motivated.",
+    "native_execution_required": "Trit-plane / codebook / sparse MUST execute native (S026 \u00a717, \u00a727, \u00a728). No reconstruct-to-dense. Sparse only with a competent fused path (N033/CSR lesson).",
+    "competency_gate": "S026 \u00a790 / N003: condemn the KERNEL not the representation until the competence screen passes."
+   },
+   "current_verdict": {
+    "status": "UNTESTED",
+    "literature_is": "HYPOTHESIS",
+    "campaign_verdict": null,
+    "hawking_receipts": [],
+    "measured_numbers": {
+     "related_prefill_answer": "Prefill on this body is the decode GEMV graph, teacher-forced. It is decode-optimal and not production-optimal for AgentOS long-context TTFT. A separate batched-prefill path is allowed and is not shipped here. q4 16K warm GPU 84.47 ms/token (MEASURED). q4 c=4 at 32K: SESSION_STATE_x_c 16.59 GiB exceeds MODEL_BYTES 13.32 GiB.",
+     "q4_c4_32k_state_exceeds_weights": true,
+     "kv_production_dtype": "f32",
+     "int4_kv_kernel_exists": true,
+     "int4_kv_wired_into_production": false
+    },
+    "scope_of_measurement": "No Hawking receipt measures asymmetric KV quant on Qwen3.8 GQA.",
+    "untested_remainder": "The whole technique. PREFILL_KV is a related census, not a verdict.",
+    "cheapest_hawking_experiment": {
+     "id": "HX-KIVI-K-VS-V-RANGE",
+     "name": "K vs V outlier-axis census (CPU)",
+     "why_cheapest": "PREFILL_KV already showed session state can exceed weights. The cheapest KIVI discriminator is whether K and V even HAVE different outlier axes on this GQA. No Metal re-bench. No model-wide decode.",
+     "cpu_only": true,
+     "loads_model": false,
+     "touches_gpu": false,
+     "stream_parent_tensors_if_needed": true,
+     "no_second_27b": true,
+     "real_x_not_gaussian": true,
+     "depends_on": [],
+     "success_criterion": "If K and V outlier axes match, KIVI's asymmetry claim is unmotivated here; fall back to a symmetric KV-bit probe later. If they differ, name K2V4 vs K4V2 as the next (still CPU) reconstruction probe."
+    },
+    "citation_rule": "no CURRENT VERDICT other than UNTESTED without a cited Hawking receipt"
+   }
+  },
+  {
+   "technique_identity": {
+    "id": "minicache",
+    "short_name": "MiniCache",
+    "s026_name": "MiniCache (depth state merge)",
+    "s026_family": "DOC-STATE",
+    "literature_status": "HYPOTHESIS",
+    "not_authority": true,
+    "s026": [
+     "\u00a75",
+     "\u00a776"
+    ]
+   },
+   "source_paper": {
+    "title": "MiniCache: KV Cache Compression via Depth-Wise Attention",
+    "authors": "Akide Liu, Jing Liu, Zizheng Pan, Yefei He, Gholamreza Haffari, Bohan Zhuang",
+    "approx_date": "2024-05",
+    "venue": "ICML 2024",
+    "arxiv": "2405.14366",
+    "url": "https://arxiv.org/abs/2405.14366",
+    "note": null,
+    "status_in_this_registry": "HYPOTHESIS"
+   },
+   "claimed_mechanism": "Cross-layer KV merging: adjacent-layer caches are similar enough to interpolate/merge, cutting KV depth. S026: depth state merge. ZERO_EXECUTION of redundant state, not of compute.",
+   "architecture_assumptions": "Stacked GQA/MHA layers with comparable KV geometry. Qwen3.8 has only 16 GQA layers (the rest are DeltaNet). Merging GQA with DeltaNet state is a type error. MiniCache is a GQA-only hypothesis here.",
+   "training_calibration_runtime": "Inference-time merge; some variants need a small interpolation fit. Runtime: fewer KV bytes, possible extra blend. Must not keep both the merged cache AND the originals.",
+   "storage_vs_execution": "Storage: merged KV (depth reduced). Execution: attention against the merged cache. Token-inflation / long-context accounting still applies (S026 \u00a750-58).",
+   "expected_useful_organs": [
+    "gqa_attention"
+   ],
+   "expected_physical_win": "Paper claim: KV memory cut by merging similar depths. Campaign: GQA KV at 16K is 2.15 GiB f32 (PREFILL_KV); depth-merge of 16 layers is a smaller lever than KIVI's bit cut, but orthogonal. Unmeasured.",
+   "risks": [
+    "16 GQA layers is a thin stack; merge pairs may not exist.",
+    "DeltaNet recurrent state is not KV and does not merge this way.",
+    "Merging away a quality-floor organ is how you get silent capability loss."
+   ],
+   "licensing_provenance": {
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation",
+    "paper_license_note": "arXiv non-exclusive; ICML 2024.",
+    "code_license_note": "MiniCache code \u2014 check license; re-derive.",
+    "do_not_copy_third_party_code": true,
+    "rederive_from_paper_if_implementing": true,
+    "campaign_provenance": "S026 \u00a750-58; related receipts/headless/PREFILL_KV.json.",
+    "this_registry_imports_no_third_party_impl": true
+   },
+   "hawking_experiment_mapping": {
+    "campaign_mechanism_overlap": "None. PREFILL_KV bills GQA KV bytes; it does not merge depths.",
+    "related_receipts": [
+     "receipts/headless/PREFILL_KV.json"
+    ],
+    "related_but_not_the_same": "Byte census \u2260 depth-merge quality.",
+    "next_phase_if_probe_promises": "Cosine between adjacent GQA-layer K (and V) on a short captured prefix. If cosine is not high, close MiniCache.",
+    "native_execution_required": "Trit-plane / codebook / sparse MUST execute native (S026 \u00a717, \u00a727, \u00a728). No reconstruct-to-dense. Sparse only with a competent fused path (N033/CSR lesson).",
+    "competency_gate": "S026 \u00a790 / N003: condemn the KERNEL not the representation until the competence screen passes."
+   },
+   "current_verdict": {
+    "status": "UNTESTED",
+    "literature_is": "HYPOTHESIS",
+    "campaign_verdict": null,
+    "hawking_receipts": [],
+    "measured_numbers": {},
+    "scope_of_measurement": "No Hawking receipt measures cross-layer KV merge on Qwen3.8 GQA.",
+    "untested_remainder": "The whole technique.",
+    "cheapest_hawking_experiment": {
+     "id": "HX-MINICACHE-ADJACENT-KV-COSINE",
+     "name": "Adjacent GQA-layer K/V cosine on a short prefix, CPU",
+     "why_cheapest": "If a 16-token K/V dump exists, use it. Else stream a short parent prefix (no second resident 27B) for the 16 GQA layers only. Cosine(K_i, K_{i+1}) and same for V.",
+     "cpu_only": true,
+     "loads_model": false,
+     "touches_gpu": false,
+     "stream_parent_tensors_if_needed": true,
+     "no_second_27b": true,
+     "real_x_not_gaussian": true,
+     "depends_on": [],
+     "success_criterion": "If adjacent cosine is not high enough to beat a constant-mean null by a stated margin, close MiniCache. Do not implement a merge kernel first."
+    },
+    "citation_rule": "no CURRENT VERDICT other than UNTESTED without a cited Hawking receipt"
+   }
+  },
+  {
+   "technique_identity": {
+    "id": "h2o",
+    "short_name": "H2O",
+    "s026_name": "H2O (heavy-hitter state)",
+    "s026_family": "DOC-STATE",
+    "literature_status": "HYPOTHESIS",
+    "not_authority": true,
+    "s026": [
+     "\u00a75",
+     "\u00a776"
+    ]
+   },
+   "source_paper": {
+    "title": "H2O: Heavy-Hitter Oracle for Efficient Generative Inference of Large Language Models",
+    "authors": "Zhenyu Zhang, Ying Sheng, Tianyi Zhou, Tianlong Chen, Lianmin Zheng, Ruisi Cai, Zhao Song, Yuandong Tian, Christopher R\u00e9, Clark Barrett, Zhangyang Wang, Beidi Chen",
+    "approx_date": "2023-06",
+    "venue": "NeurIPS 2023",
+    "arxiv": "2306.14048",
+    "url": "https://arxiv.org/abs/2306.14048",
+    "note": null,
+    "status_in_this_registry": "HYPOTHESIS"
+   },
+   "claimed_mechanism": "KV eviction: keep a small set of heavy-hitter tokens (high cumulative attention) plus recent tokens; drop the rest. S026: heavy-hitter state. This is ZERO_EXECUTION of cold prefix state, not a weight codec.",
+   "architecture_assumptions": "Attention that produces a meaningful per-token mass. GQA yes; DeltaNet is a recurrent summary and does not have a prefix-shareable KV to evict. H2O is GQA-only here.",
+   "training_calibration_runtime": "Runtime policy, no training. Cost: attention-score bookkeeping + gather of surviving KV. A data-dependent inner branch is a kernel-competence smell (N003).",
+   "storage_vs_execution": "Storage: reduced KV (budgeted slots). Execution: sparse along sequence, dense along head. Score metadata must be billed.",
+   "expected_useful_organs": [
+    "gqa_attention"
+   ],
+   "expected_physical_win": "Paper claim: large KV cut with small quality loss. Campaign: long-context SESSION_STATE is the production problem (PREFILL_KV). Heavy-hitters are untested; they interact with AgentOS long-context, not with the 2.25 MLP floor.",
+   "risks": [
+    "Evicting tool/JSON/schema tokens is S026 \u00a782 / \u00a7109 (free capability \u2260 free information).",
+    "Attention-mass on a math prompt may not match a code/JSON prompt.",
+    "DeltaNet layers do not participate; overselling whole-model KV cut is a lie."
+   ],
+   "licensing_provenance": {
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation",
+    "paper_license_note": "arXiv non-exclusive; NeurIPS 2023.",
+    "code_license_note": "H2O reference code \u2014 check license; re-derive the policy.",
+    "do_not_copy_third_party_code": true,
+    "rederive_from_paper_if_implementing": true,
+    "campaign_provenance": "S026 \u00a750-58; related receipts/headless/PREFILL_KV.json.",
+    "this_registry_imports_no_third_party_impl": true
+   },
+   "hawking_experiment_mapping": {
+    "campaign_mechanism_overlap": "None on heavy-hitter eviction. PREFILL_KV is the byte problem statement.",
+    "related_receipts": [
+     "receipts/headless/PREFILL_KV.json"
+    ],
+    "related_but_not_the_same": "A footprint census is not an eviction policy.",
+    "next_phase_if_probe_promises": "On one GQA layer, 1K-token CPU attention-mass histogram from existing scores if any; else a short parent prefix. Report heavy-hitter rank-frequency. If mass is flat, close H2O.",
+    "native_execution_required": "Trit-plane / codebook / sparse MUST execute native (S026 \u00a717, \u00a727, \u00a728). No reconstruct-to-dense. Sparse only with a competent fused path (N033/CSR lesson).",
+    "competency_gate": "S026 \u00a790 / N003: condemn the KERNEL not the representation until the competence screen passes."
+   },
+   "current_verdict": {
+    "status": "UNTESTED",
+    "literature_is": "HYPOTHESIS",
+    "campaign_verdict": null,
+    "hawking_receipts": [],
+    "measured_numbers": {},
+    "scope_of_measurement": "No Hawking receipt measures heavy-hitter KV eviction on Qwen3.8 GQA.",
+    "untested_remainder": "The whole technique.",
+    "cheapest_hawking_experiment": {
+     "id": "HX-H2O-ATTENTION-MASS-HISTOGRAM",
+     "name": "Per-token attention-mass histogram on one GQA layer, CPU",
+     "why_cheapest": "Need a score tensor. If none on disk, a short CPU attention on streamed Q/K for one layer is the probe. Do not implement an eviction kernel.",
+     "cpu_only": true,
+     "loads_model": false,
+     "touches_gpu": false,
+     "stream_parent_tensors_if_needed": true,
+     "no_second_27b": true,
+     "real_x_not_gaussian": true,
+     "depends_on": [],
+     "success_criterion": "If cumulative mass is not heavy-tailed, H2O's oracle has nothing to grab on this mixer. Close it."
+    },
+    "citation_rule": "no CURRENT VERDICT other than UNTESTED without a cited Hawking receipt"
+   }
+  },
+  {
+   "technique_identity": {
+    "id": "mixture_of_depths",
+    "short_name": "Mixture-of-Depths",
+    "s026_name": "Mixture-of-Depths (conditional depth)",
+    "s026_family": "DOC-CONDITIONAL",
+    "literature_status": "HYPOTHESIS",
+    "not_authority": true,
+    "s026": [
+     "\u00a75",
+     "\u00a776"
+    ]
+   },
+   "source_paper": {
+    "title": "Mixture-of-Depths: Dynamically allocating compute in transformer-based language models",
+    "authors": "David Raposo, Sam Ritter, Blake Richards, Timothy Lillicrap, Peter Conway Humphreys, Adam Santoro (Google DeepMind)",
+    "approx_date": "2024-04",
+    "venue": null,
+    "arxiv": "2404.02258",
+    "url": "https://arxiv.org/abs/2404.02258",
+    "note": null,
+    "status_in_this_registry": "HYPOTHESIS"
+   },
+   "claimed_mechanism": "Per-token routing over depth: some tokens skip blocks (identity residual), a learned router spends compute on hard tokens. S026: conditional depth / ZERO_EXECUTION of this token at this layer. Capacity is a static budget.",
+   "architecture_assumptions": "Uniform stacked blocks and a router trained (or distilled) to skip. Qwen3.8 already MIXES architectures (48 DeltaNet + 16 GQA) \u2014 that is not MoD. MoD would skip inside a family. Skipping a quality-floor GQA layer is high-risk.",
+   "training_calibration_runtime": "Paper trains the router. A training-free probe can still ask: which layers are already near-identity on real X? That is the cheapest Hawking experiment and does not implement MoD.",
+   "storage_vs_execution": "Storage: full weights still exist (unless elimination, S026 \u00a729). Execution: skipped layers do not run THIS token (ZERO_EXECUTION). Router bytes and capacity tables are billed. Weights not executed still count in complete EBPW.",
+   "expected_useful_organs": [
+    "mlp_gate_up",
+    "mlp_down",
+    "gqa_attention",
+    "deltanet"
+   ],
+   "expected_physical_win": "Paper claim: ~50% fewer FLOPs at matched quality. Campaign: decode is bandwidth-bound on the q4 incumbent (GPU_LEDGER). Skipping a layer wins only if it also skips the weight stream, or if the organ is compute-bound (ternary was).",
+   "risks": [
+    "Complete EBPW still counts skipped weights unless they are ELIMINATED.",
+    "A router that fires densely is a second attention.",
+    "NNS-029: activation sparsity / uniform bit-descent is not a clean path under the Qwen3.8 coherent floor \u2014 cousin warning."
+   ],
+   "licensing_provenance": {
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation",
+    "paper_license_note": "arXiv non-exclusive.",
+    "code_license_note": "DeepMind paper; no in-tree impl. Do not vendor an MoD trainer.",
+    "do_not_copy_third_party_code": true,
+    "rederive_from_paper_if_implementing": true,
+    "campaign_provenance": "S026 \u00a739-46, \u00a776; NNS-029 related.",
+    "this_registry_imports_no_third_party_impl": true
+   },
+   "hawking_experiment_mapping": {
+    "campaign_mechanism_overlap": "None as MoD. Closest: identity/skip as a diagnostic (scale trap, ZERO_DENSE). Not a router.",
+    "related_receipts": [
+     "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+    ],
+    "related_but_not_the_same": "A skip-layer ablation is not a trained Mixture-of-Depths router.",
+    "next_phase_if_probe_promises": "Identity-residual ablation of one layer at a time on real held-out X (CPU). Rank layers by how little they move the residual. That names ZERO_EXECUTION candidates.",
+    "native_execution_required": "Trit-plane / codebook / sparse MUST execute native (S026 \u00a717, \u00a727, \u00a728). No reconstruct-to-dense. Sparse only with a competent fused path (N033/CSR lesson).",
+    "competency_gate": "S026 \u00a790 / N003: condemn the KERNEL not the representation until the competence screen passes."
+   },
+   "current_verdict": {
+    "status": "UNTESTED",
+    "literature_is": "HYPOTHESIS",
+    "campaign_verdict": null,
+    "hawking_receipts": [],
+    "measured_numbers": {},
+    "scope_of_measurement": "No Hawking receipt trains or measures a depth router on Qwen3.8.",
+    "untested_remainder": "The whole technique.",
+    "cheapest_hawking_experiment": {
+     "id": "HX-MOD-SKIP-LAYER-ABLATION",
+     "name": "Identity-skip ablation across layers on real X, CPU",
+     "why_cheapest": "Teacher-forced: replace layer i mixer+MLP with identity residual, score held-out rel_fro/gain vs the unskipped teacher. Stream weights. No router training.",
+     "cpu_only": true,
+     "loads_model": false,
+     "touches_gpu": false,
+     "stream_parent_tensors_if_needed": true,
+     "no_second_27b": true,
+     "real_x_not_gaussian": true,
+     "depends_on": [],
+     "success_criterion": "A layer whose skip stays healthy is a ZERO_EXECUTION candidate. If none do, close MoD as a Qwen3.8 decode lever."
+    },
+    "citation_rule": "no CURRENT VERDICT other than UNTESTED without a cited Hawking receipt"
+   }
+  },
+  {
+   "technique_identity": {
+    "id": "prosparse",
+    "short_name": "ProSparse",
+    "s026_name": "ProSparse (activation sparsity)",
+    "s026_family": "DOC-CONDITIONAL",
+    "literature_status": "HYPOTHESIS",
+    "not_authority": true,
+    "s026": [
+     "\u00a75",
+     "\u00a776"
+    ]
+   },
+   "source_paper": {
+    "title": "ProSparse: Introducing and Enhancing Intrinsic Activation Sparsity within Large Language Models",
+    "authors": "Chenyang Song, Xu Han, Zhengyan Zhang, Shengding Hu, Xiyuan Li, Zhiyuan Liu, Maosong Sun et al.",
+    "approx_date": "2024-02",
+    "venue": "COLM 2024",
+    "arxiv": "2402.13516",
+    "url": "https://arxiv.org/abs/2402.13516",
+    "note": null,
+    "status_in_this_registry": "HYPOTHESIS"
+   },
+   "claimed_mechanism": "Replace ReLU/SwiGLU-like activations so the MLP hidden is intrinsically sparse, then exploit that sparsity at runtime. S026: activation sparsity; ZERO_EXECUTION of zero channels, only if STRUCTURED and it beats dense.",
+   "architecture_assumptions": "MLP activations that can go exactly zero. Qwen3.8 uses SwiGLU (SiLU gate): near-sparse, not ReLU-sparse. ProSparse typically SWAPS the activation \u2014 that is a behavior/representation change, not a PTQ of the current SwiGLU. Tabula vs physical (S026 \u00a771-74) applies if the swap changes behavior.",
+   "training_calibration_runtime": "Paper includes continued training to induce sparsity. A training-free probe is: how sparse is SwiGLU already on real X? If not sparse, ProSparse is a training program, not a PTQ.",
+   "storage_vs_execution": "Storage: weights unchanged unless the activation swap forces a refit. Execution: skip zero MAC/channels. BYTES_FRONTIER ternary already noted: skipping a zero trit saves an FMA, not a DRAM load, unless zeros are structured enough to skip bytes.",
+   "expected_useful_organs": [
+    "mlp_gate_up",
+    "mlp_down"
+   ],
+   "expected_physical_win": "Paper claim: ~2\u00d7 sparsity with small quality loss, faster MLP. Campaign NNS-029: activation sparsity (~2\u00d7 MLP max) is not a clean path under the Qwen3.8 coherent floor. Unstructured skip does not cut DRAM on a bandwidth-bound graph.",
+   "risks": [
+    "NNS-029 related negative on uniform activation-sparsity as a path.",
+    "Unstructured zeros do not skip DRAM (ternary 5-in-8 note).",
+    "Activation swap is a Tabula/behavior change unless proven otherwise."
+   ],
+   "licensing_provenance": {
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation",
+    "paper_license_note": "arXiv non-exclusive; COLM 2024.",
+    "code_license_note": "ProSparse code \u2014 check license; a swap of SwiGLU is not a drop-in.",
+    "do_not_copy_third_party_code": true,
+    "rederive_from_paper_if_implementing": true,
+    "campaign_provenance": "S026 \u00a741-46, \u00a776; NNS-029.",
+    "this_registry_imports_no_third_party_impl": true
+   },
+   "hawking_experiment_mapping": {
+    "campaign_mechanism_overlap": "NNS-029 (activation sparsity not a clean path). Ternary zero-MAC elision.",
+    "related_receipts": [
+     "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "receipts/headless/BYTES_FRONTIER.json"
+    ],
+    "related_but_not_the_same": "A histogram of SwiGLU zeros is not ProSparse training.",
+    "next_phase_if_probe_promises": "Activation sparsity histogram on existing capture (post-SwiGLU if present, else SiLU(gate)*up on streamed tensors). Structured vs unstructured. If unstructured, close as a DRAM lever.",
+    "native_execution_required": "Trit-plane / codebook / sparse MUST execute native (S026 \u00a717, \u00a727, \u00a728). No reconstruct-to-dense. Sparse only with a competent fused path (N033/CSR lesson).",
+    "competency_gate": "S026 \u00a790 / N003: condemn the KERNEL not the representation until the competence screen passes."
+   },
+   "current_verdict": {
+    "status": "UNTESTED",
+    "literature_is": "HYPOTHESIS",
+    "campaign_verdict": null,
+    "hawking_receipts": [],
+    "measured_numbers": {
+     "nns_029": "activation sparsity / uniform bit-descent is not a clean path under the Qwen3.8 coherent floor (related, not this measurement)",
+     "ternary_zero_macs_elided_did_not_skip_dram": true
+    },
+    "scope_of_measurement": "No Hawking receipt measures ProSparse (activation swap + induced sparsity) on Qwen3.8. NNS-029 is a related negative, not a substitute verdict on ProSparse itself.",
+    "untested_remainder": "The whole technique. Related NNS-029 is cited as context, not as a verdict receipt.",
+    "cheapest_hawking_experiment": {
+     "id": "HX-PROSPARSE-SWIGLU-SPARSITY-HISTOGRAM",
+     "name": "SwiGLU activation sparsity histogram on real X, CPU",
+     "why_cheapest": "Existing capture preferred. Else stream L0 gate/up, compute silu(g)*u sparsity. Report fraction exactly-0 and near-0, structured (channel) vs scattered.",
+     "cpu_only": true,
+     "loads_model": false,
+     "touches_gpu": false,
+     "stream_parent_tensors_if_needed": true,
+     "no_second_27b": true,
+     "real_x_not_gaussian": true,
+     "depends_on": [],
+     "success_criterion": "If sparsity is unstructured and DRAM-bound, close ProSparse as a decode lever. Structured channel-sparsity would reopen a fused skip-channel kernel, not this registry."
+    },
+    "citation_rule": "no CURRENT VERDICT other than UNTESTED without a cited Hawking receipt"
+   }
+  },
+  {
+   "technique_identity": {
+    "id": "medusa_mtp",
+    "short_name": "Medusa/MTP",
+    "s026_name": "Medusa/MTP (multi-token decode)",
+    "s026_family": "DOC-DECODE",
+    "literature_status": "HYPOTHESIS",
+    "not_authority": true,
+    "s026": [
+     "\u00a75",
+     "\u00a776"
+    ]
+   },
+   "source_paper": {
+    "title": "Medusa: Simple LLM Inference Acceleration Framework with Multiple Decoding Heads; and Better & Faster Large Language Models via Multi-token Prediction",
+    "authors": "Tianle Cai, Yuhong Li, Zhengyang Geng, Hongwu Peng, Jason D. Lee, Deming Chen, Tri Dao (Medusa); Fabian Gloeckle, Badr Youbi Idrissi, Baptiste Rozi\u00e8re, David Lopez-Paz, Gabriel Synnaeve (MTP)",
+    "approx_date": "2024-01 / 2024-04",
+    "venue": "Medusa: ICML 2024; MTP: arXiv 2404.19737",
+    "arxiv": "2401.10774",
+    "url": "https://arxiv.org/abs/2401.10774",
+    "note": "Two papers, one S026 mechanism: extra heads predict future tokens so one forward accepts multiple tokens. Qwen3.8 checkpoints may ship native MTP \u2014 census first.",
+    "status_in_this_registry": "HYPOTHESIS"
+   },
+   "claimed_mechanism": "Reduce PASSES per generated token, not bits per weight. Medusa: attach extra decoding heads to a frozen/finetuned backbone and verify a tree of draft tokens. MTP: train the model to predict several future tokens; at decode, use those heads as a same-model draft. S026 \u00a759-64, \u00a7121. S026 \u00a763: the failed 1.25 binary may be a useful DRAFT.",
+   "architecture_assumptions": "A hidden state that extra heads can read (final RMSNorm / layer-out). Speculative verification needs the target model's logits. Native Qwen MTP, if present in the parent weight_map, is the first thing to census \u2014 attaching Medusa heads is the fallback.",
+   "training_calibration_runtime": "Medusa: head training (hours). MTP: pretraining or a shipped head. Runtime: extra head GEMVs + verification. Accepted-tokens/forward and accepted-tokens/byte are the metrics (S026 \u00a794, \u00a795), not tok/s of a rejected draft.",
+   "storage_vs_execution": "Storage: auxiliary heads (billed in complete EBPW, S026 \u00a793). Execution: draft then verify. A draft that is 1.25-bit binary (already faster, already dead as a target) is a different ROLE (S026 \u00a764: negatives are purpose-scoped).",
+   "expected_useful_organs": [
+    "lm_head",
+    "sampling",
+    "gqa_attention"
+   ],
+   "expected_physical_win": "Paper claim: 2\u20133\u00d7 accepted tokens per forward. Campaign: decode is bandwidth-bound; extra heads cost bytes. Win only if accepted-tokens/byte rises. Unmeasured.",
+   "risks": [
+    "Aux heads that are never accepted are dead weight in EBPW.",
+    "Tree attention / verification kernels are new Metal work (not this CPU registry).",
+    "Using the injured binary as a draft can inject its token-271 collapse into the proposal distribution."
+   ],
+   "licensing_provenance": {
+    "s026_88": "provenance preserved",
+    "s026_6": "no blind implementation",
+    "paper_license_note": "arXiv non-exclusive; Medusa ICML 2024.",
+    "code_license_note": "FasterDecoding/Medusa and MTP training stacks \u2014 check licenses; census native Qwen heads before attaching any.",
+    "do_not_copy_third_party_code": true,
+    "rederive_from_paper_if_implementing": true,
+    "campaign_provenance": "S026 \u00a759-64, \u00a776, \u00a763 binary-as-draft.",
+    "this_registry_imports_no_third_party_impl": true
+   },
+   "hawking_experiment_mapping": {
+    "campaign_mechanism_overlap": "Binary g64 is a measured FAST and DEAD target; S026 \u00a763 reopens it as a possible DRAFT, which is a different purpose.",
+    "related_receipts": [
+     "receipts/headless/BYTES_FRONTIER.json",
+     "receipts/headless/BINARY_HEALING.json",
+     "receipts/headless/FIRST_NOETIC_EXECUTABLE.json"
+    ],
+    "related_but_not_the_same": "Speed of binary as a TARGET is not an MTP acceptance rate.",
+    "next_phase_if_probe_promises": "CPU census: does the qualified parent weight_map contain mtp/medusa/aux-head tensors? That is one streamed index JSON, no weights. If yes, name them. If no, binary-as-draft is the next (GPU) experiment and is NOT this lane.",
+    "native_execution_required": "Trit-plane / codebook / sparse MUST execute native (S026 \u00a717, \u00a727, \u00a728). No reconstruct-to-dense. Sparse only with a competent fused path (N033/CSR lesson).",
+    "competency_gate": "S026 \u00a790 / N003: condemn the KERNEL not the representation until the competence screen passes."
+   },
+   "current_verdict": {
+    "status": "UNTESTED",
+    "literature_is": "HYPOTHESIS",
+    "campaign_verdict": null,
+    "hawking_receipts": [],
+    "measured_numbers": {
+     "binary_as_draft_is_s026_63_hypothesis": true,
+     "binary_target_died_at": "coherent_generation",
+     "binary_moved_token_ns": true
+    },
+    "scope_of_measurement": "No Hawking receipt measures Medusa heads or MTP acceptance on Qwen3.8. Binary speed is a TARGET measurement, not a draft-acceptance measurement.",
+    "untested_remainder": "Native MTP census, then (if absent) binary-as-draft \u2014 GPU, not this lane.",
+    "cheapest_hawking_experiment": {
+     "id": "HX-MTP-PARENT-WEIGHTMAP-CENSUS",
+     "name": "Census parent index for MTP/Medusa tensors (CPU, no weights)",
+     "why_cheapest": "Read model.safetensors.index.json (and config.json) of the qualified parent. Count keys matching mtp/medusa/multi_token/aux_head. Stream the index only.",
+     "cpu_only": true,
+     "loads_model": false,
+     "touches_gpu": false,
+     "stream_parent_tensors_if_needed": true,
+     "no_second_27b": true,
+     "real_x_not_gaussian": true,
+     "depends_on": [],
+     "success_criterion": "If native MTP tensors exist, the next experiment is their byte bill + a decode-acceptance run (GPU, not N043). If none, record ABSENT and leave binary-as-draft to a DOC-DECODE GPU lane."
+    },
+    "citation_rule": "no CURRENT VERDICT other than UNTESTED without a cited Hawking receipt"
+   }
+  }
+ ],
+ "n_techniques": 15,
+ "n_untested": 7,
+ "n_with_campaign_verdict": 8,
+ "campaign_cross_references": {
+  "shared_basis": {
+   "maps_onto_techniques": [],
+   "receipts": [
+    "receipts/headless/SHARED_BASIS_KERNEL.json",
+    "receipts/headless/SHARED_BASIS_COHERENT.json"
+   ],
+   "also": [
+    "receipts/headless/C1SHAREDBASIS_DESIGN.json",
+    "receipts/headless/BYTES_FRONTIER.json"
+   ],
+   "verdict": "competent kernel but dead <2.25",
+   "measured": {
+    "kernel_competent": true,
+    "byte_win_translates_to_token_ns": true,
+    "k2_active_bpw": 0.53125,
+    "k2_complete_token_ns": 111626166,
+    "coherent_shared_basis_beats_q2f": false,
+    "operating_point_active_bpw": 2.125,
+    "operating_point_coherent": false,
+    "c1_verdict": "NOT_WORTH_BUILDING",
+    "c1_failure": "fidelity"
+   },
+   "reading": "SHARED_BASIS_KERNEL: fused K=2 kernel is competent and the 0.53-bpw byte win translates to token_ns. SHARED_BASIS_COHERENT: no coherent point beats q2f on both density and ns; K=2 dies at held_out_activation. Competent kernel, dead below 2.25."
+  },
+  "binary": {
+   "maps_onto_techniques": [
+    "onebit"
+   ],
+   "receipts": [
+    "receipts/headless/BYTES_FRONTIER.json",
+    "receipts/headless/BINARY_HEALING.json"
+   ],
+   "also": [
+    "receipts/headless/FIRST_NOETIC_EXECUTABLE.json"
+   ],
+   "verdict": "fast, uniformly injured",
+   "measured": {
+    "active_bpw": 1.25,
+    "complete_token_ns": 23431791,
+    "delta_ns": 4116083,
+    "moved_toward_roof": true,
+    "uniformly_injured": true,
+    "heals_coherent": 0
+   },
+   "reading": "binary_g64 is the only BYTES_FRONTIER family that moved COMPLETE_TOKEN_NS toward the roof, and BINARY_HEALING found the injury uniform across 64 layers with no island restoring coherent generation."
+  },
+  "low_rank_residual": {
+   "maps_onto_techniques": [
+    "caldera",
+    "vptq"
+   ],
+   "receipts": [
+    "receipts/headless/HYBRID_OPERATOR.json"
+   ],
+   "also": [
+    "receipts/headless/C3LOWRANKSPARSE_DESIGN.json"
+   ],
+   "verdict": "never heals",
+   "measured": {
+    "coherent_hybrid_beats_q2f": false,
+    "died_at": "held_out_activation"
+   },
+   "reading": "HYBRID_OPERATOR: no distributed low-rank correction under the joint 2.25 bpw / 27.55 ms constraint restored held-out activations on real X. The residual never heals."
+  },
+  "ternary": {
+   "maps_onto_techniques": [
+    "twla",
+    "cat_q",
+    "ptqtp"
+   ],
+   "receipts": [
+    "receipts/headless/BYTES_FRONTIER.json"
+   ],
+   "also": [
+    "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+    "receipts/headless/FRACTIONAL_BIT_CANON.json",
+    "receipts/headless/ONEBIT_FAMILIES.json"
+   ],
+   "verdict": "slower + argmax flip",
+   "measured": {
+    "active_bpw": 1.85,
+    "complete_token_ns": 59417374,
+    "delta_ns": -31869500,
+    "moved_toward_roof": false,
+    "teacher_argmax": 9714,
+    "student_argmax": 10895,
+    "argmax_agree": false
+   },
+   "reading": "ternary_5in8_g64 is slower than q2f despite fewer bytes, and the whole-model composition flipped the argmax (10895 vs teacher 9714)."
+  },
+  "sparse_residual": {
+   "maps_onto_techniques": [
+    "squeezellm",
+    "vptq"
+   ],
+   "receipts": [
+    "receipts/headless/BYTES_FRONTIER.json"
+   ],
+   "also": [
+    "receipts/headless/BINARY_HEALING.json",
+    "receipts/headless/C3LOWRANKSPARSE_DESIGN.json"
+   ],
+   "verdict": "indices cost more",
+   "measured": {
+    "active_bpw": 2.216250359030331,
+    "complete_token_ns": 37147375,
+    "csr_bytes": 2066901350.4,
+    "binary_bytes": 2673868800.0,
+    "nnz_frac": 0.02
+   },
+   "reading": "binary + 2% CSR fused: indices cost more than the residual saves. active_bpw still below 2.25 and still slower than q2f."
+  }
+ },
+ "docs": "docs/ultragoals/DOCTOR_TECHNIQUE_REGISTRY.md",
+ "elapsed_s": 0.022
+}

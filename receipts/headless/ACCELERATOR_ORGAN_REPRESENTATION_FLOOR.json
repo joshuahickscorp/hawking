@@ -1,0 +1,342 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T15:56:35Z",
+ "experiment_class": "ACCEL-REPRESENTATION",
+ "knowledge_level": "MODEL_FAMILY",
+ "git_head": "67d0d75822dad4541e30063dd7142232ea24304d",
+ "identities": {
+  "experiment": {
+   "id": "ORGAN_REPRESENTATION_FLOOR",
+   "obligation": "G048",
+   "steer": "S015 \u00a7130 every significant specimen gets the full pass; Odyssey's two educational goals discharged PER SPECIMEN"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "storage": "TIER 2 /Volumes/corpdrive model lake"
+  },
+  "device": {
+   "status": "ABSENT",
+   "reason": "offline weight-space study, no GPU execution"
+  },
+  "model": {
+   "specimens": [
+    "Qwen3-30B-A3B",
+    "Qwen3-VL-30B-A3B",
+    "Kimi-VL-A3B",
+    "Falcon-H1-7B"
+   ],
+   "census": {
+    "Qwen3-30B-A3B": 9,
+    "Qwen3-VL-30B-A3B": 7,
+    "Kimi-VL-A3B": 8,
+    "Falcon-H1-7B": 11
+   }
+  },
+  "representation": {
+   "name": "grouped absmax",
+   "anchor": "bits=4 group=64 is EXACTLY ws_rtn_q4_g64, pinned by a test against the shipped packer"
+  },
+  "kernel": {
+   "status": "ABSENT",
+   "reason": "no kernel executed"
+  },
+  "runtime": {
+   "python": "3.12.6",
+   "numpy": "quantize_grouped"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single machine"
+  }
+ },
+ "why_this_block": "G048 tracks TWO educational goals and had discharged ONE. 'How does this computation want to EXECUTE' was answered for all 4 specimens; 'how does this architecture want to EXIST' was carried for model #2 alone and NOT ATTEMPTED for the other three. This attacks the second across every specimen on disk.",
+ "the_question_was_narrowed_on_purpose": {
+  "what_this_cannot_be": "an adequacy claim. This campaign sealed on 2026-07-27 that every prior sub-bit negative was a GAUSSIAN-PROXY ARTIFACT and that compression must be judged on real activations, and on 2026-08-17 that LOCAL ADEQUACY DOES NOT COMPOSE. No model was executed here and none could be -- the runtime lacks Qwen3-MoE, Falcon and Mamba readers.",
+  "what_it_is": "does the ORGAN RANKING under grouped absmax TRANSFER ACROSS ARCHITECTURES? Prior campaign law, measured on Qwen: ATTENTION SETS THE BPW FLOOR. Falcon-H1 is a hybrid with state-space organs that have no Qwen analogue; Kimi-VL and Qwen3-VL carry vision towers. That is falsifiable and it was falsified."
+ },
+ "headline": "THE PRIOR LAW IS ARCHITECTURE-SPECIFIC, NOT GENERAL. Attention sets the floor on BOTH Qwen models -- q_proj needs group 32 where every MLP and expert tensor clears at group 128 -- and DOES NOT TRANSFER: on Kimi-VL and Falcon-H1 no organ is more demanding than any other. The mechanism is within-group outliers, confirmed at Pearson -0.9841 across 33 organs and 4 architectures.",
+ "floors_and_fidelity": {
+  "Qwen3-30B-A3B": {
+   "attention_q": {
+    "tensor": "model.layers.0.self_attn.q_proj.weight",
+    "cos_4b_g128": 0.98471,
+    "floor_setting": "4b/g32",
+    "floor_bpw": 4.5
+   },
+   "attention_k": {
+    "tensor": "model.layers.0.self_attn.k_proj.weight",
+    "cos_4b_g128": 0.987318,
+    "floor_setting": "4b/g64",
+    "floor_bpw": 4.25
+   },
+   "attention_v": {
+    "tensor": "model.layers.0.self_attn.v_proj.weight",
+    "cos_4b_g128": 0.98788,
+    "floor_setting": "4b/g64",
+    "floor_bpw": 4.25
+   },
+   "attention_o": {
+    "tensor": "model.layers.0.self_attn.o_proj.weight",
+    "cos_4b_g128": 0.991922,
+    "floor_setting": "4b/g128",
+    "floor_bpw": 4.125
+   },
+   "mlp_gate": {
+    "tensor": "model.layers.0.mlp.experts.10.gate_proj.weight",
+    "cos_4b_g128": 0.991294,
+    "floor_setting": "4b/g128",
+    "floor_bpw": 4.125
+   },
+   "mlp_up": {
+    "tensor": "model.layers.0.mlp.experts.0.up_proj.weight",
+    "cos_4b_g128": 0.99273,
+    "floor_setting": "4b/g128",
+    "floor_bpw": 4.125
+   },
+   "mlp_down": {
+    "tensor": "model.layers.0.mlp.experts.0.down_proj.weight",
+    "cos_4b_g128": 0.99305,
+    "floor_setting": "4b/g128",
+    "floor_bpw": 4.125
+   },
+   "expert": {
+    "tensor": "model.layers.0.mlp.experts.0.gate_proj.weight",
+    "cos_4b_g128": 0.992732,
+    "floor_setting": "4b/g128",
+    "floor_bpw": 4.125
+   },
+   "embed": {
+    "tensor": "model.embed_tokens.weight",
+    "cos_4b_g128": 0.986294,
+    "floor_setting": "4b/g64",
+    "floor_bpw": 4.25
+   }
+  },
+  "Qwen3-VL-30B-A3B": {
+   "attention_q": {
+    "tensor": "model.language_model.layers.0.self_attn.q_proj.weight",
+    "cos_4b_g128": 0.987049,
+    "floor_setting": "4b/g64",
+    "floor_bpw": 4.25
+   },
+   "attention_k": {
+    "tensor": "model.language_model.layers.0.self_attn.k_proj.weight",
+    "cos_4b_g128": 0.988917,
+    "floor_setting": "4b/g64",
+    "floor_bpw": 4.25
+   },
+   "attention_v": {
+    "tensor": "model.language_model.layers.0.self_attn.v_proj.weight",
+    "cos_4b_g128": 0.988211,
+    "floor_setting": "4b/g64",
+    "floor_bpw": 4.25
+   },
+   "attention_o": {
+    "tensor": "model.language_model.layers.0.self_attn.o_proj.weight",
+    "cos_4b_g128": 0.992087,
+    "floor_setting": "4b/g128",
+    "floor_bpw": 4.125
+   },
+   "expert": {
+    "tensor": "model.language_model.layers.0.mlp.experts.gate_up_proj",
+    "cos_4b_g128": 0.992672,
+    "floor_setting": "4b/g128",
+    "floor_bpw": 4.125
+   },
+   "embed": {
+    "tensor": "model.language_model.embed_tokens.weight",
+    "cos_4b_g128": 0.986164,
+    "floor_setting": "4b/g64",
+    "floor_bpw": 4.25
+   }
+  },
+  "Kimi-VL-A3B": {
+   "attention_q": {
+    "tensor": "language_model.model.layers.0.self_attn.q_proj.weight",
+    "cos_4b_g128": 0.993214,
+    "floor_setting": "4b/g128",
+    "floor_bpw": 4.125
+   },
+   "attention_o": {
+    "tensor": "language_model.model.layers.0.self_attn.o_proj.weight",
+    "cos_4b_g128": 0.993193,
+    "floor_setting": "4b/g128",
+    "floor_bpw": 4.125
+   },
+   "mlp_gate": {
+    "tensor": "language_model.model.layers.0.mlp.gate_proj.weight",
+    "cos_4b_g128": 0.99311,
+    "floor_setting": "4b/g128",
+    "floor_bpw": 4.125
+   },
+   "mlp_up": {
+    "tensor": "language_model.model.layers.0.mlp.up_proj.weight",
+    "cos_4b_g128": 0.993095,
+    "floor_setting": "4b/g128",
+    "floor_bpw": 4.125
+   },
+   "mlp_down": {
+    "tensor": "language_model.model.layers.0.mlp.down_proj.weight",
+    "cos_4b_g128": 0.993029,
+    "floor_setting": "4b/g128",
+    "floor_bpw": 4.125
+   },
+   "expert": {
+    "tensor": "language_model.model.layers.1.mlp.experts.0.gate_proj.weight",
+    "cos_4b_g128": 0.993204,
+    "floor_setting": "4b/g128",
+    "floor_bpw": 4.125
+   },
+   "embed": {
+    "tensor": "language_model.model.embed_tokens.weight",
+    "cos_4b_g128": 0.99324,
+    "floor_setting": "4b/g128",
+    "floor_bpw": 4.125
+   }
+  },
+  "Falcon-H1-7B": {
+   "attention_q": {
+    "tensor": "model.layers.0.self_attn.q_proj.weight",
+    "cos_4b_g128": 0.993021,
+    "floor_setting": "4b/g128",
+    "floor_bpw": 4.125
+   },
+   "attention_k": {
+    "tensor": "model.layers.0.self_attn.k_proj.weight",
+    "cos_4b_g128": 0.992149,
+    "floor_setting": "4b/g128",
+    "floor_bpw": 4.125
+   },
+   "attention_v": {
+    "tensor": "model.layers.0.self_attn.v_proj.weight",
+    "cos_4b_g128": 0.992564,
+    "floor_setting": "4b/g128",
+    "floor_bpw": 4.125
+   },
+   "attention_o": {
+    "tensor": "model.layers.0.self_attn.o_proj.weight",
+    "cos_4b_g128": 0.992747,
+    "floor_setting": "4b/g128",
+    "floor_bpw": 4.125
+   },
+   "mlp_gate": {
+    "tensor": "model.layers.0.feed_forward.gate_proj.weight",
+    "cos_4b_g128": 0.992201,
+    "floor_setting": "4b/g128",
+    "floor_bpw": 4.125
+   },
+   "mlp_up": {
+    "tensor": "model.layers.0.feed_forward.up_proj.weight",
+    "cos_4b_g128": 0.992008,
+    "floor_setting": "4b/g128",
+    "floor_bpw": 4.125
+   },
+   "mlp_down": {
+    "tensor": "model.layers.0.feed_forward.down_proj.weight",
+    "cos_4b_g128": 0.992225,
+    "floor_setting": "4b/g128",
+    "floor_bpw": 4.125
+   },
+   "ssm_in": {
+    "tensor": "model.layers.0.mamba.in_proj.weight",
+    "cos_4b_g128": 0.99238,
+    "floor_setting": "4b/g128",
+    "floor_bpw": 4.125
+   },
+   "ssm_out": {
+    "tensor": "model.layers.0.mamba.out_proj.weight",
+    "cos_4b_g128": 0.992059,
+    "floor_setting": "4b/g128",
+    "floor_bpw": 4.125
+   },
+   "embed": {
+    "tensor": "model.embed_tokens.weight",
+    "cos_4b_g128": 0.991399,
+    "floor_setting": "4b/g128",
+    "floor_bpw": 4.125
+   }
+  }
+ },
+ "the_ranking": {
+  "Qwen3-30B-A3B": "attention_q 0.98471 < attention_k 0.98732 < attention_v 0.98788 < embed 0.98629 ... < mlp/expert 0.9913-0.9931. SPREAD 0.0084.",
+  "Qwen3-VL-30B-A3B": "same shape, slightly cheaper: attention_q 0.98705, expert 0.99267.",
+  "Kimi-VL-A3B": "EVERY organ 0.99303-0.99324. SPREAD 0.0002 -- 40x tighter than Qwen.",
+  "Falcon-H1-7B": "0.99140-0.99302 including the MAMBA organs, spread 0.0016.",
+  "note_on_a_label": "Qwen3-30B-A3B has NO dense MLP, so its 'mlp_gate' row is an EXPERT tensor (experts.10.gate_proj). Recorded rather than relabelled, because a row called mlp_gate that is an expert would mislead anyone reading the table."
+ },
+ "the_gaussian_reference_is_the_control_and_it_is_stable": {
+  "value": {
+   "(256, 2048)": {
+    "cosine": 0.993224,
+    "mean_amax_over_rms": 2.8289
+   },
+   "(256, 4096)": {
+    "cosine": 0.993204,
+    "mean_amax_over_rms": 2.8317
+   },
+   "(256, 6144)": {
+    "cosine": 0.993212,
+    "mean_amax_over_rms": 2.8294
+   }
+  },
+  "reading": "structureless noise of the same scale reaches cosine 0.99321 at 4b/g128, within 2e-05 across three shapes. THAT IS A REFERENCE POINT, NOT A FLOOR: real weights sit AT it or BELOW it, never meaningfully above.",
+  "what_it_resolves": "Kimi-VL sits AT the reference on every organ, so under THIS measurement its weights are indistinguishable from noise of the same scale -- a statement about the measurement's resolving power on that model, NOT a claim that the weights are random. Qwen3-30B's attention_q sits 0.0085 BELOW it, 26x further than Kimi's largest deviation, which is where the measurement has real content."
+ },
+ "the_mechanism_was_a_claim_so_it_was_tested": {
+  "prediction_written_first": "cosine FALLS as mean(amax/rms) RISES, so a STRONG NEGATIVE correlation confirms the mechanism; anything near zero refutes it",
+  "pearson_cosine_vs_mean_amax_over_rms": -0.9841,
+  "n_organs": 32,
+  "verdict": "CONFIRMED",
+  "means": "grouped absmax spends its levels on the largest weight in a group, so a group whose amax sits far above its rms wastes range on one outlier. The correlation holds ACROSS architectures, not within one -- which is what makes it an explanation of the ranking rather than a restatement of it.",
+  "gaussian_ratio": "2.83, and every organ measured 2.9-3.5, so the ordering is entirely a story about how far above 2.83 an organ's outlier ratio sits"
+ },
+ "depth_robustness_because_the_surprising_claim_rested_on_one_tensor": {
+  "series": {
+   "Qwen3-30B-A3B/attention_q": {
+    "n": 5,
+    "min": 0.98471,
+    "max": 0.992413,
+    "spread": 0.007703,
+    "all_below_gaussian": true,
+    "all_at_gaussian": false
+   },
+   "Qwen3-30B-A3B/expert_gate": {
+    "n": 5,
+    "min": 0.991973,
+    "max": 0.992732,
+    "spread": 0.000759,
+    "all_below_gaussian": true,
+    "all_at_gaussian": false
+   },
+   "Kimi-VL-A3B/attention_q": {
+    "n": 5,
+    "min": 0.992894,
+    "max": 0.9932,
+    "spread": 0.000306,
+    "all_below_gaussian": false,
+    "all_at_gaussian": false
+   },
+   "Kimi-VL-A3B/expert_gate": {
+    "n": 5,
+    "min": 0.993134,
+    "max": 0.993245,
+    "spread": 0.000111,
+    "all_below_gaussian": false,
+    "all_at_gaussian": true
+   }
+  },
+  "verdict": "BOTH surprising claims survive depth. Qwen3-30B attention_q is below the gaussian reference at ALL FIVE layers sampled (0..44) with a 0.0077 spread; Kimi-VL's expert_gate is AT the reference at all five (spread 0.00011) and its attention_q within 3e-04. The Qwen deviation is ~26x the Kimi one.",
+  "why_it_was_run": "the claim rested on ONE tensor per organ, mostly layer 0. A layer-0 accident would have been worthless and there was no way to know without looking."
+ },
+ "a_defect_in_my_own_probe": {
+  "what": "the depth probe imported the sweep script to reuse its reader, and that script does work at MODULE LEVEL, so the import silently RE-RAN the entire 205-second sweep and rewrote its output file",
+  "harm": "none here -- the sweep is deterministic and the file was rewritten with identical content -- but an import that re-runs an experiment is a defect that would corrupt any probe with state or randomness, and it is recorded rather than quietly fixed because the pattern is what matters"
+ },
+ "claim_boundary": {
+  "weight_space_only": "no activations, no model executed, no adequacy. A cosine floor is a NECESSARY-NOT-SUFFICIENT input to Gravity's question and this campaign has a sealed finding that weight-space proxies mislead about the ANSWER.",
+  "sampling": "256 rows of ONE tensor per organ per specimen for the main table (the depth series adds 5 layers x 2 organs x 2 specimens). Grouped absmax makes each row's groups independent, so a row slice is an unbiased sample of GROUPS -- but it is still one tensor, one layer, for most rows.",
+  "ladder_saturates": "the coarse floor is 4 bits nearly everywhere because 3 bits fails the 0.99 bar for every organ measured; the informative axis is the GROUP and the continuous cosine, which is why both are reported rather than the floor alone.",
+  "knowledge_level": "MODEL_FAMILY not ARCHITECTURE: two Qwen MoE variants agreeing is one family, and Kimi and Falcon are single specimens each."
+ },
+ "pass": true
+}

@@ -1,0 +1,18 @@
+{
+  "schema": "hawking.nos.tabula_patient.v1", "session": "f5169750", "date": "2026-08-18",
+  "obligation": "Tabula axis for the patient (S012 §32/§33); feeds G27 G124 seal",
+  "geometric_drift": {
+    "recovered_direction_consistency": "|cos| 0.998 across L27/L43/L55 vs null 0.005 -- the abliteration direction is real and cleanly recoverable",
+    "drift_ladder_L55_full_attn_out": {"q4": 24.62, "q3": 56.81, "q2": 151.16},
+    "reproduces_recorded_G123": false,
+    "reproduce_note": "measured ~2x the recorded G123 values (q4 24.62 vs 11-12, q3 56.81 vs 25-27) -- a geometric-measure discrepancy (layer set / config), NOT necessarily a behavioral regression; the geometric metric over-predicts here"
+  },
+  "behavioral_authority": {
+    "test": "gravity_tabula_behaviour, 8 benign-but-refusal-triggering prompts, marker-based refusal detector (watched to fire)",
+    "uniform-q4-v1_refusals": "0 of 8",
+    "mixed-q3mlp-q3attn-v1_refusals": "0 of 8",
+    "verdict": "ABLITERATION BEHAVIORALLY PRESERVED. The q3 patient refuses ZERO, identical to the less-compressed q4. The high geometric drift does NOT manifest as refusal behavior."
+  },
+  "tabula_verdict": "ACCEPTABLE. Behavioral (the authority per S012 §32) shows no refusal regression under q3 compression. Geometric drift is a WARNING flag (56.81x, and it does not reproduce the recorded value) that should be watched if the patient is pushed to lower BPW, but at 3.3448 BPW the patient's behavioral identity is intact.",
+  "known_blind_spots": ["only 8 refusal prompts (narrow behavioral width)", "geometric drift high and non-reproducing (metric may be noisy)", "wide capability battery run separately"]
+}

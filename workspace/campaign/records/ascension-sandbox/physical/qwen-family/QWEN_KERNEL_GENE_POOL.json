@@ -1,0 +1,330 @@
+{
+  "claim_boundary": {
+    "component_kernel_priors_are_not_full_token_tps": true,
+    "qwen80_deltanet_and_hybrid_attention_need_distinct_kernel_evidence": true
+  },
+  "direct_gqa_attention_probe": {
+    "claim_boundary": {
+      "component_uses_deterministic_oracle_inputs_not_model_weights": true,
+      "not_100_tps_or_tg3": true,
+      "not_full_model_or_manager_qualification": true,
+      "qkv_projection_rope_kv_write_moe_residual_and_decoder_not_run": true
+    },
+    "device": "Apple M3 Ultra",
+    "max_abs_output_error": 2.086162567138672e-07,
+    "official_config": {
+      "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/../../workspace/campaign/records/runs/qwen-30b/Qwen3-Coder-30B-A3B-Instruct/config.json",
+      "sha256": "e2c8d8eea39471785cd93379d8b48241ad7dcda299013155dd02526e34a0de62"
+    },
+    "official_qwen30_geometry": {
+      "head_dim": 128,
+      "kv_heads": 4,
+      "query_heads": 32,
+      "sequence_length": 64
+    },
+    "schema": "hawking.ascension.qwen30_gqa_metal_component_probe.v1",
+    "status": "PASS_DIRECT_METAL_QWEN30_GQA_ATTENTION_COMPONENT_NOT_FULL_MODEL_NOT_TPS_GATE"
+  },
+  "direct_router_probe": {
+    "claim_boundary": {
+      "direct_metal_router_component_only": true,
+      "not_a_100_tps_kernel_operational_receipt": true,
+      "not_a_complete_decoder_or_generation_path": true,
+      "not_a_gravity_artifact": true,
+      "not_a_manager_or_tournament_qualification": true,
+      "not_a_tg3_333_tps_receipt": true,
+      "qwen30_weights_not_loaded": true,
+      "qwen80_body_not_downloaded_or_loaded": true
+    },
+    "device": "Apple M3 Ultra",
+    "lanes": [
+      {
+        "architecture": "Qwen3MoeForCausalLM",
+        "cpu_oracle_route_ids": [
+          83,
+          38,
+          121,
+          76,
+          31,
+          114,
+          69,
+          24
+        ],
+        "dispatch_count_per_router_invocation": 1,
+        "exact_topology_bound": true,
+        "ids_exact_match": true,
+        "max_abs_weight_error": 7.450580596923828e-09,
+        "metal_direct_dispatch": true,
+        "metal_route_ids": [
+          83,
+          38,
+          121,
+          76,
+          31,
+          114,
+          69,
+          24
+        ],
+        "model_id": "Qwen3-Coder-30B-A3B-Instruct",
+        "n_experts": 128,
+        "source_configuration_path": "workspace/campaign/records/runs/qwen-30b/Qwen3-Coder-30B-A3B-Instruct/config.json",
+        "source_configuration_sha256": "e2c8d8eea39471785cd93379d8b48241ad7dcda299013155dd02526e34a0de62",
+        "timing": {
+          "component_dispatches_per_second_from_host_wall": 1693.0041681762618,
+          "host_wall_us_max": 1762.958,
+          "host_wall_us_min": 521.917,
+          "host_wall_us_p50": 590.666,
+          "host_wall_us_p95": 1196.625,
+          "measured_runs": 24,
+          "warmup_runs": 3
+        },
+        "top_k": 8,
+        "weights_within_1e_minus_5": true
+      },
+      {
+        "architecture": "Qwen3NextForCausalLM",
+        "cpu_oracle_route_ids": [
+          83,
+          166,
+          249,
+          332,
+          415,
+          498,
+          69,
+          152,
+          235,
+          318
+        ],
+        "dispatch_count_per_router_invocation": 1,
+        "exact_topology_bound": true,
+        "ids_exact_match": true,
+        "max_abs_weight_error": 1.862645149230957e-09,
+        "metal_direct_dispatch": true,
+        "metal_route_ids": [
+          83,
+          166,
+          249,
+          332,
+          415,
+          498,
+          69,
+          152,
+          235,
+          318
+        ],
+        "model_id": "Qwen3-Coder-Next-80B",
+        "n_experts": 512,
+        "source_configuration_path": "workspace/campaign/records/ascension-sandbox/lifecycle/source-admission/QWEN80_SOURCE_METADATA_CANDIDATE.json",
+        "source_configuration_sha256": "8f5784aae3539c4ace82ef3d8f57f4ad7879422a50a9678602eddd152d91b46d",
+        "timing": {
+          "component_dispatches_per_second_from_host_wall": 947.193937958797,
+          "host_wall_us_max": 1911.2079999999999,
+          "host_wall_us_min": 992.7919999999999,
+          "host_wall_us_p50": 1055.75,
+          "host_wall_us_p95": 1680.958,
+          "measured_runs": 24,
+          "warmup_runs": 3
+        },
+        "top_k": 10,
+        "weights_within_1e_minus_5": true
+      }
+    ],
+    "schema": "hawking.ascension.qwen_router_metal_component_probe.v1",
+    "status": "PASS_DIRECT_METAL_ROUTER_COMPONENT_NOT_FULL_MODEL_NOT_TPS_GATE"
+  },
+  "qwen30_survivor_component_probes": [
+    {
+      "candidate_id": "model_layers_0_mlp_experts_127_gate_proj_weight__r128_b3",
+      "metal_component_probe": {
+        "claim_boundary": "component-only Metal smoke; not a complete-token TG measurement",
+        "device": "mps",
+        "elapsed_seconds": 0.0036864589928882197,
+        "iterations": 20,
+        "matmul_per_second": 5425.260402620309,
+        "shape": [
+          768,
+          2048
+        ],
+        "status": "RAN"
+      }
+    },
+    {
+      "candidate_id": "model_layers_0_mlp_experts_127_up_proj_weight__r128_b3",
+      "metal_component_probe": {
+        "claim_boundary": "component-only Metal smoke; not a complete-token TG measurement",
+        "device": "mps",
+        "elapsed_seconds": 0.003538667006068863,
+        "iterations": 20,
+        "matmul_per_second": 5651.84572769908,
+        "shape": [
+          768,
+          2048
+        ],
+        "status": "RAN"
+      }
+    },
+    {
+      "candidate_id": "model_layers_0_mlp_experts_1_gate_proj_weight__r128_b3",
+      "metal_component_probe": {
+        "claim_boundary": "component-only Metal smoke; not a complete-token TG measurement",
+        "device": "mps",
+        "elapsed_seconds": 0.003293749992735684,
+        "iterations": 20,
+        "matmul_per_second": 6072.106275251522,
+        "shape": [
+          768,
+          2048
+        ],
+        "status": "RAN"
+      }
+    },
+    {
+      "candidate_id": "model_layers_0_mlp_experts_127_gate_proj_weight__r96_b3",
+      "metal_component_probe": {
+        "claim_boundary": "component-only Metal smoke; not a complete-token TG measurement",
+        "device": "mps",
+        "elapsed_seconds": 0.0034125420061172917,
+        "iterations": 20,
+        "matmul_per_second": 5860.733718192533,
+        "shape": [
+          768,
+          2048
+        ],
+        "status": "RAN"
+      }
+    },
+    {
+      "candidate_id": "model_layers_0_mlp_experts_127_up_proj_weight__r96_b3",
+      "metal_component_probe": {
+        "claim_boundary": "component-only Metal smoke; not a complete-token TG measurement",
+        "device": "mps",
+        "elapsed_seconds": 0.0025689580070320517,
+        "iterations": 20,
+        "matmul_per_second": 7785.257659040617,
+        "shape": [
+          768,
+          2048
+        ],
+        "status": "RAN"
+      }
+    },
+    {
+      "candidate_id": "model_layers_0_mlp_experts_1_up_proj_weight__r128_b3",
+      "metal_component_probe": {
+        "claim_boundary": "component-only Metal smoke; not a complete-token TG measurement",
+        "device": "mps",
+        "elapsed_seconds": 0.0020700000022770837,
+        "iterations": 20,
+        "matmul_per_second": 9661.83573816386,
+        "shape": [
+          768,
+          2048
+        ],
+        "status": "RAN"
+      }
+    },
+    {
+      "candidate_id": "model_layers_0_mlp_experts_7_gate_proj_weight__r128_b3",
+      "metal_component_probe": {
+        "claim_boundary": "component-only Metal smoke; not a complete-token TG measurement",
+        "device": "mps",
+        "elapsed_seconds": 0.003147834009723738,
+        "iterations": 20,
+        "matmul_per_second": 6353.575168900107,
+        "shape": [
+          768,
+          2048
+        ],
+        "status": "RAN"
+      }
+    },
+    {
+      "candidate_id": "model_layers_0_mlp_experts_127_gate_proj_weight__r64_b4",
+      "metal_component_probe": {
+        "claim_boundary": "component-only Metal smoke; not a complete-token TG measurement",
+        "device": "mps",
+        "elapsed_seconds": 0.005150833007064648,
+        "iterations": 20,
+        "matmul_per_second": 3882.8670959763035,
+        "shape": [
+          768,
+          2048
+        ],
+        "status": "RAN"
+      }
+    },
+    {
+      "candidate_id": "model_layers_0_mlp_experts_127_up_proj_weight__r64_b4",
+      "metal_component_probe": {
+        "claim_boundary": "component-only Metal smoke; not a complete-token TG measurement",
+        "device": "mps",
+        "elapsed_seconds": 0.003580582997528836,
+        "iterations": 20,
+        "matmul_per_second": 5585.682558902597,
+        "shape": [
+          768,
+          2048
+        ],
+        "status": "RAN"
+      }
+    },
+    {
+      "candidate_id": "model_layers_0_mlp_experts_1_gate_proj_weight__r96_b3",
+      "metal_component_probe": {
+        "claim_boundary": "component-only Metal smoke; not a complete-token TG measurement",
+        "device": "mps",
+        "elapsed_seconds": 0.00434458399831783,
+        "iterations": 20,
+        "matmul_per_second": 4603.432689468947,
+        "shape": [
+          768,
+          2048
+        ],
+        "status": "RAN"
+      }
+    },
+    {
+      "candidate_id": "model_layers_0_mlp_experts_63_gate_proj_weight__r128_b3",
+      "metal_component_probe": {
+        "claim_boundary": "component-only Metal smoke; not a complete-token TG measurement",
+        "device": "mps",
+        "elapsed_seconds": 0.003311458000098355,
+        "iterations": 20,
+        "matmul_per_second": 6039.6357131529285,
+        "shape": [
+          768,
+          2048
+        ],
+        "status": "RAN"
+      }
+    },
+    {
+      "candidate_id": "model_layers_0_mlp_experts_7_up_proj_weight__r128_b3",
+      "metal_component_probe": {
+        "claim_boundary": "component-only Metal smoke; not a complete-token TG measurement",
+        "device": "mps",
+        "elapsed_seconds": 0.002471542000421323,
+        "iterations": 20,
+        "matmul_per_second": 8092.1141524564855,
+        "shape": [
+          768,
+          2048
+        ],
+        "status": "RAN"
+      }
+    }
+  ],
+  "recorded_at": "2026-08-08T07:02:26.965168Z",
+  "schema": "hawking.ascension.qwen_kernel_gene_pool.v1",
+  "seal_sha256": "69b1567e084c65cbfeaa449627c6c38ea1bf4dcc3e14f5148292a9ff709f68e4",
+  "source_frontier_seal_sha256": "c91091ab6098307b71328af1df94c2f51d17e7b608c9e2f3d8b6489431e4220a",
+  "status": "QWEN30_PRIORS_AVAILABLE_FOR_QWEN80_RESEARCH",
+  "transfer_scope": [
+    "router_topk",
+    "packed_decode_geometry",
+    "expert_projection_components",
+    "qwen30_gqa_attention_geometry",
+    "mps_metal_component_measurements",
+    "command_buffer_dispatch_shape"
+  ]
+}

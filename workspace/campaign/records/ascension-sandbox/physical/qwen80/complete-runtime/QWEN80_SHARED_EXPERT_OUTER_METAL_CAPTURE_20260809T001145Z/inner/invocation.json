@@ -1,0 +1,17 @@
+{
+  "admission_current": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_ADMISSION_CURRENT.json",
+  "claim_boundary": {
+    "metal_requires_explicit_root_and_rawls_quiet_lease": true,
+    "no_routed_sum_moe_combine_second_residual_layer_token_generation_hcli_or_tps": true,
+    "shared_expert_only": true
+  },
+  "cpu_baseline_receipt": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SHARED_EXPERT_CPU_BASELINE_SEALED_WRAPPER_20260808T235704Z.json",
+  "lease_receipt": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_SHARED_EXPERT_QUIET_METAL_LEASE_20260809T001101Z.json",
+  "manifest": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+  "mode": "metal",
+  "router_receipt": null,
+  "schema": "hawking.ascension.qwen80_direct_packed_shared_expert_wave_capture.v1",
+  "started_unix_millis": 1786234305745,
+  "status": "STARTED_QWEN80_SHARED_EXPERT_COMPONENT_ATTEMPT",
+  "workers": 2
+}

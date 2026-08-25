@@ -1,0 +1,76 @@
+{
+ "schema": "hawking.odyssey.compiler_blocker_final.v1",
+ "generated_at": "2026-08-25T10:19:23Z",
+ "generated_by": "tools/odyssey/compiler_blocker_final.py",
+ "obligation": "G023 \u2014 the complete blocker chain",
+ "hand_authored": false,
+ "git_head": "5687c7675d474e4c54ef2db0beef6bbf47824bae",
+ "runtime_admission_constants": [
+  {
+   "constant": "QWEN30_ARCHITECTURE",
+   "runtime_requires": "Qwen3MoeForCausalLM",
+   "model_2_has": "Qwen3MoeForCausalLM",
+   "matches": true
+  },
+  {
+   "constant": "QWEN30_MODEL_TYPE",
+   "runtime_requires": "qwen3_moe",
+   "model_2_has": "qwen3_moe",
+   "matches": true
+  },
+  {
+   "constant": "QWEN30_LAYERS",
+   "runtime_requires": "48",
+   "model_2_has": "48",
+   "matches": true
+  },
+  {
+   "constant": "QWEN30_COMPLETE_TENSOR_COUNT",
+   "runtime_requires": "18867",
+   "model_2_has": "18867",
+   "note": "computed from the specimen's own config: 48 layers x (4 qkvo + 2 qk_norm + 2 norms + 1 router + 128x3 experts) + 3 global",
+   "matches": true
+  },
+  {
+   "constant": "QWEN30_REPOSITORY",
+   "runtime_requires": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+   "model_2_has": "Qwen/Qwen3-30B-A3B",
+   "matches": false
+  }
+ ],
+ "n_matching": 4,
+ "n_constants": 5,
+ "the_tensor_count_is_not_a_barrier": {
+  "finding": "18,867 is EXACTLY model #2's tensor count as well. Both Qwen3-30B-A3B and Qwen3-Coder-30B-A3B are 128-expert, 48-layer Qwen3MoE models with identical tensor topology.",
+  "consequence": "every previous statement of this blocker, including my own, named the hardcoded 18_867 as something to be derived from the catalog. It would not have changed anything for this specimen."
+ },
+ "the_only_structural_mismatch": {
+  "constant": "QWEN30_REPOSITORY",
+  "enforced_at_n_sites": 12,
+  "requires": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+  "model_2_is": "Qwen/Qwen3-30B-A3B",
+  "kind": "a hard string equality, not a capability difference"
+ },
+ "THE_ACTUAL_HOLE_IS_A_PACKER": {
+  "finding": "the reader is nearly ready and the kernels exist. Nothing in this campaign can PRODUCE a routed-MoE artifact.",
+  "packer": "tools/headless/whole_model_native.py",
+  "packer_organs": [
+   "attention_gqa",
+   "deltanet",
+   "embedding",
+   "mlp",
+   "output"
+  ],
+  "packer_handles_moe_expert": false,
+  "packer_handles_moe_router": false,
+  "no_hq30_artifact_on_disk": true,
+  "why_this_reframes_it": "earlier passes, mine included, described the unblock as generalizing the reader. The reader matches model #2 on 4 of 5 admission constants. What does not exist is a packer that emits a routed catalog with per-expert segments and a router organ, so there is nothing to admit, and no artifact to test any reader change against."
+ },
+ "revised_unblock_order": [
+  "1. extend the packer to routed MoE: per-expert segments plus a router organ, using the representations the KernelPlanner already selected (conventional_low_bit experts, f32 router)",
+  "2. relax QWEN30_REPOSITORY from an equality to an allowlist, or key admission on architecture + layers + tensor count, all three of which already match",
+  "3. run the reader against the produced artifact and grade it against a numpy oracle, as the qwen38 path was"
+ ],
+ "why_not_attempted_here": "step 1 is a new packer path for an 18,432-tensor organ with per-expert segmentation, and step 3 needs a GPU parity harness that does not exist for this family. Neither can be written and verified responsibly alongside the rest of this campaign, and a half-built packer that emits an unreadable artifact would look like progress while producing nothing.",
+ "pass": true
+}

@@ -1,0 +1,25 @@
+{
+  "admission_receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/complete-admission/receipts/QWEN80_COMPLETE_BINARY_GRAVITY_ADMISSION_RECEIPT_14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b.json",
+  "admission_receipt_seal_sha256": "939b41322363da3db774a2530b207bf380ed641d23cae671fc6438c0eecbf628",
+  "admission_request_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/complete-admission/requests/QWEN80_COMPLETE_BINARY_GRAVITY_ADMISSION_REQUEST_14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b.json",
+  "admission_request_seal_sha256": "23b35af8d857c04539f1214955e68bbeb0eaceba9382ae3b91361e0ba95e757c",
+  "claim_boundary": {
+    "not_runtime_capability_hcli_tps_tg_or_tournament_qualification": true,
+    "receipt_is_written_only_after_native_complete_binary_admission": true,
+    "waiting_or_blocked_status_is_not_admission": true
+  },
+  "current_receipt_pointer_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_ADMISSION_CURRENT.json",
+  "current_receipt_pointer_seal_sha256": "d1518ef5478baaaaac3f85d3b579cdd4403bfae590285e9e5e92b9c30cf13ea8",
+  "heartbeat": 5676,
+  "model": {
+    "id": "Qwen3-Coder-Next-80B",
+    "key": "qwen80",
+    "repository": "Qwen/Qwen3-Coder-Next"
+  },
+  "phase": "EARNED_COMPLETE_BINARY_ADMISSION_RECEIPT_REUSED",
+  "pid": 75944,
+  "receipt_selection_source": "VERSIONED_CURRENT_MANIFEST",
+  "recorded_at": "2026-08-10T17:23:10.046810Z",
+  "schema": "hawking.ascension.qwen_complete_binary_gravity_admission_status.v1",
+  "seal_sha256": "c315988ec1d3f381b3e22c387ecdfb59001c01b318a7b27aa87cf9a20fb7ea15"
+}

@@ -1,0 +1,355 @@
+{
+  "baseline": {
+    "schema": "hawking.frankenstein.base_dsv4f_baseline_freeze.v1",
+    "seal_sha256": "239ca9204a6bfc6dc2da3fc4465b17233f6a1cb1edfc2d88881b5ce1a2e3611a"
+  },
+  "bridges": {
+    "active_v0": [
+      "GLM_EARLY_CONTEXT_BRIDGE",
+      "GLM_METHOD_BRIDGE",
+      "GLM_DECOMPOSITION_BRIDGE",
+      "GLM_PRE_ROUTER_BRIDGE",
+      "GLM_POST_MOE_BRIDGE",
+      "GLM_FORMALIZATION_BRIDGE",
+      "GLM_REPAIR_BRIDGE",
+      "GLM_LATE_CONSOLIDATION_BRIDGE",
+      "GLM_VALUE_HEAD",
+      "GLM_METHOD_CONDITIONED_ROUTE_RESIDUAL"
+    ],
+    "kimi_points_preserved": [
+      "pre_norm_hidden_state",
+      "post_attention_hidden_state",
+      "pre_router_hidden_state",
+      "router_logits",
+      "selected_expert_ids",
+      "route_probabilities_and_margins",
+      "post_moe_hidden_state",
+      "mhc_state",
+      "attention_index_state",
+      "final_hidden_state",
+      "lm_head_logits",
+      "hcli_tool_action_decision"
+    ],
+    "kimi_stage1_status": "PRESERVED_UNTOUCHED",
+    "preserved_untouched_for_stage2": "KIMI_STRATEGIC_BRIDGE"
+  },
+  "bypassable": true,
+  "byte_merge": false,
+  "capability_claim": false,
+  "claim_boundary": {
+    "capability_claim": false,
+    "cloud_confirm_still_required": true,
+    "forbidden_labels": [
+      "FUNCTIONAL_TRANSFER_COMPLETE",
+      "MATH_INHERITANCE_COMPLETE",
+      "PROTO_COMPLETE",
+      "PROTO_FRANKENSTEIN_COMPLETE",
+      "PROTO_FRANKENSTEIN_INHERITANCE_COMPLETE"
+    ],
+    "independent_verify_still_required": true,
+    "is_inheritance": false,
+    "is_proto_frankenstein": false,
+    "no_faked_accounting": true,
+    "no_gpu": true,
+    "no_kimi": true,
+    "not_sufficient_for": [
+      "math_capability_claim",
+      "PROTO_FRANKENSTEIN_COMPLETE",
+      "promotion",
+      "held_out_math_gain"
+    ],
+    "promotion_still_required": true,
+    "proto_complete_declared": false,
+    "role": "LINEAR_SUBSPACE_INITIALIZATION",
+    "trained": false,
+    "trained_stack_assembled": true,
+    "use_for": [
+      "layer_cartography_init",
+      "bridge_weight_initialization",
+      "structural_apply_artifact"
+    ]
+  },
+  "composition": {
+    "base": "BASE_DSV4F",
+    "body_rewritten": false,
+    "formula": "h_out = h_base + sum_i residual_i(h)  (each residual bypassable)",
+    "mode": "base_dsv4f_readonly_plus_reversible_v0_modules",
+    "modules": "V0 bridges + behavior heads + route residual"
+  },
+  "direct_weight_transplant": false,
+  "fabricated": false,
+  "glm_router_weights_copied": false,
+  "gravity_accounting": {
+    "active_bytes": {
+      "active_bytes_per_token": null,
+      "proxy_from_adapter_bytes": 4670564,
+      "status": "PROXY_OR_PENDING"
+    },
+    "adapter_parameter_bytes": 4670564,
+    "fabricated": false,
+    "glm_router_weights_copied": false,
+    "kimi_bridge_compatible": true,
+    "note": "Adapter byte counts come from the admitted trained pack. Body resident bytes and TPS/p99 stay PENDING until measured — never fabricated for seal.",
+    "p99": null,
+    "p99_status": "PENDING",
+    "parameter_bytes": 4670564,
+    "parts": {
+      "GLM_DECOMPOSITION_BRIDGE": {
+        "content_hash": "bcb8000050865b74fe85d2737cb9dd6e3c1ec4d2cdd281b333f5702a3ccee538",
+        "parameter_bytes": 581636,
+        "status": "DECLARED"
+      },
+      "GLM_EARLY_CONTEXT_BRIDGE": {
+        "content_hash": "75ac75e7b4f3f3715e6a41c1f02d424c5810104eb0e5e4fa344f6cefe5134e56",
+        "parameter_bytes": 581636,
+        "status": "DECLARED"
+      },
+      "GLM_FORMALIZATION_BRIDGE": {
+        "content_hash": "64dd2c9677d1fa87362a7669c797c4a6acc721c058d0867aec139b6ea4192b31",
+        "parameter_bytes": 581636,
+        "status": "DECLARED"
+      },
+      "GLM_LATE_CONSOLIDATION_BRIDGE": {
+        "content_hash": "91eb52382a6ae881b4bb62d1d7acf4f9df5ae18e7b984af9d7492b13c4a8f272",
+        "parameter_bytes": 581636,
+        "status": "DECLARED"
+      },
+      "GLM_METHOD_BRIDGE": {
+        "content_hash": "ca87b55b77343a035f69068157b844cbd628c1dd8c36480bcdddae704c5f045e",
+        "parameter_bytes": 581636,
+        "status": "DECLARED"
+      },
+      "GLM_METHOD_CONDITIONED_ROUTE_RESIDUAL": {
+        "content_hash": "0caeb6bb339d5d99b9a03d45eb60a7d2b4f2bd872a089b7e0b2e8e954fb569c6",
+        "parameter_bytes": 1088,
+        "status": "DECLARED"
+      },
+      "GLM_POST_MOE_BRIDGE": {
+        "content_hash": "cf5131a49b97094e0c4feed61021a963b7ffd2f359f3637d80ff021f4ea9a8bd",
+        "parameter_bytes": 581636,
+        "status": "DECLARED"
+      },
+      "GLM_PRE_ROUTER_BRIDGE": {
+        "content_hash": "9da0360f8de7b316916795ee65054f4f796bb178a5e88616f2eb2718ab9b015c",
+        "parameter_bytes": 581636,
+        "status": "DECLARED"
+      },
+      "GLM_REPAIR_BRIDGE": {
+        "content_hash": "e0564452503d9056694e8a3f93d4a4a710d879a4e12a9db7c2dd6c1fcd26d966",
+        "parameter_bytes": 581636,
+        "status": "DECLARED"
+      },
+      "GLM_VALUE_HEAD": {
+        "content_hash": "dae47bfa21cf145bff420407c27eaa1aedfdd332e80c4b2447ab61364fef373b",
+        "parameter_bytes": 16388,
+        "status": "DECLARED"
+      }
+    },
+    "recorded_at": "2026-08-06T19:40:07.641028Z",
+    "resident_bytes": {
+      "adapters": 4670564,
+      "base_dsv4f_body": null,
+      "status": "PARTIAL",
+      "total": null
+    },
+    "schema": "hawking.frankenstein.v0_gravity_accounting.v1",
+    "seal_sha256": "5112ef0ecfeaf8b1ede6195925763f0cda886615e98902c6e73e871c091503db",
+    "student_body": {
+      "byte_size_fabricated": false,
+      "hidden_size": 4096,
+      "num_hidden_layers": 43,
+      "read_only": true,
+      "repository": "deepseek-ai/DeepSeek-V4-Flash",
+      "revision": "60d8d70770c6776ff598c94bb586a859a38244f1"
+    },
+    "tps": null,
+    "tps_status": "PENDING"
+  },
+  "gravity_compressed": false,
+  "hash_bound": true,
+  "hcli": {
+    "encoding_contract": "tools/condense/seal_deepseek_v4_hcli_encoding_contract.py",
+    "full_runtime_claim": false,
+    "loadable_descriptor": true,
+    "note": "Descriptor is HCLI-loadable shape; full 43-layer runtime capability still requires independent verify + forward."
+  },
+  "kind": "hcli_loadable_reversible_descriptor",
+  "linear_init_role": "LINEAR_SUBSPACE_INITIALIZATION",
+  "math_donor": {
+    "family": "mathematical_donor",
+    "hidden_size": 6144,
+    "num_hidden_layers": 78,
+    "repository": "zai-org/GLM-5.2",
+    "revision": "b4734de4facf877f85769a911abafc5283eab3d9",
+    "runtime_resident": false,
+    "training_only_projectors": true
+  },
+  "module_pack_seal_sha256": "5dbb8f7e4dfbf8c7a61ab2a45890ac550cc3c941002b0ab122db03202c02aa63",
+  "name": "PROTO_FRANKENSTEIN_V0",
+  "proto_frankenstein_complete": false,
+  "recorded_at": "2026-08-06T19:40:07.641071Z",
+  "removable": true,
+  "reversible": true,
+  "role": "PROTO_FRANKENSTEIN_V0_TRAINED_STACK",
+  "runtime_storage": {
+    "claim_boundary": {
+      "capability_claim_requires_sealed_shard_scores": true,
+      "direct_weight_transplant": false,
+      "full_model_bench_permitted": false,
+      "gradient_or_optimizer": false,
+      "gravity_compression_performed": false,
+      "kimi_consumed": false,
+      "kimi_simulated": false,
+      "lane_does_not_own": [
+        "C_FINAL_PROTO_KIMI",
+        "D_RAMANUJAN"
+      ],
+      "lane_owns": [
+        "A_BASE_DSV4F",
+        "B_PROTO_DSV4F_GLM"
+      ],
+      "odyssey_or_ramanujan": false,
+      "proto_frankenstein": "DeepSeek-V4-Flash + GLM math inheritance",
+      "stage": 1,
+      "training_performed": false,
+      "weight_average_performed": false
+    },
+    "notes": "V0 seal accounting. BASE body read-only. Adapter bytes from trained pack when admitted; TPS only when measured.",
+    "recorded_at": "2026-08-06T19:40:07.641054Z",
+    "runtime": {
+      "full_model_runtime_available": false,
+      "measurement_scope": "shard_or_unmeasured",
+      "tps_base": null,
+      "tps_delta": null,
+      "tps_non_regression_within_2pct": null,
+      "tps_proto": null
+    },
+    "schema": "hawking.frankenstein.stage1_runtime_storage.v1",
+    "seal_sha256": "7bd0b8cff98215dafef24d37763f61ecb1add7ea2e3cd4e2e33fa329ea62f43b",
+    "storage": {
+      "adapter_archive_bytes": 4670564,
+      "donor_weights_retained": false,
+      "floor_bytes": 16106127360,
+      "free_bytes_at_seal": null,
+      "gravity_compressed": false,
+      "student_body_resident_read_only": true,
+      "working_set_bytes": 0
+    }
+  },
+  "schema": "hawking.frankenstein.v0_loadable_artifact.v1",
+  "seal_sha256": "2198cce3aa1d8c72bb0c4cd8afd5bd458c9a7d572917ff35e50f4aa75f22ec9f",
+  "status": "LOADABLE_TRAINED_COMPOSITION",
+  "student_body": {
+    "family": "student_body",
+    "hidden_size": 4096,
+    "num_hidden_layers": 43,
+    "read_only": true,
+    "repository": "deepseek-ai/DeepSeek-V4-Flash",
+    "revision": "60d8d70770c6776ff598c94bb586a859a38244f1"
+  },
+  "terminal_endpoint": "PROTO_FRANKENSTEIN_V0_FULL_LATENT_SEALED",
+  "terminal_reached": false,
+  "trained": true,
+  "v0_modules": [
+    {
+      "ablatable": true,
+      "bypassable": true,
+      "content_hash": "75ac75e7b4f3f3715e6a41c1f02d424c5810104eb0e5e4fa344f6cefe5134e56",
+      "hash_bound": true,
+      "name": "GLM_EARLY_CONTEXT_BRIDGE",
+      "parameter_bytes": 581636,
+      "reversible": true,
+      "trained": true
+    },
+    {
+      "ablatable": true,
+      "bypassable": true,
+      "content_hash": "ca87b55b77343a035f69068157b844cbd628c1dd8c36480bcdddae704c5f045e",
+      "hash_bound": true,
+      "name": "GLM_METHOD_BRIDGE",
+      "parameter_bytes": 581636,
+      "reversible": true,
+      "trained": true
+    },
+    {
+      "ablatable": true,
+      "bypassable": true,
+      "content_hash": "bcb8000050865b74fe85d2737cb9dd6e3c1ec4d2cdd281b333f5702a3ccee538",
+      "hash_bound": true,
+      "name": "GLM_DECOMPOSITION_BRIDGE",
+      "parameter_bytes": 581636,
+      "reversible": true,
+      "trained": true
+    },
+    {
+      "ablatable": true,
+      "bypassable": true,
+      "content_hash": "9da0360f8de7b316916795ee65054f4f796bb178a5e88616f2eb2718ab9b015c",
+      "hash_bound": true,
+      "name": "GLM_PRE_ROUTER_BRIDGE",
+      "parameter_bytes": 581636,
+      "reversible": true,
+      "trained": true
+    },
+    {
+      "ablatable": true,
+      "bypassable": true,
+      "content_hash": "cf5131a49b97094e0c4feed61021a963b7ffd2f359f3637d80ff021f4ea9a8bd",
+      "hash_bound": true,
+      "name": "GLM_POST_MOE_BRIDGE",
+      "parameter_bytes": 581636,
+      "reversible": true,
+      "trained": true
+    },
+    {
+      "ablatable": true,
+      "bypassable": true,
+      "content_hash": "64dd2c9677d1fa87362a7669c797c4a6acc721c058d0867aec139b6ea4192b31",
+      "hash_bound": true,
+      "name": "GLM_FORMALIZATION_BRIDGE",
+      "parameter_bytes": 581636,
+      "reversible": true,
+      "trained": true
+    },
+    {
+      "ablatable": true,
+      "bypassable": true,
+      "content_hash": "e0564452503d9056694e8a3f93d4a4a710d879a4e12a9db7c2dd6c1fcd26d966",
+      "hash_bound": true,
+      "name": "GLM_REPAIR_BRIDGE",
+      "parameter_bytes": 581636,
+      "reversible": true,
+      "trained": true
+    },
+    {
+      "ablatable": true,
+      "bypassable": true,
+      "content_hash": "91eb52382a6ae881b4bb62d1d7acf4f9df5ae18e7b984af9d7492b13c4a8f272",
+      "hash_bound": true,
+      "name": "GLM_LATE_CONSOLIDATION_BRIDGE",
+      "parameter_bytes": 581636,
+      "reversible": true,
+      "trained": true
+    },
+    {
+      "ablatable": true,
+      "bypassable": true,
+      "content_hash": "dae47bfa21cf145bff420407c27eaa1aedfdd332e80c4b2447ab61364fef373b",
+      "hash_bound": true,
+      "name": "GLM_VALUE_HEAD",
+      "parameter_bytes": 16388,
+      "reversible": false,
+      "trained": true
+    },
+    {
+      "ablatable": true,
+      "bypassable": true,
+      "content_hash": "0caeb6bb339d5d99b9a03d45eb60a7d2b4f2bd872a089b7e0b2e8e954fb569c6",
+      "hash_bound": true,
+      "name": "GLM_METHOD_CONDITIONED_ROUTE_RESIDUAL",
+      "parameter_bytes": 1088,
+      "reversible": true,
+      "trained": true
+    }
+  ]
+}

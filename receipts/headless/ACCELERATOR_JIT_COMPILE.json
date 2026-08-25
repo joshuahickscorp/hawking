@@ -1,0 +1,176 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T16:09:53Z",
+ "experiment_class": "ACCEL-COMPILE",
+ "knowledge_level": "INSTANCE",
+ "git_head": "e6a4fb77e12c28d79ff024fcbb56ac47bc5a78a2",
+ "identities": {
+  "experiment": {
+   "id": "JIT_COMPILE_LATENCY",
+   "obligation": "G044 + G046 + G049",
+   "steer": "S015 \u00a712 JIT/AOT and caching as a COMPILER capability; \u00a713 compiler latency is one of the things to SEE before optimizing"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal via MLX 0.32.1 mx.fast.metal_kernel JIT"
+  },
+  "model": {
+   "specimen": "Qwen3-30B-A3B",
+   "tensors": "64 expert gate_proj, for the attribution run"
+  },
+  "representation": {
+   "name": "ws_rtn_q4_g64"
+  },
+  "kernel": {
+   "status": "UNCHANGED",
+   "note": "no kernel was modified; this measures how long it takes to BUILD one"
+  },
+  "runtime": {
+   "python": "3.12.6"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device"
+  }
+ },
+ "headline": "THREE RECEIPTS BLAMED 'MLX KERNEL COMPILE' AND NONE MEASURED IT. Compile is 36.8 ms per distinct kernel and accounts for 23.2% of a WorkUnit's first-run excess. The dominant term is not compilation at all -- it is the FIRST mx.array at 151 ms, device and allocator initialisation. THE ATTRIBUTION WAS WRONG IN SCOPE TWICE.",
+ "why_this_gap": "the CCL carried COMPILER.jit_kernel_compilation with measured=False, reason 'compile latency has not been measured', while three separate receipts explained away discrepancies with that exact mechanism. An attribution repeated three times and never measured is what this program has learned to test.",
+ "measurement": {
+  "per_distinct_kernel_ms": 36.77,
+  "source_size_barely_matters": {
+   "lines_0": 36.77,
+   "lines_8": 38.59,
+   "lines_32": 45.73,
+   "lines_128": 43.56
+  },
+  "source_chars": {
+   "lines_0": 102,
+   "lines_8": 470,
+   "lines_32": 1574,
+   "lines_128": 5990
+  },
+  "reading": "102 chars costs 36.8 ms and 5990 chars costs 43.6 ms -- a 59x source increase for 1.19x compile time, so compile is a near-FIXED cost, not a function of program length at these sizes",
+  "cache_is_real": {
+   "first_ms": 110.65,
+   "second_ms": 0.24,
+   "cached": true
+  },
+  "cache_reading": "the same name and source recompiles in 0.24 ms against 110.65 ms cold = 460x, so MLX genuinely caches; a FRESH NAME with BYTE-IDENTICAL SOURCE still pays full price, which is what makes per-shape kernel naming expensive"
+ },
+ "a_defect_in_my_first_probe_that_changed_what_the_data_meant": {
+  "bug": "body(k, extra_lines=0) was called as body(extra), so `extra` bound to the UNUSED first parameter and extra_lines was ALWAYS 0 -- every kernel in that sweep had IDENTICAL SOURCE and differed only in NAME",
+  "what_survives": "the name-only result: a fresh NAME forces a real compile even when the source is byte-identical",
+  "what_is_void": "the apparent 'source size costs 113 ms' reading -- the source never changed, so that sweep measured nothing about size",
+  "and_the_113_ms_is_still_unexplained": "the corrected probe tested BOTH candidate causes -- size (weak, 1.19x over 59x) and ORDER (late trivial 35.16 ms against early 36.77, ratio 0.96) -- and NEITHER reproduces it. A median of six that a corrected probe cannot reproduce is a caution about small-n medians, and it is recorded rather than dropped."
+ },
+ "the_attribution_tested": {
+  "arithmetic_first": {
+   "gpu_pack_cold_wall_s": 1.2817,
+   "gpu_pack_warm_wall_s": 0.8806,
+   "gap_s": 0.4011,
+   "distinct_kernels": 2,
+   "compile_ms_each": 36.8,
+   "compile_share_of_gap_pct": 18.3
+  },
+  "measured_in_one_process": {
+   "walls_s": [
+    0.4196,
+    0.1019,
+    0.102,
+    0.1046,
+    0.0998
+   ],
+   "first_s": 0.4196,
+   "warm_median_s": 0.1019,
+   "first_run_excess_s": 0.3176
+  },
+  "split": {
+   "compile_s": 0.0736,
+   "compile_share_of_first_run_excess_pct": 23.2,
+   "remainder_s": 0.244,
+   "verdict": "ATTRIBUTION INCOMPLETE: compile is a minority of the one-time cost"
+  },
+  "verdict": "ATTRIBUTION INCOMPLETE. Compile of the two custom kernels is 73.6 ms = 23.2% of the 0.3176 s first-run excess."
+ },
+ "what_the_remainder_actually_is": {
+  "hypothesis": "MLX's OWN primitives are JIT-compiled on first use, so the phrase was right in spirit and wrong in scope",
+  "per_primitive_first_use_cost": {
+   "mx.array_from_numpy": {
+    "first_ms": 151.06,
+    "warm_ms": 0.041,
+    "first_use_cost_ms": 151.02
+   },
+   "view_bfloat16": {
+    "first_ms": 2.79,
+    "warm_ms": 0.05,
+    "first_use_cost_ms": 2.74
+   },
+   "astype_f32": {
+    "first_ms": 12.15,
+    "warm_ms": 0.281,
+    "first_use_cost_ms": 11.87
+   },
+   "bitwise_and": {
+    "first_ms": 2.35,
+    "warm_ms": 0.251,
+    "first_use_cost_ms": 2.1
+   },
+   "right_shift": {
+    "first_ms": 0.3,
+    "warm_ms": 0.246,
+    "first_use_cost_ms": 0.05
+   },
+   "einsum": {
+    "first_ms": 2.53,
+    "warm_ms": 0.258,
+    "first_use_cost_ms": 2.27
+   },
+   "matmul": {
+    "first_ms": 0.84,
+    "warm_ms": 0.26,
+    "first_use_cost_ms": 0.58
+   },
+   "sum_sqrt": {
+    "first_ms": 2.58,
+    "warm_ms": 0.256,
+    "first_use_cost_ms": 2.32
+   },
+   "random_normal": {
+    "first_ms": 2.45,
+    "warm_ms": 0.282,
+    "first_use_cost_ms": 2.17
+   }
+  },
+  "sum_ms": 175.12,
+  "share_of_remainder_pct": 71.8,
+  "the_hypothesis_is_supported_but_the_shape_is_the_finding": "the primitives sum to 175.12 ms = 71.8% of the remainder, BUT 151.02 ms of that 151.12 is ONE THING: the FIRST mx.array from a numpy buffer. That is device and allocator initialisation, NOT kernel compilation. Every actual primitive kernel -- bitwise_and, right_shift, einsum, matmul, sum, random_normal -- costs between 0.05 and 2.32 ms on first use, and astype costs 11.87.",
+  "so_the_phrase_was_wrong_twice": "it is not OUR kernels (23.2%), and the dominant term is not COMPILATION at all (151 of 175 ms is first-array device init)"
+ },
+ "full_decomposition_of_the_first_run_excess": {
+  "total_s": 0.3176,
+  "our_two_kernel_compiles_s": 0.0736,
+  "our_share_pct": 23.2,
+  "mlx_first_use_s": 0.1751,
+  "mlx_share_pct": 55.1,
+  "of_which_first_mx_array_s": 0.151,
+  "cold_read_s": 0.0079,
+  "cold_read_share_pct": 2.5,
+  "unattributed_s": 0.061,
+  "unattributed_share_pct": 19.2,
+  "note": "the cold-read term is taken from ACCELERATOR_TIER1_CACHE_VS_DISK (cold 0.0321 s vs cached 0.0242 s for the same 192 MB), not re-measured here"
+ },
+ "ledger_moved": {
+  "COMPILER.jit_kernel_compilation": "unmeasured -> MEASURED with a receipt path; CCL now 14 of 20 performance gaps measured, was 13"
+ },
+ "claim_boundary": {
+  "jit_only": "mx.fast.metal_kernel JIT. xcrun metal AOT is ABSENT on this machine so an AOT comparison cannot be made, and CUDA's own nvrtc latency is unmeasured because no NVIDIA hardware exists -- so this measures OUR side of the gap only.",
+  "one_time_costs_are_per_process": "everything here is amortised to zero by the second WorkUnit in the same process; it matters for SHORT-LIVED processes and for any measurement whose first run is quoted as a baseline, which is exactly how it contaminated three receipts.",
+  "unattributed_remains": "about 21% of the first-run excess is still not attributed to a named component, and saying so is better than distributing it over the terms that were measured.",
+  "no_kernel_changed": "no performance claim about any kernel moves"
+ },
+ "pass": true
+}

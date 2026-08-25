@@ -1,0 +1,121 @@
+{
+  "schema": "hawking.nos.genesis_seal.v1",
+  "obligation": "G27 -- one-command NOS: candidate -> Doctor -> NR -> NX -> NVM/HIDE -> seal",
+  "artifact": "mixed-q3mlp-q3attn-v1",
+  "stage_trace": [
+    {
+      "stage": "DOCTOR",
+      "result": "coherence PASS"
+    },
+    {
+      "stage": "DOCTOR/G124",
+      "result": "doctor_seal PASS_WITH_WARNINGS"
+    },
+    {
+      "stage": "GRAVITY",
+      "result": "from bf16 @ 3.3448 bpw"
+    },
+    {
+      "stage": "NR",
+      "result": "206127e259ede65c"
+    },
+    {
+      "stage": "NX",
+      "result": "ecb8dfec07689a5e"
+    },
+    {
+      "stage": "NVM",
+      "result": "token_identical=True tps=30.76"
+    }
+  ],
+  "doctor": {
+    "The capital of France is": {
+      "want": "Paris",
+      "got_contains": true,
+      "text": "<think>\nThe user is asking a simple factual question about the capital of France",
+      "fallbacks": 0
+    },
+    "17 times 19 equals": {
+      "want": "323",
+      "got_contains": true,
+      "text": "<think>\n\n</think>\n\nTo calculate $17 \\times 19$, we can break it down using the s",
+      "fallbacks": 0
+    }
+  },
+  "g124_seal": {
+    "doctor_seal_verdict": "PASS_WITH_WARNINGS",
+    "warnings": [
+      "tabula_drift present but its instrument is NOT validated -- G123 recovers the direction with a 200x null separation and its ladder misses the recorded 11-12/25-27/64-67 by a constant 2.5x. The drift number is PROVISIONAL."
+    ],
+    "candidate": {
+      "tabula_drift": {
+        "behavioral_refusals": "0 of 8",
+        "geometric_drift_q3": 56.81,
+        "verdict": "ACCEPTABLE. Behavioral (the authority per S012 \u00a732) shows no"
+      },
+      "observed_controls": [
+        {
+          "name": "refusal_detector",
+          "watched_to_fail": true,
+          "note": "marker-based refusal detector; a model that refused these benign prompts would fail it. Patient: 0/8."
+        },
+        {
+          "name": "coherence_probe_at_20_tokens",
+          "watched_to_fail": true,
+          "note": "DID fail once this session (France probe at 20 tokens did not reach Paris), proving the coherence check can fail; passes at 160 tokens.",
+          "source": "G27 doctor stage"
+        },
+        {
+          "name": "lure_detector",
+          "watched_to_fail": true,
+          "note": "0 lures followed across 60 battery items; a lure-following model fails it."
+        }
+      ],
+      "stated_test_width": {
+        "capability_battery_items": 60,
+        "capability_categories": [
+          "adversarial",
+          "arithmetic",
+          "calibration",
+          "code",
+          "instruction",
+          "longcontext",
+          "longform",
+          "reasoning",
+          "repo",
+          "tool"
+        ],
+        "refusal_prompts": 8,
+        "coherence_probes": 2,
+        "note": "narrow relative to a full agent workload; see known_blind_spots"
+      },
+      "known_blind_spots": [
+        "longform 0.60 (weakest capability)",
+        "8 battery truncations at 200-token budget (test artifact, not failure)",
+        "geometric Tabula drift 56.81x high + non-reproducing (metric noisy; behavioral is clean)",
+        "only 8 refusal prompts (narrow behavioral width)",
+        "tool/agent width limited to 6 items"
+      ]
+    }
+  },
+  "gravity": {
+    "compiled_from": "bf16",
+    "complete_bpw": 3.3447723007722434,
+    "pack_schema": "hawking.ascent.qwen38_mlp_not_r160.v1",
+    "source_weight_elements": 26895998464
+  },
+  "nr": {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-q3mlp-q3attn-v1/Genesis.nr",
+    "sha256": "206127e259ede65c10a97926f54ff97831a56a8fd82d156931bfb69e4e3b54f9"
+  },
+  "nx": {
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen38-27b/mixed-q3mlp-q3attn-v1/Genesis.m3ultra.nx",
+    "sha256": "ecb8dfec07689a5e05dd87fd652908c58e2941050988c4a1dbc4eb946c5648a8"
+  },
+  "nvm": {
+    "token_identical": true,
+    "tps": 30.76,
+    "stdout_tail": "     48        3          97.60          4.685\nGQA_ATTENTION                  16        3          88.34          1.413\nLM_HEAD                         1        2        1071.15          1.071\nMLP_SWIGLU                     64        2         225.27         14.417\nsum of per-route GEMV                                             21.587 ms\nmeasured decode token                                             32.512 ms\nresidual (non-GEMV + host)                                        10.925 ms\n\nRPT 130   RPS 3,999   token 32.512 ms   TPS 30.76\n\nwrote /tmp/genesis_nos_nvm_mixed-q3mlp-q3attn-v1.json\n"
+  },
+  "provenance": "each stage's output feeds the next; NX content-binds to NR (nvm refuses a mismatched NR), NR content-binds to the on-disk catalog. One command, no manual step."
+}

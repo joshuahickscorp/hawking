@@ -1,0 +1,74 @@
+{
+  "authority_boundary": {
+    "l1_dispatches_authorized": 0,
+    "lease_actions_authorized": 0,
+    "metal_or_gpu_actions_authorized": 0,
+    "new_model_processes_authorized": 0,
+    "server_or_watcher_actions_authorized": 0,
+    "tournament_actions_authorized": 0,
+    "tps_or_tg_measurements_authorized": 0
+  },
+  "blockers": [],
+  "claim_boundary": {
+    "cpu_only_post_capture_assessment": true,
+    "does_not_claim_complete_layer_token_decoder_or_tournament": true,
+    "does_not_construct_metal_or_dispatch": true,
+    "does_not_issue_or_release_a_lease": true,
+    "does_not_measure_tps_or_tg": true,
+    "does_not_open_or_scan_artifacts": true,
+    "does_not_start_server_or_watcher": true,
+    "future_l1_requires_a_fresh_joint_same_runtime_same_tcb_capture": true,
+    "l0_device_buffers_are_not_transferable_execution_authority": true
+  },
+  "cross_process_or_prior_capture_pinned_buffer_reuse_authorized": false,
+  "earned_l0_state_handoff_component": true,
+  "future_l1_requires_fresh_same_runtime_same_tcb_joint_l0_to_l1_capture": true,
+  "handoff_authority": {
+    "document_seal_sha256": "ec31baec387a1065692b7fd0c2350f54db689112e77b50046225a37d316c40ca",
+    "document_sha256": "0d17df0a225cf763c7d80f043479a0378bfbc35ed81354a1ed4e9a8ab09cb43f",
+    "present": true
+  },
+  "l0_handoff_is_evidence_baseline_only": true,
+  "l0_inner_receipt": {
+    "document_seal_sha256": "4389a5252bb787307c0e909c88e016eacf9e25c5d501c999db407695e7ee1171",
+    "document_sha256": "1d1ea7625f1914d53f10033be234cec78fa938cc2215f535ff7ece171ce708b1",
+    "present": true
+  },
+  "l0_outer_terminal": {
+    "document_seal_sha256": "0268f5642684a95488269f88df04bab70e3b9a8e876b598aa8032d8e633bd29c",
+    "document_sha256": "4063a539206d9e3899a8edd142d12825ad31581d6f46919952e9044ec3394966",
+    "present": true
+  },
+  "l1_binding_not_executed": true,
+  "l1_continuation_contract": {
+    "document_seal_sha256": "2c7da055d3e969cd72e6fdebf32c234d48f9614dbc0449e52e6c919a1c6e5c4c",
+    "document_sha256": "944ca0199f9de618478044c687c13ee2e7dbb2ebc7c2ce791fb8459a39bec590",
+    "present": true
+  },
+  "l1_continuation_prepared": false,
+  "l1_continuation_remains_non_executing": true,
+  "l1_prefix_dispatches": 0,
+  "lease_release_receipt": {
+    "document_seal_sha256": "5b49a1a85441bedd6e986b5ab2bfcdb1ac8560cc6fc30a31081b898a12a02820",
+    "document_sha256": "ad8f13579a09a560a070d9878b3f65c3608ca7f07c219cc830027333b6ffb286",
+    "present": true
+  },
+  "lease_release_recommendation_contract": {
+    "document_seal_sha256": "820d078856f3f4d356c88fcd6741142e68de819a651f2fe97d359b73d1229378",
+    "document_sha256": "0987b7aa3848b1942ae029fdea279884668bb822c54d48757e55a11b6685358f",
+    "present": true
+  },
+  "may_not_satisfy_next_layer_execution_dependency": true,
+  "schema": "hawking.ascension.qwen80_l0_state_handoff_post_capture_assessment.v1",
+  "seal_sha256": "23b6021b8403b9403a9b11044d43b2ba712fbcb2b99c431936d93b16e75ddba5",
+  "status": "EARNED_QWEN80_SOURCE_TOKEN_L0_STATE_HANDOFF_COMPONENT_L1_BINDING_NOT_EXECUTED",
+  "validated_l0_handoff": {
+    "bytes": 8192,
+    "elements": 2048,
+    "l1_layer": 1,
+    "l1_linear_state_slot": 1,
+    "retained_l0_second_residual_device_buffer_id": "8eee2226c5bb0ff71e0d5e38eb1981e9f39692912222a73cbdc6b4a952f7e549",
+    "retained_l0_second_residual_f32le_sha256": "dae9e008fc5fb62ff3e10f8c89e2623b4c79c7b5fc44af5e1478923ec748f85c",
+    "session_id": "qwen80-source-token-l0-next-layer"
+  }
+}

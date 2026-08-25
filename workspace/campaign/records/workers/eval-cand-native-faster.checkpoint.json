@@ -28,6 +28,6 @@
       ]
     }
   },
-  "commit": "1790a420c58f43c7f925c86599b43cc66f8849cc",
+  "commit": "3a526bc8e755876e7a9ce44f5c132e66472abc18",
   "rebind_note": "rebound uniform-q4-v1 -> cand-native-faster. ['hypothesis', 'code_changes', 'negative_science', 'blocker', 'next_experiment'] carried unchanged; ['measurements'] INVALIDATED and moved to stale[uniform-q4-v1] because a measurement is a statement about one artifact, not about a family. Obligations carried in full -- no progress reset."
 }

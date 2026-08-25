@@ -1,0 +1,25 @@
+{
+  "schema": "hawking.ascension.owner_direct_download_authorization.v1",
+  "recorded_at": "2026-08-07T00:52:00Z",
+  "status": "OWNER_AUTHORIZED_DIRECT_DOWNLOAD",
+  "note": "This is NOT a formal qwen_ascension_preflight gate pass. That preflight's 7 required gates were independently re-verified real and found ABSENT for both lanes (task qwen-30b-80b-preflight-20260806-204503). Owner explicitly instructed direct raw download of both models in chat, bypassing the staged formal preflight process by name (\"download both models straight no stream\"). This record documents that real authorization plainly, without pretending the formal gate schema was satisfied.",
+  "what_is_real": {
+    "owner_chat_authorization": true,
+    "identity_pinned_from_live_HF_metadata": true,
+    "download_permitted_by_formal_preflight": false
+  },
+  "what_is_not_yet_real": [
+    "runtime_loader_forward_support (no known real Qwen3MoE/Qwen3Next forward pass exists in this runtime yet, same gap found for DeepSeek-V4-Flash)",
+    "profiler_parity_capability",
+    "resource_supervisor_green",
+    "actual_artifact_receipt",
+    "source_admission",
+    "pinned_identity (as a sealed gate record, though the underlying fields are real)",
+    "controller_approval (as a sealed gate record in the formal schema, though real verbal authorization exists)"
+  ],
+  "models": {
+    "qwen_30b": {"repo": "Qwen/Qwen3-Coder-30B-A3B-Instruct", "revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120"},
+    "qwen_80b": {"repo": "Qwen/Qwen3-Coder-Next", "revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb"}
+  },
+  "disk_floor_gib_at_time_of_authorization": 10.0
+}

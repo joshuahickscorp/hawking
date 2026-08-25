@@ -1,0 +1,114 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T13:02:32Z",
+ "experiment_class": "ACCEL-FUSION",
+ "knowledge_level": "INSTANCE",
+ "git_head": "39deab7909bc0a0237ae9e80b34887cb56199621",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_D_SOFTMAX",
+   "obligation": "G046 + G043",
+   "steer": "S015 \u00a73 corpus"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model; a primitive attention depends on"
+  },
+  "representation": {
+   "name": "dense_f32"
+  },
+  "kernel": {
+   "produced_by": "air.lower_softmax_to_msl",
+   "shape": "one threadgroup per row, 2 barriers"
+  },
+  "runtime": {
+   "mlx": "0.32.1",
+   "python": "3.12.13"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "correctness": {
+   "64x128": "2.98e-07",
+   "512x1024": "3.58e-07",
+   "128x4099_non_power_of_two": "2.38e-07",
+   "8x3_tiny": "2.98e-08",
+   "rows_sum_to_one": "within 3e-07 everywhere",
+   "overflow_guard": "[1000,1001,1002] -> [0.0900, 0.2447, 0.6652], finite; without the row-max subtraction exp() would overflow to inf and the row would become nan"
+  },
+  "negative_control": {
+   "rows_sum_error_without_barriers": 0.9731367230415344,
+   "meaning": "stripping the two barriers takes rows from summing to 1 within 3e-07 to being wrong by up to 0.973 -- the barriers are the correctness, not decoration"
+  },
+  "performance": [
+   {
+    "rows": 4096,
+    "cols": 1024,
+    "err_vs_mlx": 2.980232238769531e-07,
+    "gbs": {
+     "mlx": 141.0590899939776,
+     "naive_unfused": 91.60594846793495,
+     "air_fused": 133.54996673844803
+    },
+    "iqrs": {
+     "mlx": 15.12,
+     "naive_unfused": 7.95,
+     "air_fused": 3.1
+    },
+    "fused_vs_naive": {
+     "verdict": "CANDIDATE_WINS",
+     "speedup": 1.4579,
+     "margin_pct": 45.79,
+     "arm_noise_pct": 7.95
+    },
+    "fused_vs_mlx": {
+     "verdict": "NO_CLAIM",
+     "reason": "an arm failed the 10.0% IQR gate (mlx 15.12%, air_fused 3.1%) and the margin 5.62% does not overwhelm that noise",
+     "speedup": null
+    }
+   },
+   {
+    "rows": 1024,
+    "cols": 4096,
+    "err_vs_mlx": 3.5762786865234375e-07,
+    "gbs": {
+     "mlx": 131.0935062346821,
+     "naive_unfused": 99.21241702608278,
+     "air_fused": 133.50587658154987
+    },
+    "iqrs": {
+     "mlx": 20.37,
+     "naive_unfused": 5.92,
+     "air_fused": 5.44
+    },
+    "fused_vs_naive": {
+     "verdict": "CANDIDATE_WINS",
+     "speedup": 1.3457,
+     "margin_pct": 34.57,
+     "arm_noise_pct": 5.92
+    },
+    "fused_vs_mlx": {
+     "verdict": "NO_CLAIM",
+     "reason": "an arm failed the 10.0% IQR gate (mlx 20.37%, air_fused 5.44%) and the margin 1.84% does not overwhelm that noise",
+     "speedup": null
+    }
+   }
+  ],
+  "fusion_win": "1.46x and 1.35x over the naive three-pass shape (max, then exp+sum, then divide), both CANDIDATE_WINS with clean arms. That is the value of doing all three inside one threadgroup instead of re-reading the row twice.",
+  "vs_mlx": "NO_CLAIM at both shapes -- 133.5 against 141.1 and 133.5 against 131.1 GB/s, which straddles parity and does not clear the noise in either direction. No win is claimed and no loss is either.",
+  "what_it_unblocks": "softmax was the missing prerequisite between the reduction and attention. Attention itself is still ABSENT -- this is one of its pieces, not attention."
+ },
+ "claim_boundary": "A correct, numerically stable, fused row softmax exists in AIR and beats the naive three-pass shape by about 1.4x. Against MLX it is INDISTINGUISHABLE and no claim is made either way. f32 only, last-axis only, no masking, no causal variant, no batching beyond rows, and NO ATTENTION -- softmax is a piece of attention, not attention, and nothing here was run inside a model.",
+ "pass": true
+}

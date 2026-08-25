@@ -1,0 +1,233 @@
+{
+ "schema": "hawking.odyssey.perf_addendum.v1",
+ "generated_at": "2026-08-25T06:39:04Z",
+ "generated_by": "tools/odyssey/perf_addendum.py",
+ "obligation": "G005 \u2014 the vector items the first pass did not measure",
+ "hand_authored": false,
+ "git_head": "509784d5d2f16df27048d5baed9dfd1c2ce36a90",
+ "physical_vectors": {
+  "sealed-3.14": {
+   "available": false,
+   "why": "MIX_REPORT has no payload_bytes_by_role; this body predates the per-role accounting and its active vector cannot be derived from bytes",
+   "TPOT_ns_p50": 29283625
+  },
+  "variantA-2.98": {
+   "available": true,
+   "ARTIFACT_PHYSICAL_active_bytes_per_token": 9344182314,
+   "ARTIFACT_PHYSICAL_active_ebpw_per_token": 2.779352,
+   "DESIGN_EXPECTED_active_bytes_per_token": 8234330016.0,
+   "DESIGN_EXPECTED_active_ebpw_per_token": 2.4492357186951987,
+   "design_vs_physical_rel_error": 0.1187746836164738,
+   "design_matches_physical": false,
+   "embedding_bytes_excluded_as_gather": 675430642,
+   "payload_bytes": 10019612956,
+   "ARTIFACT_PHYSICAL_dram_bytes_per_token": 9344182314,
+   "dram_assumption": "one full read of every non-embedding organ per decoded token. The body is 8.7-10.0 GB against a far smaller cache, so inter-token reuse is assumed zero. This is an UPPER bound on useful traffic and therefore a LOWER bound on the reachable roof.",
+   "RUNTIME_MEASURED_model_reachable_gb_s": 319.97,
+   "roof_scope": "this executable, this regime. Directive \u00a776: never copied to another model or another representation.",
+   "TPOT_ns_p50": 29202999
+  },
+  "clean-2.60": {
+   "available": true,
+   "ARTIFACT_PHYSICAL_active_bytes_per_token": 8234453050,
+   "ARTIFACT_PHYSICAL_active_ebpw_per_token": 2.449272,
+   "DESIGN_EXPECTED_active_bytes_per_token": 8234330016.0,
+   "DESIGN_EXPECTED_active_ebpw_per_token": 2.4492357186951987,
+   "design_vs_physical_rel_error": 1.4941368813803607e-05,
+   "design_matches_physical": true,
+   "embedding_bytes_excluded_as_gather": 496640242,
+   "payload_bytes": 8731093292,
+   "ARTIFACT_PHYSICAL_dram_bytes_per_token": 8234453050,
+   "dram_assumption": "one full read of every non-embedding organ per decoded token. The body is 8.7-10.0 GB against a far smaller cache, so inter-token reuse is assumed zero. This is an UPPER bound on useful traffic and therefore a LOWER bound on the reachable roof.",
+   "RUNTIME_MEASURED_model_reachable_gb_s": 274.32,
+   "roof_scope": "this executable, this regime. Directive \u00a776: never copied to another model or another representation.",
+   "TPOT_ns_p50": 30017749
+  }
+ },
+ "frozen_design_constant_observed": {
+  "what": "MIX_REPORT.active_bytes_per_token",
+  "clean_payload_bytes": 8731093292,
+  "variantA_payload_bytes": 10019612956,
+  "both_report_active_bytes_per_token": 8234330016.0,
+  "verdict": "a design constant published under a physical name; canary D of G033 predicts exactly this. Every figure in physical_vectors is recomputed from payload_bytes_by_role."
+ },
+ "concurrency": {
+  "method": "ALTERNATING PAIRED REPS. Two earlier single-pass sweeps disagreed at c4 by 33% and one of them reported a collapse that does not exist: a single Metal sweep is page-cache confounded. Levels are alternated within each rep so drift is shared, and the within-level spread is published as part of the result.",
+  "levels": {
+   "1": {
+    "reps": [
+     5.5257,
+     6.3634,
+     6.352
+    ],
+    "median_aggregate_tps": 6.352,
+    "min": 5.5257,
+    "max": 6.3634,
+    "spread_pct": 13.2,
+    "speedup_over_c1": 1.0
+   },
+   "2": {
+    "reps": [
+     9.4694,
+     9.4951,
+     9.4021
+    ],
+    "median_aggregate_tps": 9.4694,
+    "min": 9.4021,
+    "max": 9.4951,
+    "spread_pct": 1.0,
+    "speedup_over_c1": 1.491
+   },
+   "4": {
+    "reps": [
+     11.6884,
+     11.7318,
+     11.7994,
+     11.7648,
+     11.0334,
+     11.2788
+    ],
+    "median_aggregate_tps": 11.7101,
+    "min": 11.0334,
+    "max": 11.7994,
+    "spread_pct": 6.5,
+    "speedup_over_c1": 1.844
+   },
+   "6": {
+    "reps": [
+     9.2058,
+     12.863,
+     12.9885
+    ],
+    "median_aggregate_tps": 12.863,
+    "min": 9.2058,
+    "max": 12.9885,
+    "spread_pct": 29.4,
+    "speedup_over_c1": 2.025
+   },
+   "8": {
+    "reps": [
+     7.6192,
+     7.8755,
+     13.5044
+    ],
+    "median_aggregate_tps": 7.8755,
+    "min": 7.6192,
+    "max": 13.5044,
+    "spread_pct": 74.7,
+    "speedup_over_c1": 1.24
+   },
+   "12": {
+    "reps": [
+     3.2876,
+     1.4492,
+     2.0768
+    ],
+    "median_aggregate_tps": 2.0768,
+    "min": 1.4492,
+    "max": 3.2876,
+    "spread_pct": 88.5,
+    "speedup_over_c1": 0.327
+   }
+  },
+  "equilibrium_concurrency": 4,
+  "equilibrium_definition": "the highest level whose reps are reproducible (spread under 15% of median). Levels above it reach higher medians but are not stable enough to be a operating point.",
+  "peak_median_level": 6,
+  "superseded_single_sweeps": {
+   "sweep_1": {
+    "c1": 6.1208,
+    "c2": 8.8783,
+    "c4": 9.814
+   },
+   "sweep_2": {
+    "c1": 6.3041,
+    "c2": 7.9843,
+    "c4": 7.3913,
+    "c6": 7.0048,
+    "c8": 6.0238
+   },
+   "why_discarded": "unpaired and single-rep; sweep_2 reported a knee at c2 that the paired reps refute (c4 is 24% ABOVE c2, not below)"
+  },
+  "collapse": {
+   "observed_at": [
+    12
+   ],
+   "mechanism": "each stream is a separate PROCESS loading its own copy of the 8.7 GB body. At c12 that is roughly 105 GB of Metal working set against a recommendedMaxWorkingSetSize near 78 GiB, so the collapse is an admission failure, not a scheduling one.",
+   "consequence": "S011 \u00a729 asks for one resident body and many logical states. This measurement is the argument for it: the ceiling here is weight REPLICATION, not decode throughput."
+  }
+ },
+ "verified_wus_per_hour": {
+  "value": 0.0,
+  "basis": "a WorkUnit is only counted when its output is VERIFIED. On the canonical capability suite the clean-2.60 body scores 3/43 and variantA 0/43, and none of the passes are production tasks -- so no body in this ladder produces a verified accepted WorkUnit at any rate. The figure is zero because the bodies are capability-dead, not because the measurement is missing.",
+  "capability_receipt": "receipts/headless/COMPOSITION_ATTRIBUTION.json",
+  "ladder": [
+   {
+    "body": "sealed",
+    "complete_ebpw_physical": 3.1393,
+    "mlp_codec": "affine_q2_group64_fp16_scale_bias (2.5 bpw)",
+    "non_mlp_codec": "q4 (HQ30UQ4 g64)",
+    "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+    "passed": 30,
+    "total": 43,
+    "rate": 0.6977,
+    "per_axis": {
+     "knowledge": 1.0,
+     "reasoning": 0.5,
+     "structured_output": 0.333,
+     "mutation": 1.0,
+     "coding": 1.0,
+     "self_correction": 1.0,
+     "hygiene": 1.0
+    },
+    "receipt": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json"
+   },
+   {
+    "body": "variantA",
+    "complete_ebpw_physical": 2.980254,
+    "mlp_codec": "fourlevel_q2_group64_fp16_delta (2.25 bpw)",
+    "non_mlp_codec": "ws_rtn_q4_g64",
+    "artifact_root": "/Users/scammermike/noetic/VARIANT_A_MLP_ONLY",
+    "passed": 0,
+    "total": 43,
+    "rate": 0.0,
+    "per_axis": {
+     "knowledge": 0.0,
+     "reasoning": 0.0,
+     "structured_output": 0.0,
+     "mutation": 0.0,
+     "coding": 0.0,
+     "self_correction": 0.0,
+     "hygiene": 0.0
+    },
+    "receipt": "receipts/headless/CAPABILITY_noetic-variantA-2.98.json"
+   },
+   {
+    "body": "clean",
+    "complete_ebpw_physical": 2.596994,
+    "mlp_codec": "fourlevel_q2_group64_fp16_delta (2.25 bpw)",
+    "non_mlp_codec": "ws_rtn_q3_g128",
+    "artifact_root": "/Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors",
+    "passed": 0,
+    "total": 43,
+    "rate": 0.0,
+    "per_axis": {
+     "knowledge": 0.0,
+     "reasoning": 0.0,
+     "structured_output": 0.0,
+     "mutation": 0.0,
+     "coding": 0.0,
+     "self_correction": 0.0,
+     "hygiene": 0.0
+    },
+    "receipt": "receipts/headless/CAPABILITY_noetic-clean-2.60.json"
+   }
+  ],
+  "canonical_definition_pending": "G039 owns the HCLI bench and the scoring rule; this is the honest floor until then."
+ },
+ "anomaly_variantA_short_generation": {
+  "observed": "variantA-2.98 emitted 2 tokens per run with decode_steps=1, against 24 tokens and 23 steps for the other two bodies",
+  "consequence": "its TPOT is computed over 175 sampled steps rather than 285, and its wall-clock figures are NOT comparable to the others",
+  "reading": "an early stop is itself a capability signal, consistent with variantA scoring 0/43"
+ },
+ "pass": true
+}

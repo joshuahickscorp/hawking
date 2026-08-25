@@ -1,0 +1,152 @@
+{
+ "schema": "hawking.odyssey.compiler_stage_audit.v1",
+ "generated_at": "2026-08-25T10:11:23Z",
+ "generated_by": "tools/odyssey/compiler_stage_audit.py",
+ "obligation": "G023 \u2014 pipeline stage audit",
+ "hand_authored": false,
+ "git_head": "961239f2426e9add9db78f6163784eb708b0defa",
+ "stages": [
+  {
+   "stage": "ArchitectureRecognizer",
+   "recorded_status": "AUTOMATIC",
+   "receipt": "ARCHITECTURE_RECOGNIZER.json",
+   "receipt_exists": true,
+   "names_model_2": true,
+   "declares_specimen": null,
+   "produced_bytes": false,
+   "audited_status": "AUTOMATIC_ON_MODEL_2"
+  },
+  {
+   "stage": "OrganGraph",
+   "recorded_status": "AUTOMATIC",
+   "receipt": "PHYSICAL_GRAPH_COMPILER.json",
+   "receipt_exists": true,
+   "names_model_2": true,
+   "declares_specimen": null,
+   "produced_bytes": false,
+   "audited_status": "AUTOMATIC_ON_MODEL_2"
+  },
+  {
+   "stage": "Doctor",
+   "recorded_status": "AUTOMATIC",
+   "receipt": "DOCTOR_TRANSFER.json",
+   "receipt_exists": true,
+   "names_model_2": true,
+   "declares_specimen": "Qwen/Qwen3-30B-A3B",
+   "produced_bytes": false,
+   "audited_status": "AUTOMATIC_ON_MODEL_2"
+  },
+  {
+   "stage": "RepresentationPlanner",
+   "recorded_status": "AUTOMATIC",
+   "receipt": "QWEN_TRANSFER_REHEARSAL.json",
+   "receipt_exists": true,
+   "names_model_2": true,
+   "declares_specimen": "Qwen/Qwen3-30B-A3B",
+   "produced_bytes": false,
+   "audited_status": "AUTOMATIC_ON_MODEL_2"
+  },
+  {
+   "stage": "PhysicalGraphCompiler",
+   "recorded_status": "AUTOMATIC",
+   "receipt": "PHYSICAL_GRAPH_COMPILER.json",
+   "receipt_exists": true,
+   "names_model_2": true,
+   "declares_specimen": null,
+   "produced_bytes": false,
+   "audited_status": "AUTOMATIC_ON_MODEL_2"
+  },
+  {
+   "stage": "KernelPlanner",
+   "recorded_status": "AUTOMATIC",
+   "receipt": "KERNEL_PLANNER_MODEL2.json",
+   "receipt_exists": true,
+   "names_model_2": true,
+   "declares_specimen": "Qwen/Qwen3-30B-A3B",
+   "produced_bytes": false,
+   "audited_status": "AUTOMATIC_ON_MODEL_2"
+  },
+  {
+   "stage": "DeviceCompiler",
+   "recorded_status": "BLOCKED",
+   "receipt": null,
+   "receipt_exists": false,
+   "names_model_2": false,
+   "declares_specimen": null,
+   "produced_bytes": false,
+   "audited_status": "BLOCKED"
+  },
+  {
+   "stage": "NoeticExecutable",
+   "recorded_status": "BLOCKED",
+   "receipt": null,
+   "receipt_exists": false,
+   "names_model_2": false,
+   "declares_specimen": null,
+   "produced_bytes": false,
+   "audited_status": "BLOCKED"
+  }
+ ],
+ "recorded_automatic": 6,
+ "audited_automatic_on_model_2": 6,
+ "overstated_stages": [],
+ "overstatement": {
+  "claim": "six of eight stages run end to end on Qwen/Qwen3-30B-A3B",
+  "audit": "6 of eight. KernelPlanner points at KERNEL_LIBRARY.json, which has no specimen field, never names model #2, and catalogues kernels for ['deltanet', 'embed', 'gqa_attention', 'lm_head', 'mlp_down', 'mlp_gate_up', 'moe_expert', 'moe_expert_gate_up', 'moe_router'] -- all qwen38 organs.",
+  "moe_organ_kernels_in_the_library": [
+   "moe_expert",
+   "moe_expert_gate_up",
+   "moe_router"
+  ],
+  "consequence": "the obligation's own rule that representations are never evaluated with incompetent kernels cannot be checked for model #2, because no kernel was planned for its organs."
+ },
+ "no_stage_produced_bytes": {
+  "finding": "every AUTOMATIC stage emitted an ANALYSIS, not an artifact. PhysicalGraphCompiler records 2 collapses and their numerical equivalence; it does not pack weights. The pipeline as recorded is a PLANNING pipeline.",
+  "why_it_matters": "'runs end-to-end' reads as compilation and is true only in the sense that each stage emitted a receipt."
+ },
+ "understatement": {
+  "recorded_blocker": "no qwen3_moe reader in the native runtime",
+  "what_actually_exists": {
+   "reader": "crates/hawking-core/src/model/qwen30_complete_runtime.rs",
+   "reader_lines": 7046,
+   "moe_expert_kernels": [
+    "qwen30_expert_table_binary_matvec",
+    "qwen30_expert_table_binary_matvec_rowblock2",
+    "qwen30_expert_table_binary_matvec_rowblock4",
+    "qwen30_expert_table_binary_matvec_rowblock8",
+    "qwen30_expert_table_binary_matvec_serial",
+    "qwen30_expert_table_binary_matvec_simdgroup",
+    "qwen30_expert_table_hgravs_gemv",
+    "qwen30_expert_table_hgravs_gemv_rowblock2",
+    "qwen30_expert_table_hgravs_gemv_rowblock4",
+    "qwen30_expert_table_hgravs_gemv_rowblock8",
+    "qwen30_expert_table_paired_gate_up_swiglu",
+    "qwen30_expert_table_uniform_q4_matvec_rowblock",
+    "qwen30_expert_table_uniform_q4_matvec_serial",
+    "qwen30_expert_table_uniform_q4_matvec_simdgroup",
+    "qwen30_expert_table_uniform_q4_matvec_simdgroup_rowblock4",
+    "qwen30_expert_table_uniform_q4_matvec_simdgroup_rowblock8",
+    "qwen30_expert_table_uniform_q4_paired_gate_up_swiglu",
+    "qwen30_expert_table_uniform_q4_paired_gate_up_swiglu_simdgroup8"
+   ],
+   "n_moe_expert_kernels": 18,
+   "moe_shader": [
+    "qwen30_device_expert_table.metal"
+   ]
+  },
+  "finding": "both halves of the supposedly missing capability exist. A routed reader executes routers and experts on device, and a full family of expert-table kernels backs it with its own Metal shader. The pipeline never connected either: KernelPlanner did not catalogue them and DeviceCompiler recorded that they were absent.",
+  "revised_gap": [
+   "register the existing MoE expert kernels in the kernel library so KernelPlanner has something to plan with for model #2",
+   "derive the tensor-name/shape validation from the artifact catalog instead of the hardcoded QWEN30_COMPLETE_TENSOR_COUNT = 18_867",
+   "accept the pipeline's catalog container alongside the HQ30 admit_* family"
+  ],
+  "size": "materially smaller than either previous statement: neither a from-scratch reader nor a from-scratch kernel layer is required."
+ },
+ "still_blocked": true,
+ "unmet_acceptance": [
+  "pipeline runs end-to-end on model #2",
+  "produced executable is coherent",
+  "two device profiles qualified"
+ ],
+ "pass": true
+}

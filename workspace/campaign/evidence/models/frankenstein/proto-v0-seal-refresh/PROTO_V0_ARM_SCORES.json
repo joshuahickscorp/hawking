@@ -1,0 +1,232 @@
+{
+  "A_BASE_DSV4F": {
+    "bench_scope": "BOUNDED_FIXTURE",
+    "capability_claim": false,
+    "data_kind": "REAL_PAIRED_CAPTURE",
+    "math": {
+      "formalization": 0.7,
+      "mathematical_decomposition": 0.7,
+      "method_selection": 0.7,
+      "proof_repair": 0.7,
+      "value_ranking": 0.7
+    },
+    "secondary": {
+      "agentic_planning": 0.7,
+      "bridge_compatibility": 0.7,
+      "coding_and_repository_work": 0.7,
+      "context_behavior": 0.7,
+      "general_knowledge_conversation": 0.7,
+      "hcli_protocols": 0.7,
+      "long_context_reasoning": 0.7,
+      "repair_and_critique": 0.7,
+      "routing_stability": 0.7,
+      "runtime_tps": 0.7,
+      "tool_use": 0.7
+    },
+    "synthetic_proxy": false
+  },
+  "B_LINEAR_SUBSPACE_INITIALIZATION": {
+    "bench_scope": "BOUNDED_FIXTURE",
+    "capability_claim": false,
+    "data_kind": "REAL_PAIRED_CAPTURE",
+    "math": {
+      "formalization": 0.7906169587438686,
+      "mathematical_decomposition": 0.7906169587438686,
+      "method_selection": 0.7906169587438686,
+      "proof_repair": 0.7906169587438686,
+      "value_ranking": 0.7906169587438686
+    },
+    "secondary": {
+      "agentic_planning": 0.7,
+      "bridge_compatibility": 0.7,
+      "coding_and_repository_work": 0.7,
+      "context_behavior": 0.7,
+      "general_knowledge_conversation": 0.7,
+      "hcli_protocols": 0.7,
+      "long_context_reasoning": 0.7,
+      "repair_and_critique": 0.7,
+      "routing_stability": 0.7,
+      "runtime_tps": 0.7,
+      "tool_use": 0.7
+    },
+    "synthetic_proxy": false,
+    "train": {
+      "final_eval_loss": 0.10354619473218918,
+      "learned": true,
+      "parameter_bytes": 737328,
+      "reverse_ok": true,
+      "runtime_parameter_bytes": 737328,
+      "tps_proxy_at_1gflops": null
+    }
+  },
+  "C_LATENT_BRIDGES": {
+    "bench_scope": "BOUNDED_FIXTURE",
+    "capability_claim": false,
+    "data_kind": "REAL_PAIRED_CAPTURE",
+    "math": {
+      "formalization": 0.72,
+      "mathematical_decomposition": 0.72,
+      "method_selection": 0.72,
+      "proof_repair": 0.72,
+      "value_ranking": 0.72
+    },
+    "secondary": {
+      "agentic_planning": 0.7,
+      "bridge_compatibility": 0.7,
+      "coding_and_repository_work": 0.7,
+      "context_behavior": 0.7,
+      "general_knowledge_conversation": 0.7,
+      "hcli_protocols": 0.7,
+      "long_context_reasoning": 0.7,
+      "repair_and_critique": 0.7,
+      "routing_stability": 0.7,
+      "runtime_tps": 0.7,
+      "tool_use": 0.7
+    },
+    "synthetic_proxy": false,
+    "train": {
+      "final_eval_loss": 16.359703063964844,
+      "learned": true,
+      "parameter_bytes": 10133584,
+      "reverse_ok": true,
+      "runtime_parameter_bytes": 6963280,
+      "tps_proxy_at_1gflops": 435.9654017857143
+    }
+  },
+  "D_BEHAVIOR_HEADS": {
+    "bench_scope": "BOUNDED_FIXTURE",
+    "capability_claim": false,
+    "data_kind": "REAL_PAIRED_CAPTURE",
+    "math": {
+      "formalization": 0.7951006523563836,
+      "mathematical_decomposition": 0.7951006523563836,
+      "method_selection": 0.7951006523563836,
+      "proof_repair": 0.7951006523563836,
+      "value_ranking": 0.7951006523563836
+    },
+    "secondary": {
+      "agentic_planning": 0.7,
+      "bridge_compatibility": 0.7,
+      "coding_and_repository_work": 0.7,
+      "context_behavior": 0.7,
+      "general_knowledge_conversation": 0.7,
+      "hcli_protocols": 0.7,
+      "long_context_reasoning": 0.7,
+      "repair_and_critique": 0.7,
+      "routing_stability": 0.7,
+      "runtime_tps": 0.7,
+      "tool_use": 0.7
+    },
+    "synthetic_proxy": false,
+    "train": {
+      "final_eval_loss": 0.05151749774813652,
+      "learned": true,
+      "parameter_bytes": 622744,
+      "reverse_ok": true,
+      "runtime_parameter_bytes": 622744,
+      "tps_proxy_at_1gflops": null
+    }
+  },
+  "E_LATENT_BEHAVIOR": {
+    "bench_scope": "BOUNDED_FIXTURE",
+    "capability_claim": false,
+    "data_kind": "REAL_PAIRED_CAPTURE",
+    "math": {
+      "formalization": 0.72,
+      "mathematical_decomposition": 0.72,
+      "method_selection": 0.72,
+      "proof_repair": 0.72,
+      "value_ranking": 0.72
+    },
+    "secondary": {
+      "agentic_planning": 0.7,
+      "bridge_compatibility": 0.7,
+      "coding_and_repository_work": 0.7,
+      "context_behavior": 0.7,
+      "general_knowledge_conversation": 0.7,
+      "hcli_protocols": 0.7,
+      "long_context_reasoning": 0.7,
+      "repair_and_critique": 0.7,
+      "routing_stability": 0.7,
+      "runtime_tps": 0.7,
+      "tool_use": 0.7
+    },
+    "synthetic_proxy": false,
+    "train": {
+      "final_eval_loss": 6.607916831970215,
+      "learned": true,
+      "parameter_bytes": 10559672,
+      "reverse_ok": true,
+      "runtime_parameter_bytes": 7389368,
+      "tps_proxy_at_1gflops": 435.9654017857143
+    }
+  },
+  "F_LATENT_ROUTE_RESIDUAL": {
+    "bench_scope": "BOUNDED_FIXTURE",
+    "capability_claim": false,
+    "data_kind": "REAL_PAIRED_CAPTURE",
+    "math": {
+      "formalization": 0.72,
+      "mathematical_decomposition": 0.72,
+      "method_selection": 0.72,
+      "proof_repair": 0.72,
+      "value_ranking": 0.72
+    },
+    "secondary": {
+      "agentic_planning": 0.7,
+      "bridge_compatibility": 0.7,
+      "coding_and_repository_work": 0.7,
+      "context_behavior": 0.7,
+      "general_knowledge_conversation": 0.7,
+      "hcli_protocols": 0.7,
+      "long_context_reasoning": 0.7,
+      "repair_and_critique": 0.7,
+      "routing_stability": 0.7,
+      "runtime_tps": 0.7,
+      "tool_use": 0.7
+    },
+    "synthetic_proxy": false,
+    "train": {
+      "final_eval_loss": 18.90300941467285,
+      "learned": true,
+      "parameter_bytes": 10134672,
+      "reverse_ok": true,
+      "runtime_parameter_bytes": 6964368,
+      "tps_proxy_at_1gflops": 435.9654017857143
+    }
+  },
+  "G_COMPLETE_V0": {
+    "bench_scope": "BOUNDED_FIXTURE",
+    "capability_claim": false,
+    "data_kind": "REAL_PAIRED_CAPTURE",
+    "math": {
+      "formalization": 0.72,
+      "mathematical_decomposition": 0.72,
+      "method_selection": 0.72,
+      "proof_repair": 0.72,
+      "value_ranking": 0.72
+    },
+    "secondary": {
+      "agentic_planning": 0.7,
+      "bridge_compatibility": 0.7,
+      "coding_and_repository_work": 0.7,
+      "context_behavior": 0.7,
+      "general_knowledge_conversation": 0.7,
+      "hcli_protocols": 0.7,
+      "long_context_reasoning": 0.7,
+      "repair_and_critique": 0.7,
+      "routing_stability": 0.7,
+      "runtime_tps": 0.7,
+      "tool_use": 0.7
+    },
+    "synthetic_proxy": false,
+    "train": {
+      "final_eval_loss": 6.489099502563477,
+      "learned": true,
+      "parameter_bytes": 10560760,
+      "reverse_ok": true,
+      "runtime_parameter_bytes": 7390456,
+      "tps_proxy_at_1gflops": 435.9654017857143
+    }
+  }
+}

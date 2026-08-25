@@ -1,0 +1,14 @@
+{
+  "schema": "hawking.nos.genesis_nr.v1", "session": "f5169750", "date": "2026-08-18",
+  "obligation": "G29 -- build the FIRST REAL Genesis.nr for the frozen 3.3448 BPW patient (S012 §18)",
+  "artifact": "workspace/campaign/records/runs/qwen38-27b/mixed-q3mlp-q3attn-v1/Genesis.nr",
+  "tool_change": "tools/nr_container.py: added serialize_catalog() to build NR from the mixed catalog format (PACK_REPORT.json + catalog.hq38m20), content-addressed by the catalog sha256",
+  "nr_bytes": 2402, "nr_sha256": "206127e259ede65c",
+  "content": {"parent_model": "Qwen3.8-27B abliterated", "parameter_count": 26895998464,
+    "catalog_content_sha256": "4e5b11a8d55ee2a269fd56626e419f4f7fb713b47feb887a389d68b39378cbcd",
+    "complete_bits_per_weight": 3.3447723, "mlp_bpw": 3.25, "non_mlp_bpw": 3.51,
+    "codec_families": "q3 grouped_absmax g64 (496 encoded) + q4 grouped_absmax g64 (355 copied)"},
+  "checks": {"serialize_roundtrip_exit": 0, "self_validate": "PASS", "durable_validate_exit": 0,
+    "negative_test_exit": 1, "machine_independent": "no kernel/threadgroup/device/tps fields; content-bound to the on-disk catalog"},
+  "verdict": "PASS. A real .nr for the ACTUAL patient (not the uniform-q4 demo), validates against the G6 schema, round-trips stable, rejects machine-specific fields, and its catalog_content_sha256 binds it to the exact on-disk representation. This is Genesis.nr; NX (G30) lowers it to the machine."
+}

@@ -1,0 +1,74 @@
+{
+ "schema": "hawking.odyssey.admission_chain_scope.v1",
+ "generated_at": "2026-08-25T10:42:48Z",
+ "generated_by": "tools/odyssey/admission_chain_scope.py",
+ "obligation": "G023 step 3 scoping",
+ "hand_authored": false,
+ "git_head": "e2d05781a55cdf3f1403c70a3c725956b5070b60",
+ "MY_STEP_2_WAS_INCOMPLETE": {
+  "what_I_did": "relaxed QWEN30_REPOSITORY to an allowlist in qwen30_complete_runtime.rs, at 3 equality sites",
+  "what_I_missed": "a SECOND repository binding inside the admission path: admission.model.source_repository(), which is bound to the QwenCompleteBinaryModel enum VARIANT, not to a string I relaxed",
+  "sites": [
+   "crates/hawking-core/src/model/qwen_complete_binary/mod.rs:1564",
+   "crates/hawking-core/src/model/qwen_complete_binary/mod.rs:1626"
+  ],
+  "enum_variant_is_hardcoded": true,
+  "consequence": "admission would still refuse model #2 on the repository, one layer below where I looked. Relaxing a constant is not the same as relaxing a binding."
+ },
+ "THE_ADMITTED_FORMAT_HAS_NO_PRODUCER": {
+  "what_admission_requires": [
+   "a SEALED manifest document (verify_sealed_document) whose seal matches a seal the caller must already hold",
+   "status == the complete-binary candidate status",
+   "source_body_audit_seal_sha256 matching a second caller-held seal",
+   "a source_revalidation_receipt_path pointing at a further receipt"
+  ],
+  "schemas": [
+   "hawking.ascension.complete_binary_source_revalidation.v1",
+   "hawking.ascension.complete_binary_terminal_status.v1",
+   "hawking.ascension.qwen30_complete_binary_gravity.v1",
+   "hawking.ascension.qwen80_complete_binary_gravity.v1"
+  ],
+  "producers_outside_the_reader": {
+   "hawking.ascension.complete_binary_source_revalidation.v1": [],
+   "hawking.ascension.complete_binary_terminal_status.v1": [],
+   "hawking.ascension.qwen30_complete_binary_gravity.v1": [
+    "receipts/headless/NOMENCLATURE_CENSUS.json"
+   ],
+   "hawking.ascension.qwen80_complete_binary_gravity.v1": [
+    "tools/condense/ascension_qwen80_complete_gravity.py",
+    "receipts/headless/NOMENCLATURE_CENSUS.json"
+   ]
+  },
+  "no_hq30_manifest_on_disk": true,
+  "finding": "nothing in this repository emits the manifest the routed runtime admits. The one hit is a NOMENCLATURE census that lists the name; it does not produce the document."
+ },
+ "why_this_matters_now": {
+  "the_packer_I_extended_writes": "catalog.hq38m20 + HGRAVU01 segments, the qwen38 lineage",
+  "the_runtime_admits": "an HQ30 complete-binary sealed provenance chain",
+  "so": "a full 18,867-tensor pack in the format I can currently write would take hours and produce an artifact the runtime cannot admit. That is precisely the half-built packer emitting an unreadable artifact this campaign warned against two steps ago, so it was checked before launching rather than after."
+ },
+ "corrected_step_3": [
+  "extend the admission binding: QwenCompleteBinaryModel is an ENUM and its variant hardcodes the Coder repository, so model #2 needs a variant or a relaxed binding -- my step-2 allowlist did not reach this layer",
+  "point the EXISTING CompleteBinaryGravity operator at model #2, the way the qwen80 wrapper points it at Qwen3-Coder-Next",
+  "reconcile representation: that operator packs 1-bit signs with an FP16 scale per 128, while the KernelPlanner selected uniform_q4_group for moe_expert -- one of the two has to move, and the planner's choice is the one backed by competent kernels",
+  "then grade the produced executable against a numpy oracle"
+ ],
+ "honest_size": "smaller again than my previous statement, which is now the third time this blocker has shrunk on inspection. The sealed-chain producer exists and is parameterized; what is missing is an admission variant for model #2 and a representation reconciliation, not a format to invent.",
+ "pass": true,
+ "CORRECTION_THE_PRODUCER_EXISTS": {
+  "what_I_said_minutes_ago": "nothing in this repository emits the manifest the routed runtime admits",
+  "why_that_was_wrong": "I searched tools/ and receipts/ and did not search lab/. The qwen80 wrapper in tools/condense is 70 lines and imports CompleteBinaryGravity from lab.operators.",
+  "the_producer": "lab/operators/ascension_qwen30_complete_gravity.py",
+  "lines": 1895,
+  "emits": {
+   "manifest": "hawking.ascension.qwen30_complete_binary_gravity.v1",
+   "source_revalidation_receipt": "hawking.ascension.complete_binary_source_revalidation.v1",
+   "progress_index": "hawking.ascension.complete_binary_progress_index.v1",
+   "terminal_status": "hawking.ascension.complete_binary_terminal_status.v1"
+  },
+  "seals_with": "lab.receipts.seal / verify -- the same sealing machinery admission verifies against",
+  "is_parameterized": true,
+  "proof_it_takes_another_model": "tools/condense/ascension_qwen80_complete_gravity.py reuses the SAME class for Qwen3-Coder-Next by passing a different schema, model dir, source audit and output root"
+ },
+ "pattern_worth_recording": "every time I have stated this blocker I have overstated it, and each correction came from reading one more directory. The capability was in lab/, which I had not searched."
+}

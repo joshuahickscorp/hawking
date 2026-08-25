@@ -1,0 +1,300 @@
+{
+ "schema": "hawking.odyssey.retirement_gate.v1",
+ "generated_at": "2026-08-25T09:48:43Z",
+ "generated_by": "tools/odyssey/retirement_gate.py",
+ "obligation": "G011 \u2014 QWEN_RETIREMENT_GATE (\u00a717)",
+ "hand_authored": false,
+ "git_head": "57a4a7ebfad2c3e177a06d1ae246d94ca9349771",
+ "prerequisite_transfer_substrate": {
+  "receipts": {
+   "ODYSSEY_TRANSFER_PROVEN": {
+    "present": true,
+    "pass": true
+   },
+   "CROSS_MODEL_LAWS": {
+    "present": true,
+    "pass": true
+   },
+   "MODEL_2_COMPOUNDING": {
+    "present": true,
+    "pass": true
+   },
+   "ODYSSEY_LEARNING_CURVE": {
+    "present": true,
+    "pass": true
+   }
+  },
+  "law_levels": {
+   "QWEN_SPECIFIC": 5,
+   "ARCHITECTURE_GENERAL": 1,
+   "FAMILY_TRANSFERRED": 2,
+   "MACHINE_GENERAL": 1
+  },
+  "architecture_general_laws": [
+   "LAW-FITTED-AFFINE-BEATS-RTN"
+  ],
+  "ok": true,
+  "why": "\u00a717 forbids retirement until the transfer substrate SUCCEEDS. A law proven on two distinct architecture families is the evidence that the science outlives this model."
+ },
+ "preservation": {
+  "final_executable": {
+   "ok": true,
+   "detail": [
+    {
+     "name": "resident (sealed-3.14)",
+     "present": true,
+     "root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+     "payload_bytes": 10554328856,
+     "complete_ebpw_physical": 3.139301,
+     "mix_report_sha256": "c1e2c8388bc5e67c57a00ff10c2413a1def214108a2f389434137551014f0110",
+     "closure_files": 7,
+     "closure_required": 7,
+     "closure_complete": true,
+     "hardlinked_files": 210,
+     "self_contained": false,
+     "genome": null,
+     "legacy_genome": [
+      "3",
+      "4",
+      "5"
+     ]
+    },
+    {
+     "name": "grand candidate (variantB-2.76)",
+     "present": true,
+     "root": "/Users/scammermike/noetic/VARIANT_B_MLP_BIAS_Q3",
+     "payload_bytes": 9265849388,
+     "complete_ebpw_physical": 2.756053,
+     "mix_report_sha256": "eb30d5f15b95d6d4c39726a6414e0e914c50cf3d0065d786ad9e25ef168b174f",
+     "closure_files": 7,
+     "closure_required": 7,
+     "closure_complete": true,
+     "hardlinked_files": 0,
+     "self_contained": true,
+     "genome": {
+      "mlp": {
+       "codec": "affine2_g64_ls",
+       "family": "fourlevel_fitted_affine",
+       "gemv_storage_bpw": 2.5,
+       "group": 64,
+       "bits": 2,
+       "kernel": "affine2_group64_matvec_geo_tpr64_tg128",
+       "shader": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+       "container": "HGRAVF01",
+       "catalog_codec": 5
+      },
+      "deltanet": {
+       "codec": "ws_rtn_q3_g64",
+       "family": "grouped_absmax",
+       "gemv_storage_bpw": 3.25,
+       "group": 64,
+       "bits": 3,
+       "kernel": "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128",
+       "shader": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+       "container": "HGRAVU01",
+       "catalog_codec": 3,
+       "transition_program": true
+      },
+      "attention_gqa": {
+       "codec": "ws_rtn_q3_g128",
+       "family": "grouped_absmax",
+       "gemv_storage_bpw": 3.125,
+       "group": 128,
+       "bits": 3,
+       "kernel": "qwen_uniform_q3_group128_matvec_geo_tpr64_tg128",
+       "shader": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+       "container": "HGRAVU01",
+       "catalog_codec": 3
+      },
+      "embedding": {
+       "codec": "ws_rtn_q3_g128",
+       "family": "grouped_absmax",
+       "gemv_storage_bpw": 3.125,
+       "group": 128,
+       "bits": 3,
+       "kernel": "qwen38_hgravu_embedding_lookup",
+       "shader": "crates/hawking-core/shaders/qwen38_device_activations.metal",
+       "container": "HGRAVU01",
+       "catalog_codec": 3
+      },
+      "output": {
+       "codec": "ws_rtn_q3_g128",
+       "family": "grouped_absmax",
+       "gemv_storage_bpw": 3.125,
+       "group": 128,
+       "bits": 3,
+       "kernel": "qwen_uniform_q3_group128_matvec_geo_tpr64_tg128",
+       "shader": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+       "container": "HGRAVU01",
+       "catalog_codec": 3
+      }
+     },
+     "legacy_genome": null
+    }
+   ],
+   "why": "at least one executable must be self-contained: complete closure and no hardlinks into another artifact"
+  },
+  "exact_source_identity": {
+   "ok": true,
+   "detail": {
+    "parent": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
+    "config_sha256": "191e0af232104ed8b65258cf3fb2b842e288008baca7633c11b82a1ac7203aab",
+    "tensor_index_sha256": "77042094076611b69791a610065f28b7013b8c621795fa86ddccc8bac7d1b9df",
+    "architectures": [
+     "Qwen3_5ForConditionalGeneration"
+    ]
+   },
+   "why": "identity is the config and tensor-index hashes, which pin WHICH model this was without preserving its 52 GB"
+  },
+  "genomes": {
+   "ok": true,
+   "detail": {
+    "resident (sealed-3.14)": {
+     "schema": "legacy",
+     "organs": [
+      "3",
+      "4",
+      "5"
+     ]
+    },
+    "grand candidate (variantB-2.76)": {
+     "schema": "genome",
+     "organs": [
+      "attention_gqa",
+      "deltanet",
+      "embedding",
+      "mlp",
+      "output"
+     ]
+    }
+   },
+   "note": "two schemas are in play: the current per-organ `genome` block, and the older `codecs`/`affine_*` fields on the sealed body. Both are accepted; the schema each uses is recorded."
+  },
+  "kernels": {
+   "ok": true,
+   "detail": {
+    "n_kernels": 17,
+    "receipt": "receipts/headless/KERNEL_LIBRARY.json",
+    "n_without_runnable_contract": 9
+   }
+  },
+  "recipes": {
+   "ok": true,
+   "detail": {
+    "builders": [
+     "tools/headless/whole_model_native.py",
+     "tools/odyssey/composition_isolation.py",
+     "tools/odyssey/clean_rebuild.py"
+    ],
+    "git_head": "57a4a7ebfad2c3e177a06d1ae246d94ca9349771",
+    "q4_manifest_preserved": "recipes/qwen38-gravity-uniform-q4-v1/manifest.json",
+    "q4_manifest_sha256": "6b923c6315439439f942fe0cd5dcdf22f05823b18b2873f876c2397aa964a7e7"
+   },
+   "why": "the q4 manifest is the tensor-name to segment-filename mapping and lived ONLY inside the 13 GB incumbent. Preserving it is the precondition for relegating those bytes."
+  },
+  "receipts": {
+   "ok": true,
+   "detail": {
+    "n_receipts": 308,
+    "dir": "receipts/headless/"
+   }
+  },
+  "negative_science": {
+   "ok": true,
+   "detail": {
+    "n_entries": 40,
+    "receipt": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+    "campaign_refutations_also_preserved": [
+     "TOKENIZER_GRAVITY.json \u2014 vocabulary reduction refuted on held-out language",
+     "DECODING_GRAVITY.json \u2014 full-size drafts refuted on cost ratio",
+     "VARIANT_LOCALIZATION.json \u2014 its own axis claim refuted and retained",
+     "GRAND_CANDIDATE.json \u2014 three landed attacks retained"
+    ]
+   }
+  }
+ },
+ "all_preserved": true,
+ "relegation": {
+  "policy": "CLASSIFY AND REPORT. Nothing is deleted by this gate. A relegation candidate stays a candidate until its recipe metadata is preserved somewhere that survives it.",
+  "items": [
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
+    "bytes": 55586271232,
+    "gib": 51.77,
+    "class": "INDISPENSABLE",
+    "why": "the bf16 source. Every clean-room regeneration in this campaign reads it, and it is the only thing that can rebuild an artifact from scratch.",
+    "reproducible": "in principle re-downloadable, but it is an abliterated community checkpoint and re-acquisition is not guaranteed"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+    "bytes": 14300786688,
+    "gib": 13.32,
+    "class": "INDISPENSABLE_FOR_NOW",
+    "why": "NOT relegatable while sealed is the resident. Its 353 f32 passthrough segments regenerate byte-identically from the parent, but the resident still depends on 210 .hq30uq4 segments that no current tool can re-encode -- the de-hardlink path writes f32, so every quantized segment came back at exactly 7.53x its packed size. The information is derivable by re-running the q4 quantizer; until that exists, these bytes are load-bearing. The grand candidate needs none of them.",
+    "reproducible": "in principle yes, by re-running the q4 packer; no such path exists today"
+   },
+   {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-mlx",
+    "bytes": 16081612800,
+    "gib": 14.98,
+    "class": "RELEGATE",
+    "why": "an MLX conversion of the same parent, used only as a capability baseline. Regenerable by re-converting.",
+    "reproducible": "yes, from the bf16 parent"
+   },
+   {
+    "path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+    "bytes": 10580307968,
+    "gib": 9.85,
+    "class": "INDISPENSABLE",
+    "why": "the selected resident and the best-capability body.",
+    "reproducible": "no"
+   },
+   {
+    "path": "/Users/scammermike/noetic/VARIANT_B_MLP_BIAS_Q3",
+    "bytes": 9291804672,
+    "gib": 8.65,
+    "class": "INDISPENSABLE",
+    "why": "the grand candidate: self-contained, 2.756 EBPW, the only sub-3.0 body that works.",
+    "reproducible": "no"
+   },
+   {
+    "path": "/Users/scammermike/noetic/VARIANT_A_MLP_ONLY",
+    "bytes": 10022612992,
+    "gib": 9.33,
+    "class": "PRESERVE_AS_NEGATIVE",
+    "why": "scores 0/43. It is the evidence that the MLP per-group bias is load-bearing, and it is also the best-agreeing draft at 75%.",
+    "reproducible": "no"
+   },
+   {
+    "path": "/Users/scammermike/noetic/CLEAN_REBUILD_A",
+    "bytes": 8757137408,
+    "gib": 8.16,
+    "class": "PRESERVE_AS_NEGATIVE",
+    "why": "the 2.5970 body, capability-dead. It anchors the composition ladder and the floor-effect argument.",
+    "reproducible": "no"
+   },
+   {
+    "path": "/Users/scammermike/noetic/VARIANT_B_BIAS_ONLY",
+    "bytes": 5640847360,
+    "gib": 5.25,
+    "class": "SUPERSEDED",
+    "why": "a partial earlier variant-B build, superseded by VARIANT_B_MLP_BIAS_Q3. Not referenced by any receipt.",
+    "reproducible": "yes, by rebuilding"
+   }
+  ],
+  "relegatable_now": [
+   "/Users/scammermike/models/qwen3.8-27b-abliterated-mlx",
+   "/Users/scammermike/noetic/VARIANT_B_BIAS_ONLY"
+  ],
+  "reclaimable_bytes": 21722460160,
+  "reclaimable_gib": 20.23,
+  "operator_action_required": "deleting model weights is the operator's call; this gate never removes them"
+ },
+ "shippability": {
+  "finding": "the GRAND CANDIDATE is self-contained and the SELECTED RESIDENT is not. variantB carries its own closure and zero hardlinks; sealed carries 210 .hq30uq4 segments hardlinked into the q4 incumbent that no current tool can regenerate.",
+  "consequence": "retiring Qwen by relegating the q4 incumbent would break the resident while leaving the candidate intact. Either the q4 incumbent is preserved, or a q4 re-encode path is built, or the resident becomes the body that is already shippable.",
+  "not_a_reopening_of_G040": "the selection stands on the composite. This is a packaging property that selection never scored."
+ },
+ "RETIREMENT_READY": true,
+ "pass": true
+}

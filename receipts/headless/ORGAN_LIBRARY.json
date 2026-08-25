@@ -1,7 +1,7 @@
 {
  "schema": "hawking.headless.organ_library.v1",
- "generated_at": "2026-08-24T18:31:28Z",
- "git_head": "bab8f140631fb7463f4cdb548eebbeb9bac0b54f",
+ "generated_at": "2026-08-24T21:57:49Z",
+ "git_head": "3048963996c6ed32df3712a805c7f5918ea86fd8",
  "generated_by": "tools/headless/genome_libraries.py",
  "obligation": "N034 \u2014 GENOME LIBRARIES + ODYSSEY QUEUE RECOVERY (S023 \u00a712, \u00a713, \u00a714, \u00a734, \u00a770). Seed from verified Qwen science; recover the Odyssey queue from disk; do not invent numbers or HF repo ids.",
  "hand_authored": false,
@@ -16,7 +16,7 @@
   "\u00a712",
   "\u00a770"
  ],
- "one_line": "Seven Qwen3.8 OrganGenomes seeded from ORGAN_BANDWIDTH, ORGAN_ROOF_LEDGER, DELTANET_ORGAN, MLP_GATE_UP, MLP_DOWN, ORGAN_FRONTIERS. Unmeasured capability is ABSENT.",
+ "one_line": "Seven Qwen3.8 OrganGenomes seeded from ORGAN_BANDWIDTH, ORGAN_ROOF_LEDGER, DELTANET_ORGAN, MLP_GATE_UP, MLP_DOWN, ORGAN_FRONTIERS, ORGAN_DENSITY_FLOORS. Unmeasured capability is ABSENT.",
  "organs": [
   {
    "organ": "embed",
@@ -199,8 +199,26 @@
     "receipts/headless/NOETIC_OPERATION_CENSUS.json",
     "receipts/headless/NOETIC_PARENT_A.json",
     "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-    "receipts/headless/ORGAN_FRONTIERS.json"
-   ]
+    "receipts/headless/ORGAN_FRONTIERS.json",
+    "receipts/headless/ORGAN_DENSITY_FLOORS.json"
+   ],
+   "composition_density_floor": {
+    "complete_ebpw": {
+     "value": 3.125,
+     "kind": "CITED",
+     "unit": "EBPW",
+     "command": "ORGAN_DENSITY_FLOORS.organs.embedding_output.floor.complete_ebpw",
+     "source": "receipts/headless/ORGAN_DENSITY_FLOORS.json",
+     "absent_reason": null
+    },
+    "family": "grouped_absmax",
+    "codec": "ws_rtn_q3_g128",
+    "highest_rung_reached": "complete_token",
+    "vs_current_q2f_class": "below",
+    "dense_w": 0,
+    "note": "N040 composition-bar coherent floor on real activations. Distinct from ORGAN_FRONTIERS Q4-equivalent 0.990 bar.",
+    "source": "receipts/headless/ORGAN_DENSITY_FLOORS.json"
+   }
   },
   {
    "organ": "gqa_attention",
@@ -452,8 +470,26 @@
     "receipts/headless/NOETIC_OPERATION_CENSUS.json",
     "receipts/headless/NOETIC_PARENT_A.json",
     "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-    "receipts/headless/ORGAN_FRONTIERS.json"
-   ]
+    "receipts/headless/ORGAN_FRONTIERS.json",
+    "receipts/headless/ORGAN_DENSITY_FLOORS.json"
+   ],
+   "composition_density_floor": {
+    "complete_ebpw": {
+     "value": 3.126550820024315,
+     "kind": "CITED",
+     "unit": "EBPW",
+     "command": "ORGAN_DENSITY_FLOORS.organs.gqa_attention.floor.complete_ebpw",
+     "source": "receipts/headless/ORGAN_DENSITY_FLOORS.json",
+     "absent_reason": null
+    },
+    "family": "grouped_absmax",
+    "codec": "ws_rtn_q3_g128",
+    "highest_rung_reached": "complete_token",
+    "vs_current_q2f_class": "below",
+    "dense_w": 0,
+    "note": "N040 composition-bar coherent floor on real activations. Distinct from ORGAN_FRONTIERS Q4-equivalent 0.990 bar.",
+    "source": "receipts/headless/ORGAN_DENSITY_FLOORS.json"
+   }
   },
   {
    "organ": "deltanet",
@@ -689,6 +725,7 @@
     "receipts/headless/NOETIC_PARENT_A.json",
     "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
     "receipts/headless/ORGAN_FRONTIERS.json",
+    "receipts/headless/ORGAN_DENSITY_FLOORS.json",
     "receipts/headless/DELTANET_ORGAN.json"
    ],
    "deltanet_organ": {
@@ -710,6 +747,23 @@
      }
     ],
     "source": "receipts/headless/DELTANET_ORGAN.json"
+   },
+   "composition_density_floor": {
+    "complete_ebpw": {
+     "value": 3.2614879737507687,
+     "kind": "CITED",
+     "unit": "EBPW",
+     "command": "ORGAN_DENSITY_FLOORS.organs.deltanet.floor.complete_ebpw",
+     "source": "receipts/headless/ORGAN_DENSITY_FLOORS.json",
+     "absent_reason": null
+    },
+    "family": "grouped_absmax",
+    "codec": "ws_rtn_q3_g64",
+    "highest_rung_reached": "complete_token",
+    "vs_current_q2f_class": "below",
+    "dense_w": 0,
+    "note": "N040 composition-bar coherent floor on real activations. Distinct from ORGAN_FRONTIERS Q4-equivalent 0.990 bar.",
+    "source": "receipts/headless/ORGAN_DENSITY_FLOORS.json"
    }
   },
   {
@@ -1438,8 +1492,26 @@
     "receipts/headless/NOETIC_OPERATION_CENSUS.json",
     "receipts/headless/NOETIC_PARENT_A.json",
     "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-    "receipts/headless/ORGAN_FRONTIERS.json"
-   ]
+    "receipts/headless/ORGAN_FRONTIERS.json",
+    "receipts/headless/ORGAN_DENSITY_FLOORS.json"
+   ],
+   "composition_density_floor": {
+    "complete_ebpw": {
+     "value": 3.125,
+     "kind": "CITED",
+     "unit": "EBPW",
+     "command": "ORGAN_DENSITY_FLOORS.organs.embedding_output.floor.complete_ebpw",
+     "source": "receipts/headless/ORGAN_DENSITY_FLOORS.json",
+     "absent_reason": null
+    },
+    "family": "grouped_absmax",
+    "codec": "ws_rtn_q3_g128",
+    "highest_rung_reached": "complete_token",
+    "vs_current_q2f_class": "below",
+    "dense_w": 0,
+    "note": "N040 composition-bar coherent floor on real activations. Distinct from ORGAN_FRONTIERS Q4-equivalent 0.990 bar.",
+    "source": "receipts/headless/ORGAN_DENSITY_FLOORS.json"
+   }
   },
   {
    "organ": "sampling",

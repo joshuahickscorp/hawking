@@ -1275,6 +1275,12 @@ mod imp {
             "qwen_uniform_q4_group64_matvec_contig_tg128" => {
                 "qwen_uniform_q4_group64_matvec_contig_tg128"
             }
+            "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128" => {
+                "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128"
+            }
+            "qwen_uniform_q3_group128_matvec_geo_tpr64_tg128" => {
+                "qwen_uniform_q3_group128_matvec_geo_tpr64_tg128"
+            }
             "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128_alignedload" => {
                 "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128_alignedload"
             }
@@ -1473,6 +1479,8 @@ mod imp {
             }
             "qwen38_attention_apply_sigmoid_gate" => "qwen38_attention_apply_sigmoid_gate",
             "qwen38_f32_stream_probe" => "qwen38_f32_stream_probe",
+            "qwen38_hgravu_embedding_lookup" => "qwen38_hgravu_embedding_lookup",
+            "qwen38_hgrafv_embedding_lookup" => "qwen38_hgrafv_embedding_lookup",
             "qwen30_expert_table_hgravs_gemv" => "qwen30_expert_table_hgravs_gemv",
             "qwen30_expert_table_hgravs_gemv_rowblock2" => {
                 "qwen30_expert_table_hgravs_gemv_rowblock2"
@@ -2306,6 +2314,7 @@ mod imp {
                 "qwen38_gated_delta_decode_vi_simd_ba_tg32",
                 "qwen38_attention_apply_sigmoid_gate",
                 "qwen38_f32_stream_probe",
+                "qwen38_hgravu_embedding_lookup",
             ];
             for &kernel in &[
                 "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
@@ -2345,6 +2354,8 @@ mod imp {
                 "qwen_q2f_group64_matvec_geo_tpr64_tg128",
                 "qwen_q2f_group64_matvec_gate_up_geo_tpr64_tg128",
                 "qwen_q2f_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+                "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128",
+                "qwen_uniform_q3_group128_matvec_geo_tpr64_tg128",
             ] {
                 assert_eq!(static_kernel_name(kernel), kernel);
                 assert!(

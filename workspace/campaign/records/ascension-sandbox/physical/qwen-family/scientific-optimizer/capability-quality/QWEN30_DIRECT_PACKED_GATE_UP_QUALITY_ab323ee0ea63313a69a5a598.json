@@ -1,0 +1,105 @@
+{
+  "budget": {
+    "pair_component_physical_bpw": 1.1262868245442708,
+    "pair_physical_bytes": 442874,
+    "rule": "component BPW only; it does not estimate or change a complete artifact BPW",
+    "within_1_5_component_bpw": true
+  },
+  "claim_boundary": "source-bound component diagnostic only; no repack or baseline swap, and no full-model coherence, HCLI, capability, TPS, TG, or tournament claim",
+  "diagnosis": {
+    "interpretation_rule": "paired/direct-binary algebraic equality excludes only a source-component algebra difference; it does not validate Metal integration. The source-to-direct-binary error remains a representation diagnostic, not a prompt-quality score.",
+    "not_tested": "template_simdgroup_reduction_or_indexing_divergence_requires_a_repaired_exact_template_candidate_regression",
+    "tested": [
+      "gate_up_fusion_command_topology_not_yet_integrated",
+      "sensitive_organ_representation_error_under_complete_bpw_budget"
+    ]
+  },
+  "fail_condition": "source/revalidation, pair geometry, budget, or deterministic paired control fails",
+  "failure": null,
+  "measurement": {
+    "activation_control_count": 16,
+    "activation_scales": [
+      0.25,
+      1.0,
+      4.0,
+      8.0
+    ],
+    "claim_boundary": "deterministic source-component control only; not prompt/template parity, Metal parity, generation, HCLI, capability, or TPS",
+    "paired_vs_two_projection_direct_binary": {
+      "exact_float32_equivalent": true,
+      "max_abs": 0.0,
+      "relative_l2": 0.0
+    },
+    "source_to_direct_binary_swiglu": {
+      "cosine": 0.6606284976005554,
+      "max_abs": 243.6425018310547,
+      "relative_l2": 0.7507227063179016,
+      "rmse": 15.667373657226562
+    }
+  },
+  "pass_condition": "two source-bound direct-binary gate/up payloads fit the component budget and paired algebra matches the two-projection direct-binary control",
+  "quality_revision": "v1_source_bound_paired_swiglu_control",
+  "receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen-family/scientific-optimizer/capability-quality/QWEN30_DIRECT_PACKED_GATE_UP_QUALITY_ab323ee0ea63313a69a5a598.json",
+  "record_id": "qwen30-direct-packed-gate-up-quality:ab323ee0ea63313a69a5a598109756b125ad9000ba511820657dfd6f4b67e814",
+  "recorded_at": "2026-08-08T22:37:31.686664Z",
+  "reopen_condition": "source revalidation, direct-binary representation/layout, component kernel implementation, or runtime integration materially changes",
+  "runtime_binding": {
+    "direct_packed_component_receipt": {
+      "bytes": 4431,
+      "document_sha256": "9f95d2dbb0ea18cf26378996f89c4f0e2afb17e1392e5dc85b490ce29315dec3",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-token-profiler/QWEN30_DIRECT_PACKED_GATE_UP_PAIR_COMPONENT_RECEIPT.json",
+      "phase": null,
+      "present": true,
+      "recorded_at": "2026-08-08T22:29:16.125565Z",
+      "schema": "hawking.ascension.qwen30_direct_packed_gate_up_pair_component_receipt.v1",
+      "seal_sha256": "ddd14a0034347a2959dacd8f9972b24ad0fb146c5568dd39b5305fb1b578ff11",
+      "sealed": true,
+      "state": "SEALED",
+      "status": "EARNED_SOURCE_BOUND_DIRECT_PACKED_GATE_UP_PAIR_COMPONENT_NOT_MODEL_TPS"
+    },
+    "exact_runtime_receipt": {
+      "bytes": 4448,
+      "document_sha256": "39304280dbb9a6548d4bccadc748f5b1e244ed27495d1513ea518d6b7e3ed9ae",
+      "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-runtime/QWEN30_EXACT_FULL_TOKEN_RUNTIME_RECEIPT.json",
+      "phase": null,
+      "present": true,
+      "recorded_at": "2026-08-08T22:37:04.578861Z",
+      "schema": "hawking.ascension.physical_exact_full_token_runtime.v1",
+      "seal_sha256": "48f065627739877bbafae141fa6a4a37bbd8b24037921b996ca0881ca7828ced",
+      "sealed": true,
+      "state": "SEALED",
+      "status": "PASS_EXACT_NATIVE_FULL_TOKEN_RUNTIME"
+    },
+    "integration_state": "UNINTEGRATED_COMPONENT_ONLY"
+  },
+  "schema": "hawking.ascension.qwen30_direct_packed_gate_up_quality_diagnostic.v1",
+  "seal_sha256": "1d83d6c0e0cb620266e2095c76235c5a77e563d1e194c573b19cb1c42acb82a8",
+  "source_binding": {
+    "revalidation_receipt_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/QWEN30_CURRENT_SOURCE_SHARD_REVALIDATION.json",
+    "revalidation_receipt_seal_sha256": "ac7208e11c31bbd035bd87fd62a80020b9d1d05970867576f4649f6bebe68123",
+    "source_content_identity_sha256": "dfc985ac9e293c271209742f33c694664ed67b30962dad769cc3f596c58a9bb9",
+    "tensors": [
+      {
+        "source_shard": "model-00001-of-00016.safetensors",
+        "source_shard_sha256": "c8f4ee157c2bdb00521d0f422c08ef16f0f3f5f7e234786d829401d627d2e167",
+        "source_value_sha256": "45db05b1b7e4fca0dc2724fe7a47be16859c8d6189a8da06db680af2989cda0f",
+        "tensor_name": "model.layers.0.mlp.experts.0.gate_proj.weight",
+        "tensor_shape": [
+          768,
+          2048
+        ]
+      },
+      {
+        "source_shard": "model-00001-of-00016.safetensors",
+        "source_shard_sha256": "c8f4ee157c2bdb00521d0f422c08ef16f0f3f5f7e234786d829401d627d2e167",
+        "source_value_sha256": "a81b994a1e70c1e1e4061fb77d15114a81d64ab6d20f68a81bc9804cdcbcf12a",
+        "tensor_name": "model.layers.0.mlp.experts.0.up_proj.weight",
+        "tensor_shape": [
+          768,
+          2048
+        ]
+      }
+    ]
+  },
+  "status": "PASS_SOURCE_BOUND_DIRECT_PACKED_GATE_UP_QUALITY_DIAGNOSTIC_NOT_MODEL_QUALITY"
+}

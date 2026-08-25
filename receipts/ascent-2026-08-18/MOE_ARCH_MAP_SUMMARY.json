@@ -1,0 +1,13 @@
+{
+  "obligation": "Odyssey MoE architecture map (Grok, source-cited) + decoder-gap.",
+  "A_qwen3_moe": "48L all-MoE, 128 experts top-8, NO shared expert, softmax router (renorm top-k). Router should be higher-precision (8-bit) than experts. Experts stacked [128,out,in], SwitchGLU gather.",
+  "B_glm4_moe": "46L, layer-0 DENSE then MoE, 128 routed + 1 SHARED expert (always active), sigmoid router + correction bias + grouped-topk (n_group=1 degenerate), MTP present. Shared expert + layer-0 dense NEVER cold.",
+  "active_vs_stored": "A: every token 8/128 experts every layer. B: layer-0 dense + 8/128 routed + 1 shared always. The always-active hot body (B shared+dense) must be fast; routed experts are the sparse part.",
+  "decoder_gap": "Our Qwen3.8-hybrid decoder (dense SwiGLU + GQA + DeltaNet) has NO router dispatch or SwitchGLU expert-gather. MoE-native = a new decode path: router (higher precision) -> top-k select -> gather + affine2-quantized expert GEMV -> combine. The UNIVERSAL affine2/HGRAVF01 codec applies to expert weights directly.",
+  "opportunities": {
+    "MOE-UNIVERSAL": "native expert-gather moving ONLY active experts/token (the S042 active-vs-stored win); affine2 experts.",
+    "GLM-SPECIFIC": "shared expert + layer-0 dense are always-active hot body -> keep high fidelity; MTP throughput multiplier.",
+    "A3B-SPECIFIC_NEGATIVE": "uniform routing -> NO cold-expert compression, NO hot-subset caching."
+  },
+  "next": "GLM recon (baseline+route map) after download; then native MoE decode build (expert-gather kernel + affine2 experts) for the first native NX per model (G41)."
+}

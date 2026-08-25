@@ -1,0 +1,26 @@
+{
+  "obligation": "G21 census + G22 execution decomposition of the external MLX 2-bit abliterated artifact (S034 §2-3).",
+  "census": {
+    "quant": "EVERY language-model organ (embed, attention, deltanet, mlp, lm_head) = affine 2-bit group_size=32 = exactly 3.000 bpw effective (2 mantissa + fp16 scale + fp16 bias per 32 = 2 + 32/32).",
+    "unquantized": "norms fp16 (1.3MB); the 921MB 'other' is the VISION_TOWER (multimodal VLM) kept in bf16 -- NOT touched during text decode; linear_attn conv1d kept bf16 (3.9MB).",
+    "complete_effective_bpw": 3.2202,
+    "text_decode_active_GB": 10.09,
+    "vision_inactive_GB": 0.92,
+    "total_GB": 11.01
+  },
+  "REFRAME_decisive": "The external '2-bit' is 3.22 bpw effective -- the SAME density class as our Hawking q3 (3.3448). It is NOT a representation-density win. The bits=2 label hides fp16 scale+bias (S034 EFFECTIVE-BPW gate: exactly the trap the gate exists for).",
+  "decomposition_37.7_vs_30_TPS": {
+    "byte_ratio_q3_over_2bit": 1.16,
+    "tps_ratio": 1.26,
+    "representation_share": "~1.16x of the 1.26x = fewer active bytes (10.09 vs 11.7 GB)",
+    "runtime_kernel_share": "~1.09x residual = mlx_lm affine2 GEMV vs our geo_tpr64",
+    "WHY_fewer_bytes": "The external artifact quantizes ATTENTION to 3.0-bit affine and stays coherent (5/6). Our q3 patient over-provisions attention at ~4.25 bpw (thought it needed it). That attention gap is most of the 1.16x byte advantage."
+  },
+  "gravity_compiler_rules_learned": [
+    "affine grouped quant (scale + BIAS per group), g32, tolerates 2-bit-mantissa (3.0 eff bpw) on attention + deltanet + mlp + embed + lm_head while staying coherent -- our q3 need not keep attention at 4.25 bpw.",
+    "the 'bits' label is not the density; ALWAYS compute scale+bias+metadata overhead (g32 fp16 scale+bias = +1.0 bpw). EFFECTIVE-BPW gate.",
+    "vision tower is dead weight for text decode -- exclude from active-byte accounting."
+  ],
+  "native_reproduction_path": "To reproduce ~38 TPS natively (G26) without the foreign runtime: (1) affine-2bit-g32 pack of the bf16 (representation, incl. 3.0-bit attention) -> ~10GB active; (2) native Metal affine2 GEMV kernel (in-register dequant of 2-bit mantissa + fp16 scale/bias) matching mlx_lm efficiency; (3) run through our Rust decoder. This gives a CLEAN same-runtime comparison and, per G31, room to go below the generic external quant (per-organ group size, cheaper/shared scale, mixed bits).",
+  "next": "Grok archaeology: affine2 quant+kernel spec from installed mlx source; our decoder's affine integration point; adversarial review of this decomposition. Then build the native affine2 pack + GEMV (G23/G24)."
+}

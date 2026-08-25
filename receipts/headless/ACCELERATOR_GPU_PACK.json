@@ -1,0 +1,86 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T15:10:39Z",
+ "experiment_class": "ACCEL-KERNEL",
+ "knowledge_level": "INSTANCE",
+ "git_head": "23c5768e00f48d215f959b2c78764a714a0cc0be",
+ "identities": {
+  "experiment": {
+   "id": "GPU_PACK_Q4_G64",
+   "obligation": "G046 + G049",
+   "steer": "S015 \u00a777 the metric that counts; \u00a7141 existing winners; \u00a719 no dense remat"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "storage": "TIER 1 ~/noetic/stage"
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "specimen": "Qwen3-30B-A3B",
+   "tensors": "64 expert gate_proj, 768x2048"
+  },
+  "representation": {
+   "name": "ws_rtn_q4_g64",
+   "bpw": 4.25
+  },
+  "kernel": {
+   "produced_by": "gravity_native.pack_source",
+   "shape": "one thread per 64-weight group; absmax, scale, quantise, pack; NO barrier"
+  },
+  "runtime": {
+   "python": "3.12.6"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "THE_TIER1_RECEIPT_NAMED_THIS_LEVER": "'pack 36.96% > gpu 30.88% > verify 29.02% > read 3.12%. The largest phase is now CPU-SIDE QUANTIZATION, which the accelerator could attack and has not.' This attacks it, changing ONLY the packer.",
+  "CORRECTNESS_IS_BINARY_HERE_AND_THAT_IS_THE_POINT": "The quantiser is integer rounding of an f32 quotient, and Metal's rint() is round-half-to-even exactly as numpy's is, so BIT-EXACTNESS IS ACHIEVABLE AND THEREFORE REQUIRED. Not a tolerance -- the bytes match or the port is wrong. BIT-EXACT on (768,2048), (256,512), (64,64); on the amax==0 branch; on EXACT .5 QUOTIENTS where the rounding mode alone decides; on negatives-only; on values at 1e-30; and on 8 of 8 REAL Qwen3 expert tensors read from the staged shard. A TOLERANCE WOULD HAVE HIDDEN A ROUNDING-MODE DIFFERENCE that changes one weight in a million and never shows up in a norm.",
+  "THE_PREDICTION_AND_WHAT_IT_GOT_RIGHT_AND_WRONG": "Written before the run: relative gain +20% to +50%, absolute 215,000-270,000 WU/h. THE RELATIVE PREDICTION LANDED at +48.31% on the first A/B and +57.41% on medians of six pairs. THE ABSOLUTE PREDICTION MISSED HIGH because I computed it off the TIER 1 baseline of 179,762 WU/h, which included MLX's one-time kernel COMPILE; with both paths warmed the CPU-pack baseline is 261,640. Predicting a ratio off a cold absolute is a mistake I made and it is recorded rather than quietly rebased.",
+  "SIX ALTERNATING PAIRS, NOT ONE RUN": {
+   "pairs": 6,
+   "cpu_wu_h": [
+    259713.3,
+    267477.7,
+    263567.1,
+    268250.2,
+    240081.2,
+    248991.6
+   ],
+   "gpu_wu_h": [
+    421345.8,
+    413614.1,
+    415736.4,
+    410100.8,
+    389699.1,
+    374603.0
+   ],
+   "median_cpu": 261640.19999999998,
+   "median_gpu": 411857.44999999995,
+   "gain_pct": 57.41,
+   "cpu_spread_pct": 10.77,
+   "gpu_spread_pct": 11.35,
+   "separated": true
+  },
+  "THE_EVIDENCE_IS_SEPARATION_NOT_A_RATIO": "CPU median 261640 WU/h (spread 10.77%), GPU median 411857 (spread 11.35%), gain +57.41%. Arms ALTERNATED so drift hits both. EVERY GPU RUN BEATS EVERY CPU RUN -- min GPU 374,603 against max CPU 268,250 -- and complete separation at these spreads is stronger evidence than the median ratio. Margin 57.41% against worst-arm noise 11.3% is 5.1x, which also clears this program's own large-margin hatch.",
+  "the_pack_itself": {
+   "cpu_s": 0.35925,
+   "gpu_s": 0.07057,
+   "speedup": 5.09
+  },
+  "WHY_IT_WINS_AND_WHY_IT_IS_NOT_MORE": "The pack is EMBARRASSINGLY PARALLEL ACROSS GROUPS -- each 64-weight group owns its absmax, its scale and its 32 output bytes, so the kernel needs NO BARRIER at all. That is why it ports cleanly. It wins 5.06x rather than more because the arm still pays a dispatch and a DEVICE ROUND TRIP per tensor: the packed bytes come back to numpy only to be handed straight back to the verify kernel. Keeping them on device would remove that and is NOT DONE HERE.",
+  "THE_BOTTLENECK_MOVED_AGAIN_AND_IT_IS_NOW_MY_OWN_HONESTY": "Under GPU pack the shares are verify 61.407% > pack 12.656% > read 7.075% > gpu 6.217%. THE DOMINANT PHASE IS NOW accept_pack -- the two-gate predicate built to replace the one that accepted an all-zeros pack. Fixing the correctness defect made verification 61% of the work. The next lever is making the HONEST gate cheap, NOT weakening it back toward the cheap dishonest one, and naming it that way is the only thing stopping the obvious wrong fix.",
+  "A_PRE_EXISTING_REPRESENTATION_LIMIT_FOUND_ON_THE_WAY": "An absmax above 458,528 (= 65504 x 7) overflows the stored f16 scale to inf and the dequantized tensor becomes nan. BOTH packers do it IDENTICALLY, so it is a limit of ws_rtn_q4_g64 and not of the port. Real bf16 weights are O(1) so it does not bite in practice, but it is SILENT, and accept_pack now catches it (cosine 0.0, magnitude ratio nan, REJECTED). Recorded rather than fixed, because changing the representation is Gravity's call and not this receipt's.",
+  "GPU_COLUMN_STILL_CONTAMINATED_AND_STILL_SAID_SO": "gpu_s measured 0.05765 s in the CPU-pack arm and 0.03467 s in the GPU-pack arm for IDENTICAL verify work. GPU compute cannot vary with what the CPU did before it, so that column carries scheduling and wait as well as kernel time, exactly as the \u00a777 receipt recorded.",
+  "test_count": "166 accelerator tests pass (was 161)"
+ },
+ "claim_boundary": "One specimen, one tensor class, 64 units per run, 6 alternating pairs on ONE machine from TIER 1 storage. Spreads are ~11%, above the 10% IQR gate, so this is admitted by COMPLETE SEPARATION and a 5.1x margin-over-noise rather than by a clean gate. f32 input only -- the bf16 decode still happens on CPU before the pack, and moving THAT is a separate unmeasured step. The packed bytes still round-trip through host memory. Nothing here ran inside a model, and bit-exactness of a PACK says nothing about whether the REPRESENTATION is adequate for one.",
+ "pass": true,
+ "amendment_mlx_compile_attribution": "AMENDED 2026-08-25 by ACCELERATOR_JIT_COMPILE.json: this receipt attributed a first-run cost to 'MLX kernel compile'. THAT ATTRIBUTION IS NOW MEASURED AND IT IS WRONG IN SCOPE TWICE. Compiling a distinct custom kernel costs 36.8 ms, so the WorkUnit's two kernels are 73.6 ms = 23.2% of its 0.3176 s first-run excess. The dominant term is MLX's first-use costs at 175 ms, and 151 ms of THAT is a single thing -- the FIRST mx.array from a numpy buffer, which is device and allocator initialisation, NOT compilation. The direction of every affected statement is unchanged (the first run really is slower and really should not be quoted as a baseline); only the named MECHANISM changes."
+}

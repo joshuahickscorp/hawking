@@ -1,0 +1,452 @@
+{
+  "alignment_policy": {
+    "align_on": [
+      "decoded_spans",
+      "byte_ranges",
+      "formal_actions",
+      "tool_events"
+    ],
+    "never_align_on": [
+      "token_ids",
+      "incompatible_vocab_indices"
+    ]
+  },
+  "bounded_logits_top_k": null,
+  "decoded_spans": [
+    {
+      "byte_end": 319,
+      "byte_start": 0,
+      "role": "prompt",
+      "side": "glm",
+      "text": "Select useful premises for proving the goal (method selection).\n\nGoal:\ncommute_algebraMap_left (r : R) (x : A) : Commute (algebraMap R A r) x\n\nCandidate premises (mixed useful/distractor):\n- Algebra.commutes\n- Algebra.subsingleton\n- coe_zero\n- coe_one\n- coe_natCast\n- coe_add\n- coe_mul\n\nReturn the useful premises only.",
+      "token_ids": null,
+      "token_ids_forbidden_for_alignment": true
+    }
+  ],
+  "decomposition": null,
+  "example_id": "pfv0:d3:Mathlib.Algebra.Algebra.Defs.commute_algebraMap_left",
+  "fabricated": false,
+  "formal_actions": [],
+  "membership": "train",
+  "meta": {
+    "complete_pair": false,
+    "corpus_level": "L0",
+    "glm_teacher_forced": true,
+    "layers_captured": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13
+    ]
+  },
+  "method_family_choice": null,
+  "prompt_text": "Select useful premises for proving the goal (method selection).\n\nGoal:\ncommute_algebraMap_left (r : R) (x : A) : Commute (algebraMap R A r) x\n\nCandidate premises (mixed useful/distractor):\n- Algebra.commutes\n- Algebra.subsingleton\n- coe_zero\n- coe_one\n- coe_natCast\n- coe_add\n- coe_mul\n\nReturn the useful premises only.",
+  "proof_plan": null,
+  "recorded_at": "2026-08-06T17:58:08.322840Z",
+  "repair_steps": [],
+  "representative_hidden_states": null,
+  "route_statistics": null,
+  "schema": "hawking.frankenstein.paired_functional_trace.v1",
+  "seal_sha256": "d9c088be60f5fda1517aa98d4bf55992e9c64a6c35ef909c35d6b21a80eecfe2",
+  "sides": {
+    "dsv4f": {
+      "bounded_logits_top_k": null,
+      "capture_status": "ABSENT",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "method_family_choice": null,
+      "present": false,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": null,
+      "route_statistics": null,
+      "side": "dsv4f",
+      "tool_events": [],
+      "verification": null
+    },
+    "glm": {
+      "bounded_logits_top_k": [
+        {
+          "logit": 3.474438190460205,
+          "rank": 0,
+          "token_id": 27
+        },
+        {
+          "logit": 3.2992732524871826,
+          "rank": 1,
+          "token_id": 43
+        },
+        {
+          "logit": 3.214876413345337,
+          "rank": 2,
+          "token_id": 26
+        },
+        {
+          "logit": 2.8745365142822266,
+          "rank": 3,
+          "token_id": 58
+        },
+        {
+          "logit": 2.8092565536499023,
+          "rank": 4,
+          "token_id": 29
+        },
+        {
+          "logit": 2.807034492492676,
+          "rank": 5,
+          "token_id": 55
+        },
+        {
+          "logit": 2.623051404953003,
+          "rank": 6,
+          "token_id": 50
+        },
+        {
+          "logit": 2.528398275375366,
+          "rank": 7,
+          "token_id": 1
+        }
+      ],
+      "capture_status": "OK",
+      "decoded_spans": [],
+      "decomposition": null,
+      "formal_actions": [],
+      "layer_major": true,
+      "layers_captured": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "method_family_choice": null,
+      "present": true,
+      "proof_plan": null,
+      "repair_steps": [],
+      "representative_hidden_states": [
+        {
+          "absmax": 0.18665897846221924,
+          "l2": 3.593578577041626,
+          "layer": 0,
+          "mlp_type": "dense",
+          "sample_sha256": "05c24d86bfdcef617d9f4d3f1d8611527421f7e3bea72b25211be75442c76204",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.2358187437057495,
+          "l2": 3.3311188220977783,
+          "layer": 1,
+          "mlp_type": "dense",
+          "sample_sha256": "ed92b5848a8b14afb878211df0bcfdbc214da62b775b0c9a33023b8754e55712",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.25659212470054626,
+          "l2": 3.237342596054077,
+          "layer": 2,
+          "mlp_type": "dense",
+          "sample_sha256": "38188f846d4b288d242c6fa257f9728bbb4e4bdb67527ccc27d59d3de31a9cd1",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.28160879015922546,
+          "l2": 3.3319091796875,
+          "layer": 3,
+          "mlp_type": "sparse",
+          "sample_sha256": "25a5392a2a570ad9b3498b324bf2a4d8248f50884365fb18c39a6dc941732bde",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.29394811391830444,
+          "l2": 3.491328239440918,
+          "layer": 4,
+          "mlp_type": "sparse",
+          "sample_sha256": "7153bae8d94500d2c8948179ec36654f2fd8b0f7fe6b8946e48e4ac98d58d1c9",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.3304002285003662,
+          "l2": 3.9502198696136475,
+          "layer": 5,
+          "mlp_type": "sparse",
+          "sample_sha256": "64c849d3cad82534a46d7c620783dc0d2a7bba67e73018825e99dce77c2a702c",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 0.6281153559684753,
+          "l2": 5.347162246704102,
+          "layer": 6,
+          "mlp_type": "sparse",
+          "sample_sha256": "ef210db622a82a2cf1eb00523e37420e87803384d1ca270fd46461a8b7c6fda5",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 1.1029884815216064,
+          "l2": 6.19463586807251,
+          "layer": 7,
+          "mlp_type": "sparse",
+          "sample_sha256": "3084e55605755301be3ebdd4597b9429b04bf257d4bd7928b1cb0f980f5160d4",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 39.36675262451172,
+          "l2": 95.87801361083984,
+          "layer": 8,
+          "mlp_type": "sparse",
+          "sample_sha256": "70d731c4471787149e5692f25f34fc083d7490911725217d67c7a48f363f1bd3",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 81.41049194335938,
+          "l2": 634.4593505859375,
+          "layer": 9,
+          "mlp_type": "sparse",
+          "sample_sha256": "20380f324eec63c3885037de033e272db6cfb8d3dbd5b42839040d9c63e7a8bf",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 83.47467041015625,
+          "l2": 640.7652587890625,
+          "layer": 10,
+          "mlp_type": "sparse",
+          "sample_sha256": "e679d6f02e56c6fbdcfbb0773568727a4d6e1017cf3b2da7a39907c1430d774f",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 83.96946716308594,
+          "l2": 640.8268432617188,
+          "layer": 11,
+          "mlp_type": "sparse",
+          "sample_sha256": "7fa5859b015f2b0381c0b39506c4d9c3900457b3dcb4316058f606434dfe45c4",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 87.47718048095703,
+          "l2": 641.490478515625,
+          "layer": 12,
+          "mlp_type": "sparse",
+          "sample_sha256": "92b8619a24e3277c558e843fe59a644a7ea1cb927c44ce70cf53f7d071a8e3f4",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        },
+        {
+          "absmax": 88.21761322021484,
+          "l2": 641.6891479492188,
+          "layer": 13,
+          "mlp_type": "sparse",
+          "sample_sha256": "adb5eeeb09b821677342baec3f6ff1c74fba39ecf7e7a3750f77962d0c0bdcbd",
+          "sample_slots": [
+            "first",
+            "mid",
+            "last"
+          ],
+          "site": "block_output"
+        }
+      ],
+      "route_statistics": {
+        "expert_counts": {
+          "0": 3,
+          "100": 4,
+          "101": 1,
+          "102": 2,
+          "106": 1,
+          "108": 1,
+          "11": 3,
+          "110": 2,
+          "112": 1,
+          "113": 1,
+          "114": 2,
+          "117": 4,
+          "120": 1,
+          "122": 2,
+          "129": 2,
+          "13": 5,
+          "130": 5,
+          "131": 1,
+          "133": 1,
+          "135": 2,
+          "139": 1,
+          "14": 6,
+          "140": 7,
+          "142": 1,
+          "143": 2,
+          "145": 2,
+          "148": 6,
+          "15": 9,
+          "150": 1,
+          "152": 1,
+          "156": 1,
+          "158": 1,
+          "161": 4,
+          "163": 4,
+          "166": 2,
+          "167": 7,
+          "170": 1,
+          "171": 3,
+          "174": 2,
+          "18": 2,
+          "181": 3,
+          "185": 2,
+          "186": 3,
+          "187": 1,
+          "190": 1,
+          "191": 1,
+          "193": 6,
+          "199": 1,
+          "2": 2,
+          "201": 1,
+          "205": 2,
+          "206": 4,
+          "21": 1,
+          "210": 1,
+          "213": 1,
+          "214": 2,
+          "218": 3,
+          "22": 1,
+          "220": 2,
+          "223": 1,
+          "227": 1,
+          "229": 4,
+          "230": 3,
+          "232": 1,
+          "233": 1,
+          "237": 1,
+          "238": 1,
+          "239": 1,
+          "240": 1,
+          "248": 5,
+          "250": 4,
+          "251": 1,
+          "252": 2,
+          "26": 3,
+          "28": 5,
+          "3": 1,
+          "32": 1,
+          "34": 5,
+          "37": 1,
+          "4": 1,
+          "41": 4,
+          "47": 1,
+          "48": 1,
+          "5": 1,
+          "50": 4,
+          "51": 1,
+          "60": 7,
+          "61": 12,
+          "62": 4,
+          "63": 1,
+          "69": 1,
+          "7": 2,
+          "70": 1,
+          "72": 3,
+          "77": 1,
+          "78": 1,
+          "8": 1,
+          "82": 5,
+          "83": 3,
+          "87": 1,
+          "90": 3,
+          "93": 1,
+          "95": 2,
+          "96": 2,
+          "98": 2,
+          "99": 2
+        },
+        "load_balance_cv": null,
+        "note": "route stats are student-native; never copy GLM router weights",
+        "source_layer": 3,
+        "top_k": 8
+      },
+      "side": "glm",
+      "teacher_forced": true,
+      "tool_events": [],
+      "verification": null
+    }
+  },
+  "tool_events": [],
+  "verification": null
+}

@@ -1,0 +1,123 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T16:13:05Z",
+ "experiment_class": "ACCEL-COMPILE",
+ "knowledge_level": "INSTANCE",
+ "git_head": "59d5867491ef127853cae3bd4392c2394e97f62e",
+ "identities": {
+  "experiment": {
+   "id": "SPECIALIZATION_CONSTANTS",
+   "obligation": "G044 + G043",
+   "steer": "S015 \u00a712 SPECIALIZATION as a COMPILER capability; AIR has carried specialization constants as a first-class field since P3"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal via MLX 0.32.1"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "microbenchmark, no model"
+  },
+  "representation": {
+   "status": "ABSENT",
+   "reason": "dense f32"
+  },
+  "kernel": {
+   "produced_by": "hand-written MSL pairs differing ONLY in whether the constant is a literal or a buffer read"
+  },
+  "runtime": {
+   "python": "3.12.6"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device"
+  }
+ },
+ "headline": "SPECIALIZATION CONSTANTS BUY NOTHING MEASURABLE ON THIS BACKEND. Scalar literal vs buffer: INDISTINGUISHABLE. Compute-bound loop bound, where unrolling should have paid: INDISTINGUISHABLE with the literal 3.09% SLOWER, both arms CLEAN. My prediction was wrong in both loop cases and the explanation I offered for the first died in the second.",
+ "why_this_gap": "the CCL carried COMPILER.specialization_constants with measured=False, reason 'specialisation was never isolated as its own arm'. AIR has had the field since P3 and the forge tunes one, but nothing ever compared BAKING A VALUE INTO THE SOURCE against READING IT FROM A BUFFER.",
+ "the_design_had_two_cases_on_purpose": {
+  "case_A_scalar": "literal 1.5f against s[0]. Specialization saves ONE broadcast LOAD. PREDICTED INDISTINGUISHABLE.",
+  "case_B_loop_bound": "for(k < 64) literal against for(k < n[0]). Specialization changes WHAT THE COMPILER CAN PROVE -- a literal bound can be unrolled and the induction folded. PREDICTED A REAL DIFFERENCE."
+ },
+ "results": {
+  "scalar": {
+   "arms": {
+    "scalar_literal": {
+     "median_s": 0.00024649998522363603,
+     "iqr_spread_pct": 7.95,
+     "reliable": true
+    },
+    "scalar_buffer": {
+     "median_s": 0.00024250001297332346,
+     "iqr_spread_pct": 6.64,
+     "reliable": true
+    }
+   },
+   "compare": {
+    "verdict": "INDISTINGUISHABLE",
+    "speedup": 0.9838,
+    "reason": "margin 1.62% does not clear arm noise 7.95%"
+   },
+   "verdict": "PREDICTION A CONFIRMED"
+  },
+  "loop_memory_bound": {
+   "arms": {
+    "loop_literal": {
+     "median_s": 0.00021595798898488283,
+     "iqr_spread_pct": 9.16,
+     "reliable": true
+    },
+    "loop_buffer": {
+     "median_s": 0.00022154100588522851,
+     "iqr_spread_pct": 14.66,
+     "reliable": false
+    }
+   },
+   "compare": {
+    "verdict": "NO_CLAIM",
+    "reason": "an arm failed the 10.0% IQR gate (loop_buffer 14.66%, loop_literal 9.16%) and the margin 2.59% does not overwhelm that noise",
+    "speedup": null
+   },
+   "verdict": "PREDICTION B NOT CONFIRMED -- 2.59% margin and the buffer arm failed the gate at 14.66%, so the instrument refused to call it either way"
+  },
+  "loop_compute_bound": {
+   "arms": {
+    "compute_literal": {
+     "median_s": 0.0003683329850900918,
+     "iqr_spread_pct": 5.25,
+     "reliable": true
+    },
+    "compute_buffer": {
+     "median_s": 0.00035695801489055157,
+     "iqr_spread_pct": 4.96,
+     "reliable": true
+    }
+   },
+   "compare": {
+    "verdict": "INDISTINGUISHABLE",
+    "speedup": 0.9691,
+    "reason": "margin 3.09% does not clear arm noise 5.25%"
+   },
+   "verdict": "PREDICTION B REFUTED -- clean arms at 5.25% and 4.96%, and the literal is 3.09% SLOWER"
+  }
+ },
+ "the_explanation_i_offered_died_in_the_next_experiment": {
+  "what_i_said": "the first loop was MEMORY BOUND, so unrolling changes the instruction stream but not the traffic, and the traffic is the wall",
+  "how_it_was_tested": "one load then 256 fused multiply-adds on it, so loop overhead and the branch are the ONLY difference between the arms",
+  "outcome": "INDISTINGUISHABLE with CLEAN ARMS. The explanation predicted a win on the compute-bound shape and there is none, so it is refuted rather than carried forward as a story that happens to fit one null result.",
+  "what_would_settle_the_mechanism_and_why_it_cannot_be_done_here": "whether the literal loop is actually unrolled is a question about GENERATED CODE, and xcrun metal is ABSENT on this machine (the same named gate that blocks AOT metallib), so the assembly cannot be inspected. 'The compiler already handles a uniform runtime bound as well as a literal' is a HYPOTHESIS here, not a finding."
+ },
+ "a_distinction_that_must_not_be_conflated": "the FORGE tunes a TILE SIZE and calls it a specialization, and it measured 2096 / 2091 / 2258 GFLOP/s across tiles 8/16/32. THAT IS A DIFFERENT THING: a tile size changes the ALGORITHM -- threadgroup allocation, loop structure, memory access pattern -- while this measures a CONSTANT that changes only where a number comes from. Reading the forge's tile result as evidence that specialization constants pay would be wrong, and this receipt exists partly to keep the two apart.",
+ "consequence_for_AIR": "AIR's specialization constants are an EXPRESSIVENESS feature on this backend, not a performance one. They still earn their place -- a program that names its constants is a program whose identity key can include them, which is what the forge cache depends on -- but no speed claim may be attached to them.",
+ "claim_boundary": {
+  "two_shapes_one_machine": "a 2^22 elementwise multiply and a 2^20 x 256 fma loop, f32, one machine, INSTANCE. A kernel where a specialized constant enables BRANCH ELIMINATION or a different memory layout is untested and could differ.",
+  "reps": "200 reps and 40 warmup, the program's own stability floor, and three of the four arms in the first run plus both in the second are inside the 10% gate",
+  "correctness_first": "both pairs verified BIT-IDENTICAL (max_abs_diff exactly 0.0) before timing -- a faster wrong answer is not a result, and here a DIFFERENT answer would have meant the arms were not the same computation at all",
+  "mlx_not_metal_directly": "MLX supplies the kernel signature and may itself pass shapes as buffers; what is compared is what MLX emits, not raw Metal"
+ },
+ "pass": true
+}

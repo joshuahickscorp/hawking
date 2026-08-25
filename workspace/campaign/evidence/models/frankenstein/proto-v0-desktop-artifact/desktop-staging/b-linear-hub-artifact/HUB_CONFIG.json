@@ -1,0 +1,20 @@
+{
+  "always_on_mode": "sequential",
+  "claim_boundary": {
+    "capability_claim": false,
+    "live_v0_switched": false,
+    "production_validated": false,
+    "status": "B_LINEAR_DESKTOP_ARTIFACT"
+  },
+  "d_model": 4096,
+  "env_override_key": "FRANKENSTEIN_HUB_ACTIVE",
+  "flip_instructions": "Set hub_active=true in this config (or HUB_ACTIVE=True in frankenstein_adapter_hub.py, or FRANKENSTEIN_HUB_ACTIVE=1) ONLY after activation_trigger evaluates true.  Do not flip before A\u2013G ablation / auto-bench shows secondary regression beyond tolerance or a confirmed transplant-site collision.",
+  "gate_hidden": 32,
+  "gate_pool": "token",
+  "hub_active": true,
+  "include_bypass": true,
+  "module_default_HUB_ACTIVE": false,
+  "schema": "hawking.frankenstein.multi_adapter_hub_config.v1",
+  "selection_mode": "top1",
+  "temperature": 1.0
+}

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>com.hawking.ascension.qwen30.complete-gravity</string>
+  <key>ProgramArguments</key><array>
+    <string>/usr/bin/nice</string><string>-n</string><string>10</string>
+    <string>/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python</string>
+    <string>/Users/scammermike/Downloads/hawking/tools/condense/ascension_qwen30_complete_gravity.py</string>
+    <string>--model-dir</string><string>/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-30b/Qwen3-Coder-30B-A3B-Instruct</string>
+    <string>--source-audit</string><string>/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/QWEN30_SOURCE_BODY_AUDIT_CANDIDATE.json</string>
+    <string>--root</string><string>/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity</string>
+    <string>--max-tensors</string><string>16</string>
+  </array>
+  <key>WorkingDirectory</key><string>/Users/scammermike/Downloads/hawking</string>
+  <key>ProcessType</key><string>Background</string>
+  <key>KeepAlive</key><true/><key>ThrottleInterval</key><integer>5</integer>
+  <key>StandardOutPath</key><string>/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/launchd.stdout.log</string>
+  <key>StandardErrorPath</key><string>/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen30/complete-gravity/launchd.stderr.log</string>
+</dict></plist>

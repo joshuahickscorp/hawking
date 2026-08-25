@@ -1,0 +1,2153 @@
+{
+  "checkpointed_at": "2026-08-18T06:07:22.256109Z",
+  "ephemeral_state_persisted": false,
+  "reason": "AgentOS HCLI turn persisted",
+  "resume_requires_transcript": false,
+  "schema": "hawking.genesis.worker_checkpoint.v1",
+  "seal_sha256": "d4989bba3a76323fa1774c851c6e2e9a12c8ce1b4cab40a5b46d619a61cedb1f",
+  "worker": {
+    "bound_generation": {
+      "artifact_sha": "d650a757c4cffed463ce8c24dfd5052c2cb47c0f6b1eb10349947854fc47b9df",
+      "complete_token_ns": 37879375,
+      "generation": 0,
+      "physical_bpw": 4.252735126866492,
+      "repo_head": "0fbf2e2a5e8972e5cb52435c5a2e6cb30b5238f9",
+      "runtime_sha": "ae0bc8defd84a8a1a5cd1c4598224f370c0cfce83a0904e275cbb33df84d32c2",
+      "tps": 26.399590806342502
+    },
+    "durable_task_state": {
+      "NEXT_ACTION": "Repair or falsify the failed AgentOS HCLI turn 9a712a69694abd1c before broadening the search.",
+      "findings": [],
+      "goal": "Lower the complete-token wall of the current Genesis execution genome.",
+      "hcli_session_id": "genesis-kernel",
+      "hypotheses": [],
+      "last_agentos_turn": {
+        "at": "2026-08-18T06:07:22Z",
+        "ok": false,
+        "summary": "ResidentRefused: resident client returned no result"
+      },
+      "last_agentos_turn_receipt_sha256": "9a712a69694abd1c19b8e68ca387e7c400d2ef3a034cb469f3e9efe11cdeda48",
+      "negative_science": [],
+      "pending_experiments": [],
+      "receipts": [
+        {
+          "at": "2026-08-17T16:04:48Z",
+          "kind": "agentos_hcli_turn",
+          "ok": false,
+          "sha256": "01308907d693683f4608a38bb93611c4ee841c9623896ea096aeaa5c992f3d32"
+        },
+        {
+          "at": "2026-08-17T16:15:08Z",
+          "kind": "agentos_hcli_turn",
+          "ok": true,
+          "sha256": "15d902e3538adcb2f16498ff95bc727980a3e6e63be00b06b8cb9b012bcd752f"
+        },
+        {
+          "at": "2026-08-17T16:20:15Z",
+          "kind": "agentos_hcli_turn",
+          "ok": false,
+          "sha256": "a9a51f20e011561dc9ee04519351c4c8160d1f21e74d9751a34201fe3dd5fb38"
+        },
+        {
+          "at": "2026-08-17T16:31:20Z",
+          "kind": "agentos_hcli_turn",
+          "ok": true,
+          "sha256": "83884d6c623f30edec066adc99fb375ea4f3ff0e5697455f4e213162075d4a4f"
+        },
+        {
+          "at": "2026-08-17T16:43:10Z",
+          "kind": "agentos_hcli_turn",
+          "ok": true,
+          "sha256": "4f346e745f22bff718b3e726780c2d1280b74c682ce6f364f03cfa68ec153496"
+        },
+        {
+          "at": "2026-08-17T17:12:05Z",
+          "kind": "agentos_hcli_turn",
+          "ok": true,
+          "sha256": "c263d45157d284d3ef0b885bfac73dfb5feeb39d5f24d8d935d27de00ac64b02"
+        },
+        {
+          "at": "2026-08-17T17:20:09Z",
+          "kind": "agentos_hcli_turn",
+          "ok": true,
+          "sha256": "1ace4a6aa60fa917d68c8b1d9edf12a66379c1c817a7d8c4a3331a77bbf02883"
+        },
+        {
+          "at": "2026-08-17T17:28:09Z",
+          "kind": "agentos_hcli_turn",
+          "ok": true,
+          "sha256": "fc9da9479fa3faef95bc4c3a8a5d934a236de6ebb2a13c78f1b6d2c486db5654"
+        },
+        {
+          "at": "2026-08-17T17:36:10Z",
+          "kind": "agentos_hcli_turn",
+          "ok": true,
+          "sha256": "da36191601dec504858fb9a7e8b803aa29806fb82e341a7a3e4cb8a73bff8576"
+        },
+        {
+          "at": "2026-08-17T17:44:14Z",
+          "kind": "agentos_hcli_turn",
+          "ok": true,
+          "sha256": "1d50eea786670e3629496e32a12329d79b83621a756a4dededfed63e087ddbb4"
+        },
+        {
+          "at": "2026-08-17T17:52:22Z",
+          "kind": "agentos_hcli_turn",
+          "ok": true,
+          "sha256": "5cd9bf358beb58e043934c6772254960d3437680adb8ffacf23063fdcd503176"
+        },
+        {
+          "at": "2026-08-17T17:56:24Z",
+          "kind": "agentos_hcli_turn",
+          "ok": false,
+          "sha256": "3e956534dca67f26d94164b891855c9777f48a2f8cf8b4da2a96ea2cc781d6f4"
+        },
+        {
+          "at": "2026-08-17T18:04:32Z",
+          "kind": "agentos_hcli_turn",
+          "ok": false,
+          "sha256": "1ca9a9361067acbcdc85e5f78957306b775956d20dc924fe080d533f47620995"
+        },
+        {
+          "at": "2026-08-17T18:15:35Z",
+          "kind": "agentos_hcli_turn",
+          "ok": false,
+          "sha256": "03339981da5900ad0d0fd60830f98320989e17e0fd51acbaa11d87f91c776c05"
+        },
+        {
+          "at": "2026-08-17T18:24:48Z",
+          "kind": "agentos_hcli_turn",
+          "ok": false,
+          "sha256": "4ba014f1d1addf9051bc3e69d13aca6fc3dbe2cefb258d9e10056e0d151d52e4"
+        },
+        {
+          "at": "2026-08-17T18:34:12Z",
+          "kind": "agentos_hcli_turn",
+          "ok": false,
+          "sha256": "235f4fbeccf847a4bcd84958cfbbc6e483f3435be6764dd4d57b867406b4ead0"
+        },
+        {
+          "at": "2026-08-17T18:53:43Z",
+          "kind": "agentos_hcli_turn",
+          "ok": false,
+          "sha256": "04b4833cf97104f2b9dbe0302bcdb1330c520090353960318d9ccd65120c87b9"
+        },
+        {
+          "at": "2026-08-17T19:03:46Z",
+          "kind": "agentos_hcli_turn",
+          "ok": false,
+          "sha256": "b2a1cfd33be9294f23759ca59add3172bca927dac1a59039bd795d850287f8dd"
+        },
+        {
+          "at": "2026-08-17T19:14:03Z",
+          "kind": "agentos_hcli_turn",
+          "ok": false,
+          "sha256": "d606fe022df16c20d3ad67fb023aacdf60ddd63b72e5926175ee4c85cee3dcaa"
+        },
+        {
+          "at": "2026-08-17T19:23:12Z",
+          "kind": "agentos_hcli_turn",
+          "ok": false,
+          "sha256": "58e56d9cfd1da8a154bd6e9abc8c84c95fbb6791644a8fa5ddefb6cac1b352a2"
+        },
+        {
+          "at": "2026-08-17T19:49:34Z",
+          "kind": "agentos_hcli_turn",
+          "ok": false,
+          "sha256": "12f1e49d7670d7245ac1f3f02e8b07828d30123354a8f10661adc9f8ecc7019c"
+        },
+        {
+          "at": "2026-08-17T19:59:37Z",
+          "kind": "agentos_hcli_turn",
+          "ok": false,
+          "sha256": "29b1a559e50df05b76032830bd3edcab192c1dd2a8fc77bfe9efa0cdbd0bd804"
+        },
+        {
+          "at": "2026-08-17T20:09:38Z",
+          "kind": "agentos_hcli_turn",
+          "ok": false,
+          "sha256": "4738e11d93a3fc6f931e56e9c9f062c01b8ddbed8022ef551401c8bfc65e8b25"
+        },
+        {
+          "at": "2026-08-17T20:19:40Z",
+          "kind": "agentos_hcli_turn",
+          "ok": false,
+          "sha256": "8a23405bf0d6c71f7abad115cb91014f712f59ee0276d7b9f951c3499294ac84"
+        },
+        {
+          "at": "2026-08-17T20:29:59Z",
+          "kind": "agentos_hcli_turn",
+          "ok": false,
+          "sha256": "ea02c4423d3455c5fdf6f6e7c6e0018ef3a1292b29d9bbf2158ca89d70b341a0"
+        },
+        {
+          "at": "2026-08-17T20:40:36Z",
+          "kind": "agentos_hcli_turn",
+          "ok": false,
+          "sha256": "8bbe9747140be8d63f083c4cdbf54e9a26818716d9f5b760d1226fa619aeed33"
+        },
+        {
+          "at": "2026-08-18T05:49:25Z",
+          "kind": "agentos_hcli_turn",
+          "ok": false,
+          "sha256": "2df32ef2b30c72199a9ef651dfe39c817e960be4f720012cd74c1048dd64ec61"
+        },
+        {
+          "at": "2026-08-18T05:58:53Z",
+          "kind": "agentos_hcli_turn",
+          "ok": false,
+          "sha256": "e1fd92ba3ad0c80c7ac11d27b36a6dffad417498b6812d5f22d9eed29feee7f7"
+        },
+        {
+          "at": "2026-08-18T06:07:22Z",
+          "kind": "agentos_hcli_turn",
+          "ok": false,
+          "sha256": "9a712a69694abd1c19b8e68ca387e7c400d2ef3a034cb469f3e9efe11cdeda48"
+        }
+      ],
+      "repo": "/Users/scammermike/Downloads/hawking",
+      "subgoal": "Build and falsify kernel/runtime successor artifacts.",
+      "tool_results": [
+        {
+          "act": {
+            "calls": [
+              {
+                "arguments": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py"
+                },
+                "name": "read",
+                "raw": "{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py\"}}"
+              }
+            ],
+            "malformed": null,
+            "native": {
+              "binary": null,
+              "body_resident": true,
+              "decode_wall_ns": 3488467709,
+              "fallbacks": 0,
+              "max_new_tokens": 256,
+              "new_tokens": [
+                248058,
+                198,
+                4754,
+                591,
+                3147,
+                851,
+                2129,
+                15889,
+                21624,
+                2267,
+                56550,
+                6914,
+                32364,
+                64348,
+                76,
+                2875,
+                14,
+                48103,
+                7294,
+                654,
+                10253,
+                90166,
+                14,
+                3595,
+                21579,
+                14,
+                75229,
+                40551,
+                428,
+                27686,
+                87301,
+                56380,
+                90947,
+                37998,
+                6971,
+                29958,
+                198,
+                248059,
+                248046
+              ],
+              "prefill_wall_ns": 228521161125,
+              "prompt_len": 3529,
+              "raw_prompt": true,
+              "serve_index": 10,
+              "session_role": "child_b",
+              "session_serve_index": 4,
+              "transport": "genesis_resident",
+              "used_gpu_lane_lock": false,
+              "wall_ns": 232009632542
+            },
+            "ok": true,
+            "produced_by": "model",
+            "results": [
+              {
+                "detail": {
+                  "kind": "file",
+                  "limit": 200,
+                  "offset": 1,
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py",
+                  "total_lines": 515
+                },
+                "name": "read",
+                "ok": true,
+                "output": "1:from __future__ import annotations\n2:import json\n3:from dataclasses import dataclass, field\n4:from pathlib import Path\n5:from typing import Any, Callable, Mapping\n6:from lab.checkpoint import CheckpointStore\n7:from lab.engine_support import ResourceGovernor, ResourceLimits\n8:from lab.layout import REPORTS_ROOT, resolve_workspace_path\n9:from lab.lease import LeaseError, SingletonLease\n10:from lab.engine_support import Scheduler\n11:from lab.engine_support import IllegalTransition, Phase, StateMachine\n12:from lab.rules import GovernanceLedger, apply_governance\n13:from lab.spec import CampaignPhase, ExperimentSpec, load_spec\n14:from lab.science_registry import OperatorRegistry, load_default_registry\n15:from lab.receipts import GateEvidence, Receipt, ReceiptAuthority, SealIntegrityError\n16:Handler = Callable[['ExperimentRuntime', Mapping[str, Any]], dict[str, Any]]\n17:\n18:\n19:def _existing_workspace_path(path: str | Path) -> Path:\n20:    \"\"\"Bridge a historic root-relative record to the live workspace if present.\"\"\"\n21:    candidate = Path(path)\n22:    if candidate.is_absolute():\n23:        return candidate\n24:    resolved = resolve_workspace_path(candidate)\n25:    return resolved if resolved.exists() else candidate\n26:\n27:@dataclass\n28:class RunResult:\n29:    campaign_id: str\n30:    phase: str\n31:    status: str\n32:    completed_steps: list[str]\n33:    receipt_path: str | None = None\n34:    detail: dict[str, Any] = field(default_factory=dict)\n35:\n36:    def to_dict(self) -> dict[str, Any]:\n37:        return {\n38:            'campaign_id': self.campaign_id,\n39:            'phase': self.phase,\n40:            'status': self.status,\n41:            'completed_steps': list(self.completed_steps),\n42:            'receipt_path': self.receipt_path,\n43:            'detail': dict(self.detail),\n44:        }\n45:\n46:def _handle_record(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n47:    modules = params.get('modules') or params.get('module')\n48:    if modules is None:\n49:        return {'recorded': True, **dict(params)}\n50:    names = [modules] if isinstance(modules, str) else [str(m) for m in modules]\n51:    missing = [n for n in names if runtime.operators.get(n) is None]\n52:    if missing and (not params.get('allow_missing')):\n53:        raise RuntimeError(f'operators not in registry: {missing}')\n54:    return {\n55:        'recorded': True,\n56:        'operators_present': [n for n in names if n not in missing],\n57:        'operators_missing': missing,\n58:        **{k: v for k, v in dict(params).items() if k not in {'modules', 'module'}},\n59:    }\n60:\n61:def _handle_precheck_fences(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n62:    closed: list[str] = []\n63:    overrides = params.get('allow') or {}\n64:    for fence in runtime.spec.authorization_fences:\n65:        if overrides.get(fence):\n66:            raise RuntimeError(f'authorization fence forced open: {fence}')\n67:        closed.append(fence)\n68:    return {'fences_closed': closed}\n69:\n70:def _handle_seal_receipt(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n71:    step_id = runtime.active_step_id or 'seal'\n72:    receipt = Receipt(\n73:        campaign_id=f'{runtime.spec.campaign_id}:{step_id}',\n74:        verdict=str(params.get('verdict') or 'SEALED'),\n75:        status='sealed',\n76:        phase=runtime.machine.phase.value,\n77:        inputs={'campaign_id': runtime.spec.campaign_id},\n78:        method={'handler': 'seal.receipt', 'step_id': step_id},\n79:        measurement=dict(params.get('measurement') or {}),\n80:        summary={k: v for k, v in dict(params).items() if k != 'measurement'},\n81:        artifacts=tuple(str(p) for p in params.get('artifacts') or ()),\n82:    )\n83:    path = runtime.receipts.write(receipt)\n84:    sealed = runtime.receipts.read(f'{runtime.spec.campaign_id}:{step_id}')\n85:    return {'sealed': True, 'receipt_path': str(path), 'receipt_sha256': sealed['seal_sha256']}\n86:\n87:def _handle_verify_gates(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n88:    required = tuple(runtime.spec.verification_gates)\n89:    supplied = params.get('gate_evidence') or params.get('evidence')\n90:    # Historical records preserve their declared state, but are never a source\n91:    # of a fresh live promotion.  Every live result must point at sealed input.\n92:    if supplied is None:\n93:        legacy = dict(params.get('gate_results') or {})\n94:        if runtime.spec.status == 'released_historical_non_invocable' and legacy:\n95:            if set(legacy) != set(required):\n96:                raise RuntimeError('historical gate declaration must name exactly the required gates')\n97:            runtime.gate_results.update({gate: bool(legacy[gate]) for gate in required})\n98:            return {'gates': dict(runtime.gate_results), 'authority': 'HISTORICAL_DECLARATION_ONLY'}\n99:        if required:\n100:            raise RuntimeError('verify.gates requires sealed gate_evidence for every required gate')\n101:        return {'gates': dict(runtime.gate_results)}\n102:    if not isinstance(supplied, Mapping):\n103:        raise RuntimeError('gate_evidence must be an object keyed by gate id')\n104:    unknown = set(supplied) - set(required)\n105:    missing = set(required) - set(supplied)\n106:    if unknown or missing:\n107:        raise RuntimeError(f'gate evidence must exactly match required gates; missing={sorted(missing)}, unknown={sorted(unknown)}')\n108:    for gate in required:\n109:        candidate = supplied[gate]\n110:        if isinstance(candidate, Mapping):\n111:            # A sealed inline record is persisted before it is read back; this\n112:            # prevents an ephemeral object from becoming promotion authority.\n113:            gate_path = runtime.receipts.write_gate_evidence(candidate)\n114:        elif isinstance(candidate, str):\n115:            gate_path = _existing_workspace_path(candidate)\n116:            if not gate_path.is_absolute():\n117:                gate_path = runtime.work_dir / gate_path\n118:        else:\n119:            raise RuntimeError(f'gate evidence for {gate!r} must be a sealed object or path')\n120:        evidence = runtime.receipts.read_gate_evidence(gate_path, expected_gate=gate)\n121:        runtime.gate_evidence[gate] = evidence\n122:        runtime.gate_results[gate] = evidence.result == 'PASS'\n123:        if evidence.result != 'PASS':\n124:            raise RuntimeError(f'gate {gate!r} is sealed as {evidence.result}; promotion is refused')\n125:    return {\n126:        'gates': dict(runtime.gate_results),\n127:        'gate_evidence': {gate: str(runtime.receipts.gate_path_for(gate)) for gate in required},\n128:    }\n129:\n130:def _handle_promote(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n131:    return apply_governance(\n132:        runtime.spec,\n133:        ledger=runtime.ledger,\n134:        verdict=str(params.get('verdict') or 'PASS'),\n135:        gate_results=runtime.gate_results,\n136:        gate_evidence=runtime.gate_evidence,\n137:        author=str(params.get('author') or ''),\n138:        admitter=str(params.get('admitter') or 'engine'),\n139:        measurement_kind=str(params.get('measurement_kind') or 'real'),\n140:        action='promote',\n141:    )\n142:\n143:def _handle_bury(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n144:    arts = [_existing_workspace_path(p) for p in params.get('artifacts') or []]\n145:    recs = [_existing_workspace_path(p) for p in params.get('receipts') or []]\n146:    for p in arts + recs:\n147:        if not p.exists():\n148:            raise RuntimeError(f'burial retention path is missing: {p}')\n149:    for p in recs:\n150:        try:\n151:            # Receipt.from_dict verifies the common seal, so this accepts both\n152:            # normal experiment receipts and GateEvidence envelopes while\n153:            # rejecting an arbitrary JSON file that merely looks like one.\n154:            Receipt.from_dict(json.loads(p.read_text(encoding='utf-8')))\n155:        except (OSError, ValueError, SealIntegrityError) as exc:\n156:            raise RuntimeError(f'burial receipt is not sealed: {p}: {exc}') from exc\n157:    return apply_governance(\n158:        runtime.spec,\n159:        ledger=runtime.ledger,\n160:        verdict=str(params.get('verdict') or 'BURIED'),\n161:        gate_results=runtime.gate_results,\n162:        action='bury',\n163:        artifacts=arts,\n164:        receipts=recs,\n165:    )\n166:BUILTIN_HANDLERS: dict[str, Handler] = {\n167:    'record': _handle_record,\n168:    'precheck.fences': _handle_precheck_fences,\n169:    'precheck.contract': _handle_record,\n170:    'measure.parity': _handle_record,\n171:    'report.summary': _handle_record,\n172:    'seal.receipt': _handle_seal_receipt,\n173:    'verify.gates': _handle_verify_gates,\n174:    'promote': _handle_promote,\n175:    'bury': _handle_bury,\n176:}\n177:\n178:class ExperimentRuntime:\n179:\n180:    def __init__(\n181:        self,\n182:        spec: ExperimentSpec,\n183:        *,\n184:        work_dir: Path,\n185:        handlers: Mapping[str, Handler] | None=None,\n186:        operators: OperatorRegistry | None=None,\n187:        controller_epoch: str='1',\n188:        acquire_lease: bool=True,\n189:    ) -> None:\n190:        self.spec = spec\n191:        self.work_dir = Path(work_dir)\n192:        self.work_dir.mkdir(parents=True, exist_ok=True)\n193:        self.operators = operators or load_default_registry()\n194:        self.handlers: dict[str, Handler] = {**BUILTIN_HANDLERS, **dict(handlers or {})}\n195:        for key, handler in self.operators.handlers.items():\n196:            self.handlers.setdefault(key, handler)\n197:        if not handlers:\n198:            from lab.science_registry import build_operator_handlers\n199:            for key, handler in build_operator_handlers().items():\n200:                self.handlers.setdefault(key, handler)"
+              }
+            ],
+            "text": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py\"}}\n</tool_call>"
+          },
+          "authority_moved": false,
+          "context_sha256": "a84965abf94ceec4a6538e5c8ad696abdcc1fd582d12e7a4fb5ca66ea5fd5a0f",
+          "hcli_session_id": "genesis-kernel",
+          "ok": true,
+          "outcome": "TURN_COMPLETE",
+          "recorded_at": "2026-08-17T17:12:05Z",
+          "schema": "hawking.genesis.agentos_tick.v1",
+          "session_role": "child_b",
+          "summary": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py\"}}\n</tool_call>",
+          "worker_id": "kernel"
+        },
+        {
+          "act": {
+            "calls": [
+              {
+                "arguments": {
+                  "limit": 200,
+                  "offset": 1,
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py"
+                },
+                "name": "read",
+                "raw": "{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py\",\"offset\":1,\"limit\":200}}"
+              }
+            ],
+            "malformed": null,
+            "native": {
+              "binary": null,
+              "body_resident": true,
+              "decode_wall_ns": 4409841709,
+              "fallbacks": 0,
+              "max_new_tokens": 256,
+              "new_tokens": [
+                248058,
+                198,
+                4754,
+                591,
+                3147,
+                851,
+                2129,
+                15889,
+                21624,
+                2267,
+                56550,
+                6914,
+                32364,
+                64348,
+                76,
+                2875,
+                14,
+                48103,
+                7294,
+                654,
+                10253,
+                90166,
+                14,
+                3595,
+                21579,
+                14,
+                75229,
+                40551,
+                428,
+                27686,
+                87301,
+                56380,
+                90947,
+                37998,
+                6971,
+                2129,
+                3075,
+                763,
+                16,
+                1288,
+                9226,
+                763,
+                17,
+                15,
+                15,
+                3307,
+                198,
+                248059,
+                248046
+              ],
+              "prefill_wall_ns": 229460023833,
+              "prompt_len": 3534,
+              "raw_prompt": true,
+              "serve_index": 12,
+              "session_role": "child_b",
+              "session_serve_index": 5,
+              "transport": "genesis_resident",
+              "used_gpu_lane_lock": false,
+              "wall_ns": 233869869417
+            },
+            "ok": true,
+            "produced_by": "model",
+            "results": [
+              {
+                "detail": {
+                  "kind": "file",
+                  "limit": 200,
+                  "offset": 1,
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py",
+                  "total_lines": 515
+                },
+                "name": "read",
+                "ok": true,
+                "output": "1:from __future__ import annotations\n2:import json\n3:from dataclasses import dataclass, field\n4:from pathlib import Path\n5:from typing import Any, Callable, Mapping\n6:from lab.checkpoint import CheckpointStore\n7:from lab.engine_support import ResourceGovernor, ResourceLimits\n8:from lab.layout import REPORTS_ROOT, resolve_workspace_path\n9:from lab.lease import LeaseError, SingletonLease\n10:from lab.engine_support import Scheduler\n11:from lab.engine_support import IllegalTransition, Phase, StateMachine\n12:from lab.rules import GovernanceLedger, apply_governance\n13:from lab.spec import CampaignPhase, ExperimentSpec, load_spec\n14:from lab.science_registry import OperatorRegistry, load_default_registry\n15:from lab.receipts import GateEvidence, Receipt, ReceiptAuthority, SealIntegrityError\n16:Handler = Callable[['ExperimentRuntime', Mapping[str, Any]], dict[str, Any]]\n17:\n18:\n19:def _existing_workspace_path(path: str | Path) -> Path:\n20:    \"\"\"Bridge a historic root-relative record to the live workspace if present.\"\"\"\n21:    candidate = Path(path)\n22:    if candidate.is_absolute():\n23:        return candidate\n24:    resolved = resolve_workspace_path(candidate)\n25:    return resolved if resolved.exists() else candidate\n26:\n27:@dataclass\n28:class RunResult:\n29:    campaign_id: str\n30:    phase: str\n31:    status: str\n32:    completed_steps: list[str]\n33:    receipt_path: str | None = None\n34:    detail: dict[str, Any] = field(default_factory=dict)\n35:\n36:    def to_dict(self) -> dict[str, Any]:\n37:        return {\n38:            'campaign_id': self.campaign_id,\n39:            'phase': self.phase,\n40:            'status': self.status,\n41:            'completed_steps': list(self.completed_steps),\n42:            'receipt_path': self.receipt_path,\n43:            'detail': dict(self.detail),\n44:        }\n45:\n46:def _handle_record(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n47:    modules = params.get('modules') or params.get('module')\n48:    if modules is None:\n49:        return {'recorded': True, **dict(params)}\n50:    names = [modules] if isinstance(modules, str) else [str(m) for m in modules]\n51:    missing = [n for n in names if runtime.operators.get(n) is None]\n52:    if missing and (not params.get('allow_missing')):\n53:        raise RuntimeError(f'operators not in registry: {missing}')\n54:    return {\n55:        'recorded': True,\n56:        'operators_present': [n for n in names if n not in missing],\n57:        'operators_missing': missing,\n58:        **{k: v for k, v in dict(params).items() if k not in {'modules', 'module'}},\n59:    }\n60:\n61:def _handle_precheck_fences(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n62:    closed: list[str] = []\n63:    overrides = params.get('allow') or {}\n64:    for fence in runtime.spec.authorization_fences:\n65:        if overrides.get(fence):\n66:            raise RuntimeError(f'authorization fence forced open: {fence}')\n67:        closed.append(fence)\n68:    return {'fences_closed': closed}\n69:\n70:def _handle_seal_receipt(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n71:    step_id = runtime.active_step_id or 'seal'\n72:    receipt = Receipt(\n73:        campaign_id=f'{runtime.spec.campaign_id}:{step_id}',\n74:        verdict=str(params.get('verdict') or 'SEALED'),\n75:        status='sealed',\n76:        phase=runtime.machine.phase.value,\n77:        inputs={'campaign_id': runtime.spec.campaign_id},\n78:        method={'handler': 'seal.receipt', 'step_id': step_id},\n79:        measurement=dict(params.get('measurement') or {}),\n80:        summary={k: v for k, v in dict(params).items() if k != 'measurement'},\n81:        artifacts=tuple(str(p) for p in params.get('artifacts') or ()),\n82:    )\n83:    path = runtime.receipts.write(receipt)\n84:    sealed = runtime.receipts.read(f'{runtime.spec.campaign_id}:{step_id}')\n85:    return {'sealed': True, 'receipt_path': str(path), 'receipt_sha256': sealed['seal_sha256']}\n86:\n87:def _handle_verify_gates(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n88:    required = tuple(runtime.spec.verification_gates)\n89:    supplied = params.get('gate_evidence') or params.get('evidence')\n90:    # Historical records preserve their declared state, but are never a source\n91:    # of a fresh live promotion.  Every live result must point at sealed input.\n92:    if supplied is None:\n93:        legacy = dict(params.get('gate_results') or {})\n94:        if runtime.spec.status == 'released_historical_non_invocable' and legacy:\n95:            if set(legacy) != set(required):\n96:                raise RuntimeError('historical gate declaration must name exactly the required gates')\n97:            runtime.gate_results.update({gate: bool(legacy[gate]) for gate in required})\n98:            return {'gates': dict(runtime.gate_results), 'authority': 'HISTORICAL_DECLARATION_ONLY'}\n99:        if required:\n100:            raise RuntimeError('verify.gates requires sealed gate_evidence for every required gate')\n101:        return {'gates': dict(runtime.gate_results)}\n102:    if not isinstance(supplied, Mapping):\n103:        raise RuntimeError('gate_evidence must be an object keyed by gate id')\n104:    unknown = set(supplied) - set(required)\n105:    missing = set(required) - set(supplied)\n106:    if unknown or missing:\n107:        raise RuntimeError(f'gate evidence must exactly match required gates; missing={sorted(missing)}, unknown={sorted(unknown)}')\n108:    for gate in required:\n109:        candidate = supplied[gate]\n110:        if isinstance(candidate, Mapping):\n111:            # A sealed inline record is persisted before it is read back; this\n112:            # prevents an ephemeral object from becoming promotion authority.\n113:            gate_path = runtime.receipts.write_gate_evidence(candidate)\n114:        elif isinstance(candidate, str):\n115:            gate_path = _existing_workspace_path(candidate)\n116:            if not gate_path.is_absolute():\n117:                gate_path = runtime.work_dir / gate_path\n118:        else:\n119:            raise RuntimeError(f'gate evidence for {gate!r} must be a sealed object or path')\n120:        evidence = runtime.receipts.read_gate_evidence(gate_path, expected_gate=gate)\n121:        runtime.gate_evidence[gate] = evidence\n122:        runtime.gate_results[gate] = evidence.result == 'PASS'\n123:        if evidence.result != 'PASS':\n124:            raise RuntimeError(f'gate {gate!r} is sealed as {evidence.result}; promotion is refused')\n125:    return {\n126:        'gates': dict(runtime.gate_results),\n127:        'gate_evidence': {gate: str(runtime.receipts.gate_path_for(gate)) for gate in required},\n128:    }\n129:\n130:def _handle_promote(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n131:    return apply_governance(\n132:        runtime.spec,\n133:        ledger=runtime.ledger,\n134:        verdict=str(params.get('verdict') or 'PASS'),\n135:        gate_results=runtime.gate_results,\n136:        gate_evidence=runtime.gate_evidence,\n137:        author=str(params.get('author') or ''),\n138:        admitter=str(params.get('admitter') or 'engine'),\n139:        measurement_kind=str(params.get('measurement_kind') or 'real'),\n140:        action='promote',\n141:    )\n142:\n143:def _handle_bury(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n144:    arts = [_existing_workspace_path(p) for p in params.get('artifacts') or []]\n145:    recs = [_existing_workspace_path(p) for p in params.get('receipts') or []]\n146:    for p in arts + recs:\n147:        if not p.exists():\n148:            raise RuntimeError(f'burial retention path is missing: {p}')\n149:    for p in recs:\n150:        try:\n151:            # Receipt.from_dict verifies the common seal, so this accepts both\n152:            # normal experiment receipts and GateEvidence envelopes while\n153:            # rejecting an arbitrary JSON file that merely looks like one.\n154:            Receipt.from_dict(json.loads(p.read_text(encoding='utf-8')))\n155:        except (OSError, ValueError, SealIntegrityError) as exc:\n156:            raise RuntimeError(f'burial receipt is not sealed: {p}: {exc}') from exc\n157:    return apply_governance(\n158:        runtime.spec,\n159:        ledger=runtime.ledger,\n160:        verdict=str(params.get('verdict') or 'BURIED'),\n161:        gate_results=runtime.gate_results,\n162:        action='bury',\n163:        artifacts=arts,\n164:        receipts=recs,\n165:    )\n166:BUILTIN_HANDLERS: dict[str, Handler] = {\n167:    'record': _handle_record,\n168:    'precheck.fences': _handle_precheck_fences,\n169:    'precheck.contract': _handle_record,\n170:    'measure.parity': _handle_record,\n171:    'report.summary': _handle_record,\n172:    'seal.receipt': _handle_seal_receipt,\n173:    'verify.gates': _handle_verify_gates,\n174:    'promote': _handle_promote,\n175:    'bury': _handle_bury,\n176:}\n177:\n178:class ExperimentRuntime:\n179:\n180:    def __init__(\n181:        self,\n182:        spec: ExperimentSpec,\n183:        *,\n184:        work_dir: Path,\n185:        handlers: Mapping[str, Handler] | None=None,\n186:        operators: OperatorRegistry | None=None,\n187:        controller_epoch: str='1',\n188:        acquire_lease: bool=True,\n189:    ) -> None:\n190:        self.spec = spec\n191:        self.work_dir = Path(work_dir)\n192:        self.work_dir.mkdir(parents=True, exist_ok=True)\n193:        self.operators = operators or load_default_registry()\n194:        self.handlers: dict[str, Handler] = {**BUILTIN_HANDLERS, **dict(handlers or {})}\n195:        for key, handler in self.operators.handlers.items():\n196:            self.handlers.setdefault(key, handler)\n197:        if not handlers:\n198:            from lab.science_registry import build_operator_handlers\n199:            for key, handler in build_operator_handlers().items():\n200:                self.handlers.setdefault(key, handler)"
+              }
+            ],
+            "text": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py\",\"offset\":1,\"limit\":200}}\n</tool_call>"
+          },
+          "authority_moved": false,
+          "context_sha256": "e68032255374f299cbe369083bc1ae0874b499014485db5b77cb4fb2ca03b563",
+          "hcli_session_id": "genesis-kernel",
+          "ok": true,
+          "outcome": "TURN_COMPLETE",
+          "recorded_at": "2026-08-17T17:20:09Z",
+          "schema": "hawking.genesis.agentos_tick.v1",
+          "session_role": "child_b",
+          "summary": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py\",\"offset\":1,\"limit\":200}}\n</tool_call>",
+          "worker_id": "kernel"
+        },
+        {
+          "act": {
+            "calls": [
+              {
+                "arguments": {
+                  "limit": 200,
+                  "offset": 1,
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py"
+                },
+                "name": "read",
+                "raw": "{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py\",\"offset\":1,\"limit\":200}}"
+              }
+            ],
+            "malformed": null,
+            "native": {
+              "binary": null,
+              "body_resident": true,
+              "decode_wall_ns": 4390303542,
+              "fallbacks": 0,
+              "max_new_tokens": 256,
+              "new_tokens": [
+                248058,
+                198,
+                4754,
+                591,
+                3147,
+                851,
+                2129,
+                15889,
+                21624,
+                2267,
+                56550,
+                6914,
+                32364,
+                64348,
+                76,
+                2875,
+                14,
+                48103,
+                7294,
+                654,
+                10253,
+                90166,
+                14,
+                3595,
+                21579,
+                14,
+                75229,
+                40551,
+                428,
+                27686,
+                87301,
+                56380,
+                90947,
+                37998,
+                6971,
+                2129,
+                3075,
+                763,
+                16,
+                1288,
+                9226,
+                763,
+                17,
+                15,
+                15,
+                3307,
+                198,
+                248059,
+                248046
+              ],
+              "prefill_wall_ns": 227923884208,
+              "prompt_len": 3527,
+              "raw_prompt": true,
+              "serve_index": 14,
+              "session_role": "child_b",
+              "session_serve_index": 6,
+              "transport": "genesis_resident",
+              "used_gpu_lane_lock": false,
+              "wall_ns": 232314190375
+            },
+            "ok": true,
+            "produced_by": "model",
+            "results": [
+              {
+                "detail": {
+                  "kind": "file",
+                  "limit": 200,
+                  "offset": 1,
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py",
+                  "total_lines": 515
+                },
+                "name": "read",
+                "ok": true,
+                "output": "1:from __future__ import annotations\n2:import json\n3:from dataclasses import dataclass, field\n4:from pathlib import Path\n5:from typing import Any, Callable, Mapping\n6:from lab.checkpoint import CheckpointStore\n7:from lab.engine_support import ResourceGovernor, ResourceLimits\n8:from lab.layout import REPORTS_ROOT, resolve_workspace_path\n9:from lab.lease import LeaseError, SingletonLease\n10:from lab.engine_support import Scheduler\n11:from lab.engine_support import IllegalTransition, Phase, StateMachine\n12:from lab.rules import GovernanceLedger, apply_governance\n13:from lab.spec import CampaignPhase, ExperimentSpec, load_spec\n14:from lab.science_registry import OperatorRegistry, load_default_registry\n15:from lab.receipts import GateEvidence, Receipt, ReceiptAuthority, SealIntegrityError\n16:Handler = Callable[['ExperimentRuntime', Mapping[str, Any]], dict[str, Any]]\n17:\n18:\n19:def _existing_workspace_path(path: str | Path) -> Path:\n20:    \"\"\"Bridge a historic root-relative record to the live workspace if present.\"\"\"\n21:    candidate = Path(path)\n22:    if candidate.is_absolute():\n23:        return candidate\n24:    resolved = resolve_workspace_path(candidate)\n25:    return resolved if resolved.exists() else candidate\n26:\n27:@dataclass\n28:class RunResult:\n29:    campaign_id: str\n30:    phase: str\n31:    status: str\n32:    completed_steps: list[str]\n33:    receipt_path: str | None = None\n34:    detail: dict[str, Any] = field(default_factory=dict)\n35:\n36:    def to_dict(self) -> dict[str, Any]:\n37:        return {\n38:            'campaign_id': self.campaign_id,\n39:            'phase': self.phase,\n40:            'status': self.status,\n41:            'completed_steps': list(self.completed_steps),\n42:            'receipt_path': self.receipt_path,\n43:            'detail': dict(self.detail),\n44:        }\n45:\n46:def _handle_record(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n47:    modules = params.get('modules') or params.get('module')\n48:    if modules is None:\n49:        return {'recorded': True, **dict(params)}\n50:    names = [modules] if isinstance(modules, str) else [str(m) for m in modules]\n51:    missing = [n for n in names if runtime.operators.get(n) is None]\n52:    if missing and (not params.get('allow_missing')):\n53:        raise RuntimeError(f'operators not in registry: {missing}')\n54:    return {\n55:        'recorded': True,\n56:        'operators_present': [n for n in names if n not in missing],\n57:        'operators_missing': missing,\n58:        **{k: v for k, v in dict(params).items() if k not in {'modules', 'module'}},\n59:    }\n60:\n61:def _handle_precheck_fences(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n62:    closed: list[str] = []\n63:    overrides = params.get('allow') or {}\n64:    for fence in runtime.spec.authorization_fences:\n65:        if overrides.get(fence):\n66:            raise RuntimeError(f'authorization fence forced open: {fence}')\n67:        closed.append(fence)\n68:    return {'fences_closed': closed}\n69:\n70:def _handle_seal_receipt(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n71:    step_id = runtime.active_step_id or 'seal'\n72:    receipt = Receipt(\n73:        campaign_id=f'{runtime.spec.campaign_id}:{step_id}',\n74:        verdict=str(params.get('verdict') or 'SEALED'),\n75:        status='sealed',\n76:        phase=runtime.machine.phase.value,\n77:        inputs={'campaign_id': runtime.spec.campaign_id},\n78:        method={'handler': 'seal.receipt', 'step_id': step_id},\n79:        measurement=dict(params.get('measurement') or {}),\n80:        summary={k: v for k, v in dict(params).items() if k != 'measurement'},\n81:        artifacts=tuple(str(p) for p in params.get('artifacts') or ()),\n82:    )\n83:    path = runtime.receipts.write(receipt)\n84:    sealed = runtime.receipts.read(f'{runtime.spec.campaign_id}:{step_id}')\n85:    return {'sealed': True, 'receipt_path': str(path), 'receipt_sha256': sealed['seal_sha256']}\n86:\n87:def _handle_verify_gates(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n88:    required = tuple(runtime.spec.verification_gates)\n89:    supplied = params.get('gate_evidence') or params.get('evidence')\n90:    # Historical records preserve their declared state, but are never a source\n91:    # of a fresh live promotion.  Every live result must point at sealed input.\n92:    if supplied is None:\n93:        legacy = dict(params.get('gate_results') or {})\n94:        if runtime.spec.status == 'released_historical_non_invocable' and legacy:\n95:            if set(legacy) != set(required):\n96:                raise RuntimeError('historical gate declaration must name exactly the required gates')\n97:            runtime.gate_results.update({gate: bool(legacy[gate]) for gate in required})\n98:            return {'gates': dict(runtime.gate_results), 'authority': 'HISTORICAL_DECLARATION_ONLY'}\n99:        if required:\n100:            raise RuntimeError('verify.gates requires sealed gate_evidence for every required gate')\n101:        return {'gates': dict(runtime.gate_results)}\n102:    if not isinstance(supplied, Mapping):\n103:        raise RuntimeError('gate_evidence must be an object keyed by gate id')\n104:    unknown = set(supplied) - set(required)\n105:    missing = set(required) - set(supplied)\n106:    if unknown or missing:\n107:        raise RuntimeError(f'gate evidence must exactly match required gates; missing={sorted(missing)}, unknown={sorted(unknown)}')\n108:    for gate in required:\n109:        candidate = supplied[gate]\n110:        if isinstance(candidate, Mapping):\n111:            # A sealed inline record is persisted before it is read back; this\n112:            # prevents an ephemeral object from becoming promotion authority.\n113:            gate_path = runtime.receipts.write_gate_evidence(candidate)\n114:        elif isinstance(candidate, str):\n115:            gate_path = _existing_workspace_path(candidate)\n116:            if not gate_path.is_absolute():\n117:                gate_path = runtime.work_dir / gate_path\n118:        else:\n119:            raise RuntimeError(f'gate evidence for {gate!r} must be a sealed object or path')\n120:        evidence = runtime.receipts.read_gate_evidence(gate_path, expected_gate=gate)\n121:        runtime.gate_evidence[gate] = evidence\n122:        runtime.gate_results[gate] = evidence.result == 'PASS'\n123:        if evidence.result != 'PASS':\n124:            raise RuntimeError(f'gate {gate!r} is sealed as {evidence.result}; promotion is refused')\n125:    return {\n126:        'gates': dict(runtime.gate_results),\n127:        'gate_evidence': {gate: str(runtime.receipts.gate_path_for(gate)) for gate in required},\n128:    }\n129:\n130:def _handle_promote(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n131:    return apply_governance(\n132:        runtime.spec,\n133:        ledger=runtime.ledger,\n134:        verdict=str(params.get('verdict') or 'PASS'),\n135:        gate_results=runtime.gate_results,\n136:        gate_evidence=runtime.gate_evidence,\n137:        author=str(params.get('author') or ''),\n138:        admitter=str(params.get('admitter') or 'engine'),\n139:        measurement_kind=str(params.get('measurement_kind') or 'real'),\n140:        action='promote',\n141:    )\n142:\n143:def _handle_bury(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n144:    arts = [_existing_workspace_path(p) for p in params.get('artifacts') or []]\n145:    recs = [_existing_workspace_path(p) for p in params.get('receipts') or []]\n146:    for p in arts + recs:\n147:        if not p.exists():\n148:            raise RuntimeError(f'burial retention path is missing: {p}')\n149:    for p in recs:\n150:        try:\n151:            # Receipt.from_dict verifies the common seal, so this accepts both\n152:            # normal experiment receipts and GateEvidence envelopes while\n153:            # rejecting an arbitrary JSON file that merely looks like one.\n154:            Receipt.from_dict(json.loads(p.read_text(encoding='utf-8')))\n155:        except (OSError, ValueError, SealIntegrityError) as exc:\n156:            raise RuntimeError(f'burial receipt is not sealed: {p}: {exc}') from exc\n157:    return apply_governance(\n158:        runtime.spec,\n159:        ledger=runtime.ledger,\n160:        verdict=str(params.get('verdict') or 'BURIED'),\n161:        gate_results=runtime.gate_results,\n162:        action='bury',\n163:        artifacts=arts,\n164:        receipts=recs,\n165:    )\n166:BUILTIN_HANDLERS: dict[str, Handler] = {\n167:    'record': _handle_record,\n168:    'precheck.fences': _handle_precheck_fences,\n169:    'precheck.contract': _handle_record,\n170:    'measure.parity': _handle_record,\n171:    'report.summary': _handle_record,\n172:    'seal.receipt': _handle_seal_receipt,\n173:    'verify.gates': _handle_verify_gates,\n174:    'promote': _handle_promote,\n175:    'bury': _handle_bury,\n176:}\n177:\n178:class ExperimentRuntime:\n179:\n180:    def __init__(\n181:        self,\n182:        spec: ExperimentSpec,\n183:        *,\n184:        work_dir: Path,\n185:        handlers: Mapping[str, Handler] | None=None,\n186:        operators: OperatorRegistry | None=None,\n187:        controller_epoch: str='1',\n188:        acquire_lease: bool=True,\n189:    ) -> None:\n190:        self.spec = spec\n191:        self.work_dir = Path(work_dir)\n192:        self.work_dir.mkdir(parents=True, exist_ok=True)\n193:        self.operators = operators or load_default_registry()\n194:        self.handlers: dict[str, Handler] = {**BUILTIN_HANDLERS, **dict(handlers or {})}\n195:        for key, handler in self.operators.handlers.items():\n196:            self.handlers.setdefault(key, handler)\n197:        if not handlers:\n198:            from lab.science_registry import build_operator_handlers\n199:            for key, handler in build_operator_handlers().items():\n200:                self.handlers.setdefault(key, handler)"
+              }
+            ],
+            "text": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py\",\"offset\":1,\"limit\":200}}\n</tool_call>"
+          },
+          "authority_moved": false,
+          "context_sha256": "e5a07c71af00eb0d49057ee7d41c5ede94a1f5e5b2bb4a38ad4d7047761e8644",
+          "hcli_session_id": "genesis-kernel",
+          "ok": true,
+          "outcome": "TURN_COMPLETE",
+          "recorded_at": "2026-08-17T17:28:09Z",
+          "schema": "hawking.genesis.agentos_tick.v1",
+          "session_role": "child_b",
+          "summary": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py\",\"offset\":1,\"limit\":200}}\n</tool_call>",
+          "worker_id": "kernel"
+        },
+        {
+          "act": {
+            "calls": [
+              {
+                "arguments": {
+                  "limit": 200,
+                  "offset": 1,
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py"
+                },
+                "name": "read",
+                "raw": "{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py\",\"offset\":1,\"limit\":200}}"
+              }
+            ],
+            "malformed": null,
+            "native": {
+              "binary": null,
+              "body_resident": true,
+              "decode_wall_ns": 4386315917,
+              "fallbacks": 0,
+              "max_new_tokens": 256,
+              "new_tokens": [
+                248058,
+                198,
+                4754,
+                591,
+                3147,
+                851,
+                2129,
+                15889,
+                21624,
+                2267,
+                56550,
+                6914,
+                32364,
+                64348,
+                76,
+                2875,
+                14,
+                48103,
+                7294,
+                654,
+                10253,
+                90166,
+                14,
+                3595,
+                21579,
+                14,
+                75229,
+                40551,
+                428,
+                27686,
+                87301,
+                56380,
+                90947,
+                37998,
+                6971,
+                2129,
+                3075,
+                763,
+                16,
+                1288,
+                9226,
+                763,
+                17,
+                15,
+                15,
+                3307,
+                198,
+                248059,
+                248046
+              ],
+              "prefill_wall_ns": 227192006792,
+              "prompt_len": 3515,
+              "raw_prompt": true,
+              "serve_index": 16,
+              "session_role": "child_b",
+              "session_serve_index": 7,
+              "transport": "genesis_resident",
+              "used_gpu_lane_lock": false,
+              "wall_ns": 231578325375
+            },
+            "ok": true,
+            "produced_by": "model",
+            "results": [
+              {
+                "detail": {
+                  "kind": "file",
+                  "limit": 200,
+                  "offset": 1,
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py",
+                  "total_lines": 515
+                },
+                "name": "read",
+                "ok": true,
+                "output": "1:from __future__ import annotations\n2:import json\n3:from dataclasses import dataclass, field\n4:from pathlib import Path\n5:from typing import Any, Callable, Mapping\n6:from lab.checkpoint import CheckpointStore\n7:from lab.engine_support import ResourceGovernor, ResourceLimits\n8:from lab.layout import REPORTS_ROOT, resolve_workspace_path\n9:from lab.lease import LeaseError, SingletonLease\n10:from lab.engine_support import Scheduler\n11:from lab.engine_support import IllegalTransition, Phase, StateMachine\n12:from lab.rules import GovernanceLedger, apply_governance\n13:from lab.spec import CampaignPhase, ExperimentSpec, load_spec\n14:from lab.science_registry import OperatorRegistry, load_default_registry\n15:from lab.receipts import GateEvidence, Receipt, ReceiptAuthority, SealIntegrityError\n16:Handler = Callable[['ExperimentRuntime', Mapping[str, Any]], dict[str, Any]]\n17:\n18:\n19:def _existing_workspace_path(path: str | Path) -> Path:\n20:    \"\"\"Bridge a historic root-relative record to the live workspace if present.\"\"\"\n21:    candidate = Path(path)\n22:    if candidate.is_absolute():\n23:        return candidate\n24:    resolved = resolve_workspace_path(candidate)\n25:    return resolved if resolved.exists() else candidate\n26:\n27:@dataclass\n28:class RunResult:\n29:    campaign_id: str\n30:    phase: str\n31:    status: str\n32:    completed_steps: list[str]\n33:    receipt_path: str | None = None\n34:    detail: dict[str, Any] = field(default_factory=dict)\n35:\n36:    def to_dict(self) -> dict[str, Any]:\n37:        return {\n38:            'campaign_id': self.campaign_id,\n39:            'phase': self.phase,\n40:            'status': self.status,\n41:            'completed_steps': list(self.completed_steps),\n42:            'receipt_path': self.receipt_path,\n43:            'detail': dict(self.detail),\n44:        }\n45:\n46:def _handle_record(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n47:    modules = params.get('modules') or params.get('module')\n48:    if modules is None:\n49:        return {'recorded': True, **dict(params)}\n50:    names = [modules] if isinstance(modules, str) else [str(m) for m in modules]\n51:    missing = [n for n in names if runtime.operators.get(n) is None]\n52:    if missing and (not params.get('allow_missing')):\n53:        raise RuntimeError(f'operators not in registry: {missing}')\n54:    return {\n55:        'recorded': True,\n56:        'operators_present': [n for n in names if n not in missing],\n57:        'operators_missing': missing,\n58:        **{k: v for k, v in dict(params).items() if k not in {'modules', 'module'}},\n59:    }\n60:\n61:def _handle_precheck_fences(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n62:    closed: list[str] = []\n63:    overrides = params.get('allow') or {}\n64:    for fence in runtime.spec.authorization_fences:\n65:        if overrides.get(fence):\n66:            raise RuntimeError(f'authorization fence forced open: {fence}')\n67:        closed.append(fence)\n68:    return {'fences_closed': closed}\n69:\n70:def _handle_seal_receipt(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n71:    step_id = runtime.active_step_id or 'seal'\n72:    receipt = Receipt(\n73:        campaign_id=f'{runtime.spec.campaign_id}:{step_id}',\n74:        verdict=str(params.get('verdict') or 'SEALED'),\n75:        status='sealed',\n76:        phase=runtime.machine.phase.value,\n77:        inputs={'campaign_id': runtime.spec.campaign_id},\n78:        method={'handler': 'seal.receipt', 'step_id': step_id},\n79:        measurement=dict(params.get('measurement') or {}),\n80:        summary={k: v for k, v in dict(params).items() if k != 'measurement'},\n81:        artifacts=tuple(str(p) for p in params.get('artifacts') or ()),\n82:    )\n83:    path = runtime.receipts.write(receipt)\n84:    sealed = runtime.receipts.read(f'{runtime.spec.campaign_id}:{step_id}')\n85:    return {'sealed': True, 'receipt_path': str(path), 'receipt_sha256': sealed['seal_sha256']}\n86:\n87:def _handle_verify_gates(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n88:    required = tuple(runtime.spec.verification_gates)\n89:    supplied = params.get('gate_evidence') or params.get('evidence')\n90:    # Historical records preserve their declared state, but are never a source\n91:    # of a fresh live promotion.  Every live result must point at sealed input.\n92:    if supplied is None:\n93:        legacy = dict(params.get('gate_results') or {})\n94:        if runtime.spec.status == 'released_historical_non_invocable' and legacy:\n95:            if set(legacy) != set(required):\n96:                raise RuntimeError('historical gate declaration must name exactly the required gates')\n97:            runtime.gate_results.update({gate: bool(legacy[gate]) for gate in required})\n98:            return {'gates': dict(runtime.gate_results), 'authority': 'HISTORICAL_DECLARATION_ONLY'}\n99:        if required:\n100:            raise RuntimeError('verify.gates requires sealed gate_evidence for every required gate')\n101:        return {'gates': dict(runtime.gate_results)}\n102:    if not isinstance(supplied, Mapping):\n103:        raise RuntimeError('gate_evidence must be an object keyed by gate id')\n104:    unknown = set(supplied) - set(required)\n105:    missing = set(required) - set(supplied)\n106:    if unknown or missing:\n107:        raise RuntimeError(f'gate evidence must exactly match required gates; missing={sorted(missing)}, unknown={sorted(unknown)}')\n108:    for gate in required:\n109:        candidate = supplied[gate]\n110:        if isinstance(candidate, Mapping):\n111:            # A sealed inline record is persisted before it is read back; this\n112:            # prevents an ephemeral object from becoming promotion authority.\n113:            gate_path = runtime.receipts.write_gate_evidence(candidate)\n114:        elif isinstance(candidate, str):\n115:            gate_path = _existing_workspace_path(candidate)\n116:            if not gate_path.is_absolute():\n117:                gate_path = runtime.work_dir / gate_path\n118:        else:\n119:            raise RuntimeError(f'gate evidence for {gate!r} must be a sealed object or path')\n120:        evidence = runtime.receipts.read_gate_evidence(gate_path, expected_gate=gate)\n121:        runtime.gate_evidence[gate] = evidence\n122:        runtime.gate_results[gate] = evidence.result == 'PASS'\n123:        if evidence.result != 'PASS':\n124:            raise RuntimeError(f'gate {gate!r} is sealed as {evidence.result}; promotion is refused')\n125:    return {\n126:        'gates': dict(runtime.gate_results),\n127:        'gate_evidence': {gate: str(runtime.receipts.gate_path_for(gate)) for gate in required},\n128:    }\n129:\n130:def _handle_promote(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n131:    return apply_governance(\n132:        runtime.spec,\n133:        ledger=runtime.ledger,\n134:        verdict=str(params.get('verdict') or 'PASS'),\n135:        gate_results=runtime.gate_results,\n136:        gate_evidence=runtime.gate_evidence,\n137:        author=str(params.get('author') or ''),\n138:        admitter=str(params.get('admitter') or 'engine'),\n139:        measurement_kind=str(params.get('measurement_kind') or 'real'),\n140:        action='promote',\n141:    )\n142:\n143:def _handle_bury(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n144:    arts = [_existing_workspace_path(p) for p in params.get('artifacts') or []]\n145:    recs = [_existing_workspace_path(p) for p in params.get('receipts') or []]\n146:    for p in arts + recs:\n147:        if not p.exists():\n148:            raise RuntimeError(f'burial retention path is missing: {p}')\n149:    for p in recs:\n150:        try:\n151:            # Receipt.from_dict verifies the common seal, so this accepts both\n152:            # normal experiment receipts and GateEvidence envelopes while\n153:            # rejecting an arbitrary JSON file that merely looks like one.\n154:            Receipt.from_dict(json.loads(p.read_text(encoding='utf-8')))\n155:        except (OSError, ValueError, SealIntegrityError) as exc:\n156:            raise RuntimeError(f'burial receipt is not sealed: {p}: {exc}') from exc\n157:    return apply_governance(\n158:        runtime.spec,\n159:        ledger=runtime.ledger,\n160:        verdict=str(params.get('verdict') or 'BURIED'),\n161:        gate_results=runtime.gate_results,\n162:        action='bury',\n163:        artifacts=arts,\n164:        receipts=recs,\n165:    )\n166:BUILTIN_HANDLERS: dict[str, Handler] = {\n167:    'record': _handle_record,\n168:    'precheck.fences': _handle_precheck_fences,\n169:    'precheck.contract': _handle_record,\n170:    'measure.parity': _handle_record,\n171:    'report.summary': _handle_record,\n172:    'seal.receipt': _handle_seal_receipt,\n173:    'verify.gates': _handle_verify_gates,\n174:    'promote': _handle_promote,\n175:    'bury': _handle_bury,\n176:}\n177:\n178:class ExperimentRuntime:\n179:\n180:    def __init__(\n181:        self,\n182:        spec: ExperimentSpec,\n183:        *,\n184:        work_dir: Path,\n185:        handlers: Mapping[str, Handler] | None=None,\n186:        operators: OperatorRegistry | None=None,\n187:        controller_epoch: str='1',\n188:        acquire_lease: bool=True,\n189:    ) -> None:\n190:        self.spec = spec\n191:        self.work_dir = Path(work_dir)\n192:        self.work_dir.mkdir(parents=True, exist_ok=True)\n193:        self.operators = operators or load_default_registry()\n194:        self.handlers: dict[str, Handler] = {**BUILTIN_HANDLERS, **dict(handlers or {})}\n195:        for key, handler in self.operators.handlers.items():\n196:            self.handlers.setdefault(key, handler)\n197:        if not handlers:\n198:            from lab.science_registry import build_operator_handlers\n199:            for key, handler in build_operator_handlers().items():\n200:                self.handlers.setdefault(key, handler)"
+              }
+            ],
+            "text": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py\",\"offset\":1,\"limit\":200}}\n</tool_call>"
+          },
+          "authority_moved": false,
+          "context_sha256": "589726b6021aec8bdcfa7152c4b9a09a362fb8315cc37716643162a7458d9055",
+          "hcli_session_id": "genesis-kernel",
+          "ok": true,
+          "outcome": "TURN_COMPLETE",
+          "recorded_at": "2026-08-17T17:36:10Z",
+          "schema": "hawking.genesis.agentos_tick.v1",
+          "session_role": "child_b",
+          "summary": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py\",\"offset\":1,\"limit\":200}}\n</tool_call>",
+          "worker_id": "kernel"
+        },
+        {
+          "act": {
+            "calls": [
+              {
+                "arguments": {
+                  "limit": 200,
+                  "offset": 1,
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py"
+                },
+                "name": "read",
+                "raw": "{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py\",\"offset\":1,\"limit\":200}}"
+              }
+            ],
+            "malformed": null,
+            "native": {
+              "binary": null,
+              "body_resident": true,
+              "decode_wall_ns": 4411937167,
+              "fallbacks": 0,
+              "max_new_tokens": 256,
+              "new_tokens": [
+                248058,
+                198,
+                4754,
+                591,
+                3147,
+                851,
+                2129,
+                15889,
+                21624,
+                2267,
+                56550,
+                6914,
+                32364,
+                64348,
+                76,
+                2875,
+                14,
+                48103,
+                7294,
+                654,
+                10253,
+                90166,
+                14,
+                3595,
+                21579,
+                14,
+                75229,
+                40551,
+                428,
+                27686,
+                87301,
+                56380,
+                90947,
+                37998,
+                6971,
+                2129,
+                3075,
+                763,
+                16,
+                1288,
+                9226,
+                763,
+                17,
+                15,
+                15,
+                3307,
+                198,
+                248059,
+                248046
+              ],
+              "prefill_wall_ns": 228985715125,
+              "prompt_len": 3541,
+              "raw_prompt": true,
+              "serve_index": 18,
+              "session_role": "child_b",
+              "session_serve_index": 8,
+              "transport": "genesis_resident",
+              "used_gpu_lane_lock": false,
+              "wall_ns": 233397659459
+            },
+            "ok": true,
+            "produced_by": "model",
+            "results": [
+              {
+                "detail": {
+                  "kind": "file",
+                  "limit": 200,
+                  "offset": 1,
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py",
+                  "total_lines": 515
+                },
+                "name": "read",
+                "ok": true,
+                "output": "1:from __future__ import annotations\n2:import json\n3:from dataclasses import dataclass, field\n4:from pathlib import Path\n5:from typing import Any, Callable, Mapping\n6:from lab.checkpoint import CheckpointStore\n7:from lab.engine_support import ResourceGovernor, ResourceLimits\n8:from lab.layout import REPORTS_ROOT, resolve_workspace_path\n9:from lab.lease import LeaseError, SingletonLease\n10:from lab.engine_support import Scheduler\n11:from lab.engine_support import IllegalTransition, Phase, StateMachine\n12:from lab.rules import GovernanceLedger, apply_governance\n13:from lab.spec import CampaignPhase, ExperimentSpec, load_spec\n14:from lab.science_registry import OperatorRegistry, load_default_registry\n15:from lab.receipts import GateEvidence, Receipt, ReceiptAuthority, SealIntegrityError\n16:Handler = Callable[['ExperimentRuntime', Mapping[str, Any]], dict[str, Any]]\n17:\n18:\n19:def _existing_workspace_path(path: str | Path) -> Path:\n20:    \"\"\"Bridge a historic root-relative record to the live workspace if present.\"\"\"\n21:    candidate = Path(path)\n22:    if candidate.is_absolute():\n23:        return candidate\n24:    resolved = resolve_workspace_path(candidate)\n25:    return resolved if resolved.exists() else candidate\n26:\n27:@dataclass\n28:class RunResult:\n29:    campaign_id: str\n30:    phase: str\n31:    status: str\n32:    completed_steps: list[str]\n33:    receipt_path: str | None = None\n34:    detail: dict[str, Any] = field(default_factory=dict)\n35:\n36:    def to_dict(self) -> dict[str, Any]:\n37:        return {\n38:            'campaign_id': self.campaign_id,\n39:            'phase': self.phase,\n40:            'status': self.status,\n41:            'completed_steps': list(self.completed_steps),\n42:            'receipt_path': self.receipt_path,\n43:            'detail': dict(self.detail),\n44:        }\n45:\n46:def _handle_record(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n47:    modules = params.get('modules') or params.get('module')\n48:    if modules is None:\n49:        return {'recorded': True, **dict(params)}\n50:    names = [modules] if isinstance(modules, str) else [str(m) for m in modules]\n51:    missing = [n for n in names if runtime.operators.get(n) is None]\n52:    if missing and (not params.get('allow_missing')):\n53:        raise RuntimeError(f'operators not in registry: {missing}')\n54:    return {\n55:        'recorded': True,\n56:        'operators_present': [n for n in names if n not in missing],\n57:        'operators_missing': missing,\n58:        **{k: v for k, v in dict(params).items() if k not in {'modules', 'module'}},\n59:    }\n60:\n61:def _handle_precheck_fences(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n62:    closed: list[str] = []\n63:    overrides = params.get('allow') or {}\n64:    for fence in runtime.spec.authorization_fences:\n65:        if overrides.get(fence):\n66:            raise RuntimeError(f'authorization fence forced open: {fence}')\n67:        closed.append(fence)\n68:    return {'fences_closed': closed}\n69:\n70:def _handle_seal_receipt(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n71:    step_id = runtime.active_step_id or 'seal'\n72:    receipt = Receipt(\n73:        campaign_id=f'{runtime.spec.campaign_id}:{step_id}',\n74:        verdict=str(params.get('verdict') or 'SEALED'),\n75:        status='sealed',\n76:        phase=runtime.machine.phase.value,\n77:        inputs={'campaign_id': runtime.spec.campaign_id},\n78:        method={'handler': 'seal.receipt', 'step_id': step_id},\n79:        measurement=dict(params.get('measurement') or {}),\n80:        summary={k: v for k, v in dict(params).items() if k != 'measurement'},\n81:        artifacts=tuple(str(p) for p in params.get('artifacts') or ()),\n82:    )\n83:    path = runtime.receipts.write(receipt)\n84:    sealed = runtime.receipts.read(f'{runtime.spec.campaign_id}:{step_id}')\n85:    return {'sealed': True, 'receipt_path': str(path), 'receipt_sha256': sealed['seal_sha256']}\n86:\n87:def _handle_verify_gates(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n88:    required = tuple(runtime.spec.verification_gates)\n89:    supplied = params.get('gate_evidence') or params.get('evidence')\n90:    # Historical records preserve their declared state, but are never a source\n91:    # of a fresh live promotion.  Every live result must point at sealed input.\n92:    if supplied is None:\n93:        legacy = dict(params.get('gate_results') or {})\n94:        if runtime.spec.status == 'released_historical_non_invocable' and legacy:\n95:            if set(legacy) != set(required):\n96:                raise RuntimeError('historical gate declaration must name exactly the required gates')\n97:            runtime.gate_results.update({gate: bool(legacy[gate]) for gate in required})\n98:            return {'gates': dict(runtime.gate_results), 'authority': 'HISTORICAL_DECLARATION_ONLY'}\n99:        if required:\n100:            raise RuntimeError('verify.gates requires sealed gate_evidence for every required gate')\n101:        return {'gates': dict(runtime.gate_results)}\n102:    if not isinstance(supplied, Mapping):\n103:        raise RuntimeError('gate_evidence must be an object keyed by gate id')\n104:    unknown = set(supplied) - set(required)\n105:    missing = set(required) - set(supplied)\n106:    if unknown or missing:\n107:        raise RuntimeError(f'gate evidence must exactly match required gates; missing={sorted(missing)}, unknown={sorted(unknown)}')\n108:    for gate in required:\n109:        candidate = supplied[gate]\n110:        if isinstance(candidate, Mapping):\n111:            # A sealed inline record is persisted before it is read back; this\n112:            # prevents an ephemeral object from becoming promotion authority.\n113:            gate_path = runtime.receipts.write_gate_evidence(candidate)\n114:        elif isinstance(candidate, str):\n115:            gate_path = _existing_workspace_path(candidate)\n116:            if not gate_path.is_absolute():\n117:                gate_path = runtime.work_dir / gate_path\n118:        else:\n119:            raise RuntimeError(f'gate evidence for {gate!r} must be a sealed object or path')\n120:        evidence = runtime.receipts.read_gate_evidence(gate_path, expected_gate=gate)\n121:        runtime.gate_evidence[gate] = evidence\n122:        runtime.gate_results[gate] = evidence.result == 'PASS'\n123:        if evidence.result != 'PASS':\n124:            raise RuntimeError(f'gate {gate!r} is sealed as {evidence.result}; promotion is refused')\n125:    return {\n126:        'gates': dict(runtime.gate_results),\n127:        'gate_evidence': {gate: str(runtime.receipts.gate_path_for(gate)) for gate in required},\n128:    }\n129:\n130:def _handle_promote(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n131:    return apply_governance(\n132:        runtime.spec,\n133:        ledger=runtime.ledger,\n134:        verdict=str(params.get('verdict') or 'PASS'),\n135:        gate_results=runtime.gate_results,\n136:        gate_evidence=runtime.gate_evidence,\n137:        author=str(params.get('author') or ''),\n138:        admitter=str(params.get('admitter') or 'engine'),\n139:        measurement_kind=str(params.get('measurement_kind') or 'real'),\n140:        action='promote',\n141:    )\n142:\n143:def _handle_bury(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n144:    arts = [_existing_workspace_path(p) for p in params.get('artifacts') or []]\n145:    recs = [_existing_workspace_path(p) for p in params.get('receipts') or []]\n146:    for p in arts + recs:\n147:        if not p.exists():\n148:            raise RuntimeError(f'burial retention path is missing: {p}')\n149:    for p in recs:\n150:        try:\n151:            # Receipt.from_dict verifies the common seal, so this accepts both\n152:            # normal experiment receipts and GateEvidence envelopes while\n153:            # rejecting an arbitrary JSON file that merely looks like one.\n154:            Receipt.from_dict(json.loads(p.read_text(encoding='utf-8')))\n155:        except (OSError, ValueError, SealIntegrityError) as exc:\n156:            raise RuntimeError(f'burial receipt is not sealed: {p}: {exc}') from exc\n157:    return apply_governance(\n158:        runtime.spec,\n159:        ledger=runtime.ledger,\n160:        verdict=str(params.get('verdict') or 'BURIED'),\n161:        gate_results=runtime.gate_results,\n162:        action='bury',\n163:        artifacts=arts,\n164:        receipts=recs,\n165:    )\n166:BUILTIN_HANDLERS: dict[str, Handler] = {\n167:    'record': _handle_record,\n168:    'precheck.fences': _handle_precheck_fences,\n169:    'precheck.contract': _handle_record,\n170:    'measure.parity': _handle_record,\n171:    'report.summary': _handle_record,\n172:    'seal.receipt': _handle_seal_receipt,\n173:    'verify.gates': _handle_verify_gates,\n174:    'promote': _handle_promote,\n175:    'bury': _handle_bury,\n176:}\n177:\n178:class ExperimentRuntime:\n179:\n180:    def __init__(\n181:        self,\n182:        spec: ExperimentSpec,\n183:        *,\n184:        work_dir: Path,\n185:        handlers: Mapping[str, Handler] | None=None,\n186:        operators: OperatorRegistry | None=None,\n187:        controller_epoch: str='1',\n188:        acquire_lease: bool=True,\n189:    ) -> None:\n190:        self.spec = spec\n191:        self.work_dir = Path(work_dir)\n192:        self.work_dir.mkdir(parents=True, exist_ok=True)\n193:        self.operators = operators or load_default_registry()\n194:        self.handlers: dict[str, Handler] = {**BUILTIN_HANDLERS, **dict(handlers or {})}\n195:        for key, handler in self.operators.handlers.items():\n196:            self.handlers.setdefault(key, handler)\n197:        if not handlers:\n198:            from lab.science_registry import build_operator_handlers\n199:            for key, handler in build_operator_handlers().items():\n200:                self.handlers.setdefault(key, handler)"
+              }
+            ],
+            "text": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py\",\"offset\":1,\"limit\":200}}\n</tool_call>"
+          },
+          "authority_moved": false,
+          "context_sha256": "2891d64a197584383fd1eb10eed494400691d31f24dfbea64e2eacea546a7152",
+          "hcli_session_id": "genesis-kernel",
+          "ok": true,
+          "outcome": "TURN_COMPLETE",
+          "recorded_at": "2026-08-17T17:44:14Z",
+          "schema": "hawking.genesis.agentos_tick.v1",
+          "session_role": "child_b",
+          "summary": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py\",\"offset\":1,\"limit\":200}}\n</tool_call>",
+          "worker_id": "kernel"
+        },
+        {
+          "act": {
+            "calls": [
+              {
+                "arguments": {
+                  "limit": 200,
+                  "offset": 1,
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py"
+                },
+                "name": "read",
+                "raw": "{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py\",\"offset\":1,\"limit\":200}}"
+              }
+            ],
+            "malformed": null,
+            "native": {
+              "binary": null,
+              "body_resident": true,
+              "decode_wall_ns": 4452138500,
+              "fallbacks": 0,
+              "max_new_tokens": 256,
+              "new_tokens": [
+                248058,
+                198,
+                4754,
+                591,
+                3147,
+                851,
+                2129,
+                15889,
+                21624,
+                2267,
+                56550,
+                6914,
+                32364,
+                64348,
+                76,
+                2875,
+                14,
+                48103,
+                7294,
+                654,
+                10253,
+                90166,
+                14,
+                3595,
+                21579,
+                14,
+                75229,
+                40551,
+                428,
+                27686,
+                87301,
+                56380,
+                90947,
+                37998,
+                6971,
+                2129,
+                3075,
+                763,
+                16,
+                1288,
+                9226,
+                763,
+                17,
+                15,
+                15,
+                3307,
+                198,
+                248059,
+                248046
+              ],
+              "prefill_wall_ns": 234840441625,
+              "prompt_len": 3605,
+              "raw_prompt": true,
+              "serve_index": 20,
+              "session_role": "child_b",
+              "session_serve_index": 9,
+              "transport": "genesis_resident",
+              "used_gpu_lane_lock": false,
+              "wall_ns": 239292585125
+            },
+            "ok": true,
+            "produced_by": "model",
+            "results": [
+              {
+                "detail": {
+                  "kind": "file",
+                  "limit": 200,
+                  "offset": 1,
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py",
+                  "total_lines": 515
+                },
+                "name": "read",
+                "ok": true,
+                "output": "1:from __future__ import annotations\n2:import json\n3:from dataclasses import dataclass, field\n4:from pathlib import Path\n5:from typing import Any, Callable, Mapping\n6:from lab.checkpoint import CheckpointStore\n7:from lab.engine_support import ResourceGovernor, ResourceLimits\n8:from lab.layout import REPORTS_ROOT, resolve_workspace_path\n9:from lab.lease import LeaseError, SingletonLease\n10:from lab.engine_support import Scheduler\n11:from lab.engine_support import IllegalTransition, Phase, StateMachine\n12:from lab.rules import GovernanceLedger, apply_governance\n13:from lab.spec import CampaignPhase, ExperimentSpec, load_spec\n14:from lab.science_registry import OperatorRegistry, load_default_registry\n15:from lab.receipts import GateEvidence, Receipt, ReceiptAuthority, SealIntegrityError\n16:Handler = Callable[['ExperimentRuntime', Mapping[str, Any]], dict[str, Any]]\n17:\n18:\n19:def _existing_workspace_path(path: str | Path) -> Path:\n20:    \"\"\"Bridge a historic root-relative record to the live workspace if present.\"\"\"\n21:    candidate = Path(path)\n22:    if candidate.is_absolute():\n23:        return candidate\n24:    resolved = resolve_workspace_path(candidate)\n25:    return resolved if resolved.exists() else candidate\n26:\n27:@dataclass\n28:class RunResult:\n29:    campaign_id: str\n30:    phase: str\n31:    status: str\n32:    completed_steps: list[str]\n33:    receipt_path: str | None = None\n34:    detail: dict[str, Any] = field(default_factory=dict)\n35:\n36:    def to_dict(self) -> dict[str, Any]:\n37:        return {\n38:            'campaign_id': self.campaign_id,\n39:            'phase': self.phase,\n40:            'status': self.status,\n41:            'completed_steps': list(self.completed_steps),\n42:            'receipt_path': self.receipt_path,\n43:            'detail': dict(self.detail),\n44:        }\n45:\n46:def _handle_record(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n47:    modules = params.get('modules') or params.get('module')\n48:    if modules is None:\n49:        return {'recorded': True, **dict(params)}\n50:    names = [modules] if isinstance(modules, str) else [str(m) for m in modules]\n51:    missing = [n for n in names if runtime.operators.get(n) is None]\n52:    if missing and (not params.get('allow_missing')):\n53:        raise RuntimeError(f'operators not in registry: {missing}')\n54:    return {\n55:        'recorded': True,\n56:        'operators_present': [n for n in names if n not in missing],\n57:        'operators_missing': missing,\n58:        **{k: v for k, v in dict(params).items() if k not in {'modules', 'module'}},\n59:    }\n60:\n61:def _handle_precheck_fences(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n62:    closed: list[str] = []\n63:    overrides = params.get('allow') or {}\n64:    for fence in runtime.spec.authorization_fences:\n65:        if overrides.get(fence):\n66:            raise RuntimeError(f'authorization fence forced open: {fence}')\n67:        closed.append(fence)\n68:    return {'fences_closed': closed}\n69:\n70:def _handle_seal_receipt(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n71:    step_id = runtime.active_step_id or 'seal'\n72:    receipt = Receipt(\n73:        campaign_id=f'{runtime.spec.campaign_id}:{step_id}',\n74:        verdict=str(params.get('verdict') or 'SEALED'),\n75:        status='sealed',\n76:        phase=runtime.machine.phase.value,\n77:        inputs={'campaign_id': runtime.spec.campaign_id},\n78:        method={'handler': 'seal.receipt', 'step_id': step_id},\n79:        measurement=dict(params.get('measurement') or {}),\n80:        summary={k: v for k, v in dict(params).items() if k != 'measurement'},\n81:        artifacts=tuple(str(p) for p in params.get('artifacts') or ()),\n82:    )\n83:    path = runtime.receipts.write(receipt)\n84:    sealed = runtime.receipts.read(f'{runtime.spec.campaign_id}:{step_id}')\n85:    return {'sealed': True, 'receipt_path': str(path), 'receipt_sha256': sealed['seal_sha256']}\n86:\n87:def _handle_verify_gates(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n88:    required = tuple(runtime.spec.verification_gates)\n89:    supplied = params.get('gate_evidence') or params.get('evidence')\n90:    # Historical records preserve their declared state, but are never a source\n91:    # of a fresh live promotion.  Every live result must point at sealed input.\n92:    if supplied is None:\n93:        legacy = dict(params.get('gate_results') or {})\n94:        if runtime.spec.status == 'released_historical_non_invocable' and legacy:\n95:            if set(legacy) != set(required):\n96:                raise RuntimeError('historical gate declaration must name exactly the required gates')\n97:            runtime.gate_results.update({gate: bool(legacy[gate]) for gate in required})\n98:            return {'gates': dict(runtime.gate_results), 'authority': 'HISTORICAL_DECLARATION_ONLY'}\n99:        if required:\n100:            raise RuntimeError('verify.gates requires sealed gate_evidence for every required gate')\n101:        return {'gates': dict(runtime.gate_results)}\n102:    if not isinstance(supplied, Mapping):\n103:        raise RuntimeError('gate_evidence must be an object keyed by gate id')\n104:    unknown = set(supplied) - set(required)\n105:    missing = set(required) - set(supplied)\n106:    if unknown or missing:\n107:        raise RuntimeError(f'gate evidence must exactly match required gates; missing={sorted(missing)}, unknown={sorted(unknown)}')\n108:    for gate in required:\n109:        candidate = supplied[gate]\n110:        if isinstance(candidate, Mapping):\n111:            # A sealed inline record is persisted before it is read back; this\n112:            # prevents an ephemeral object from becoming promotion authority.\n113:            gate_path = runtime.receipts.write_gate_evidence(candidate)\n114:        elif isinstance(candidate, str):\n115:            gate_path = _existing_workspace_path(candidate)\n116:            if not gate_path.is_absolute():\n117:                gate_path = runtime.work_dir / gate_path\n118:        else:\n119:            raise RuntimeError(f'gate evidence for {gate!r} must be a sealed object or path')\n120:        evidence = runtime.receipts.read_gate_evidence(gate_path, expected_gate=gate)\n121:        runtime.gate_evidence[gate] = evidence\n122:        runtime.gate_results[gate] = evidence.result == 'PASS'\n123:        if evidence.result != 'PASS':\n124:            raise RuntimeError(f'gate {gate!r} is sealed as {evidence.result}; promotion is refused')\n125:    return {\n126:        'gates': dict(runtime.gate_results),\n127:        'gate_evidence': {gate: str(runtime.receipts.gate_path_for(gate)) for gate in required},\n128:    }\n129:\n130:def _handle_promote(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n131:    return apply_governance(\n132:        runtime.spec,\n133:        ledger=runtime.ledger,\n134:        verdict=str(params.get('verdict') or 'PASS'),\n135:        gate_results=runtime.gate_results,\n136:        gate_evidence=runtime.gate_evidence,\n137:        author=str(params.get('author') or ''),\n138:        admitter=str(params.get('admitter') or 'engine'),\n139:        measurement_kind=str(params.get('measurement_kind') or 'real'),\n140:        action='promote',\n141:    )\n142:\n143:def _handle_bury(runtime: 'ExperimentRuntime', params: Mapping[str, Any]) -> dict[str, Any]:\n144:    arts = [_existing_workspace_path(p) for p in params.get('artifacts') or []]\n145:    recs = [_existing_workspace_path(p) for p in params.get('receipts') or []]\n146:    for p in arts + recs:\n147:        if not p.exists():\n148:            raise RuntimeError(f'burial retention path is missing: {p}')\n149:    for p in recs:\n150:        try:\n151:            # Receipt.from_dict verifies the common seal, so this accepts both\n152:            # normal experiment receipts and GateEvidence envelopes while\n153:            # rejecting an arbitrary JSON file that merely looks like one.\n154:            Receipt.from_dict(json.loads(p.read_text(encoding='utf-8')))\n155:        except (OSError, ValueError, SealIntegrityError) as exc:\n156:            raise RuntimeError(f'burial receipt is not sealed: {p}: {exc}') from exc\n157:    return apply_governance(\n158:        runtime.spec,\n159:        ledger=runtime.ledger,\n160:        verdict=str(params.get('verdict') or 'BURIED'),\n161:        gate_results=runtime.gate_results,\n162:        action='bury',\n163:        artifacts=arts,\n164:        receipts=recs,\n165:    )\n166:BUILTIN_HANDLERS: dict[str, Handler] = {\n167:    'record': _handle_record,\n168:    'precheck.fences': _handle_precheck_fences,\n169:    'precheck.contract': _handle_record,\n170:    'measure.parity': _handle_record,\n171:    'report.summary': _handle_record,\n172:    'seal.receipt': _handle_seal_receipt,\n173:    'verify.gates': _handle_verify_gates,\n174:    'promote': _handle_promote,\n175:    'bury': _handle_bury,\n176:}\n177:\n178:class ExperimentRuntime:\n179:\n180:    def __init__(\n181:        self,\n182:        spec: ExperimentSpec,\n183:        *,\n184:        work_dir: Path,\n185:        handlers: Mapping[str, Handler] | None=None,\n186:        operators: OperatorRegistry | None=None,\n187:        controller_epoch: str='1',\n188:        acquire_lease: bool=True,\n189:    ) -> None:\n190:        self.spec = spec\n191:        self.work_dir = Path(work_dir)\n192:        self.work_dir.mkdir(parents=True, exist_ok=True)\n193:        self.operators = operators or load_default_registry()\n194:        self.handlers: dict[str, Handler] = {**BUILTIN_HANDLERS, **dict(handlers or {})}\n195:        for key, handler in self.operators.handlers.items():\n196:            self.handlers.setdefault(key, handler)\n197:        if not handlers:\n198:            from lab.science_registry import build_operator_handlers\n199:            for key, handler in build_operator_handlers().items():\n200:                self.handlers.setdefault(key, handler)"
+              }
+            ],
+            "text": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py\",\"offset\":1,\"limit\":200}}\n</tool_call>"
+          },
+          "authority_moved": false,
+          "context_sha256": "bc72fbc003f1f589e9458049b8c1b91d8597cdefae60bd90432e149a1930f60a",
+          "hcli_session_id": "genesis-kernel",
+          "ok": true,
+          "outcome": "TURN_COMPLETE",
+          "recorded_at": "2026-08-17T17:52:22Z",
+          "schema": "hawking.genesis.agentos_tick.v1",
+          "session_role": "child_b",
+          "summary": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/lab/runtime.py\",\"offset\":1,\"limit\":200}}\n</tool_call>",
+          "worker_id": "kernel"
+        },
+        {
+          "authority_moved": false,
+          "error_type": "ResidentRefused",
+          "ok": false,
+          "outcome": "TURN_FAILED",
+          "recorded_at": "2026-08-17T17:56:24Z",
+          "schema": "hawking.genesis.agentos_tick.v1",
+          "session_role": "child_b",
+          "summary": "ResidentRefused: resident client returned no result",
+          "worker_id": "kernel"
+        },
+        {
+          "authority_moved": false,
+          "error_type": "ResidentRefused",
+          "ok": false,
+          "outcome": "TURN_FAILED",
+          "recorded_at": "2026-08-17T18:04:32Z",
+          "schema": "hawking.genesis.agentos_tick.v1",
+          "session_role": "child_b",
+          "summary": "ResidentRefused: resident client returned no result",
+          "worker_id": "kernel"
+        },
+        {
+          "act": {
+            "calls": [
+              {
+                "arguments": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "raw": "{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}"
+              }
+            ],
+            "malformed": null,
+            "native": {
+              "binary": null,
+              "body_resident": true,
+              "decode_wall_ns": 2867879542,
+              "fallbacks": 0,
+              "max_new_tokens": 256,
+              "new_tokens": [
+                248058,
+                198,
+                4754,
+                591,
+                3147,
+                851,
+                2129,
+                15889,
+                21624,
+                2267,
+                56550,
+                6914,
+                32364,
+                64348,
+                76,
+                2875,
+                14,
+                48103,
+                7294,
+                654,
+                10253,
+                90166,
+                14,
+                3595,
+                14,
+                75229,
+                1723,
+                25386,
+                29958,
+                198,
+                248059,
+                248046
+              ],
+              "prefill_wall_ns": 233688637917,
+              "prompt_len": 3580,
+              "raw_prompt": true,
+              "serve_index": 24,
+              "session_role": "child_b",
+              "session_serve_index": 10,
+              "transport": "genesis_resident",
+              "used_gpu_lane_lock": false,
+              "wall_ns": 236556520250
+            },
+            "ok": false,
+            "produced_by": "model",
+            "results": [
+              {
+                "detail": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "ok": false,
+                "output": "missing path /Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+              }
+            ],
+            "text": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>"
+          },
+          "authority_moved": false,
+          "context_sha256": "89d017a317e3eeee023242178d7a35da90fbe21c9d6b1c2e432d37f5be7bd202",
+          "hcli_session_id": "genesis-kernel",
+          "ok": false,
+          "outcome": "TURN_COMPLETE",
+          "recorded_at": "2026-08-17T18:15:35Z",
+          "schema": "hawking.genesis.agentos_tick.v1",
+          "session_role": "child_b",
+          "summary": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>",
+          "worker_id": "kernel"
+        },
+        {
+          "act": {
+            "calls": [
+              {
+                "arguments": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "raw": "{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}"
+              }
+            ],
+            "malformed": null,
+            "native": {
+              "binary": null,
+              "body_resident": true,
+              "decode_wall_ns": 2929703250,
+              "fallbacks": 0,
+              "max_new_tokens": 256,
+              "new_tokens": [
+                248058,
+                198,
+                4754,
+                591,
+                3147,
+                851,
+                2129,
+                15889,
+                21624,
+                2267,
+                56550,
+                6914,
+                32364,
+                64348,
+                76,
+                2875,
+                14,
+                48103,
+                7294,
+                654,
+                10253,
+                90166,
+                14,
+                3595,
+                14,
+                75229,
+                1723,
+                25386,
+                29958,
+                198,
+                248059,
+                248046
+              ],
+              "prefill_wall_ns": 244758102792,
+              "prompt_len": 3698,
+              "raw_prompt": true,
+              "serve_index": 26,
+              "session_role": "child_b",
+              "session_serve_index": 11,
+              "transport": "genesis_resident",
+              "used_gpu_lane_lock": false,
+              "wall_ns": 247687810208
+            },
+            "ok": false,
+            "produced_by": "model",
+            "results": [
+              {
+                "detail": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "ok": false,
+                "output": "missing path /Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+              }
+            ],
+            "text": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>"
+          },
+          "authority_moved": false,
+          "context_sha256": "d797aec53ce7bee90e7f1737392a7c5810f8d6b75630c29ba30b23bd5a603d38",
+          "hcli_session_id": "genesis-kernel",
+          "ok": false,
+          "outcome": "TURN_COMPLETE",
+          "recorded_at": "2026-08-17T18:24:48Z",
+          "schema": "hawking.genesis.agentos_tick.v1",
+          "session_role": "child_b",
+          "summary": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>",
+          "worker_id": "kernel"
+        },
+        {
+          "act": {
+            "calls": [
+              {
+                "arguments": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "raw": "{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}"
+              }
+            ],
+            "malformed": null,
+            "native": {
+              "binary": null,
+              "body_resident": true,
+              "decode_wall_ns": 2939213417,
+              "fallbacks": 0,
+              "max_new_tokens": 256,
+              "new_tokens": [
+                248058,
+                198,
+                4754,
+                591,
+                3147,
+                851,
+                2129,
+                15889,
+                21624,
+                2267,
+                56550,
+                6914,
+                32364,
+                64348,
+                76,
+                2875,
+                14,
+                48103,
+                7294,
+                654,
+                10253,
+                90166,
+                14,
+                3595,
+                14,
+                75229,
+                1723,
+                25386,
+                29958,
+                198,
+                248059,
+                248046
+              ],
+              "prefill_wall_ns": 245583848125,
+              "prompt_len": 3708,
+              "raw_prompt": true,
+              "serve_index": 28,
+              "session_role": "child_b",
+              "session_serve_index": 12,
+              "transport": "genesis_resident",
+              "used_gpu_lane_lock": false,
+              "wall_ns": 248523065833
+            },
+            "ok": false,
+            "produced_by": "model",
+            "results": [
+              {
+                "detail": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "ok": false,
+                "output": "missing path /Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+              }
+            ],
+            "text": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>"
+          },
+          "authority_moved": false,
+          "context_sha256": "2722517cbb46a710cd29b39b0188aad287ea918d91a1dcbbf45388f10d6322c0",
+          "hcli_session_id": "genesis-kernel",
+          "ok": false,
+          "outcome": "TURN_COMPLETE",
+          "recorded_at": "2026-08-17T18:34:12Z",
+          "schema": "hawking.genesis.agentos_tick.v1",
+          "session_role": "child_b",
+          "summary": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>",
+          "worker_id": "kernel"
+        },
+        {
+          "act": {
+            "calls": [
+              {
+                "arguments": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "raw": "{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}"
+              }
+            ],
+            "malformed": null,
+            "native": {
+              "binary": null,
+              "body_resident": true,
+              "decode_wall_ns": 2929262667,
+              "fallbacks": 0,
+              "max_new_tokens": 256,
+              "new_tokens": [
+                248058,
+                198,
+                4754,
+                591,
+                3147,
+                851,
+                2129,
+                15889,
+                21624,
+                2267,
+                56550,
+                6914,
+                32364,
+                64348,
+                76,
+                2875,
+                14,
+                48103,
+                7294,
+                654,
+                10253,
+                90166,
+                14,
+                3595,
+                14,
+                75229,
+                1723,
+                25386,
+                29958,
+                198,
+                248059,
+                248046
+              ],
+              "prefill_wall_ns": 245185778042,
+              "prompt_len": 3708,
+              "raw_prompt": true,
+              "serve_index": 32,
+              "session_role": "child_b",
+              "session_serve_index": 13,
+              "transport": "genesis_resident",
+              "used_gpu_lane_lock": false,
+              "wall_ns": 248115042542
+            },
+            "ok": false,
+            "produced_by": "model",
+            "results": [
+              {
+                "detail": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "ok": false,
+                "output": "missing path /Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+              }
+            ],
+            "text": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>"
+          },
+          "authority_moved": false,
+          "context_sha256": "4d4f3a3801e929c48efa4461ee3c17698f7be868b6828ea7fa243bc46e29a32c",
+          "hcli_session_id": "genesis-kernel",
+          "ok": false,
+          "outcome": "TURN_COMPLETE",
+          "recorded_at": "2026-08-17T18:53:43Z",
+          "schema": "hawking.genesis.agentos_tick.v1",
+          "session_role": "child_b",
+          "summary": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>",
+          "worker_id": "kernel"
+        },
+        {
+          "act": {
+            "calls": [
+              {
+                "arguments": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "raw": "{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}"
+              }
+            ],
+            "malformed": null,
+            "native": {
+              "binary": null,
+              "body_resident": true,
+              "decode_wall_ns": 2939056208,
+              "fallbacks": 0,
+              "max_new_tokens": 256,
+              "new_tokens": [
+                248058,
+                198,
+                4754,
+                591,
+                3147,
+                851,
+                2129,
+                15889,
+                21624,
+                2267,
+                56550,
+                6914,
+                32364,
+                64348,
+                76,
+                2875,
+                14,
+                48103,
+                7294,
+                654,
+                10253,
+                90166,
+                14,
+                3595,
+                14,
+                75229,
+                1723,
+                25386,
+                29958,
+                198,
+                248059,
+                248046
+              ],
+              "prefill_wall_ns": 246030315625,
+              "prompt_len": 3710,
+              "raw_prompt": true,
+              "serve_index": 34,
+              "session_role": "child_b",
+              "session_serve_index": 14,
+              "transport": "genesis_resident",
+              "used_gpu_lane_lock": false,
+              "wall_ns": 248969376167
+            },
+            "ok": false,
+            "produced_by": "model",
+            "results": [
+              {
+                "detail": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "ok": false,
+                "output": "missing path /Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+              }
+            ],
+            "text": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>"
+          },
+          "authority_moved": false,
+          "context_sha256": "ec89fa3d8bffa152ab0c2b9372d71e73c4e5a0b459e9ce9068df4a8e834a5b7f",
+          "hcli_session_id": "genesis-kernel",
+          "ok": false,
+          "outcome": "TURN_COMPLETE",
+          "recorded_at": "2026-08-17T19:03:46Z",
+          "schema": "hawking.genesis.agentos_tick.v1",
+          "session_role": "child_b",
+          "summary": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>",
+          "worker_id": "kernel"
+        },
+        {
+          "act": {
+            "calls": [
+              {
+                "arguments": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "raw": "{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}"
+              }
+            ],
+            "malformed": null,
+            "native": {
+              "binary": null,
+              "body_resident": true,
+              "decode_wall_ns": 3097861500,
+              "fallbacks": 0,
+              "max_new_tokens": 256,
+              "new_tokens": [
+                248058,
+                198,
+                4754,
+                591,
+                3147,
+                851,
+                2129,
+                15889,
+                21624,
+                2267,
+                56550,
+                6914,
+                32364,
+                64348,
+                76,
+                2875,
+                14,
+                48103,
+                7294,
+                654,
+                10253,
+                90166,
+                14,
+                3595,
+                14,
+                75229,
+                1723,
+                25386,
+                29958,
+                198,
+                248059,
+                248046
+              ],
+              "prefill_wall_ns": 259956730834,
+              "prompt_len": 3708,
+              "raw_prompt": true,
+              "serve_index": 36,
+              "session_role": "child_b",
+              "session_serve_index": 15,
+              "transport": "genesis_resident",
+              "used_gpu_lane_lock": false,
+              "wall_ns": 263054595959
+            },
+            "ok": false,
+            "produced_by": "model",
+            "results": [
+              {
+                "detail": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "ok": false,
+                "output": "missing path /Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+              }
+            ],
+            "text": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>"
+          },
+          "authority_moved": false,
+          "context_sha256": "12074137cb0d9f6cb00df5b28ae47f4fdf0a1d4824d8689f2d0aa057daf1f02f",
+          "hcli_session_id": "genesis-kernel",
+          "ok": false,
+          "outcome": "TURN_COMPLETE",
+          "recorded_at": "2026-08-17T19:14:03Z",
+          "schema": "hawking.genesis.agentos_tick.v1",
+          "session_role": "child_b",
+          "summary": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>",
+          "worker_id": "kernel"
+        },
+        {
+          "act": {
+            "calls": [
+              {
+                "arguments": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "raw": "{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}"
+              }
+            ],
+            "malformed": null,
+            "native": {
+              "binary": null,
+              "body_resident": true,
+              "decode_wall_ns": 2941389250,
+              "fallbacks": 0,
+              "max_new_tokens": 256,
+              "new_tokens": [
+                248058,
+                198,
+                4754,
+                591,
+                3147,
+                851,
+                2129,
+                15889,
+                21624,
+                2267,
+                56550,
+                6914,
+                32364,
+                64348,
+                76,
+                2875,
+                14,
+                48103,
+                7294,
+                654,
+                10253,
+                90166,
+                14,
+                3595,
+                14,
+                75229,
+                1723,
+                25386,
+                29958,
+                198,
+                248059,
+                248046
+              ],
+              "prefill_wall_ns": 245943989500,
+              "prompt_len": 3708,
+              "raw_prompt": true,
+              "serve_index": 38,
+              "session_role": "child_b",
+              "session_serve_index": 16,
+              "transport": "genesis_resident",
+              "used_gpu_lane_lock": false,
+              "wall_ns": 248885382250
+            },
+            "ok": false,
+            "produced_by": "model",
+            "results": [
+              {
+                "detail": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "ok": false,
+                "output": "missing path /Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+              }
+            ],
+            "text": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>"
+          },
+          "authority_moved": false,
+          "context_sha256": "ecb70c1933dc41d935d248dc8c93e03f7bb27645d7a4a8bb88a6b997ef46f583",
+          "hcli_session_id": "genesis-kernel",
+          "ok": false,
+          "outcome": "TURN_COMPLETE",
+          "recorded_at": "2026-08-17T19:23:12Z",
+          "schema": "hawking.genesis.agentos_tick.v1",
+          "session_role": "child_b",
+          "summary": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>",
+          "worker_id": "kernel"
+        },
+        {
+          "act": {
+            "calls": [
+              {
+                "arguments": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "raw": "{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}"
+              }
+            ],
+            "malformed": null,
+            "native": {
+              "binary": null,
+              "body_resident": true,
+              "decode_wall_ns": 2959354750,
+              "fallbacks": 0,
+              "max_new_tokens": 256,
+              "new_tokens": [
+                248058,
+                198,
+                4754,
+                591,
+                3147,
+                851,
+                2129,
+                15889,
+                21624,
+                2267,
+                56550,
+                6914,
+                32364,
+                64348,
+                76,
+                2875,
+                14,
+                48103,
+                7294,
+                654,
+                10253,
+                90166,
+                14,
+                3595,
+                14,
+                75229,
+                1723,
+                25386,
+                29958,
+                198,
+                248059,
+                248046
+              ],
+              "prefill_wall_ns": 246435596375,
+              "prompt_len": 3709,
+              "raw_prompt": true,
+              "serve_index": 42,
+              "session_role": "child_b",
+              "session_serve_index": 17,
+              "transport": "genesis_resident",
+              "used_gpu_lane_lock": false,
+              "wall_ns": 249394953917
+            },
+            "ok": false,
+            "produced_by": "model",
+            "results": [
+              {
+                "detail": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "ok": false,
+                "output": "missing path /Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+              }
+            ],
+            "text": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>"
+          },
+          "authority_moved": false,
+          "context_sha256": "67d3e07f10b0478ddddd9bec2f60466f5a356f95a295854e3bde09b18dc7581d",
+          "hcli_session_id": "genesis-kernel",
+          "ok": false,
+          "outcome": "TURN_COMPLETE",
+          "recorded_at": "2026-08-17T19:49:34Z",
+          "schema": "hawking.genesis.agentos_tick.v1",
+          "session_role": "child_b",
+          "summary": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>",
+          "worker_id": "kernel"
+        },
+        {
+          "act": {
+            "calls": [
+              {
+                "arguments": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "raw": "{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}"
+              }
+            ],
+            "malformed": null,
+            "native": {
+              "binary": null,
+              "body_resident": true,
+              "decode_wall_ns": 2959310709,
+              "fallbacks": 0,
+              "max_new_tokens": 256,
+              "new_tokens": [
+                248058,
+                198,
+                4754,
+                591,
+                3147,
+                851,
+                2129,
+                15889,
+                21624,
+                2267,
+                56550,
+                6914,
+                32364,
+                64348,
+                76,
+                2875,
+                14,
+                48103,
+                7294,
+                654,
+                10253,
+                90166,
+                14,
+                3595,
+                14,
+                75229,
+                1723,
+                25386,
+                29958,
+                198,
+                248059,
+                248046
+              ],
+              "prefill_wall_ns": 246418864500,
+              "prompt_len": 3711,
+              "raw_prompt": true,
+              "serve_index": 44,
+              "session_role": "child_b",
+              "session_serve_index": 18,
+              "transport": "genesis_resident",
+              "used_gpu_lane_lock": false,
+              "wall_ns": 249378178334
+            },
+            "ok": false,
+            "produced_by": "model",
+            "results": [
+              {
+                "detail": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "ok": false,
+                "output": "missing path /Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+              }
+            ],
+            "text": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>"
+          },
+          "authority_moved": false,
+          "context_sha256": "c7cb74a1cb20acf812870315c347e4ec2b1df17676d2111e358dbc7a22e77599",
+          "hcli_session_id": "genesis-kernel",
+          "ok": false,
+          "outcome": "TURN_COMPLETE",
+          "recorded_at": "2026-08-17T19:59:37Z",
+          "schema": "hawking.genesis.agentos_tick.v1",
+          "session_role": "child_b",
+          "summary": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>",
+          "worker_id": "kernel"
+        },
+        {
+          "act": {
+            "calls": [
+              {
+                "arguments": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "raw": "{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}"
+              }
+            ],
+            "malformed": null,
+            "native": {
+              "binary": null,
+              "body_resident": true,
+              "decode_wall_ns": 2926158959,
+              "fallbacks": 0,
+              "max_new_tokens": 256,
+              "new_tokens": [
+                248058,
+                198,
+                4754,
+                591,
+                3147,
+                851,
+                2129,
+                15889,
+                21624,
+                2267,
+                56550,
+                6914,
+                32364,
+                64348,
+                76,
+                2875,
+                14,
+                48103,
+                7294,
+                654,
+                10253,
+                90166,
+                14,
+                3595,
+                14,
+                75229,
+                1723,
+                25386,
+                29958,
+                198,
+                248059,
+                248046
+              ],
+              "prefill_wall_ns": 245485380208,
+              "prompt_len": 3710,
+              "raw_prompt": true,
+              "serve_index": 46,
+              "session_role": "child_b",
+              "session_serve_index": 19,
+              "transport": "genesis_resident",
+              "used_gpu_lane_lock": false,
+              "wall_ns": 248411543667
+            },
+            "ok": false,
+            "produced_by": "model",
+            "results": [
+              {
+                "detail": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "ok": false,
+                "output": "missing path /Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+              }
+            ],
+            "text": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>"
+          },
+          "authority_moved": false,
+          "context_sha256": "1ddd393e489a2e130e73fc2e4f00f4806ceeb3494b55af35f182597a45be1c8d",
+          "hcli_session_id": "genesis-kernel",
+          "ok": false,
+          "outcome": "TURN_COMPLETE",
+          "recorded_at": "2026-08-17T20:09:38Z",
+          "schema": "hawking.genesis.agentos_tick.v1",
+          "session_role": "child_b",
+          "summary": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>",
+          "worker_id": "kernel"
+        },
+        {
+          "act": {
+            "calls": [
+              {
+                "arguments": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "raw": "{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}"
+              }
+            ],
+            "malformed": null,
+            "native": {
+              "binary": null,
+              "body_resident": true,
+              "decode_wall_ns": 2930217417,
+              "fallbacks": 0,
+              "max_new_tokens": 256,
+              "new_tokens": [
+                248058,
+                198,
+                4754,
+                591,
+                3147,
+                851,
+                2129,
+                15889,
+                21624,
+                2267,
+                56550,
+                6914,
+                32364,
+                64348,
+                76,
+                2875,
+                14,
+                48103,
+                7294,
+                654,
+                10253,
+                90166,
+                14,
+                3595,
+                14,
+                75229,
+                1723,
+                25386,
+                29958,
+                198,
+                248059,
+                248046
+              ],
+              "prefill_wall_ns": 245724314375,
+              "prompt_len": 3710,
+              "raw_prompt": true,
+              "serve_index": 48,
+              "session_role": "child_b",
+              "session_serve_index": 20,
+              "transport": "genesis_resident",
+              "used_gpu_lane_lock": false,
+              "wall_ns": 248654536208
+            },
+            "ok": false,
+            "produced_by": "model",
+            "results": [
+              {
+                "detail": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "ok": false,
+                "output": "missing path /Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+              }
+            ],
+            "text": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>"
+          },
+          "authority_moved": false,
+          "context_sha256": "8553f29c38b9fc0ec125e67afac1f0e50bb03de3595ffd96919cd0401cbb01f2",
+          "hcli_session_id": "genesis-kernel",
+          "ok": false,
+          "outcome": "TURN_COMPLETE",
+          "recorded_at": "2026-08-17T20:19:40Z",
+          "schema": "hawking.genesis.agentos_tick.v1",
+          "session_role": "child_b",
+          "summary": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>",
+          "worker_id": "kernel"
+        },
+        {
+          "act": {
+            "calls": [
+              {
+                "arguments": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "raw": "{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}"
+              }
+            ],
+            "malformed": null,
+            "native": {
+              "binary": null,
+              "body_resident": true,
+              "decode_wall_ns": 3161126041,
+              "fallbacks": 0,
+              "max_new_tokens": 256,
+              "new_tokens": [
+                248058,
+                198,
+                4754,
+                591,
+                3147,
+                851,
+                2129,
+                15889,
+                21624,
+                2267,
+                56550,
+                6914,
+                32364,
+                64348,
+                76,
+                2875,
+                14,
+                48103,
+                7294,
+                654,
+                10253,
+                90166,
+                14,
+                3595,
+                14,
+                75229,
+                1723,
+                25386,
+                29958,
+                198,
+                248059,
+                248046
+              ],
+              "prefill_wall_ns": 262487175666,
+              "prompt_len": 3710,
+              "raw_prompt": true,
+              "serve_index": 50,
+              "session_role": "child_b",
+              "session_serve_index": 21,
+              "transport": "genesis_resident",
+              "used_gpu_lane_lock": false,
+              "wall_ns": 265648340875
+            },
+            "ok": false,
+            "produced_by": "model",
+            "results": [
+              {
+                "detail": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "ok": false,
+                "output": "missing path /Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+              }
+            ],
+            "text": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>"
+          },
+          "authority_moved": false,
+          "context_sha256": "77088e5aaa70eb4f3fcbe730af9aeda0cab150e33e047b50fda1fa0e839fcb01",
+          "hcli_session_id": "genesis-kernel",
+          "ok": false,
+          "outcome": "TURN_COMPLETE",
+          "recorded_at": "2026-08-17T20:29:59Z",
+          "schema": "hawking.genesis.agentos_tick.v1",
+          "session_role": "child_b",
+          "summary": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>",
+          "worker_id": "kernel"
+        },
+        {
+          "act": {
+            "calls": [
+              {
+                "arguments": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "raw": "{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}"
+              }
+            ],
+            "malformed": null,
+            "native": {
+              "binary": null,
+              "body_resident": true,
+              "decode_wall_ns": 3108270375,
+              "fallbacks": 0,
+              "max_new_tokens": 256,
+              "new_tokens": [
+                248058,
+                198,
+                4754,
+                591,
+                3147,
+                851,
+                2129,
+                15889,
+                21624,
+                2267,
+                56550,
+                6914,
+                32364,
+                64348,
+                76,
+                2875,
+                14,
+                48103,
+                7294,
+                654,
+                10253,
+                90166,
+                14,
+                3595,
+                14,
+                75229,
+                1723,
+                25386,
+                29958,
+                198,
+                248059,
+                248046
+              ],
+              "prefill_wall_ns": 288476081209,
+              "prompt_len": 3709,
+              "raw_prompt": true,
+              "serve_index": 52,
+              "session_role": "child_b",
+              "session_serve_index": 22,
+              "transport": "genesis_resident",
+              "used_gpu_lane_lock": false,
+              "wall_ns": 291584383000
+            },
+            "ok": false,
+            "produced_by": "model",
+            "results": [
+              {
+                "detail": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "ok": false,
+                "output": "missing path /Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+              }
+            ],
+            "text": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>"
+          },
+          "authority_moved": false,
+          "context_sha256": "83eab4a131786e0d448c862607acc443f379fe540c5d1f8df3bdc586a3c8fe6b",
+          "hcli_session_id": "genesis-kernel",
+          "ok": false,
+          "outcome": "TURN_COMPLETE",
+          "recorded_at": "2026-08-17T20:40:36Z",
+          "schema": "hawking.genesis.agentos_tick.v1",
+          "session_role": "child_b",
+          "summary": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\"}}\n</tool_call>",
+          "worker_id": "kernel"
+        },
+        {
+          "authority_moved": false,
+          "error_type": "ResidentRefused",
+          "ok": false,
+          "outcome": "TURN_FAILED",
+          "recorded_at": "2026-08-18T05:49:25Z",
+          "schema": "hawking.genesis.agentos_tick.v1",
+          "session_role": "child_b",
+          "summary": "ResidentRefused: resident client returned no result",
+          "worker_id": "kernel"
+        },
+        {
+          "act": {
+            "calls": [
+              {
+                "arguments": {
+                  "limit": 200,
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "raw": "{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\",\"limit\":200}}"
+              }
+            ],
+            "malformed": null,
+            "native": {
+              "binary": null,
+              "body_resident": true,
+              "decode_wall_ns": 3473161291,
+              "fallbacks": 0,
+              "max_new_tokens": 256,
+              "new_tokens": [
+                248058,
+                198,
+                4754,
+                591,
+                3147,
+                851,
+                2129,
+                15889,
+                21624,
+                2267,
+                56550,
+                6914,
+                32364,
+                64348,
+                76,
+                2875,
+                14,
+                48103,
+                7294,
+                654,
+                10253,
+                90166,
+                14,
+                3595,
+                14,
+                75229,
+                1723,
+                25386,
+                2129,
+                9226,
+                763,
+                17,
+                15,
+                15,
+                3307,
+                198,
+                248059,
+                248046
+              ],
+              "prefill_wall_ns": 239527839583,
+              "prompt_len": 3650,
+              "raw_prompt": true,
+              "serve_index": 2,
+              "session_role": "child_b",
+              "session_serve_index": 1,
+              "transport": "genesis_resident",
+              "used_gpu_lane_lock": false,
+              "wall_ns": 243001004959
+            },
+            "ok": false,
+            "produced_by": "model",
+            "results": [
+              {
+                "detail": {
+                  "path": "/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+                },
+                "name": "read",
+                "ok": false,
+                "output": "missing path /Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates"
+              }
+            ],
+            "text": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\",\"limit\":200}}\n</tool_call>"
+          },
+          "authority_moved": false,
+          "context_sha256": "f31679ca6bff84f1db865a7c9510c115e50c9414cfbc0b3d3e740a170bcd4d5f",
+          "hcli_session_id": "genesis-kernel",
+          "ok": false,
+          "outcome": "TURN_COMPLETE",
+          "recorded_at": "2026-08-18T05:58:53Z",
+          "schema": "hawking.genesis.agentos_tick.v1",
+          "session_role": "child_b",
+          "summary": "<tool_call>\n{\"name\":\"read\",\"arguments\":{\"path\":\"/Users/scammermike/Downloads/hawking/workspace/ops/genesis-candidates\",\"limit\":200}}\n</tool_call>",
+          "worker_id": "kernel"
+        },
+        {
+          "authority_moved": false,
+          "error_type": "ResidentRefused",
+          "ok": false,
+          "outcome": "TURN_FAILED",
+          "recorded_at": "2026-08-18T06:07:22Z",
+          "schema": "hawking.genesis.agentos_tick.v1",
+          "session_role": "child_b",
+          "summary": "ResidentRefused: resident client returned no result",
+          "worker_id": "kernel"
+        }
+      ],
+      "worktree": "/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel",
+      "worktree_base_commit": "45a27c2ad00a7763b6d1772fa274fb7fdd34c647",
+      "worktree_isolated": true,
+      "worktree_provisioned_at": "2026-08-17T15:35:24.345539Z"
+    },
+    "ephemeral_model_state": {
+      "kv_preserved": false,
+      "transcript_required_for_resume": false
+    },
+    "generation_dependencies": [
+      "artifact",
+      "runtime"
+    ],
+    "priority": 10,
+    "session_role": "child_b",
+    "state": "READY",
+    "task_contract": {
+      "front": "kernel/execution genome",
+      "version": 1
+    },
+    "task_id": "genesis-kernel-frontier",
+    "unevictable": false,
+    "worker_id": "kernel"
+  }
+}

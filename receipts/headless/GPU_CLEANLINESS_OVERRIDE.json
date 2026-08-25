@@ -1,0 +1,327 @@
+{
+ "schema": "hawking.odyssey.gpu_cleanliness.v1",
+ "generated_at": "2026-08-25T06:28:13Z",
+ "generated_by": "tools/odyssey/gpu_cleanliness.py",
+ "obligation": "G013 \u2014 GPU_CLEANLINESS_OVERRIDE (\u00a725)",
+ "hand_authored": false,
+ "git_head": "eb1494112b61953122262e311cc9243dbd44952e",
+ "resume_guarantees": [
+  {
+   "guarantee": "1_normal_exit",
+   "paused": true,
+   "resumed": true,
+   "passed": true
+  },
+  {
+   "guarantee": "2_parent_killed_watchdog_resumes",
+   "paused": true,
+   "still_stopped_after_kill": true,
+   "resumed_by_detached_watchdog": true,
+   "passed": true,
+   "note": "this is the exact failure that left six downloaders stopped"
+  },
+  {
+   "guarantee": "3_stale_lease_healed",
+   "paused": true,
+   "heal_result": {
+    "healed": true,
+    "resumed": [
+     63476
+    ],
+    "owner_dead": true,
+    "expired": false
+   },
+   "resumed": true,
+   "passed": true
+  }
+ ],
+ "n_guarantees_passed": 3,
+ "historical_defect": {
+  "what": "PausedIO resumed only inside __exit__",
+  "how_it_failed": "the parent shell was killed on a timeout mid-window, so __exit__ never ran and six downloader processes were left SIGSTOPped indefinitely",
+  "observed": "pids 52301 52324 52325 52328 52329 59031 stopped; resumed by hand",
+  "fix": "tools/odyssey/protected_window.py \u2014 lease written before the first SIGSTOP, detached watchdog resumes at the deadline, next run heals a stale lease"
+ },
+ "classification": [
+  {
+   "pid": 1029,
+   "name": "fileproviderd",
+   "cpu_percent": 94.3,
+   "io_bound_invisible_to_cpu_threshold": false,
+   "paused_by_window": false,
+   "class": "STANDING",
+   "reason": "part of this machine in production too; pausing it would forge a speedup"
+  },
+  {
+   "pid": 62697,
+   "name": "OrbStack",
+   "cpu_percent": 61.3,
+   "io_bound_invisible_to_cpu_threshold": false,
+   "paused_by_window": false,
+   "class": "STANDING",
+   "reason": "part of this machine in production too; pausing it would forge a speedup"
+  },
+  {
+   "pid": 1168,
+   "name": "avconferenced",
+   "cpu_percent": 44.7,
+   "io_bound_invisible_to_cpu_threshold": false,
+   "paused_by_window": false,
+   "class": "STANDING",
+   "reason": "part of this machine in production too; pausing it would forge a speedup"
+  },
+  {
+   "pid": 623,
+   "name": "WindowServer",
+   "cpu_percent": 32.0,
+   "io_bound_invisible_to_cpu_threshold": false,
+   "paused_by_window": false,
+   "class": "STANDING",
+   "reason": "part of this machine in production too; pausing it would forge a speedup"
+  },
+  {
+   "pid": 97218,
+   "name": "Claude",
+   "cpu_percent": 19.2,
+   "io_bound_invisible_to_cpu_threshold": false,
+   "paused_by_window": false,
+   "class": "STANDING",
+   "reason": "part of this machine in production too; pausing it would forge a speedup"
+  },
+  {
+   "pid": 75443,
+   "name": "powermetrics",
+   "cpu_percent": 12.9,
+   "io_bound_invisible_to_cpu_threshold": false,
+   "paused_by_window": false,
+   "class": "OURS_NOT_PAUSED",
+   "reason": "ours, campaign-only, would not run during production inference"
+  },
+  {
+   "pid": 97344,
+   "name": "Application",
+   "cpu_percent": 8.9,
+   "io_bound_invisible_to_cpu_threshold": false,
+   "paused_by_window": false,
+   "class": "STANDING",
+   "reason": "part of this machine in production too; pausing it would forge a speedup"
+  },
+  {
+   "pid": 801,
+   "name": "sysmond",
+   "cpu_percent": 8.1,
+   "io_bound_invisible_to_cpu_threshold": false,
+   "paused_by_window": false,
+   "class": "STANDING",
+   "reason": "part of this machine in production too; pausing it would forge a speedup"
+  },
+  {
+   "pid": 97199,
+   "name": "Claude",
+   "cpu_percent": 5.2,
+   "io_bound_invisible_to_cpu_threshold": false,
+   "paused_by_window": false,
+   "class": "STANDING",
+   "reason": "part of this machine in production too; pausing it would forge a speedup"
+  },
+  {
+   "pid": 1834,
+   "name": "VTEncoderXPCService",
+   "cpu_percent": 5.1,
+   "io_bound_invisible_to_cpu_threshold": false,
+   "paused_by_window": false,
+   "class": "STANDING",
+   "reason": "part of this machine in production too; pausing it would forge a speedup"
+  },
+  {
+   "pid": 59031,
+   "name": "hf download",
+   "cpu_percent": 2.6,
+   "io_bound_invisible_to_cpu_threshold": true,
+   "paused_by_window": true,
+   "class": "PAUSABLE",
+   "reason": "ours, campaign-only, would not run during production inference"
+  },
+  {
+   "pid": 52324,
+   "name": "hf download",
+   "cpu_percent": 2.5,
+   "io_bound_invisible_to_cpu_threshold": true,
+   "paused_by_window": true,
+   "class": "PAUSABLE",
+   "reason": "ours, campaign-only, would not run during production inference"
+  },
+  {
+   "pid": 52325,
+   "name": "hf download",
+   "cpu_percent": 2.4,
+   "io_bound_invisible_to_cpu_threshold": true,
+   "paused_by_window": true,
+   "class": "PAUSABLE",
+   "reason": "ours, campaign-only, would not run during production inference"
+  },
+  {
+   "pid": 63419,
+   "name": "hf download",
+   "cpu_percent": 2.4,
+   "io_bound_invisible_to_cpu_threshold": true,
+   "paused_by_window": true,
+   "class": "PAUSABLE",
+   "reason": "ours, campaign-only, would not run during production inference"
+  },
+  {
+   "pid": 52329,
+   "name": "hf download",
+   "cpu_percent": 1.2,
+   "io_bound_invisible_to_cpu_threshold": true,
+   "paused_by_window": true,
+   "class": "PAUSABLE",
+   "reason": "ours, campaign-only, would not run during production inference"
+  },
+  {
+   "pid": 52328,
+   "name": "hf download",
+   "cpu_percent": 0.3,
+   "io_bound_invisible_to_cpu_threshold": true,
+   "paused_by_window": true,
+   "class": "PAUSABLE",
+   "reason": "ours, campaign-only, would not run during production inference"
+  },
+  {
+   "pid": 52301,
+   "name": "lake_filler.py",
+   "cpu_percent": 0.0,
+   "io_bound_invisible_to_cpu_threshold": true,
+   "paused_by_window": true,
+   "class": "PAUSABLE",
+   "reason": "ours, campaign-only, would not run during production inference"
+  },
+  {
+   "pid": 75259,
+   "name": "powermetrics",
+   "cpu_percent": 0.0,
+   "io_bound_invisible_to_cpu_threshold": true,
+   "paused_by_window": false,
+   "class": "OURS_NOT_PAUSED",
+   "reason": "ours, campaign-only, would not run during production inference"
+  },
+  {
+   "pid": 75442,
+   "name": "powermetrics",
+   "cpu_percent": 0.0,
+   "io_bound_invisible_to_cpu_threshold": true,
+   "paused_by_window": false,
+   "class": "OURS_NOT_PAUSED",
+   "reason": "ours, campaign-only, would not run during production inference"
+  }
+ ],
+ "pausable": [
+  {
+   "pid": 59031,
+   "name": "hf download",
+   "cpu_percent": 2.6
+  },
+  {
+   "pid": 52324,
+   "name": "hf download",
+   "cpu_percent": 2.5
+  },
+  {
+   "pid": 52325,
+   "name": "hf download",
+   "cpu_percent": 2.4
+  },
+  {
+   "pid": 63419,
+   "name": "hf download",
+   "cpu_percent": 2.4
+  },
+  {
+   "pid": 52329,
+   "name": "hf download",
+   "cpu_percent": 1.2
+  },
+  {
+   "pid": 52328,
+   "name": "hf download",
+   "cpu_percent": 0.3
+  },
+  {
+   "pid": 52301,
+   "name": "lake_filler.py",
+   "cpu_percent": 0.0
+  }
+ ],
+ "n_pausable_invisible_to_a_cpu_threshold": 7,
+ "ours_not_paused": [
+  {
+   "pid": 75443,
+   "name": "powermetrics",
+   "cpu_percent": 12.9,
+   "action": "profiling leftover; kill rather than endure"
+  },
+  {
+   "pid": 75259,
+   "name": "powermetrics",
+   "cpu_percent": 0.0,
+   "action": "profiling leftover; kill rather than endure"
+  },
+  {
+   "pid": 75442,
+   "name": "powermetrics",
+   "cpu_percent": 0.0,
+   "action": "profiling leftover; kill rather than endure"
+  }
+ ],
+ "standing_not_paused": [
+  {
+   "name": "fileproviderd",
+   "cpu_percent": 94.3
+  },
+  {
+   "name": "OrbStack",
+   "cpu_percent": 61.3
+  },
+  {
+   "name": "avconferenced",
+   "cpu_percent": 44.7
+  },
+  {
+   "name": "WindowServer",
+   "cpu_percent": 32.0
+  },
+  {
+   "name": "Claude",
+   "cpu_percent": 19.2
+  },
+  {
+   "name": "Application",
+   "cpu_percent": 8.9
+  },
+  {
+   "name": "sysmond",
+   "cpu_percent": 8.1
+  },
+  {
+   "name": "Claude",
+   "cpu_percent": 5.2
+  },
+  {
+   "name": "VTEncoderXPCService",
+   "cpu_percent": 5.1
+  }
+ ],
+ "standing_cpu_percent_total": 278.8,
+ "no_forged_speedups": {
+  "rule": "only load that would be absent in production is paused",
+  "standing_load_is_endured_and_declared": true,
+  "consequence": "every latency figure in this campaign carries the standing floor below; it is not subtracted out"
+ },
+ "acquisition_context": {
+  "volume": "Seagate BUP Portable, USB, external, SMART Verified",
+  "measured_sustained_write_mib_s": 15,
+  "concurrent_write_streams_observed": 78,
+  "note": "a spinning USB disk, so acquisition I/O is a genuine contaminator of unified memory and CPU submission; this is why the window exists"
+ },
+ "pass": true
+}

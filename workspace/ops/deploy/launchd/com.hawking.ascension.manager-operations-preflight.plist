@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.hawking.ascension.manager-operations-preflight</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/caffeinate</string>
+    <string>-is</string>
+    <string>--</string>
+    <string>/usr/bin/nice</string>
+    <string>-n</string>
+    <string>15</string>
+    <string>/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python</string>
+    <string>/Users/scammermike/Downloads/hawking/tools/condense/ascension_manager_operations_preflight.py</string>
+    <string>watch</string>
+    <string>--idle-seconds</string>
+    <string>45</string>
+  </array>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ProcessType</key>
+  <string>Background</string>
+  <key>ThrottleInterval</key>
+  <integer>20</integer>
+  <key>WorkingDirectory</key>
+  <string>/Users/scammermike/Downloads/hawking</string>
+  <key>StandardOutPath</key>
+  <string>/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/manager-operations-preflight.launchd.stdout.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/manager-operations-preflight.launchd.stderr.log</string>
+</dict>
+</plist>

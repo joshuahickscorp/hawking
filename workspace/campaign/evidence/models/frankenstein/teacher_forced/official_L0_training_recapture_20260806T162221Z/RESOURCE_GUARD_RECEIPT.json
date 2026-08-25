@@ -1,0 +1,41 @@
+{
+  "baseline_swap_bytes": 0,
+  "child_pid": 152,
+  "command": [
+    "/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python",
+    "-m",
+    "lab.operators.frankenstein_teacher_forced_executor",
+    "--mode",
+    "official",
+    "--corpus-level",
+    "L0",
+    "--stream",
+    "--source-root",
+    "/Users/scammermike/Library/Application Support/hawking/GLM52Gravity/stream_scratch",
+    "--output-dir",
+    "/Users/scammermike/Downloads/hawking/workspace/campaign/evidence/models/frankenstein/teacher_forced/official_L0_training_recapture_20260806T162221Z",
+    "--max-sequence",
+    "32",
+    "--microbatch",
+    "8",
+    "--sample-hidden",
+    "64"
+  ],
+  "completed_at": "2026-08-06T16:23:45.949196Z",
+  "elapsed_seconds": 19.097,
+  "exit_code": -15,
+  "minimum_free_disk_bytes": 175784611840,
+  "peak_rss_bytes": 5881053184,
+  "policy": {
+    "disk_floor_bytes": 26843545600,
+    "disk_path": "/Users/scammermike/Downloads/hawking",
+    "rss_cap_bytes": 5368709120,
+    "swap_growth_allowed": false
+  },
+  "runner_pid": 150,
+  "samples": 10,
+  "schema": "hawking.ascension.bounded_process_runner.v1",
+  "started_at_monotonic": 86986.762134125,
+  "state": "FAILED",
+  "stop_reason": "RSS_CAP_EXCEEDED"
+}

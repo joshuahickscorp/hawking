@@ -1,0 +1,235 @@
+{
+ "schema": "hawking.odyssey.decoding_gravity.v1",
+ "generated_at": "2026-08-25T08:50:00Z",
+ "generated_by": "tools/odyssey/decoding_gravity.py",
+ "obligation": "G038 \u2014 DECODING_GRAVITY",
+ "hand_authored": false,
+ "git_head": "a6209635ab9dec3c0c4b44894b03e19271330288",
+ "why_this_lever": "G005 measured the model-reachable roof at 274-290 GB/s against a 778.8 GB/s device sustained roof, so decode is dispatch-bound and no representation change moves TPOT. Accepted tokens per forward pass is the remaining lever.",
+ "census": {
+  "parent": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
+  "n_tensors_total": 1199,
+  "machinery_found": {
+   "mtp": 15,
+   "multi_token": 0,
+   "nextn": 0,
+   "draft": 0,
+   "medusa": 0,
+   "eagle": 0,
+   "exit": 0,
+   "aux": 0
+  },
+  "mtp_tensors": {
+   "mtp.fc.weight": {
+    "shape": [
+     5120,
+     10240
+    ],
+    "params": 52428800
+   },
+   "mtp.layers.0.input_layernorm.weight": {
+    "shape": [
+     5120
+    ],
+    "params": 5120
+   },
+   "mtp.layers.0.mlp.down_proj.weight": {
+    "shape": [
+     5120,
+     17408
+    ],
+    "params": 89128960
+   },
+   "mtp.layers.0.mlp.gate_proj.weight": {
+    "shape": [
+     17408,
+     5120
+    ],
+    "params": 89128960
+   },
+   "mtp.layers.0.mlp.up_proj.weight": {
+    "shape": [
+     17408,
+     5120
+    ],
+    "params": 89128960
+   },
+   "mtp.layers.0.post_attention_layernorm.weight": {
+    "shape": [
+     5120
+    ],
+    "params": 5120
+   },
+   "mtp.layers.0.self_attn.k_norm.weight": {
+    "shape": [
+     256
+    ],
+    "params": 256
+   },
+   "mtp.layers.0.self_attn.k_proj.weight": {
+    "shape": [
+     1024,
+     5120
+    ],
+    "params": 5242880
+   },
+   "mtp.layers.0.self_attn.o_proj.weight": {
+    "shape": [
+     5120,
+     6144
+    ],
+    "params": 31457280
+   },
+   "mtp.layers.0.self_attn.q_norm.weight": {
+    "shape": [
+     256
+    ],
+    "params": 256
+   },
+   "mtp.layers.0.self_attn.q_proj.weight": {
+    "shape": [
+     12288,
+     5120
+    ],
+    "params": 62914560
+   },
+   "mtp.layers.0.self_attn.v_proj.weight": {
+    "shape": [
+     1024,
+     5120
+    ],
+    "params": 5242880
+   },
+   "mtp.norm.weight": {
+    "shape": [
+     5120
+    ],
+    "params": 5120
+   },
+   "mtp.pre_fc_norm_embedding.weight": {
+    "shape": [
+     5120
+    ],
+    "params": 5120
+   },
+   "mtp.pre_fc_norm_hidden.weight": {
+    "shape": [
+     5120
+    ],
+    "params": 5120
+   }
+  },
+  "mtp_params": 424699392,
+  "mtp_share_of_model_pct": 1.579,
+  "mtp_bf16_bytes": 849398784,
+  "structure": "a complete single transformer layer (self_attn + SwiGLU MLP + norms) plus mtp.fc [5120, 10240], which fuses the normalized embedding with the normalized main hidden state. This is the standard MTP arrangement: predict token t+2 from the main model's hidden at t, then decode through the SHARED lm_head.",
+  "status_in_this_campaign": "PRESENT ON DISK AND NEVER PACKED. No noetic artifact in this campaign contains any mtp.* tensor."
+ },
+ "draft_measurement": {
+  "method": "greedy k=1: the verifier's token sequence is generated once, then each draft is asked for ONE token on each prefix and compared. Acceptance under exact greedy verification is argmax agreement.",
+  "verifier": "sealed-3.14",
+  "n_positions": 20,
+  "round_trip_skipped": 0,
+  "round_trip_note": "every prefix is detokenized back to text because the binary takes text; the round trip is VERIFIED per position and non-round-tripping positions are excluded rather than guessed",
+  "drafts": {
+   "clean-2.60": {
+    "capability_passed": 0,
+    "is_dead_final_generator": true,
+    "agreement": "10/20",
+    "acceptance_rate": 0.5,
+    "acceptance": 0.5,
+    "draft_ms": 30.018,
+    "verify_ms": 29.284,
+    "cost_ratio_draft_over_verify": 1.0251,
+    "break_even_cost_ratio": 0.5,
+    "pays": false,
+    "predicted_speedup_x": 0.7407,
+    "role": "USEFUL_DRAFT_BY_AGREEMENT_BUT_NOT_ECONOMIC"
+   },
+   "variantA-2.98": {
+    "capability_passed": 0,
+    "is_dead_final_generator": true,
+    "agreement": "15/20",
+    "acceptance_rate": 0.75,
+    "acceptance": 0.75,
+    "draft_ms": 29.203,
+    "verify_ms": 29.284,
+    "cost_ratio_draft_over_verify": 0.9972,
+    "break_even_cost_ratio": 0.75,
+    "pays": false,
+    "predicted_speedup_x": 0.8762,
+    "role": "USEFUL_DRAFT_BY_AGREEMENT_BUT_NOT_ECONOMIC"
+   },
+   "variantB-2.76": {
+    "capability_passed": 24,
+    "is_dead_final_generator": false,
+    "agreement": "13/20",
+    "acceptance_rate": 0.65,
+    "acceptance": 0.65,
+    "draft_ms": 30.198,
+    "verify_ms": 29.284,
+    "cost_ratio_draft_over_verify": 1.0312,
+    "break_even_cost_ratio": 0.65,
+    "pays": false,
+    "predicted_speedup_x": 0.8123,
+    "role": "USEFUL_DRAFT_BY_AGREEMENT_BUT_NOT_ECONOMIC"
+   }
+  }
+ },
+ "reclassification_S011_21": {
+  "finding": "a DEAD_FINAL_GENERATOR does carry usable draft signal: variantA-2.98 scores 0/43 as a generator and still matches the verifier's argmax 75% of the time, and clean-2.60 matches 50%.",
+  "but": "none of them pays. Every body in this ladder is the same size class with the same 964 dispatches per token, so draft cost and verify cost are within 3% of each other. Break-even needs draft/verify < acceptance; the best case here is 0.997 vs 0.75.",
+  "prior_falsification": "this codebase already measured 87% acceptance at 0.91x. Acceptance alone never proves a speedup, and these numbers are reported with the cost ratio attached for that reason.",
+  "roles": {
+   "clean-2.60": "USEFUL_DRAFT_BY_AGREEMENT_BUT_NOT_ECONOMIC",
+   "variantA-2.98": "USEFUL_DRAFT_BY_AGREEMENT_BUT_NOT_ECONOMIC",
+   "variantB-2.76": "USEFUL_DRAFT_BY_AGREEMENT_BUT_NOT_ECONOMIC"
+  }
+ },
+ "where_it_could_pay": {
+  "candidate": "the MTP head already on disk",
+  "draft_cost_ratio": 0.01579,
+  "why": "the MTP head is 1.579% of the model, so a draft pass costs about that fraction of a full forward pass instead of ~100%. Break-even needs only acceptance above 0.0158.",
+  "projected": {
+   "0.5": {
+    "acceptance": 0.5,
+    "draft_ms": 0.46239435999999995,
+    "verify_ms": 29.284,
+    "cost_ratio_draft_over_verify": 0.0158,
+    "break_even_cost_ratio": 0.5,
+    "pays": true,
+    "predicted_speedup_x": 1.4767
+   },
+   "0.6": {
+    "acceptance": 0.6,
+    "draft_ms": 0.46239435999999995,
+    "verify_ms": 29.284,
+    "cost_ratio_draft_over_verify": 0.0158,
+    "break_even_cost_ratio": 0.6,
+    "pays": true,
+    "predicted_speedup_x": 1.5751
+   },
+   "0.75": {
+    "acceptance": 0.75,
+    "draft_ms": 0.46239435999999995,
+    "verify_ms": 29.284,
+    "cost_ratio_draft_over_verify": 0.0158,
+    "break_even_cost_ratio": 0.75,
+    "pays": true,
+    "predicted_speedup_x": 1.7228
+   },
+   "0.9": {
+    "acceptance": 0.9,
+    "draft_ms": 0.46239435999999995,
+    "verify_ms": 29.284,
+    "cost_ratio_draft_over_verify": 0.0158,
+    "break_even_cost_ratio": 0.9,
+    "pays": true,
+    "predicted_speedup_x": 1.8705
+   }
+  },
+  "IS_A_PROJECTION_NOT_A_MEASUREMENT": "these speedups assume the MTP head's acceptance rate lands in the range shown and that its cost scales with its parameter share. Neither is measured: the head has never been packed into a noetic artifact and the runtime has no MTP path. The measured acceptance figures above are for the FULL-SIZE drafts only.",
+  "next_step": "pack mtp.* into an artifact and add a runtime path, then measure its acceptance the same way this receipt measured the full-size drafts"
+ },
+ "pass": true
+}

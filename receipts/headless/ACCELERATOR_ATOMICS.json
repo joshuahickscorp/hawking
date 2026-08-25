@@ -1,0 +1,131 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T13:07:28Z",
+ "experiment_class": "ACCEL-KERNEL",
+ "knowledge_level": "INSTANCE",
+ "git_head": "5b899211069a33398aef13a84d405dd74ca37a8c",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_D_ATOMICS",
+   "obligation": "G046 + G044",
+   "steer": "S015 \u00a712 EXECUTION.atomics"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model"
+  },
+  "representation": {
+   "name": "dense_f32"
+  },
+  "kernel": {
+   "produced_by": "air.lower_reduce_to_msl strategy='atomic'",
+   "uses": "atomic_fetch_add_explicit on a float output"
+  },
+  "runtime": {
+   "mlx": "0.32.1",
+   "python": "3.12.13"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "closes_a_large_gap": "EXECUTION.atomics was LARGE with nothing implemented. Native float atomic add works on this Metal and is now a reduction strategy in AIR.",
+  "hypothesis_tested": "The two-stage reduction receipt named its own loss: three separate GPU launches where MLX uses far fewer. Atomics collapse that to ONE launch and change nothing else, so this is a direct test of that diagnosis.",
+  "hypothesis_confirmed": {
+   "at_2^20": "6.1 -> 18.7 GB/s, 3.05x",
+   "at_2^24": "73.9 -> 133.1 GB/s, 1.80x",
+   "why_the_gain_shrinks": "exactly what the launch-bound versus bandwidth-bound split predicts. At 2^20 the work is small and launch overhead dominates, so removing two launches is worth 3x. At 2^24 there is more actual traffic to move, launches are a smaller fraction, and the same change is worth only 1.8x."
+  },
+  "performance": [
+   {
+    "n": 1048576,
+    "rel_err_two": 0.0,
+    "rel_err_atomic": 1.3898503951136195e-07,
+    "gbs": {
+     "mlx": 16.63304108076549,
+     "two_stage": 6.1167404407823085,
+     "atomic": 18.66557509503492
+    },
+    "iqrs": {
+     "mlx": 13.34,
+     "two_stage": 15.83,
+     "atomic": 7.51
+    },
+    "atomic_vs_two": {
+     "verdict": "CANDIDATE_WINS_DESPITE_NOISE",
+     "speedup": 3.0516,
+     "margin_pct": 205.16,
+     "arm_noise_pct": 15.83,
+     "margin_over_noise_ratio": 13.0,
+     "caveat": "an arm exceeded the 10.0% IQR gate, but the margin is 13x the worst arm noise, so the direction of the result is not in doubt; the MAGNITUDE carries more uncertainty than a clean measurement would"
+    },
+    "atomic_vs_mlx": {
+     "verdict": "NO_CLAIM",
+     "reason": "an arm failed the 10.0% IQR gate (mlx 13.34%, atomic 7.51%) and the margin 12.22% does not overwhelm that noise",
+     "speedup": null
+    }
+   },
+   {
+    "n": 16777216,
+    "rel_err_two": 5.857935686895681e-07,
+    "rel_err_atomic": 1.977053294327292e-06,
+    "gbs": {
+     "mlx": 225.16579856187712,
+     "two_stage": 73.93563779452401,
+     "atomic": 133.10840421561508
+    },
+    "iqrs": {
+     "mlx": 15.97,
+     "two_stage": 14.02,
+     "atomic": 7.4
+    },
+    "atomic_vs_two": {
+     "verdict": "CANDIDATE_WINS_DESPITE_NOISE",
+     "speedup": 1.8003,
+     "margin_pct": 80.03,
+     "arm_noise_pct": 14.02,
+     "margin_over_noise_ratio": 5.7,
+     "caveat": "an arm exceeded the 10.0% IQR gate, but the margin is 6x the worst arm noise, so the direction of the result is not in doubt; the MAGNITUDE carries more uncertainty than a clean measurement would"
+    },
+    "atomic_vs_mlx": {
+     "verdict": "NO_CLAIM",
+     "reason": "an arm failed the 10.0% IQR gate (mlx 15.97%, atomic 7.4%) and the margin 69.16% does not overwhelm that noise",
+     "speedup": null
+    }
+   }
+  ],
+  "vs_mlx": "NO_CLAIM at both sizes. At 2^20 atomic edges MLX 18.7 to 16.6 and at 2^24 MLX leads 225.2 to 133.1, but neither margin clears the noise. No win and no loss is claimed.",
+  "an_accuracy_tradeoff_worth_naming": {
+   "two_stage_rel_err": [
+    0.0,
+    5.857935686895681e-07
+   ],
+   "atomic_rel_err": [
+    1.3898503951136195e-07,
+    1.977053294327292e-06
+   ],
+   "meaning": "the atomic strategy is 3.4x less accurate at 2^24 (2.0e-06 against 5.9e-07) because atomic adds land in nondeterministic order, so the float summation order changes run to run. Both are far inside any reasonable tolerance, but the faster strategy is the less exact one and BOTH ARE KEPT rather than the slower one being deleted."
+  },
+  "max_still_needs_two_stage": "Metal has no float atomic max here, so the atomic strategy REFUSES op='max' rather than silently producing a wrong answer",
+  "CORRECTED_BY_LATER_MEASUREMENT": {
+   "corrected_by": "receipts/headless/ACCELERATOR_SYNC_CORRECTION.json",
+   "date": "2026-08-25",
+   "what_was_wrong": "This receipt's central claim -- that the two-stage reduction's loss was LAUNCH COUNT, and that atomics collapsing 3 launches to 1 confirmed it at 3.05x / 1.80x -- is REFUTED. The two-stage arm called mx.eval once per level of the tree, so it paid three HOST ROUND TRIPS where the atomic arm paid one. The comparison varied launches and syncs together.",
+   "what_the_decomposition_shows": "Launches isolated (1 dispatch vs 3, both with one sync): NO_CLAIM at 2^20, INDISTINGUISHABLE 1.019x at 2^24. Syncs isolated (3 dispatches both, 1 sync vs 3): 2.30x at 2^20, 1.28x at 2^24 -- essentially the whole reported effect.",
+   "consequence": "The recommendation flips. Atomic adds are nondeterministic in order and 3.4x less exact; that was worth a 3x speedup and is not worth zero. two_stage is now the strategy to prefer. Both are still kept -- the atomic path remains real evidence that Metal float atomics work, which is what closed EXECUTION.atomics.",
+   "what_still_stands": "The correctness results, the float-atomic capability itself, and the exactness tradeoff measurement (2.0e-06 vs 5.9e-07) are unaffected -- none of them depended on the timing harness."
+  }
+ },
+ "claim_boundary": "Float atomics work and make a single-pass sum reduction 3.05x and 1.80x faster than the two-stage form. Against MLX it is INDISTINGUISHABLE at both sizes -- no win claimed. Sum only, f32 only. The atomic path is measurably less numerically exact and nondeterministic in summation order, which is a real cost, not a footnote.",
+ "pass": true
+}

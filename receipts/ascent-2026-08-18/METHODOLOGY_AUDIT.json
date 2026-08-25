@@ -1,0 +1,17 @@
+{
+  "obligation": "Adversarial audit of the Phase-B shared-operator methodology (5 dimensions + synthesis), after the wrong-input-tensor bug.",
+  "survives": {
+    "q3_baseline_D1": "The experiment's q3 control is bit-for-bit the deployed HGRAVU01 recipe (symmetric absmax, group-64, 7 levels, scale_ratio=1.0, no channel-scale). fp16-vs-fp32 scale delta < 2e-7. NOT a strawman; marginally conservative. Real packer: lab/operators/qwen38_mlp_not_r160_pack.py:80-114.",
+    "teacher_function_D2": "F=down(silu(gate)*up), bias-free, DENSE (no MoE/router), no intra-MLP norm, norm+residual outside the operator -- matches both mlx_lm qwen3_next (aliased by qwen3_5) and the Rust decoder gk_swiglu_f32. Correct target.",
+    "forward_math_D4": "MLX operator transcription == torch Shared.forward to 1.8e-12 (FiLM path exercised). The operator computes what it claims."
+  },
+  "bugs_found": {
+    "B0_wrong_input": "Operators trained/scored on post_input_norm (attention input); real MLP input is post_attn_norm. Voids all G3_ALL64_SCALE absolute numbers (shared_op_all64.py:20 still uses wrong input). Affects q3 and operator symmetrically but the receipt must be regenerated.",
+    "D3a_leakage_SEVERE": "The 80/20 positional slice ignores the capture's prompt-level fit/hold. On L20: 20/400 held rows bitwise-identical to a train row; 97.5% at cosine>0.99 (median 0.9996); the train/held boundary falls INSIDE one prompt. Root cause: degenerate corpus -- each prompt is the SAME paragraph repeated ~12x and same-family prompts share the paragraph. The leakage specifically flatters the trained operator (q3 does not train).",
+    "D3b_single_family": "All operator scripts use NTOK=2000 = 100% PROSE on both train and held. S027's cross-task-family holdout (train prose, test code) is NOT satisfied. The corpus has 7 families (prose/code/math/instruction/long/multilingual/adversarial) but the training never leaves prose.",
+    "D5_aggregation_mismatch": "q3 held error = MEAN of per-layer relative-L2 ratios (np.mean(eq3s)); operator held error = SINGLE POOLED relative-L2 over all layers concatenated (rel(G(Xte),Yte)). Not directly comparable; the pooled form aligns with the operator's own MSE objective and flatters it. Present in all three scripts."
+  },
+  "verdict": "The headline 'shared operator BEATS q3 held-out' (0.371 vs 0.384) does NOT survive: three defects (D3a leakage, D5 aggregation, B0 input) each swing more than the 0.0134 margin, all in the operator's favor. 'Valid successor / wall broken' was never measured -- no cross-family generalization (D3b), no assembled-Doctor (never ran; and the MLX test had a KeyError that would have made it silently measure nothing). The active-byte win (operator 38.3MB vs q3 108.6MB/layer) is real and independent of these bugs.",
+  "corrective_plan": "Rebuild the eval honestly: (1) CROSS-FAMILY split -- train on some families, hold out entirely-unseen families (no positional leakage possible); (2) correct input post_attn_norm; (3) consistent aggregation -- per-layer mean rel-L2 for BOTH operator and q3; (4) fix the MLX loader key bug (g.0.weight). Then re-measure operator vs q3. Bar for a successor: q3-COMPARABLE function on unseen families at materially fewer active bytes + assembled-Doctor coherent.",
+  "value": "The adversarial audit prevented building a Metal kernel + assembled test on a false premise. Same lesson as the memory 'FIVE systems reported success while checking nothing' -- an obligation with an adjective (generalizes, beats) looks complete until the check is watched to fail."
+}

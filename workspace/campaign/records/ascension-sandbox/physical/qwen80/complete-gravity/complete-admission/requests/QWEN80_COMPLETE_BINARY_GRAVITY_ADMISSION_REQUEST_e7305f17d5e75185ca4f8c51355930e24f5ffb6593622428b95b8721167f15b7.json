@@ -1,0 +1,57 @@
+{
+  "claim_boundary": {
+    "manifest_is_bound_by_exact_seal_and_raw_document_sha256": true,
+    "not_native_decoder_runtime_capability_hcli_tps_tg_or_tournament_qualification": true,
+    "raw_bf16_source_is_authority_teacher_not_tournament_participant": true,
+    "source_content_identity_and_current_full_shard_revalidation_are_both_required": true
+  },
+  "complete_manifest": {
+    "document_sha256": "a06d8df7bb0076010c22e6a2c305fa54ec2da113cb8e1bc7e16066f8258cb557",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+    "schema": "hawking.ascension.qwen80_complete_binary_gravity.v1",
+    "seal_sha256": "e7305f17d5e75185ca4f8c51355930e24f5ffb6593622428b95b8721167f15b7",
+    "status": "CANDIDATE_COMPLETE_BINARY_ARTIFACT_LOW_FIDELITY_UNQUALIFIED"
+  },
+  "current_source_revalidation": {
+    "document_sha256": "8f97534277730f266a07fb631b4c65fd2663a555028c96a062f1899235b77f91",
+    "index_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-80b/Qwen3-Coder-Next/model.safetensors.index.json",
+    "index_sha256": "e54c170589a729006db825100b4c69cf1c485ee89d3e8dd30aec9dccbf9cea1b",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_CURRENT_SOURCE_SHARD_REVALIDATION.json",
+    "repository": "Qwen/Qwen3-Coder-Next",
+    "revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+    "seal_sha256": "7bf027ed96db95d9700081d9841256597385e9793d2a4b623db1f6726b231990",
+    "sealed_shard_count": 40,
+    "sealed_shard_hashes_sha256": "fa73015966ff0fef5294db7d95b9a86dcef4ce18fbfe0f1d5f0a55a0fabc9709",
+    "source_audit_document_sha256": "74d95e3215e98901b6ef97135a9653bd004fc4fa62b5a6c882ceccc49ba7c30a",
+    "source_audit_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80-acquisition/QWEN80_SOURCE_BODY_AUDIT_CANDIDATE.json",
+    "source_audit_seal_sha256": "fb3ef8cd63dc72b8a34a51dc4d27db6a91226dfc1742e052041afb90634b0331",
+    "source_model_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-80b/Qwen3-Coder-Next",
+    "weight_map_sha256": "e2016f7d0b2699cb8d339f57c18030dc893db078802a3de267288e928399bad3"
+  },
+  "immutable_source_identity": {
+    "content_identity_sha256": "3a6c4816e885023cc6eaaf0521adb0be1a9a008ee5021116c1305b78a2745acc",
+    "document_sha256": "fa2cdca1b4716fa0d553ab796976dfcda36ba38274c759034912fd0fa01d3a0f",
+    "historical_weight_body_audit_seal_sha256": "b655f7d55bd461f23602b07c1ef71118f50f5dee2a17f2071fc5d493dc2ac1b3",
+    "index_sha256": "e54c170589a729006db825100b4c69cf1c485ee89d3e8dd30aec9dccbf9cea1b",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/evolution/SOURCE_CONTENT_IDENTITY.json",
+    "repository": "Qwen/Qwen3-Coder-Next",
+    "revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+    "seal_sha256": "4a71f1cc860d362176e5501426e7f9b3e4e1178f1389e5989c03c38301e9a8e3",
+    "source_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/runs/qwen-80b/Qwen3-Coder-Next"
+  },
+  "model": {
+    "id": "Qwen3-Coder-Next-80B",
+    "key": "qwen80",
+    "native_core_model": "qwen80",
+    "repository": "Qwen/Qwen3-Coder-Next",
+    "revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb"
+  },
+  "native_admission": {
+    "rechecks_complete_catalog_payload_hash_layout_and_current_source_identity": true,
+    "required_api": "hawking_core::model::qwen_complete_binary::admit_complete_binary_artifact"
+  },
+  "request_version": 1,
+  "schema": "hawking.ascension.qwen_complete_binary_gravity_admission_request.v1",
+  "seal_sha256": "e534eb65cfcd0bd5f31a12b1366bd582e0e7d047ca3cc804b816197820b54810",
+  "status": "SEALED_EXACT_COMPLETE_BINARY_ADMISSION_REQUEST"
+}

@@ -1,0 +1,24 @@
+{
+ "title": "Honest strategic finding on the 100 TPS flagship for Qwen3.8-27B, after the Phase-B executable-operator investigation.",
+ "date": "2026-08-18",
+ "what_was_tested_this_phase": "Executable-operator MLP replacement (S027 Phase B): shared operators + per-layer FiLM/LoRA, single and grouped, on a genuinely diverse multi-family corpus with correct methodology (correct input post_attn_norm, cross-family held-out, consistent aggregation, adversarially audited).",
+ "results": {
+  "earlier_breakthrough_REFUTED": "The 'shared operator beats q3 at 0.37' was a degenerate-corpus + methodology artifact (leakage + aggregation mismatch + wrong input), refuted by the adversarial audit (METHODOLOGY_AUDIT.json).",
+  "honest_operator_function": "Best honest single shared operator: rel 0.648 vs q3 0.343 (1.9x worse). Diagnostic best-case (8-layer, in-family): 0.59. Grouped/LoRA: diverges or worse.",
+  "assembled_doctor_DEFINITIVE": "Single operator swapped into all 64 MLPs -> patient GIBBERISH (0/4 probes) while the true patient answers correctly. Density via shared operator is refuted at the Doctor (contract) level, not just a proxy metric.",
+  "execution_lever": "geo_tpr64 already the default for the q3 patient (EXEC_LEVER_MAP.json) -- no leftover win.",
+  "grouped_confirms": "Grouped K=4 stable: function 0.649 (same as single), assembled 0/4 gibberish. Grouping doesn't help -> width bottleneck is fundamental. Operator density family definitively refuted at the Doctor level."
+ },
+ "the_physics_wall": "A 27B-parameter model at ~3.3 BPW is ~11.7 GB active/token. At ~471 GB/s effective decode bandwidth the ceiling is ~40 TPS (measured ~30). 100 TPS = 10 ms/token needs <=~4.7 GB active = ~1.4 BPW equivalent -- far below the coherent floor (q3 ~3.25 BPW MLP). The MLP is ~7 GB (68% of GEMV); cutting it to the ~40 MB a shared operator would need requires representing the MLP function at ~0.05 bits/weight, which the assembled-Doctor test shows is incoherent. CONVERGENT evidence: Phase A (conventional compression) and Phase B (executable operators) BOTH hit the same q3 coherence floor from opposite directions.",
+ "honest_conclusion": "100 TPS on Qwen3.8-27B at Doctor-coherent quality is not achievable on this hardware by density (operators or quantization) -- it is a physics constraint (params x BPW / bandwidth), not a shortfall of effort or search. The coherent frontier for this model on this box is ~30-40 TPS, which the current Phase-A Genesis patient already occupies (Doctor-valid, one-command NOS, geo_tpr64-optimized).",
+ "reachable_now": "The delivered Phase-A Genesis: mixed-q3mlp-v1, ~30-35 TPS, Doctor-valid capability 0.96, Tabula preserved, zero fallback, one-command NOS. This is a real, shippable successor-grade artifact at the coherent frontier.",
+ "reopeners_low_to_moderate_probability": [
+  "G8 structured-nonlinear (Monarch/butterfly full-width operator) -- the one untested family that is NOT a narrow bottleneck; still faces the coherence-floor rate-distortion but keeps full expressivity. Untested.",
+  "attention/DeltaNet active-byte reduction -- untested (MLP was the 68% focus); even halving attention gives only a modest TPS gain since it is ~32% of GEMV.",
+  "the unused geo_tpr64 alignedload kernel variant (code change, unbenched).",
+  "DIFFERENT BASE MODEL: a smaller model (fewer params) is the only path that changes the physics; S027 deferred this. 100 TPS is naturally reachable on a model whose active bytes at coherent BPW are <=4.7 GB (roughly <=11B params at 3.3 BPW).",
+  "different hardware with higher decode bandwidth."
+ ],
+ "steer_needed": "The user's '100 TPS flagship' on THIS model is physics-blocked at coherent quality. Options requiring a steer: (a) accept ~30-40 TPS coherent frontier as the deliverable; (b) authorize a smaller base model for the 100 TPS flagship (S027 currently defers this); (c) authorize deep structured-operator (G8) research at low success probability; (d) different hardware. This is NOT a terminal blocker to declare unilaterally -- it is a strategic fork for the user.",
+ "external_validation_2bit": "A ready-made MLX 2-bit abliterated quant (~3.0 bpw effective) was downloaded and tested: coherent (5/6), abliteration preserved (0/2 refusals), 37.7 TPS via mlx_lm (~10GB active). This EXTERNALLY confirms the wall -- the coherent quant floor is ~3 bpw, ceiling ~38 TPS for 27B; 100 TPS needs sub-coherent ~1.4 bpw. It is also a real modest speed win (38 vs 30 TPS) as a ready-made successor if wanted."
+}

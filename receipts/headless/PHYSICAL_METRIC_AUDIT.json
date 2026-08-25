@@ -1,0 +1,116 @@
+{
+ "schema": "hawking.headless.physical_metric_audit.v1",
+ "generated_at": "2026-08-25T05:42:03Z",
+ "generated_by": "tools/odyssey/metric_audit.py",
+ "obligation": "G033 \u2014 PHYSICAL_METRIC_AUDIT (steer S011 \u00a75)",
+ "git_head": "eb1494112b61953122262e311cc9243dbd44952e",
+ "hand_authored": false,
+ "metrics": [
+  {
+   "metric": "complete_ebpw",
+   "classification": "ARTIFACT_PHYSICAL_complete_ebpw",
+   "source_of_value": "8 * (payload_bytes - header_bytes) / parent_params",
+   "note": "WAS a design constant published under a physical name; corrected so it follows the payload, with the design figure kept beside it as a cross-check"
+  },
+  {
+   "metric": "complete_ebpw_from_design_constants",
+   "classification": "DESIGN_EXPECTED_complete_ebpw",
+   "source_of_value": "hardcoded per-organ rates: mlp*2.25, dn*3.25, gqa/embed/out*3.125",
+   "note": "cannot move when the genome or the artifact moves; retained only to surface a design/physical divergence"
+  },
+  {
+   "metric": "active_ebpw_per_token",
+   "classification": "DESIGN_EXPECTED_active_ebpw_per_token",
+   "source_of_value": "same hardcoded per-organ rates",
+   "note": "STILL FROZEN. Identical 8234330016.0 was reported for two artifacts differing by 1.29 GB. Not corrected because no measurement in this campaign depends on it; flagged here so nobody quotes it as physical."
+  },
+  {
+   "metric": "active_bytes_per_token",
+   "classification": "DESIGN_EXPECTED_active_bytes_per_token",
+   "source_of_value": "hardcoded organ element counts x design rates",
+   "note": "same defect as above"
+  },
+  {
+   "metric": "payload_bytes",
+   "classification": "ARTIFACT_PHYSICAL_payload_bytes",
+   "source_of_value": "sum of bytes written by the packer",
+   "note": "moves with the artifact"
+  },
+  {
+   "metric": "resident_bytes",
+   "classification": "ARTIFACT_PHYSICAL_resident_bytes",
+   "source_of_value": "du over the artifact root",
+   "note": "measured, not declared"
+  },
+  {
+   "metric": "dispatches_per_token",
+   "classification": "RUNTIME_MEASURED_dispatches_per_token",
+   "source_of_value": "counted by the runtime during decode",
+   "note": "964 for all three bodies, which is itself informative: representation change did not alter dispatch count"
+  },
+  {
+   "metric": "median_gpu_ns_per_token",
+   "classification": "RUNTIME_MEASURED_tpot",
+   "source_of_value": "GPU timestamps per decode step",
+   "note": "carries the machine's standing CPU floor"
+  },
+  {
+   "metric": "TTFT / prefill_wall_ns",
+   "classification": "RUNTIME_MEASURED_latency",
+   "source_of_value": "wall clock around prefill",
+   "note": "contaminated by any concurrent work; measured inside a protected window"
+  },
+  {
+   "metric": "dram_bytes_per_token",
+   "classification": "DESIGN_EXPECTED_dram_bytes_per_token",
+   "source_of_value": "derived from the design active-bytes figure",
+   "note": "inherits the frozen active-bytes defect; treat as design until re-derived from a counter"
+  },
+  {
+   "metric": "model_reachable_roof",
+   "classification": "RUNTIME_MEASURED_roof_input",
+   "source_of_value": "measured achieved GB/s against the executable's own traffic",
+   "note": "per-executable and per-regime; explicitly forbidden from being copied across models"
+  },
+  {
+   "metric": "DEVICE_MEASURED_SUSTAINED (778.8) / DEVICE_THEORETICAL (819.0)",
+   "classification": "RUNTIME_MEASURED_machine_roof",
+   "source_of_value": "sealed bandwidth probe",
+   "note": "machine constants, valid on this box only"
+  },
+  {
+   "metric": "representation_identity",
+   "classification": "ARTIFACT_PHYSICAL_identity",
+   "source_of_value": "codec + group + bits recorded per segment header",
+   "note": "readable from the artifact"
+  },
+  {
+   "metric": "kernel_identity",
+   "classification": "ARTIFACT_PHYSICAL_identity",
+   "source_of_value": "kernel name + shader sha256 in KERNEL_LIBRARY",
+   "note": "sha256 of the shader source, not of the compiled metallib, which the runtime compiles from source"
+  },
+  {
+   "metric": "runtime_identity",
+   "classification": "RUNTIME_MEASURED_identity",
+   "source_of_value": "genome_bind string plus dense_w_materialized counter emitted at decode",
+   "note": "the counter is incremented only by Qwen38HybridDecodeSession::account_dense_w"
+  }
+ ],
+ "n_metrics": 15,
+ "n_design_expected": 4,
+ "n_artifact_physical": 5,
+ "n_runtime_measured": 6,
+ "still_frozen_and_flagged": [
+  "active_ebpw_per_token",
+  "dram_bytes_per_token"
+ ],
+ "law": "never expose a design constant under a physical label",
+ "observed_values": {
+  "clean_design_ebpw": 2.5969567265364937,
+  "clean_physical_ebpw": 2.596994,
+  "wmn_complete_ebpw": 2.5969567265364937,
+  "mix_payload_bytes": 8731093292
+ },
+ "pass": true
+}

@@ -1,0 +1,15 @@
+{
+  "admission_current": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_ADMISSION_CURRENT.json",
+  "claim_boundary": {
+    "metal_requires_explicit_rawls_quiet_lease": true,
+    "not_ten_route_shared_expert_residual_layer_token_generation_hcli_or_tps": true,
+    "one_selected_expert_only": true
+  },
+  "manifest": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+  "mode": "cpu-oracle",
+  "router_receipt": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-runtime/QWEN80_POSTNORM_ROUTER_TOP10_CPU_CAPTURE_20260808T000002Z/receipt.json",
+  "schema": "hawking.ascension.qwen80_direct_packed_routed_expert_wave_capture.v1",
+  "started_unix_millis": 1786224821672,
+  "status": "STARTED_QWEN80_ROUTED_EXPERT_65_COMPONENT_ATTEMPT",
+  "workers": 4
+}

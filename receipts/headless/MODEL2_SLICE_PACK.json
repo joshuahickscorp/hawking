@@ -1,0 +1,41 @@
+{
+ "schema": "hawking.headless.model2_slice_pack.v1",
+ "generated_at": "2026-08-25T10:36:41Z",
+ "generated_by": "tools/headless/moe_slice_pack.py",
+ "obligation": "G023 step 1c \u2014 a real catalog and segments for model #2",
+ "hand_authored": false,
+ "artifact_root": "/Users/scammermike/noetic/MODEL2_SLICE",
+ "driven_by": "the specimen's own safetensors index, NOT the q4 incumbent manifest that compile_mix requires and model #2 does not have",
+ "representations_from": "receipts/headless/KERNEL_PLANNER_MODEL2.json \u2014 the planner's decisions for THIS model, not qwen38's genome",
+ "planned": {
+  "embedding": "conventional_low_bit",
+  "attention_gqa": "conventional_low_bit",
+  "output": "conventional_low_bit",
+  "moe_expert": "conventional_low_bit"
+ },
+ "n_tensors": 33,
+ "roles": {
+  "leftover": 5,
+  "moe_expert": 24,
+  "attention_gqa": 4
+ },
+ "payload_bytes": 31153412,
+ "n_segments_written": 33,
+ "all_segments_read_back_identical": true,
+ "decode": {
+  "n_quantized": 28,
+  "median_cosine": 0.993662,
+  "worst_cosine": 0.988149,
+  "decoder": "an INDEPENDENT reader in this file, not the packer's own round-trip helper"
+ },
+ "failures": [],
+ "scope": {
+  "is_a_slice_not_a_model": true,
+  "layers_packed": 1,
+  "layers_in_model": 48,
+  "experts_packed": 8,
+  "experts_per_layer": 128
+ },
+ "what_this_does_not_show": "that model #2 would be coherent. Local adequacy does not compose -- the ternary bracket failed at 1.85 bpw with every organ locally validated.",
+ "pass": true
+}

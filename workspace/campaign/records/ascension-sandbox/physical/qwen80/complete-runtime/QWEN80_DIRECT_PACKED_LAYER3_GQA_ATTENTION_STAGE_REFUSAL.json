@@ -1,0 +1,110 @@
+{
+  "schema": "hawking.ascension.qwen80.direct_packed_layer3_gqa_attention_stage_refusal.v1",
+  "recorded_at": "2026-08-08T18:41:01Z",
+  "status": "REFUSED_QWEN80_ADMITTED_DIRECT_PACKED_LAYER3_GQA_ATTENTION_STAGE_UNVERIFIABLE",
+  "classification": "execution_observability_failure_not_a_numerical_or_capability_result",
+  "component_boundary": {
+    "layer": 3,
+    "layer_kind": "full_attention",
+    "hidden_size": 2048,
+    "query_heads": 16,
+    "kv_heads": 2,
+    "head_dim": 256,
+    "gqa_group_size": 8,
+    "q_projection_shape": [8192, 2048],
+    "k_projection_shape": [512, 2048],
+    "v_projection_shape": [512, 2048],
+    "o_projection_shape": [2048, 4096],
+    "q_proj_source_layout": "[head][Q256,gate256]",
+    "q_norm_and_k_norm_width": 256,
+    "rope_theta": 5000000,
+    "partial_rotary_factor": 0.25,
+    "rotary_dims": 64,
+    "direct_packed_group_size": 128
+  },
+  "source_binding": {
+    "manifest_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+    "admission_current_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_ADMISSION_CURRENT.json",
+    "manifest_seal_sha256": "14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b",
+    "source_body_audit_seal_sha256": "c572b2270b623b8677c374b43c89ddd729de135c25721488bb874b184ff8c3d4",
+    "admission_receipt_seal_sha256": "939b41322363da3db774a2530b207bf380ed641d23cae671fc6438c0eecbf628",
+    "source_revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb"
+  },
+  "one_leased_invocation": {
+    "mode": "metal",
+    "command": "cargo run -p hawking-core --example ascension_qwen80_direct_packed_attention_stage -- --manifest /Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/QWEN80_COMPLETE_BINARY_GRAVITY_CANDIDATE.json --expected-manifest-seal-sha256 14cf6c4d17086dabc54b53b4dd28b9f6551ef06c6d8bf4ee8453d775d0f6817b --expected-source-audit-seal-sha256 c572b2270b623b8677c374b43c89ddd729de135c25721488bb874b184ff8c3d4 --expected-source-revision a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb --mode metal",
+    "pid": 96714,
+    "ppid": 9034,
+    "started_at_utc": "2026-08-08T18:31:45.376Z",
+    "outer_execution_yielded_at_utc": "2026-08-08T18:31:56.391Z",
+    "outer_execution_cell_id": 37,
+    "outer_execution_result": "Script running with cell ID 37",
+    "persisted_stdout": false,
+    "persisted_stderr": false,
+    "persisted_exit_code": false
+  },
+  "process_observations": [
+    {
+      "observed_at_utc": "2026-08-08T18:32:26.067Z",
+      "pid": 96714,
+      "ppid": 9034,
+      "state": "Rs",
+      "elapsed": "00:41"
+    },
+    {
+      "observed_at_utc": "2026-08-08T18:33:38.648Z",
+      "pid": 96714,
+      "ppid": 9034,
+      "state": "Rs",
+      "elapsed": "01:53",
+      "cpu_percent": 86.8,
+      "rss_kib": 9631520
+    },
+    {
+      "observed_at_utc": "2026-08-08T18:33:56.944Z",
+      "pid": 96714,
+      "ppid": 9034,
+      "state": "Rs",
+      "elapsed": "02:11",
+      "cpu_percent": 87.5,
+      "rss_kib": 11191600
+    },
+    {
+      "observed_at_utc": "2026-08-08T18:35:03.452Z",
+      "pid": 96714,
+      "result": "not_present_in_ps_output",
+      "exit_code_unknown": true
+    }
+  ],
+  "recovery_checks": {
+    "session_output": "No completion output matching the invocation call was persisted after the outer execution yielded.",
+    "terminal_read": "The app terminal read did not return a recoverable completed-command ledger.",
+    "qwen80_record_scan": "No layer-3 GQA parity JSON receipt was created by the invocation.",
+    "os_crash_and_memory_log_scan": "No attributable crash, jetsam, or memory-kill record was recovered.",
+    "result": "The process lifetime alone cannot prove that any CPU oracle or Metal dispatch completed."
+  },
+  "component_sources_at_invocation": {
+    "example_path": "crates/hawking-core/examples/ascension_qwen80_direct_packed_attention_stage.rs",
+    "example_sha256": "167b471f9ba61d852067475911dbe9c59835a7feaf73cf7ea25d2b2a32406a4f",
+    "shader_path": "crates/hawking-core/shaders/qwen80_direct_packed_attention_stage.metal",
+    "shader_sha256": "e1272f8865ec4fff58a58126ac1e0c2402d11113713a303516db5503ff84e9de",
+    "test_path": "crates/hawking-core/tests/qwen80_direct_packed_attention_stage.rs",
+    "test_sha256": "88ba74c734a35a3089fb453abbe37c944a1b5766f19874ae72d892d6a30ff930"
+  },
+  "claims_refused": {
+    "cpu_direct_packed_oracle_parity": true,
+    "metal_projection_parity": true,
+    "metal_qk_norm_rope_cache_parity": true,
+    "metal_gqa_attention_parity": true,
+    "metal_gate_or_o_projection_parity": true,
+    "complete_layer_or_decoder_execution": true,
+    "generation_hcli_tps_or_tournament_qualification": true
+  },
+  "reopen_condition": {
+    "required_change_before_retry": "Durably capture stdout, stderr, exit code, and an atomically written JSON receipt before a new GPU lease is requested.",
+    "retry_order": "Wait for Q30 cache-backed requalification to release its next lease; do not reuse the just-closed Qwen80 lease.",
+    "retry_reason": "The first invocation produced no scientific evidence, not a negative parity result.",
+    "retry_must_remain_component_only": true
+  },
+  "seal_sha256": "4baaa0edf69fe0a4cc743fc0085e18d7b6ef3cd2de3beb363cfc6459640ab850"
+}

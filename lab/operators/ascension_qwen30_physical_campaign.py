@@ -40,8 +40,15 @@ MAGIC = b"HAWKQ30G\0"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MODEL_DIR = REPO_ROOT / "workspace/campaign/records/runs/qwen-30b/Qwen3-Coder-30B-A3B-Instruct"
 DEFAULT_ROOT = REPO_ROOT / "workspace/campaign/records/ascension-sandbox/physical/qwen30"
-SOURCE_REVISION = "b2cff646eb4bb1d68355c01b18ae02e7cf42d120"
-SOURCE_REPOSITORY = "Qwen/Qwen3-Coder-30B-A3B-Instruct"
+# Defaults, not bindings. These were module constants read directly at three sites, so
+# the operator could only ever audit one model however its model_dir was pointed. The
+# sibling operator in this directory (ascension_qwen30_complete_gravity) already takes
+# repository and model_id as constructor arguments; this now follows it.
+DEFAULT_SOURCE_REVISION = "b2cff646eb4bb1d68355c01b18ae02e7cf42d120"
+DEFAULT_SOURCE_REPOSITORY = "Qwen/Qwen3-Coder-30B-A3B-Instruct"
+# kept so any external importer of the old names still resolves
+SOURCE_REVISION = DEFAULT_SOURCE_REVISION
+SOURCE_REPOSITORY = DEFAULT_SOURCE_REPOSITORY
 HASH_CHUNK_BYTES = 8 * 1024 * 1024
 GROUP_SIZE = 64
 
@@ -360,11 +367,19 @@ def _metal_probe(weights: np.ndarray) -> dict[str, Any]:
 
 
 class Qwen30PhysicalCampaign:
-    def __init__(self, *, model_dir: Path, root: Path) -> None:
+    def __init__(
+        self, *, model_dir: Path, root: Path,
+        source_repository: str = DEFAULT_SOURCE_REPOSITORY,
+        source_revision: str = DEFAULT_SOURCE_REVISION,
+        audit_prefix: str = "QWEN30",
+    ) -> None:
         self.model_dir = model_dir.expanduser().resolve()
         self.root = root.expanduser().resolve()
-        self.status_path = self.root / "QWEN30_REAL_CAMPAIGN_STATUS.json"
-        self.source_audit_path = self.root / "QWEN30_SOURCE_BODY_AUDIT_CANDIDATE.json"
+        self.source_repository = source_repository
+        self.source_revision = source_revision
+        self.status_path = self.root / f"{audit_prefix}_REAL_CAMPAIGN_STATUS.json"
+        self.source_audit_path = (
+            self.root / f"{audit_prefix}_SOURCE_BODY_AUDIT_CANDIDATE.json")
         self.candidate_dir = self.root / "candidates"
         self.artifact_dir = self.root / "artifacts"
         self.frontier_path = self.root / "QWEN30_GRAVITY_FRONTIER.json"
@@ -380,8 +395,8 @@ class Qwen30PhysicalCampaign:
             "pid": os.getpid(),
             "heartbeat": int(existing.get("heartbeat", 0)) + 1,
             "model": {
-                "repository": SOURCE_REPOSITORY,
-                "revision": SOURCE_REVISION,
+                "repository": self.source_repository,
+                "revision": self.source_revision,
                 "local_path": str(self.model_dir),
             },
             "source_audit": existing.get("source_audit", {}),
@@ -442,8 +457,8 @@ class Qwen30PhysicalCampaign:
                 "status": "CANDIDATE_SOURCE_BODY_VERIFIED",
                 "recorded_at": _utc_now(),
                 "source": {
-                    "repository": SOURCE_REPOSITORY,
-                    "revision": SOURCE_REVISION,
+                    "repository": self.source_repository,
+                    "revision": self.source_revision,
                     "model_dir": str(self.model_dir),
                     "shards": completed,
                     "total_bytes": total,
@@ -636,8 +651,8 @@ class Qwen30PhysicalCampaign:
                 "recorded_at": _utc_now(),
                 "candidate_id": candidate_id,
                 "source": {
-                    "repository": SOURCE_REPOSITORY,
-                    "revision": SOURCE_REVISION,
+                    "repository": self.source_repository,
+                    "revision": self.source_revision,
                     "source_body_audit_seal_sha256": source_sha256,
                     "tensor_name": tensor_name,
                     "shape": list(weights.shape),
@@ -742,6 +757,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model-dir", type=Path, default=DEFAULT_MODEL_DIR)
     parser.add_argument("--root", type=Path, default=DEFAULT_ROOT)
+    # the operator audits whatever model_dir points at, so the repository and revision it
+    # RECORDS must be able to follow. They defaulted to the Coder model as constants.
+    parser.add_argument("--source-repository", default=DEFAULT_SOURCE_REPOSITORY)
+    parser.add_argument("--source-revision", default=DEFAULT_SOURCE_REVISION)
+    parser.add_argument("--audit-prefix", default="QWEN30",
+                        help="names the audit and status files, so a second model does "
+                             "not overwrite the first")
     sub = parser.add_subparsers(dest="command", required=True)
     once = sub.add_parser("once", help="complete source audit and measure bounded candidates")
     once.add_argument("--max-candidates", type=int, default=1)
@@ -753,7 +775,12 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    campaign = Qwen30PhysicalCampaign(model_dir=args.model_dir, root=args.root)
+    campaign = Qwen30PhysicalCampaign(
+        model_dir=args.model_dir, root=args.root,
+        source_repository=args.source_repository,
+        source_revision=args.source_revision,
+        audit_prefix=args.audit_prefix,
+    )
     if args.command == "once":
         if args.max_candidates <= 0:
             raise SystemExit("--max-candidates must be positive")

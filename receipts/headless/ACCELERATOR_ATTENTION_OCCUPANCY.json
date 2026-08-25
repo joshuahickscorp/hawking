@@ -1,0 +1,91 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T13:12:59Z",
+ "experiment_class": "ACCEL-SCHEDULING",
+ "knowledge_level": "INSTANCE",
+ "git_head": "7509cb0bd425d54a56538c19c4bfa5b6a8e1b691",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_D_OCCUPANCY",
+   "obligation": "G046",
+   "steer": "S015 \u00a7112"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model"
+  },
+  "representation": {
+   "name": "dense_f32",
+   "shape": "seq 512, head_dim 64"
+  },
+  "kernel": {
+   "variant": "simdgroup attention, 4 simdgroups splitting the key range over the SAME 8 query rows"
+  },
+  "runtime": {
+   "mlx": "0.32.1",
+   "python": "3.12.13"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device"
+  }
+ },
+ "result": {
+  "hypothesis": "the previous receipt refuted 'scalar dot products' and proposed OCCUPANCY instead: the simdgroup kernel put 32 threads on 8 query rows where the scalar kernel puts 256 on one. That replacement diagnosis is itself a claim, so it was tested rather than left standing.",
+  "test": "four simdgroups cooperating on the SAME 8 query rows, each owning a quarter of the key range, partial outputs summed in threadgroup memory. Same matrix instructions, 4x the threads, nothing else changed.",
+  "measurements": {
+   "err": 2.682209014892578e-07,
+   "ms": {
+    "sg1": 0.42033300269395113,
+    "sg4": 0.2661250182427466,
+    "scalar": 0.258082989603281,
+    "naive": 0.24704198585823178
+   },
+   "iqrs": {
+    "sg1": 27.83,
+    "sg4": 5.69,
+    "scalar": 11.38,
+    "naive": 4.57
+   },
+   "sg4_vs_sg1": {
+    "verdict": "NO_CLAIM",
+    "reason": "an arm failed the 10.0% IQR gate (sg1 27.83%, sg4 5.69%) and the margin 57.95% does not overwhelm that noise",
+    "speedup": null
+   },
+   "sg4_vs_scalar": {
+    "verdict": "NO_CLAIM",
+    "reason": "an arm failed the 10.0% IQR gate (scalar 11.38%, sg4 5.69%) and the margin 3.12% does not overwhelm that noise",
+    "speedup": null
+   },
+   "sg4_vs_naive": {
+    "verdict": "BASELINE_WINS",
+    "speedup": 0.9283,
+    "margin_pct": 7.17,
+    "arm_noise_pct": 5.69
+   }
+  },
+  "verdict": "DIRECTIONALLY CONFIRMED, NOT CLEANLY MEASURED. sg1 0.420 ms -> sg4 0.266 ms is the predicted direction and roughly the predicted size, but the sg1 arm carries a 27.83% IQR so compare() returns NO_CLAIM rather than a ratio. The direction is not in doubt; the magnitude is not established.",
+  "where_it_lands": {
+   "vs_scalar": "NO_CLAIM at 0.266 against 0.258 -- the simdgroup version has gone from LOSING 0.70x to being INDISTINGUISHABLE from the scalar kernel, which is what fixing occupancy was supposed to buy",
+   "vs_naive": "BASELINE_WINS 0.9283 with clean arms -- naive still wins by 1.08x, so the fused approach does not beat three MLX calls even with occupancy repaired"
+  },
+  "what_this_settles_and_what_it_does_not": "SETTLED: occupancy was the dominant cost of the 8-row simdgroup blocking, and restoring it recovers most of the gap. NOT SETTLED: whether fused attention can beat the naive path at all on this machine at these shapes. It still does not, and no amount of the present design appears likely to -- MLX's matmul is simply very good, and three calls into it beat one hand-built kernel.",
+  "diagnosis_scorecard": {
+   "MLX scale advantage = operand reuse": "CONFIRMED (2.48x)",
+   "reduction loss = launch count": "CONFIRMED (3.05x)",
+   "attention loss = scalar dot products": "REFUTED",
+   "attention loss = occupancy": "DIRECTIONALLY CONFIRMED, magnitude not clean",
+   "note": "four diagnoses, four tested. Two clean confirmations, one refutation, one partial. None was allowed to stand as an explanation without a measurement."
+  }
+ },
+ "claim_boundary": "One shape, seq 512 head_dim 64, one machine. The occupancy fix takes simdgroup attention from losing to the scalar kernel to being indistinguishable from it, but the sg1 baseline arm was too noisy for a clean ratio and NAIVE STILL WINS by 1.08x with clean arms. No win is claimed. This does not make fused attention useful here.",
+ "pass": true
+}

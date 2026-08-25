@@ -1,0 +1,52 @@
+{
+ "schema": "hawking.accelerator.cumetal_pin.v1",
+ "generated_at": "2026-08-25T12:02:06Z",
+ "obligation": "G044 / FRONT B, proof P1 prerequisite (steer S015 \u00a74)",
+ "naming_correction": "There is NO repository literally named 'CuMetal'. The project's README self-identifies as CuMetal but the canonical owner/repo is Lulzx/cuda-metal. The steer's name is the project's name, not its slug.",
+ "verified_directly_by_this_repo": {
+  "method": "GitHub API queried from this machine, not taken from the research agent",
+  "full_name": "Lulzx/cuda-metal",
+  "url": "https://github.com/Lulzx/cuda-metal",
+  "license_spdx": "Apache-2.0",
+  "default_branch": "main",
+  "pinned_commit": "19a702303dd29a1b25d668c6a6eca51302a2323c",
+  "pinned_commit_date": "2026-08-10T06:29:23Z",
+  "pushed_at": "2026-08-10T06:29:25Z"
+ },
+ "reported_by_research_not_independently_verified": {
+  "inputs_accepted": [
+   ".cu source via cumetalc",
+   "PTX with CFG/SSA construction",
+   "optional libcuda.dylib alias for binary compatibility",
+   "NVVM IR (single source, seen twice from one fetch)"
+  ],
+  "stated_limitations": [
+   "no dynamic parallelism",
+   "no multi-GPU or peer-to-peer",
+   "no OpenGL/Vulkan/DirectX interop",
+   "no SASS execution",
+   "multi-block cooperative launch/grid sync rejected",
+   "FP64 register emulation ~44-bit mantissa, not IEEE binary64",
+   "texture/surface lifecycle exists but general device-side sampling does not",
+   "CUDA, cuDNN, PhysX, llama.cpp and PTX coverage incomplete",
+   "experimental software; unsupported paths expected to fail explicitly"
+  ],
+  "requires": "macOS 14 or newer on Apple Silicon",
+  "caveat": "quoted through a summarizing fetch, not a byte-exact diff of the README"
+ },
+ "not_yet_done": "The source is NOT cloned and NOTHING has been executed from it. P1 (pinned seed reproduces) is NOT claimed -- only the pin exists.",
+ "license_obligation": "Apache-2.0 requires the LICENSE and NOTICE be preserved in any vendored copy, with modifications marked. No code has been vendored yet, so nothing is owed yet.",
+ "other_candidates_found": [
+  {
+   "repo": "MEHDI342/CUDAM",
+   "license_spdx": "NOASSERTION",
+   "note": "no detectable license; last push 2025-08-05"
+  },
+  {
+   "repo": "Perinban/MetaXuda",
+   "license_spdx": "NOASSERTION",
+   "note": "Numba CUDA on Metal; pushed 2026-08-25 but license unconfirmed"
+  }
+ ],
+ "pass": true
+}

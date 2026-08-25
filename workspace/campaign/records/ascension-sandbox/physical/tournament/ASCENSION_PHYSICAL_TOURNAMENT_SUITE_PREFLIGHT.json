@@ -1,0 +1,123 @@
+{
+  "claim_boundary": {
+    "preflight_does_not_activate_sandbox": true,
+    "preflight_does_not_run_or_score_candidates": true,
+    "preflight_does_not_select_a_winner": true,
+    "preflight_is_not_a_model_runtime_or_tps_result": true
+  },
+  "deterministic_scoring": {
+    "candidate_order_is_fixed": true,
+    "dimensions": [
+      "manager_capability",
+      "verified_tasks_per_hour",
+      "architecture_kernel_research",
+      "gravity_research_quality",
+      "long_horizon_reliability",
+      "tool_recovery",
+      "search_retrieval",
+      "memory_context",
+      "hcli_latency",
+      "multi_agent_throughput",
+      "resident_memory",
+      "active_bytes_per_token",
+      "energy_per_verified_task",
+      "thermal_stability",
+      "error_rate",
+      "receipt_quality"
+    ],
+    "hidden_prompt_scoring": "case-insensitive required-token containment",
+    "primary_metric": "verified_tasks_completed_per_hour",
+    "ties_are_not_auto_resolved": true,
+    "winner_selection": "DISABLED"
+  },
+  "fixed_candidate_order": [
+    "Qwen30-Gravity-Manager-Artifact",
+    "Qwen80-Gravity-Manager-Artifact"
+  ],
+  "frozen_task_set": {
+    "case_count": 16,
+    "case_ids": [
+      "chat",
+      "repo_context",
+      "coding",
+      "planner_act_verify",
+      "tool_calls",
+      "structured_json",
+      "session_restart",
+      "endpoint_restart",
+      "context_compaction",
+      "read_safe_swarm",
+      "isolated_write_agent",
+      "continuous_batching",
+      "search_retrieval",
+      "memory_ops",
+      "skill_execution",
+      "document_perception"
+    ],
+    "document_sha256": "322303c8b8510010e9e349a0c37e14454490ef164defc30d6355cd962e9a7181",
+    "path": "/Users/scammermike/Downloads/hawking/workspace/docs/plans/ascension/ASCENSION_HCLI_PRODUCT_TEST_CATALOG.json"
+  },
+  "hidden_membership": {
+    "candidate_visible_surface_excludes_hidden_member_ids": true,
+    "commitment_document_sha256": "fb2d60180de6e1911a729ced93c64343247ca4abdb708c1d1e17f9caaa3abb03",
+    "commitment_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/governance/odyssey/program/evaluation/hidden/HIDDEN_MEMBERSHIP_COMMITMENT.json",
+    "commitment_sha256": "82e569d070f81217fb02bfa888ee759d11a28e7cbdac253ca3d8855278612bd4",
+    "hidden_count": 5,
+    "training_surface_contains_no_hidden_ids": true,
+    "training_visible_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/governance/odyssey/program/training/TRAINING_VISIBLE_EVAL.json"
+  },
+  "physical_root": "/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical",
+  "protected_evaluator": {
+    "candidate_processes_do_not_receive_hidden_membership_paths": true,
+    "raw_prompt_and_completion_text_are_not_written_to_receipts": true,
+    "runner_source_path": "/Users/scammermike/Downloads/hawking/lab/operators/ascension_physical_tournament.py",
+    "runner_source_sha256": "c150ed9da472aab8325d61381e95a05544572ebec82d50baa13af9f0ca39f382"
+  },
+  "recorded_at": "2026-08-08T14:57:44.368046Z",
+  "recovery_contract": {
+    "each_final_manager_operations_receipt_requires_restart_rollback_and_session_evidence": true,
+    "endpoint_failure_aborts_without_winner": true,
+    "runner_rechecks_endpoint_health_before_each_candidate": true
+  },
+  "resource_accounting": {
+    "disk_free_before_after": true,
+    "endpoint_request_latency": true,
+    "process_rusage": true,
+    "wall_clock": true
+  },
+  "schema": "hawking.ascension.physical_tournament_suite_preflight.v1",
+  "seal_sha256": "d2816445e3a34d6875712a8f16cb4804b6d59707900d371fbc55c04cd996f21e",
+  "status": "PASS_FROZEN_PROTECTED_TOURNAMENT_SUITE_PREFLIGHT",
+  "tool_environment": {
+    "endpoint_contract": {
+      "candidate_receives_only_current_evaluation_prompt": true,
+      "candidate_tool_policy": "no_host_shell_or_hidden_membership_files",
+      "chat_path": "/v1/chat/completions",
+      "health_path": "/healthz",
+      "loopback_only": true,
+      "protocol": "openai_chat_completions_v1"
+    },
+    "fixed_files": {
+      "hcli_product_harness": {
+        "bytes": 20062,
+        "path": "/Users/scammermike/Downloads/hawking/tools/condense/hcli_product_test_harness.py",
+        "sha256": "28e6a3cf8dfc256aebda58c8b6f6467aadc5853957f065f34fd644139784f417"
+      },
+      "hidden_membership_policy": {
+        "bytes": 7247,
+        "path": "/Users/scammermike/Downloads/hawking/tools/odyssey/hidden_memberships.py",
+        "sha256": "199e3d66a98a79302160e1ac7fe94c89cd9f0b3948238ef059e5171194046ab2"
+      },
+      "runner": {
+        "bytes": 37555,
+        "path": "/Users/scammermike/Downloads/hawking/lab/operators/ascension_physical_tournament.py",
+        "sha256": "c150ed9da472aab8325d61381e95a05544572ebec82d50baa13af9f0ca39f382"
+      }
+    },
+    "machine": "arm64",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python_executable": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12",
+    "python_version": "3.12.6"
+  },
+  "tool_environment_sha256": "43e0c8e21b61c11908f885f3165cf37e23be9e68b69fa005a517b224c840b3ac"
+}

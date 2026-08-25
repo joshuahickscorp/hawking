@@ -1,0 +1,17 @@
+{
+  "claim_boundary": {
+    "no_complete_layer_token_decoder_generation_hcli_tps_tg_or_tournament_claim": true
+  },
+  "complete_layer_or_token_performed": false,
+  "component_only": true,
+  "durable_capture": {
+    "outer_reaped_capture_required": true,
+    "receipt_written_last_is_completion_marker": true,
+    "replay_guarded": true
+  },
+  "error": "all-ten plan route differs from same-input direct-packed CPU router",
+  "metal_device_or_dispatch_performed": false,
+  "mode": "metal",
+  "schema": "hawking.ascension.qwen80_all_ten_true_moe_graph_device.v1",
+  "status": "REFUSED_QWEN80_SOURCE_INPUT_L0_TRUE_MOE_STRICT_MATH_COMPONENT"
+}

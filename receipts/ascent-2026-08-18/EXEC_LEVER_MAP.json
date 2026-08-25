@@ -1,0 +1,15 @@
+{
+  "obligation": "Map the execution lever (geo_tpr64 vs simd3) for the q3 patient MLP GEMV.",
+  "finding": "The current q3 patient (mixed-q3mlp-v1, HGRAVU01 uniform q3 group-64) ALREADY dispatches the fast geo_tpr64 kernel by default. There is NO leftover 3-4x sitting on a flag.",
+  "detail": {
+    "dispatch": "encode_dense_mlp_mixed -> encode_named_matvec -> dispatch_uniform (qwen38_hybrid_decode.rs:1800) -> qwen38_hgravu01_geo_tpr64_launch (:564) -> qwen_uniform_q3_group64_matvec_geo_tpr64_tg128 (TG128, 64 threads/row).",
+    "simd3": "q80_hgravs01_factor_matvec_simd3 (TG256) is ONLY the fuse-ON fallback when bits/group/cols miss the geo predicate -- not used by this patient.",
+    "recon_fuse": "HAWKING_QWEN38_RECON_FUSE is a default-ON opt-out choosing occupancy tiles vs the serial G023 family; it does NOT choose geo vs simd3. Setting it 0 makes MLP SLOWER.",
+    "already_realized_delta": "the informal ~3.5x whole-token GPU delta (46-48 ms vs 163 ms/token) is the geo win, ALREADY the default -- not recoverable a second time.",
+    "bit_identical": "MLP q3 geo == simd3 (max_abs 0); no Doctor re-validation for this lever.",
+    "remaining_exec_option": "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128_alignedload EXISTS but is not dispatched; reaching it is a CODE CHANGE of uncertain gain (not benched)."
+  },
+  "correction_to_memory": "The memory note 'HGRAVU01 dispatches simd3 not geo_tpr64' reflected an EARLIER state; the geo_tpr64 path is now the default for this patient. The execution lever is already claimed.",
+  "strategic_implication": "Both quick TPS levers are spent for the current patient: density (shared operators plateau ~0.59 vs q3 0.337, pareto confirming) and execution (geo_tpr64 already default). Reaching 100 TPS from ~30 needs a genuine architectural change, not a flag or a narrow-operator swap. Remaining candidates: the unused alignedload variant (code change), attention/DeltaNet active-byte reduction (untested -- MLP was the focus), and operator families G4/G5/G7/G8 (likely same rate-distortion wall).",
+  "source": "Grok lane exec-lever-map, verified against live decoder + shaders; deliverable workspace/campaign/exec_lever_map.md (582 lines)."
+}

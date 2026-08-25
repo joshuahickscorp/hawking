@@ -1,0 +1,115 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T14:03:35Z",
+ "experiment_class": "ACCEL-HUMF",
+ "knowledge_level": "INSTANCE",
+ "git_head": "4d18e707c8f2cca089d602aa0cf9957edd5b0589",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_H_SILENT_CORRUPTION",
+   "obligation": "G050",
+   "steer": "S015 \u00a714 coherence states; \u00a721 simulated numbers are not physical evidence"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "measured_bandwidth_gb_s": 589.73
+  },
+  "device": {
+   "status": "ABSENT",
+   "reason": "no GPU; the memory state machine and a CPU checksum"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model"
+  },
+  "representation": {
+   "name": "dense_f32"
+  },
+  "kernel": {
+   "status": "ABSENT",
+   "reason": "no kernel dispatched"
+  },
+  "runtime": {
+   "python": "3.12.6"
+  },
+  "transport": {
+   "name": "MOCK_EXTERNAL_VRAM",
+   "physical": false,
+   "note": "bandwidth is a KNOB; the CHECKSUM rates below are measured, the TRANSPORT rates are named assumptions"
+  }
+ },
+ "result": {
+  "i_followed_my_own_named_gap": "ACCELERATOR_HUMF_FAILURE_INJECTION.json closed with 'NOT MODELLED: silent corruption that returns wrong bytes WITHOUT raising... A PROVIDER THAT LIES IS A HARDER PROBLEM THAN ONE THAT FAILS and only the second is handled.' This is the first one.",
+  "why_it_is_harder": "A provider that FAILS raises, and a state machine can react -- that is what the last block built. A provider that LIES returns without error and returns the wrong bytes, so ERROR HANDLING IS NO DEFENCE AT ALL. The transfer 'succeeds', the copy is marked CLEAN, it is counted among valid_copies(), and the data is wrong. Only VERIFICATION catches it.",
+  "demonstrated_with_a_control_not_asserted": "corrupt_next flips a byte in what copy_out returns and raises nothing. With verify_transfers=False -- which is exactly the previous behaviour -- the transfer completes, the destination is CLEAN, it appears in valid_copies(), and its payload differs from the source. With verification on, the same corruption raises, the destination goes INVALID and out of valid_copies(), and the source is untouched. Both directions are pinned by tests.",
+  "measured_checksum_rates_on_this_machine": {
+   "sha256": 2.932,
+   "blake2b": 1.368,
+   "crc32": 36.849
+  },
+  "THE_DESIGN_CONCLUSION_HAS_A_SHAPE": "Verification is affordable EXACTLY in the regime where an external bridge is used, and the boundary is a NUMBER: a crc32 pass runs at 36.849 GB/s here, so it costs under a quarter of the transfer for any transport slower than ~9.2 GB/s. Against Apple unified memory at 589.73 GB/s it costs 16.0x the transfer -- unaffordable, AND unnecessary, because there is no transport there to corrupt. Against Thunderbolt or PCIe at a few GB/s it costs a tenth. A ~32 GB/s link sits ON THE WRONG SIDE at 0.87x, so this is not a blanket 'external transports are slow enough' -- it is a threshold, and a fast enough bridge would put verification back in question. THE DOMAIN THAT NEEDS CHECKING IS, AT TODAY'S LINK SPEEDS, THE DOMAIN THAT CAN AFFORD IT.",
+  "crc32_policy_across_plausible_transports": {
+   "589.73 GB/s": {
+    "transport_gb_s": 589.73,
+    "checksum_gb_s": 36.849,
+    "verification_cost_as_multiple_of_transfer": 16.004,
+    "affordable": false,
+    "note": "checksum_gb_s is MEASURED on this machine; transport_gb_s is whatever the caller supplies and is NOT measured here"
+   },
+   "32.0 GB/s": {
+    "transport_gb_s": 32.0,
+    "checksum_gb_s": 36.849,
+    "verification_cost_as_multiple_of_transfer": 0.868,
+    "affordable": false,
+    "note": "checksum_gb_s is MEASURED on this machine; transport_gb_s is whatever the caller supplies and is NOT measured here"
+   },
+   "7.9 GB/s": {
+    "transport_gb_s": 7.9,
+    "checksum_gb_s": 36.849,
+    "verification_cost_as_multiple_of_transfer": 0.214,
+    "affordable": true,
+    "note": "checksum_gb_s is MEASURED on this machine; transport_gb_s is whatever the caller supplies and is NOT measured here"
+   },
+   "4.0 GB/s": {
+    "transport_gb_s": 4.0,
+    "checksum_gb_s": 36.849,
+    "verification_cost_as_multiple_of_transfer": 0.109,
+    "affordable": true,
+    "note": "checksum_gb_s is MEASURED on this machine; transport_gb_s is whatever the caller supplies and is NOT measured here"
+   },
+   "1.0 GB/s": {
+    "transport_gb_s": 1.0,
+    "checksum_gb_s": 36.849,
+    "verification_cost_as_multiple_of_transfer": 0.027,
+    "affordable": true,
+    "note": "checksum_gb_s is MEASURED on this machine; transport_gb_s is whatever the caller supplies and is NOT measured here"
+   }
+  },
+  "why_not_a_cryptographic_hash": {
+   "sha256_policy": {
+    "589.73 GB/s": {
+     "transport_gb_s": 589.73,
+     "checksum_gb_s": 2.932,
+     "verification_cost_as_multiple_of_transfer": 201.136,
+     "affordable": false,
+     "note": "checksum_gb_s is MEASURED on this machine; transport_gb_s is whatever the caller supplies and is NOT measured here"
+    },
+    "4.0 GB/s": {
+     "transport_gb_s": 4.0,
+     "checksum_gb_s": 2.932,
+     "verification_cost_as_multiple_of_transfer": 1.364,
+     "affordable": false,
+     "note": "checksum_gb_s is MEASURED on this machine; transport_gb_s is whatever the caller supplies and is NOT measured here"
+    }
+   },
+   "reasoning": "sha256 measures 2.932 GB/s and blake2b 1.368, against crc32's 36.849 -- crc32 is 12.6x faster than sha256. Over a 4 GB/s link sha256 would cost 1.36x the transfer while crc32 costs 0.109x. THE THREAT MODEL IS THE REASON, NOT ONLY THE SPEED: this defends against a FAULTY transport -- a cable, a reset, a driver bug -- and a checksum is the right tool for accident. It is the WRONG tool for a malicious peer, and the module says so rather than letting 'integrity' be read as 'authentication'."
+  },
+  "what_verification_does_not_cover": "A corruption that happens AFTER the check, corruption of the SOURCE before the digest is taken, a provider that corrupts consistently in both copy_in and copy_out (the digest would agree with itself), and any adversary who can recompute a crc32. Detection is at transfer boundaries only, not continuous.",
+  "test_count": "tools/accelerator/test_humf.py 24 passed (was 19, was 12)",
+  "crc32_affordability_crossover_gb_s": 9.2,
+  "measurement_stability": "Two independent probes of the same checksums gave crc32 38.44 then 36.849 and sha256 2.70 then 2.932 -- about 4-8% run to run, which is why the conclusion is stated as a threshold with a margin rather than as an exact rate. The 14x-vs-12.6x difference between the two probes does not move any verdict in the table."
+ },
+ "claim_boundary": "MOCK domain only. The checksum rates ARE measured on this machine; every TRANSPORT rate in the policy table is a NAMED ASSUMPTION, not a measurement -- no external GPU exists here and \u00a721 forbids reading a simulated transport number as physical evidence. So the AFFORDABILITY CONCLUSION is conditional on a transport speed nobody here has measured, and it says so. What IS established without assumption: crc32 runs 14.2x faster than sha256 on this machine, and silent corruption is undetectable without a check of some kind.",
+ "pass": true
+}

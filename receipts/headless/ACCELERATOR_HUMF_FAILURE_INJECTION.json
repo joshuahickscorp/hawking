@@ -1,0 +1,61 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T14:00:48Z",
+ "experiment_class": "ACCEL-HUMF",
+ "knowledge_level": "INSTANCE",
+ "git_head": "729dd54019c58569597f5f31956bcc0d34a1f1f6",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_H_FAILURE_INJECTION",
+   "obligation": "G050",
+   "steer": "S015 \u00a714 coherence states; \u00a732 object model; the obligation's own words 'MockExternalMemoryProvider WITH FAILURE INJECTION'"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "status": "ABSENT",
+   "reason": "no GPU involved; this is the memory state machine"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model; a coherence-bookkeeping experiment"
+  },
+  "representation": {
+   "name": "dense_f32"
+  },
+  "kernel": {
+   "status": "ABSENT",
+   "reason": "no kernel; nothing is dispatched"
+  },
+  "runtime": {
+   "python": "3.12.6"
+  },
+  "transport": {
+   "name": "MOCK_EXTERNAL_VRAM",
+   "physical": false,
+   "note": "a mock provider, and every number it yields is SIMULATED"
+  }
+ },
+ "result": {
+  "the_obligation_named_something_that_existed_but_was_never_EXERCISED": "G050 asks for a MockExternalMemoryProvider WITH FAILURE INJECTION. The injection existed -- fail_next over allocate, copy_in and copy_out -- and one test fired it by calling the provider DIRECTLY. What nothing tested was the injection reaching the fabric, and that is where the defect was.",
+  "THE_DEFECT": "Humf.execute() NEVER CALLED THE PROVIDER. It transitioned the destination TRANSFERRING and then CLEAN on bookkeeping alone. So a transfer moved no bytes, could not fail, and ALWAYS ended CLEAN. P8's two halves were each verified on a SEPARATE PATH -- the bit-identical SHA-256 round trip went straight through the provider, while the state machine went through execute() -- and the SEAM between them was never exercised.",
+  "DEMONSTRATED_AGAINST_THE_PRE_FIX_CODE_NOT_ASSERTED": "The previous humf.py was checked out and run with fail_next='copy' armed. It RAISED NOTHING; the destination came out CLEAN; valid_copies() returned ['APPLE_UM', 'MOCK_EXTERNAL_VRAM']; and fail_next was STILL ARMED afterwards, proving the provider was never called. A copy reported as VALID that holds NOTHING is precisely the silent data corruption the module's own docstring says it fails closed against -- and the module was failing OPEN on the one path that mattered.",
+  "THE_FIX": "execute() now MOVES THE BYTES. Materializations carry a payload; a TRANSFER reads a valid source copy and hands it to the destination domain's provider; RECOMPUTE runs the object's actual recipe. On failure the destination goes INVALID, stays out of valid_copies(), keeps a null payload, and the log records outcome FAILED. A transfer that cannot fail is not a transfer, it is an assumption.",
+  "WHAT_THE_NEW_TESTS_PIN": [
+   "a failed transfer leaves the destination INVALID, not CLEAN, with no payload",
+   "a failed OUTBOUND transfer does not damage the source -- losing the only valid copy because a transfer failed would turn a recoverable error into data loss",
+   "the failure is recorded in the log as FAILED rather than silently dropped",
+   "the SAME path, when it succeeds, delivers the bytes intact -- otherwise the failure test would only prove an exception path exists",
+   "INVALID is not a dead end: after a failure a retry succeeds, so one transport hiccup cannot permanently strand an object",
+   "a transfer with no valid source payload is REFUSED even for a domain with no provider, so bytes are never conjured from nothing",
+   "RECOMPUTE runs the recipe and delivers its result"
+  ],
+  "TWO_EXISTING_TESTS_FAILED_ON_THIS_CHANGE_AND_WERE_RIGHT_TO": "The fixture placed a copy marked CLEAN that carried NO BYTES, and two tests transferred from it. That fixture was modelling exactly the fiction the defect allowed. Fixed by giving the CLEAN copy real bytes rather than by weakening the check -- the failing tests were the new check working.",
+  "WHY_THIS_MATTERS_BEYOND_THE_MOCK": "EGB's whole point is a transport that really exists, and real transports really fail -- a cable, a reset, a full device, a driver timeout. The bookkeeping that decides which copy is valid is the one component where a wrong answer is silent. Getting this wrong against a MOCK costs nothing; getting it wrong against real VRAM costs the data.",
+  "test_count": "tools/accelerator/test_humf.py 19 passed (was 12)"
+ },
+ "claim_boundary": "MOCK domain only, unchanged by this: 5 GB/s remains a KNOB, no NVIDIA VRAM exists, no physical transport was crossed, and nothing here is evidence about real external-GPU transfer cost. The failure modes injected are allocate, copy_in and copy_out; NOT modelled are partial or torn writes, silent corruption that returns wrong bytes without raising, timeouts, or a provider that disappears mid-transfer. A provider that lies is a harder problem than a provider that fails, and this handles only the second.",
+ "pass": true
+}

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>com.hawking.ascension.qwen80.complete-gravity</string>
+  <key>ProgramArguments</key><array>
+    <string>/usr/bin/nice</string><string>-n</string><string>10</string>
+    <string>/Users/scammermike/Downloads/hawking/tools/condense/.venv/bin/python</string>
+    <string>/Users/scammermike/Downloads/hawking/tools/condense/ascension_qwen80_complete_gravity.py</string>
+  </array>
+  <key>WorkingDirectory</key><string>/Users/scammermike/Downloads/hawking</string>
+  <key>ProcessType</key><string>Background</string><key>KeepAlive</key><true/><key>ThrottleInterval</key><integer>5</integer>
+  <key>StandardOutPath</key><string>/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/launchd.stdout.log</string>
+  <key>StandardErrorPath</key><string>/Users/scammermike/Downloads/hawking/workspace/campaign/records/ascension-sandbox/physical/qwen80/complete-gravity/launchd.stderr.log</string>
+</dict></plist>

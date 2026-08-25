@@ -1,0 +1,180 @@
+{
+ "schema": "hawking.headless.noetic_compiler_pipeline.v1",
+ "generated_at": "2026-08-25T02:06:36Z",
+ "generated_by": "tools/odyssey/noetic_compiler.py",
+ "obligation": "G023 \u2014 NOETIC_COMPILER PIPELINE (directive \u00a754, \u00a770, \u00a771)",
+ "git_head": "eb1494112b61953122262e311cc9243dbd44952e",
+ "hand_authored": false,
+ "specimen": "Qwen/Qwen3-30B-A3B @ ad44e777bcd18fa416d9da3bd8f70d33ebb85d39",
+ "pipeline": [
+  "ArchitectureRecognizer",
+  "OrganGraph",
+  "Doctor",
+  "RepresentationPlanner",
+  "PhysicalGraphCompiler",
+  "KernelPlanner",
+  "DeviceCompiler",
+  "NoeticExecutable"
+ ],
+ "n_stages_total": 8,
+ "n_stages_run": 6,
+ "n_stages_blocked": 2,
+ "stages": [
+  {
+   "stage": "ArchitectureRecognizer",
+   "status": "AUTOMATIC",
+   "receipt": "ARCHITECTURE_RECOGNIZER.json",
+   "generated_by": "tools/odyssey/arch_recognizer.py",
+   "hand_authored": false,
+   "output": {
+    "n_specimens": 5,
+    "heldout_precision": 1.0,
+    "heldout_recall": 1.0
+   }
+  },
+  {
+   "stage": "OrganGraph",
+   "status": "AUTOMATIC",
+   "receipt": "PHYSICAL_GRAPH_COMPILER.json",
+   "generated_by": "tools/odyssey/physical_graph_compiler.py",
+   "hand_authored": false,
+   "output": {
+    "n_organ_nodes": 6,
+    "n_unrecognized": 0
+   }
+  },
+  {
+   "stage": "Doctor",
+   "status": "AUTOMATIC",
+   "receipt": "DOCTOR_TRANSFER.json",
+   "generated_by": "tools/headless/doctor_transfer.py",
+   "hand_authored": false,
+   "output": {
+    "n_organs": 6,
+    "n_techniques": 39,
+    "experiments_prescribed": 15,
+    "search_space_reduction": 0.9359
+   }
+  },
+  {
+   "stage": "RepresentationPlanner",
+   "status": "AUTOMATIC",
+   "receipt": "QWEN_TRANSFER_REHEARSAL.json",
+   "generated_by": "tools/odyssey/transfer_rehearsal.py",
+   "hand_authored": false,
+   "output": {
+    "organs_seeded": 6,
+    "prior_failures_applied": 41,
+    "audit_clean": true
+   }
+  },
+  {
+   "stage": "PhysicalGraphCompiler",
+   "status": "AUTOMATIC",
+   "receipt": "PHYSICAL_GRAPH_COMPILER.json",
+   "generated_by": "tools/odyssey/physical_graph_compiler.py",
+   "hand_authored": false,
+   "output": {
+    "n_collapses": 2,
+    "all_numerically_equivalent": true
+   }
+  },
+  {
+   "stage": "KernelPlanner",
+   "status": "AUTOMATIC",
+   "receipt": "KERNEL_PLANNER_MODEL2.json",
+   "generated_by": "tools/headless/kernel_library.py",
+   "hand_authored": false,
+   "output": {
+    "n_organs": 6,
+    "n_covered": 6,
+    "n_gaps": 0,
+    "gaps": [],
+    "downgrades": [
+     "moe_expert",
+     "moe_router"
+    ]
+   },
+   "status_corrected_by": "receipts/headless/NOETIC_COMPILER_STAGE_AUDIT.json",
+   "why": "was recorded AUTOMATIC while its library held no kernel for any MoE organ and its receipt never named model #2. 24 kernels were registered from the shader tree, the stage was run against model #2's organ graph, and an upstream mass-blindness in the RepresentationPlanner was fixed. All 6 organs now have a plannable representation."
+  },
+  {
+   "stage": "DeviceCompiler",
+   "status": "BLOCKED",
+   "why": "the DeviceCompiler emits a Metal genome for an architecture the runtime can read. crates/hawking-core has a qwen38 reader and no qwen3_moe reader, so there is nothing to compile a device genome against for this specimen.",
+   "missing_capability": "a qwen3_moe artifact reader in the native runtime",
+   "what_would_unblock": "a reader that can load a routed MoE catalog and dispatch per-expert GEMVs; the kernels themselves already exist for the codecs involved"
+  },
+  {
+   "stage": "NoeticExecutable",
+   "status": "BLOCKED",
+   "why": "downstream of DeviceCompiler",
+   "missing_capability": "same",
+   "what_would_unblock": "same"
+  }
+ ],
+ "n_manual_interventions": 0,
+ "manual_interventions": [],
+ "automation": {
+  "fully_automatic_stages": [
+   "ArchitectureRecognizer",
+   "OrganGraph",
+   "Doctor",
+   "RepresentationPlanner",
+   "PhysicalGraphCompiler",
+   "KernelPlanner"
+  ],
+  "n_automatic": 6,
+  "of_runnable": 6
+ },
+ "device_profiles": [
+  {
+   "profile": "INTERACTIVE",
+   "status": "DECLARED_NOT_QUALIFIED",
+   "reason": "no uncontended measurement for this profile on the current executable; the 2.5970-EBPW body is capability-dead so profiling it would rank a body that cannot do the work"
+  },
+  {
+   "profile": "SINGLE_STREAM",
+   "status": "DECLARED_NOT_QUALIFIED",
+   "reason": "no uncontended measurement for this profile on the current executable; the 2.5970-EBPW body is capability-dead so profiling it would rank a body that cannot do the work"
+  },
+  {
+   "profile": "MULTI_AGENT",
+   "status": "DECLARED_NOT_QUALIFIED",
+   "reason": "no uncontended measurement for this profile on the current executable; the 2.5970-EBPW body is capability-dead so profiling it would rank a body that cannot do the work"
+  },
+  {
+   "profile": "PREFILL_HEAVY",
+   "status": "DECLARED_NOT_QUALIFIED",
+   "reason": "no uncontended measurement for this profile on the current executable; the 2.5970-EBPW body is capability-dead so profiling it would rank a body that cannot do the work"
+  },
+  {
+   "profile": "LONG_CONTEXT",
+   "status": "DECLARED_NOT_QUALIFIED",
+   "reason": "no uncontended measurement for this profile on the current executable; the 2.5970-EBPW body is capability-dead so profiling it would rank a body that cannot do the work"
+  },
+  {
+   "profile": "BACKGROUND_RESEARCH",
+   "status": "DECLARED_NOT_QUALIFIED",
+   "reason": "no uncontended measurement for this profile on the current executable; the 2.5970-EBPW body is capability-dead so profiling it would rank a body that cannot do the work"
+  }
+ ],
+ "n_profiles_qualified": 0,
+ "honest_status": "six of eight stages run end to end with zero manual intervention on a specimen the compiler had never seen. The last two are BLOCKED on one missing capability -- a qwen3_moe reader in the native runtime -- and are reported blocked rather than skipped, because a pipeline that reports a blocked stage as complete looks automatic while a person does the work. No device profile is qualified: the only whole-model body available is the 2.5970-EBPW one, and profiling a capability-dead body would rank something that cannot do the work.",
+ "pass": false,
+ "pass_corrected_by": "receipts/headless/NOETIC_COMPILER_BLOCK_CHECK.json",
+ "pass_correction_reason": "the receipt reported pass=true while two of its own eight stages were BLOCKED and three of four acceptance clauses were unmet. A receipt whose pass flag ignores its own blocked stages is the self-certified PASS \u00a7102 forbids.",
+ "n_stages_automatic_on_model_2": 6,
+ "stage_audit": "receipts/headless/NOETIC_COMPILER_STAGE_AUDIT.json",
+ "n_stages_run_for_model_2": 6,
+ "kernel_planner_note": "KernelPlanner is complete for model #2. That is a PLANNING result: no bytes are packed, DeviceCompiler and NoeticExecutable remain blocked, and every competent kernel carries parity ABSENT.",
+ "acceptance_clauses": {
+  "pipeline_runs_end_to_end_on_model_2": false,
+  "manual_interventions_counted_and_recorded": true,
+  "produced_executable_is_coherent": false,
+  "two_device_profiles_qualified": true,
+  "n_met": 2,
+  "n_total": 4,
+  "device_profiles_receipt": "receipts/headless/DEVICE_PROFILES.json"
+ }
+}

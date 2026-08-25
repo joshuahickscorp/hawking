@@ -1,0 +1,12 @@
+{
+  "obligation": "Phase-B correctness: the MLP-operator distillation used the WRONG input tensor; caught and corrected before the assembled test.",
+  "bug": "All shared-operator training (G3 15-layer, all-64, tuned K=1) fed the operator post_input_norm (the ATTENTION input = output of input_layernorm) as the MLP input. The real MLP input is post_attn_norm (output of post_attention_layernorm).",
+  "how_caught": "Before the MLX assembled test, matched the two candidate norms against the captured post_swiglu intermediate: silu(gate@X)*up@X vs post_swiglu. post_attn_norm matches to rel-error 0.0040 (exact); post_input_norm matches only 0.8539 (wrong). The two norms differ by 121% relative -- genuinely different distributions.",
+  "impact": {
+    "comparison_still_valid": "The per-layer 'operator beats q3 held-out' comparison remains valid because BOTH the operator and the q3 control were scored on the same (post_input_norm) inputs -- it is a fair relative comparison of two approximations of the same function on the same points.",
+    "checkpoint_invalid": "The trained checkpoints are INVALID for the assembled model and for deployment: the real forward feeds post_attn_norm, on which the operator (trained on post_input_norm) is out-of-distribution. An MLX assembled test on the old checkpoint would show OOD failure, not true error compounding -- confounding the make-or-break result.",
+    "science_must_be_re_established": "The absolute numbers (0.356 held-out, 35% active bytes) and the 'beats q3' claim must be RE-VERIFIED on post_attn_norm, since q3's error and the operator's error both depend on the input distribution."
+  },
+  "fix": "shared_op_tuned.py and grouped_lora.py switched post_input_norm -> post_attn_norm; retrain_correct.py retrains K=1 m=6144 on the correct input and re-measures vs q3. In flight.",
+  "lesson": "Same class as the memory 'Q30 fits CALIBRATED ON GIBBERISH' and 'compile from BF16 parent': a distillation is only as valid as the input distribution it is trained on. Verify the input tensor is the one the target operator actually consumes -- match against a downstream capture, do not assume the norm name."
+}
