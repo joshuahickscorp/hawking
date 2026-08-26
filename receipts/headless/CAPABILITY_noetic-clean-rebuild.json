@@ -1,0 +1,529 @@
+{
+ "schema": "hawking.headless.capability_suite.v1",
+ "generated_at": "2026-08-25T00:52:47Z",
+ "label": "noetic-clean-rebuild",
+ "backend": "noetic",
+ "target": "http://127.0.0.1:8080",
+ "scoring": "every item scores through a deterministic predicate over the reply text \u2014 exact string, parsed JSON, compiled AST. No model grades any model, because that would make the gate inherit the unreliability it exists to detect.",
+ "overall": {
+  "passed": 14,
+  "total": 43,
+  "rate": 0.3256
+ },
+ "per_axis": {
+  "knowledge": {
+   "passed": 3,
+   "total": 3,
+   "rate": 1.0
+  },
+  "reasoning": {
+   "passed": 3,
+   "total": 6,
+   "rate": 0.5
+  },
+  "structured_output": {
+   "passed": 0,
+   "total": 15,
+   "rate": 0.0
+  },
+  "mutation": {
+   "passed": 5,
+   "total": 10,
+   "rate": 0.5
+  },
+  "coding": {
+   "passed": 0,
+   "total": 3,
+   "rate": 0.0
+  },
+  "self_correction": {
+   "passed": 0,
+   "total": 3,
+   "rate": 0.0
+  },
+  "hygiene": {
+   "passed": 3,
+   "total": 3,
+   "rate": 1.0
+  }
+ },
+ "per_item": {
+  "fact-capital": {
+   "axis": "knowledge",
+   "repeats": 3,
+   "passed": 3,
+   "rate": 1.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 3,
+     "wall_s": 3.255,
+     "reply_head": "\nParis"
+    },
+    {
+     "rep": 1,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 3,
+     "wall_s": 2.798,
+     "reply_head": "\nParis"
+    },
+    {
+     "rep": 2,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 3,
+     "wall_s": 2.787,
+     "reply_head": "\nParis"
+    }
+   ]
+  },
+  "fact-arith": {
+   "axis": "reasoning",
+   "repeats": 3,
+   "passed": 3,
+   "rate": 1.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 512,
+     "wall_s": 19.515,
+     "reply_head": "\n\n17 \u00d7 19 = 323\n323\n323\n321\n321\n321\n321\n321\n321\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n"
+    },
+    {
+     "rep": 1,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 512,
+     "wall_s": 19.53,
+     "reply_head": "\n\n17 \u00d7 19 = 323\n323\n323\n321\n321\n321\n321\n321\n321\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n"
+    },
+    {
+     "rep": 2,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 512,
+     "wall_s": 19.554,
+     "reply_head": "\n\n17 \u00d7 19 = 323\n323\n323\n321\n321\n321\n321\n321\n321\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n311\n"
+    }
+   ]
+  },
+  "fact-multistep": {
+   "axis": "reasoning",
+   "repeats": 3,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "expected 21 among the numbers emitted, got []",
+     "finish_reason": "stop",
+     "completion_tokens": 3,
+     "wall_s": 3.811,
+     "reply_head": ">\n"
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "expected 21 among the numbers emitted, got []",
+     "finish_reason": "stop",
+     "completion_tokens": 3,
+     "wall_s": 3.767,
+     "reply_head": ">\n"
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "expected 21 among the numbers emitted, got []",
+     "finish_reason": "stop",
+     "completion_tokens": 3,
+     "wall_s": 3.793,
+     "reply_head": ">\n"
+    }
+   ]
+  },
+  "json-answer": {
+   "axis": "structured_output",
+   "repeats": 5,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 47,
+     "wall_s": 5.294,
+     "reply_head": "The `os.replace` function guarantees that the target path (or the source path, depending on the specific context and OS) is **not** a directory (or a file, depending on the specific context and OS),\n"
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 47,
+     "wall_s": 5.253,
+     "reply_head": "The `os.replace` function guarantees that the target path (or the source path, depending on the specific context and OS) is **not** a directory (or a file, depending on the specific context and OS),\n"
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 47,
+     "wall_s": 5.297,
+     "reply_head": "The `os.replace` function guarantees that the target path (or the source path, depending on the specific context and OS) is **not** a directory (or a file, depending on the specific context and OS),\n"
+    },
+    {
+     "rep": 3,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 47,
+     "wall_s": 5.277,
+     "reply_head": "The `os.replace` function guarantees that the target path (or the source path, depending on the specific context and OS) is **not** a directory (or a file, depending on the specific context and OS),\n"
+    },
+    {
+     "rep": 4,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 47,
+     "wall_s": 5.282,
+     "reply_head": "The `os.replace` function guarantees that the target path (or the source path, depending on the specific context and OS) is **not** a directory (or a file, depending on the specific context and OS),\n"
+    }
+   ]
+  },
+  "json-kind-correct": {
+   "axis": "structured_output",
+   "repeats": 5,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 349,
+     "wall_s": 15.34,
+     "reply_head": "{\n \n \n\n\n\n\n\n \n \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 349,
+     "wall_s": 15.307,
+     "reply_head": "{\n \n \n\n\n\n\n\n \n \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 349,
+     "wall_s": 15.318,
+     "reply_head": "{\n \n \n\n\n\n\n\n \n \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    },
+    {
+     "rep": 3,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 349,
+     "wall_s": 15.318,
+     "reply_head": "{\n \n \n\n\n\n\n\n \n \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    },
+    {
+     "rep": 4,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 349,
+     "wall_s": 15.273,
+     "reply_head": "{\n \n \n\n\n\n\n\n \n \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    }
+   ]
+  },
+  "json-no-prose": {
+   "axis": "structured_output",
+   "repeats": 5,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1,
+     "wall_s": 3.279,
+     "reply_head": ""
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1,
+     "wall_s": 3.272,
+     "reply_head": ""
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1,
+     "wall_s": 3.266,
+     "reply_head": ""
+    },
+    {
+     "rep": 3,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1,
+     "wall_s": 3.252,
+     "reply_head": ""
+    },
+    {
+     "rep": 4,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1,
+     "wall_s": 3.258,
+     "reply_head": ""
+    }
+   ]
+  },
+  "mutation-anchor-exact": {
+   "axis": "mutation",
+   "repeats": 5,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 44,
+     "wall_s": 6.662,
+     "reply_head": "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 44,
+     "wall_s": 6.678,
+     "reply_head": "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 44,
+     "wall_s": 6.662,
+     "reply_head": "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    },
+    {
+     "rep": 3,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 44,
+     "wall_s": 6.652,
+     "reply_head": "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    },
+    {
+     "rep": 4,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 44,
+     "wall_s": 6.68,
+     "reply_head": "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    }
+   ]
+  },
+  "mutation-refuses-invention": {
+   "axis": "mutation",
+   "repeats": 5,
+   "passed": 5,
+   "rate": 1.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 34,
+     "wall_s": 5.161,
+     "reply_head": "{\n  \"name\": \" totally_unseen_module.py\",\n  \"description\": \" You have NOT been shown this file's contents.\"\n}\n\n"
+    },
+    {
+     "rep": 1,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 34,
+     "wall_s": 5.207,
+     "reply_head": "{\n  \"name\": \" totally_unseen_module.py\",\n  \"description\": \" You have NOT been shown this file's contents.\"\n}\n\n"
+    },
+    {
+     "rep": 2,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 34,
+     "wall_s": 5.177,
+     "reply_head": "{\n  \"name\": \" totally_unseen_module.py\",\n  \"description\": \" You have NOT been shown this file's contents.\"\n}\n\n"
+    },
+    {
+     "rep": 3,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 34,
+     "wall_s": 5.21,
+     "reply_head": "{\n  \"name\": \" totally_unseen_module.py\",\n  \"description\": \" You have NOT been shown this file's contents.\"\n}\n\n"
+    },
+    {
+     "rep": 4,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 34,
+     "wall_s": 5.159,
+     "reply_head": "{\n  \"name\": \" totally_unseen_module.py\",\n  \"description\": \" You have NOT been shown this file's contents.\"\n}\n\n"
+    }
+   ]
+  },
+  "code-compiles": {
+   "axis": "coding",
+   "repeats": 3,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "no python code block in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 512,
+     "wall_s": 20.11,
+     "reply_head": "<think>\nThe user wants a Python function `dedund` that:\n1. Takes a list `xs`\n2 Removes duplicates (duplicates)\n3. Pres the order of first appearance ( first seen order)\n\n\nThe function should:\n-  -    -          -        "
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "no python code block in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 512,
+     "wall_s": 20.13,
+     "reply_head": "<think>\nThe user wants a Python function `dedund` that:\n1. Takes a list `xs`\n2 Removes duplicates (duplicates)\n3. Pres the order of first appearance ( first seen order)\n\n\nThe function should:\n-  -    -          -        "
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "no python code block in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 512,
+     "wall_s": 20.128,
+     "reply_head": "<think>\nThe user wants a Python function `dedund` that:\n1. Takes a list `xs`\n2 Removes duplicates (duplicates)\n3. Pres the order of first appearance ( first seen order)\n\n\nThe function should:\n-  -    -          -        "
+    }
+   ]
+  },
+  "code-self-correct": {
+   "axis": "self_correction",
+   "repeats": 3,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "no python code block in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 131,
+     "wall_s": 7.988,
+     "reply_head": "The function is incorrect because it adds 1 to the divisor (making the denominator ` len(x) +  ),),,,\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "no python code block in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 131,
+     "wall_s": 8.016,
+     "reply_head": "The function is incorrect because it adds 1 to the divisor (making the denominator ` len(x) +  ),),,,\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "no python code block in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 131,
+     "wall_s": 8.028,
+     "reply_head": "The function is incorrect because it adds 1 to the divisor (making the denominator ` len(x) +  ),),,,\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    }
+   ]
+  },
+  "no-think-leak": {
+   "axis": "hygiene",
+   "repeats": 3,
+   "passed": 3,
+   "rate": 1.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 40,
+     "wall_s": 4.767,
+     "reply_head": "{\"\n\"kind\": \"\n\"\",\",\n\"content\": \"\n\"\",\n\n\"operations\": [\n\"],,\n\"\n\"\n\"tests: [\n\""
+    },
+    {
+     "rep": 1,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 40,
+     "wall_s": 4.759,
+     "reply_head": "{\"\n\"kind\": \"\n\"\",\",\n\"content\": \"\n\"\",\n\n\"operations\": [\n\"],,\n\"\n\"\n\"tests: [\n\""
+    },
+    {
+     "rep": 2,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 40,
+     "wall_s": 4.791,
+     "reply_head": "{\"\n\"kind\": \"\n\"\",\",\n\"content\": \"\n\"\",\n\n\"operations\": [\n\"],,\n\"\n\"\n\"tests: [\n\""
+    }
+   ]
+  }
+ },
+ "identity_sufficient": false,
+ "identity_verdict": "UNIDENTIFIED (G073, amended 2026-08-26): this receipt records target='http://127.0.0.1:8080' and label='noetic-clean-rebuild' and carries NO artifact hash, NO executable-closure hash and NO chat-template field. The score stands as a MEASUREMENT; what is NOT established is WHICH BODY earned it. It must not be compared against another row -- G067 measured the same body at 0/43 and 14/43 across two chat-template arms, and no row here records its arm. tools/headless/capability_suite.py now refuses such a receipt."
+}

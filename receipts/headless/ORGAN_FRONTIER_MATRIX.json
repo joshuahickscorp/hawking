@@ -1,0 +1,801 @@
+{
+ "schema": "hawking.headless.organ_frontier_matrix.v1",
+ "generated_at": "2026-08-25T00:09:14Z",
+ "generated_by": "tools/headless/organ_library.py",
+ "obligation": "G017 \u2014 ORGAN_LIBRARY + ORGAN_FRONTIER_MATRIX (directive \u00a748, \u00a749)",
+ "git_head": "eb1494112b61953122262e311cc9243dbd44952e",
+ "hand_authored": false,
+ "unmeasured_is_absent": true,
+ "n_models": 1,
+ "n_models_note": "only qwen3.8-27b-abliterated has measured organ floors on this machine. Rows for other models are ABSENT, never interpolated. add_measurement() adds a second model in one call.",
+ "families": [
+  "vocabulary",
+  "embed",
+  "normalization",
+  "mlp_gate_up",
+  "activation",
+  "mlp_down",
+  "mha_attention",
+  "gqa_attention",
+  "latent_attention",
+  "recurrent_state",
+  "deltanet",
+  "moe_router",
+  "moe_expert",
+  "shared_expert",
+  "lm_head",
+  "kv_state",
+  "mm_projector",
+  "vision_encoder"
+ ],
+ "aliases": {
+  "gqa": "gqa_attention",
+  "embedding": "embed",
+  "embedding_output": "embed",
+  "attention": "gqa_attention",
+  "mlp": "mlp_gate_up",
+  "rmsnorm": "normalization",
+  "sampling": "decode_sampling",
+  "output_head": "lm_head"
+ },
+ "n_families": 18,
+ "n_measured": 5,
+ "organs": [
+  {
+   "organ": "vocabulary",
+   "models_measured": [],
+   "status": "UNMEASURED",
+   "unmeasured_reason": "no measurement on any Odyssey specimen yet",
+   "lowest_local_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_composition_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_generation_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_capability_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "fastest_coherent_representation": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_kernel": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_device_profile": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   }
+  },
+  {
+   "organ": "embed",
+   "models_measured": [
+    "qwen3.8-27b-abliterated"
+   ],
+   "status": "MEASURED",
+   "unmeasured_reason": null,
+   "lowest_local_ebpw": {
+    "value": 3.125,
+    "codec": "ws_rtn_q3_g128",
+    "family": "grouped_absmax",
+    "cite": "receipts/headless/ORGAN_DENSITY_FLOORS.json#organs.embedding_output.candidates"
+   },
+   "lowest_composition_ebpw": {
+    "value": 4.125,
+    "method": "embed_ws_rtn_q4_g128_slice",
+    "family": "grouped_absmax_table",
+    "healthy": true,
+    "cite": "receipts/headless/ORGAN_FRONTIERS.json#organs.embedding_output.floor"
+   },
+   "lowest_generation_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_capability_ebpw": {
+    "value": 4.125,
+    "cosine": 0.9922110438346863,
+    "surplus_over_null": 0.8405545502901077,
+    "bar": "q4_equivalent_on_rare_or_unseen",
+    "cite": "receipts/headless/ORGAN_FRONTIERS.json#organs.embedding_output.floor.function"
+   },
+   "fastest_coherent_representation": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_kernel": "qwen_uniform_qn_embedding_lookup",
+   "best_device_profile": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   }
+  },
+  {
+   "organ": "normalization",
+   "models_measured": [],
+   "status": "UNMEASURED",
+   "unmeasured_reason": "no measurement on any Odyssey specimen yet",
+   "lowest_local_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_composition_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_generation_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_capability_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "fastest_coherent_representation": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_kernel": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_device_profile": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   }
+  },
+  {
+   "organ": "mlp_gate_up",
+   "models_measured": [
+    "qwen3.8-27b-abliterated"
+   ],
+   "status": "MEASURED",
+   "unmeasured_reason": null,
+   "lowest_local_ebpw": {
+    "value": 2.25,
+    "codec": "q2f_g64",
+    "family": "fourlevel_fitted",
+    "cite": "receipts/headless/DENSITY_DESCENT_FRONTIER.json#one_line",
+    "note": "Two coupled frontiers (S024 \u00a72): COHERENCE=q2f_g64 at 2.25 bpw coherent; EXECUTION=q2f_g64 at 27.55 ms. Faster incoherent bodies do not take the execution frontier."
+   },
+   "lowest_composition_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_generation_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_capability_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "fastest_coherent_representation": {
+    "codec": "q2f_g64",
+    "complete_token_ms": 27.55,
+    "cite": "receipts/headless/DENSITY_DESCENT_FRONTIER.json#one_line"
+   },
+   "best_kernel": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_device_profile": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   }
+  },
+  {
+   "organ": "activation",
+   "models_measured": [],
+   "status": "UNMEASURED",
+   "unmeasured_reason": "no measurement on any Odyssey specimen yet",
+   "lowest_local_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_composition_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_generation_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_capability_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "fastest_coherent_representation": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_kernel": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_device_profile": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   }
+  },
+  {
+   "organ": "mlp_down",
+   "models_measured": [
+    "qwen3.8-27b-abliterated"
+   ],
+   "status": "MEASURED",
+   "unmeasured_reason": null,
+   "lowest_local_ebpw": {
+    "value": 2.25,
+    "codec": "q2f_g64",
+    "family": "fourlevel_fitted",
+    "cite": "receipts/headless/DENSITY_DESCENT_FRONTIER.json#one_line",
+    "note": "Two coupled frontiers (S024 \u00a72): COHERENCE=q2f_g64 at 2.25 bpw coherent; EXECUTION=q2f_g64 at 27.55 ms. Faster incoherent bodies do not take the execution frontier."
+   },
+   "lowest_composition_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_generation_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_capability_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "fastest_coherent_representation": {
+    "codec": "q2f_g64",
+    "complete_token_ms": 27.55,
+    "cite": "receipts/headless/DENSITY_DESCENT_FRONTIER.json#one_line"
+   },
+   "best_kernel": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_device_profile": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   }
+  },
+  {
+   "organ": "mha_attention",
+   "models_measured": [],
+   "status": "UNMEASURED",
+   "unmeasured_reason": "no measurement on any Odyssey specimen yet",
+   "lowest_local_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_composition_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_generation_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_capability_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "fastest_coherent_representation": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_kernel": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_device_profile": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   }
+  },
+  {
+   "organ": "gqa_attention",
+   "models_measured": [
+    "qwen3.8-27b-abliterated"
+   ],
+   "status": "MEASURED",
+   "unmeasured_reason": null,
+   "lowest_local_ebpw": {
+    "value": 3.126550820024315,
+    "codec": "ws_rtn_q3_g128",
+    "family": "grouped_absmax",
+    "cite": "receipts/headless/ORGAN_DENSITY_FLOORS.json#organs.gqa_attention.candidates"
+   },
+   "lowest_composition_ebpw": {
+    "value": 4.25,
+    "method": "ws_rtn_q4_g64",
+    "family": "grouped_absmax",
+    "healthy": true,
+    "cite": "receipts/headless/ORGAN_FRONTIERS.json#organs.gqa.floor"
+   },
+   "lowest_generation_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_capability_ebpw": {
+    "value": 4.25,
+    "cosine": 0.9917783737182617,
+    "surplus_over_null": 0.3624526262283325,
+    "bar": "q4_equivalent",
+    "cite": "receipts/headless/ORGAN_FRONTIERS.json#organs.gqa.floor.function"
+   },
+   "fastest_coherent_representation": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_kernel": "qwen_uniform_qn_matvec",
+   "best_device_profile": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   }
+  },
+  {
+   "organ": "latent_attention",
+   "models_measured": [],
+   "status": "UNMEASURED",
+   "unmeasured_reason": "no measurement on any Odyssey specimen yet",
+   "lowest_local_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_composition_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_generation_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_capability_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "fastest_coherent_representation": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_kernel": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_device_profile": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   }
+  },
+  {
+   "organ": "recurrent_state",
+   "models_measured": [],
+   "status": "UNMEASURED",
+   "unmeasured_reason": "no measurement on any Odyssey specimen yet",
+   "lowest_local_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_composition_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_generation_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_capability_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "fastest_coherent_representation": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_kernel": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_device_profile": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   }
+  },
+  {
+   "organ": "deltanet",
+   "models_measured": [
+    "qwen3.8-27b-abliterated"
+   ],
+   "status": "MEASURED",
+   "unmeasured_reason": null,
+   "lowest_local_ebpw": {
+    "value": 3.1365379214627285,
+    "codec": "ws_rtn_q3_g128",
+    "family": "grouped_absmax",
+    "cite": "receipts/headless/ORGAN_DENSITY_FLOORS.json#organs.deltanet.candidates"
+   },
+   "lowest_composition_ebpw": {
+    "value": 4.125,
+    "method": "ws_rtn_q4_g128",
+    "family": "grouped_absmax",
+    "healthy": true,
+    "cite": "receipts/headless/ORGAN_FRONTIERS.json#organs.deltanet.floor"
+   },
+   "lowest_generation_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_capability_ebpw": {
+    "value": 4.125,
+    "cosine": 0.9947348833084106,
+    "surplus_over_null": 0.6758401989936829,
+    "bar": "q4_equivalent",
+    "cite": "receipts/headless/ORGAN_FRONTIERS.json#organs.deltanet.floor.function"
+   },
+   "fastest_coherent_representation": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_kernel": "qwen_uniform_qn_matvec",
+   "best_device_profile": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   }
+  },
+  {
+   "organ": "moe_router",
+   "models_measured": [],
+   "status": "UNMEASURED",
+   "unmeasured_reason": "no measurement on any Odyssey specimen yet",
+   "lowest_local_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_composition_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_generation_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_capability_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "fastest_coherent_representation": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_kernel": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_device_profile": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   }
+  },
+  {
+   "organ": "moe_expert",
+   "models_measured": [],
+   "status": "UNMEASURED",
+   "unmeasured_reason": "no measurement on any Odyssey specimen yet",
+   "lowest_local_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_composition_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_generation_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_capability_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "fastest_coherent_representation": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_kernel": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_device_profile": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   }
+  },
+  {
+   "organ": "shared_expert",
+   "models_measured": [],
+   "status": "UNMEASURED",
+   "unmeasured_reason": "no measurement on any Odyssey specimen yet",
+   "lowest_local_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_composition_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_generation_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_capability_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "fastest_coherent_representation": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_kernel": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_device_profile": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   }
+  },
+  {
+   "organ": "lm_head",
+   "models_measured": [],
+   "status": "UNMEASURED",
+   "unmeasured_reason": "no measurement on any Odyssey specimen yet",
+   "lowest_local_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_composition_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_generation_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_capability_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "fastest_coherent_representation": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_kernel": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_device_profile": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   }
+  },
+  {
+   "organ": "kv_state",
+   "models_measured": [],
+   "status": "UNMEASURED",
+   "unmeasured_reason": "no measurement on any Odyssey specimen yet",
+   "lowest_local_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_composition_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_generation_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_capability_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "fastest_coherent_representation": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_kernel": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_device_profile": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   }
+  },
+  {
+   "organ": "mm_projector",
+   "models_measured": [],
+   "status": "UNMEASURED",
+   "unmeasured_reason": "no measurement on any Odyssey specimen yet",
+   "lowest_local_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_composition_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_generation_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_capability_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "fastest_coherent_representation": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_kernel": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_device_profile": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   }
+  },
+  {
+   "organ": "vision_encoder",
+   "models_measured": [],
+   "status": "UNMEASURED",
+   "unmeasured_reason": "no measurement on any Odyssey specimen yet",
+   "lowest_local_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_composition_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_generation_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "lowest_capability_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "fastest_coherent_representation": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_kernel": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   },
+   "best_device_profile": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "not measured on any specimen"
+   }
+  }
+ ],
+ "pass": true
+}

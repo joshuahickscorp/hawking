@@ -1,0 +1,144 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T12:27:33",
+ "experiment_class": "ACCEL-MEMORY",
+ "knowledge_level": "INSTANCE",
+ "git_head": "87fd406a3c86880fbd66f3264536d87dd80ee057",
+ "identities": {
+  "experiment": {
+   "id": "A_RELEASED_LINK_IS_NOT_A_CERTIFICATE_FOR_WHAT_SITS_ON_IT",
+   "obligation": "G050",
+   "steer": "S015 \u00a714 coherence states; \u00a732 the twelve recorded fields; \u00a734 the planner"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra"
+  },
+  "device": {
+   "status": "ABSENT",
+   "reason": "fabric-level"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "opaque bytes"
+  },
+  "representation": {
+   "status": "ABSENT",
+   "reason": "opaque bytes by design"
+  },
+  "kernel": {
+   "status": "ABSENT",
+   "reason": "no kernel"
+  },
+  "runtime": {
+   "python": "3.12.6"
+  },
+  "transport": {
+   "status": "MOCK",
+   "reason": "no external GPU; every rate is a knob"
+  }
+ },
+ "headline": "The previous receipt named this asymmetry against itself: release_quarantine did not distinguish 'the link is fine' from 'and every copy on it is good'. DOING THE THING A RECEIPT SAID WAS NOT DONE found a SECOND hole underneath it, and the second is worse: the PLAN AND THE MOVER DISAGREED ABOUT WHERE THE BYTES CAME FROM.",
+ "the_asymmetry_i_named_myself": {
+  "carried_from": "receipts/headless/ACCELERATOR_HUMF_QUARANTINE_TRUST.json",
+  "words": "an UNKNOWN copy is protected ONLY by the quarantine on its domain, so an operator who releases the quarantine without resolving the unknowns turns those copies back into sources with their trust NEVER RE-ESTABLISHED",
+  "demonstrated_against_pre_fix_code": {
+   "probe": "unknown_hole.py",
+   "while_quarantined": {
+    "action": "IMPOSSIBLE",
+    "detail": "SLOW's only CLEAN copies are in QUARANTINED domains ['MOCK_EXTERNAL_VRAM']"
+   },
+   "after_release": {
+    "action": "TRANSFER",
+    "detail": "SLOW -> APPLE_UM via TRANSFER from MOCK_EXTERNAL_VRAM",
+    "sources_offered": [
+     "MOCK_EXTERNAL_VRAM"
+    ]
+   },
+   "hole_exists": true,
+   "reading": "one release_quarantine call and the copy whose probe TIMED OUT was a transfer source again, silently, with nothing having been learned about it in between"
+  },
+  "after_fix": {
+   "action": "IMPOSSIBLE",
+   "sources_offered": [],
+   "detail": "SLOW's only CLEAN copies are UNRESOLVED in ['MOCK_EXTERNAL_VRAM'] -- the quarantine was released but the copies' trust was never re-established",
+   "release_returns": {
+    "cleared": [],
+    "still_unresolved": [
+     "SLOW"
+    ]
+   }
+  }
+ },
+ "the_principle_the_fix_encodes": {
+  "statement": "TRUST IS PER COPY, NOT ONLY PER DOMAIN.",
+  "why_a_blanket_refusal_would_have_been_wrong": "The lazy fix is to make release_quarantine REFUSE while any unknown remains. That is the manufactured-loss error in a new direction: one copy nobody could reach would hold an entire healthy link hostage, and the other ninety-nine good copies on it with it. The link and the copies are two questions and they get two answers.",
+  "shape": {
+   "TRUSTED": "usable",
+   "UNKNOWN": "a probe could not answer for it; out of service until resolved",
+   "ASSERTED": "an operator said it is fine WITHOUT a check -- weaker than verified, and recorded as weaker"
+  },
+  "both_directions_pinned": "accepting the COPY does not clear the LINK either -- a test caught that, expecting TRANSFER and getting RECOMPUTE while the domain was still quarantined. Neither axis stands in for the other."
+ },
+ "re_establishing_trust_needs_something_to_check_against": {
+  "the_difficulty": "A probe that comes back proves the copy ANSWERED. That is presence, not integrity, and promoting the first to the second is the quiet-promotion class this fabric exists to refuse.",
+  "so_resolve_unknown_reports_five_outcomes": {
+   "VERIFIED": "bytes match the digest recorded when the copy was verified; trust re-established",
+   "PRESENT_BUT_UNVERIFIABLE": "the copy answered and NO digest was ever recorded, so there is nothing to compare to. Trust STAYS UNKNOWN",
+   "CORRUPT": "the copy was there and it was WRONG -- the case a timeout can hide",
+   "LOST": "the probe answered with a failure, so the copy is gone rather than unknown",
+   "STILL_UNKNOWN": "timed out again; nothing changes, because nothing was learned"
+  },
+  "the_operator_door": "accept_unknown() exists because a copy nobody can ask about must not be permanently stranded. It records evidence: 'NONE -- operator assertion'. The value of that door is entirely in it being labelled.",
+  "carried_forward_not_re_solved": "the probe reads through copy_out, the ROUND-TRIP path, not the path a kernel uses -- so even VERIFIED means the read-back path agrees, not that the resident bytes a compute would see are good. That blind spot needs the DEVICE digesting its own memory and is still not built."
+ },
+ "the_second_hole_and_it_is_worse": {
+  "found_by": "asking whether the planner's refusal was actually enforced anywhere, rather than assuming a refusal in plan_acquire governs what execute() does",
+  "defect": "_move re-derived its own source -- `the first CLEAN copy` -- instead of using the one the plan named. So the planner could refuse a quarantined source and the mover could take it anyway.",
+  "demonstrated_against_pre_fix_code": {
+   "probe": "move_source_hole.py",
+   "plan_detail": "W -> SCRATCH via TRANSFER from TRUSTED_SRC",
+   "sources_offered": [
+    "TRUSTED_SRC"
+   ],
+   "bytes_actually_moved_from": "QUARANTINED_SRC",
+   "hole_exists": true
+  },
+  "why_worse_than_the_first": "the first hole made a wrong plan. This one made a RIGHT plan and then did something else -- the log said TRUSTED_SRC and the bytes came from the quarantined domain. A plan whose source is not what executes is not an audit trail, and every quarantine and trust refusal in the planner was decorative wherever it applied.",
+  "after_fix": {
+   "bytes_actually_moved_from": "TRUSTED_SRC",
+   "hole_exists": false
+  },
+  "and_it_refuses_rather_than_substituting": "if the named source goes bad between plan and execute, _move raises and says re-plan. Silently picking another is how the log stops matching reality in the first place."
+ },
+ "a_distinction_that_would_have_rotted_quietly": {
+  "question": "should valid_copies() still name a copy whose trust is UNKNOWN?",
+  "answer": "YES. valid_copies() is field 5 of \u00a732 and it is a question about STATE -- an UNKNOWN copy may be perfectly current. Folding trust into it would make the field mean something other than what the steer says.",
+  "but_the_consequence_had_to_be_followed": "DATA-LOSS accounting asked valid_copies(), so an UNKNOWN copy counted as a SURVIVOR -- reporting 'you still have it' about a copy nobody can vouch for, which is the safe-LOOKING direction and the wrong one. trusted_copies() now answers that question and the three data-loss sites use it.",
+  "pinned": "one test asserts a copy is in valid_copies() and NOT in trusted_copies() at once"
+ },
+ "claim_boundary": {
+  "mock_only": "no external GPU exists, every transport number is a knob, \u00a721 forbids citing one as physical evidence. What is proven is the PLANNER'S TRUST MODEL, the PLAN-TO-MOVER agreement, and the state machine.",
+  "nothing_timed": "no performance claim moves; no kernel changed",
+  "still_not_modelled": [
+   "a provider that corrupts CONSISTENTLY IN BOTH DIRECTIONS so the digest agrees with itself",
+   "any adversary who can recompute a crc32 -- this defends against ACCIDENT",
+   "the ROUND-TRIP-VS-RESIDENT-COPY blind spot, which needs the device digesting its own memory",
+   "trust decay over time -- a copy VERIFIED once is TRUSTED forever after, and nothing re-checks it"
+  ]
+ },
+ "tests": {
+  "file": "tools/accelerator/test_humf.py",
+  "humf": 49,
+  "was": [
+   40,
+   35,
+   32,
+   24,
+   19,
+   12
+  ],
+  "accelerator_total": 208,
+  "was_total": 199
+ },
+ "pass": true
+}

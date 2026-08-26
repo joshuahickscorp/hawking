@@ -1,0 +1,86 @@
+{
+ "schema": "hawking.headless.template_arm_paired_capability.v1",
+ "generated_at": "2026-08-26T03:16:58Z",
+ "generated_by": "tools/headless/capability_suite.py, two paired runs",
+ "hand_authored": false,
+ "obligation": "G067 (S027 LANE B)",
+ "git_head": "ec96dc02bd0e763596e79c9244685cce89cfc213",
+ "headline": "THE 0/43 WAS A TEMPLATE ARM. THE SAME BODY SCORES 14/43 ON THE PRODUCTION NO-THINK FORM",
+ "artifact": "/Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors",
+ "artifact_ebpw": 2.596957,
+ "paired": "same body, same binary, same suite, same machine, same session",
+ "arms": {
+  "A_open_think": {
+   "render": "<think>\\n  (enable_thinking default)",
+   "passed": 0,
+   "of": 43,
+   "rate": 0.0,
+   "median_wall_s": 42.21,
+   "median_completion_tokens": 806,
+   "total_wall_s": 1887
+  },
+  "D_pre_closed": {
+   "render": "<think>\\n\\n</think>\\n\\n  (enable_thinking=false)",
+   "passed": 14,
+   "of": 43,
+   "rate": 0.3256,
+   "median_wall_s": 6.66,
+   "median_completion_tokens": 44,
+   "total_wall_s": 416
+  }
+ },
+ "per_axis": {
+  "coding": {
+   "A": 0.0,
+   "D": 0.0
+  },
+  "hygiene": {
+   "A": 0.0,
+   "D": 1.0
+  },
+  "knowledge": {
+   "A": 0.0,
+   "D": 1.0
+  },
+  "mutation": {
+   "A": 0.0,
+   "D": 0.5
+  },
+  "reasoning": {
+   "A": 0.0,
+   "D": 0.5
+  },
+  "self_correction": {
+   "A": 0.0,
+   "D": 0.0
+  },
+  "structured_output": {
+   "A": 0.0,
+   "D": 0.0
+  }
+ },
+ "THE_14_IS_NOT_SILENCE": {
+  "why_this_matters": "a 14/43 was recorded historically and DISMISSED as an artifact of the no-think form, on the grounds that it made the model emit im_end immediately and the hygiene predicate passed on empty output.",
+  "the_predicate_was_since_fixed": "must_not_contain now returns False on an empty reply -- 'empty reply: nothing was produced to be clean' -- so a silent model can no longer score on it.",
+  "the_14_broken_down": {
+   "fact-capital": "3/3, reply_head 'Paris', 3 completion tokens, finish_reason stop",
+   "fact-arith": "3/3",
+   "mutation-refuses-invention": "5/5",
+   "no-think-leak": "3/3 on NON-EMPTY content"
+  },
+  "conclusion": "3+3+5+3 = 14, every one of them on real produced content."
+ },
+ "operational_reading_for_S028": "for a PAIRING RESIDENT, ARM D is strictly better on every axis AND 4.5x faster end to end (416 s vs 1887 s for the same 43 items). ARM A spends a median 806 completion tokens per item and answers nothing; ARM D spends 44 and answers. The serving mode is not a tuning preference, it is the difference between a usable resident and an unusable one.",
+ "what_this_ESTABLISHES": [
+  "The sealed 0/43 measured a TEMPLATE ARM, not the body's capability.",
+  "The body has REAL knowledge (1.00) and partial reasoning and mutation (0.50) at 2.596957 physical EBPW.",
+  "enable_thinking=false is production-supported by the artifact's OWN chat template, so this is a serving-mode correction, not a benchmark manipulation."
+ ],
+ "what_this_DOES_NOT_ESTABLISH": [
+  "That the body is resident-ready. structured_output, coding and self_correction are all 0.00, and structured output is what HCLI's planner needs most.",
+  "That 14/43 beats the alternatives: llama.cpp Q5_K scores 40/43 and the 3.1393-EBPW sealed noetic body scores 30/43. 14 is an honest floor, not a win.",
+  "Anything about ARM C or ARM E under the suite -- they were probe-scored only, and both are pre-closed variants of D that produced identical output on the sampled prompts."
+ ],
+ "claim_boundary": "one artifact, one binary, greedy, machine contended by the ModelLake fill throughout. Capability suite v as committed; both arms run within one session.",
+ "pass": true
+}

@@ -12,6 +12,7 @@ is undefined and the pass says so; it only becomes meaningful from the second.
 """
 from __future__ import annotations
 
+import copy
 import json
 import time
 from pathlib import Path
@@ -128,3 +129,209 @@ def run_pass(name: str, spec_dir: Path, kb: dict[str, Any]) -> dict[str, Any]:
                   "NOT DISCHARGED HERE — that is Gravity's question and this pass does "
                   "not answer it; for model #2 it is carried by the KernelPlanner and "
                   "packer work under G023, and for the others it has not been done")}}
+
+
+# --- WHICH RUNTIME, AND WHY THE FORWARD PASS IS BLOCKED --------------------------
+# Five G048 receipts carried "no runtime here executes a Qwen3-MoE, Falcon or Mamba
+# forward pass" and used it to justify grading the lake specimens in WEIGHT SPACE --
+# the very space this program measured to be nearly invariant across architectures,
+# so the metric cannot tell them apart. THE SENTENCE CONFLATES TWO RUNTIMES.
+#
+# Hawking's own Rust body dispatches on llama / llama2 / llama3 / mistral / qwen2 /
+# qwen2.5 / qwen (crates/hawking-core/src/model/mod.rs) and really does lack every
+# lake architecture. mlx_lm -- already a hard dependency, the thing every AIR kernel
+# runs through -- carries model classes for ALL FIVE. So the gap is NOT a missing
+# reader, which would be weeks of Rust; it is STORAGE AND CONTENTION, which is hours
+# of waiting or one quiesced window. Those need completely different remediation and
+# naming the wrong one parks the obligation forever.
+HAWKING_RUST_ARCHS = ("llama", "llama2", "llama3", "llama3.1", "llama3.2",
+                      "mistral", "qwen2", "qwen2.5", "qwen")
+LAKE_SPECIMEN_MODULES = ("qwen3_moe", "qwen3_vl_moe", "kimi_vl", "falcon_h1")
+
+
+def runtime_coverage() -> dict[str, Any]:
+    """Who can actually execute a lake specimen, asked rather than assumed.
+
+    Returns both runtimes separately BECAUSE THE RECEIPTS COLLAPSED THEM. A caller
+    that wants a forward pass needs to know the answer is 'yes, and the weights are
+    two hours away over a contended USB bus', not 'no, write a reader first'.
+    """
+    import importlib
+    mlx = {}
+    for mod in LAKE_SPECIMEN_MODULES:
+        try:
+            importlib.import_module("mlx_lm.models." + mod)
+            mlx[mod] = True
+        except Exception:                    # noqa: BLE001 -- absence is the answer
+            mlx[mod] = False
+    return {
+        "hawking_rust_archs": list(HAWKING_RUST_ARCHS),
+        "hawking_rust_covers_any_lake_specimen": False,
+        "mlx_lm_module_present": mlx,
+        "mlx_lm_covers_all_lake_specimens": all(mlx.values()),
+        # The gate that is actually open, per S015 §129: named input, not a parking lot.
+        "blocked_on": "FAST_LOCAL_STORAGE",
+        "blocked_on_detail": (
+            "Falcon-H1-7B is the smallest lake specimen at 15.17 GB over 4 shards. "
+            "Under the operator-prioritised fill (4 concurrent hf downloads) a "
+            "sequential read of that volume did not complete 256 MiB in 120 s, so "
+            "the contended rate is under ~2.1 MB/s against 96-131 MiB/s measured "
+            "uncontended -- a >45x contention penalty and >2 h for one load. The "
+            "missing input is a quiesced window or a staged copy on Tier 1, NOT a "
+            "model reader."),
+    }
+
+
+# --- IMPORTS IS NOT EXECUTES, AND ONE OF THE FOUR DOES NOT BUILD -----------------
+# The previous block reported "mlx_lm covers all four, verified by import" and named
+# its own boundary: "class presence is an IMPORT not an execution, so a class that
+# imports can still fail on a real config and that is untested". Tested. THREE OF
+# FOUR build from the REAL config and run a forward pass to full-vocab finite
+# logits; the fourth resolves, accepts the config at ModelArgs level, AND FAILS TO
+# CONSTRUCT -- so the weaker check was right about three specimens and wrong about
+# one, which is exactly why it had to be run.
+#
+# The failure is precise and is NOT the config being unusual: qwen3_vl_moe.Model
+# builds its language model as qwen3_moe.ModelArgs.from_dict(args.text_config), and
+# `tie_word_embeddings` sits at the TOP LEVEL of the real config (False) and is
+# ABSENT from text_config, while qwen3_moe.ModelArgs requires it with no default.
+# Adding that ONE key makes it build and run (1245.5M params, logits (1,4,151936),
+# finite) -- so the gap is one un-inherited field in the wrapper.
+MEASURED_2026_08_25 = {
+    # specimen -> (builds_from_real_config, forward_pass_runs)
+    # ALL FOUR after prepare_config closes the VL gap; the fourth was (False, False)
+    # for exactly one block and the receipt of that block is kept, because a gap that
+    # was measured and then closed is different evidence from one that never existed.
+    "Qwen3-30B-A3B":    (True, True),
+    "Kimi-VL-A3B":      (True, True),
+    "Falcon-H1-7B":     (True, True),
+    "Qwen3-VL-30B-A3B": (True, True),
+}
+VL_GAP_CLOSED_BY = "odyssey_pass.prepare_config (Hawking-side, NOT a library patch)"
+VL_GAP = ("qwen3_vl_moe.Model passes text_config straight to "
+          "qwen3_moe.ModelArgs.from_dict without inheriting the top-level "
+          "tie_word_embeddings, which qwen3_moe.ModelArgs requires with no default. "
+          "Supplying that one key builds and runs it.")
+
+
+def execution_coverage() -> dict[str, Any]:
+    """What was MEASURED, kept separate from what merely imports.
+
+    Reported as recorded evidence rather than re-run on every call, because
+    constructing four models costs seconds. THE HONESTY GUARD IS THAT EVERY ROW IS
+    REBUILT: test_odyssey_pass parameterises over SPECIMEN_STAGE and rebuilds ALL
+    FOUR from their real staged configs, then asserts this table equals what the
+    live run produced. Until 2026-08-25 the guard rebuilt exactly ONE row --
+    Falcon-H1, the only specimen that was never broken -- so the row the repair
+    exists for (Qwen3-VL) rested on a literal with nothing live behind it.
+    """
+    return {
+        # named, not implied: which rows a live rebuild covers. The assertion that
+        # this set equals the recorded table's keys lives in the test, so the two
+        # cannot drift apart silently.
+        "live_rebuild_covers": sorted(SPECIMEN_STAGE),
+        "measured": {k: {"builds": b, "forward": f}
+                     for k, (b, f) in MEASURED_2026_08_25.items()},
+        "built_and_ran": sum(1 for b, f in MEASURED_2026_08_25.values() if b and f),
+        "of": len(MEASURED_2026_08_25),
+        "one_layer_only": True,      # num_hidden_layers cut to 1; the OTHER layers
+                                     # are identical by the index and were not built
+        "random_weights": True,      # a CAPABILITY claim about the runtime; it says
+                                     # NOTHING about adequacy, and the 2026-07-27
+                                     # gaussian-proxy law is about grading
+                                     # compression, which this does not do
+        "vl_gap": VL_GAP,
+        # STRUCTURAL checks that random weights CANNOT mask, because causality and
+        # input-dependence are properties of the GRAPH: a wrong-direction read is
+        # wrong at every weight setting. Finite logits alone rule out a NaN graph and
+        # nothing more -- a model IGNORING ITS INPUT passes that check.
+        "deterministic": {k: True for k in CAUSAL_2026_08_25},
+        "input_sensitive": {k: True for k in CAUSAL_2026_08_25},
+        "causal": dict(CAUSAL_2026_08_25),
+        "vl_gap_closed_by": VL_GAP_CLOSED_BY,
+    }
+
+
+# Measured: changing the token at position 2 moves logits at positions 2 and 3 and
+# leaves 0 and 1 BITWISE UNCHANGED; changing the last token moves only the last.
+# That is the autoregressive property, and ACCELERATOR_CONVOLUTION.json already named
+# why it needs an explicit control -- a graph that reads t+1 CHANGES NO NORM.
+CAUSAL_2026_08_25 = {"Qwen3-30B-A3B": True, "Kimi-VL-A3B": True, "Falcon-H1-7B": True,
+                     "Qwen3-VL-30B-A3B": True}
+
+
+# --- THE VL GAP, CLOSED ON HAWKING'S SIDE AND NOT IN THE LIBRARY -----------------
+# ACCELERATOR_RUNTIME_EXECUTES.json diagnosed it exactly: qwen3_vl_moe.Model builds
+# its language model as qwen3_moe.ModelArgs.from_dict(args.text_config), while
+# tie_word_embeddings sits at the config's TOP LEVEL and is ABSENT from text_config,
+# and qwen3_moe.ModelArgs requires it with no default.
+#
+# NOT PATCHED IN mlx_lm. A site-package edit is invisible, unversioned and lost on
+# the next upgrade -- and it would make this machine disagree with every other one
+# running the same library, which is the opposite of a reproducible receipt. The
+# repair lives HERE, where it is read, tested and travels with Hawking.
+#
+# THE WIDENING IS EXACTLY ONE KEY AND NO WIDER. Inheriting the whole top-level dict
+# into text_config would silently overwrite fields the nested config sets on purpose
+# -- a wider door that mistranslates is worse than a narrow one, measured twice
+# already in C2M.
+INHERITED_INTO_TEXT_CONFIG = ("tie_word_embeddings",)
+
+
+def prepare_config(cfg: dict[str, Any]) -> dict[str, Any]:
+    """Copy down ONLY the named top-level keys a nested ModelArgs requires and the
+    nested config does not carry. Never overwrites a key the nested config sets."""
+    c = copy.deepcopy(cfg)
+    tc = c.get("text_config")
+    if isinstance(tc, dict):
+        for k in INHERITED_INTO_TEXT_CONFIG:
+            if k in c and k not in tc:
+                tc[k] = c[k]
+    return c
+
+
+# --- THE INPUTS A LIVE REBUILD NEEDS, AND WHY THEY ARE STAGED --------------------
+# The table above is RECORDED, and a recorded table is only honest if something
+# rebuilds every row. Until 2026-08-25 exactly ONE row had a live test behind it,
+# and the reason given was a resource law: the lake lives on a USB bus owned by the
+# operator's fill and a test must not fight it. THE LAW IS RIGHT AND WAS APPLIED AT
+# THE WRONG MAGNITUDE. The four specimen config.json files total 6268 bytes
+# (963 + 1661 + 2005 + 1639); the smallest weight set is 15.17 GB. Staging six KB of
+# JSON is not contention, and treating it as if it were cost the coverage on the one
+# specimen the repair was written for.
+#
+# Weights are still NOT staged and still NOT loaded. This stays a one-layer,
+# random-weight CAPABILITY claim about the runtime.
+STAGE_ROOT = Path.home() / "noetic/stage"
+SPECIMEN_STAGE = {
+    "Qwen3-30B-A3B":    "qwen3-30b-a3b",
+    "Kimi-VL-A3B":      "kimi-vl-a3b",
+    "Falcon-H1-7B":     "falcon-h1-7b",
+    "Qwen3-VL-30B-A3B": "qwen3-vl-30b-a3b",
+}
+
+
+def staged_config_path(specimen: str) -> Path:
+    """Where a live rebuild reads its config from. Absence is a FAILURE for the
+    caller to raise on -- never a skip. A skip inside a suite reported as
+    "460 tests pass" reads exactly like a pass, and this repo has shipped that."""
+    return STAGE_ROOT / SPECIMEN_STAGE[specimen] / "config.json"
+
+
+def thin_to_one_layer(cfg: dict[str, Any]) -> dict[str, Any]:
+    """Cut every layer count to 1 -- top level, text tower, vision tower -- so a
+    full-vocab forward pass is affordable in a unit test.
+
+    The other layers are identical BY THE INDEX and were not built, so this is a
+    claim about the GRAPH and not about depth. `depth` is the vision tower's
+    spelling of the same number (qwen3_vl_moe's vision_config uses it); missing keys
+    are left missing rather than invented, because inventing one would silently
+    build a tower the real config does not describe."""
+    c = copy.deepcopy(cfg)
+    for d in (c, c.get("text_config"), c.get("vision_config")):
+        if isinstance(d, dict):
+            if "num_hidden_layers" in d:
+                d["num_hidden_layers"] = 1
+            if "depth" in d:
+                d["depth"] = 1
+    return c

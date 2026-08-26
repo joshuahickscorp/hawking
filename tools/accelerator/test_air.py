@@ -943,3 +943,504 @@ def test_a_matmul_still_accepts_because_its_lowering_emits_its_own_barriers():
     mm = air.AirMatmul(name="mm_probe", m=32, k=32, n=32, dtype="f32")
     ok, why = mm.executable_on_metal_backend()
     assert ok is True, why
+
+
+def test_topk_sample_refuses_what_it_cannot_do():
+    mk = lambda **kw: air.AirTopKSample(**{"name": "t", "rows": 2, "cols": 64,
+                                           "k": 4, **kw})
+    with pytest.raises(ValueError, match="exceeds 64"):
+        mk(k=65, cols=1024).validate()
+    with pytest.raises(ValueError, match="must be in 1"):
+        mk(k=65, cols=32).validate()
+    with pytest.raises(ValueError, match="temperature"):
+        mk(temperature=0.0).validate()
+    with pytest.raises(ValueError, match="multiple of 32"):
+        mk(threadgroup=100).validate()
+    # a name with a dot becomes an invalid Metal SYMBOL and fails deep inside the MLX
+    # header with no mention of the name; found by naming a variant after its temperature
+    with pytest.raises(ValueError, match="valid identifier"):
+        air.AirTopKSample("l2_0.5", rows=2, cols=64, k=4).validate()
+
+
+def test_topk_is_exact_against_a_stable_argsort():
+    pytest.importorskip("mlx.core")
+    rng = np.random.default_rng(11)
+    for rows, cols, k in [(4, 64, 5), (2, 1031, 8), (3, 128, 1)]:
+        x = (rng.standard_normal((rows, cols)) * 3).astype(np.float32)
+        u = rng.random(rows).astype(np.float32)
+        ts = air.AirTopKSample(f"tk_{rows}_{cols}_{k}", rows=rows, cols=cols, k=k)
+        _, tv, ti = air.execute_topk_sample(ts, x, u)
+        _, ovals, oidx = air.topk_sample_oracle(x, u, k)
+        assert (np.array(ti) == oidx).all()
+        assert float(np.max(np.abs(np.array(tv) - ovals))) == 0.0
+
+
+def test_ties_break_to_the_lower_index_where_ONE_thread_sees_them_all():
+    """The regression a mutation of mine failed to catch. The tie-break lives in TWO
+    places -- the per-thread scan and the tree reduce -- and at cols <= threadgroup
+    each thread sees at most one element, so the per-thread half is DEAD CODE and a
+    test at that shape proves nothing about it. The ties here sit a full threadgroup
+    stride apart so one thread must break them itself."""
+    pytest.importorskip("mlx.core")
+    tg, cols = 256, 1024
+    x = np.zeros((2, cols), np.float32)
+    for c in (5, 5 + tg, 5 + 2 * tg):
+        x[:, c] = 1.0
+    u = np.array([0.1, 0.9], np.float32)
+    ts = air.AirTopKSample("tiestride", rows=2, cols=cols, k=3, threadgroup=tg)
+    _, _, ti = air.execute_topk_sample(ts, x, u)
+    assert np.array(ti)[0].tolist() == [5, 5 + tg, 5 + 2 * tg]
+
+
+def test_the_sample_is_a_pure_function_of_the_logits_and_u():
+    """Randomness as an INPUT is what makes exact grading possible at all: same u
+    gives the same answer, a different u actually moves it, and the answer matches an
+    independent numpy CDF walk."""
+    pytest.importorskip("mlx.core")
+    rng = np.random.default_rng(5)
+    rows, cols, k = 256, 512, 8
+    x = (rng.standard_normal((rows, cols)) * 2.5).astype(np.float32)
+    u = rng.random(rows).astype(np.float32)
+    ts = air.AirTopKSample("pure", rows=rows, cols=cols, k=k)
+    a, _, _ = air.execute_topk_sample(ts, x, u)
+    b, _, _ = air.execute_topk_sample(ts, x, u)
+    c, _, _ = air.execute_topk_sample(ts, x, rng.random(rows).astype(np.float32))
+    och, _, _ = air.topk_sample_oracle(x, u, k)
+    assert (np.array(a) == np.array(b)).all()          # reproducible
+    assert (np.array(a) != np.array(c)).sum() > rows // 4   # and not trivially constant
+    assert (np.array(a) == och).all()                  # matches the independent oracle
+
+
+def test_the_distribution_is_checked_and_the_check_can_fail():
+    """A sampler cannot be graded by equality alone: `the index is one of the top k`
+    PASSES FOR A SAMPLER THAT ALWAYS RETURNS THE ARGMAX. So the frequencies are tested
+    -- and the negative control is what makes that test evidence rather than ritual."""
+    pytest.importorskip("mlx.core")
+    rng = np.random.default_rng(99)
+    n, cols, k = 4096, 256, 8
+    logits = (rng.standard_normal(cols) * 2.0).astype(np.float32)
+    X = np.repeat(logits[None, :], n, axis=0)
+    u = rng.random(n).astype(np.float32)
+    ts = air.AirTopKSample("dist", rows=n, cols=cols, k=k)
+    ch, _, ti = air.execute_topk_sample(ts, X, u)
+    order = np.array(ti)[0]
+    vals = logits[order]
+    p = np.exp(vals - vals.max()); p = p / p.sum()
+    exp_counts = p * n
+    chi2 = lambda idx: float(((np.array([(idx == t).sum() for t in order]) - exp_counts)
+                              ** 2 / exp_counts).sum())
+    critical = 24.322                       # chi-square upper 0.1% point, df = k-1 = 7
+    assert chi2(np.array(ch)) < critical
+    assert chi2(np.full(n, order[0])) > critical        # argmax-always must FAIL
+    assert chi2(order[np.minimum((u * k).astype(int), k - 1)]) > critical  # uniform too
+
+
+def test_norm_refuses_what_it_cannot_do():
+    mk = lambda **kw: air.AirNorm(**{"name": "n", "rows": 2, "cols": 64, **kw})
+    with pytest.raises(ValueError, match="must be 'rms' or 'layer'"):
+        mk(mode="batch").validate()
+    with pytest.raises(ValueError, match="two_pass"):
+        mk(mode="layer", variance="welford").validate()
+    # RMSNorm subtracts no mean, so a one-pass variance is not a choice that exists
+    with pytest.raises(ValueError, match="no mean"):
+        mk(mode="rms", variance="one_pass").validate()
+    with pytest.raises(ValueError, match="multiple of 32"):
+        mk(threadgroup=100).validate()
+    with pytest.raises(ValueError, match="valid identifier"):
+        air.AirNorm("n.1", rows=2, cols=64).validate()
+
+
+def test_norm_matches_a_float64_oracle():
+    pytest.importorskip("mlx.core")
+    rng = np.random.default_rng(21)
+    for rows, cols, mode in [(4, 128, "rms"), (3, 4099, "layer"), (2, 37, "layer")]:
+        x = (rng.standard_normal((rows, cols)) * 2).astype(np.float32)
+        w = (rng.standard_normal(cols) * 0.5 + 1).astype(np.float32)
+        b = (rng.standard_normal(cols) * 0.1).astype(np.float32)
+        nm = air.AirNorm(f"n_{mode}_{cols}", rows=rows, cols=cols, mode=mode)
+        got = np.array(air.execute_norm(nm, x, w, b))
+        assert float(np.max(np.abs(got - air.norm_oracle(x, w, b, mode)))) < 1e-5
+
+
+def test_the_write_after_read_regression_at_threadgroup_1024():
+    """THE BUG THIS PINS WAS REAL AND MINE: phase 2 reused phase 1's scratch with
+    nothing ordering its WRITE after every thread's READ of the first result. Exact at
+    threadgroup 64 and 256, WRONG BY 0.061 at 1024, because 32 lanes make the read loop
+    long enough for a fast thread to overtake a slow one. Found only by running the
+    barrier control ACROSS WIDTHS, which is the discipline the top-k receipt argued for
+    one block earlier."""
+    pytest.importorskip("mlx.core")
+    rng = np.random.default_rng(1234)
+    rows, cols = 32, 4096
+    x = (rng.standard_normal((rows, cols)) * 2).astype(np.float32)
+    w = np.ones(cols, np.float32); b = np.zeros(cols, np.float32)
+    ref = air.norm_oracle(x, w, b, "layer")
+    for tgw in (256, 1024):
+        nm = air.AirNorm(f"war{tgw}", rows=rows, cols=cols, mode="layer", threadgroup=tgw)
+        got = np.array(air.execute_norm(nm, x, w, b))
+        assert float(np.max(np.abs(got - ref))) < 1e-5, tgw
+
+
+def test_the_two_reductions_do_not_share_scratch_anywhere():
+    """Structural pin so the hazard cannot come back by someone tidying the slots.
+    Softmax and attention carry the SAME shape and never fired -- and a race that does
+    not fire is not a passing test, so they are fixed on structure, not on evidence."""
+    sm = air.lower_softmax_to_msl(air.AirSoftmax("s", rows=4, cols=128))
+    at = air.lower_attention_to_msl(air.AirAttention("a", seq_q=64, seq_k=64, head_dim=32))
+    nm = air.lower_norm_to_msl(air.AirNorm("n", rows=4, cols=128, mode="layer"))
+    for src in (sm, at, nm):
+        assert "u + warp] =" in src        # the second reduction writes its own slots
+
+
+def test_the_one_pass_variance_really_does_die():
+    """Both strategies are kept, and the cheap one is kept as a DEMONSTRATION. A
+    strategy nobody has watched fail reads as one that merely lost a style argument."""
+    pytest.importorskip("mlx.core")
+    rng = np.random.default_rng(7)
+    rows, cols = 2, 4096
+    w = np.ones(cols, np.float32); b = np.zeros(cols, np.float32)
+    for ratio, must_be_close in ((1, True), (4096, False)):
+        x = ((rng.standard_normal((rows, cols)) + ratio)).astype(np.float32)
+        ref = air.norm_oracle(x, w, b, "layer")
+        one = np.array(air.execute_norm(
+            air.AirNorm(f"op{ratio}", rows=rows, cols=cols, mode="layer",
+                        variance="one_pass"), x, w, b))
+        two = np.array(air.execute_norm(
+            air.AirNorm(f"tp{ratio}", rows=rows, cols=cols, mode="layer"), x, w, b))
+        assert float(np.max(np.abs(two - ref))) < 1e-2      # two-pass survives both
+        ok = bool(np.isfinite(one).all()) and float(np.max(np.abs(one - ref))) < 1e-3
+        assert ok == must_be_close, (ratio, ok)
+
+
+def test_stripping_the_first_norm_barrier_breaks_it():
+    """The barrier that publishes the row mean is read by EVERY thread, so this control
+    is LOUD where the top-k tree-reduce control was nearly silent -- same class of
+    control, different evidential value, and the difference is whether the dependency
+    is total or incidental."""
+    pytest.importorskip("mlx.core")
+    import mlx.core as mx
+    rng = np.random.default_rng(3)
+    rows, cols = 32, 4096
+    x = (rng.standard_normal((rows, cols)) * 2).astype(np.float32)
+    w = np.ones(cols, np.float32); b = np.zeros(cols, np.float32)
+    nm = air.AirNorm("bar", rows=rows, cols=cols, mode="layer")
+    bad = air.lower_norm_to_msl(nm).replace(
+        "threadgroup_barrier(mem_flags::mem_threadgroup);", "", 1)
+    kern = mx.fast.metal_kernel(name="nobar_norm", input_names=nm.input_names(),
+                                output_names=["out"], source=bad, ensure_row_contiguous=True)
+    g, tg = nm.launch()
+    (o,) = kern(inputs=[mx.array(x), mx.array(w), mx.array(b)], grid=g, threadgroup=tg,
+                output_shapes=[(rows, cols)], output_dtypes=[mx.float32])
+    mx.eval(o)
+    ref = air.norm_oracle(x, w, b, "layer")
+    assert float(np.max(np.abs(np.array(o) - ref))) > 1e-2
+
+
+def test_batched_matvec_matches_a_float64_oracle():
+    pytest.importorskip("mlx.core")
+    rng = np.random.default_rng(77)
+    for B, R, C in [(4, 16, 64), (3, 7, 129), (17, 5, 32)]:
+        w = (rng.standard_normal((B, R, C)) * 2).astype(np.float32)
+        x = (rng.standard_normal((B, C)) * 2).astype(np.float32)
+        bm = air.AirBatchedMatvec(f"bmv{B}_{R}_{C}", batch=B, rows=R, cols=C)
+        got = np.array(air.execute_batched_matvec(bm, w, x))
+        ref = np.einsum("brc,bc->br", w.astype(np.float64), x.astype(np.float64))
+        assert float(np.max(np.abs(got - ref))) < 1e-4, (B, R, C)
+
+
+def test_a_shared_activation_batch_collapses_to_one_taller_matvec():
+    """The distinction the batched kernel exists to keep: a DECODE-time expert batch
+    shares its activation, so it is arithmetically a taller matvec and needs no batched
+    kernel. Only a batch with a DIFFERENT vector per element needs one."""
+    pytest.importorskip("mlx.core")
+    rng = np.random.default_rng(5)
+    B, R, C = 6, 8, 64
+    w = (rng.standard_normal((B, R, C)) * 2).astype(np.float32)
+    xs = (rng.standard_normal(C) * 2).astype(np.float32)
+    shared = np.repeat(xs[None, :], B, axis=0)
+    batched = np.array(air.execute_batched_matvec(
+        air.AirBatchedMatvec("shared", batch=B, rows=R, cols=C), w, shared))
+    stacked = np.array(air.execute_batched_matvec(
+        air.AirBatchedMatvec("stacked", batch=1, rows=B * R, cols=C),
+        w.reshape(1, B * R, C), xs[None, :]))
+    assert (batched.reshape(-1) == stacked.reshape(-1)).all()   # EXACT, not close
+    # and a different vector per element does NOT collapse, or the distinction is empty
+    diff = (rng.standard_normal((B, C)) * 2).astype(np.float32)
+    other = np.array(air.execute_batched_matvec(
+        air.AirBatchedMatvec("differ", batch=B, rows=R, cols=C), w, diff))
+    assert not np.allclose(other, batched)
+
+
+def test_batched_matvec_refuses_what_it_cannot_do():
+    mk = lambda **kw: air.AirBatchedMatvec(**{"name": "b", "batch": 2, "rows": 4,
+                                              "cols": 8, **kw})
+    with pytest.raises(ValueError, match="multiple of 32"):
+        mk(threadgroup=48).validate()
+    with pytest.raises(ValueError, match="must be positive"):
+        mk(batch=0).validate()
+    with pytest.raises(ValueError, match="valid identifier"):
+        air.AirBatchedMatvec("b.1", batch=2, rows=4, cols=8).validate()
+    # one thread owns one output row, so this lowering emits NO barrier -- pinned so it
+    # cannot be conflated with the reductions that do
+    assert mk().barrier_scopes_emitted() == []
+
+
+def test_sparse_matvec_matches_a_dense_oracle():
+    pytest.importorskip("mlx.core")
+    rng = np.random.default_rng(101)
+    for rows, cols, dens in [(64, 128, 0.05), (17, 513, 0.2), (5, 32, 1.0)]:
+        a = (rng.standard_normal((rows, cols)) * 2).astype(np.float32)
+        a[rng.random((rows, cols)) > dens] = 0.0
+        x = (rng.standard_normal(cols) * 2).astype(np.float32)
+        rp, ci, v = air.to_csr(a)
+        sp = air.AirSparseMatvec(f"sp{rows}_{cols}", rows=rows, cols=cols, nnz=len(v))
+        got = np.array(air.execute_sparse_matvec(sp, rp, ci, v, x))
+        ref = a.astype(np.float64) @ x.astype(np.float64)
+        assert float(np.max(np.abs(got - ref))) < 1e-4, (rows, cols, dens)
+
+
+def test_a_structurally_empty_row_returns_zero_not_garbage():
+    """A fully pruned output row is a real case. A kernel that walks a stale range
+    returns plausible nonsense for exactly the rows nobody looks at."""
+    pytest.importorskip("mlx.core")
+    a = np.zeros((4, 16), np.float32)
+    a[1, 3] = 2.0; a[3, 15] = -1.5          # rows 0 and 2 are entirely empty
+    x = np.arange(16, dtype=np.float32)
+    rp, ci, v = air.to_csr(a)
+    sp = air.AirSparseMatvec("empty", rows=4, cols=16, nnz=len(v))
+    got = np.array(air.execute_sparse_matvec(sp, rp, ci, v, x))
+    assert got.tolist() == [0.0, 6.0, 0.0, -22.5]
+
+
+def test_sparse_matvec_refuses_what_it_cannot_do():
+    mk = lambda **kw: air.AirSparseMatvec(**{"name": "s", "rows": 4, "cols": 8,
+                                             "nnz": 3, **kw})
+    with pytest.raises(ValueError, match="exceeds the"):
+        mk(nnz=99).validate()
+    with pytest.raises(ValueError, match="must be positive"):
+        mk(rows=0).validate()
+    with pytest.raises(ValueError, match="valid identifier"):
+        air.AirSparseMatvec("s.1", rows=4, cols=8, nnz=3).validate()
+    assert mk().barrier_scopes_emitted() == []      # one thread per row, nothing to order
+    assert abs(mk().density() - 3 / 32) < 1e-9
+
+
+def test_causal_conv1d_matches_a_float64_oracle():
+    pytest.importorskip("mlx.core")
+    rng = np.random.default_rng(31)
+    for C, L, W in [(8, 32, 4), (5, 1, 4), (3, 2, 4), (17, 129, 3), (4, 16, 1)]:
+        x = (rng.standard_normal((C, L)) * 2).astype(np.float32)
+        w = (rng.standard_normal((C, W)) * 2).astype(np.float32)
+        b = (rng.standard_normal(C) * 0.5).astype(np.float32)
+        cv = air.AirCausalConv1d(f"cv{C}_{L}_{W}", channels=C, length=L, width=W)
+        got = np.array(air.execute_causal_conv1d(cv, x, w, b))
+        ref = air.causal_conv1d_oracle(x, w, b, W)
+        assert float(np.max(np.abs(got - ref))) < 1e-4, (C, L, W)
+
+
+def test_a_sequence_shorter_than_the_kernel_is_all_padding():
+    """L=1 with W=4 means three of four taps read the zero pad. It is the DECODE shape
+    for a Mamba mixer, so getting it wrong breaks generation and nothing else."""
+    pytest.importorskip("mlx.core")
+    w = np.array([[1.0, 10.0, 100.0, 1000.0]], np.float32)   # one channel, distinct taps
+    x = np.array([[7.0]], np.float32)
+    b = np.array([0.5], np.float32)
+    cv = air.AirCausalConv1d("short", channels=1, length=1, width=4)
+    got = np.array(air.execute_causal_conv1d(cv, x, w, b))
+    # only the LAST tap sees the single element; the first three see the pad
+    assert abs(float(got[0, 0]) - (1000.0 * 7.0 + 0.5)) < 1e-4
+
+
+def test_peeking_at_the_future_is_caught():
+    """Causality is the correctness. In an autoregressive model a conv that reads t+1
+    changes no norm -- it just makes teacher forcing mysteriously easy -- so the control
+    has to be explicit."""
+    pytest.importorskip("mlx.core")
+    import mlx.core as mx
+    rng = np.random.default_rng(9)
+    C, L, W = 16, 32, 4
+    x = (rng.standard_normal((C, L)) * 2).astype(np.float32)
+    w = (rng.standard_normal((C, W)) * 2).astype(np.float32)
+    b = np.zeros(C, np.float32)
+    cv = air.AirCausalConv1d("peek", channels=C, length=L, width=W)
+    good = np.array(air.execute_causal_conv1d(cv, x, w, b))
+    src = air.lower_causal_conv1d_to_msl(cv)
+    bad = src.replace(f"int src = (int)t - {W - 1} + (int)k;", "int src = (int)t + (int)k;")
+    assert bad != src
+    kern = mx.fast.metal_kernel(name="conv_peek_t", input_names=["x", "w", "bias"],
+                                output_names=["out"], source=bad, ensure_row_contiguous=True)
+    g, tg = cv.launch()
+    (o,) = kern(inputs=[mx.array(x), mx.array(w), mx.array(b)], grid=g, threadgroup=tg,
+                output_shapes=[(C, L)], output_dtypes=[mx.float32])
+    mx.eval(o)
+    assert float(np.max(np.abs(np.array(o) - good))) > 1e-2
+
+
+def test_causal_conv1d_refuses_what_it_cannot_do():
+    mk = lambda **kw: air.AirCausalConv1d(**{"name": "c", "channels": 4, "length": 8,
+                                             "width": 4, **kw})
+    with pytest.raises(ValueError, match="must be positive"):
+        mk(channels=0).validate()
+    with pytest.raises(ValueError, match="multiple of 32"):
+        mk(threadgroup=48).validate()
+    with pytest.raises(ValueError, match="valid identifier"):
+        air.AirCausalConv1d("c.1", channels=4, length=8, width=4).validate()
+    assert mk().barrier_scopes_emitted() == []      # depthwise, one thread per output
+
+
+def test_the_tiled_matmul_handles_a_shape_that_is_not_a_multiple_of_the_tile():
+    """The simdgroup receipt justified keeping the tiled strategy by saying it 'has NO
+    shape constraint -- deleting tiled would have removed the only strategy that handles
+    a 60x60 matmul'. That 60x60x60 was WRONG BY 3.84 until the launch rounded up to
+    whole threadgroups. The kernel body was always guarded; the LAUNCH under-dispatched."""
+    pytest.importorskip("mlx.core")
+    rng = np.random.default_rng(5)
+    for m, k, n in [(60, 60, 60), (8, 64, 32), (17, 64, 32)]:
+        a = (rng.standard_normal((m, k)) * 0.5).astype(np.float32)
+        b = (rng.standard_normal((k, n)) * 0.5).astype(np.float32)
+        mm = air.AirMatmul(f"odd{m}_{k}_{n}", m=m, k=k, n=n, tile=16)
+        got = np.array(air.execute_matmul(mm, a, b))
+        ref = a.astype(np.float64) @ b.astype(np.float64)
+        assert float(np.max(np.abs(got - ref))) < 1e-3, (m, k, n)
+    # and the launch really does cover every row now
+    mm = air.AirMatmul("cover", m=17, k=64, n=32, tile=16)
+    grid, tg = mm.launch()
+    assert grid[0] % tg[0] == 0 and grid[1] % tg[1] == 0
+
+
+def test_a_graph_node_takes_its_geometry_from_the_op():
+    """AirGraphNode derived a 1-D grid from an element count for many blocks, which is
+    right for elementwise and wrong for everything else -- and wrong in the worst way,
+    LOOKING CORRECT at 8x1024 (24 spare threadgroups running out of bounds) and wrong by
+    2.62 at 8x64 (2 threadgroups for 8 rows). node_for asks the op instead."""
+    pytest.importorskip("mlx.core")
+    rng = np.random.default_rng(3)
+    for rows, cols in ((8, 64), (8, 1024), (64, 128)):
+        x = (rng.standard_normal((rows, cols)) * 2).astype(np.float32)
+        w = np.ones(cols, np.float32)
+        nm = air.AirNorm(f"gn{rows}_{cols}", rows=rows, cols=cols, mode="rms")
+        node = air.node_for("normed", nm, ["x", "w"], source=air.lower_norm_to_msl(nm),
+                            param_names=["x", "w"])
+        assert node.launch() == nm.launch() and node.shape() == (rows, cols)
+        g = air.AirGraph(f"gg{rows}_{cols}", nodes=[node], externals=["x", "w"])
+        got = np.array(air.execute_graph(g, {"x": x, "w": w})["normed"])
+        ref = air.norm_oracle(x, w, np.zeros(cols, np.float32), "rms")
+        assert float(np.max(np.abs(got - ref))) < 1e-4, (rows, cols)
+
+
+def test_a_whole_gated_mlp_block_composes_and_matches_an_f64_oracle():
+    """Every AIR receipt grades ONE primitive. This campaign's own law is that LOCAL
+    ADEQUACY DOES NOT COMPOSE -- stated about representations, and equally open about
+    kernels. Five nodes, one submission, checked end to end."""
+    pytest.importorskip("mlx.core")
+    rng = np.random.default_rng(17)
+    T, C, H = 8, 256, 128
+    x = (rng.standard_normal((T, C)) * 0.5).astype(np.float32)
+    wn = (rng.standard_normal(C) * 0.1 + 1).astype(np.float32)
+    wg = (rng.standard_normal((C, H)) * 0.05).astype(np.float32)
+    wd = (rng.standard_normal((H, C)) * 0.05).astype(np.float32)
+    nm = air.AirNorm("bn", rows=T, cols=C, mode="rms")
+    g1 = air.AirMatmul("bg", m=T, k=C, n=H, tile=16)
+    g2 = air.AirMatmul("bd", m=T, k=H, n=C, tile=16)
+    el = lambda n, body: f"uint i = thread_position_in_grid.x;\nif (i >= {n}u) return;\n{body}"
+    nodes = [
+        air.node_for("normed", nm, ["x", "wn"], source=air.lower_norm_to_msl(nm),
+                     param_names=["x", "w"]),
+        air.node_for("gated", g1, ["normed", "wg"], source=air.lower_matmul_to_msl(g1),
+                     param_names=["A", "B"], out_name="C"),
+        air.AirGraphNode("act", el(T * H, "float v = a[i]; out[i] = v / (1.0f + exp(-v));"),
+                         ["gated"], n=T * H, param_names=["a"], out_shape=(T, H)),
+        air.node_for("down", g2, ["act", "wd"], source=air.lower_matmul_to_msl(g2),
+                     param_names=["A", "B"], out_name="C"),
+        air.AirGraphNode("y", el(T * C, "out[i] = a[i] + b[i];"), ["x", "down"],
+                         n=T * C, param_names=["a", "b"], out_shape=(T, C)),
+    ]
+    g = air.AirGraph("mlp", nodes=nodes, externals=["x", "wn", "wg", "wd"])
+    got = np.array(air.execute_graph(g, {"x": x, "wn": wn, "wg": wg, "wd": wd})["y"])
+    xd = x.astype(np.float64)
+    r = 1.0 / np.sqrt((xd * xd).mean(axis=1, keepdims=True) + 1e-5)
+    h = (xd * r * wn.astype(np.float64)) @ wg.astype(np.float64)
+    ref = xd + (h / (1.0 + np.exp(-h))) @ wd.astype(np.float64)
+    assert float(np.max(np.abs(got - ref)) / np.max(np.abs(ref))) < 1e-4
+    assert g.serial_depth() == 5 and g.submissions() == 1
+
+
+def test_the_weight_space_gate_cannot_tell_organs_apart_and_output_space_can():
+    """A per-tensor weight gate weights every input direction equally, which is what a
+    Gaussian x does. Pinned on constructed tensors that reproduce the MiniLM finding:
+    real activations separate two organs that weight-space cosine calls identical."""
+    import gravity_native as gn
+    rng = np.random.default_rng(0)
+    W = (rng.standard_normal((64, 128)) * 0.05).astype(np.float32)
+    Wq = gn.quantize_grouped(W, 3, 64)
+    # activations with a strong preferred direction, as real ones have
+    X = (rng.standard_normal((256, 128)) * 0.1).astype(np.float64)
+    X[:, :8] += 4.0
+    f = gn.output_space_fidelity(W, Wq, X)
+    # THE CONTROL MUST MOVE THE ANSWER, or it is a formality. Directional inputs and
+    # directionless ones disagree by far more than float noise on the same pack.
+    assert abs(f["cosine_real_inputs"] - f["cosine_gaussian_inputs"]) > 5e-3
+    # and where the separation comes from the per-feature marginals rather than from
+    # cross-feature correlation, shuffling the columns changes nothing
+    assert abs(f["cosine_real_inputs"] - f["cosine_shuffled_inputs"]) < 1e-3
+
+
+def test_accept_pack_reports_the_output_space_reading_without_letting_it_decide():
+    """accept_pack's representation gate is already output-space, but on ONE x. When
+    real activations are supplied the wider reading is REPORTED beside the verdict and
+    never replaces it -- a caller with no activations must not silently get a weaker
+    answer than one who has them."""
+    import gravity_native as gn
+    rng = np.random.default_rng(0)
+    W = (rng.standard_normal((64, 128)) * 0.05).astype(np.float32)
+    packed, scale = gn.pack_q4_g64(W)
+    x = rng.standard_normal(128).astype(np.float32)
+    out = gn.ref_matvec(packed, scale, 128, x)
+    X = (rng.standard_normal((32, 128)) * 0.1); X[:, :8] += 4.0
+    with_act = gn.accept_pack(W, packed, scale, 128, out, x, activations=X)
+    without = gn.accept_pack(W, packed, scale, 128, out, x)
+    assert without["output_space"] is None
+    assert with_act["accepted"] == without["accepted"]      # it does not decide
+    assert set(with_act["output_space"]) >= {
+        "cosine_real_inputs", "cosine_gaussian_inputs", "ok",
+        "agrees_with_single_x_gate"}
+
+
+def test_one_input_vector_is_a_noisier_gate_than_many():
+    """A one-row gate flips its verdict on 12.6% of real packs. Pinned structurally:
+    the spread of single-row cosines straddles the aggregate, so the verdict a
+    single-x gate returns depends on which row it happened to get."""
+    import gravity_native as gn
+    rng = np.random.default_rng(1)
+    W = (rng.standard_normal((32, 64)) * 0.05).astype(np.float32)
+    Wq = gn.quantize_grouped(W, 3, 64)
+    X = np.abs(rng.standard_normal((64, 64))) * rng.choice([0.1, 3.0], (64, 1))
+    singles = [gn.output_space_fidelity(W, Wq, X[i:i + 1])["cosine_real_inputs"]
+               for i in range(X.shape[0])]
+    full = gn.output_space_fidelity(W, Wq, X)["cosine_real_inputs"]
+    assert min(singles) < full < max(singles)
+    assert max(singles) - min(singles) > 10 * abs(full - float(np.mean(singles)))
+
+
+def test_a_verdict_can_be_precision_safe_and_still_undecided():
+    """safe_at_float32 answers a question about ARITHMETIC. When the gate's inputs are
+    a SAMPLE of activations the wider source of disagreement is WHICH ROWS -- measured
+    at 28.6x the float32 bar, with three of six unstable packs passing safe_at_float32
+    and one of them flipping on 8.3% of 176-row resamples."""
+    import gravity_native as gn
+    near = gn.near_threshold_headroom(cos=0.99 + 0.0008, ratio=1.0, kernel_err=0.0,
+                                      kernel_tol=1.0, min_cosine=0.99,
+                                      magnitude_band=(0.9, 1.1))
+    assert near["safe_at_float32"] is True              # 0.0008 clears 100 x 2.85e-06
+    assert near["decided_under_resampling"] is False    # and is inside the 0.002 band
+    far = gn.near_threshold_headroom(cos=0.9999, ratio=1.0, kernel_err=0.0,
+                                     kernel_tol=1.0, min_cosine=0.99,
+                                     magnitude_band=(0.9, 1.1))
+    assert far["safe_at_float32"] and far["decided_under_resampling"]
+    # AND THE BAR CANNOT BE SET AT THE WIDEST UNSTABLE PACK: an accepted pack's
+    # cosine headroom is capped at 1 - min_cosine, so a 0.01 bar would call every
+    # acceptance undecided. Pinned so nobody "tightens" it into vacuity.
+    assert gn.near_threshold_headroom(cos=1.0, ratio=1.0, kernel_err=0.0,
+                                      kernel_tol=1.0, min_cosine=0.99,
+                                      magnitude_band=(0.9, 1.1)
+                                      )["min_distance_to_a_threshold"] <= 0.01 + 1e-12

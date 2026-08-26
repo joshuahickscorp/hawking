@@ -1,0 +1,178 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T12:34:35",
+ "experiment_class": "ACCEL-AUTOTUNE",
+ "knowledge_level": "INSTANCE",
+ "git_head": "d22c976d501f8db369a54a50cfe17a90b651542b",
+ "identities": {
+  "experiment": {
+   "id": "THE_CLIFF_MOVES_WITH_THE_PRIMITIVE",
+   "obligation": "G047",
+   "steer": "S015 \u00a7113 a learned performance model; \u00a715 Kernel Forge priors"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "api": "Metal via MLX mx.fast.metal_kernel JIT"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "synthetic buffers, no model"
+  },
+  "representation": {
+   "status": "ABSENT",
+   "reason": "dense f32"
+  },
+  "kernel": {
+   "primitives": [
+    "writeonly",
+    "fused chain mul->relu->silu",
+    "heavy 256-FMA chain"
+   ]
+  },
+  "runtime": {
+   "python": "3.12.6",
+   "mlx": "0.32.1"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device"
+  }
+ },
+ "headline": "\u00a7113's model 'in the sense of something that GENERALISES across primitives' was named NOT BUILT by the perf-model receipt. Built and tested here, and the result splits: the DIRECTION generalises and the MAGNITUDE does not. THE OCCUPANCY CLIFF IS NOT AT A FIXED per_tg -- it sits where threadgroup dispatch overtakes the primitive's own work, so a CHEAPER kernel is still 1.90x off its floor exactly where the fused chain has already flattened.",
+ "the_model_written_before_the_run": {
+  "form": "time(per_tg) = max(T, threadgroups / R), T the primitive's saturated time, R a machine constant",
+  "why_it_could_generalise": "if R is a property of the machine and T of the primitive, one fit predicts every other primitive's cliff without measuring it",
+  "additive_form_considered_and_rejected_on_existing_data": "time = T + tg/R gives R = 1.18e9 and 3.11e9 at the two cliff points, 2.6x apart, while max() gives 5.49e8 and 4.39e8, 1.25x apart. The worse model was not carried forward.",
+  "R_fit_on_the_chain_ALONE": {
+   "per_tg_64_point": 4.386,
+   "units": "1e8 threadgroups/s",
+   "range_across_the_two_cliff_points": [
+    4.39,
+    5.49
+   ]
+  }
+ },
+ "the_prediction_and_the_verdict": {
+  "predicted_cliff_per_tg": {
+   "writeonly": 128.5,
+   "chain": 75.0,
+   "heavy": 15.4
+  },
+  "observed_cliff_per_tg_at_a_1.10x_threshold": {
+   "writeonly": 256,
+   "chain": 64,
+   "heavy": 32
+  },
+  "chain_is_the_fit_not_a_test": "chain's 74.9 is self-fit and proves nothing",
+  "verdict": "DIRECTION CONFIRMED, MAGNITUDE REFUTED. Both OUT-OF-SAMPLE predictions miss by about 2x AND IN THE SAME DIRECTION -- write-only predicted 128 and degrades out to 256, heavy predicted no cliff above 15 and still pays 1.15x at 32. A model that is wrong twice the same way is wrong about its SHAPE, not unlucky.",
+  "what_the_same_sign_points_at": "max() predicts a KNEE -- exactly at floor above per_tg*. The write-only curve is 2.94 / 1.90 / 1.37 / 1.11 / 1.02, a SMOOTH DECAY, so the transition is gradual and the bad region reaches further than any hard-corner model allows.",
+  "the_fixed_per_threadgroup_cost_model_dies_too": "excess over floor for write-only is 0.5764 / 0.2685 / 0.1092 / 0.0305 / 0.0044 ms against threadgroup counts halving each step; successive ratios 2.15, 2.46, 3.58, 6.9 where a fixed cost per threadgroup demands a flat 2.0. Both simple models fail and a third fitted to five points would be curve-fitting, so none is claimed."
+ },
+ "the_measured_landscapes": {
+  "n": 16777216,
+  "reps": 200,
+  "warmup": 40,
+  "floor_ms": {
+   "writeonly": 0.2977,
+   "chain": 0.5103,
+   "heavy": 2.482
+  },
+  "ratio_to_own_floor_by_per_tg": {
+   "writeonly": {
+    "32": 2.938,
+    "64": 1.9,
+    "128": 1.373,
+    "256": 1.113,
+    "512": 1.016,
+    "1024": 1.004,
+    "2048": 1.0
+   },
+   "chain": {
+    "32": 1.87,
+    "64": 1.171,
+    "128": 1.005,
+    "256": 1.0,
+    "512": 1.005,
+    "1024": 1.022,
+    "2048": 1.084
+   },
+   "heavy": {
+    "32": 1.146,
+    "64": 1.047,
+    "128": 1.052,
+    "256": 1.049,
+    "512": 1.001,
+    "1024": 1.0,
+    "2048": 1.018
+   }
+  },
+  "read_it_as": "three primitives, three different answers about the same machine. write-only is 1.90x off at per_tg 64 where the chain is 1.17x and the heavy kernel 1.05x."
+ },
+ "per_tg_is_the_variable_and_now_it_is_a_real_collapse": {
+  "why_it_had_to_be_redone": "the perf-model receipt rested this on ONE pair. The sweep here varies threadgroup size and per_tg together below 256, so it cannot tell them apart on its own -- reading a second primitive's sweep without settling that would have been reading a confound.",
+  "write_only_per_tg_256_four_ways": {
+   "(32,8)": 0.3237,
+   "(64,4)": 0.3281,
+   "(128,2)": 0.3298,
+   "(256,1)": 0.3282,
+   "spread_pct": 1.88
+  },
+  "the_decisive_part_is_what_does_NOT_track": "those four differ 8x IN THREAD COUNT -- 2.1M against 16.7M -- and land within 1.88%. Thread count is ruled out; threadgroup COUNT is what tracks.",
+  "chain_agrees_in_the_cliff_region": {
+   "per_tg_64": 0.4,
+   "per_tg_128": 1.8,
+   "units": "% spread"
+  },
+  "AND_THE_COLLAPSE_HAS_A_MEASURED_EXCEPTION": "on the READ-heavy chain an ept of 8 costs 7.9% at per_tg 256 and 7.6% at 512 against the same per_tg reached with a larger threadgroup, while the write-only kernel shows no such penalty (1.88% and 0.17%). per_tg is dominant, NOT total -- so candidates sharing it are not deduped, only reported as the near-duplicates they are.",
+  "noise_caveat_stated_not_buried": "five write-only arms near the floor carry 10.0-11.5% IQR, ABOVE the 10% gate, and the 1.88% collapse spread is well INSIDE that. So the collapse establishes that NO LARGE effect of the split exists -- it does not establish agreement to 1.88%. The 8x-thread-count conclusion survives because an effect of that size could not hide under 11% noise."
+ },
+ "what_this_corrects_in_the_forge": {
+  "the_claim_being_corrected": "ACCELERATOR_PERF_MODEL.json recorded 'THREADGROUP_PRIOR stops at 64 and that exclusion is now MEASURED rather than assumed'. True, and measured ON ONE PRIMITIVE.",
+  "why_that_matters_concretely": "the prior's grid STARTS at threadgroup 64. For a write-only kernel per_tg 64/128/256 are 1.90x / 1.37x / 1.11x off the floor, so a search that trusted this prior as a machine property would spend its whole budget inside another primitive's bad region and crown a champion 1.9x off the achievable floor.",
+  "shipped": [
+   "Candidate.per_tg, the variable that actually tracks time",
+   "collapse_groups(): the default 15-candidate grid covers only 7 distinct per_tg values, so roughly half the search re-measures a point it already holds",
+   "the prior's comment now carries the three-primitive table and says CHAIN-SHAPED PRIOR, NOT A PROPERTY OF THE MACHINE",
+   "two tests, one pinning the 15-to-7 redundancy and one pinning the caveat in source"
+  ],
+  "NOT_shipped_and_why": "the candidates are not deduped by per_tg, because the collapse has a measured 7.9% exception on read-heavy kernels at ept 8; discarding a candidate that can differ by 7.9% to save reps would be trading a real measurement for a convenient assumption."
+ },
+ "reproducibility": {
+  "chain_re_measured_against_a_different_day": {
+   "per_tg_32": [
+    0.9545,
+    0.9559
+   ],
+   "per_tg_64": [
+    0.5977,
+    0.5954
+   ],
+   "per_tg_128": [
+    0.5126,
+    0.512
+   ],
+   "per_tg_256": [
+    0.5103,
+    0.511
+   ],
+   "worst_disagreement_pct": 0.4
+  },
+  "means": "the landscape the prior was fit on reproduces across processes and days to 0.4%"
+ },
+ "claim_boundary": {
+  "correctness_first": "all three kernels verified against a numpy oracle before timing -- write-only 0.0, chain 9.54e-07, heavy checked finite and not the input",
+  "one_shape": "n = 2^24 f32 only; nothing here says how the cliff moves with n",
+  "one_machine": "INSTANCE. 60 GPU cores, one M3 Ultra, not promoted",
+  "heavy_is_latency_bound_not_throughput_bound": "its 256 FMAs are a serial dependent chain at ~1.7 TFLOP/s, well under peak, so it stands in for EXPENSIVE PER ELEMENT and not for a tuned compute-bound kernel",
+  "no_champion_moves": "no existing forge result changes; what changes is how far its prior travels",
+  "the_generalising_model_is_still_not_built": "what exists is a DIRECTIONAL rule -- cheaper primitive, cliff reaches further -- which tells a search WHERE TO LOOK and cannot tell it what it will find. \u00a7113's model in the strong sense remains unbuilt and is not claimed."
+ },
+ "tests": {
+  "accelerator_total": 210,
+  "was_total": 208
+ },
+ "pass": true
+}

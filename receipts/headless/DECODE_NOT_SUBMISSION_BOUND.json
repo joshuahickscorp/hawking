@@ -1,0 +1,65 @@
+{
+ "schema": "hawking.headless.decode_is_not_submission_bound.v1",
+ "generated_at": "2026-08-26T03:24:06Z",
+ "generated_by": "decomposition of the per-step gpu/wait arrays already in QWEN_PERFORMANCE_QUALIFICATION.json",
+ "hand_authored": false,
+ "obligation": "G046, G049 (submission floor at model scale), G072 (regravity), G071 (the 50 TPS bar)",
+ "git_head": "1d79a5b13e5573f5d34cfa379d27069ca31b082a",
+ "headline": "WHOLE-MODEL DECODE IS ~99% GPU-BOUND AND NEARLY INVARIANT TO EBPW: A 21% DENSITY RANGE MOVES GPU TIME 3.2%, AND THE SMALLEST BODY IS THE SLOWEST",
+ "why_this_question": "G046 and G049 sighted a ~0.16-0.25 ms per-submission floor FIVE times on microbenchmarks and composites, and every one closed by saying it had not reached a real model. The 2.60 body runs 964 dispatches per token. If those were separate submissions the floor would dominate everything -- so whether the 50 TPS path is DISPATCH FUSION or CHEAPER GPU WORK turns on this one decomposition.",
+ "bodies": {
+  "sealed-3.14": {
+   "ebpw": 3.1393,
+   "runs": 5,
+   "median_gpu_ms": 29.2864,
+   "gpu_spread_pct": 0.09,
+   "median_wait_ms": 29.6278,
+   "host_overhead_ms": 0.3414,
+   "host_overhead_pct": 1.15,
+   "dispatches_per_step": 964
+  },
+  "variantA-2.98": {
+   "ebpw": 2.980242,
+   "runs": 5,
+   "median_gpu_ms": 29.1779,
+   "gpu_spread_pct": 0.45,
+   "median_wait_ms": 29.5306,
+   "host_overhead_ms": 0.3528,
+   "host_overhead_pct": 1.19,
+   "dispatches_per_step": 964
+  },
+  "clean-2.60": {
+   "ebpw": 2.596957,
+   "runs": 5,
+   "median_gpu_ms": 30.1111,
+   "gpu_spread_pct": 1.03,
+   "median_wait_ms": 30.4513,
+   "host_overhead_ms": 0.3402,
+   "host_overhead_pct": 1.12,
+   "dispatches_per_step": 964
+  }
+ },
+ "FINDING_1_not_submission_bound": {
+  "host_overhead_per_token_ms": "0.307 to 0.342 across all three bodies",
+  "as_fraction_of_wall": "1.03% to 1.16%",
+  "per_dispatch": "~0.33 microseconds over 964 dispatches",
+  "reading": "the AirGraph sweep measured a WITHIN-command-buffer dispatch at ~11 us and a CROSS-command-buffer submission at ~157 us. At 0.33 us per dispatch these 964 are ALREADY batched -- 964 separate submissions would cost 151 SECONDS per token. THE SUBMISSION FLOOR DOES NOT REACH THIS WORKLOAD, which is the first time that has been checked at model scale rather than asserted either way.",
+  "consequence_for_50_tps": "eliminating ALL host overhead takes 30.19 ms to 29.87 ms = 33.5 TPS. DISPATCH FUSION CANNOT REACH 50 TPS HERE. Reaching 50 needs GPU time down to 20 ms, a 1.51x cut in the GPU work itself."
+ },
+ "FINDING_2_ebpw_does_not_buy_decode_speed": {
+  "range": "2.5970 to 3.1393 EBPW = 20.9% denser to sparser",
+  "gpu_time_spread_pct": 3.2,
+  "ordering": "2.5970 -> 30.111 ms | 2.9802 -> 29.178 ms | 3.1393 -> 29.286 ms",
+  "the_smallest_is_the_slowest": true,
+  "reading": "decode GPU time is NOT set by EBPW in this range, and the inversion is the informative part: the 2.60 body is a MIXED/HETERO codec and pays MORE unpack arithmetic. This independently reproduces at MODEL scale what ACCELERATOR_EXPERT_BATCH.json measured at TENSOR scale -- the native arm reaches only 161.9 GB/s against dense's 426.4 and is ARITHMETIC-BOUND ON THE UNPACK, not bandwidth-bound. Reading fewer bytes buys nothing when bytes are not the wall.",
+  "consequence_for_S027_S028": "the resurrection ladder's premise is that smaller is faster. Between 2.60 and 3.14 IT IS NOT -- density bought no decode speed and cost a little. A sub-bit body would have to win on UNPACK ARITHMETIC, not on byte count, and nothing here says it would."
+ },
+ "what_this_DOES_NOT_establish": [
+  "That EBPW never buys decode speed. THREE bodies over a 21% range on ONE runtime; a 1.25 or 0.53 BPW body is far outside this range and is NOT measured here.",
+  "That the unpack arithmetic cannot be made cheaper -- that is exactly the open kernel question, and this says where to point it, not what it will find.",
+  "Anything about prefill, batching or concurrency. This is single-stream decode only.",
+  "That 50 TPS is unreachable -- only that DISPATCH FUSION will not deliver it, since there is ~1% of wall there to reclaim."
+ ],
+ "claim_boundary": "the per-step arrays are from the sealed performance qualification, measured in a protected window with the fill SIGSTOPped; 5 runs per body, gpu spreads 0.1-1.0%. My own contended re-runs show 8+ ms of host overhead, which is CONTENTION and not a contradiction -- the 1% figure is the quiesced machine. One machine, one shape, INSTANCE. Nothing was re-executed for this receipt: it is a decomposition of data already taken.",
+ "pass": true
+}

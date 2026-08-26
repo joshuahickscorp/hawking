@@ -134,3 +134,47 @@ def test_entering_a_window_heals_a_stale_one_first():
     finally:
         for v in (v1, v2):
             v.kill(); v.wait()
+
+
+def test_the_watchdog_resumes_on_OWNER_DEATH_not_only_at_the_deadline(tmp_path,
+                                                                      monkeypatch):
+    """OBSERVED FOR REAL: a harness timeout killed the owner two seconds into a
+    max_s=2400 window and left thirteen of the operator's downloads in state T. The
+    watchdog would have waited FORTY MINUTES, because it polled only the clock.
+
+    heal() already computed owner_dead; the watchdog never asked. This pins that it
+    does, by writing a lease owned by a PID that cannot exist and requiring the
+    watchdog to return promptly rather than sitting out a far-future deadline.
+    """
+    import json as _json, time as _time
+    import protected_window as pw
+
+    lease = tmp_path / "lease.json"
+    monkeypatch.setattr(pw, "LEASE", lease)
+    dead_pid = 2 ** 22                      # above any real pid on this machine
+    assert not pw._alive(dead_pid)
+    lease.write_text(_json.dumps({"owner_pid": dead_pid, "pids": [],
+                                  "deadline": _time.time() + 3600}))
+    t0 = _time.time()
+    assert pw._watchdog_body(_time.time() + 3600) == 0
+    assert _time.time() - t0 < 5            # NOT the 3600 s deadline
+    assert not lease.exists()               # healed and cleared
+
+
+def test_the_watchdog_still_waits_out_a_LIVE_owner(tmp_path, monkeypatch):
+    """The other direction: a live owner mid-window must NOT be healed out from under.
+    A check that only ever resumes is as useless as one that never does."""
+    import json as _json, time as _time, os as _os
+    import protected_window as pw
+
+    lease = tmp_path / "lease.json"
+    monkeypatch.setattr(pw, "LEASE", lease)
+    lease.write_text(_json.dumps({"owner_pid": _os.getpid(), "pids": [],
+                                  "deadline": _time.time() + 3600}))
+    pw._watchdog_body(_time.time() + 1.5)   # short deadline so the test ends
+    # MY FIRST ASSERTION HERE WAS WRONG AND THE CODE WAS RIGHT: I expected the lease
+    # cleared, but heal() honours the LEASE's deadline (+3600), not the watchdog loop's
+    # argument, so a live owner mid-window is correctly left alone. That is the property
+    # worth pinning -- a window must not be healed out from under its owner.
+    assert lease.exists()
+    assert pw.heal(verbose=False)["reason"] == "lease still held by a live owner"

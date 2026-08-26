@@ -1,0 +1,178 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T14:17:58",
+ "experiment_class": "ACCEL-CORRECTNESS",
+ "knowledge_level": "INSTANCE",
+ "git_head": "6fb234885ef97ec7c801596c6a70af88e9b6ecc0",
+ "identities": {
+  "experiment": {
+   "id": "THE_GATE_THAT_COULD_HAVE_CAUGHT_IT",
+   "obligation": "G047 / G043",
+   "answers": "the gap the composition receipt recorded against the forge -- 'a single-primitive check reuses the same launch it is supposed to be testing'"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal via MLX 0.32.1 JIT"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "synthetic operands; correctness only"
+  },
+  "representation": {
+   "name": "dense_f32",
+   "note": "CSR for the sparse arm"
+  },
+  "kernel": {
+   "swept": [
+    "matmul tiled",
+    "matmul simdgroup",
+    "rms norm",
+    "layer norm",
+    "softmax",
+    "reduce sum",
+    "reduce max",
+    "scan",
+    "batched matvec",
+    "causal conv1d",
+    "attention",
+    "causal attention",
+    "top-k",
+    "sparse matvec"
+   ]
+  },
+  "runtime": {
+   "python": "3.12.6",
+   "mlx": "0.32.1"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device"
+  }
+ },
+ "headline": "The composition block recorded a GAP IN THE GATE rather than only a fixed bug: the forge verifies every candidate through the op's OWN execute(), so it never varies the LAUNCH, which is how the tiled matmul stayed wrong at every m not a multiple of the tile while every check passed. This is the sweep that would have caught it -- and the first version of the sweep REPORTED ZERO FAILURES FOR FOUR PRIMITIVES IT NEVER RAN.",
+ "MY_OWN_FUZZ_COULD_NOT_FAIL_FOR_FOUR_PRIMITIVES": {
+  "what_happened": "round one printed 0 wrong over 2322 shapes. matmul_simdgroup, attention, top-k and sparse recorded ZERO CASES -- the simdgroup filter demanded every dimension be a multiple of 8 and the awkward grid held exactly ONE such value, and the other three were simply never written.",
+  "how_it_was_caught": "by asking which primitives APPEAR in the per-primitive table, not by reading the loop. A missing key is visible; a zero count inside a passing summary is not.",
+  "why_it_is_the_same_class": "this program has sealed the check-that-cannot-fail four times -- a gate blind to magnitude, a predicate that accepted an all-zeros pack, a tie-break mutation on dead code, and a curve counting the absence of probed blockers. Here it is in the instrument built to find it.",
+  "shipped": "kernel_forge.shape_sweep RAISES on zero cases. A sweep that executed nothing cannot report zero failures, and the message says to check the shape FILTER rather than the kernel."
+ },
+ "the_sweep_itself": {
+  "round_1": {
+   "shapes": 2322,
+   "wrong_or_raised": 0,
+   "per_primitive": {
+    "matmul_tiled": {
+     "cases": 2248,
+     "wrong": 0,
+     "raised": 0
+    },
+    "norm_rms": {
+     "cases": 11,
+     "wrong": 0,
+     "raised": 0
+    },
+    "norm_layer": {
+     "cases": 11,
+     "wrong": 0,
+     "raised": 0
+    },
+    "softmax": {
+     "cases": 8,
+     "wrong": 0,
+     "raised": 0
+    },
+    "reduce_sum": {
+     "cases": 11,
+     "wrong": 0,
+     "raised": 0
+    },
+    "reduce_max": {
+     "cases": 11,
+     "wrong": 0,
+     "raised": 0
+    },
+    "scan_sum": {
+     "cases": 11,
+     "wrong": 0,
+     "raised": 0
+    },
+    "batched_matvec": {
+     "cases": 5,
+     "wrong": 0,
+     "raised": 0
+    },
+    "causal_conv1d": {
+     "cases": 6,
+     "wrong": 0,
+     "raised": 0
+    }
+   }
+  },
+  "round_2_the_four_that_had_been_missed": {
+   "shapes": 563,
+   "wrong_or_raised": 0,
+   "per_primitive": {
+    "matmul_simdgroup": {
+     "cases": 531,
+     "wrong": 0,
+     "raised": 0
+    },
+    "attention_causal0": {
+     "cases": 9,
+     "wrong": 0,
+     "raised": 0
+    },
+    "attention_causal1": {
+     "cases": 1,
+     "wrong": 0,
+     "raised": 0
+    },
+    "topk_indices": {
+     "cases": 8,
+     "wrong": 0,
+     "raised": 0
+    },
+    "topk_choice": {
+     "cases": 8,
+     "wrong": 0,
+     "raised": 0
+    },
+    "sparse_matvec": {
+     "cases": 6,
+     "wrong": 0,
+     "raised": 0
+    }
+   }
+  },
+  "total_shapes": 2885,
+  "total_failures": 0,
+  "shapes_include": "1, primes, one above and one below a threadgroup multiple, very wide, very narrow, and for the simdgroup strategy nine multiples of 8 including non-multiples of 16",
+  "worst_relative_error": 8.35e-06
+ },
+ "prediction_refuted": {
+  "written": "at least ONE more primitive is wrong at some awkward shape, because this program has found the same class three times",
+  "measured": "2885 shapes across 15 primitive/strategy combinations, ZERO wrong and ZERO raised",
+  "verdict": "REFUTED, and it is the good kind of refutation: after the launch fix the primitives are shape-robust across every awkward shape tried. The prediction was reasonable and the answer is better than it expected.",
+  "what_it_does_not_prove": "absence of shape-dependent defects, only that 2885 specific shapes are correct. The tiled matmul's bug lived at m % tile != 0, a condition this grid hits constantly -- a defect keyed on something the grid does not vary, dtype or threadgroup width, would still be invisible."
+ },
+ "shipped": {
+  "kernel_forge.shape_sweep": "varies the shape, records a RAISE as a FAILURE rather than a skip, refuses a zero-case sweep",
+  "kernel_forge.AWKWARD_SHAPES": "the grid, so a caller does not reinvent a filter that silently excludes everything",
+  "pinned_by_test": "a one-shape check PASSES the tiled matmul's defect and the sweep does not -- the regression is expressed as the difference between the two, which is the whole point of the gap"
+ },
+ "claim_boundary": {
+  "one_dtype": "f32 throughout; the sweep varies SHAPE and nothing else",
+  "one_threadgroup_width": "every primitive runs at its default; the top-k receipt already showed a race that only fires at 1024, so width is a SECOND axis this sweep does not cover",
+  "not_wired_into_the_forge_loop": "shape_sweep is available and tested; forge() still verifies one shape per candidate, because the forge tunes an ELEMENTWISE chain where the launch is a 1-D grid over n and the shape axis is degenerate. Wiring it where it would be decoration is not a fix.",
+  "nothing_timed": "correctness only; no performance claim moves"
+ },
+ "tests": {
+  "accelerator_total": 255,
+  "was_total": 252
+ },
+ "pass": true
+}

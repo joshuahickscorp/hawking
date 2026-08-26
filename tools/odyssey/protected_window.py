@@ -17,7 +17,7 @@ cannot depend on the parent surviving.
 Three independent guarantees, in order of who is still alive to act:
 
   1. normal exit          -- __exit__ resumes and clears the lease
-  2. parent killed        -- a DETACHED watchdog resumes at the lease deadline
+  2. parent killed        -- a DETACHED watchdog notices within 1s and resumes
   3. watchdog also lost   -- the next run heals the stale lease on startup
 
 The lease file is the shared state all three read.
@@ -78,10 +78,31 @@ def heal(verbose=True):
 
 
 def _watchdog_body(deadline):
-    """Guarantee 2. Runs detached; outlives the parent by construction."""
+    """Guarantee 2. Runs detached; outlives the parent by construction.
+
+    IT USED TO FIRE AT THE DEADLINE, NOT AT THE DEATH. This module exists because a
+    parent was once killed on a timeout mid-window and SIGCONT never ran -- and the
+    watchdog it shipped waited out the WHOLE lease before resuming, so with max_s=2400
+    a parent killed at t=2s left the downloads stopped for forty minutes. OBSERVED FOR
+    REAL AGAIN on 2026-08-25: a two-minute harness timeout killed the owner and left
+    THIRTEEN of the operator's download processes in state T, and nothing but a human
+    noticing brought them back. A STOPPED DOWNLOAD IS STRICTLY WORSE THAN AN UNPAUSED
+    ONE, and that is the whole premise of the module, so the resume must track the
+    OWNER'S LIFE and not only the clock.
+
+    heal() ALREADY COMPUTED owner_dead -- the watchdog simply never asked until the
+    deadline. Polling it takes resume latency from (deadline - death) to <= 1 s.
+    """
     while time.time() < deadline:
         if not LEASE.is_file():
             return 0                      # parent finished cleanly
+        try:
+            owner = json.loads(LEASE.read_text()).get("owner_pid", -1)
+        except Exception:                 # noqa: BLE001 -- unreadable lease: let heal decide
+            owner = -1
+        if owner != -1 and not _alive(owner):
+            heal(verbose=False)           # the owner is gone: resume NOW, not at the deadline
+            return 0
         time.sleep(1)
     heal(verbose=False)                   # deadline hit: resume regardless
     return 0

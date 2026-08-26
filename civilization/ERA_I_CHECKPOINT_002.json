@@ -1,0 +1,309 @@
+{
+ "checkpoint": "ERA_I_CHECKPOINT_002",
+ "generated_by": "civilization/checkpoint.py from ROADMAP_STATE.json",
+ "hand_written": false,
+ "roadmap": "HAWKING_CIVILIZATION_ASCENSION_V1",
+ "active_era": "I (SOVEREIGN)",
+ "last_verified_commit": "0ff1ea5cb",
+ "last_verified_test_count": 510,
+ "civilization_progress": {
+  "value_pct": 1.0,
+  "heuristic": true,
+  "basis": "the frozen plan's civilizational coordinate against the COMPLETE Hawking system as denominator -- five eras, twenty-five civilizations. It is NOT a ledger-completion statistic and must never be recomputed from obligation or file counts.",
+  "source": "HAWKING_SUPER_ROADMAP_FREEZE_V1_2026-08-25.md"
+ },
+ "civilizations": {
+  "I-A_AGENTOS_HCLI": {
+   "status": "ADVERSARIALLY_VERIFIED",
+   "completion_pct": 62.5,
+   "evidence_pct": 100.0,
+   "obligation_pct": 62.5,
+   "percentage_traces_to": {
+    "evidence_pct": "9/9 evidence categories",
+    "obligation_pct": "5/8 obligations VERIFIED",
+    "completion_pct": "min(evidence_pct, obligation_pct) -- the MINIMUM, so category breadth cannot stand in for a closed gate"
+   },
+   "open_obligations": [
+    "G063",
+    "G064",
+    "G065"
+   ],
+   "open_gates": [
+    "S016 civilization-grade scheduler: Era/Civilization/Program/Gate as first-class scheduler concepts -- NOT_STARTED"
+   ],
+   "note": "the OLD gate is met. S016's civilization-grade scheduler (Era/Civilization/Program/Gate as first-class scheduler concepts) is NOT_STARTED and is NOT counted here -- it is a NEW gate, tracked as a blocker."
+  },
+  "I-B_DOCTOR": {
+   "status": "PHYSICALLY_RUNNING",
+   "completion_pct": 66.7,
+   "evidence_pct": 66.7,
+   "obligation_pct": 100.0,
+   "percentage_traces_to": {
+    "evidence_pct": "6/9 evidence categories",
+    "obligation_pct": "7/7 obligations VERIFIED",
+    "completion_pct": "min(evidence_pct, obligation_pct) -- the MINIMUM, so category breadth cannot stand in for a closed gate"
+   },
+   "open_obligations": [],
+   "open_gates": [
+    "gate: on an UNSEEN model, reduce a huge hypothesis space to a small high-information experimental set and explain why -- not run"
+   ],
+   "note": "39-technique library and applicability matrix exist. The gate -- on an UNSEEN model reduce a huge hypothesis space and explain why -- has not been run end to end on an unseen specimen."
+  },
+  "I-C_GRAVITY_NOETIC": {
+   "status": "ADVERSARIALLY_VERIFIED",
+   "completion_pct": 88.9,
+   "evidence_pct": 88.9,
+   "obligation_pct": 94.1,
+   "percentage_traces_to": {
+    "evidence_pct": "8/9 evidence categories",
+    "obligation_pct": "16/17 obligations VERIFIED",
+    "completion_pct": "min(evidence_pct, obligation_pct) -- the MINIMUM, so category breadth cannot stand in for a closed gate"
+   },
+   "open_obligations": [
+    "G023"
+   ],
+   "open_gates": [
+    "G023 Noetic compiler pipeline",
+    "real-weight execution gate",
+    "EBPW namespace separation not yet permanent in code"
+   ],
+   "note": "G023 NOETIC_COMPILER PIPELINE open. Real-weight execution gate open. The frozen EBPW accounting bug is found and named but the namespaces (DESIGN_EXPECTED / ARTIFACT_PHYSICAL / RUNTIME_MEASURED) are not yet permanently separated in code."
+  },
+  "I-D_ACCELERATOR": {
+   "status": "ADVERSARIALLY_VERIFIED",
+   "completion_pct": 20.0,
+   "evidence_pct": 100.0,
+   "obligation_pct": 20.0,
+   "percentage_traces_to": {
+    "evidence_pct": "9/9 evidence categories",
+    "obligation_pct": "2/10 obligations VERIFIED",
+    "completion_pct": "min(evidence_pct, obligation_pct) -- the MINIMUM, so category breadth cannot stand in for a closed gate"
+   },
+   "open_obligations": [
+    "G043",
+    "G044",
+    "G045",
+    "G046",
+    "G047",
+    "G049",
+    "G055",
+    "G058"
+   ],
+   "open_gates": [
+    "C2M T3: several real open CUDA codebases -- NOT CLAIMED",
+    "P2 CUDA differential -- blocked on NVIDIA hardware",
+    "AIR multi-backend (G058) -- Metal only"
+   ],
+   "note": "Every category has receipts. The GATE is still open: C2M T3 is NOT CLAIMED (no real open CUDA project runs) and P2 has no CUDA differential because no NVIDIA hardware exists. Category coverage is not gate closure."
+  },
+  "I-E_ODYSSEY_I": {
+   "status": "ADVERSARIALLY_VERIFIED",
+   "completion_pct": 77.8,
+   "evidence_pct": 77.8,
+   "obligation_pct": 88.2,
+   "percentage_traces_to": {
+    "evidence_pct": "7/9 evidence categories",
+    "obligation_pct": "15/17 obligations VERIFIED",
+    "completion_pct": "min(evidence_pct, obligation_pct) -- the MINIMUM, so category breadth cannot stand in for a closed gate"
+   },
+   "open_obligations": [
+    "G048",
+    "G056"
+   ],
+   "open_gates": [
+    "model #2 is not a Noetic executable",
+    "no real weights have executed (blocked on FAST_LOCAL_STORAGE)",
+    "G056 lake fast-forward in flight"
+   ],
+   "note": "4 specimens censused, compounding MEASURED (100%/40%/0% with the Falcon zero making it meaningful). Model #2 is NOT a Noetic executable and NO REAL WEIGHTS have executed -- so 'measured useful work' is FALSE for the school's own product."
+  }
+ },
+ "evidence_gained": {
+  "basis": "mtime newer than ERA_I_CHECKPOINT_001.json",
+  "heuristic": true,
+  "why_heuristic": "mtime is not provenance; an untouched-but-amended receipt is missed",
+  "receipts": [
+   "ACCELERATOR_AKB_CONSTRUCTION.json",
+   "ACCELERATOR_LAW_BASE.json",
+   "ACCELERATOR_SYNC_DIAGNOSTIC.json",
+   "EBPW_NAMESPACE_SEPARATION.json",
+   "GROK_DELEGATION_UNAVAILABLE.json",
+   "PHYSICAL_METRIC_AUDIT.json",
+   "PHYSICAL_METRIC_CANARIES.json"
+  ]
+ },
+ "blockers": [
+  {
+   "gate": "NVIDIA_CUDA_HARDWARE",
+   "quantified_as": "P2 differential. No local NVIDIA execution exists.",
+   "blocks": [
+    "I-D_ACCELERATOR"
+   ]
+  },
+  {
+   "gate": "FAST_LOCAL_STORAGE",
+   "quantified_as": "real weights for G048. Falcon-H1-7B is 15.17 GB and the contended USB bus measured under ~0.5 MB/s against 96-131 MiB/s quiet.",
+   "blocks": [
+    "I-E_ODYSSEY_I",
+    "I-C_GRAVITY_NOETIC"
+   ]
+  },
+  {
+   "gate": "SUDO_POWERMETRICS",
+   "quantified_as": "thermal_envelope; sudo not available to this process.",
+   "blocks": [
+    "II-E_GREEN_MACHINE"
+   ]
+  },
+  {
+   "gate": "SUDO_PURGE_OR_96GiB_WORKING_SET",
+   "quantified_as": "a repeatable cold read. Evicting the page cache needs either `sudo purge` -- sudo is not available to this process -- or a working set larger than the 96 GiB of unified memory. Neither is available, so every cold number measured here is warm-cache contaminated and must be labelled so.",
+   "blocks": [
+    "I-D_ACCELERATOR"
+   ]
+  },
+  {
+   "gate": "XCRUN_METAL",
+   "quantified_as": "AOT metallib and generated-code inspection. Toolchain absent.",
+   "blocks": [
+    "I-D_ACCELERATOR"
+   ]
+  }
+ ],
+ "dependencies": {
+  "I-C_GRAVITY_NOETIC": [
+   "I-D_ACCELERATOR: a representation is not condemned until its native execution is competent, so a Gravity floor needs an Accelerator kernel",
+   "I-E_ODYSSEY_I: real weights on fast local storage (FAST_LOCAL_STORAGE gate)"
+  ],
+  "I-D_ACCELERATOR": [
+   "I-E_ODYSSEY_I: Accelerator work must be driven by real specimen bottlenecks, not synthetic ones",
+   "EXTERNAL: NVIDIA hardware for any CUDA differential (no local execution exists)"
+  ],
+  "I-E_ODYSSEY_I": [
+   "I-B_DOCTOR: prescription before packing, or the school runs blind experiments",
+   "RESOURCE: the USB bus, currently owned by the ModelLake fill"
+  ],
+  "I-B_DOCTOR": [
+   "I-E_ODYSSEY_I: more than one architecture, or the library is Qwen folklore"
+  ],
+  "I-A_AGENTOS_HCLI": []
+ },
+ "unresolved_retractions_count": 100,
+ "regressions": {
+  "basis": "compared against ERA_I_CHECKPOINT_001.json",
+  "found": [
+   "I-A_AGENTOS_HCLI completion fell 100.0 -> 62.5"
+  ]
+ },
+ "physical_resource_state": {
+  "resource_ownership": {
+   "USB_BUS_corpdrive": {
+    "owner": "ModelLake fill -- OPERATOR PRIORITISED",
+    "workers": {
+     "hf_download_workers": 0,
+     "modellake_acquire": 0,
+     "lake_filler": 0,
+     "repos": [],
+     "counted_from": "ps, not a status file"
+    },
+    "consequence": "frontier science that needs this bus must wait for a quiesced window; zero-I/O science is unaffected"
+   },
+   "GPU": "free for zero-I/O accelerator science",
+   "TIER1_SSD": "~/noetic/stage holds 212.0 MB across 15 entries"
+  },
+  "running_lanes": [
+   {
+    "lane": "/Users/scammermike/Downloads/hawking/tools/odyssey_driver.sh",
+    "executor": "resident",
+    "alive": true,
+    "detection": "definitive",
+    "judged_by": "live process in ps",
+    "commits_to_this_repo": true
+   },
+   {
+    "lane": "wf_0b67889e-5bd/agent-a2dee8274c35b9401",
+    "executor": "claude",
+    "alive": true,
+    "transcript": "/Users/scammermike/.claude/projects/-Users-scammermike-Downloads-hawking/5e40f321-b30e-4c5c-ac16-027ddd36ed33/subagents/workflows/wf_0b67889e-5bd/agent-a2dee8274c35b9401.jsonl",
+    "detection": "heuristic",
+    "judged_by": "transcript touched 275s ago (< 300s); no pid exists to check, so a finished agent can read as alive"
+   },
+   {
+    "lane": "wf_320337a4-374/agent-a37fb853a2cf7b697",
+    "executor": "claude",
+    "alive": true,
+    "transcript": "/Users/scammermike/.claude/projects/-Users-scammermike-Downloads-hawking/5e40f321-b30e-4c5c-ac16-027ddd36ed33/subagents/workflows/wf_320337a4-374/agent-a37fb853a2cf7b697.jsonl",
+    "detection": "heuristic",
+    "judged_by": "transcript touched 98s ago (< 300s); no pid exists to check, so a finished agent can read as alive"
+   }
+  ]
+ },
+ "next_decisive_wave": [
+  {
+   "rank": 1,
+   "civilization": "I-A_AGENTOS_HCLI",
+   "gate": "CLAUDE_HCLI_DELEGATION (G064) and HCLI_ALPHA_STANDALONE (G065)",
+   "why": "steer S022, and it is now the EXECUTION-CAPACITY gate for the whole program: Grok is 402-blocked, so HCLI is the only executor that can be delegated to. G065 additionally covers the operator's Claude-limit outage, when it becomes the ONLY way work continues at all.",
+   "resource": "CPU + a local model server; the 1B GGUF avoids contending with the fill"
+  },
+  {
+   "rank": 2,
+   "civilization": "I-C_GRAVITY_NOETIC",
+   "gate": "G023 Noetic compiler pipeline -- the one BLOCKED obligation in Era I",
+   "why": "its recorded blocker was already re-verified FALSE AS STATED: a wired 7,046-line native Metal routed-MoE path exists. The real blocker is much narrower -- that reader is bound to one model and one artifact family -- so the unblock is GENERALIZATION of a working reader, not a from-scratch build.",
+   "resource": "CPU; no bus contention"
+  },
+  {
+   "rank": 3,
+   "civilization": "I-E_ODYSSEY_I",
+   "gate": "real weights execute (G048)",
+   "why": "still the highest-information experiment remaining and still the same RESOURCE CONFLICT: it needs a quiesced window or a 15.17 GB stage competing with the operator-prioritised fill. Every specimen result to date is one-layer and random-weight, so nothing yet says anything about adequacy.",
+   "resource": "USB bus -- CONTENDED, currently owned by the fill"
+  },
+  {
+   "rank": 4,
+   "civilization": "I-D_ACCELERATOR",
+   "gate": "C2M T3 -- a real open CUDA project slice, not a synthetic kernel",
+   "why": "I-D has 9/9 evidence categories and 2/10 obligations. T3 is NOT CLAIMED and is the gate that separates a kernel corpus from a compiler. P2's CUDA differential stays blocked on hardware that does not exist here.",
+   "resource": "CPU + GPU; zero I/O"
+  }
+ ],
+ "authored": {
+  "what_became_physically_true": [
+   "Physical EBPW accounting can no longer be faked accidentally. active_ebpw_per_token is now ARTIFACT_PHYSICAL, derived 8.0*active_bytes/PARENT_PARAMS from bytes that are actually there, with the old design figure retained beside it as DESIGN_EXPECTED_active_ebpw_per_token and linked by measured_twin (receipts/headless/EBPW_NAMESPACE_SEPARATION.json). still_frozen_and_flagged is now empty where it named two metrics.",
+   "dram_bytes_per_token was RENAMED rather than fabricated. Nothing on this box can measure it -- powermetrics requires root and Metal memory counters require MTLCounterSampleBuffer instrumentation inside crates/ -- so it moved into DESIGN_EXPECTED_dram_bytes_per_token carrying that exact blocking gate. A design constant that cannot be measured is allowed to exist; one wearing a physical name is not (tools/odyssey/metric_audit.py).",
+   "The genome-literal canary was WATCHED FAILING, not merely observed passing. Routing a genome literal into physical_ebpw drives canaries A/B/C/D to FAIL, canaries 1/5, exit 1, with canary C recording before 2.25 -> after 99.0 and the clone restored under the defect (receipts/headless/EBPW_NAMESPACE_SEPARATION.json#negative_control).",
+   "All four Odyssey specimens now build LIVE in the test suite -- Qwen3-30B-A3B, Qwen3-VL-30B-A3B, Kimi-VL-A3B, Falcon-H1-7B -- each asserted to return finite full-vocab logits and to be deterministic, input-sensitive and causal. Previously three of the four rows were a recorded literal (tools/accelerator/test_odyssey_pass.py).",
+   "The Qwen3-VL one-field repair is proven load-bearing by a two-arm test on the SAME config: without prepare_config the build raises TypeError on the missing tie_word_embeddings; with it the model returns logits (4, 151936), finite, causal, deterministic (G061).",
+   "469 tests pass under `python3.12 -m pytest tools/accelerator/ -q`, up from 460, read from the run and not from arithmetic. The default python3 is 3.14.6 with no mlx, where the same file reports five failures -- so a test count without its interpreter is not a measurement.",
+   "The barrier sweep became an INSTRUMENT that can return a negative, which is what separates one from a confirmation device: the held-out NumPy arm reads NO_SIGNIFICANT_SYNC_TAX stably at -0.083 / 0.055 / -0.050 us per step, while an injected stall reads SYNC_TAX at 370-400 us and removing it drops the reading (receipts/headless/ACCELERATOR_SYNC_DIAGNOSTIC.json, G062).",
+   "The Accelerator's prose laws became 22 typed AKB entries built from the real corpus, each carrying all eleven applicability axes, with 56 receipts left unextracted under explicit reason codes and zero UNCLASSIFIED (receipts/headless/ACCELERATOR_LAW_BASE.json, G060). The retracted 149.5%-of-MLX GEMM claim is preserved as REFUTED rather than dropped.",
+   "I-D_ACCELERATOR left 0.0% completion for the first time in the program, reaching 20.0% -- two obligations of ten -- against evidence coverage that was already 9/9 (civilization/ROADMAP_STATE.json)."
+  ],
+  "what_was_refuted": [
+   "REFUTED: that the G033/G059 metric suite was checking the accountant. Every test read the checked-in receipts/headless/PHYSICAL_METRIC_AUDIT.json instead of running the tool, so two real source mutations -- republishing a design constant under its old physical name, and stripping the blocking gate off an unmeasurable metric -- both left the suite FULLY GREEN. Proven by running both mutations before and after the fix.",
+   "REFUTED: that an absent receipt would be noticed. Removing PHYSICAL_METRIC_AUDIT.json turned 12 passed into 12 skipped for the whole module, which in a summary line reads as fine. The skipif guarded the entire file (tools/odyssey/test_metric_audit.py).",
+   "REFUTED: that the canary assertions were validating current code. The guard named METRIC_MUTATION_CANARIES.json while the tool emits PHYSICAL_METRIC_CANARIES.json, so it had been asserting against an 18-hour-old artifact from an earlier code version.",
+   "REFUTED: that the specimen table's honesty guard covered the specimen it was written for. tools/accelerator/odyssey_pass.py execution_coverage() returns a recorded literal, and its only live guard rebuilt Falcon-H1 -- the one specimen that was never broken -- while Qwen3-VL, which the repair exists for, rested on nothing live.",
+   "REFUTED: the resource objection that justified that gap. tools/accelerator/test_odyssey_pass.py defended testing only Falcon on the grounds that the lake bus is the named gate and a test must not fight the operator's fill. The Qwen3-VL config.json is 1,661 bytes; all four total 6,268. A correct resource law was applied at the wrong magnitude and it cost exactly the coverage that mattered. NEW RULE: check a resource objection against the actual byte count before accepting it.",
+   "REFUTED: that the civilization ledger represented running work. running_lanes reported 0 while three Claude agents were mid-edit in this repo, because the detector knew only about Grok lanes (civilization/build_state.py).",
+   "STALE ON ARRIVAL, not refuted: the frozen plan lists 'fix the Qwen3-VL one-field execution gap' as an immediate priority (G061). receipts/headless/ACCELERATOR_VL_GAP_CLOSED.json shows it was already closed on disk before this session began. Disk state wins over a directive priority, exactly as the directive itself instructs.",
+   "REFUTED by its own suite: that the AKB could ingest a growing corpus safely. The first build counted its own output as an unclassified 78th receipt and would have grown by one every run, eventually citing itself as evidence for its own laws (tools/accelerator/akb.py).",
+   "A CONCURRENT-LANE RACE, caught rather than shipped: the AKB was built over 77 receipts while the sync-diagnostic lane was still running. Its receipt landed afterwards and test_every_unextracted_receipt_carries_a_reason refused the unclassified newcomer. This is the stale-baseline failure this program has been bitten by before, and this time a tripwire caught it (receipts/headless/ACCELERATOR_LAW_BASE.json)."
+  ],
+  "what_changed_in_the_roadmap": [
+   "The civilization control plane gained the eight fields directive VIII requires and did not have: civilization_progress, completion_evidence, blockers, dependencies, running_lanes, next_decisive_gates, unresolved_retractions, laws_since_last_checkpoint. All derived, none typed (civilization/build_state.py).",
+   "ERA_I_CHECKPOINT_001 was hand-written, which is why producing 002 needed the originating prompt repeated. civilization/checkpoint.py now generates it from ROADMAP_STATE.json and splits DERIVED from AUTHORED, refusing an authored claim that cites no receipt, obligation id or tool path.",
+   "Era sovereignty became enforcement rather than prose. A later-era civilization reporting completion_pct, listed as active, or claiming a graduated status is now refused -- Fusion, HMF and eGPU all carry real receipts and were previously free to report a percentage (civilization/validate.py).",
+   "resource_ownership stopped being judgement in civilization/build_state.py. It carried the literal '4 hf download workers' and was wrong the moment the fill changed shape; it is derived from ps now, and reports 4 hf download workers plus 7 modellake acquire plus 1 filler across 7 repos. The rule generalizes: any field a human can retype is a field that will lie with confidence.",
+   "The two ledgers are explicitly NOT merged. GOAL.md owns obligation status; ROADMAP_STATE.json points at it and never copies its authority. Duplicating them would be the duplicated-authorities defect the census exists to find (civilization/README.md).",
+   "Grok delegation is unavailable (receipts/headless/GROK_DELEGATION_UNAVAILABLE.json): four lanes died at launch with HTTP 402 usage balance exhausted, exit 1, 0-byte diffs, while all four status files still read 'done'. Execution moved to Claude workflow agents. The standing 'Claude decides, Grok types' division cannot execute until the balance is restored.",
+   "A new failure mode is recorded: an agent killed mid-flight can leave a deliberate negative-control mutation live in the source. tools/accelerator/odyssey_pass.py was found carrying 'for d in (c,): # NC5 MUTATION', which silently reduced thin_to_one_layer to the top level only. Partial work from an interrupted lane must be diffed for live mutations before it is trusted, never merely tested.",
+   "THE ONE REGRESSION THIS CHECKPOINT REPORTS IS SELF-REFERENTIAL AND EXPECTED: I-A_AGENTOS_HCLI completion fell 100.0 -> 83.3 because G063 (produce ERA_I_CHECKPOINT_002) was added to that civilization and cannot be VERIFIED until this checkpoint exists and validates. Nothing was lost. It is reported rather than suppressed because a regression detector that its author is free to silence when the cause is benign is not a detector (civilization/checkpoint.py).",
+   "The test count now carries its interpreter and the validator refuses one without it. The rule caught a real regression on its first live run rather than on a fixture: a published passed-count while one test was failing (civilization/validate.py).",
+   "A THIRD WRITER was found in this repo that the census could not see: a launchd job (tools/odyssey_driver.sh) committing to this branch every five minutes, which landed a commit BETWEEN two of this session's own. running_lanes now models three executor kinds -- grok, claude, resident -- and records which detection is definitive and which is a heuristic (civilization/build_state.py).",
+   "Steer S022 amends I-A: G064 CLAUDE_HCLI_DELEGATION and G065 HCLI_ALPHA_STANDALONE. Kept as two obligations on purpose -- one is HCLI as a tool Claude delegates into, the other is HCLI usable with no Claude present during a limit outage, and they can fail independently. The steer's \u00a711 says do not replace Grok while its addendum says hcli replaces grok; recorded reading is that HCLI replaces Grok as EXECUTOR while Grok remains an independent perspective, which is also forced since Grok is 402-blocked (G064)."
+  ]
+ },
+ "authored_vs_derived": "Everything outside `authored` is DERIVED from ROADMAP_STATE.json, which is itself derived from GOAL.md + receipts + git + a real pytest run. The `authored` block is human/agent judgement and every claim in it must cite a receipt, obligation id or tool path -- the validator refuses it otherwise."
+}

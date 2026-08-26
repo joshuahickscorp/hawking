@@ -1,0 +1,169 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T14:38:16",
+ "experiment_class": "ACCEL-CORRECTNESS",
+ "knowledge_level": "INSTANCE",
+ "git_head": "aa50ebbd6715eb965cc0e6dba91605f0cfe1cdf3",
+ "identities": {
+  "experiment": {
+   "id": "THE_QUIET_CONTROL_IS_BLIND_AT_FOUR_OF_SIX_WIDTHS",
+   "obligation": "G043 / G047",
+   "answers": "the width sweep's own claim boundary -- 'ONE control, on a TOTAL dependency, and the top-k receipt already showed an INCIDENTAL barrier is far quieter so a control's loudness is not transferable evidence'"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal via MLX 0.32.1 JIT"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "synthetic logits; correctness only"
+  },
+  "representation": {
+   "name": "dense_f32"
+  },
+  "kernel": {
+   "real_arm": "AirTopKSample rows=32 cols=4096 k=8",
+   "loud_control": "AirNorm rms, first threadgroup_barrier stripped (publishes the row sum every thread reads: TOTAL)",
+   "quiet_control": "AirTopKSample, tree-reduce barrier stripped (orders one sweep of a halving reduce: INCIDENTAL)",
+   "widths": [
+    32,
+    64,
+    128,
+    256,
+    512,
+    1024
+   ]
+  },
+  "runtime": {
+   "python": "/usr/local/bin/python3",
+   "mlx": "0.32.1"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device"
+  }
+ },
+ "headline": "A control's loudness is not transferable, and the number is 10x. On the same width list, same repeat and same machine, a barrier on a TOTAL dependency fires in 40 of 48 runs and is blind at 1 of 6 widths; a barrier on an INCIDENTAL one fires in 4 of 48 and is blind at 4 of 6. A sweep whose only control is loud reports a blind list of length 1 and thereby implies a resolving power it does not have.",
+ "GROUND_TRUTH_FIRST": {
+  "runs_per_cell": 40,
+  "total_executions": 480,
+  "intact_wrong": {
+   "32": 0,
+   "64": 0,
+   "128": 0,
+   "256": 0,
+   "512": 0,
+   "1024": 0
+  },
+  "broken_per_run_probability": {
+   "32": 0.0,
+   "64": 0.0,
+   "128": 0.0,
+   "256": 0.0,
+   "512": 0.15,
+   "1024": 0.975
+  },
+  "reading": "0 of 240 for the intact kernel at every width. The quiet control's per-run probability is a CLIFF, not a gradient: 0, 0, 0, 0, 0.15, 0.975 at 32/64/128/256/512/1024. Four widths are not quiet -- they are SILENT, and no repeat count rescues p = 0.",
+  "it_also_fires_at_512_which_had_never_been_looked_at": "the top-k receipt tested 64, 256 and 1024 only and recorded 16 of 30 at 1024. At this shape 1024 is 39 of 40, and 512 -- a width that receipt never ran -- fires at 0.15. The race's rate depends on the shape as well as the width."
+ },
+ "THE_FLOOR_IS_CALIBRATED_AND_BOUNDS_THE_WRONG_THING": {
+  "why_it_matters": "swept_with_control reports detection_floor_per_run = 1 - 0.5**(1/repeat) with every result, and a reader takes that as the sweep's resolving power. It assumes the repeat runs are INDEPENDENT Bernoulli trials, which nothing had checked.",
+  "prediction_written_before_the_run": "at threadgroup 512 with p ~ 0.15, an 8-run block should detect in ~0.73 of trials; predicted band 0.60-0.85. Well below means runs are correlated and the floor is optimistic.",
+  "measured": {
+   "width": 512,
+   "runs": 320,
+   "p_hat": 0.1187,
+   "blocks": 40,
+   "blocks_detected": 25,
+   "observed_block_detection": 0.625,
+   "binomial_prediction": 0.6363
+  },
+  "outcome": "CONFIRMED at the low edge of the band -- 0.6250 observed against 0.6363 predicted, 1.1 percentage points apart.",
+  "the_stronger_test_is_the_whole_distribution": {
+   "dispersion_obs_var_over_binomial_var": 1.1,
+   "chi2": 0.149623668687124,
+   "dof": 2,
+   "critical_0.05": 5.991,
+   "observed_bins_0_1_2_ge3": [
+    15,
+    15,
+    8,
+    2
+   ],
+   "expected_bins_0_1_2_ge3": [
+    14.556,
+    15.684,
+    7.394,
+    2.366
+   ],
+   "reading": "matching the MEAN could happen with correlated runs; the per-block hit COUNTS fit Binomial(8, p) at chi2 0.150 on 2 dof against a 5.991 critical value, dispersion 1.10. The runs are independent and the formula is honest about repeat."
+  },
+  "and_the_floor_was_calibrated_at_its_own_threshold_by_accident": "the stated floor is 8.3% per run and this real race sits at 11.87%, just above it; the sweep caught it in 25 of 40 blocks, which is what 'detects anything above the floor more than half the time' asserts. Nothing was arranged to land there.",
+  "the_correction": "the floor bounds REPEAT and the receipt reported it beside a length-1 blind list, which invites reading it as the sweep's coverage. Coverage is set by the CASE LIST and by whether the defect fires there at all. The quiet control makes the gap concrete: at 32/64/128/256 the floor is irrelevant because p is exactly zero."
+ },
+ "AND_MY_OWN_CONTROL_REPORTED_DETECTING_EVERYWHERE_WHILE_CRASHING_EVERYWHERE": {
+  "what_happened": "the first two-control run reported the LOUD control detecting at all six widths including 32, contradicting ACCELERATOR_WIDTH_SWEEP.json which measured it EXACT there. The probe passed kind='rms' where the field is `mode`, so AirNorm.__init__ raised a TypeError on every call; swept_with_control's run() caught it, recorded inf, and counted it as a detection. The control detected a TypeError in my probe.",
+  "caught_by": "the disagreement with a shipped receipt, not by re-reading the loop. Checked directly: stripped-vs-intact at threadgroup 32 is IDENTICAL to the last digit at cols 512 (6.804e-08) and cols 4096 (1.065e-07), so the shipped 32-blindness reproduces on two shapes it was never measured on.",
+  "the_rule_that_hid_it_is_one_I_SHIPPED_TWO_BLOCKS_AGO": "ACCELERATOR_SHAPE_FUZZ.json established that a sweep must record A RAISE AS A FAILURE rather than a skip, because a shape the kernel refuses is a shape the caller needs told about. That is CORRECT FOR THE REAL ARM AND BACKWARDS FOR A CONTROL: a control that raises never ran the kernel, so crediting it with a detection gives the sweep power it has not got. A right rule applied to the wrong arm, which is a different failure from a wrong rule.",
+  "fixed": "run() takes raises_are_failures; the control arm passes False and a raise REFUSES the sweep, naming the control and the exception. Both directions are pinned by tests sitting next to each other."
+ },
+ "the_sweep_after_the_fix": {
+  "cases": 6,
+  "repeat": 8,
+  "executions": 144,
+  "real_arm_failures": 0,
+  "real_arm_all_ok": true,
+  "controls": [
+   {
+    "label": "loud_total_dependency",
+    "detected_at": [
+     64,
+     128,
+     256,
+     512,
+     1024
+    ],
+    "blind_at": [
+     32
+    ],
+    "fired": "40/48"
+   },
+   {
+    "label": "quiet_incidental_barrier",
+    "detected_at": [
+     512,
+     1024
+    ],
+    "blind_at": [
+     32,
+     64,
+     128,
+     256
+    ],
+    "fired": "4/48"
+   }
+  ],
+  "blind_at_every_control": [
+   32
+  ]
+ },
+ "shipped": [
+  "swept_with_control accepts a LIST of (label, broken_check) and reports each control's detected/blind lists and fired-run count separately",
+  "blind_at_every_control -- the cases NO control reached, which is what the sweep actually says nothing about; control_blind_at is kept for back-compat and carries a comment naming it as the first control's alone",
+  "a control that RAISES refuses the sweep instead of being credited with a detection",
+  "floor_bounds_repeat_not_coverage on every result, with the calibration in the docstring so the floor cannot be read as the sweep's coverage"
+ ],
+ "claim_boundary": [
+  "TWO controls is still not a characterisation of control loudness -- it is one point at each end of a spectrum whose middle is unmeasured.",
+  "the quiet control's rates are for ONE shape (rows 32, cols 4096); the top-k receipt measured 16 of 30 at 1024 on its own shape against 39 of 40 here, so p is a property of the defect, the width AND the shape together.",
+  "the calibration is at ONE width (512) on ONE race; independence is established there and assumed elsewhere.",
+  "blind_at_every_control is the union over the controls that RAN -- it is not a proof that no defect could hide at those cases, only that these controls did not reach them.",
+  "f32, one machine, INSTANCE; nothing timed, no performance claim moves."
+ ],
+ "tests": "tools/accelerator/test_kernel_forge.py 20 passed; 273 accelerator tests pass",
+ "pass": true
+}

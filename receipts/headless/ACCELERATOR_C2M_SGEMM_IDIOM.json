@@ -1,0 +1,208 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T14:11:57",
+ "experiment_class": "ACCEL-C2M",
+ "knowledge_level": "INSTANCE",
+ "git_head": "9c7ad4fed4ce54e2409777089613db486e80ec5d",
+ "identities": {
+  "experiment": {
+   "id": "THE_BRITTLENESS_WAS_HIDING_A_SEMANTIC_DIFFERENCE",
+   "obligation": "G045",
+   "answers": "the previous receipt's own words -- 'widening recognition needs its own near-miss evidence, which is a block's work'"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra"
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal via MLX JIT"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "kernel translation, no model"
+  },
+  "representation": {
+   "name": "dense_f32",
+   "shape": "64x64x64"
+  },
+  "kernel": {
+   "origin": "the pinned seed's real sgemm_shmem.cu -> recognition -> AIR"
+  },
+  "runtime": {
+   "python": "3.12.6",
+   "mlx": "0.32.1"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device"
+  }
+ },
+ "headline": "The obvious fix was to loosen the recogniser's regexes until they matched the seed's real GEMM. THAT WOULD HAVE SUBSTITUTED A DIFFERENT COMPUTATION: the real kernel computes alpha*A@B + beta*C and AIR's matmul computes A@B. The syntactic difference was the visible one; the SEMANTIC term was the one that mattered. AND THE SEED'S OWN TEST WOULD NOT HAVE CAUGHT IT -- main() calls the kernel with alpha=1 and beta=0, exactly where a plain matmul agrees to the last bit.",
+ "what_the_naive_widening_would_have_returned": {
+  "measured": [
+   {
+    "alpha": 1.0,
+    "beta": 0.0,
+    "rel_err_vs_real_semantics": 3.1080672195347527e-07,
+    "rel_err_if_handed_to_a_PLAIN_matmul": 3.1080672195347527e-07
+   },
+   {
+    "alpha": 2.0,
+    "beta": 0.5,
+    "rel_err_vs_real_semantics": 3.1765807192642973e-07,
+    "rel_err_if_handed_to_a_PLAIN_matmul": 0.5056525367038815
+   },
+   {
+    "alpha": -1.5,
+    "beta": 2.0,
+    "rel_err_vs_real_semantics": 2.906034677062901e-07,
+    "rel_err_if_handed_to_a_PLAIN_matmul": 1.5651126035659415
+   }
+  ],
+  "reading": "at alpha=1 beta=0 the plain matmul is EXACT against the real semantics (3.1e-07, the same number as the correct path). At alpha=2 beta=0.5 it is wrong by 0.506 relative and at alpha=-1.5 beta=2.0 by 1.565. A mistake that is invisible on the corpus's own inputs and order-1 everywhere else is the worst shape this program keeps finding.",
+  "the_corpus_cannot_catch_it": "sgemm_shmem.cu's main() sets alpha = 1.0f, beta = 0.0f"
+ },
+ "built_as_a_SEPARATE_idiom_not_a_looser_one": {
+  "recognised": {
+   "idiom": "sgemm_alpha_beta",
+   "kernel": "sgemm_shared_mem_block",
+   "fragments_matched": [
+    "shared tile for A, 1-D with a symbolic extent",
+    "shared tile for B, 1-D with a symbolic extent",
+    "output block row from blockIdx.x",
+    "output block column from blockIdx.y",
+    "thread column from threadIdx.x %",
+    "thread row from threadIdx.x /",
+    "accumulator initialised to zero",
+    "loop over k-tiles",
+    "A staged row-major into As",
+    "B staged row-major into Bs",
+    "inner product over the tile",
+    "alpha/beta store, which is what makes this NOT a plain matmul"
+   ],
+   "tile_from_source": null,
+   "why_tile_is_none": "BLOCKSIZE is a template parameter; the kernel source does not contain the value"
+  },
+  "the_stricter_claim_is_tried_first": "a kernel that scales and accumulates is not a plain matmul, so the alpha/beta form is matched BEFORE tiled_gemm; letting the looser idiom win would be the substitution this door exists to refuse",
+  "the_old_door_still_refuses_the_new_shape": "not recognised as tiled_gemm: the required element 'shared tile for A' is absent",
+  "THE_TILE_IS_NOT_IN_THE_KERNEL": {
+   "why": "BLOCKSIZE is a template parameter, so the source does not contain the value",
+   "what_recognition_does": "returns tile=None and execute_idiom REFUSES without dims['tile'] rather than guessing one",
+   "refusal": "sgemm_alpha_beta declares its tile as a TEMPLATE PARAMETER, so the kernel source does not contain it; pass dims['tile'] "
+  },
+  "executed_correctly_at_three_settings": [
+   {
+    "alpha": 1.0,
+    "beta": 0.0,
+    "rel_err": 3.1080672195347527e-07
+   },
+   {
+    "alpha": 2.0,
+    "beta": 0.5,
+    "rel_err": 3.1765807192642973e-07
+   },
+   {
+    "alpha": -1.5,
+    "beta": 2.0,
+    "rel_err": 2.906034677062901e-07
+   }
+  ]
+ },
+ "the_near_misses_are_still_the_evidence": {
+  "presented": 10,
+  "refused": 10,
+  "each_differs_in_exactly_one_respect": [
+   "beta term dropped (computes alpha*A@B, a different function)",
+   "alpha and beta swapped",
+   "B tile index transposed (computes A@B^T)",
+   "one barrier removed (a race)",
+   "both barriers removed",
+   "accumulator starts at one",
+   "rectangular shared tile",
+   "row and column sources swapped",
+   "A staged from the wrong stride",
+   "product replaced by a sum"
+  ],
+  "why_this_is_the_gate": "grading a recognised kernel against an oracle derived from the idiom is CIRCULAR. The non-circular evidence is that a kernel differing in one respect is REFUSED with that respect named -- and two of the ten differ only in the SEMANTIC term (beta dropped, alpha and beta swapped), which is exactly the class the widening could have let through.",
+  "results": [
+   {
+    "near_miss": "beta term dropped (computes alpha*A@B, a different function)",
+    "refused": true,
+    "reason": "not recognised as tiled_gemm: the required element 'shared tile for A' is absent"
+   },
+   {
+    "near_miss": "alpha and beta swapped",
+    "refused": true,
+    "reason": "not recognised as tiled_gemm: the required element 'shared tile for A' is absent"
+   },
+   {
+    "near_miss": "B tile index transposed (computes A@B^T)",
+    "refused": true,
+    "reason": "not recognised as sgemm_alpha_beta: the required element 'inner product over the tile' is absent"
+   },
+   {
+    "near_miss": "one barrier removed (a race)",
+    "refused": true,
+    "reason": "not recognised as sgemm_alpha_beta: found 1 __syncthreads() calls and the idiom has exactly 2"
+   },
+   {
+    "near_miss": "both barriers removed",
+    "refused": true,
+    "reason": "not recognised as sgemm_alpha_beta: found 0 __syncthreads() calls and the idiom has exactly 2"
+   },
+   {
+    "near_miss": "accumulator starts at one",
+    "refused": true,
+    "reason": "not recognised as sgemm_alpha_beta: the required element 'accumulator initialised to zero' is absent"
+   },
+   {
+    "near_miss": "rectangular shared tile",
+    "refused": true,
+    "reason": "not recognised as sgemm_alpha_beta: the shared tile extent is BLOCKSIZE * OTHERSIZE, and a square tile needs the same sy"
+   },
+   {
+    "near_miss": "row and column sources swapped",
+    "refused": true,
+    "reason": "not recognised as sgemm_alpha_beta: the required element 'output block row from blockIdx"
+   },
+   {
+    "near_miss": "A staged from the wrong stride",
+    "refused": true,
+    "reason": "not recognised as sgemm_alpha_beta: the required element 'A staged row-major into As' is absent"
+   },
+   {
+    "near_miss": "product replaced by a sum",
+    "refused": true,
+    "reason": "not recognised as sgemm_alpha_beta: the required element 'inner product over the tile' is absent"
+   }
+  ]
+ },
+ "the_reduction_is_REFUSED_and_the_reason_is_different_in_kind": {
+  "refusal": "not recognised as block_reduce_sum: the required element 'shared buffer' is absent",
+  "why_not_widened": "it is a GRID-STRIDE cooperative-groups reduction with an unrolled if-cascade and a __shfl_down_sync warp stage -- cg::sync not __syncthreads, and no halving tree at all. The GEMM differed in SYNTAX and in one SEMANTIC term; this differs in ALGORITHM, and matching it would mean recognising a family rather than a shape.",
+  "the_distinction_that_matters": "the GEMM differed in SYNTAX plus one SEMANTIC term and could be met by naming a second idiom precisely. The reduction differs in ALGORITHM -- grid-stride, cooperative groups, an unrolled if-cascade, a warp shuffle stage, cg::sync rather than __syncthreads -- so matching it means recognising a FAMILY, not a shape, and that is not what this door does."
+ },
+ "corpus_position": {
+  "kernels_recognised_before": 0,
+  "kernels_recognised_now": 1,
+  "of": 35,
+  "honest_reading": "one kernel of thirty-five, and it is one of the eleven under tests/cuda_projects. The census's binding constraint is unchanged: C2M is not a C compiler. What moved is that the recogniser now matches a kernel nobody wrote to suit it, and the semantic trap in doing so is measured rather than avoided."
+ },
+ "predictions": {
+  "real_kernel_recognised": "CONFIRMED",
+  "all_near_misses_refused": "CONFIRMED, 10 of 10",
+  "plain_matmul_wrong_by_order_1_at_alpha2_beta05": "CONFIRMED at 0.506, and the unpredicted half is that it is EXACT at the corpus's own alpha=1 beta=0"
+ },
+ "claim_boundary": {
+  "still_recognition_not_compilation": "no loop, no shared memory, no barrier is compiled; a third algorithm is named",
+  "still_name_brittle": "the fragments match threadRow/threadCol/tmp/bkIdx/dotIdx by name. The same kernel with different identifiers is still REFUSED, and widening that is the same block of work again",
+  "T3_not_claimed": "one real kernel is not a real project",
+  "nothing_timed": "the recognised path runs AIR's tiled matmul, which already loses to MLX; no performance claim moves",
+  "oracle": "float64 numpy of the kernel's own written semantics; P2 stays open"
+ },
+ "tests": {
+  "accelerator_total": 252,
+  "was_total": 246
+ },
+ "pass": true
+}

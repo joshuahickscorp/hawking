@@ -1,0 +1,44 @@
+{
+ "experiment_class": "ACCEL-ODYSSEY-PASS",
+ "date": "2026-08-25",
+ "obligations": [
+  "G048",
+  "G043"
+ ],
+ "headline": "THE BLOCKER FIVE RECEIPTS REPEATED IS MISATTRIBUTED: THE READER EXISTS, THE BUS IS THE GATE",
+ "the_sentence_under_test": "no runtime here executes a Qwen3-MoE, Falcon or Mamba forward pass -- carried by ACCELERATOR_ORGAN_REPRESENTATION_FLOOR, ACCELERATOR_ORGAN_DISCRIMINATION, ACCELERATOR_GATE_DISAGREEMENT, ACCELERATOR_GATE_HEADROOM and the Odyssey pass, and used to justify grading all four lake specimens in WEIGHT SPACE.",
+ "why_it_matters_that_it_is_wrong": "weight space is the space THIS PROGRAM MEASURED to be nearly invariant across organs AND architectures -- 11 organs across 4 architectures all floor at 4.125 bpw and span 0.00105 of cosine -- so the metric cannot tell the specimens apart. The second educational goal (how does this architecture want to EXIST) is open precisely because the only available grade is the blind one, and the stated reason for not fixing it was a missing reader.",
+ "the_conflation": {
+  "hawking_rust_body": "dispatches on llama / llama2 / llama3 / llama3.1 / llama3.2 / mistral / qwen2 / qwen2.5 / qwen (crates/hawking-core/src/model/mod.rs:143-156). Covers NO lake specimen. TRUE.",
+  "mlx_lm_0_31_3": "carries model classes for qwen3_moe, qwen3_vl_moe, kimi_vl AND falcon_h1 -- all four, verified by import. It is already a HARD DEPENDENCY, the runtime every AIR kernel in this program executes through.",
+  "reading": "BOTH HALVES ARE TRUE AND THE RECEIPTS STATED ONE. The sentence sounded right because Hawking's own runtime really is missing them."
+ },
+ "the_gate_that_is_actually_open": {
+  "named_input": "FAST LOCAL STORAGE, or a quiesced window",
+  "smallest_specimen": "Falcon-H1-7B, 15.17 GB over 4 shards (4.96 / 4.94 / 4.48 / 0.80)",
+  "contended_rate_measured": "a sequential read of one shard did not complete 256 MiB in 120 s, and was still running past 8 minutes -- so under ~0.5 MB/s",
+  "uncontended_rate_measured_earlier_this_session": "96-131 MiB/s sequential on the same USB volume",
+  "contention_penalty": "greater than 190x, and one full load is HOURS not minutes",
+  "why_it_is_not_being_forced": "the operator explicitly prioritised the fill ('make the downloads more aggressive fill the 3.5TB as fast as possible'); staging 15.17 GB would compete with exactly that. Recorded as a NAMED GATE per S015 \u00a7129 alongside the powermetrics/thermal gate, the NVIDIA/P2 gate and the sudo-purge cold-read gate.",
+  "what_changes_when_it_opens": "a real forward pass on a DECODER and an MoE, which is the boundary every gate receipt names -- 'one small bidirectional encoder, which is not a decoder and not an MoE'."
+ },
+ "shipped": {
+  "odyssey_pass.runtime_coverage": "reports the two runtimes SEPARATELY, because the receipts collapsed them, and names the gate as FAST_LOCAL_STORAGE with the detail saying explicitly that it is NOT a model reader. A gap named 'no reader' invites weeks of Rust; a gap named 'contended bus' invites one quiesced window.",
+  "three_tests": "one pins that mlx_lm covers all four (so the claim stays false until it becomes true again), one pins that Hawking's Rust body still covers none (the half that was right), and one pins that the gate names storage.",
+  "the_check_can_fail": "verified directly rather than assumed -- adding a bogus architecture to the probe list flips mlx_lm_covers_all_lake_specimens to False and names it in the per-module table."
+ },
+ "claim_boundary": [
+  "NO FORWARD PASS WAS RUN. What is established is that the RUNTIME EXISTS and the obstacle is storage; the activations themselves are still absent and every weight-space caveat in the G048 receipts stands unchanged.",
+  "mlx_lm class presence is an IMPORT, not an execution -- a class that imports can still fail on a real config, and that is untested.",
+  "the contended rate is a BOUND, not a measurement: the probe was killed by a harness timeout rather than completing, so 0.5 MB/s is an upper bound on the rate and the true figure may be lower.",
+  "the 96-131 MiB/s uncontended figure is from earlier this session on the same volume and is NOT re-measured here.",
+  "no kernel changed and no performance claim moves."
+ ],
+ "tests": "454 accelerator tests pass (was 451): 3 new.",
+ "AMENDED_IN_PLACE_2026_08_25": {
+  "by": "receipts/headless/ACCELERATOR_RUNTIME_EXECUTES.json",
+  "what_is_STRENGTHENED": "this receipt's own boundary said class presence is an IMPORT not an execution. Measured: 3 of 4 specimens BUILD from their real config and run a forward pass to finite full-vocab logits, including the Mamba hybrid.",
+  "what_is_CORRECTED": "'mlx_lm covers all four' is true of imports and FALSE of execution for Qwen3-VL-30B-A3B, which resolves and accepts its config and then fails to construct -- qwen3_vl_moe.Model does not inherit the top-level tie_word_embeddings into text_config, and qwen3_moe.ModelArgs requires it with no default. Adding that one key builds and runs it.",
+  "what_is_UNCHANGED": "the storage gate. No real weights were loaded, so every weight-space caveat stands and no adequacy claim moves."
+ }
+}

@@ -1,0 +1,98 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-26T00:57:07Z",
+ "experiment_class": "ACCEL-STATE",
+ "knowledge_level": "INSTANCE",
+ "git_head": "5d7a169fb06ca538ae41073b4b33b4cb6dadc21e",
+ "identities": {
+  "experiment": {
+   "id": "G060-AKB-DEVICE-GENOME",
+   "obligation": "type the Accelerator's measured laws with their exact applicability domain, and refuse an entry broader than its evidence"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "status": "ABSENT",
+   "reason": "nothing was dispatched; this lane reads receipts"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model executed; the corpus is the subject"
+  },
+  "representation": {
+   "status": "ABSENT",
+   "reason": "no representation exercised"
+  },
+  "kernel": {
+   "status": "ABSENT",
+   "reason": "no kernel built, run or timed"
+  },
+  "runtime": {
+   "python": "3.12.13 (/Library/Frameworks/Python.framework/Versions/3.12)",
+   "note": "the default python3 on this box is 3.14.6 and has no mlx; nothing in this lane needs mlx, and the suite passes under both"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single machine; no transport crossed"
+  }
+ },
+ "result": {
+  "corpus_size": 78,
+  "receipts_yielding_laws": 22,
+  "laws": 22,
+  "entries_by_status": {
+   "ACTIVE": 17,
+   "CONDITIONAL": 4,
+   "REFUTED": 1
+  },
+  "negative_results": 10,
+  "unextracted_count": 56,
+  "unextracted_by_reason": {
+   "CAPABILITY_NOT_LAW": 22,
+   "MOCK_ONLY": 7,
+   "NO_VERDICT_FIELD": 5,
+   "PROSE_ONLY": 4,
+   "SUBSUMED": 6,
+   "SUPERSEDED_IN_FLIGHT": 12
+  },
+  "supersession_modelled": 14,
+  "negative_control": [
+   {
+    "control": "UNSCOPED on SHAPE whose source receipt measured one shape",
+    "what_it_claims": "that the scan result holds across all shapes, citing a single-valued field as breadth",
+    "observed_refusal": "AKB-SCAN-VS-CUMSUM: axis SHAPE is UNSCOPED but its basis receipts/headless/ACCELERATOR_SCAN.json#result.performance.16777216.gbps_2n.mlx_cumsum shows only 1 value. One measured value is not breadth -- name the value, or say UNKNOWN."
+   },
+   {
+    "control": "a bare 'X is faster' statement with no domain",
+    "what_it_claims": "a present-tense universal comparative the steer forbids",
+    "observed_refusal": "AKB-SCAN-VS-CUMSUM: statement makes a bare present-tense comparative claim ('is faster'). Record what the evidence supports: X WAS FASTER FOR primitive x shape x representation x machine x runtime."
+   },
+   {
+    "control": "a citation to a receipt path that does not exist",
+    "what_it_claims": "evidence from a receipt that is not on disk",
+    "observed_refusal": "citation names a receipt that does not exist: receipts/headless/ACCELERATOR_NO_SUCH_RECEIPT.json"
+   },
+   {
+    "control": "ACTIVE on a source receipt carrying AMENDED_IN_PLACE_*",
+    "what_it_claims": "that an amended receipt's law is current and servable",
+    "observed_refusal": "AKB-ORGAN-FLOOR-DOES-NOT-TRANSFER: status ACTIVE but source ACCELERATOR_ORGAN_REPRESENTATION_FLOOR.json is superseded by ['ACCELERATOR_ORGAN_REPRESENTATION_FLOOR.json#AMENDED_IN_PLACE_2026_08_25']. A law resting on an amended or closed receipt is CONDITIONAL at best."
+   },
+   {
+    "control": "ACTIVE on a receipt named by a later receipt's boundary_this_closes",
+    "what_it_claims": "that a law closed by a later block is still current",
+    "observed_refusal": "AKB-SCAN-VS-CUMSUM: status ACTIVE but source ACCELERATOR_RUNTIME_GATE.json is superseded by ['ACCELERATOR_RUNTIME_EXECUTES.json#boundary_this_closes', 'ACCELERATOR_RUNTIME_GATE.json#AMENDED_IN_PLACE_2026_08_25']. A law resting on an amended or closed receipt is CONDITIONAL at best."
+   },
+   {
+    "control": "evidence_class Measured on a source receipt with pass: false",
+    "what_it_claims": "a measurement from a run that failed",
+    "observed_refusal": "AKB-MACHINE-BANDWIDTH: evidence_class Measured but source receipts/headless/ACCELERATOR_FAILED.json records pass: false. A failed run is evidence of failure, not of the measurement."
+   }
+  ],
+  "a_defect_the_suite_caught_in_this_lane": "the first build ingested its OWN output: ACCELERATOR_LAW_BASE.json matches the ACCELERATOR_*.json corpus glob, so the base counted itself as an unclassified 78th receipt and would have grown by one on every build. test_every_unextracted_receipt_carries_a_reason caught it. corpus() now names and excludes this lane's own outputs.",
+  "what_the_path_collision_forced": "the contract names receipts/headless/ACCELERATOR_KNOWLEDGE_BASE.json as a NEW file for this AKB. It is not new: it is a live git-tracked artifact written by tools/accelerator/odyssey_pass.py, which this lane is forbidden to touch, holding organ SHAPES under schema hawking.accelerator.knowledge_base.v1. odyssey_pass rewrites it whole from its own _fresh(), so anything written there would be destroyed on the next pass AND would break the byte-identical rule. The law base is therefore ACCELERATOR_LAW_BASE.json and that receipt stays an ordinary corpus input."
+ },
+ "claim_boundary": "WHAT THIS DOES NOT COVER. (1) COVERAGE: 21 of 77 receipts yielded a typed law; 56 are in `unextracted` with a reason code, and 22 of those are CAPABILITY_NOT_LAW -- real results that record a construct now executes, which is not a relation with an applicability domain. A later lane could type several of them. (2) THE LAWS ARE HAND-EXTRACTED. Every number is quoted from a cited field of a receipt that was read, and the validator refuses a citation that does not resolve -- but nothing here proves the STATEMENT is a faithful reading of the field it cites. That gap is real and no test closes it. (3) THE VALIDATOR CHECKS FORM, NOT TRUTH. It refuses breadth without evidence, bare comparatives, unresolvable citations, ACTIVE-on-superseded and Measured-on-failed. It cannot tell whether an axis value is the RIGHT value; an entry naming the wrong machine passes. (4) SUPERSESSION IS SYNTACTIC: an AMEND* key or a receipt name inside boundary_this_closes. A receipt superseded in prose without either marker is invisible to it, and a receipt whose amendment STRENGTHENS its claim is treated the same as one whose amendment guts it. (5) NOTHING WAS MEASURED. This lane ran no GPU work; every number is transcribed from a prior receipt and inherits that receipt's own boundary, including the several that are DIRECTIONAL rather than admissible speedups.",
+ "pass": true
+}

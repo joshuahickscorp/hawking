@@ -1,0 +1,192 @@
+{
+ "schema": "hawking.headless.model2_compounding.v1",
+ "generated_at": "2026-08-25T00:43:18Z",
+ "generated_by": "tools/headless/model2_compounding.py",
+ "obligation": "G026 \u2014 MODEL_2_COMPOUNDING_PROVEN (directive \u00a789, \u00a70)",
+ "git_head": "eb1494112b61953122262e311cc9243dbd44952e",
+ "hand_authored": false,
+ "specimen": {
+  "oxx": "O005",
+  "model": "Qwen3-30B-A3B",
+  "canonical_source": "Qwen/Qwen3-30B-A3B",
+  "canonical_revision": "ad44e777bcd18fa416d9da3bd8f70d33ebb85d39",
+  "resolved_sha": "ad44e777bcd18fa416d9da3bd8f70d33ebb85d39",
+  "download_gib": 56.89,
+  "novel_organs": [
+   "moe_experts",
+   "moe_router"
+  ],
+  "transfer_overlap": 1.0,
+  "why": "highest mission value per download GiB among acquirable candidates",
+  "mission_value": 4.0,
+  "novelty_axes": [
+   "routing"
+  ],
+  "same_family_as_parent": true
+ },
+ "n_demonstrations": 5,
+ "n_happened": 5,
+ "n_adversaries_won": 0,
+ "demonstrations": [
+  {
+   "demonstration": "known organs recognized automatically",
+   "measured": {
+    "n_organs": 6,
+    "n_known": 2,
+    "n_declared_unmeasured": 4,
+    "n_novel": 0,
+    "n_unrecognized_clusters": 0,
+    "recognition_wall_s": 0.037
+   },
+   "happened": true,
+   "adversary": {
+    "claim_attacked": "the recognizer was tuned on this specimen, so recognizing it proves nothing",
+    "check": "the recognizer's held-out calibration was measured on two specimens (GLM-4.5-Air, Mistral-Small-3.1-24B) that were never used while the fingerprints were written or fixed",
+    "result": {
+     "heldout_precision": 1.0,
+     "heldout_recall": 1.0
+    },
+    "adversary_wins": false
+   },
+   "evidence": [
+    "receipts/headless/QWEN_TRANSFER_REHEARSAL.json#plan.n_organs_recognized",
+    "receipts/headless/ARCHITECTURE_RECOGNIZER.json#calibration_heldout"
+   ]
+  },
+  {
+   "demonstration": "some kernels reused",
+   "measured": {
+    "n_distinct_kernels_offered": 7,
+    "kernels": [
+     "affine2_group32_matvec_geo_tpr64_tg128",
+     "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+     "affine2_group64_matvec_geo_tpr64_tg128",
+     "binary_sparse_fused_geo_c5120_tpr64_tg128",
+     "q2f_g64_matvec_geo_c5120_tpr64_tg128",
+     "q2f_group64_matvec",
+     "q2f_group64_matvec_gate_up_swiglu_geo_tpr64_tg128"
+    ],
+    "organs_with_a_reusable_kernel": 6
+   },
+   "happened": true,
+   "adversary": {
+    "claim_attacked": "'reused' means named in a plan, not executed",
+    "check": "the kernels come from KERNEL_LIBRARY entries that passed the field completeness checker, and two of their parity contracts were executed for real on this machine",
+    "result": {
+     "n_complete": 17,
+     "contract_runs": [
+      "q2f_parity",
+      "affine2_parity"
+     ]
+    },
+    "honest_limitation": "no native kernel has yet EXECUTED against specimen #2's packed weights; the runtime has no qwen3_moe reader. What is demonstrated is kernel SELECTION from a qualified library, not kernel execution on this specimen.",
+    "adversary_wins": false
+   },
+   "evidence": [
+    "receipts/headless/QWEN_TRANSFER_REHEARSAL.json#plan.organ_plan",
+    "receipts/headless/KERNEL_LIBRARY.json#contract_runs"
+   ]
+  },
+  {
+   "demonstration": "some representation choices seeded, and the seed was better",
+   "measured": {
+    "n_tiers": 3,
+    "n_tiers_seeded_wins": 3,
+    "tiers": [
+     {
+      "bpw": 2.25,
+      "seeded": 0.498769,
+      "generic": 0.9471,
+      "ratio": 1.899
+     },
+     {
+      "bpw": 3.25,
+      "seeded": 0.26904,
+      "generic": 0.358701,
+      "ratio": 1.333
+     },
+     {
+      "bpw": 4.25,
+      "seeded": 0.131346,
+      "generic": 0.149519,
+      "ratio": 1.138
+     }
+    ]
+   },
+   "happened": true,
+   "adversary": {
+    "claim_attacked": "the seeded family wins because it was given more bits",
+    "check": "the comparison is at MATCHED bits per weight in every tier; the bpw column is identical on both sides of each row",
+    "result": {
+     "tiers_are_matched_bits": true,
+     "same_evaluator_and_activations": true
+    },
+    "adversary_wins": false
+   },
+   "evidence": [
+    "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json#matched_bits_comparison"
+   ]
+  },
+  {
+   "demonstration": "some prior failures avoided",
+   "measured": {
+    "n_prior_failures_applied": 41,
+    "n_branches_demoted": 41,
+    "distinct_warnings": [
+     "KIN_ORGAN_FAILURE",
+     "QN-BINARY-HEALING",
+     "QN-BINARY-INJURY",
+     "QN-HEAD-REDUNDANCY",
+     "QN-LOWRANK-HEALING",
+     "QN-SHARED-BASIS-DENSITY",
+     "QN-SHARED-K-HYBRID"
+    ]
+   },
+   "happened": true,
+   "adversary": {
+    "claim_attacked": "the rehearsal read Qwen's private scratch, so the 'avoided' branches are smuggled knowledge",
+    "check": "a sys.addaudithook recorded every file the rehearsal opened; the forbidden prefixes are ~/noetic, ~/models, workspace/, artifacts/ and crates/, and a deliberate smuggle is shown being caught",
+    "result": {
+     "n_forbidden_reads": 0,
+     "n_reads_outside_allowlist": 0,
+     "audit_clean": true
+    },
+    "adversary_wins": false
+   },
+   "evidence": [
+    "receipts/headless/QWEN_TRANSFER_REHEARSAL.json#input_audit",
+    "receipts/headless/QWEN_TRANSFER_REHEARSAL.json#plan.n_prior_failures_applied"
+   ]
+  },
+  {
+   "demonstration": "reduced time-to-strong-candidate",
+   "measured": {
+    "rule": "strictly lower held-out rel_fro than uniform_q4_g64 at no more bits",
+    "cold_evaluations": 9,
+    "transfer_evaluations": 5,
+    "evaluations_avoided": 4,
+    "both_landed_on": "affine_q4_g128"
+   },
+   "happened": true,
+   "adversary": {
+    "claim_attacked": "the transfer arm was simply given an easier target",
+    "check": "both arms use ONE evaluator, ONE activation set and ONE pre-registered rule; only the candidate ORDER differs. And under the loose 'first acceptable' target the cold arm WINS, which is reported rather than retuned",
+    "result": {
+     "cold_wins_under_loose_target": {
+      "cold": 2,
+      "transfer": 10
+     },
+     "honest_note_present": true
+    },
+    "adversary_wins": false
+   },
+   "evidence": [
+    "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json#evaluations_to_beat_the_generic_baseline",
+    "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json#honest_note"
+   ]
+  }
+ ],
+ "directive_stop_rule": "if none happen, stop scaling Odyssey and repair the transfer machinery first (\u00a789)",
+ "stop_rule_triggered": false,
+ "pass": true
+}

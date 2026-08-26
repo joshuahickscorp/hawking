@@ -1,0 +1,108 @@
+{
+ "schema": "hawking.headless.modellake_diagnosis.v1",
+ "generated_at": "2026-08-25T19:21:00Z",
+ "generated_by": "read-only diagnosis session (no process signalled, nothing under /Volumes/corpdrive modified, no commit made)",
+ "obligation": "diagnose filler-state.json Qwen2.5-72B-Instruct failure (exit_code=1, wall_s=1989.4, bytes_on_disk=0) before any worker-count change is considered",
+
+ "q1_code_mechanics": {
+  "source": ["tools/odyssey/lake_filler.py", "tools/odyssey/modellake.py"],
+  "worker_assignment": "lake_filler.py main(): diversity queue is a shared Python list `q` behind `qlock`; each of `a.workers` (currently 10, see q6 evidence) threads calls diversity_worker() which does `with qlock: item = q.pop(0)` -- one atomic pop per claim, so within ONE lake_filler.py process diversity workers cannot double-claim. Bulk workers get a static 1:1 assignment: `bulk = todo[-a.bulk_workers:]`, disjoint from `small = todo[:len(todo)-len(bulk)]`, so no overlap between diversity and bulk queues within one process either.",
+  "exit_code_origin": "exit_code in filler-state.json is `p.returncode` from `subprocess.run([...,'modellake.py','acquire',...])` in lake_filler.fetch(). modellake.py main() computes its own return code as `0 if out.get('acquired', ...) is not False else 1` -- so ANY unsuccessful acquire() outcome (capacity refusal, hf-download nonzero/negative return, hash rejection) surfaces as parent exit_code=1. A truly uncaught Python exception (e.g. the ValueError modellake.acquire() raises on revision mismatch) also exits 1 by CPython default, and neither modellake.py nor lake_filler.py contains a single `try`/`except` anywhere (grep returned zero matches in both files) -- ruled out the 'broad except disguises a real error' trap this campaign hit before; there is no except block here to disguise anything.",
+  "bytes_on_disk_measurement": "lake_filler.fetch() computes `got = ml.du(ml.TIER2 / item['slug'])` AFTER the subprocess exits -- i.e. it measures only the FINAL published directory under specimens/, which modellake.acquire() populates via `os.rename(part, final)` and ONLY after every declared file passes sha256 (or size-only) verification. bytes_on_disk=0 therefore means the atomic rename never happened; it does NOT mean zero network bytes were transferred -- partial data can exist under partial/<slug>/ and never be counted.",
+  "can_two_workers_claim_same_repo": "Within a single lake_filler.py run: no (qlock + disjoint index ranges, see above). ACROSS processes: yes, nothing stops it. plan() de-dupes only against `resident_slugs()` (specimens/ directories that are FULLY published) at the single moment plan() runs; there is no in-progress claim registry, lock file, or PID file anywhere in either script. This is not hypothetical -- see q4/live evidence below: two live OS processes are right now both running `modellake.py acquire --repo moonshotai/Kimi-Linear-48B-A3B-Instruct --revision e1df551a447157d4658b573f9a695d57658590e9` against the identical target path."
+ },
+
+ "q2_log_evidence": {
+  "qwen2_5_72b_log": {
+   "path": "/Volumes/corpdrive/hawking-modellake/filler-logs/Qwen--Qwen2.5-72B-Instruct@495f39366efe.log",
+   "measured_size_bytes": 0,
+   "note": "The log for the FAILED attempt recorded in filler-state.json (wall_s=1989.4) is empty. Cause (measured): lake_filler.fetch() opens this exact path in 'w' mode (truncating) every time it is called. A NEW attempt for this same repo is currently running (PID 24463/24504, started 2026-08-25 07:44, see q6), which reopened and truncated this log path and has not yet produced output because it has not finished. The original failure's error text is UNRECOVERABLE -- it was overwritten by the subsequent retry that reused the same deterministic log path."
+  },
+  "deepseek_v4_flash_log": {
+   "path": "/Volumes/corpdrive/hawking-modellake/filler-logs/deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6.log",
+   "measured_size_bytes": 4986,
+   "quoted_lines_verbatim": [
+    "{",
+    " \"acquired\": false,",
+    " \"error\": \"hf download exit -15\",",
+    " \"stderr\": \"\",",
+    " \"partial\": \"/Volumes/corpdrive/hawking-modellake/partial/deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6\"",
+    "}",
+    "Still waiting to acquire lock on /Volumes/corpdrive/hawking-modellake/partial/deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6/.cache/huggingface/download/model-00038-of-00046.safetensors.lock (elapsed: 10.0 seconds)",
+    "Still waiting to acquire lock on .../model-00034-of-00046.safetensors.lock (elapsed: 579.3 seconds)"
+   ],
+   "interpretation": "exit -15 means the hf-download child received SIGTERM (Python subprocess returncode = -signum). This is direct, measured evidence of file-lock contention: huggingface_hub's per-shard '.lock' files (via the filelock package) being held/contended across concurrent 'hf download' invocations pointed at the same --local-dir. The log's own internal ordering (short JSON result block, then renewed lock-wait chatter afterward) is itself consistent with two writers sharing one truncated-then-reopened log path -- i.e. more than one process touching this exact log/target concurrently, the same defect class as q1/q4.",
+   "measured_vs_inferred": "MEASURED: exit -15, the lock-wait text, the log corruption pattern. INFERRED: that this same mechanism (not e.g. plain network flakiness) is what produced the Qwen2.5-72B-Instruct failure -- plausible and evidence-supported by analogy and by the live Kimi-Linear duplicate below, but NOT directly provable because that specific log is gone."
+  },
+  "autoadvance_logs": {
+   "qwen3_vl_30b": "Success record: acquired=true, 15183298560-scale bytes irrelevant here, path completed normally, no error text.",
+   "falcon_h1_7b": "Success record: acquired=true, bytes=15183298560, wall_s=196.0, no error text.",
+   "note": "Neither autoadvance log shows any failure or lock contention; both are clean successful single-shot acquisitions from the independent capacity_event(start=True) code path in modellake.py, which is itself a SEPARATE, uncoordinated spawn mechanism from lake_filler.py (see q1)."
+  }
+ },
+
+ "q3_failure_mode_elimination": {
+  "gated_repo_auth_refusal": "RULED OUT (measured). Qwen/Qwen2.5-72B-Instruct is ungated and is downloading successfully right now under the exact same repo+revision (PID 24504, 'hf download Qwen/Qwen2.5-72B-Instruct --revision 495f39366efef23836d0cfae4fbe635880d2be31', alive since 07:44:45, 12.6% CPU, actively transferring). A gated-repo refusal also fails in seconds, not 1989s.",
+  "disk_space_precheck_refusal": "RULED OUT (measured, directly from the failed record's own embedded capacity_check): budget_ok=true, headroom_ok=true, free_gib=4397.7. capacity_ok() passed, so fetch() proceeded into the actual subprocess call -- it did not stop at the precheck.",
+  "manifest_identity_resolution_failure": "UNLIKELY (inferred). modellake.acquire() calls the HF metadata API (`_api()`, urllib, timeout=30) before any download; a revision mismatch there raises ValueError almost instantly, not after 33 minutes. Cannot be fully excluded (DNS/getaddrinfo hangs are not bounded by urlopen's timeout parameter on all platforms), but no evidence supports it and it does not fit the observed duration.",
+  "timeout": "RULED OUT as a coded mechanism -- neither acquire() nor fetch() sets any subprocess timeout= anywhere; nothing in the code times out at 1989s. If something WAS killed at that mark, it was an external signal, not a programmed timeout (compare: DeepSeek's SIGTERM/exit -15, which IS an external kill of exactly this shape).",
+  "network_failure_generic": "POSSIBLE but not the best-evidenced explanation -- see file_lock_contention below.",
+  "file_lock_contention_from_duplicate_process": "BEST-EVIDENCED (inferred for Qwen2.5-72B specifically, but the mechanism itself is directly measured elsewhere in this same system right now). huggingface_hub's 'hf download' takes a per-shard filelock under <local-dir>/.cache/huggingface/download/*.lock; a second process targeting the same --local-dir blocks waiting for those locks, potentially for the full duration before something (a restart, a manual kill, resource pressure) SIGTERMs it. This is proven to be actively happening in this system: see q4 live duplicate-process evidence."
+ },
+
+ "q4_in_flight_state_and_unclassified_check": {
+  "where_in_flight_state_lives": "NOWHERE in filler-state.json -- lake_filler.fetch() only appends to `_results`/writes STATE after `subprocess.run()` returns, i.e. only on COMPLETION (success or failure) of one item. An item still running has zero representation in filler-state.json. The only place in-flight state exists is (a) the live OS process table (ps), and (b) each item's per-slug log file under filler-logs/, which is truncated fresh on every attempt and therefore only reflects the CURRENT attempt, not history.",
+  "seven_repos_in_flight_confirmed": "MEASURED via ps: lake_filler.py PID 24408 (started 2026-08-25 07:44:21, --workers 10 --bulk-workers 2, PPID=1 i.e. orphaned/reparented from its original launcher) has exactly 7 child 'modellake.py acquire' processes, all started 07:44:34: mistralai/Mistral-Small-3.1-24B-Instruct-2503 (24451), deepseek-ai/DeepSeek-V4-Flash (24452), zai-org/GLM-4.5 (24460), moonshotai/Kimi-K3 (24461), zai-org/GLM-4.5-Air (24462), Qwen/Qwen2.5-72B-Instruct (24463), moonshotai/Kimi-Linear-48B-A3B-Instruct (24470). This matches the prompt's '7 repos in flight' exactly.",
+  "live_duplicate_claim_caught_in_the_act": "MEASURED, not inferred: PID 52317 (`modellake.py acquire --repo moonshotai/Kimi-Linear-48B-A3B-Instruct --revision e1df551a447157d4658b573f9a695d57658590e9`, PPID=1, started 2026-08-25 01:34:21 -- i.e. BEFORE the 07:44 restart and orphaned by it) is STILL ALIVE right now, running the IDENTICAL repo+revision as the current worker PID 24470 (started 07:44:34 under the current lake_filler.py). Both target the same partial directory: /Volumes/corpdrive/hawking-modellake/partial/moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471. This is direct, present-tense proof that the restart mentioned in the task orphaned at least one prior-run process instead of killing it, and that nothing in the code detects or prevents the resulting collision.",
+  "unclassified_models_on_disk": "NONE found. specimens/ contains exactly 4 published directories (Qwen--Qwen3-30B-A3B, Qwen--Qwen3-VL-30B-A3B-Instruct, moonshotai--Kimi-VL-A3B-Instruct, tiiuae--Falcon-H1-7B-Instruct) and manifests/ contains a matching .json for every one of them, plus one extra manifest (Qwen--Qwen3-0.6B) with no specimens/ directory -- consistent with retire(), which deletes the specimens/ bytes but deliberately keeps the manifest as the reacquisition recipe. Every currently-downloading partial/ entry corresponds 1:1 to a live or orphaned 'modellake.py acquire' process. Caveat: this checks directory/manifest presence only, by name, not manifest CONTENTS against actual bytes, and does not check any separate architecture/genome classification layer that may exist elsewhere in the pipeline (out of scope here, not determined)."
+ },
+
+ "q5_goodput_measurement": {
+  "method": "df -k /Volumes/corpdrive, 4 samples 60s apart (3 windows), no signals sent to anything, background sampler only.",
+  "raw_samples_used_kb": [1057049624, 1059172624, 1059790916, 1060571684],
+  "sample_times_edt": ["15:15:55", "15:16:55", "15:17:55", "15:18:55"],
+  "windows": [
+   {"window": 1, "interval": "15:15:55-15:16:55", "delta_kib": 2123000, "delta_mib": 2073.24, "MiB_per_s": 34.55},
+   {"window": 2, "interval": "15:16:55-15:17:55", "delta_kib": 618292, "delta_mib": 603.80, "MiB_per_s": 10.06},
+   {"window": 3, "interval": "15:17:55-15:18:55", "delta_kib": 780768, "delta_mib": 762.47, "MiB_per_s": 12.71}
+  ],
+  "spread": "10.06 to 34.55 MiB/s across three consecutive clean 60s windows (mean ~19.1 MiB/s over the full 180s span) -- large window-to-window variance even with nothing else contending, so a single 60s sample is not representative in either direction.",
+  "concurrent_heavy_processes_at_measurement_time": "ps showed no unrelated large read/write competing on the bus at measurement time (the only other bus-adjacent activity was the modellake fleet itself). Total process count 756, mostly idle 'merc-agent sandbox-egress-proxy' helper processes (0.00s CPU each, unrelated sandboxes) and this Claude session. No evidence of a contaminating bulk transfer like the previously-reported 14 GB read.",
+  "measured_vs_documented": "The operator-supplied ~22 MiB/s (at 10 workers) and ~5.53 MiB/s (contaminated single sample) figures were given as context, not re-derived here; this fresh 3-window measurement (10.06-34.55 MiB/s, mean ~19.1) sits closer to the ~22 MiB/s figure than the contaminated 5.53 MiB/s one, for whatever that is worth given only 3 short windows and 5 (not 10) actually-active hf-download children at measurement time (2 of the 7 in-flight items -- DeepSeek-V4-Flash and one of the two Kimi-Linear processes -- have no live hf-download child at all right now, consistent with them being stuck)."
+ },
+
+ "q6_concurrency_live_changeable": {
+  "answer": "NO -- requires a process restart. Confirmed from code, not inferred.",
+  "evidence": [
+   "lake_filler.py main(): `ap.add_argument('--workers', type=int, default=4, ...)` and `ap.add_argument('--bulk-workers', type=int, default=1, ...)` -- parsed once via `a = ap.parse_args()` at process start.",
+   "Thread count is fixed at startup: `threads = [threading.Thread(target=diversity_worker, args=(i + 1,), daemon=False) for i in range(a.workers)]`, plus one thread per bulk item -- both computed once, before `for t in threads: t.start()`, never revisited.",
+   "No config-file re-read, no signal handler, no state-file field controlling concurrency anywhere in lake_filler.py or modellake.py -- confirmed by inspection of both files in full; there is no `signal.signal(` call and no re-open of any config/state path inside the worker loop.",
+   "The currently-running instance (PID 24408, PPID=1) was already launched with `--workers 10 --bulk-workers 2` -- i.e. concurrency is already well above the code's own default of 4+1, so any 'should we raise workers' discussion is against a baseline of 12 configured slots (10 diversity + 2 bulk), not 4."
+  ],
+  "implication_for_the_no_restart_law": "Since concurrency cannot change without killing PID 24408 (and, transitively, needing to also clean up its children), and this diagnosis has already caught one orphaned process (PID 52317) surviving the LAST restart uncleaned and actively colliding with a fresh worker on the same repo, any future restart carries a demonstrated, non-hypothetical risk of creating more of the same collision -- this is the strongest argument in this report for not restarting again until that gap is closed."
+ },
+
+ "measured_vs_inferred_summary": {
+  "measured": [
+   "filler-state.json's two recorded results (exact fields, verbatim)",
+   "Qwen2.5-72B-Instruct log is 0 bytes right now",
+   "DeepSeek-V4-Flash log contains 'hf download exit -15' and repeated 'Still waiting to acquire lock' lines with elapsed timers up to 579.3s",
+   "zero try/except blocks exist in either script (grep, full file)",
+   "no signal handler, no live config reload path for worker counts (full file read)",
+   "PID 52317 (Kimi-Linear, started 01:34, orphaned) and PID 24470 (Kimi-Linear, started 07:44) are simultaneously alive right now targeting the identical repo+revision+path",
+   "current lake_filler.py is running with --workers 10 --bulk-workers 2, not the code's default of 4+1",
+   "the 3 clean df-based goodput windows and their spread",
+   "capacity_check embedded in the failed Qwen2.5-72B record shows budget_ok=true/headroom_ok=true",
+   "Qwen/Qwen2.5-72B-Instruct is downloading successfully right now under a fresh attempt (PID 24504)"
+  ],
+  "inferred": [
+   "that file-lock contention from a duplicate/orphaned process (the same mechanism proven live for Kimi-Linear and evidenced for DeepSeek) is what specifically caused the ORIGINAL Qwen2.5-72B-Instruct 1989s/0-byte failure -- plausible and best-supported by the available analogy and timing, but not directly provable because that specific log was overwritten by the current retry before this diagnosis could read it"
+  ],
+  "could_not_determine": [
+   "the exact original error text for the Qwen2.5-72B-Instruct failure (log overwritten by the in-progress retry; unrecoverable without a filesystem snapshot or journal that was not asked for and was not taken)",
+   "why DeepSeek-V4-Flash's and one Kimi-Linear process's modellake.py acquire (PIDs 24452 and one of the two Kimi-Linear PIDs) show live CPU usage with no visible hf-download child and no new log output for hours -- consistent with being stuck inside the CPU-bound sha256() verification loop on already-downloaded shards, but not confirmed by any direct trace/profiler read",
+   "whether any separate architecture/genome classification layer (beyond the specimens/manifests reconciliation checked here) leaves any downloaded model unclassified -- out of scope of the filler/lake code read for this report",
+   "the precise byte-level mechanism by which the DeepSeek-V4-Flash log ended up containing both a terminal JSON result block and renewed lock-wait chatter afterward (consistent with two writers touching the same truncated log path, but the exact interleaving was not traced)"
+  ]
+ }
+}

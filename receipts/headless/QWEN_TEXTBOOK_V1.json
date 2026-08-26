@@ -1,0 +1,211 @@
+{
+ "schema": "hawking.headless.textbook_trace.v1",
+ "generated_at": "2026-08-25T04:03:42Z",
+ "generated_by": "tools/headless/textbook_trace.py",
+ "obligation": "G006 \u2014 QWEN_TEXTBOOK_V1 traceability (directive \u00a713)",
+ "document": "docs/ultragoals/QWEN_TEXTBOOK_V1.md",
+ "n_claims": 30,
+ "n_bare_citations": 8,
+ "n_untraceable": 0,
+ "n_problems": 0,
+ "problems": [],
+ "untraceable_lines": [],
+ "claims": [
+  {
+   "value": "26895998464",
+   "cite": "receipts/headless/WHOLE_MODEL_NATIVE.json#parent_params",
+   "ok": true,
+   "receipt_value": 26895998464
+  },
+  {
+   "value": "2.25",
+   "cite": "receipts/headless/BYTES_FRONTIER.json#baseline.active_bpw",
+   "ok": true,
+   "receipt_value": 2.25
+  },
+  {
+   "value": "2.25",
+   "cite": "receipts/headless/BYTES_FRONTIER.json#representations.0.active_bpw",
+   "ok": true,
+   "receipt_value": 2.25
+  },
+  {
+   "value": "0",
+   "cite": "receipts/headless/BINARY_HEALING.json#finding.n_that_reached_coherent_generation",
+   "ok": true,
+   "receipt_value": 0
+  },
+  {
+   "value": "3.126550820024315",
+   "cite": "receipts/headless/ORGAN_DENSITY_FLOORS.json#organs.gqa_attention.candidates.5.complete_ebpw",
+   "ok": true,
+   "receipt_value": 3.126550820024315
+  },
+  {
+   "value": "3.1365379214627285",
+   "cite": "receipts/headless/ORGAN_DENSITY_FLOORS.json#organs.deltanet.candidates.5.complete_ebpw",
+   "ok": true,
+   "receipt_value": 3.1365379214627285
+  },
+  {
+   "value": "3.125",
+   "cite": "receipts/headless/ORGAN_DENSITY_FLOORS.json#organs.embedding_output.candidates.3.complete_ebpw",
+   "ok": true,
+   "receipt_value": 3.125
+  },
+  {
+   "value": "3.126550820024315",
+   "cite": "receipts/headless/ORGAN_DENSITY_FLOORS.json#organs.gqa_attention.candidates.5.complete_ebpw",
+   "ok": true,
+   "receipt_value": 3.126550820024315
+  },
+  {
+   "value": "2.2515978145705065",
+   "cite": "receipts/headless/ORGAN_DENSITY_FLOORS.json#organs.gqa_attention.candidates.6.complete_ebpw",
+   "ok": true,
+   "receipt_value": 2.2515978145705065
+  },
+  {
+   "value": "3.1365379214627285",
+   "cite": "receipts/headless/ORGAN_DENSITY_FLOORS.json#organs.deltanet.candidates.5.complete_ebpw",
+   "ok": true,
+   "receipt_value": 3.1365379214627285
+  },
+  {
+   "value": "2.2618875554464477",
+   "cite": "receipts/headless/ORGAN_DENSITY_FLOORS.json#organs.deltanet.candidates.6.complete_ebpw",
+   "ok": true,
+   "receipt_value": 2.2618875554464477
+  },
+  {
+   "value": "3.125",
+   "cite": "receipts/headless/ORGAN_DENSITY_FLOORS.json#organs.embedding_output.candidates.3.complete_ebpw",
+   "ok": true,
+   "receipt_value": 3.125
+  },
+  {
+   "value": "2.25",
+   "cite": "receipts/headless/ORGAN_DENSITY_FLOORS.json#organs.embedding_output.candidates.4.complete_ebpw",
+   "ok": true,
+   "receipt_value": 2.25
+  },
+  {
+   "value": "2.5969567265364937",
+   "cite": "receipts/headless/WHOLE_MODEL_NATIVE.json#compile.complete_ebpw",
+   "ok": true,
+   "receipt_value": 2.5969567265364937
+  },
+  {
+   "value": "8234330016",
+   "cite": "receipts/headless/WHOLE_MODEL_NATIVE.json#compile.active_bytes_per_token",
+   "ok": true,
+   "receipt_value": 8234330016.0
+  },
+  {
+   "value": "964",
+   "cite": "receipts/headless/WHOLE_MODEL_NATIVE.json#decode.dispatches_per_token",
+   "ok": true,
+   "receipt_value": 964
+  },
+  {
+   "value": "30171291",
+   "cite": "receipts/headless/WHOLE_MODEL_NATIVE.json#decode.median_gpu_ns_per_token",
+   "ok": true,
+   "receipt_value": 30171291
+  },
+  {
+   "value": "16",
+   "cite": "receipts/headless/WHOLE_MODEL_NATIVE.json#decode.coherence.n_unique_ids",
+   "ok": true,
+   "receipt_value": 16
+  },
+  {
+   "value": "0",
+   "cite": "receipts/headless/QWEN_CAPABILITY_QUALIFICATION.json#results.3.overall.passed",
+   "ok": true,
+   "receipt_value": 0
+  },
+  {
+   "value": "27",
+   "cite": "receipts/headless/QWEN_CAPABILITY_QUALIFICATION.json#results.2.overall.passed",
+   "ok": true,
+   "receipt_value": 27
+  },
+  {
+   "value": "819.0",
+   "cite": "receipts/headless/WHOLE_MODEL_NATIVE.json#three_roofs.DEVICE_THEORETICAL",
+   "ok": true,
+   "receipt_value": 819.0
+  },
+  {
+   "value": "778.8",
+   "cite": "receipts/headless/BANDWIDTH_ROOF.json#anchor_roof.correction.new_roof_gb_s",
+   "ok": true,
+   "receipt_value": 778.8
+  },
+  {
+   "value": "690.8064962384027",
+   "cite": "receipts/headless/WHOLE_MODEL_NATIVE.json#three_roofs.MODEL_REACHABLE",
+   "ok": true,
+   "receipt_value": 690.8064962384027
+  },
+  {
+   "value": "272.22650823855514",
+   "cite": "receipts/headless/WHOLE_MODEL_NATIVE.json#three_roofs.current_achieved_gb_s",
+   "ok": true,
+   "receipt_value": 272.22650823855514
+  },
+  {
+   "value": "0.39407056783757816",
+   "cite": "receipts/headless/WHOLE_MODEL_NATIVE.json#three_roofs.current_fraction_of_model_reachable",
+   "ok": true,
+   "receipt_value": 0.39407056783757816
+  },
+  {
+   "value": "0.04382772212914319",
+   "cite": "receipts/headless/STRUCTURAL_ELIMINATION.json#attention_heads.headline.q_mean_cosine_all_layers",
+   "ok": true,
+   "receipt_value": 0.04382772212914319
+  },
+  {
+   "value": "17",
+   "cite": "receipts/headless/KERNEL_LIBRARY.json#n_kernels",
+   "ok": true,
+   "receipt_value": 17
+  },
+  {
+   "value": "9",
+   "cite": "receipts/headless/KERNEL_LIBRARY.json#n_kernels_without_a_runnable_contract",
+   "ok": true,
+   "receipt_value": 9
+  },
+  {
+   "value": "40",
+   "cite": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#counts.total",
+   "ok": true,
+   "receipt_value": 40
+  },
+  {
+   "value": "0",
+   "cite": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#counts.by_level.GENERAL_PHYSICAL",
+   "ok": true,
+   "receipt_value": 0
+  }
+ ],
+ "negative_control": {
+  "what": "a document with a wrong value, a dead pointer and an uncited number",
+  "problem_kinds_caught": [
+   "DEAD_POINTER",
+   "VALUE_DISAGREES"
+  ],
+  "n_problems": 2,
+  "n_untraceable": 1,
+  "checker_can_fail": true,
+  "expected_kinds": [
+   "DEAD_POINTER",
+   "VALUE_DISAGREES"
+  ],
+  "all_expected_caught": true
+ },
+ "pass": true
+}

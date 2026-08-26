@@ -1,0 +1,423 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T12:50:17",
+ "experiment_class": "ACCEL-CORRECTNESS",
+ "knowledge_level": "INSTANCE",
+ "git_head": "a38e48f4b5a7bed8c6a89a50f59665b6f7757c8e",
+ "identities": {
+  "experiment": {
+   "id": "A_HAZARD_I_INTRODUCED_WAS_ALREADY_IN_TWO_OTHER_KERNELS",
+   "obligation": "G043/G046",
+   "steer": "S015 \u00a73 NORMALIZATION; \u00a7141 retention"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "api": "Metal via MLX mx.fast.metal_kernel JIT"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "synthetic rows; no model executed"
+  },
+  "representation": {
+   "status": "ABSENT",
+   "reason": "dense f32"
+  },
+  "kernel": {
+   "air_op": "AirNorm",
+   "modes": [
+    "rms",
+    "layer"
+   ],
+   "variance_strategies": [
+    "two_pass",
+    "one_pass"
+   ]
+  },
+  "runtime": {
+   "python": "3.12.6",
+   "mlx": "0.32.1"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device"
+  }
+ },
+ "headline": "NORMALIZATION was the next named-absent corpus item. Building it produced three findings bigger than the kernel: a WRITE-AFTER-READ hazard that WAS ALREADY IN SOFTMAX AND ATTENTION, a batching correction that flipped the MLX verdict from `no claim` to `we lose`, and a catastrophic-cancellation threshold measured rather than recited.",
+ "correctness": {
+  "vs_float64_oracle": [
+   {
+    "mode": "rms",
+    "rows": 8,
+    "cols": 128,
+    "max_abs_err": 5.851993325478588e-07,
+    "non_power_of_two": false
+   },
+   {
+    "mode": "rms",
+    "rows": 4,
+    "cols": 4096,
+    "max_abs_err": 9.062319641373051e-07,
+    "non_power_of_two": false
+   },
+   {
+    "mode": "layer",
+    "rows": 8,
+    "cols": 128,
+    "max_abs_err": 4.1491132396487274e-07,
+    "non_power_of_two": false
+   },
+   {
+    "mode": "layer",
+    "rows": 4,
+    "cols": 4099,
+    "max_abs_err": 7.134829358435013e-07,
+    "non_power_of_two": true
+   },
+   {
+    "mode": "layer",
+    "rows": 3,
+    "cols": 37,
+    "max_abs_err": 3.419206668908714e-07,
+    "non_power_of_two": true
+   },
+   {
+    "mode": "rms",
+    "rows": 2,
+    "cols": 8192,
+    "max_abs_err": 5.904587920824156e-07,
+    "non_power_of_two": false
+   }
+  ],
+  "worst": 9.06e-07,
+  "includes_non_power_of_two": [
+   "4099",
+   "37"
+  ],
+  "agreement_with_mlx_fast": "9.5e-07 on all four timed shapes, so our fused kernel computes what Apple's does"
+ },
+ "THE_HAZARD_AND_IT_WAS_ALREADY_ELSEWHERE": {
+  "how_it_was_found": "the top-k receipt one block earlier measured a missing barrier being EXACTLY CORRECT at threadgroup 64 and 256 and firing at 1024 in 16 of 30 runs, and concluded a control must be run ACROSS WIDTHS. Doing that here found something the control was not looking for: THE INTACT KERNEL WAS WRONG AT 1024.",
+  "measured": {
+   "intact_max_abs_err_by_threadgroup": {
+    "64": 5.66e-07,
+    "256": 5.66e-07,
+    "1024": 0.0613
+   }
+  },
+  "cause": "phase 1 writes red[warp], barriers, and then EVERY thread READS red[0..lanes). Phase 2 then WRITES red[warp] again with NOTHING ordering that write after those reads -- a write-after-read hazard, not a missing publish barrier. At 32 lanes the read loop is long enough for a fast thread to overtake a slow one.",
+  "AND_THE_SAME_SHAPE_WAS_ALREADY_IN_TWO_SHIPPED_KERNELS": {
+   "softmax": [
+    {
+     "threadgroup": 64,
+     "reps": 10,
+     "worst_max_abs_err": 1.3279331090298996e-07,
+     "wrong": false
+    },
+    {
+     "threadgroup": 256,
+     "reps": 10,
+     "worst_max_abs_err": 1.3279331090298996e-07,
+     "wrong": false
+    },
+    {
+     "threadgroup": 512,
+     "reps": 10,
+     "worst_max_abs_err": 1.3279331090298996e-07,
+     "wrong": false
+    },
+    {
+     "threadgroup": 1024,
+     "reps": 10,
+     "worst_max_abs_err": 7.318866612759933e-08,
+     "wrong": false
+    }
+   ],
+   "attention": [
+    {
+     "threadgroup": 64,
+     "reps": 6,
+     "worst_max_abs_err": 8.088572274467243e-08,
+     "wrong": false
+    },
+    {
+     "threadgroup": 256,
+     "reps": 6,
+     "worst_max_abs_err": 8.833630334159626e-08,
+     "wrong": false
+    },
+    {
+     "threadgroup": 1024,
+     "reps": 6,
+     "worst_max_abs_err": 8.833630334159626e-08,
+     "wrong": false
+    }
+   ],
+   "reading": "NEITHER FIRES, at any width, across 10 and 6 runs -- because a long exp loop sits between the read and the next write. But the previous receipt's own words apply: A RACE THAT DOES NOT FIRE IS NOT A PASSING TEST. Softmax and attention were not safe, they were UNCAUGHT, and their receipts measured them correct for many blocks.",
+   "fixed_structurally_not_by_evidence": "the second reduction now gets ITS OWN SLOTS in all three lowerings. That beats adding a third barrier because there is nothing left to forget, and it costs 128 bytes of threadgroup memory at the widest setting."
+  },
+  "after_the_fix": {
+   "threadgroup_1024_worst_over_20_runs": 6.1e-07,
+   "was": 0.0613,
+   "widths_checked": [
+    64,
+    256,
+    512,
+    1024
+   ]
+  },
+  "the_barrier_control_itself_is_LOUD_here": {
+   "trials": [
+    {
+     "threadgroup": 64,
+     "reps": 10,
+     "runs_that_fired": 10,
+     "worst_max_abs_err_mutated": 0.042812,
+     "intact_max_abs_err": 5.657309625206608e-07
+    },
+    {
+     "threadgroup": 256,
+     "reps": 10,
+     "runs_that_fired": 10,
+     "worst_max_abs_err_mutated": 1.154264,
+     "intact_max_abs_err": 5.657309625206608e-07
+    },
+    {
+     "threadgroup": 1024,
+     "reps": 10,
+     "runs_that_fired": 10,
+     "worst_max_abs_err_mutated": 1.96208,
+     "intact_max_abs_err": 0.061307860350331644
+    }
+   ],
+   "why_it_differs_from_top_k": "this barrier publishes the ROW MEAN, which every thread then reads -- a TOTAL dependency, so removing it is wrong 10 of 10 runs at every width (0.043 / 1.15 / 1.96). The top-k tree reduce's dependency is INCIDENTAL, which is why the same class of control was nearly silent there."
+  }
+ },
+ "THE_BATCHING_CORRECTION_FLIPPED_THE_VERDICT": {
+  "unbatched": {
+   "rms_4096x4096": {
+    "ours_ms": 0.4154,
+    "mlx_ms": 0.4115,
+    "verdict": {
+     "verdict": "NO_CLAIM",
+     "reason": "an arm failed the 10.0% IQR gate (mlx 12.62%, ours 9.62%) and the margin 0.95% does not overwhelm that noise",
+     "speedup": null
+    }
+   },
+   "layer_4096x4096": {
+    "ours_ms": 0.4274,
+    "mlx_ms": 0.4121,
+    "verdict": {
+     "verdict": "INDISTINGUISHABLE",
+     "speedup": 0.9643,
+     "reason": "margin 3.57% does not clear arm noise 8.56%"
+    }
+   },
+   "rms_8192x1024": {
+    "ours_ms": 0.2945,
+    "mlx_ms": 0.291,
+    "verdict": {
+     "verdict": "NO_CLAIM",
+     "reason": "an arm failed the 10.0% IQR gate (mlx 8.84%, ours 11.42%) and the margin 1.19% does not overwhelm that noise",
+     "speedup": null
+    }
+   },
+   "layer_8192x1024": {
+    "ours_ms": 0.3011,
+    "mlx_ms": 0.2948,
+    "verdict": {
+     "verdict": "NO_CLAIM",
+     "reason": "an arm failed the 10.0% IQR gate (mlx 7.16%, ours 16.7%) and the margin 2.15% does not overwhelm that noise",
+     "speedup": null
+    }
+   }
+  },
+  "batched_10_per_timed_call": {
+   "rms_4096x4096": {
+    "ours_ms_per_call": 0.2405,
+    "ours_iqr": 9.6,
+    "mlx_ms_per_call": 0.2094,
+    "mlx_iqr": 6.05,
+    "verdict": {
+     "verdict": "BASELINE_WINS",
+     "speedup": 0.8707,
+     "margin_pct": 12.93,
+     "arm_noise_pct": 9.6
+    }
+   },
+   "layer_4096x4096": {
+    "ours_ms_per_call": 0.3254,
+    "ours_iqr": 7.28,
+    "mlx_ms_per_call": 0.2621,
+    "mlx_iqr": 40.4,
+    "verdict": {
+     "verdict": "NO_CLAIM",
+     "reason": "an arm failed the 10.0% IQR gate (mlx 40.4%, ours 7.28%) and the margin 24.16% does not overwhelm that noise",
+     "speedup": null
+    }
+   },
+   "rms_8192x1024": {
+    "ours_ms_per_call": 0.1339,
+    "ours_iqr": 5.43,
+    "mlx_ms_per_call": 0.1212,
+    "mlx_iqr": 6.36,
+    "verdict": {
+     "verdict": "BASELINE_WINS",
+     "speedup": 0.9055,
+     "margin_pct": 9.45,
+     "arm_noise_pct": 6.36
+    }
+   },
+   "layer_8192x1024": {
+    "ours_ms_per_call": 0.1779,
+    "ours_iqr": 5.98,
+    "mlx_ms_per_call": 0.1237,
+    "mlx_iqr": 6.44,
+    "verdict": {
+     "verdict": "BASELINE_WINS",
+     "speedup": 0.695,
+     "margin_pct": 30.5,
+     "arm_noise_pct": 6.44
+    }
+   }
+  },
+  "what_changed_and_why_it_matters": "unbatched, 3 of 4 shapes returned NO_CLAIM and one INDISTINGUISHABLE -- a reader would have taken that as parity with Apple's hand-tuned primitive. Batched, with clean arms, MLX WINS at 0.87x, 0.91x and 0.70x. THE FIRST MEASUREMENT DID NOT SHOW PARITY, IT SHOWED AN INSTRUMENT THAT COULD NOT SEE, and reporting `no claim either way` would have let the flattering reading stand.",
+  "AND_THE_MACHINE_CONSTANT_PREDICTS_THE_DILUTION": {
+   "per_call_time_removed_by_batching_ms": {
+    "rms_4096x4096": {
+     "ours": 0.1749,
+     "mlx": 0.2021
+    },
+    "layer_4096x4096": {
+     "ours": 0.102,
+     "mlx": 0.15
+    },
+    "rms_8192x1024": {
+     "ours": 0.1606,
+     "mlx": 0.1698
+    },
+    "layer_8192x1024": {
+     "ours": 0.1232,
+     "mlx": 0.1711
+    }
+   },
+   "graph_receipt_constant": "a cross-command-buffer submission costs ~0.157 ms",
+   "reading": "six of the eight arms shed 0.10-0.20 ms per call, centred on the 0.157 ms the AirGraph sweep measured in unrelated work. The submission was COMMON MODE -- it did not bias the direction, it DILUTED the margin until the gate refused a real result, which is the third time this program has caught that exact instrument failure."
+  },
+  "MLX_RETAINED": "\u00a7141 and \u00a7142: the evidence says DO NOT REPLACE. Apple's fused primitive wins on every shape where the gate spoke."
+ },
+ "the_cancellation_threshold_measured": {
+  "prediction_before_the_run": "relative variance error ~ (mean/sigma)^2; indistinguishable at ratio 1; f32's 24 bits exhausted near ratio 4096",
+  "sweep": [
+   {
+    "mean_over_sigma": 1,
+    "true_variance": 1.025566,
+    "two_pass": {
+     "out_max_abs_err": 5.154170832355476e-07,
+     "out_rel_err": 1.2742063861320293e-07
+    },
+    "one_pass": {
+     "out_max_abs_err": 5.902529061074802e-07,
+     "out_rel_err": 1.4592143855104353e-07
+    }
+   },
+   {
+    "mean_over_sigma": 16,
+    "true_variance": 0.975562,
+    "two_pass": {
+     "out_max_abs_err": 1.0032575552543221e-06,
+     "out_rel_err": 2.3394260495673098e-07
+    },
+    "one_pass": {
+     "out_max_abs_err": 5.997945963009954e-05,
+     "out_rel_err": 1.3986190242250977e-05
+    }
+   },
+   {
+    "mean_over_sigma": 256,
+    "true_variance": 0.991743,
+    "two_pass": {
+     "out_max_abs_err": 1.0992905288276233e-05,
+     "out_rel_err": 2.7281246506871458e-06
+    },
+    "one_pass": {
+     "out_max_abs_err": 0.022875770447321475,
+     "out_rel_err": 0.0056771118848222375
+    }
+   },
+   {
+    "mean_over_sigma": 1024,
+    "true_variance": 0.974344,
+    "two_pass": {
+     "out_max_abs_err": 9.297716124656574e-05,
+     "out_rel_err": 2.18428486960625e-05
+    },
+    "one_pass": {
+     "out_max_abs_err": 0.530006308892288,
+     "out_rel_err": 0.12451281000494537
+    }
+   },
+   {
+    "mean_over_sigma": 4096,
+    "true_variance": 0.979469,
+    "two_pass": {
+     "out_max_abs_err": 0.00030002437848253294,
+     "out_rel_err": 7.200716878348243e-05
+    },
+    "one_pass": {
+     "out_max_abs_err": NaN,
+     "out_rel_err": NaN
+    }
+   },
+   {
+    "mean_over_sigma": 16384,
+    "true_variance": 1.025536,
+    "two_pass": {
+     "out_max_abs_err": 0.0007484140721261134,
+     "out_rel_err": 0.00018345398895905975
+    },
+    "one_pass": {
+     "out_max_abs_err": NaN,
+     "out_rel_err": NaN
+    }
+   },
+   {
+    "mean_over_sigma": 65536,
+    "true_variance": 1.011788,
+    "two_pass": {
+     "out_max_abs_err": 0.007890740509875371,
+     "out_rel_err": 0.0017584604872921106
+    },
+    "one_pass": {
+     "out_max_abs_err": NaN,
+     "out_rel_err": NaN
+    }
+   }
+  ],
+  "verdict": "CONFIRMED IN ALL THREE PARTS. At mean/sigma = 1 the two forms are indistinguishable (1.3e-07 vs 1.5e-07). The one-pass error grows roughly QUADRATICALLY -- 1.4e-05 at 16, 5.7e-03 at 256, 0.125 at 1024 -- and at 4096 it is NaN, which is where 24 bits of f32 were predicted to run out.",
+  "NaN_IS_WORSE_THAN_INACCURATE": "E[x^2] - E[x]^2 goes NEGATIVE, so rsqrt(var + eps) is NaN. A negative variance is a physically impossible value that the arithmetic produces SILENTLY, and NaN then propagates through everything downstream.",
+  "two_pass_is_not_immune_and_that_is_stated": "its error also grows, 1.3e-07 to 1.8e-03 across the same sweep -- but LINEARLY in the ratio where one-pass is quadratic, and it never produces a NaN.",
+  "why_the_bug_survives_in_real_code": "transformer hidden states have near-zero mean, so mean/sigma is O(1) and one-pass is SAFE EXACTLY WHERE PEOPLE TEST IT. It fails on a distribution shift, which is the worst place to discover it.",
+  "consequence_for_RMSNorm": "RMSNorm subtracts no mean, so this hazard does not exist for it at all -- validate() REFUSES variance='one_pass' on rms rather than accepting a flag that means nothing."
+ },
+ "claim_boundary": {
+  "f32_only": "one dtype, one machine, INSTANCE",
+  "no_model": "synthetic rows; this is the SHAPE of a transformer norm, not a model",
+  "batched_arms_measure_a_different_thing": "batching removes the per-call submission, so these numbers describe a norm inside a larger graph, not a norm submitted alone -- which is the realistic case and is stated rather than assumed",
+  "one_NO_CLAIM_remains": "layer 4096x4096 batched: MLX's own arm carried 40.4% IQR, so the gate refused despite a 24% margin. Not counted as a win for either side.",
+  "softmax_and_attention_are_fixed_but_were_never_seen_to_fail": "their correctness at every width is evidence of nothing about the hazard; the fix is structural",
+  "corpus_still_absent": [
+   "batched GEMM",
+   "sparse",
+   "FFT",
+   "convolution"
+  ]
+ },
+ "tests": {
+  "accelerator_total": 221,
+  "was_total": 215
+ },
+ "pass": true
+}

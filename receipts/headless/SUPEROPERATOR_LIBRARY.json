@@ -1,6 +1,6 @@
 {
  "schema": "hawking.headless.superoperator_library.v1",
- "generated_at": "2026-08-25T09:57:52Z",
+ "generated_at": "2026-08-26T03:41:38Z",
  "obligation": "G019 \u2014 SUPEROPERATOR_LIBRARY (directive \u00a752)",
  "law": "graph-collapsed operators are tracked separately from primitive kernels; a fusion win must never be read as a codec win",
  "operators": [

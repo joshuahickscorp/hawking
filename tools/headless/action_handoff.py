@@ -23,8 +23,42 @@ RECEIPTS = REPO / "receipts" / "headless"
 RECEIPT = RECEIPTS / "HAWKING_ACTION_HANDOFF.json"
 SCHEMA = "hawking.headless.action_handoff.v1"
 
-ACTIVE_LEDGER = Path.home() / ".claude" / "ultragoal" / "hawking-noetic-onebit" / "GOAL.md"
 ULTRAGOAL_ROOT = Path.home() / ".claude" / "ultragoal"
+ULTRAGOAL_ACTIVE = ULTRAGOAL_ROOT / "active"
+PREDECESSOR_LEDGER = ULTRAGOAL_ROOT / "hawking-noetic-onebit" / "GOAL.md"
+
+
+def _resolve_active_ledger() -> Path:
+    """The ACTIVE goal, resolved from the armed slots on disk.
+
+    This was pinned to hawking-noetic-onebit, which is the SEALED PREDECESSOR. A handoff
+    that names a finished campaign as current is worse than no handoff: a fresh session
+    reads it and resumes the wrong mission. One slot per session lives in
+    ~/.claude/ultragoal/active/<session>.json; the newest armed one that still has an
+    unVERIFIED obligation is the live campaign.
+    """
+    best = None
+    if ULTRAGOAL_ACTIVE.is_dir():
+        for slot in sorted(ULTRAGOAL_ACTIVE.glob("*.json")):
+            try:
+                doc = json.loads(slot.read_text())
+            except Exception:
+                continue
+            led = Path(str(doc.get("ledger", "")))
+            if not led.is_file():
+                continue
+            text = led.read_text()
+            if "- [ ]" not in text:          # every obligation VERIFIED: not the live one
+                continue
+            mtime = slot.stat().st_mtime
+            if best is None or mtime > best[0]:
+                best = (mtime, led)
+    if best:
+        return best[1]
+    return PREDECESSOR_LEDGER
+
+
+ACTIVE_LEDGER = _resolve_active_ledger()
 GROK_TASKS = Path.home() / ".claude-grok" / "tasks"
 
 GENESIS_REL = "receipts/ascent-2026-08-18/Genesis.m3ultra.nx"
@@ -57,10 +91,20 @@ REQUIRED_KEYS = (
     "active_grok_tasks",
     "next_workunits",
     "negative_science",
+    # directive §100 names twelve things a fresh session must recover. The four below were
+    # not in the v1 handoff, so a resuming session could not tell which specimen was under
+    # study, what the libraries held, or what was queued next.
+    "current_specimen",
+    "odyssey_queue",
+    "doctor_state",
+    "libraries",
 )
 
+# The id prefix is per-campaign: the predecessor used N###, this one uses G###. Pinning
+# the letter made the parser silently return ZERO obligations against the live ledger, and
+# a handoff reporting 0/0 looks exactly like a finished campaign.
 OBLIGATION_HEAD_RE = re.compile(
-    r"^- \[([ xX])\] (N\d+)\s+[—–-]\s+([A-Z0-9_]+)",
+    r"^- \[([ xX])\] ([A-Z]\d+)\s+[—–-]\s+([A-Z0-9_/-]+)",
     re.M,
 )
 STATUS_RE = re.compile(r"\|\s*status:\s*([A-Z_]+)")
@@ -339,7 +383,7 @@ def field_ledgers() -> Dict[str, Any]:
     if not ACTIVE_LEDGER.is_file():
         return absent(
             f"active ledger not on disk: {ACTIVE_LEDGER} "
-            "(expected ~/.claude/ultragoal/hawking-noetic-onebit/GOAL.md)"
+            f"(resolved from {ULTRAGOAL_ACTIVE}; falls back to {PREDECESSOR_LEDGER})"
         )
     text = ACTIVE_LEDGER.read_text()
     rows = _parse_obligations(text)
@@ -363,6 +407,9 @@ def field_ledgers() -> Dict[str, Any]:
     return measured(
         {
             "active_ledger_path": str(ACTIVE_LEDGER),
+            "ultragoal": ACTIVE_LEDGER.parent.name,
+            "resolved_from": str(ULTRAGOAL_ACTIVE),
+            "predecessor_ledger": str(PREDECESSOR_LEDGER),
             "counts": {
                 "n_total": len(rows),
                 "n_checked": sum(1 for r in rows if r["checked"]),
@@ -885,6 +932,97 @@ def field_negative_science() -> Dict[str, Any]:
     )
 
 
+
+
+def field_current_specimen() -> Dict[str, Any]:
+    sel, sel_src = load_rel_json("receipts/headless/MODEL_2_SELECTION.json")
+    lake = Path("/Volumes/corpdrive/hawking-modellake/specimens")
+    # Finder drops .DS_Store into any directory it displays; a dotfile is not a specimen.
+    resident = sorted(p.name for p in lake.iterdir()
+                      if p.is_dir() and not p.name.startswith(".")) if lake.is_dir() else []
+    if sel is None and not resident:
+        return absent("no MODEL_2_SELECTION.json and no resident specimens on the model lake")
+    return measured(
+        {
+            "principal_specimen": dig(sel, "recommendation", default=None),
+            "resident_in_model_lake": resident,
+            "lake_root": str(lake.parent),
+            "stale_on_disk_flags_found": dig(sel, "stale_flags", default=[]),
+        },
+        source=[x for x in (sel_src, str(lake)) if x],
+    )
+
+
+def field_odyssey_queue() -> Dict[str, Any]:
+    q, q_src = load_rel_json("receipts/headless/ODYSSEY_QUEUE_RECOVERED.json")
+    if q is None:
+        return absent("receipts/headless/ODYSSEY_QUEUE_RECOVERED.json not on disk")
+    rows = q.get("queue") or []
+    return measured(
+        {
+            "n_patients": len(rows),
+            "patients": [{"oxx": r.get("oxx"), "model": r.get("model"),
+                          "class": r.get("class"),
+                          "canonical_source": r.get("canonical_source"),
+                          "canonical_revision": r.get("canonical_revision")}
+                         for r in rows],
+            "on_disk_flags_are_stale": True,
+            "measure_presence_with": "tools/odyssey/model2_select.py (stats the real paths)",
+        },
+        source=q_src,
+    )
+
+
+def field_doctor_state() -> Dict[str, Any]:
+    lib, lib_src = load_rel_json("receipts/headless/DOCTOR_TECHNIQUE_LIBRARY.json")
+    tr, tr_src = load_rel_json("receipts/headless/DOCTOR_TRANSFER.json")
+    if lib is None:
+        return absent("receipts/headless/DOCTOR_TECHNIQUE_LIBRARY.json not on disk")
+    techs = lib.get("techniques") or []
+    return measured(
+        {
+            "n_techniques": len(techs),
+            "all_KEEP": all(t.get("decision") == "KEEP" for t in techs),
+            "pruning_law": "a single model's failure never prunes a technique",
+            "last_prescription_run": None if tr is None else {
+                "specimen": dig(tr, "specimen", default=None),
+                "n_organs": tr.get("n_organs"),
+                "experiments_prescribed": tr.get("distinct_experiments_prescribed"),
+                "search_space_reduction":
+                    dig(tr, "prescription_quality", "search_space_reduction", "value"),
+            },
+        },
+        source=[x for x in (lib_src, tr_src) if x],
+    )
+
+
+def field_libraries() -> Dict[str, Any]:
+    out, srcs = {}, []
+    for name, rel in (
+        ("organ_frontier_matrix", "receipts/headless/ORGAN_FRONTIER_MATRIX.json"),
+        ("representation_library", "receipts/headless/REPRESENTATION_LIBRARY.json"),
+        ("kernel_library", "receipts/headless/KERNEL_LIBRARY.json"),
+        ("superoperator_library", "receipts/headless/SUPEROPERATOR_LIBRARY.json"),
+        ("transfer_report", "receipts/headless/QWEN_TRANSFER_REPORT.json"),
+        ("cross_model_laws", "receipts/headless/CROSS_MODEL_LAWS.json"),
+    ):
+        doc, src = load_rel_json(rel)
+        if doc is None:
+            out[name] = {"present": False}
+            continue
+        srcs.append(src)
+        out[name] = {
+            "present": True, "schema": doc.get("schema"),
+            "counts": {k: doc[k] for k in
+                       ("n_models", "n_measured", "n_families", "n_kernels", "n_complete",
+                        "n_operators", "n_entries", "n_laws", "counts")
+                       if k in doc},
+        }
+    if not srcs:
+        return absent("no canonical library receipts on disk")
+    return measured(out, source=srcs)
+
+
 BUILDERS = {
     "git": field_git,
     "ledgers": field_ledgers,
@@ -898,6 +1036,10 @@ BUILDERS = {
     "active_grok_tasks": field_active_grok_tasks,
     "next_workunits": field_next_workunits,
     "negative_science": field_negative_science,
+    "current_specimen": field_current_specimen,
+    "odyssey_queue": field_odyssey_queue,
+    "doctor_state": field_doctor_state,
+    "libraries": field_libraries,
 }
 
 

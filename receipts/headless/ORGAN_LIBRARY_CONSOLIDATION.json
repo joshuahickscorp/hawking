@@ -1,0 +1,141 @@
+{
+ "schema": "hawking.headless.organ_library_consolidation.v1",
+ "generated_at": "2026-08-25T00:09:14Z",
+ "canonical_authority": "receipts/headless/ORGAN_LIBRARY.json",
+ "law": "receipts are evidence and are never deleted; a rival organ spelling becomes an alias pointing at the canonical name",
+ "n_rival_receipts": 6,
+ "aliases": {
+  "gqa": "gqa_attention",
+  "embedding": "embed",
+  "embedding_output": "embed",
+  "attention": "gqa_attention",
+  "mlp": "mlp_gate_up",
+  "rmsnorm": "normalization",
+  "sampling": "decode_sampling",
+  "output_head": "lm_head"
+ },
+ "receipts": [
+  {
+   "receipt": "receipts/headless/C5STRUCTTRANSFORM_DESIGN.json",
+   "organ_names": [
+    "linear_attn.in_proj_ba",
+    "linear_attn.in_proj_qkvz",
+    "linear_attn.out_proj",
+    "lm_head",
+    "mlp.down_proj",
+    "mlp.gate_proj",
+    "mlp.up_proj",
+    "self_attn.k_proj",
+    "self_attn.o_proj",
+    "self_attn.q_proj",
+    "self_attn.v_proj"
+   ],
+   "canonical": {
+    "linear_attn.in_proj_ba": "linear_attn.in_proj_ba",
+    "linear_attn.in_proj_qkvz": "linear_attn.in_proj_qkvz",
+    "linear_attn.out_proj": "linear_attn.out_proj",
+    "lm_head": "lm_head",
+    "mlp.down_proj": "mlp.down_proj",
+    "mlp.gate_proj": "mlp.gate_proj",
+    "mlp.up_proj": "mlp.up_proj",
+    "self_attn.k_proj": "self_attn.k_proj",
+    "self_attn.o_proj": "self_attn.o_proj",
+    "self_attn.q_proj": "self_attn.q_proj",
+    "self_attn.v_proj": "self_attn.v_proj"
+   },
+   "disposition": "ALIASED_TO_CANONICAL"
+  },
+  {
+   "receipt": "receipts/headless/NOETIC_ORGAN_CENSUS.json",
+   "organ_names": [
+    "attention_gqa",
+    "deltanet",
+    "embedding",
+    "mlp",
+    "output"
+   ],
+   "canonical": {
+    "attention_gqa": "attention_gqa",
+    "deltanet": "deltanet",
+    "embedding": "embed",
+    "mlp": "mlp_gate_up",
+    "output": "output"
+   },
+   "disposition": "ALIASED_TO_CANONICAL"
+  },
+  {
+   "receipt": "receipts/headless/ORGAN_DENSITY_FLOORS.json",
+   "organ_names": [
+    "deltanet",
+    "embedding_output",
+    "gqa_attention"
+   ],
+   "canonical": {
+    "deltanet": "deltanet",
+    "embedding_output": "embed",
+    "gqa_attention": "gqa_attention"
+   },
+   "disposition": "ALIASED_TO_CANONICAL"
+  },
+  {
+   "receipt": "receipts/headless/ORGAN_FRONTIERS.json",
+   "organ_names": [
+    "deltanet",
+    "embedding_output",
+    "gqa"
+   ],
+   "canonical": {
+    "deltanet": "deltanet",
+    "embedding_output": "embed",
+    "gqa": "gqa_attention"
+   },
+   "disposition": "ALIASED_TO_CANONICAL"
+  },
+  {
+   "receipt": "receipts/headless/ORGAN_LIBRARY.json",
+   "organ_names": [
+    "deltanet",
+    "embed",
+    "gqa_attention",
+    "lm_head",
+    "mlp_down",
+    "mlp_gate_up",
+    "sampling"
+   ],
+   "canonical": {
+    "deltanet": "deltanet",
+    "embed": "embed",
+    "gqa_attention": "gqa_attention",
+    "lm_head": "lm_head",
+    "mlp_down": "mlp_down",
+    "mlp_gate_up": "mlp_gate_up",
+    "sampling": "decode_sampling"
+   },
+   "disposition": "CANONICAL"
+  },
+  {
+   "receipt": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+   "organ_names": [
+    "deltanet",
+    "embedding",
+    "gqa_attention",
+    "lm_head",
+    "mlp_down",
+    "mlp_gate_up",
+    "q4_remainder",
+    "sampling"
+   ],
+   "canonical": {
+    "deltanet": "deltanet",
+    "embedding": "embed",
+    "gqa_attention": "gqa_attention",
+    "lm_head": "lm_head",
+    "mlp_down": "mlp_down",
+    "mlp_gate_up": "mlp_gate_up",
+    "q4_remainder": "q4_remainder",
+    "sampling": "decode_sampling"
+   },
+   "disposition": "ALIASED_TO_CANONICAL"
+  }
+ ]
+}

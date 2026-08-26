@@ -39,6 +39,12 @@ UNSUPPORTED = {
 
 # The T0 expression forms. A pattern frontend, not a general C expression parser --
 # stated plainly so nobody mistakes its reach.
+#
+# THE INDEX VARIABLE IS DISCOVERED, NOT ASSUMED. These read `i` for display only;
+# patterns_for() rebuilds them around whatever identifier the kernel actually binds to
+# the global thread index. The hardcoded `i` REFUSED TWO KERNELS IN THE PINNED SEED
+# THAT COMPUTE EXACTLY a[index] + b[index] -- a supported operation rejected over a
+# VARIABLE NAME. Measured in ACCELERATOR_C2M_CORPUS_CENSUS.json.
 PATTERNS: list[tuple[str, str, int]] = [
     (r"^(\w+)\[i\]\s*\+\s*(\w+)\[i\]$", "add", 2),
     (r"^(\w+)\[i\]\s*\*\s*(\w+)\[i\]$", "mul", 2),
@@ -47,9 +53,39 @@ PATTERNS: list[tuple[str, str, int]] = [
     (r"^fmax\(\s*(\w+)\[i\]\s*,\s*0(?:\.0)?f?\s*\)$", "relu", 1),
 ]
 
-GRID_IDX = re.compile(
-    r"blockIdx\.x\s*\*\s*blockDim\.x\s*\+\s*threadIdx\.x"
-    r"|threadIdx\.x\s*\+\s*blockIdx\.x\s*\*\s*blockDim\.x")
+
+def patterns_for(idx: str) -> list[tuple[str, str, int]]:
+    """The same forms, written around the kernel's OWN index identifier."""
+    q = re.escape(idx)
+    return [(pat.replace(r"\[i\]", r"\[" + q + r"\]"), op, ar)
+            for pat, op, ar in PATTERNS]
+
+
+# THE GLOBAL THREAD INDEX, IN EVERY SPELLING THAT MEANS THE SAME THING.
+#
+# The addend order was already accepted; the FACTOR order was not, so
+# `blockDim.x * blockIdx.x + threadIdx.x` -- integer multiplication written the other
+# way round, identical semantics -- was refused as "no recognised global thread
+# index". Two kernels in the pinned seed spell it that way and both compute exactly
+# c[id] = a[id] + b[id], the one elementwise computation this frontend already
+# handles. Half of the commutation being handled is what hid the other half.
+#
+# THIS IS THE SECOND SUPPORTED COMPUTATION REJECTED OVER SPELLING: the corpus census
+# already found the index VARIABLE NAME hardcoded to `i`. A pattern matcher's misses
+# are dominated by spelling, not by expressiveness -- measured in
+# ACCELERATOR_C2M_CORPUS_DENOMINATOR.json.
+#
+# The widening is exactly commutativity and no wider. `blockIdx.x + blockDim.x *
+# threadIdx.x` is a DIFFERENT index and stays refused; a test pins that near miss.
+_PRODUCT = r"(?:blockIdx\.x\s*\*\s*blockDim\.x|blockDim\.x\s*\*\s*blockIdx\.x)"
+_GRID_IDX_SRC = (rf"(?:{_PRODUCT}\s*\+\s*threadIdx\.x"
+                 rf"|threadIdx\.x\s*\+\s*{_PRODUCT})")
+
+INDEX_BINDING = re.compile(
+    r"\b(?:const\s+)?(?:unsigned\s+)?(?:int|long|size_t|unsigned)\s+(\w+)\s*=\s*[^;]*"
+    + _GRID_IDX_SRC)
+
+GRID_IDX = re.compile(_GRID_IDX_SRC)
 
 
 class C2MRefusal(Exception):
@@ -83,6 +119,20 @@ def translate(src: str, *, elements: int) -> TranslatedKernel:
         raise C2MRefusal("no __global__ kernel with a body was found")
     name, params_src, body = m.group(1), m.group(2), m.group(3)
 
+    # AN EMPTY BODY IS REFUSED FIRST, AND THE ORDER IS THE POINT. The pinned seed
+    # holds nine `extern "C" __global__ void f(const float*, int64_t, ...) {}` stubs
+    # that exist to check name mangling and ABI, not to compute. Their parameters are
+    # UNNAMED, so parameter parsing reached them first and refused with "cannot parse
+    # parameter 'const float*'" -- a true statement about a kernel whose real and
+    # permanent disqualification is that IT COMPUTES NOTHING. This program has already
+    # sealed that a refusal naming the wrong cause teaches the wrong lesson (the
+    # barrier-scopes receipt); here it invited the reader to go fix a parameter parser
+    # for a kernel no frontend can ever translate. Measured in
+    # ACCELERATOR_C2M_CORPUS_DENOMINATOR.json.
+    if not strip_comments(body).strip():
+        raise C2MRefusal(f"kernel {name!r} has an EMPTY BODY and computes nothing; "
+                         f"it is a signature/ABI probe, not a translatable kernel")
+
     params: list[tuple[str, str, bool]] = []
     for raw in [p.strip() for p in params_src.split(",") if p.strip()]:
         pm = re.match(r"(?:const\s+)?(\w+)\s*(\*?)\s*(\w+)$", raw)
@@ -96,17 +146,23 @@ def translate(src: str, *, elements: int) -> TranslatedKernel:
     if not GRID_IDX.search(body):
         raise C2MRefusal("no recognised global thread index "
                          "(expected blockIdx.x * blockDim.x + threadIdx.x)")
+    ib = INDEX_BINDING.search(body)
+    if not ib:
+        raise C2MRefusal("the global thread index is computed but not bound to a named "
+                         "variable; the T0 subset indexes through that name")
+    idx = ib.group(1)
+    q = re.escape(idx)
 
     # the single guarded assignment this tier supports
-    am = re.search(r"(\w+)\s*\[\s*i\s*\]\s*=\s*([^;]+);", body)
+    am = re.search(r"(\w+)\s*\[\s*" + q + r"\s*\]\s*=\s*([^;]+);", body)
     if not am:
-        raise C2MRefusal("no single indexed assignment found in the kernel body")
+        raise C2MRefusal(f"no single assignment indexed by {idx!r} found in the body")
     out_name, expr = am.group(1), am.group(2).strip()
 
-    if len(re.findall(r"\w+\s*\[\s*i\s*\]\s*=", body)) > 1:
+    if len(re.findall(r"\w+\s*\[\s*" + q + r"\s*\]\s*=(?!=)", body)) > 1:
         raise C2MRefusal("more than one store; the T0 subset is a single assignment")
 
-    for pat, op, arity in PATTERNS:
+    for pat, op, arity in patterns_for(idx):
         pm = re.match(pat, expr)
         if not pm:
             continue
@@ -262,3 +318,99 @@ def translate_ptx(src: str, *, elements: int) -> TranslatedKernel:
     prog = AirProgram(name, ins, [AirOp(kind, tuple(in_names), "out_")], "out_")
     return TranslatedKernel(name, [("float", p, True) for p in params],
                             in_names, f"p{out_param}", prog)
+
+
+# ---------------------------------------------------------------------------
+# CORPUS CENSUS -- what the denominator actually contains.
+#
+# Every C2M receipt has quoted coverage as a fraction of "35 kernels in the pinned
+# seed". Measuring that denominator found two things that make the fraction mean
+# something different from what it reads as. Both are in
+# ACCELERATOR_C2M_CORPUS_DENOMINATOR.json.
+#
+#   1. NINE of the 36 __global__ kernels have EMPTY BODIES. No frontend can ever
+#      translate a kernel that computes nothing, so nine denominator slots are
+#      unreachable by construction and any coverage fraction over 35 is understated.
+#
+#   2. Of the 27 kernels that DO compute, SEVEN are elementwise maps and ALL SEVEN
+#      COMPUTE a[idx] + b[idx]. The corpus holds ONE distinct elementwise
+#      computation, written seven times with different index names, guard styles
+#      and dtypes. A coverage number over this corpus is measuring repetition.
+# ---------------------------------------------------------------------------
+
+# Cooperative constructs disqualify a kernel from being an elementwise map. This is
+# a REGEX over the body and is therefore an UPPER BOUND: the seed's softmax_warp
+# calls warp_reduce_max(), whose __shfl_xor_sync lives one function call away, so
+# this classifies it as elementwise-shaped and it is not. Named rather than fixed --
+# resolving it needs a call graph, which is the C compiler this frontend is not.
+_COOPERATIVE = ("__shared__", "__syncthreads", "__syncwarp", "__shfl",
+                "__ballot", "cg::", "atomic")
+
+
+def strip_comments(src: str) -> str:
+    return re.sub(r"//[^\n]*|/\*.*?\*/", "", src, flags=re.S)
+
+
+def split_kernels(src: str) -> list[tuple[str, str, str]]:
+    """Every __global__ kernel in a translation unit as (name, params, body).
+
+    Brace-matched rather than regex-terminated, because the `\\{(.*)\\}` greedy form
+    translate() uses swallows every kernel after the first when a file holds several.
+    """
+    out: list[tuple[str, str, str]] = []
+    head = re.compile(r"__global__\s+[\w\s\*]*?\s(\w+)\s*\(([^)]*)\)\s*\{", re.S)
+    for m in head.finditer(src):
+        depth, end = 0, None
+        for j in range(m.end() - 1, len(src)):
+            if src[j] == "{":
+                depth += 1
+            elif src[j] == "}":
+                depth -= 1
+                if depth == 0:
+                    end = j
+                    break
+        if end is None:
+            raise C2MRefusal(f"kernel {m.group(1)!r} has an unterminated body")
+        out.append((m.group(1), m.group(2), src[m.end():end]))
+    return out
+
+
+def census(sources: dict[str, str], *, elements: int = 16) -> dict[str, Any]:
+    """The honest denominator for a CUDA corpus. `sources` maps path -> file text."""
+    kernels, empty, ew, translated = [], [], [], []
+    refusals: dict[str, int] = {}
+    computations: dict[str, list[str]] = {}
+    for path, text in sorted(sources.items()):
+        for name, params, body in split_kernels(text):
+            kernels.append((path, name))
+            clean = strip_comments(body)
+            if not clean.strip():
+                empty.append(name)
+                continue
+            cooperative = [c for c in _COOPERATIVE if c in clean]
+            stores = re.findall(r"(\w+)\s*\[\s*[^\]]+?\s*\]\s*=(?!=)\s*([^;]+);", clean)
+            if not cooperative and not re.search(r"\b(for|while)\s*\(", clean) \
+                    and len(stores) == 1:
+                ew.append(name)
+                key = re.sub(r"\s+", "", re.sub(r"\[[^\]]*\]", "[_]", stores[0][1]))
+                computations.setdefault(key, []).append(name)
+            try:
+                translate(f"__global__ void {name}({params}){{{body}}}",
+                          elements=elements)
+                translated.append(name)
+            except C2MRefusal as e:
+                refusals[str(e)[:60]] = refusals.get(str(e)[:60], 0) + 1
+    return {
+        "kernels": len(kernels),
+        "empty_body": len(empty),
+        "empty_body_names": empty,
+        "computing_kernels": len(kernels) - len(empty),
+        "elementwise_shaped_upper_bound": len(ew),
+        "elementwise_shaped_is_an_upper_bound_because":
+            "the cooperative check is a regex over the body and is blind to a "
+            "shuffle or barrier behind a device-function call",
+        "distinct_elementwise_computations": len(computations),
+        "elementwise_computations": {k: sorted(v) for k, v in computations.items()},
+        "translated": len(translated),
+        "refusal_histogram": dict(sorted(refusals.items(), key=lambda kv: -kv[1])),
+    }

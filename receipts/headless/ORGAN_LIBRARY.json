@@ -1,7 +1,7 @@
 {
  "schema": "hawking.headless.organ_library.v1",
- "generated_at": "2026-08-24T21:57:49Z",
- "git_head": "3048963996c6ed32df3712a805c7f5918ea86fd8",
+ "generated_at": "2026-08-26T03:40:22Z",
+ "git_head": "e665c7319eb06bc1611d1ede67e091160dea83c0",
  "generated_by": "tools/headless/genome_libraries.py",
  "obligation": "N034 \u2014 GENOME LIBRARIES + ODYSSEY QUEUE RECOVERY (S023 \u00a712, \u00a713, \u00a714, \u00a734, \u00a770). Seed from verified Qwen science; recover the Odyssey queue from disk; do not invent numbers or HF repo ids.",
  "hand_authored": false,
@@ -184,15 +184,7 @@
      "absent_reason": "NOETIC_PARENT_A.capability_evidence is 16 greedy tokens of a compiler-prose prompt, not a Doctor suite. CAPABILITY_llamacpp-q5k.json and CAPABILITY_mlx-4bit.json exist and do not target NOETIC_PARENT_A. Per-organ capability sensitivity is UNMEASURED."
     }
    },
-   "negative_science": [
-    {
-     "id": "NNS-003",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That a whole-model artifact at complete BPW \u2264 1.5, built from the existing Gravity families (HGRAVB01/R02/S01 + rice on attention), is coherent on Qwen3.8 or is a copyable Q30 template.",
-     "scope_organ": "attention GEMVs + embed/lm_head dominate; MLP already 0.848 BPW",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    }
-   ],
+   "negative_science": [],
    "citations": [
     "receipts/headless/ORGAN_BANDWIDTH.json",
     "receipts/headless/ORGAN_ROOF_LEDGER.json",
@@ -427,43 +419,7 @@
      "absent_reason": "NOETIC_PARENT_A.capability_evidence is 16 greedy tokens of a compiler-prose prompt, not a Doctor suite. CAPABILITY_llamacpp-q5k.json and CAPABILITY_mlx-4bit.json exist and do not target NOETIC_PARENT_A. Per-organ capability sensitivity is UNMEASURED."
     }
    },
-   "negative_science": [
-    {
-     "id": "NNS-002",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That complete (or active) BPW predicts coherence: denser is worse, cheaper is worse, the number is the capability.",
-     "scope_organ": "whole artifact (attention-dominated on Qwen3.8)",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-003",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That a whole-model artifact at complete BPW \u2264 1.5, built from the existing Gravity families (HGRAVB01/R02/S01 + rice on attention), is coherent on Qwen3.8 or is a copyable Q30 template.",
-     "scope_organ": "attention GEMVs + embed/lm_head dominate; MLP already 0.848 BPW",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-009",
-     "kind": "ARTIFACT_OF_METHOD",
-     "claim_refuted": "That organ cosine ~0.86\u20130.90, or the D23 0.8604 residual-identity bar, is a capability certificate / hard GO-NO-GO.",
-     "scope_organ": "expert organs; not attention (attention uses 0.99)",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-019",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That existing Gravity expert families (HGRAVB01 / HGRAVR02 / HGRAVS01, or the Q80 mixed gate/up/down bundle) transfer to attention at Q4-equivalent quality.",
-     "scope_organ": "Q/K/V/O, DeltaNet in/out, lm_head extra (top-1 \u2260 cosine)",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-020",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That storage / complete_physical BPW is the BPW decode moves (active BPW), and that crushing routed experts is therefore the velocity lever.",
-     "scope_organ": "attention + lm_head vs routed experts",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    }
-   ],
+   "negative_science": [],
    "citations": [
     "receipts/headless/ORGAN_BANDWIDTH.json",
     "receipts/headless/ORGAN_ROOF_LEDGER.json",
@@ -709,15 +665,7 @@
      "absent_reason": "NOETIC_PARENT_A.capability_evidence is 16 greedy tokens of a compiler-prose prompt, not a Doctor suite. CAPABILITY_llamacpp-q5k.json and CAPABILITY_mlx-4bit.json exist and do not target NOETIC_PARENT_A. Per-organ capability sensitivity is UNMEASURED."
     }
    },
-   "negative_science": [
-    {
-     "id": "NNS-019",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That existing Gravity expert families (HGRAVB01 / HGRAVR02 / HGRAVS01, or the Q80 mixed gate/up/down bundle) transfer to attention at Q4-equivalent quality.",
-     "scope_organ": "Q/K/V/O, DeltaNet in/out, lm_head extra (top-1 \u2260 cosine)",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    }
-   ],
+   "negative_science": [],
    "citations": [
     "receipts/headless/ORGAN_BANDWIDTH.json",
     "receipts/headless/ORGAN_ROOF_LEDGER.json",
@@ -925,106 +873,7 @@
      "absent_reason": "NOETIC_PARENT_A.capability_evidence is 16 greedy tokens of a compiler-prose prompt, not a Doctor suite. CAPABILITY_llamacpp-q5k.json and CAPABILITY_mlx-4bit.json exist and do not target NOETIC_PARENT_A. Per-organ capability sensitivity is UNMEASURED."
     }
    },
-   "negative_science": [
-    {
-     "id": "NNS-003",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That a whole-model artifact at complete BPW \u2264 1.5, built from the existing Gravity families (HGRAVB01/R02/S01 + rice on attention), is coherent on Qwen3.8 or is a copyable Q30 template.",
-     "scope_organ": "attention GEMVs + embed/lm_head dominate; MLP already 0.848 BPW",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-004",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That routed experts share a basis / codebook / template, so a shared subspace, joint codebook, or same-index cross-layer tying compresses them together.",
-     "scope_organ": "gate_proj / up_proj (and F1 all three)",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-005",
-     "kind": "ARTIFACT_OF_METHOD",
-     "claim_refuted": "That a fit-quality gate of observed/probed/worst_unit cosine can certify an artifact, including that 1.000000 means the weights were preserved.",
-     "scope_organ": "any matrix scored by cosine-only doctor axes",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-007",
-     "kind": "ARTIFACT_OF_METHOD",
-     "claim_refuted": "That a rank-r or full-dim codec scored on fewer captured rows than the fitted dimension is a score of the codec.",
-     "scope_organ": "routed expert gate/up/down",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-010",
-     "kind": "ARTIFACT_OF_METHOD",
-     "claim_refuted": "That matching the Gaussian rate-distortion function sqrt(2^-2R) proves a post-hoc codec is at the true Shannon floor.",
-     "scope_organ": "gate/down; layer 0 is a different source",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-011",
-     "kind": "ARTIFACT_OF_METHOD",
-     "claim_refuted": "That the 5.9\u00d7 per-byte reconstruction penalty measured on Q80 mixed rice/low-rank is a property of those codecs, and that it transfers to Qwen3.8.",
-     "scope_organ": "MLP GEMV",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-012",
-     "kind": "ARTIFACT_OF_METHOD",
-     "claim_refuted": "That the G3 shared-operator headline 'beats q3 held-out 0.371 vs 0.401 at 24% of the bytes' is a measured successor.",
-     "scope_organ": "all 64 MLPs as one shared operator + FiLM",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-013",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That a narrow shared / grouped SwiGLU operator (m < 17408) can replace Qwen3.8's MLP at q3 quality and materially fewer active bytes, including after honest methodology.",
-     "scope_organ": "MLP (67\u201368% of GEMV bytes)",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-014",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That activation-aware functional low-rank (output-PCA / reduced rank on real post-SwiGLU X) beats q3 at matched bytes held-out.",
-     "scope_organ": "down_proj L31/L15 (and G034 gate/down L0/L31/L63)",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-016",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That weight-space low-rank / TT / Kronecker factorisation of a single expert tensor is a density win at the coherent point (layers \u2265 1).",
-     "scope_organ": "gate/down; L0 is the exception",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-017",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That PQ/VQ coding of the RAW frozen weights is a route to one bit or below that preserves capability.",
-     "scope_organ": "whole model; dominant_failure_organ = gate",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-018",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That a single codec family (all-binary, or all low-rank) wins on every Q80 expert organ inside the 1.5 budget.",
-     "scope_organ": "routed gate / up / down separately",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-025",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That selection-policy search over which sub-1.2-bpw organs to replace can recover coherence, or that beating a constant-mean null is the replacement gate.",
-     "scope_organ": "expert gate/up/down",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-029",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That activation sparsity (~2\u00d7 MLP max) or uniform bit-descent below q3 is a clean path under the Qwen3.8 coherent floor.",
-     "scope_organ": "MLP (sparsity); whole artifact (bit-descent)",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    }
-   ],
+   "negative_science": [],
    "citations": [
     "receipts/headless/ORGAN_BANDWIDTH.json",
     "receipts/headless/ORGAN_ROOF_LEDGER.json",
@@ -1201,92 +1050,7 @@
      "absent_reason": "NOETIC_PARENT_A.capability_evidence is 16 greedy tokens of a compiler-prose prompt, not a Doctor suite. CAPABILITY_llamacpp-q5k.json and CAPABILITY_mlx-4bit.json exist and do not target NOETIC_PARENT_A. Per-organ capability sensitivity is UNMEASURED."
     }
    },
-   "negative_science": [
-    {
-     "id": "NNS-003",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That a whole-model artifact at complete BPW \u2264 1.5, built from the existing Gravity families (HGRAVB01/R02/S01 + rice on attention), is coherent on Qwen3.8 or is a copyable Q30 template.",
-     "scope_organ": "attention GEMVs + embed/lm_head dominate; MLP already 0.848 BPW",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-007",
-     "kind": "ARTIFACT_OF_METHOD",
-     "claim_refuted": "That a rank-r or full-dim codec scored on fewer captured rows than the fitted dimension is a score of the codec.",
-     "scope_organ": "routed expert gate/up/down",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-010",
-     "kind": "ARTIFACT_OF_METHOD",
-     "claim_refuted": "That matching the Gaussian rate-distortion function sqrt(2^-2R) proves a post-hoc codec is at the true Shannon floor.",
-     "scope_organ": "gate/down; layer 0 is a different source",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-011",
-     "kind": "ARTIFACT_OF_METHOD",
-     "claim_refuted": "That the 5.9\u00d7 per-byte reconstruction penalty measured on Q80 mixed rice/low-rank is a property of those codecs, and that it transfers to Qwen3.8.",
-     "scope_organ": "MLP GEMV",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-012",
-     "kind": "ARTIFACT_OF_METHOD",
-     "claim_refuted": "That the G3 shared-operator headline 'beats q3 held-out 0.371 vs 0.401 at 24% of the bytes' is a measured successor.",
-     "scope_organ": "all 64 MLPs as one shared operator + FiLM",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-013",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That a narrow shared / grouped SwiGLU operator (m < 17408) can replace Qwen3.8's MLP at q3 quality and materially fewer active bytes, including after honest methodology.",
-     "scope_organ": "MLP (67\u201368% of GEMV bytes)",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-014",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That activation-aware functional low-rank (output-PCA / reduced rank on real post-SwiGLU X) beats q3 at matched bytes held-out.",
-     "scope_organ": "down_proj L31/L15 (and G034 gate/down L0/L31/L63)",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-015",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That low-rank + activation-aware correction of the residual beats q3's density-quality point (fewer active bytes at q3 quality, held-out).",
-     "scope_organ": "down_proj L31, real post_swiglu X",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-016",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That weight-space low-rank / TT / Kronecker factorisation of a single expert tensor is a density win at the coherent point (layers \u2265 1).",
-     "scope_organ": "gate/down; L0 is the exception",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-018",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That a single codec family (all-binary, or all low-rank) wins on every Q80 expert organ inside the 1.5 budget.",
-     "scope_organ": "routed gate / up / down separately",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-025",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That selection-policy search over which sub-1.2-bpw organs to replace can recover coherence, or that beating a constant-mean null is the replacement gate.",
-     "scope_organ": "expert gate/up/down",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-029",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That activation sparsity (~2\u00d7 MLP max) or uniform bit-descent below q3 is a clean path under the Qwen3.8 coherent floor.",
-     "scope_organ": "MLP (sparsity); whole artifact (bit-descent)",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    }
-   ],
+   "negative_science": [],
    "citations": [
     "receipts/headless/ORGAN_BANDWIDTH.json",
     "receipts/headless/ORGAN_ROOF_LEDGER.json",
@@ -1463,29 +1227,7 @@
      "absent_reason": "NOETIC_PARENT_A.capability_evidence is 16 greedy tokens of a compiler-prose prompt, not a Doctor suite. CAPABILITY_llamacpp-q5k.json and CAPABILITY_mlx-4bit.json exist and do not target NOETIC_PARENT_A. Per-organ capability sensitivity is UNMEASURED."
     }
    },
-   "negative_science": [
-    {
-     "id": "NNS-003",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That a whole-model artifact at complete BPW \u2264 1.5, built from the existing Gravity families (HGRAVB01/R02/S01 + rice on attention), is coherent on Qwen3.8 or is a copyable Q30 template.",
-     "scope_organ": "attention GEMVs + embed/lm_head dominate; MLP already 0.848 BPW",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-019",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That existing Gravity expert families (HGRAVB01 / HGRAVR02 / HGRAVS01, or the Q80 mixed gate/up/down bundle) transfer to attention at Q4-equivalent quality.",
-     "scope_organ": "Q/K/V/O, DeltaNet in/out, lm_head extra (top-1 \u2260 cosine)",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    },
-    {
-     "id": "NNS-020",
-     "kind": "PROPERTY_OF_IDEA",
-     "claim_refuted": "That storage / complete_physical BPW is the BPW decode moves (active BPW), and that crushing routed experts is therefore the velocity lever.",
-     "scope_organ": "attention + lm_head vs routed experts",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
-    }
-   ],
+   "negative_science": [],
    "citations": [
     "receipts/headless/ORGAN_BANDWIDTH.json",
     "receipts/headless/ORGAN_ROOF_LEDGER.json",

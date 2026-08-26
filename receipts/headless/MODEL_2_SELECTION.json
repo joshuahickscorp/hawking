@@ -1,0 +1,1014 @@
+{
+ "schema": "hawking.headless.model2_selection.v1",
+ "generated_at": "2026-08-24T23:57:06Z",
+ "generated_by": "tools/odyssey/model2_select.py",
+ "obligation": "G024 \u2014 MODEL_2_SELECTION (directive \u00a787, \u00a744, \u00a731, \u00a746)",
+ "hand_authored": false,
+ "did_not_invent_hf_repo_ids": true,
+ "did_not_download_weights": true,
+ "unmeasured_is_absent": true,
+ "scoring_criteria": {
+  "transfer_overlap": "directive \u00a787 \u2014 how much of the Qwen dense-backbone science still applies",
+  "novelty_axes": "directive \u00a789 \u2014 independent new things to learn; attribution = 1/len(axes)",
+  "family_multiplier": "directive \u00a791 \u2014 only a same-family specimen separates FAMILY-TRANSFERRED from ARCHITECTURE-GENERAL",
+  "cost": "directive \u00a746 \u2014 information gain per resource cost, cost measured as upstream download bytes",
+  "formula": "mission_value = overlap * n_novel * attribution * family_multiplier;  rank = mission_value / download_gib"
+ },
+ "sources_read": [
+  "/Users/scammermike/Downloads/hawking/receipts/headless/ODYSSEY_QUEUE_RECOVERED.json",
+  "/Users/scammermike/Downloads/hawking/receipts/headless/ORGAN_LIBRARY.json"
+ ],
+ "known_organs_from": "/Users/scammermike/Downloads/hawking/receipts/headless/ORGAN_LIBRARY.json",
+ "known_organs": [
+  "deltanet",
+  "embed",
+  "gqa_attention",
+  "lm_head",
+  "mlp_down",
+  "mlp_gate_up",
+  "sampling"
+ ],
+ "free_bytes": {
+  "ssd": 362147291136,
+  "hdd_corpdrive": 4872923041792
+ },
+ "stale_flags": [
+  {
+   "oxx": "O003",
+   "recovered_on_disk": true,
+   "measured_present": false,
+   "bytes_present": 0
+  },
+  {
+   "oxx": "O006",
+   "recovered_on_disk": true,
+   "measured_present": false,
+   "bytes_present": 0
+  }
+ ],
+ "candidates": [
+  {
+   "oxx": "O000",
+   "model": "gemma-3-1b-it",
+   "class": "tiny-dense",
+   "canonical_source": "google/gemma-3-1b-it",
+   "canonical_revision": "dcc83ea841ab6100d6b47a070329e1ba4cf78752",
+   "identity_status": "RESOLVED",
+   "state": "ACQUIRING",
+   "recovered_on_disk": false,
+   "disk": {
+    "paths": [],
+    "bytes_present": 0,
+    "present": false
+   },
+   "upstream": {
+    "repo": "google/gemma-3-1b-it",
+    "revision": "dcc83ea841ab6100d6b47a070329e1ba4cf78752",
+    "checked_at": "2026-08-24T23:57:03Z",
+    "http_status": 200,
+    "resolved_sha": "dcc83ea841ab6100d6b47a070329e1ba4cf78752",
+    "gated": true,
+    "n_files": 10,
+    "download_bytes": 2039069601,
+    "n_files_without_size": 0,
+    "config": {
+     "architectures": [
+      "Gemma3ForCausalLM"
+     ],
+     "model_type": "gemma3_text",
+     "tokenizer_config": {
+      "bos_token": "<bos>",
+      "chat_template": "{{ bos_token }}\n{%- if messages[0]['role'] == 'system' -%}\n    {%- if messages[0]['content'] is string -%}\n        {%- set first_user_prefix = messages[0]['content'] + '\n\n' -%}\n    {%- else -%}\n        {%- set first_user_prefix = messages[0]['content'][0]['text'] + '\n\n' -%}\n    {%- endif -%}\n    {%- set loop_messages = messages[1:] -%}\n{%- else -%}\n    {%- set first_user_prefix = \"\" -%}\n    {%- set loop_messages = messages -%}\n{%- endif -%}\n{%- for message in loop_messages -%}\n    {%- if (message['role'] == 'user') != (loop.index0 % 2 == 0) -%}\n        {{ raise_exception(\"Conversation roles must alternate user/assistant/user/assistant/...\") }}\n    {%- endif -%}\n    {%- if (message['role'] == 'assistant') -%}\n        {%- set role = \"model\" -%}\n    {%- else -%}\n        {%- set role = message['role'] -%}\n    {%- endif -%}\n    {{ '<start_of_turn>' + role + '\n' + (first_user_prefix if loop.first else \"\") }}\n    {%- if message['content'] is string -%}\n        {{ message['content'] | trim }}\n    {%- elif message['content'] is iterable -%}\n        {%- for item in message['content'] -%}\n            {%- if item['type'] == 'image' -%}\n                {{ '<start_of_image>' }}\n            {%- elif item['type'] == 'text' -%}\n                {{ item['text'] | trim }}\n            {%- endif -%}\n        {%- endfor -%}\n    {%- else -%}\n        {{ raise_exception(\"Invalid content type\") }}\n    {%- endif -%}\n    {{ '<end_of_turn>\n' }}\n{%- endfor -%}\n{%- if add_generation_prompt -%}\n    {{'<start_of_turn>model\n'}}\n{%- endif -%}\n",
+      "eos_token": "<eos>",
+      "pad_token": "<pad>",
+      "unk_token": "<unk>",
+      "use_default_system_prompt": false
+     }
+    },
+    "revision_matches": true
+   },
+   "score": {
+    "model_type": null,
+    "novel_organs": [],
+    "n_novel": 0,
+    "novelty_axes": [],
+    "attribution": 0.0,
+    "same_family_as_parent": false,
+    "family_multiplier": 1.0,
+    "transfer_overlap": 0.0,
+    "download_gib": 1.9,
+    "acquirable": false,
+    "mission_value": 0.0,
+    "information_gain_per_gib": 0.0
+   }
+  },
+  {
+   "oxx": "O001",
+   "model": "Falcon-H1-7B-Instruct",
+   "class": "hybrid",
+   "canonical_source": "tiiuae/Falcon-H1-7B-Instruct",
+   "canonical_revision": "41e72f27effbab80cd45b6e884688452253a3686",
+   "identity_status": "RESOLVED",
+   "state": "ACQUIRING",
+   "recovered_on_disk": false,
+   "disk": {
+    "paths": [],
+    "bytes_present": 0,
+    "present": false
+   },
+   "upstream": {
+    "repo": "tiiuae/Falcon-H1-7B-Instruct",
+    "revision": "41e72f27effbab80cd45b6e884688452253a3686",
+    "checked_at": "2026-08-24T23:57:03Z",
+    "http_status": 200,
+    "resolved_sha": "41e72f27effbab80cd45b6e884688452253a3686",
+    "gated": false,
+    "n_files": 13,
+    "download_bytes": 15182220635,
+    "n_files_without_size": 0,
+    "config": {
+     "architectures": [
+      "FalconH1ForCausalLM"
+     ],
+     "model_type": "falcon_h1",
+     "tokenizer_config": {
+      "bos_token": "<|begin_of_text|>",
+      "eos_token": "<|end_of_text|>",
+      "pad_token": "<pad>"
+     },
+     "chat_template_jinja": "{{bos_token}}\n{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {{- messages[0].content + '\\n\\n' }}\n    {%- endif %}\n    {{- \"You are a function calling AI model. You are provided with function signature within <tools> </tools> XML tags. You may call one or more functions to assist with the user query. Don't make assumptions about what values to plug into functions.\\n<tools>\\n\" }}\n    {%- for tool in tools %}[{{- tool | tojson }}]{%- endfor %}\n    {{- \"\\n</tools>\\nFor each function call, return a json object with function name and arguments within <tool_call> </tool_call> tags with the following schema:\\n<tool_call>\\n{'arguments': <args-dict>, 'name': <function-name>}\\n</tool_call>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0].content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}{% for message in messages %}{%- if message.role != 'system' %}{{'<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>' + '\n'}}{%- endif %}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant\n' }}{% endif %}"
+    },
+    "revision_matches": true
+   },
+   "score": {
+    "model_type": "falcon_h1",
+    "novel_organs": [
+     "recurrent_state"
+    ],
+    "n_novel": 1,
+    "novelty_axes": [
+     "state"
+    ],
+    "attribution": 1.0,
+    "same_family_as_parent": false,
+    "family_multiplier": 1.0,
+    "transfer_overlap": 0.75,
+    "download_gib": 14.14,
+    "acquirable": true,
+    "mission_value": 0.75,
+    "information_gain_per_gib": 0.05304
+   }
+  },
+  {
+   "oxx": "O002",
+   "model": "gemma-3-4b-it",
+   "class": "mm-dense",
+   "canonical_source": "google/gemma-3-4b-it",
+   "canonical_revision": "093f9f388b31de276ce2de164bdc2081324b9767",
+   "identity_status": "RESOLVED",
+   "state": "ACQUIRING",
+   "recovered_on_disk": false,
+   "disk": {
+    "paths": [],
+    "bytes_present": 0,
+    "present": false
+   },
+   "upstream": {
+    "repo": "google/gemma-3-4b-it",
+    "revision": "093f9f388b31de276ce2de164bdc2081324b9767",
+    "checked_at": "2026-08-24T23:57:04Z",
+    "http_status": 200,
+    "resolved_sha": "093f9f388b31de276ce2de164bdc2081324b9767",
+    "gated": true,
+    "n_files": 15,
+    "download_bytes": 8639629983,
+    "n_files_without_size": 0,
+    "config": {
+     "architectures": [
+      "Gemma3ForConditionalGeneration"
+     ],
+     "model_type": "gemma3",
+     "processor_config": {
+      "chat_template": "{{ bos_token }}\n{%- if messages[0]['role'] == 'system' -%}\n    {%- if messages[0]['content'] is string -%}\n        {%- set first_user_prefix = messages[0]['content'] + '\n\n' -%}\n    {%- else -%}\n        {%- set first_user_prefix = messages[0]['content'][0]['text'] + '\n\n' -%}\n    {%- endif -%}\n    {%- set loop_messages = messages[1:] -%}\n{%- else -%}\n    {%- set first_user_prefix = \"\" -%}\n    {%- set loop_messages = messages -%}\n{%- endif -%}\n{%- for message in loop_messages -%}\n    {%- if (message['role'] == 'user') != (loop.index0 % 2 == 0) -%}\n        {{ raise_exception(\"Conversation roles must alternate user/assistant/user/assistant/...\") }}\n    {%- endif -%}\n    {%- if (message['role'] == 'assistant') -%}\n        {%- set role = \"model\" -%}\n    {%- else -%}\n        {%- set role = message['role'] -%}\n    {%- endif -%}\n    {{ '<start_of_turn>' + role + '\n' + (first_user_prefix if loop.first else \"\") }}\n    {%- if message['content'] is string -%}\n        {{ message['content'] | trim }}\n    {%- elif message['content'] is iterable -%}\n        {%- for item in message['content'] -%}\n            {%- if item['type'] == 'image' -%}\n                {{ '<start_of_image>' }}\n            {%- elif item['type'] == 'text' -%}\n                {{ item['text'] | trim }}\n            {%- endif -%}\n        {%- endfor -%}\n    {%- else -%}\n        {{ raise_exception(\"Invalid content type\") }}\n    {%- endif -%}\n    {{ '<end_of_turn>\n' }}\n{%- endfor -%}\n{%- if add_generation_prompt -%}\n    {{'<start_of_turn>model\n'}}\n{%- endif -%}\n"
+     },
+     "tokenizer_config": {
+      "bos_token": "<bos>",
+      "chat_template": "{{ bos_token }}\n{%- if messages[0]['role'] == 'system' -%}\n    {%- if messages[0]['content'] is string -%}\n        {%- set first_user_prefix = messages[0]['content'] + '\n\n' -%}\n    {%- else -%}\n        {%- set first_user_prefix = messages[0]['content'][0]['text'] + '\n\n' -%}\n    {%- endif -%}\n    {%- set loop_messages = messages[1:] -%}\n{%- else -%}\n    {%- set first_user_prefix = \"\" -%}\n    {%- set loop_messages = messages -%}\n{%- endif -%}\n{%- for message in loop_messages -%}\n    {%- if (message['role'] == 'user') != (loop.index0 % 2 == 0) -%}\n        {{ raise_exception(\"Conversation roles must alternate user/assistant/user/assistant/...\") }}\n    {%- endif -%}\n    {%- if (message['role'] == 'assistant') -%}\n        {%- set role = \"model\" -%}\n    {%- else -%}\n        {%- set role = message['role'] -%}\n    {%- endif -%}\n    {{ '<start_of_turn>' + role + '\n' + (first_user_prefix if loop.first else \"\") }}\n    {%- if message['content'] is string -%}\n        {{ message['content'] | trim }}\n    {%- elif message['content'] is iterable -%}\n        {%- for item in message['content'] -%}\n            {%- if item['type'] == 'image' -%}\n                {{ '<start_of_image>' }}\n            {%- elif item['type'] == 'text' -%}\n                {{ item['text'] | trim }}\n            {%- endif -%}\n        {%- endfor -%}\n    {%- else -%}\n        {{ raise_exception(\"Invalid content type\") }}\n    {%- endif -%}\n    {{ '<end_of_turn>\n' }}\n{%- endfor -%}\n{%- if add_generation_prompt -%}\n    {{'<start_of_turn>model\n'}}\n{%- endif -%}\n",
+      "eos_token": "<eos>",
+      "pad_token": "<pad>",
+      "unk_token": "<unk>",
+      "use_default_system_prompt": false
+     }
+    },
+    "revision_matches": true
+   },
+   "score": {
+    "model_type": null,
+    "novel_organs": [],
+    "n_novel": 0,
+    "novelty_axes": [],
+    "attribution": 0.0,
+    "same_family_as_parent": false,
+    "family_multiplier": 1.0,
+    "transfer_overlap": 0.0,
+    "download_gib": 8.05,
+    "acquirable": false,
+    "mission_value": 0.0,
+    "information_gain_per_gib": 0.0
+   }
+  },
+  {
+   "oxx": "O003",
+   "model": "Kimi-VL-A3B-Instruct",
+   "class": "mm-moe",
+   "canonical_source": "moonshotai/Kimi-VL-A3B-Instruct",
+   "canonical_revision": "398eede0903cd983a2bfa0cc634e9ac1d843f375",
+   "identity_status": "RESOLVED",
+   "state": "READY",
+   "recovered_on_disk": true,
+   "disk": {
+    "paths": [],
+    "bytes_present": 0,
+    "present": false
+   },
+   "upstream": {
+    "repo": "moonshotai/Kimi-VL-A3B-Instruct",
+    "revision": "398eede0903cd983a2bfa0cc634e9ac1d843f375",
+    "checked_at": "2026-08-24T23:57:04Z",
+    "http_status": 200,
+    "resolved_sha": "398eede0903cd983a2bfa0cc634e9ac1d843f375",
+    "gated": false,
+    "n_files": 25,
+    "download_bytes": 32823063084,
+    "n_files_without_size": 0,
+    "config": {
+     "architectures": [
+      "KimiVLForConditionalGeneration"
+     ],
+     "auto_map": {
+      "AutoConfig": "configuration_kimi_vl.KimiVLConfig",
+      "AutoModel": "modeling_kimi_vl.KimiVLForConditionalGeneration",
+      "AutoModelForCausalLM": "modeling_kimi_vl.KimiVLForConditionalGeneration"
+     },
+     "model_type": "kimi_vl",
+     "tokenizer_config": {
+      "bos_token": "[BOS]",
+      "eos_token": "[EOS]",
+      "pad_token": "[PAD]",
+      "unk_token": "[UNK]",
+      "chat_template": "{%- for message in messages -%}{%- if loop.first and messages[0]['role'] != 'system' -%}{{'<|im_system|>system<|im_middle|>You are a helpful assistant<|im_end|>'}}{%- endif -%}{%- if message['role'] == 'system' -%}{{'<|im_system|>'}}{%- endif -%}{%- if message['role'] == 'user' -%}{{'<|im_user|>'}}{%- endif -%}{%- if message['role'] == 'assistant' -%}{{'<|im_assistant|>'}}{%- endif -%}{{- message['role'] -}}{{'<|im_middle|>'}}{%- if message['content'] is string -%}{{- message['content'] + '<|im_end|>' -}}{%- else -%}{%- for content in message['content'] -%}{%- if content['type'] == 'image' or 'image' in content or 'image_url' in content -%}{{'<|media_start|>image<|media_content|><|media_pad|><|media_end|>'}}{%- else -%}{{content['text']}}{%- endif -%}{%- endfor -%}{{'<|im_end|>'}}{%- endif -%}{%- endfor -%}{%- if add_generation_prompt -%}{{'<|im_assistant|>assistant<|im_middle|>'}}{%- endif -%}"
+     },
+     "chat_template_jinja": "{%- for message in messages -%}\n  {%- if loop.first and messages[0]['role'] != 'system' -%}\n    {{'<|im_system|>system<|im_middle|>You are a helpful assistant<|im_end|>'}}\n  {%- endif -%}\n  {%- if message['role'] == 'system' -%}\n    {{'<|im_system|>'}}\n  {%- endif -%}\n  {%- if message['role'] == 'user' -%}\n    {{'<|im_user|>'}}\n  {%- endif -%}\n  {%- if message['role'] == 'assistant' -%}\n    {{'<|im_assistant|>'}}\n  {%- endif -%}\n  {{- message['role'] -}}\n  {{'<|im_middle|>'}}\n  {%- if message['content'] is string -%}\n    {{- message['content'] + '<|im_end|>' -}}\n  {%- else -%}\n    {%- for content in message['content'] -%}\n      {%- if content['type'] == 'image' or 'image' in content or 'image_url' in content -%}\n        {{'<|media_start|>image<|media_content|><|media_pad|><|media_end|>'}}\n      {%- else -%}\n        {{content['text']}}\n      {%- endif -%}\n    {%- endfor -%}\n    {{'<|im_end|>'}}\n  {%- endif -%}\n{%- endfor -%}\n{%- if add_generation_prompt -%}\n  {{'<|im_assistant|>assistant<|im_middle|>'}}\n{%- endif -%}\n"
+    },
+    "revision_matches": true
+   },
+   "score": {
+    "model_type": "kimi_vl",
+    "novel_organs": [
+     "latent_attention",
+     "moe_experts",
+     "moe_router",
+     "vision_encoder"
+    ],
+    "n_novel": 4,
+    "novelty_axes": [
+     "attention",
+     "modality",
+     "routing"
+    ],
+    "attribution": 0.3333,
+    "same_family_as_parent": false,
+    "family_multiplier": 1.0,
+    "transfer_overlap": 0.6,
+    "download_gib": 30.57,
+    "acquirable": true,
+    "mission_value": 0.8,
+    "information_gain_per_gib": 0.02617
+   }
+  },
+  {
+   "oxx": "O004",
+   "model": "Mistral-Small-3.1-24B-Instruct-2503",
+   "class": "mm-dense",
+   "canonical_source": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+   "canonical_revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
+   "identity_status": "RESOLVED",
+   "state": "ACQUIRING",
+   "recovered_on_disk": false,
+   "disk": {
+    "paths": [],
+    "bytes_present": 0,
+    "present": false
+   },
+   "upstream": {
+    "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+    "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
+    "checked_at": "2026-08-24T23:57:04Z",
+    "http_status": 200,
+    "resolved_sha": "68faf511d618ef198fef186659617cfd2eb8e33a",
+    "gated": false,
+    "n_files": 25,
+    "download_bytes": 96077777512,
+    "n_files_without_size": 0,
+    "config": {
+     "architectures": [
+      "Mistral3ForConditionalGeneration"
+     ],
+     "model_type": "mistral3",
+     "processor_config": {
+      "chat_template": "{%- set today = strftime_now(\"%Y-%m-%d\") %}\n{%- set default_system_message = \"You are Mistral Small 3, a Large Language Model (LLM) created by Mistral AI, a French startup headquartered in Paris.\\nYour knowledge base was last updated on 2023-10-01. The current date is \" + today + \".\\n\\nWhen you're not sure about some information, you say that you don't have the information and don't make up anything.\\nIf the user's question is not clear, ambiguous, or does not provide enough context for you to accurately answer the question, you do not try to answer it right away and you rather ask the user to clarify their request (e.g. \\\"What are some good restaurants around me?\\\" => \\\"Where are you?\\\" or \\\"When is the next flight to Tokyo\\\" => \\\"Where do you travel from?\\\")\" %}\n\n{{- bos_token }}\n\n{%- if messages[0]['role'] == 'system' %}\n    {%- if messages[0]['content'] is string %}\n        {%- set system_message = messages[0]['content'] %}\n    {%- else %}\n        {%- set system_message = messages[0]['content'][0]['text'] %}\n    {%- endif %}\n    {%- set loop_messages = messages[1:] %}\n{%- else %}\n    {%- set system_message = default_system_message %}\n    {%- set loop_messages = messages %}\n{%- endif %}\n{{- '[SYSTEM_PROMPT]' + system_message + '[/SYSTEM_PROMPT]' }}\n\n{%- for message in loop_messages %}\n    {%- if message['role'] == 'user' %}\n        {%- if message['content'] is string %}\n            {{- '[INST]' + message['content'] + '[/INST]' }}\n        {%- else %}\n            {{- '[INST]' }}\n            {%- for block in message['content'] %}\n                {%- if block['type'] == 'text' %}\n                    {{- block['text'] }}\n                {%- elif block['type'] in ['image', 'image_url'] %}\n                    {{- '[IMG]' }}\n                {%- else %}\n                    {{- raise_exception('Only text and image blocks are supported in message content!') }}\n                {%- endif %}\n            {%- endfor %}\n            {{- '[/INST]' }}\n        {%- endif %}\n    {%- elif message['role'] == 'system' %}\n        {%- if message['content'] is string %}\n            {{- '[SYSTEM_PROMPT]' + message['content'] + '[/SYSTEM_PROMPT]' }}\n        {%- else %}\n            {{- '[SYSTEM_PROMPT]' + message['content'][0]['text'] + '[/SYSTEM_PROMPT]' }}\n        {%- endif %}\n    {%- elif message['role'] == 'assistant' %}\n        {%- if message['content'] is string %}\n            {{- message['content'] + eos_token }}\n        {%- else %}\n            {{- message['content'][0]['text'] + eos_token }}\n        {%- endif %}\n    {%- else %}\n        {{- raise_exception('Only user, system and assistant roles are supported!') }}\n    {%- endif %}\n{%- endfor %}"
+     },
+     "tokenizer_config": {
+      "bos_token": "<s>",
+      "eos_token": "</s>",
+      "pad_token": "<pad>",
+      "unk_token": "<unk>",
+      "use_default_system_prompt": false
+     }
+    },
+    "revision_matches": true
+   },
+   "score": {
+    "model_type": "mistral3",
+    "novel_organs": [
+     "vision_encoder"
+    ],
+    "n_novel": 1,
+    "novelty_axes": [
+     "modality"
+    ],
+    "attribution": 1.0,
+    "same_family_as_parent": false,
+    "family_multiplier": 1.0,
+    "transfer_overlap": 0.75,
+    "download_gib": 89.48,
+    "acquirable": true,
+    "mission_value": 0.75,
+    "information_gain_per_gib": 0.00838
+   }
+  },
+  {
+   "oxx": "O005",
+   "model": "Qwen3-30B-A3B",
+   "class": "moe",
+   "canonical_source": "Qwen/Qwen3-30B-A3B",
+   "canonical_revision": "ad44e777bcd18fa416d9da3bd8f70d33ebb85d39",
+   "identity_status": "RESOLVED",
+   "state": "ACQUIRING",
+   "recovered_on_disk": false,
+   "disk": {
+    "paths": [],
+    "bytes_present": 0,
+    "present": false
+   },
+   "upstream": {
+    "repo": "Qwen/Qwen3-30B-A3B",
+    "revision": "ad44e777bcd18fa416d9da3bd8f70d33ebb85d39",
+    "checked_at": "2026-08-24T23:57:04Z",
+    "http_status": 200,
+    "resolved_sha": "ad44e777bcd18fa416d9da3bd8f70d33ebb85d39",
+    "gated": false,
+    "n_files": 26,
+    "download_bytes": 61084187391,
+    "n_files_without_size": 0,
+    "config": {
+     "architectures": [
+      "Qwen3MoeForCausalLM"
+     ],
+     "model_type": "qwen3_moe",
+     "num_experts": 128,
+     "num_experts_per_tok": 8,
+     "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {{- messages[0].content + '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0].content + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" and message.content is string and not(message.content.startswith('<tool_response>') and message.content.endswith('</tool_response>')) %}\n        {%- set ns.multi_step_tool = false %}\n        {%- set ns.last_query_index = index %}\n    {%- endif %}\n{%- endfor %}\n{%- for message in messages %}\n    {%- if message.content is string %}\n        {%- set content = message.content %}\n    {%- else %}\n        {%- set content = '' %}\n    {%- endif %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- else %}\n            {%- if '</think>' in content %}\n                {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n                {%- set content = content.split('</think>')[-1].lstrip('\\n') %}\n            {%- endif %}\n        {%- endif %}\n        {%- if loop.index0 > ns.last_query_index %}\n            {%- if loop.last or (not loop.last and reasoning_content) %}\n                {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content.strip('\\n') + '\\n</think>\\n\\n' + content.lstrip('\\n') }}\n            {%- else %}\n                {{- '<|im_start|>' + message.role + '\\n' + content }}\n            {%- endif %}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- endif %}\n{%- endif %}",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+     }
+    },
+    "revision_matches": true
+   },
+   "score": {
+    "model_type": "qwen3_moe",
+    "novel_organs": [
+     "moe_experts",
+     "moe_router"
+    ],
+    "n_novel": 2,
+    "novelty_axes": [
+     "routing"
+    ],
+    "attribution": 1.0,
+    "same_family_as_parent": true,
+    "family_multiplier": 2.0,
+    "transfer_overlap": 1.0,
+    "download_gib": 56.89,
+    "acquirable": true,
+    "mission_value": 4.0,
+    "information_gain_per_gib": 0.07031
+   }
+  },
+  {
+   "oxx": "O006",
+   "model": "Qwen3-VL-30B-A3B-Instruct",
+   "class": "mm-moe",
+   "canonical_source": "Qwen/Qwen3-VL-30B-A3B-Instruct",
+   "canonical_revision": "9c4b90e1e4ba969fd3b5378b57d966d725f1b86c",
+   "identity_status": "RESOLVED",
+   "state": "READY",
+   "recovered_on_disk": true,
+   "disk": {
+    "paths": [],
+    "bytes_present": 0,
+    "present": false
+   },
+   "upstream": {
+    "repo": "Qwen/Qwen3-VL-30B-A3B-Instruct",
+    "revision": "9c4b90e1e4ba969fd3b5378b57d966d725f1b86c",
+    "checked_at": "2026-08-24T23:57:04Z",
+    "http_status": 200,
+    "resolved_sha": "9c4b90e1e4ba969fd3b5378b57d966d725f1b86c",
+    "gated": false,
+    "n_files": 25,
+    "download_bytes": 62153207155,
+    "n_files_without_size": 0,
+    "config": {
+     "architectures": [
+      "Qwen3VLMoeForConditionalGeneration"
+     ],
+     "model_type": "qwen3_vl_moe",
+     "processor_config": {
+      "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {%- if messages[0].content is string %}\n            {{- messages[0].content }}\n        {%- else %}\n            {%- for content in messages[0].content %}\n                {%- if 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' }}\n        {%- if messages[0].content is string %}\n            {{- messages[0].content }}\n        {%- else %}\n            {%- for content in messages[0].content %}\n                {%- if 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- for message in messages %}\n    {%- if message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content in message.content %}\n                {%- if content.type == 'image' or 'image' in content or 'image_url' in content %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                    {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                    <|vision_start|><|image_pad|><|vision_end|>\n                {%- elif content.type == 'video' or 'video' in content %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                    {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                    <|vision_start|><|video_pad|><|vision_end|>\n                {%- elif 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content_item in message.content %}\n                {%- if 'text' in content_item %}\n                    {{- content_item.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and message.content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content in message.content %}\n                {%- if content.type == 'image' or 'image' in content or 'image_url' in content %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                    {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                    <|vision_start|><|image_pad|><|vision_end|>\n                {%- elif content.type == 'video' or 'video' in content %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                    {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                    <|vision_start|><|video_pad|><|vision_end|>\n                {%- elif 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}\n"
+     },
+     "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {%- if messages[0].content is string %}\n            {{- messages[0].content }}\n        {%- else %}\n            {%- for content in messages[0].content %}\n                {%- if 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0].role == 'system' %}\n        {{- '<|im_start|>system\\n' }}\n        {%- if messages[0].content is string %}\n            {{- messages[0].content }}\n        {%- else %}\n            {%- for content in messages[0].content %}\n                {%- if 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- for message in messages %}\n    {%- if message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content in message.content %}\n                {%- if content.type == 'image' or 'image' in content or 'image_url' in content %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                    {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                    <|vision_start|><|image_pad|><|vision_end|>\n                {%- elif content.type == 'video' or 'video' in content %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                    {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                    <|vision_start|><|video_pad|><|vision_end|>\n                {%- elif 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role + '\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content_item in message.content %}\n                {%- if 'text' in content_item %}\n                    {{- content_item.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {%- if message.tool_calls %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if (loop.first and message.content) or (not loop.first) %}\n                    {{- '\\n' }}\n                {%- endif %}\n                {%- if tool_call.function %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {{- '<tool_call>\\n{\"name\": \"' }}\n                {{- tool_call.name }}\n                {{- '\", \"arguments\": ' }}\n                {%- if tool_call.arguments is string %}\n                    {{- tool_call.arguments }}\n                {%- else %}\n                    {{- tool_call.arguments | tojson }}\n                {%- endif %}\n                {{- '}\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {%- if message.content is string %}\n            {{- message.content }}\n        {%- else %}\n            {%- for content in message.content %}\n                {%- if content.type == 'image' or 'image' in content or 'image_url' in content %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                    {%- if add_vision_id %}Picture {{ image_count.value }}: {% endif -%}\n                    <|vision_start|><|image_pad|><|vision_end|>\n                {%- elif content.type == 'video' or 'video' in content %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                    {%- if add_vision_id %}Video {{ video_count.value }}: {% endif -%}\n                    <|vision_start|><|video_pad|><|vision_end|>\n                {%- elif 'text' in content %}\n                    {{- content.text }}\n                {%- endif %}\n            {%- endfor %}\n        {%- endif %}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}\n",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+     }
+    },
+    "revision_matches": true
+   },
+   "score": {
+    "model_type": "qwen3_vl_moe",
+    "novel_organs": [
+     "moe_experts",
+     "moe_router",
+     "vision_encoder"
+    ],
+    "n_novel": 3,
+    "novelty_axes": [
+     "modality",
+     "routing"
+    ],
+    "attribution": 0.5,
+    "same_family_as_parent": true,
+    "family_multiplier": 2.0,
+    "transfer_overlap": 0.75,
+    "download_gib": 57.88,
+    "acquirable": true,
+    "mission_value": 2.25,
+    "information_gain_per_gib": 0.03887
+   }
+  },
+  {
+   "oxx": "O007",
+   "model": "Kimi-Linear-48B-A3B-Instruct",
+   "class": "moe",
+   "canonical_source": "moonshotai/Kimi-Linear-48B-A3B-Instruct",
+   "canonical_revision": "e1df551a447157d4658b573f9a695d57658590e9",
+   "identity_status": "RESOLVED",
+   "state": "ACQUIRING",
+   "recovered_on_disk": false,
+   "disk": {
+    "paths": [],
+    "bytes_present": 0,
+    "present": false
+   },
+   "upstream": {
+    "repo": "moonshotai/Kimi-Linear-48B-A3B-Instruct",
+    "revision": "e1df551a447157d4658b573f9a695d57658590e9",
+    "checked_at": "2026-08-24T23:57:05Z",
+    "http_status": 200,
+    "resolved_sha": "e1df551a447157d4658b573f9a695d57658590e9",
+    "gated": false,
+    "n_files": 38,
+    "download_bytes": 98253571658,
+    "n_files_without_size": 0,
+    "config": {
+     "architectures": [
+      "KimiLinearForCausalLM"
+     ],
+     "auto_map": {
+      "AutoConfig": "configuration_kimi.KimiLinearConfig",
+      "AutoModel": "modeling_kimi.KimiLinearModel",
+      "AutoModelForCausalLM": "modeling_kimi.KimiLinearForCausalLM"
+     },
+     "model_type": "kimi_linear",
+     "num_experts": 256,
+     "tokenizer_config": {
+      "bos_token": "[BOS]",
+      "eos_token": "[EOS]",
+      "pad_token": "[PAD]",
+      "unk_token": "[UNK]"
+     },
+     "chat_template_jinja": "{% macro render_content(msg) -%}\n    {%- set c = msg.get('content') -%}\n    {%- if c is string -%}\n      {{ c }}\n    {%- elif c is not none -%}\n      {% for content in c -%}\n        {% if content['type'] == 'image' or 'image' in content or 'image_url' in content -%}\n          <|media_start|>image<|media_content|><|media_pad|><|media_end|>\n        {% else -%}\n          {{ content['text'] }}\n        {%- endif -%}\n      {%- endfor -%}\n    {%- endif -%}\n{%- endmacro %}\n\n\n{%- if tools -%}\n  <|im_system|>tool_declare<|im_middle|>{{ tools | tojson(separators=(',', ':')) }}<|im_end|>\n{%- endif -%}\n{% for message in messages %}  \n  {%- set role_name =  message.get('name') or  message['role'] -%}\n  {%- if message['role'] == 'user' -%}\n    <|im_user|>{{role_name}}<|im_middle|>\n  {%- elif message['role'] == 'assistant' -%}\n    <|im_assistant|>{{role_name}}<|im_middle|>\n  {%- else -%}\n    <|im_system|>{{role_name}}<|im_middle|>\n  {%- endif -%}\n\n  {%- if message['role'] == 'assistant' and message.get('tool_calls') -%}\n    {{render_content(message)}}<|tool_calls_section_begin|>\n    {%- for tool_call in message['tool_calls'] -%}\n        {%- set formatted_id = tool_call['id'] -%}\n      <|tool_call_begin|>{{ formatted_id }}<|tool_call_argument_begin|>{% if tool_call['function']['arguments'] is string %}{{ tool_call['function']['arguments'] }}{% else %}{{ tool_call['function']['arguments'] | tojson }}{% endif %}<|tool_call_end|>\n    {%- endfor -%}\n    <|tool_calls_section_end|>\n  {%- elif message['role'] == 'tool' -%}\n    {%- set tool_call_id = message.tool_call_id -%}\n    ## Return of {{ tool_call_id }}\n{{render_content(message)}}\n  {%- elif message['content'] is not none -%}\n    {{render_content(message)}}\n  {%- endif -%}\n  <|im_end|>\n{%- endfor -%}\n{%- if add_generation_prompt -%}\n  <|im_assistant|>assistant<|im_middle|>\n{%- endif -%}"
+    },
+    "revision_matches": true
+   },
+   "score": {
+    "model_type": "kimi_linear",
+    "novel_organs": [
+     "latent_attention",
+     "moe_experts",
+     "recurrent_state"
+    ],
+    "n_novel": 3,
+    "novelty_axes": [
+     "attention",
+     "routing",
+     "state"
+    ],
+    "attribution": 0.3333,
+    "same_family_as_parent": false,
+    "family_multiplier": 1.0,
+    "transfer_overlap": 0.6,
+    "download_gib": 91.51,
+    "acquirable": true,
+    "mission_value": 0.6,
+    "information_gain_per_gib": 0.00656
+   }
+  },
+  {
+   "oxx": "O008",
+   "model": "AI21-Jamba-Mini-1.5",
+   "class": "hybrid",
+   "canonical_source": "ai21labs/AI21-Jamba-Mini-1.5",
+   "canonical_revision": "5a844bbacf32cf46d9561d11622833340aa426b9",
+   "identity_status": "RESOLVED",
+   "state": "ACQUIRING",
+   "recovered_on_disk": false,
+   "disk": {
+    "paths": [],
+    "bytes_present": 0,
+    "present": false
+   },
+   "upstream": {
+    "repo": "ai21labs/AI21-Jamba-Mini-1.5",
+    "revision": "5a844bbacf32cf46d9561d11622833340aa426b9",
+    "checked_at": "2026-08-24T23:57:05Z",
+    "http_status": 200,
+    "resolved_sha": "5a844bbacf32cf46d9561d11622833340aa426b9",
+    "gated": true,
+    "n_files": 31,
+    "download_bytes": 103146336649,
+    "n_files_without_size": 0,
+    "config": {
+     "architectures": [
+      "JambaForCausalLM"
+     ],
+     "model_type": "jamba",
+     "num_experts": 16,
+     "num_experts_per_tok": 2,
+     "tokenizer_config": {
+      "bos_token": "<|startoftext|>",
+      "chat_template": "{# Variables #}\n{% set ns = namespace(message_count=0, is_last_checked_defined=False) %}\n{##}\n{% set bom_str = bom_str or \"<|bom|>\" %}\n{% set eom_str = eom_str or \"<|eom|>\" %}\n{% set default_system_message = \"\" %}\n{##}\n{% set documents_prefix = \"<documents>\" %}\n{% set documents_suffix = \"</documents>\" %}\n{% set tool_definitions_prefix = \"<tool_definitions>\" %}\n{% set tool_definitions_suffix = \"</tool_definitions>\" %}\n{% set active_modes_prefix = \"<active_output_modes>\" %}\n{% set active_modes_suffix = \"</active_output_modes>\" %}\n{##}\n{% set tool_calls_prefix = \"<tool_calls>\" %}\n{% set tool_calls_suffix = \"</tool_calls>\" %}\n{% set citations_prefix = \"<citations>\" %}\n{% set citations_suffix = \"</citations>\" %}\n{##}\n{% if add_generation_prompt is not defined %}\n  {% set add_generation_prompt = True %}\n{% endif %}\n{% set role_to_predict = role_to_predict or \"assistant\" %}\n{% if messages|length > 0 and messages[0].role == \"system\" %}\n  {% set system_message = messages[0].content %}\n  {% set loop_messages = messages[1:] %}\n{% else %}\n  {% set system_message = default_system_message %}\n  {% set loop_messages = messages %}\n{% endif %}\n{##}\n{##}\n{# Macros #}\n{% macro handle_tool_definitions(tools) %}\n  {{- tool_definitions_prefix -}}\n  {{- \"\\n# Tools\" -}}\n  {{- \"\\n\\n## Functions\" -}}\n  {% for tool in tools %}\n    {% set _ = is_param_set(tool, field=\"type\") %}\n    {% set is_tool_type_set = ns.is_last_checked_defined %}\n    {% if is_tool_type_set %}\n      {% if tool.type == \"function\" %}\n        {% set tool = tool.function %}\n      {% else %}\n        {{ raise_exception(\"Currently, the only supported tool type is `function`\") }}\n      {% endif %}\n    {% endif %}\n    {{- \"\\n\\n\" + (tool|tojson(indent=2)) -}}\n  {% endfor %}\n  {{- \"\\n\" + tool_definitions_suffix -}}\n{% endmacro %}\n{##}\n{% macro handle_first_system_message(system_message, tools) %}\n  {{- bom_str + handle_role(\"system\") -}}\n  {% set _ = is_param_set(system_message) %}\n  {% set is_system_message_set = ns.is_last_checked_defined %}\n  {% if is_system_message_set %}\n    {{- system_message -}}\n  {% endif %}\n  {% set _ = is_param_set(tools, is_list=True) %}\n  {% set is_tools_set = ns.is_last_checked_defined %}\n  {% if is_tools_set %}\n    {% if system_message %}\n      {{- \"\\n\\n\" -}}\n    {% endif %}\n    {{- handle_tool_definitions(tools) -}}\n  {% endif %}\n  {% set ns.message_count = ns.message_count + 1 %}\n{% endmacro %}\n{##}\n{% macro handle_tool_calls(tool_calls) %}\n  {{- tool_calls_prefix + \"[\\n\" -}}\n  {% for tool_call in tool_calls %}\n    {% set _ = is_param_set(tool_call, field=\"function\") %}\n    {% set is_tool_call_function_set = ns.is_last_checked_defined %}\n    {% if is_tool_call_function_set %}\n      {%- set tool_call = tool_call.function %}\n    {%- endif %}\n    {% set arguments = tool_call.arguments %}\n    {% if arguments is not string %}\n      {%- set arguments = arguments|tojson -%}\n    {%- endif %}\n    {{ \"{\\\"name\\\": \\\"\" + tool_call.name + \"\\\", \\\"arguments\\\": \" + arguments + \"}\" -}}\n    {% if not loop.last %}\n      {{- \",\" }}\n    {% endif %}\n  {% endfor %}\n  {{- \"\\n]\" + tool_calls_suffix -}}\n{% endmacro %}\n{##}\n{% macro handle_documents(documents) %}\n  {{- documents_prefix -}}\n  {{- \"\\n# Documents\" -}}\n  {{- \"\\n\\nYou can use the following documents for reference:\" -}}\n  {% for doc in documents %}\n    {{- \"\\n\\n## Document ID: \" + loop.index0|string -}}\n    {% set _ = is_param_set(doc, field=\"title\") %}\n    {% set is_doc_title_set = ns.is_last_checked_defined %}\n    {% if is_doc_title_set %}\n      {{- \"\\nTitle: \" + doc.title -}}\n    {% endif %}\n    {% for key, value in doc.items() %}\n      {% if key not in [\"title\", \"text\"] %}\n        {{- \"\\n\" + key|title + \": \" + value|string -}}\n      {% endif %}\n    {% endfor %}\n    {{- \"\\nText: \" + doc.text -}}\n  {% endfor %}\n  {{- \"\\n\" + documents_suffix -}}\n{% endmacro %}\n{##}\n{% macro handle_knobs(knobs) %}\n  {{- active_modes_prefix -}}\n  {{- \"\\n# Active Modes\" -}}\n  {{ \"\\n\\nThe following modes configure the format or style of your responses. You should adhere to all currently\" -}}\n  {{ \" active modes simultaneously.\" -}}\n  {% if knobs.citation_mode == \"fast\" %}\n    {{- \"\\n\\n## Citation Mode\" -}}\n    {{- \"\\n\\nProvide a list of references only for the documents you base your response on. Format your response\" -}}\n    {{ \" with the original answer followed by a citation section. Use this template:\" -}}\n    {{ \" `{answer}\" + citations_prefix + \"DOCUMENT_IDS\" + citations_suffix + \"`, where DOCUMENT_IDS are the relevant document numbers\" -}}\n    {{ \" (e.g. [2, 5, 9]), or [] if the answer cannot be supported by the provided documents.\" -}}\n  {% endif %}\n  {% if knobs.response_format == \"json_object\" %}\n    {{- \"\\n\\n## JSON Mode\" -}}\n    {{ \"\\n\\nProvide your response in JSON format. Adhere strictly to any schema given by the user.\" -}}\n    {{ \" If an appropriate JSON format exists, use it without modification.\" -}}\n  {% endif %}\n  {{- \"\\n\" + active_modes_suffix -}}\n{% endmacro %}\n{##}\n{% macro get_last_user_index(messages) %}\n  {% set ns.last_user_index = 0 %}\n  {% for message in messages %}\n    {% if message.role == 'user' %}\n      {% set ns.last_user_index = loop.index0 %}\n    {% endif %}\n  {% endfor %}\n  {{- ns.last_user_index -}}\n{% endmacro %}\n{##}\n{% macro handle_last_system_message(documents, knobs, use_documents, use_knobs) %}\n  {{- bom_str + handle_role(\"system\") -}}\n  {% set macros_to_call = [] %}\n  {% set params_for_macros = [] %}\n  {% if use_documents %}\n    {% set macros_to_call = macros_to_call + [handle_documents] %}\n    {% set params_for_macros = params_for_macros + [[documents]] %}\n  {% endif %}\n  {% if use_knobs %}\n    {% set macros_to_call = macros_to_call + [handle_knobs] %}\n    {% set params_for_macros = params_for_macros + [[knobs]] %}\n  {% endif %}\n  {% for i in range(macros_to_call|length) %}\n    {% if i > 0 %}\n      {{- \"\\n\\n\" -}}\n    {% endif %}\n    {{- macros_to_call[i](*params_for_macros[i]) -}}\n  {% endfor %}\n  {% set ns.message_count = ns.message_count + 1 %}\n{% endmacro %}\n{##}\n{% macro handle_role(role, add_space=True) %}\n  {{- \"<|\" + role + \"|>\" -}}\n  {% if add_space %}\n    {{- \" \" -}}\n  {% endif %}\n{% endmacro %}\n{##}\n{% macro is_param_set(param, field=none, is_list=False) %}\n  {% if field is not none %}\n    {% if field in param %}\n      {% set param = param[field] %}\n    {% else %}\n      {% set param = none %}\n    {% endif %}\n  {% endif %}\n  {% set is_defined = param is defined and param is not none %}\n  {% if is_list %}\n    {% set ns.is_last_checked_defined = is_defined and param|length > 0 %}\n  {% else %}\n    {% set ns.is_last_checked_defined = is_defined %}\n  {% endif %}\n{% endmacro %}\n{##}\n{##}\n{# Template #}\n{{- \"<|startoftext|>\" -}}\n{% set _ = is_param_set(system_message) %}\n{% set is_system_message_set = ns.is_last_checked_defined %}\n{% set _ = is_param_set(tools, is_list=True) %}\n{% set is_tools_set = ns.is_last_checked_defined %}\n{% set has_system_message = (is_system_message_set or is_tools_set) %}\n{% if has_system_message %}\n  {{- handle_first_system_message(system_message, tools) -}}\n{% endif %}\n{% set last_user_index = get_last_user_index(loop_messages)|int %}\n{% for message in loop_messages %}\n  {% if loop.index0 == last_user_index %}\n    {% set _ = is_param_set(documents, is_list=True) %}\n    {% set use_documents = ns.is_last_checked_defined %}\n    {% set _ = is_param_set(knobs) %}\n    {% set use_knobs = ns.is_last_checked_defined and knobs.is_set %}\n    {% set add_last_system_message = use_documents or use_knobs %}\n    {% if add_last_system_message %}\n      {% if ns.message_count > 0 %}\n        {{- eom_str -}}\n      {% endif %}\n      {{- handle_last_system_message(documents, knobs, use_documents, use_knobs) -}}\n    {% endif %}\n  {% endif %}\n  {% set role = message.role %}\n  {% set _ = is_param_set(message, field=\"name\") %}\n  {% set is_message_name_set = ns.is_last_checked_defined %}\n  {% if is_message_name_set %}\n    {% set message_prefix = handle_role(role) + \"(\" + message.name + \")\" %}\n  {% else %}\n    {% set message_prefix = handle_role(role) %}\n  {% endif %}\n  {% set content = (message.content or \"\") %}\n  {% if content is not string %}\n    {% set content = content|tojson %}\n  {% endif %}\n  {% if ns.message_count > 0 %}\n    {{- eom_str -}}\n  {% endif %}\n  {{- bom_str + message_prefix + content -}}\n  {% set _ = is_param_set(message, field=\"tool_calls\", is_list=True) %}\n  {% set is_tool_calls_set = ns.is_last_checked_defined %}\n  {% if role == \"assistant\" and is_tool_calls_set %}\n    {{- handle_tool_calls(message.tool_calls) -}}\n  {% endif %}\n  {% set _ = is_param_set(message, field=\"citations\", is_list=True) %}\n  {% set is_citations_set = ns.is_last_checked_defined %}\n  {% if role == \"assistant\" and is_citations_set %}\n    {{- citations_prefix + message.citations|map(attribute=\"document_id\")|list|string + citations_suffix -}}\n  {% endif %}\n  {% set ns.message_count = ns.message_count + 1 %}\n{% endfor %}\n{% if add_generation_prompt %}\n  {% if ns.message_count > 0 %}\n    {{- eom_str -}}\n  {% endif %}\n  {{- bom_str + handle_role(role_to_predict, add_space=False) -}}\n  {% set _ = is_param_set(generation_preamble) %}\n  {% set is_generation_preamble_set = ns.is_last_checked_defined %}\n  {% if is_generation_preamble_set and generation_preamble.strip() != \"\" %}\n    {{- \" \" + generation_preamble -}}\n  {% endif %}\n  {% set ns.message_count = ns.message_count + 1 %}\n{% else %}\n  {% if ns.message_count > 0 %}\n    {{- eom_str -}}\n  {% endif %}\n{% endif %}\n",
+      "eos_token": "<|endoftext|>",
+      "pad_token": "<|pad|>",
+      "unk_token": "<|unk|>",
+      "use_default_system_prompt": false
+     }
+    },
+    "revision_matches": true
+   },
+   "score": {
+    "model_type": null,
+    "novel_organs": [],
+    "n_novel": 0,
+    "novelty_axes": [],
+    "attribution": 0.0,
+    "same_family_as_parent": false,
+    "family_multiplier": 1.0,
+    "transfer_overlap": 0.0,
+    "download_gib": 96.06,
+    "acquirable": false,
+    "mission_value": 0.0,
+    "information_gain_per_gib": 0.0
+   }
+  },
+  {
+   "oxx": "O009",
+   "model": "Qwen2.5-72B-Instruct",
+   "class": "large-dense",
+   "canonical_source": "Qwen/Qwen2.5-72B-Instruct",
+   "canonical_revision": "495f39366efef23836d0cfae4fbe635880d2be31",
+   "identity_status": "RESOLVED",
+   "state": "ACQUIRING",
+   "recovered_on_disk": false,
+   "disk": {
+    "paths": [],
+    "bytes_present": 0,
+    "present": false
+   },
+   "upstream": {
+    "repo": "Qwen/Qwen2.5-72B-Instruct",
+    "revision": "495f39366efef23836d0cfae4fbe635880d2be31",
+    "checked_at": "2026-08-24T23:57:05Z",
+    "http_status": 200,
+    "resolved_sha": "495f39366efef23836d0cfae4fbe635880d2be31",
+    "gated": false,
+    "n_files": 47,
+    "download_bytes": 145424101604,
+    "n_files_without_size": 0,
+    "config": {
+     "architectures": [
+      "Qwen2ForCausalLM"
+     ],
+     "model_type": "qwen2",
+     "tokenizer_config": {
+      "bos_token": null,
+      "chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- messages[0]['content'] }}\n    {%- else %}\n        {{- 'You are Qwen, created by Alibaba Cloud. You are a helpful assistant.' }}\n    {%- endif %}\n    {{- \"\\n\\n# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call><|im_end|>\\n\" }}\n{%- else %}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- '<|im_start|>system\\n' + messages[0]['content'] + '<|im_end|>\\n' }}\n    {%- else %}\n        {{- '<|im_start|>system\\nYou are Qwen, created by Alibaba Cloud. You are a helpful assistant.<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- for message in messages %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) or (message.role == \"assistant\" and not message.tool_calls) %}\n        {{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {{- '<|im_start|>' + message.role }}\n        {%- if message.content %}\n            {{- '\\n' + message.content }}\n        {%- endif %}\n        {%- for tool_call in message.tool_calls %}\n            {%- if tool_call.function is defined %}\n                {%- set tool_call = tool_call.function %}\n            {%- endif %}\n            {{- '\\n<tool_call>\\n{\"name\": \"' }}\n            {{- tool_call.name }}\n            {{- '\", \"arguments\": ' }}\n            {{- tool_call.arguments | tojson }}\n            {{- '}\\n</tool_call>' }}\n        {%- endfor %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if (loop.index0 == 0) or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n{%- endif %}\n",
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+     }
+    },
+    "revision_matches": true
+   },
+   "score": {
+    "model_type": "qwen2",
+    "novel_organs": [],
+    "n_novel": 0,
+    "novelty_axes": [],
+    "attribution": 0.0,
+    "same_family_as_parent": true,
+    "family_multiplier": 2.0,
+    "transfer_overlap": 1.0,
+    "download_gib": 135.44,
+    "acquirable": true,
+    "mission_value": 0.0,
+    "information_gain_per_gib": 0.0
+   }
+  },
+  {
+   "oxx": "O010",
+   "model": "GLM-4.5-Air",
+   "class": "large-moe",
+   "canonical_source": "zai-org/GLM-4.5-Air",
+   "canonical_revision": "a24ceef6ce4f3536971efe9b778bdaa1bab18daa",
+   "identity_status": "RESOLVED",
+   "state": "READY",
+   "recovered_on_disk": false,
+   "disk": {
+    "paths": [],
+    "bytes_present": 0,
+    "present": false
+   },
+   "upstream": {
+    "repo": "zai-org/GLM-4.5-Air",
+    "revision": "a24ceef6ce4f3536971efe9b778bdaa1bab18daa",
+    "checked_at": "2026-08-24T23:57:05Z",
+    "http_status": 200,
+    "resolved_sha": "a24ceef6ce4f3536971efe9b778bdaa1bab18daa",
+    "gated": false,
+    "n_files": 55,
+    "download_bytes": 220961581797,
+    "n_files_without_size": 0,
+    "config": {
+     "architectures": [
+      "Glm4MoeForCausalLM"
+     ],
+     "model_type": "glm4_moe",
+     "num_experts_per_tok": 8,
+     "tokenizer_config": {
+      "eos_token": "<|endoftext|>",
+      "pad_token": "<|endoftext|>"
+     },
+     "chat_template_jinja": "[gMASK]<sop>\n{%- if tools -%}\n<|system|>\n# Tools\n\nYou may call one or more functions to assist with the user query.\n\nYou are provided with function signatures within <tools></tools> XML tags:\n<tools>\n{% for tool in tools %}\n{{ tool | tojson(ensure_ascii=False) }}\n{% endfor %}\n</tools>\n\nFor each function call, output the function name and arguments within the following XML format:\n<tool_call>{function-name}\n<arg_key>{arg-key-1}</arg_key>\n<arg_value>{arg-value-1}</arg_value>\n<arg_key>{arg-key-2}</arg_key>\n<arg_value>{arg-value-2}</arg_value>\n...\n</tool_call>{%- endif -%}\n{%- macro visible_text(content) -%}\n    {%- if content is string -%}\n        {{- content }}\n    {%- elif content is iterable and content is not mapping -%}\n        {%- for item in content -%}\n            {%- if item is mapping and item.type == 'text' -%}\n                {{- item.text }}\n            {%- elif item is string -%}\n                {{- item }}\n            {%- endif -%}\n        {%- endfor -%}\n    {%- else -%}\n        {{- content }}\n    {%- endif -%}\n{%- endmacro -%}\n{%- set ns = namespace(last_user_index=-1) %}\n{%- for m in messages %}\n    {%- if m.role == 'user' %}\n        {% set ns.last_user_index = loop.index0 -%}\n    {%- endif %}\n{%- endfor %}\n{% for m in messages %}\n{%- if m.role == 'user' -%}<|user|>\n{{ visible_text(m.content) }}\n{{- '/nothink' if (enable_thinking is defined and not enable_thinking and not visible_text(m.content).endswith(\"/nothink\")) else '' -}}\n{%- elif m.role == 'assistant' -%}\n<|assistant|>\n{%- set reasoning_content = '' %}\n{%- set content = visible_text(m.content) %}\n{%- if m.reasoning_content is string %}\n    {%- set reasoning_content = m.reasoning_content %}\n{%- else %}\n    {%- if '</think>' in content %}\n        {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n        {%- set content = content.split('</think>')[-1].lstrip('\\n') %}\n    {%- endif %}\n{%- endif %}\n{%- if loop.index0 > ns.last_user_index and reasoning_content -%}\n{{ '\\n<think>' + reasoning_content.strip() +  '</think>'}}\n{%- else -%}\n{{ '\\n<think></think>' }}\n{%- endif -%}\n{%- if content.strip() -%}\n{{ '\\n' + content.strip() }}\n{%- endif -%}\n{% if m.tool_calls %}\n{% for tc in m.tool_calls %}\n{%- if tc.function %}\n    {%- set tc = tc.function %}\n{%- endif %}\n{{ '\\n<tool_call>' + tc.name }}\n{% set _args = tc.arguments %}\n{% for k, v in _args.items() %}\n<arg_key>{{ k }}</arg_key>\n<arg_value>{{ v | tojson(ensure_ascii=False) if v is not string else v }}</arg_value>\n{% endfor %}\n</tool_call>{% endfor %}\n{% endif %}\n{%- elif m.role == 'tool' -%}\n{%- if m.content is string -%}\n{%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n    {{- '<|observation|>' }}\n{%- endif %}\n{{- '\\n<tool_response>\\n' }}\n{{- m.content }}\n{{- '\\n</tool_response>' }}\n{%- else -%}\n<|observation|>{% for tr in m.content %}\n\n<tool_response>\n{{ tr.output if tr.output is defined else tr }}\n</tool_response>{% endfor -%}\n{% endif -%}\n{%- elif m.role == 'system' -%}\n<|system|>\n{{ visible_text(m.content) }}\n{%- endif -%}\n{%- endfor -%}\n{%- if add_generation_prompt -%}\n    <|assistant|>{{- '\\n<think></think>' if (enable_thinking is defined and not enable_thinking) else '' -}}\n{%- endif -%}"
+    },
+    "revision_matches": true
+   },
+   "score": {
+    "model_type": "glm4_moe",
+    "novel_organs": [
+     "moe_experts",
+     "moe_router"
+    ],
+    "n_novel": 2,
+    "novelty_axes": [
+     "routing"
+    ],
+    "attribution": 1.0,
+    "same_family_as_parent": false,
+    "family_multiplier": 1.0,
+    "transfer_overlap": 1.0,
+    "download_gib": 205.79,
+    "acquirable": true,
+    "mission_value": 2.0,
+    "information_gain_per_gib": 0.00972
+   }
+  },
+  {
+   "oxx": "O011",
+   "model": "DSV4F",
+   "class": "large-moe",
+   "canonical_source": "deepseek-ai/DeepSeek-V4-Flash",
+   "canonical_revision": "60d8d70770c6776ff598c94bb586a859a38244f1",
+   "identity_status": "RESOLVED",
+   "state": "READY",
+   "recovered_on_disk": false,
+   "disk": {
+    "paths": [],
+    "bytes_present": 0,
+    "present": false
+   },
+   "upstream": {
+    "repo": "deepseek-ai/DeepSeek-V4-Flash",
+    "revision": "60d8d70770c6776ff598c94bb586a859a38244f1",
+    "checked_at": "2026-08-24T23:57:05Z",
+    "http_status": 200,
+    "resolved_sha": "60d8d70770c6776ff598c94bb586a859a38244f1",
+    "gated": false,
+    "n_files": 73,
+    "download_bytes": 159630041626,
+    "n_files_without_size": 0,
+    "config": {
+     "architectures": [
+      "DeepseekV4ForCausalLM"
+     ],
+     "expert_dtype": "fp4",
+     "model_type": "deepseek_v4",
+     "num_experts_per_tok": 6,
+     "quantization_config": {
+      "quant_method": "fp8"
+     },
+     "tokenizer_config": {
+      "bos_token": {
+       "__type": "AddedToken",
+       "content": "<\uff5cbegin\u2581of\u2581sentence\uff5c>",
+       "lstrip": false,
+       "normalized": true,
+       "rstrip": false,
+       "single_word": false
+      },
+      "eos_token": {
+       "__type": "AddedToken",
+       "content": "<\uff5cend\u2581of\u2581sentence\uff5c>",
+       "lstrip": false,
+       "normalized": true,
+       "rstrip": false,
+       "single_word": false
+      },
+      "pad_token": {
+       "__type": "AddedToken",
+       "content": "<\uff5cend\u2581of\u2581sentence\uff5c>",
+       "lstrip": false,
+       "normalized": true,
+       "rstrip": false,
+       "single_word": false
+      },
+      "unk_token": null
+     }
+    },
+    "revision_matches": true
+   },
+   "score": {
+    "model_type": "deepseek_v4",
+    "novel_organs": [
+     "latent_attention",
+     "moe_experts",
+     "moe_router"
+    ],
+    "n_novel": 3,
+    "novelty_axes": [
+     "attention",
+     "routing"
+    ],
+    "attribution": 0.5,
+    "same_family_as_parent": false,
+    "family_multiplier": 1.0,
+    "transfer_overlap": 0.85,
+    "download_gib": 148.67,
+    "acquirable": true,
+    "mission_value": 1.275,
+    "information_gain_per_gib": 0.00858
+   }
+  },
+  {
+   "oxx": "O012",
+   "model": "GLM-4.5",
+   "class": "large-moe",
+   "canonical_source": "zai-org/GLM-4.5",
+   "canonical_revision": "cbb2c7cfb52fa128a9660cb1a7a78e017899e115",
+   "identity_status": "RESOLVED",
+   "state": "READY",
+   "recovered_on_disk": false,
+   "disk": {
+    "paths": [],
+    "bytes_present": 0,
+    "present": false
+   },
+   "upstream": {
+    "repo": "zai-org/GLM-4.5",
+    "revision": "cbb2c7cfb52fa128a9660cb1a7a78e017899e115",
+    "checked_at": "2026-08-24T23:57:05Z",
+    "http_status": 200,
+    "resolved_sha": "cbb2c7cfb52fa128a9660cb1a7a78e017899e115",
+    "gated": false,
+    "n_files": 101,
+    "download_bytes": 716705229651,
+    "n_files_without_size": 0,
+    "config": {
+     "architectures": [
+      "Glm4MoeForCausalLM"
+     ],
+     "model_type": "glm4_moe",
+     "num_experts_per_tok": 8,
+     "tokenizer_config": {
+      "eos_token": "<|endoftext|>",
+      "pad_token": "<|endoftext|>"
+     },
+     "chat_template_jinja": "[gMASK]<sop>\n{%- if tools -%}\n<|system|>\n# Tools\n\nYou may call one or more functions to assist with the user query.\n\nYou are provided with function signatures within <tools></tools> XML tags:\n<tools>\n{% for tool in tools %}\n{{ tool | tojson(ensure_ascii=False) }}\n{% endfor %}\n</tools>\n\nFor each function call, output the function name and arguments within the following XML format:\n<tool_call>{function-name}\n<arg_key>{arg-key-1}</arg_key>\n<arg_value>{arg-value-1}</arg_value>\n<arg_key>{arg-key-2}</arg_key>\n<arg_value>{arg-value-2}</arg_value>\n...\n</tool_call>{%- endif -%}\n{%- macro visible_text(content) -%}\n    {%- if content is string -%}\n        {{- content }}\n    {%- elif content is iterable and content is not mapping -%}\n        {%- for item in content -%}\n            {%- if item is mapping and item.type == 'text' -%}\n                {{- item.text }}\n            {%- elif item is string -%}\n                {{- item }}\n            {%- endif -%}\n        {%- endfor -%}\n    {%- else -%}\n        {{- content }}\n    {%- endif -%}\n{%- endmacro -%}\n{%- set ns = namespace(last_user_index=-1) %}\n{%- for m in messages %}\n    {%- if m.role == 'user' %}\n        {% set ns.last_user_index = loop.index0 -%}\n    {%- endif %}\n{%- endfor %}\n{% for m in messages %}\n{%- if m.role == 'user' -%}<|user|>\n{{ visible_text(m.content) }}\n{{- '/nothink' if (enable_thinking is defined and not enable_thinking and not visible_text(m.content).endswith(\"/nothink\")) else '' -}}\n{%- elif m.role == 'assistant' -%}\n<|assistant|>\n{%- set reasoning_content = '' %}\n{%- set content = visible_text(m.content) %}\n{%- if m.reasoning_content is string %}\n    {%- set reasoning_content = m.reasoning_content %}\n{%- else %}\n    {%- if '</think>' in content %}\n        {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}\n        {%- set content = content.split('</think>')[-1].lstrip('\\n') %}\n    {%- endif %}\n{%- endif %}\n{%- if loop.index0 > ns.last_user_index and reasoning_content -%}\n{{ '\\n<think>' + reasoning_content.strip() +  '</think>'}}\n{%- else -%}\n{{ '\\n<think></think>' }}\n{%- endif -%}\n{%- if content.strip() -%}\n{{ '\\n' + content.strip() }}\n{%- endif -%}\n{% if m.tool_calls %}\n{% for tc in m.tool_calls %}\n{%- if tc.function %}\n    {%- set tc = tc.function %}\n{%- endif %}\n{{ '\\n<tool_call>' + tc.name }}\n{% set _args = tc.arguments %}\n{% for k, v in _args.items() %}\n<arg_key>{{ k }}</arg_key>\n<arg_value>{{ v | tojson(ensure_ascii=False) if v is not string else v }}</arg_value>\n{% endfor %}\n</tool_call>{% endfor %}\n{% endif %}\n{%- elif m.role == 'tool' -%}\n{%- if m.content is string -%}\n{%- if loop.first or (messages[loop.index0 - 1].role != \"tool\") %}\n    {{- '<|observation|>' }}\n{%- endif %}\n{{- '\\n<tool_response>\\n' }}\n{{- m.content }}\n{{- '\\n</tool_response>' }}\n{%- else -%}\n<|observation|>{% for tr in m.content %}\n\n<tool_response>\n{{ tr.output if tr.output is defined else tr }}\n</tool_response>{% endfor -%}\n{% endif -%}\n{%- elif m.role == 'system' -%}\n<|system|>\n{{ visible_text(m.content) }}\n{%- endif -%}\n{%- endfor -%}\n{%- if add_generation_prompt -%}\n    <|assistant|>{{- '\\n<think></think>' if (enable_thinking is defined and not enable_thinking) else '' -}}\n{%- endif -%}"
+    },
+    "revision_matches": true
+   },
+   "score": {
+    "model_type": "glm4_moe",
+    "novel_organs": [
+     "moe_experts",
+     "moe_router"
+    ],
+    "n_novel": 2,
+    "novelty_axes": [
+     "routing"
+    ],
+    "attribution": 1.0,
+    "same_family_as_parent": false,
+    "family_multiplier": 1.0,
+    "transfer_overlap": 1.0,
+    "download_gib": 667.48,
+    "acquirable": true,
+    "mission_value": 2.0,
+    "information_gain_per_gib": 0.003
+   }
+  },
+  {
+   "oxx": "O013",
+   "model": "Kimi-K3",
+   "class": "streamed",
+   "canonical_source": "moonshotai/Kimi-K3",
+   "canonical_revision": "9f62e4e9fffbd0a83ddd60e1c209d828994b3569",
+   "identity_status": "RESOLVED",
+   "state": "READY",
+   "recovered_on_disk": false,
+   "disk": {
+    "paths": [],
+    "bytes_present": 0,
+    "present": false
+   },
+   "upstream": {
+    "repo": "moonshotai/Kimi-K3",
+    "revision": "9f62e4e9fffbd0a83ddd60e1c209d828994b3569",
+    "checked_at": "2026-08-24T23:57:06Z",
+    "http_status": 200,
+    "resolved_sha": "9f62e4e9fffbd0a83ddd60e1c209d828994b3569",
+    "gated": false,
+    "n_files": 118,
+    "download_bytes": 1560998984390,
+    "n_files_without_size": 0,
+    "config": {
+     "architectures": [
+      "KimiK3ForConditionalGeneration"
+     ],
+     "auto_map": {
+      "AutoConfig": "configuration_kimi_k3.KimiK3Config",
+      "AutoModel": "modeling_kimi_k3.KimiK3ForConditionalGeneration",
+      "AutoModelForCausalLM": "modeling_kimi_k3.KimiK3ForConditionalGeneration"
+     },
+     "model_type": "kimi_k3",
+     "text_config": {
+      "quantization_config": {
+       "config_groups": {
+        "group_0": {
+         "format": "mxfp4-pack-quantized",
+         "targets": [
+          "Linear"
+         ],
+         "weights": {
+          "num_bits": 4
+         }
+        }
+       },
+       "format": "mxfp4-pack-quantized",
+       "ignore": [
+        "re:.*self_attn.*",
+        "re:.*shared_experts.*",
+        "re:.*mlp\\.(gate|up|gate_up|down)_proj.*",
+        "re:.*lm_head.*",
+        "re:.*vision_tower.*",
+        "re:.*mm_projector.*"
+       ],
+       "quant_method": "compressed-tensors"
+      }
+     },
+     "tokenizer_config": {
+      "bos_token": "[BOS]",
+      "eos_token": "[EOS]",
+      "pad_token": "[PAD]",
+      "unk_token": "[UNK]"
+     }
+    },
+    "revision_matches": true
+   },
+   "score": {
+    "model_type": "kimi_k3",
+    "novel_organs": [
+     "latent_attention",
+     "mm_projector",
+     "moe_experts",
+     "recurrent_state",
+     "vision_encoder"
+    ],
+    "n_novel": 5,
+    "novelty_axes": [
+     "attention",
+     "modality",
+     "routing",
+     "state"
+    ],
+    "attribution": 0.25,
+    "same_family_as_parent": false,
+    "family_multiplier": 1.0,
+    "transfer_overlap": 0.35,
+    "download_gib": 1453.79,
+    "acquirable": true,
+    "mission_value": 0.4375,
+    "information_gain_per_gib": 0.0003
+   }
+  }
+ ],
+ "recommendation": {
+  "oxx": "O005",
+  "model": "Qwen3-30B-A3B",
+  "canonical_source": "Qwen/Qwen3-30B-A3B",
+  "canonical_revision": "ad44e777bcd18fa416d9da3bd8f70d33ebb85d39",
+  "resolved_sha": "ad44e777bcd18fa416d9da3bd8f70d33ebb85d39",
+  "download_gib": 56.89,
+  "novel_organs": [
+   "moe_experts",
+   "moe_router"
+  ],
+  "transfer_overlap": 1.0,
+  "why": "highest mission value per download GiB among acquirable candidates",
+  "mission_value": 4.0,
+  "novelty_axes": [
+   "routing"
+  ],
+  "same_family_as_parent": true
+ },
+ "runners_up": [
+  {
+   "oxx": "O001",
+   "model": "Falcon-H1-7B-Instruct",
+   "information_gain_per_gib": 0.05304,
+   "lost_because": "lower information gain per GiB than the recommendation"
+  },
+  {
+   "oxx": "O006",
+   "model": "Qwen3-VL-30B-A3B-Instruct",
+   "information_gain_per_gib": 0.03887,
+   "lost_because": "lower information gain per GiB than the recommendation"
+  },
+  {
+   "oxx": "O003",
+   "model": "Kimi-VL-A3B-Instruct",
+   "information_gain_per_gib": 0.02617,
+   "lost_because": "lower information gain per GiB than the recommendation"
+  }
+ ],
+ "not_acquirable": [
+  {
+   "oxx": "O000",
+   "model": "gemma-3-1b-it",
+   "http_status": 200,
+   "gated": true,
+   "error": null
+  },
+  {
+   "oxx": "O002",
+   "model": "gemma-3-4b-it",
+   "http_status": 200,
+   "gated": true,
+   "error": null
+  },
+  {
+   "oxx": "O008",
+   "model": "AI21-Jamba-Mini-1.5",
+   "http_status": 200,
+   "gated": true,
+   "error": null
+  }
+ ],
+ "pass": true
+}

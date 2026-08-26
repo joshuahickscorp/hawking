@@ -1,0 +1,109 @@
+{
+ "schema": "hawking.headless.composition_attribution.v1",
+ "generated_at": "2026-08-25T05:05:55Z",
+ "generated_by": "tools/odyssey/composition_attribution.py",
+ "obligation": "G032 \u2014 WHOLE_MODEL_CAPABILITY_COMPOSITION (directive \u00a71 reopened)",
+ "git_head": "eb1494112b61953122262e311cc9243dbd44952e",
+ "hand_authored": false,
+ "method": "three bodies from one parent, one binary, one tokenizer, one suite; each adjacent pair differs in exactly one coordinate",
+ "ladder": [
+  {
+   "body": "sealed",
+   "complete_ebpw_physical": 3.1393,
+   "mlp_codec": "affine_q2_group64_fp16_scale_bias (2.5 bpw)",
+   "non_mlp_codec": "q4 (HQ30UQ4 g64)",
+   "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+   "passed": 30,
+   "total": 43,
+   "rate": 0.6977,
+   "per_axis": {
+    "knowledge": 1.0,
+    "reasoning": 0.5,
+    "structured_output": 0.333,
+    "mutation": 1.0,
+    "coding": 1.0,
+    "self_correction": 1.0,
+    "hygiene": 1.0
+   },
+   "receipt": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json"
+  },
+  {
+   "body": "variantA",
+   "complete_ebpw_physical": 2.980254,
+   "mlp_codec": "fourlevel_q2_group64_fp16_delta (2.25 bpw)",
+   "non_mlp_codec": "ws_rtn_q4_g64",
+   "artifact_root": "/Users/scammermike/noetic/VARIANT_A_MLP_ONLY",
+   "passed": 0,
+   "total": 43,
+   "rate": 0.0,
+   "per_axis": {
+    "knowledge": 0.0,
+    "reasoning": 0.0,
+    "structured_output": 0.0,
+    "mutation": 0.0,
+    "coding": 0.0,
+    "self_correction": 0.0,
+    "hygiene": 0.0
+   },
+   "receipt": "receipts/headless/CAPABILITY_noetic-variantA-2.98.json"
+  },
+  {
+   "body": "clean",
+   "complete_ebpw_physical": 2.596994,
+   "mlp_codec": "fourlevel_q2_group64_fp16_delta (2.25 bpw)",
+   "non_mlp_codec": "ws_rtn_q3_g128",
+   "artifact_root": "/Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors",
+   "passed": 0,
+   "total": 43,
+   "rate": 0.0,
+   "per_axis": {
+    "knowledge": 0.0,
+    "reasoning": 0.0,
+    "structured_output": 0.0,
+    "mutation": 0.0,
+    "coding": 0.0,
+    "self_correction": 0.0,
+    "hygiene": 0.0
+   },
+   "receipt": "receipts/headless/CAPABILITY_noetic-clean-2.60.json"
+  }
+ ],
+ "attribution": {
+  "mlp_change": {
+   "what": "MLP affine 2.5 bpw (per-group scale AND bias) -> q2f 2.25 bpw (per-group scale only, no bias)",
+   "bpw_saved": 0.25,
+   "capability_points_cost": 30,
+   "isolated_by": "sealed -> variantA",
+   "CONFOUND": "this pair is not a perfectly clean single-coordinate move. Both bodies hold the non-MLP organs at q4 g64, but sealed stores them in the older HQ30UQ4 container with its own kernel while variantA stores them in HGRAVU01 with qwen_uniform_q4_group64_matvec_geo_tpr64_tg128. The bit rate is identical and the reconstruction should be too, but the kernel path differs, so some part of the 19-point gap could belong to the container rather than to the MLP bias. A fully clean isolation would repack the sealed MLP codec into the HGRAVU01-q4 body.",
+   "why_the_conclusion_still_holds": "the variantA -> clean pair IS clean -- same container, same kernel family, only the bit rate moves -- and it prices the entire non-MLP 4-bit-to-3-bit drop at 5 points. Even if the container accounted for the whole of its share, the MLP change would still be the larger single cost."
+  },
+  "non_mlp_change": {
+   "UNPRICED_IF_FLOOR": true,
+   "what": "attention / DeltaNet / embed / head q4 g64 -> q3 g128",
+   "bpw_saved": 0.3833,
+   "capability_points_cost": 0,
+   "isolated_by": "variantA -> clean, which differ ONLY in the non-MLP bit rate: same HGRAVU01 container, same kernel family, q4 g64 -> q3 g128. This pair is a clean single-coordinate move."
+  },
+  "floor_effect": {
+   "hit": true,
+   "middle_body_score": 0,
+   "what_it_means": "the variantA -> clean comparison is UNINFORMATIVE, not favourable: variantA already scores 0, so removing more information from it cannot lower the score. The non-MLP change is UNPRICED, not free.",
+   "what_would_price_it": "variant B: MLP affine 2.5 WITH bias + non-MLP q3. If it scores near the sealed body, the non-MLP drop is genuinely cheap and that body is a ~2.85-EBPW candidate at sealed capability. If it scores 0, the non-MLP drop is fatal too.",
+   "receipt_when_available": "receipts/headless/COMPOSITION_ISOLATION_B.json"
+  },
+  "dominant": "mlp_change",
+  "dominant_caveat": "the non-MLP cost is measured against an already-dead body and is a lower bound of 0, not a measurement",
+  "ratio_mlp_over_non_mlp": null
+ },
+ "weight_space_prediction_was_wrong": {
+  "weight_space_drop_mlp": 0.004990279674530029,
+  "weight_space_drop_non_mlp": 0.03071827080796974,
+  "weight_space_said": "the non-MLP change is 6.2x larger, so it should dominate",
+  "capability_said": "the MLP change costs 30 points and the non-MLP change costs 0",
+  "verdict": "weight-space cosine got the ORDERING BACKWARDS",
+  "this_is_the_campaign_s_own_law": "TR-METHOD-HELDOUT-ACTIVATIONS in the transfer report: judge a candidate on held-out REAL activations, never on weight-space error. The reconstruction isolation used weight-space error and inverted the answer, so the law demonstrated itself on the very campaign that recorded it."
+ },
+ "finding": "removing the per-group BIAS from the MLP codec -- 0.25 bpw -- is what breaks the model: it costs 30 of the sealed body's 30 capability points on its own. The non-MLP q4->q3 drop is UNPRICED because it was only ever applied to a body that already scored zero. Both changes passed their own held-out organ probes; composed, the model does not work.",
+ "durable_law": "LOCAL ADEQUACY DOES NOT COMPOSE, and weight-space fidelity does not rank composition risk. A per-organ floor is necessary and is not sufficient.",
+ "pass": true
+}

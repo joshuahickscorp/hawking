@@ -1,0 +1,174 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T13:24:17",
+ "experiment_class": "ACCEL-HUMF",
+ "knowledge_level": "GENERAL",
+ "git_head": "0f0c5cc0c05d8b09829f33293a3b73e22ddcdb8b",
+ "identities": {
+  "experiment": {
+   "id": "ERROR_DETECTION_IS_NOT_IDENTITY",
+   "obligation": "G050",
+   "steer": "S015 \u00a732/\u00a714; the campaign law 'never trust a check you have not watched FAIL'"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "status": "ABSENT",
+   "reason": "the fabric's state machine; no GPU work"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "synthetic payloads at real object sizes"
+  },
+  "representation": {
+   "name": "opaque bytes",
+   "note": "the fabric never interprets them"
+  },
+  "kernel": {
+   "status": "ABSENT",
+   "reason": "no kernel executed"
+  },
+  "runtime": {
+   "python": "3.12.6"
+  },
+  "transport": {
+   "name": "MockExternalMemoryProvider",
+   "physical": false,
+   "note": "bandwidth is a KNOB, so every ratio against transfer TIME below is mock-relative and is labelled as such"
+  }
+ },
+ "headline": "HUMF's integrity check was watched, and it PASSED ON WRONG BYTES TWICE, for two unrelated reasons. crc32 can be REPAIRED in 0.035 ms by a linear solve, so a payload with a flipped weight byte and four adjusted padding bytes was accepted, marked CLEAN and counted TRUSTED. And the check compares the SOURCE to the DESTINATION, so a source that rotted in place was compared with a faithful copy of its own rot and passed -- after which the two copies AGREE and every later check confirms the corruption. Neither is a flaw in crc32. ERROR DETECTION IS NOT IDENTITY.",
+ "THE_FORGERY": {
+  "payload_bytes": 4096,
+  "good_crc32": "a4e5cb92",
+  "forged_crc32": "a4e5cb92",
+  "crc32_agrees": true,
+  "bytes_that_differ": 5,
+  "the_weight_byte_differs": true,
+  "blake2b_agrees": false,
+  "cost_ms": 0.035,
+  "method": "32x32 GF(2) solve over 4 chosen bytes, not a search",
+  "through_the_fabric": {
+   "fault_control": "CAUGHT: integrity check FAILED transferring W into MOCK_EXTERNAL_VRAM",
+   "forgery_raised": false,
+   "destination_state": "CLEAN",
+   "counted_as_a_valid_copy": true,
+   "counted_as_TRUSTED": true,
+   "recorded_digest": "a4e5cb92",
+   "bytes_are_wrong": true,
+   "verdict": "THE FABRIC ACCEPTED WRONG BYTES AND MARKED THEM CLEAN AND TRUSTED"
+  }
+ },
+ "WHAT_CRC32_ACTUALLY_BUYS": {
+  "single_bit_flip": 1.0,
+  "two_bit_flips": 1.0,
+  "eight_bit_flips": 1.0,
+  "random_4_byte_burst": 1.0,
+  "random_64_byte_burst": 1.0,
+  "reading": "crc32 is EXCELLENT at the thing it was designed for. The forgery is not evidence that it is a bad error detector; it is evidence that error detection is not identity.",
+  "why_this_half_matters": "Reporting the forgery without this would be a smear. crc32 caught EVERY accidental corruption in 4000 trials of each class. It stays the per-transfer fault check; it stops being the thing that answers 'is this the same object'."
+ },
+ "THE_ROT": {
+  "without_a_sealed_identity": {
+   "transfer_raised": false,
+   "destination_state": "CLEAN",
+   "trusted": true,
+   "source_and_destination_agree": true,
+   "and_both_are_wrong": true,
+   "verdict": "THE ROT PROPAGATED THROUGH A CHECK THAT REPORTED SUCCESS. The per-transfer check compares SOURCE to DESTINATION, so a faithful copy of corrupt bytes is exactly what it is looking for. Worse: afterwards the two copies AGREE, so every later check confirms the corruption."
+  },
+  "with_a_sealed_identity": {
+   "transfer_refused": true,
+   "message": "refusing to transfer W out of APPLE_UM: the source no longer matches the identity sealed at registration (4d03115716aa4f5b vs 5adfa153ce0b5065). Nothi",
+   "nothing_moved": true,
+   "source_trust_after": "UNKNOWN",
+   "sealed_at_registration": "5adfa153ce0b5065"
+  }
+ },
+ "TRUST_DECAY_NOW_HAS_A_MECHANISM": {
+  "the_hole": "a copy verified once was TRUSTED FOREVER and nothing ever re-asked. Trust was a fact with no age, so 'verified' silently meant 'was verified, at some moment, possibly a thousand events ago'.",
+  "what_was_built": {
+   "Materialization.verified_at": "the fabric event at which this copy's trust was last established",
+   "Humf.epoch": "a monotonic EVENT counter, not a clock -- wall time is not what invalidates a copy, activity is, and a counter cannot drift",
+   "Humf.audit(identity)": "re-check every copy against the sealed identity NOW; a diverged copy goes UNKNOWN",
+   "Humf.stale_verifications(max_age)": "what you are relying on that has not been looked at recently",
+   "HumfObject.content_digest": "blake2b-128 of the value, computed BY THE FABRIC at registration -- the only value here a transport cannot influence",
+   "mark_written UNSEALS": "an identity check that fires on legitimate writes is an identity check somebody turns off"
+  },
+  "audit_finds_what_nothing_else_would_touch": {
+   "before": {
+    "APPLE_UM": "MATCHES",
+    "MOCK_EXTERNAL_VRAM": "MATCHES"
+   },
+   "after": {
+    "APPLE_UM": "MATCHES",
+    "MOCK_EXTERNAL_VRAM": "DIVERGED"
+   },
+   "trust_after": {
+    "APPLE_UM": "TRUSTED",
+    "MOCK_EXTERNAL_VRAM": "UNKNOWN"
+   },
+   "why_it_matters": "Nothing in the fabric had a reason to touch this copy. Without an audit its trust rested on a check from epoch 1 and would have rested there forever."
+  },
+  "age": {
+   "stale_at_max_age_5": [
+    "APPLE_UM",
+    "MOCK_EXTERNAL_VRAM"
+   ],
+   "ages": {
+    "APPLE_UM": 41,
+    "MOCK_EXTERNAL_VRAM": 40
+   },
+   "note": "an event counter, not a clock -- wall time is not what invalidates a copy"
+  },
+  "a_write_unseals": {
+   "content_digest": null,
+   "unsealed_because": "written in APPLE_UM",
+   "audit_says": "value is UNSEALED (written in APPLE_UM); there is nothing to check against until seal_value()",
+   "why": "an identity check that fires on legitimate writes is an identity check somebody turns off"
+  }
+ },
+ "AND_IT_IS_NOT_FREE": {
+  "machine_real_rates_GB_s": {
+   "crc32_GB_s": 35.526,
+   "blake2b_128_GB_s": 1.387,
+   "paid_per": "ONCE PER OBJECT at seal, plus once per transfer on the SOURCE only. The round-trip check on the destination stays crc32, because that check is against a FAULT and crc32 caught 100% of every fault class measured."
+  },
+  "ratio_on_this_machine": "blake2b-128 1.387 GB/s against crc32 35.526 GB/s = 25.6x slower. Against a 5 GB/s bridge an unconditional re-hash costs ~3.6x the transfer it protects; against Apple UM at 589.73 GB/s it costs ~425x. THE CHECK IS MORE EXPENSIVE THAN THE MOVE.",
+  "mock_relative_arms": {
+   "every_transfer_(default)": {
+    "median_ms": 3.388,
+    "iqr_pct": 6.34,
+    "overhead_vs_registration_only": 14.73
+   },
+   "only_if_unverified_for_8_events": {
+    "median_ms": 0.236,
+    "iqr_pct": 1217.71,
+    "overhead_vs_registration_only": 1.026
+   },
+   "registration_only": {
+    "median_ms": 0.23,
+    "iqr_pct": 4.94,
+    "overhead_vs_registration_only": 1.0
+   }
+  },
+  "mock_caveat": "the 14.73x is against a SIMULATED transfer whose bandwidth is a knob; it is reported because it is what the fabric actually did, and the bandwidth ratio above is the number that transfers to real hardware",
+  "the_bimodal_arm_is_not_noise": "only_if_unverified_for_8_events shows 1217% IQR BY CONSTRUCTION -- the first transfer pays the hash and the rest do not. Reported rather than smoothed.",
+  "resolution": "identity_recheck_age: 0 = every transfer (default, safe), k = only when the source has gone k events unverified, None = registration only. THIS IS THE DECAY MODEL PAYING FOR ITSELF: re-verify what has gone unlooked-at, not what was just checked. A production ADP on a high-bandwidth link should set k, and the receipt says so rather than leaving a default nobody can afford."
+ },
+ "claim_boundary": {
+  "the_round_trip_blind_spot_is_UNCHANGED": "the destination check still validates copy_out, not what a KERNEL reads. compute_skew still passes it. Sealing the SOURCE does nothing about that and it is not claimed to.",
+  "no_hostile_transport_is_modelled": "substitute_next hands the fabric chosen bytes; it does not model an adversary who also sees the sealed digest. The realistic threat on a bridge is a buggy driver reusing a stale buffer, not an attacker",
+  "blake2b_is_not_proven_here": "it is used as a standard construction, not analysed",
+  "mock_only": "no real external device; the fabric's state machine is what is graded",
+  "rot_is_injected_not_observed": "no bit rot was witnessed on this machine"
+ },
+ "tests": {
+  "humf": 54,
+  "accelerator_total": 239,
+  "was_total": 234
+ },
+ "pass": true
+}

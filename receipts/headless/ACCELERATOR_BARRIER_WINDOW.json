@@ -1,0 +1,201 @@
+{
+ "experiment_class": "ACCEL-CONTROL-CALIBRATION",
+ "date": "2026-08-25",
+ "obligations": [
+  "G047",
+  "G043"
+ ],
+ "headline": "THE WINDOW IS THE KNOB, THE BARRIER DOES NOT FULLY RESYNCHRONIZE, AND THE QUIET NUMBER I SHIPPED IS NOT A NUMBER",
+ "boundary_this_closes": "ACCELERATOR_BARRIER_CONTROL_MECHANISM.json: 'confirmation rests on a single factorial and varying the WORK BETWEEN the two barriers is not done here'.",
+ "prediction_written_first": {
+  "written_before_the_run": true,
+  "boundary_being_closed": "ACCELERATOR_BARRIER_CONTROL_MECHANISM.json: 'confirmation rests on a single factorial and varying the WORK BETWEEN the two barriers is not done here'.",
+  "the_mechanism_under_test": "the factorial established that an upstream barrier takes p_fired from 1.000 to 0.084 and proposed the RACE WINDOW as the reason -- the barrier resynchronizes the group, so the window collapses to the work between the barrier and the conflicting access. If that is right, WORK IS A CONTINUOUS KNOB and p should climb back toward 1.0 as work is inserted.",
+  "P1_monotone_rise": "p_fired rises monotonically with the number of FMAs between the upstream barrier and the racing write, from ~0.08 at zero work toward ~1.0 at large work.",
+  "P2_the_crossover_moves_with_width": "the crossover N is LARGER at narrow widths, because fewer simdgroups means less skew to accumulate.",
+  "P3_THE_CONTROL_IS_WHAT_MAKES_IT_A_MECHANISM": "identical work placed BEFORE the upstream barrier must NOT raise p. A barrier resynchronizes whatever skew preceded it, so pre-barrier work delays arrival and buys no window. If BOTH arms rise, the effect is 'the kernel takes longer / more chances' and the RACE WINDOW framing is wrong -- the fifth framing would die like the first four.",
+  "how_it_could_be_refuted": "a flat BETWEEN curve (work does not widen the window, so the barrier's effect is binary and unexplained), or a rising BEFORE curve (loudness tracks total kernel duration, not the gap between barrier and access)."
+ },
+ "arm_between_CONFIRMS_the_mechanism": {
+  "table_p_fired": {
+   "0": {
+    "64": 0.25,
+    "256": 0.475,
+    "1024": 0.7
+   },
+   "1": {
+    "64": 0.45,
+    "256": 0.75,
+    "1024": 0.975
+   },
+   "4": {
+    "64": 0.675,
+    "256": 0.45,
+    "1024": 0.9
+   },
+   "16": {
+    "64": 0.45,
+    "256": 0.75,
+    "1024": 1.0
+   },
+   "64": {
+    "64": 0.175,
+    "256": 0.525,
+    "1024": 1.0
+   },
+   "256": {
+    "64": 0.25,
+    "256": 1.0,
+    "1024": 1.0
+   },
+   "1024": {
+    "64": 0.95,
+    "256": 1.0,
+    "1024": 1.0
+   },
+   "4096": {
+    "64": 1.0,
+    "256": 1.0,
+    "1024": 1.0
+   }
+  },
+  "verdict": "P1 CONFIRMED. Work inserted between the upstream barrier and the racing write drives p from the quiet regime back to 1.00 -- THE FIRST CONTINUOUS KNOB IN FIVE FRAMINGS, where dependency density, maskability, slot contents and distance were all flat or scattered.",
+  "P2_CONFIRMED_AND_IT_IS_THE_SHARPEST_PART": "the crossover moves with width exactly as predicted: width 1024 reaches 1.00 by ~16 fused multiply-adds, 256 by ~256, 64 not until ~1024. More simdgroups, less work needed to open the window -- the same direction the width sweep found by a different route."
+ },
+ "the_control_is_REFUTED_ABOVE_WIDTH_64": {
+  "table_p_fired": {
+   "0": {
+    "64": 0.0,
+    "256": 0.05,
+    "1024": 0.125
+   },
+   "1": {
+    "64": 0.0,
+    "256": 0.0,
+    "1024": 0.825
+   },
+   "4": {
+    "64": 0.0,
+    "256": 0.05,
+    "1024": 0.35
+   },
+   "16": {
+    "64": 0.025,
+    "256": 0.025,
+    "1024": 0.925
+   },
+   "64": {
+    "64": 0.0,
+    "256": 0.025,
+    "1024": 1.0
+   },
+   "256": {
+    "64": 0.0,
+    "256": 0.0,
+    "1024": 0.975
+   },
+   "1024": {
+    "64": 0.0,
+    "256": 0.1,
+    "1024": 0.95
+   },
+   "4096": {
+    "64": 0.025,
+    "256": 0.075,
+    "1024": 1.0
+   }
+  },
+  "direct_measurement": [
+   {
+    "width": 32,
+    "no_work": [
+     0.0,
+     0.0
+    ],
+    "prebarrier_4096": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "width": 64,
+    "no_work": [
+     0.2,
+     0.09
+    ],
+    "prebarrier_4096": [
+     0.08,
+     0.09
+    ]
+   },
+   {
+    "width": 128,
+    "no_work": [
+     0.11,
+     0.11
+    ],
+    "prebarrier_4096": [
+     0.6,
+     0.45
+    ]
+   },
+   {
+    "width": 256,
+    "no_work": [
+     0.64,
+     0.65
+    ],
+    "prebarrier_4096": [
+     0.9,
+     0.83
+    ]
+   },
+   {
+    "width": 512,
+    "no_work": [
+     0.85,
+     0.89
+    ],
+    "prebarrier_4096": [
+     1.0,
+     0.98
+    ]
+   },
+   {
+    "width": 1024,
+    "no_work": [
+     0.75,
+     0.79
+    ],
+    "prebarrier_4096": [
+     1.0,
+     1.0
+    ]
+   }
+  ],
+  "verdict": "P3 HOLDS AT 32 AND 64 AND FAILS AT 128 AND ABOVE. Identical work placed BEFORE the upstream barrier should buy no window, because a barrier resynchronizes whatever skew preceded it. Measured in ONE process at 4096 fmas against none: 0.00 vs 0.00 at width 32, 0.20 vs 0.09 at 64 -- flat -- then 0.11 vs 0.60 at 128, 0.65 vs 0.90 at 256, 0.89 vs 1.00 at 512, 0.79 vs 1.00 at 1024.",
+  "what_that_means": "A THREADGROUP BARRIER DOES NOT FULLY RESYNCHRONIZE A WIDE THREADGROUP. Skew accumulated before the barrier LEAKS THROUGH it at 128 threads and above, so 'the window is exactly the work between the barrier and the access' is TOO STRONG. The barrier narrows the window; it does not reset it.",
+  "the_one_width_that_is_clean_is_clean_for_a_known_reason": "width 32 is one simdgroup and both arms are 0.00 -- the fifth independent sighting in this program that lockstep removes the effect entirely."
+ },
+ "the_correction_to_what_i_shipped_last_block": {
+  "what_was_shipped": "barrier_control_prior returned expected_p_fired = 0.084 for a control whose barrier has an upstream barrier, taken from the factorial's marginal.",
+  "why_it_is_wrong": "THE SAME KERNEL MEASURED p = 0.05 AND 0.65 AT WIDTH 256 IN TWO PROCESSES, and 0.12 against 0.79 at width 1024. The zero-work point at width 64 read 0.25 in one process and 0.30-0.45 in another against the factorial's 0.01-0.03. 0.084 was a SAMPLE FROM AN UNSTABLE DISTRIBUTION and quoting it as an expectation invited exactly the reading it cannot support.",
+  "a_candidate_explanation_TESTED_AND_REJECTED": "the factorial's kernel had a threadgroup READ between the barrier and the racing write and this sweep's did not, which is a real difference and would be the obvious cause. Run side by side in ONE process at width 64: with the read 0.56/0.69, without 0.45/0.30 -- the gap between the two variants is SMALLER than the gap between two runs of the same variant, so THE READ IS NOT THE EXPLANATION and process-to-process instability is.",
+  "the_asymmetry_that_survives_and_is_now_encoded": "THE LOUD CASE IS A RELIABLE PREDICTION and the quiet case is not a number. With no upstream barrier every cell ever measured fires 1.00 -- all eight factorial cells, and every width and work count here. With one, p ranges 0.01 to 0.90 depending on width, on the work in the gap, and on which process you happened to run in.",
+  "shipped": "CONTROL_LOUDNESS_PRIOR['upstream_barrier'] is now None with QUIET_OBSERVED_RANGE beside it; expected_p_fired is None for a quiet control ON PURPOSE, because a number there gets cited as one; expected_p_fired_range and quiet_only_while_the_gap_is_small travel with every verdict, since a quiet control is quiet because THE GAP IS SHORT and not because the barrier is unimportant."
+ },
+ "correctness": {
+  "intact_kernel_wrong": 0,
+  "intact_runs": 760,
+  "reading": "a firing control is the stripped barrier and not a broken kernel."
+ },
+ "claim_boundary": [
+  "SYNTHETIC kernels. This maps the CONTROL SPECTRUM; the shipped AirNorm and AirTopKSample endpoints stay where they were measured.",
+  "The BETWEEN and BEFORE arms of the main sweep were measured in ONE process each, so the CONTRAST between them at a given width is sound while the ABSOLUTE levels are not comparable to any other run -- which is the block's own finding applied to its own data.",
+  "The resynchronization result is 40-100 runs per cell at ONE work count (4096 fmas) and ONE shape. It establishes that pre-barrier work RAISES p at 128 and above; it does not measure how much skew leaks through.",
+  "Work is counted in FUSED MULTIPLY-ADDS, a proxy for elapsed time in the gap, and no time was measured -- the crossover counts are not portable to another instruction mix.",
+  "f32, one machine, INSTANCE. Nothing timed and the lake fill was NOT quiesced, which cannot bias a correctness count.",
+  "NO SHIPPED KERNEL WAS MODIFIED, so no performance or correctness claim about any AIR primitive moves."
+ ],
+ "tests": "451 accelerator tests pass (was 450)."
+}

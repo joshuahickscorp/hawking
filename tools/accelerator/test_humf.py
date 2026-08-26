@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools/accelerator"))
+import humf  # noqa: E402
 from humf import (DeviceLost, Domain, Humf, HumfError, HumfObject,  # noqa: E402
                   Materialization, MockExternalMemoryProvider, State,
                   TransferTimeout)
@@ -534,3 +535,339 @@ def test_a_probe_that_times_out_is_UNKNOWN_not_lost():
     assert m.state is State.CLEAN and m.payload == PAYLOAD   # untouched
     # and the quarantine is what stops it being used before an operator resolves it
     assert "MOCK_EXTERNAL_VRAM" in h.quarantined
+
+
+def _unknown_copy(verify=True):
+    """A copy in the mock domain whose probe timed out, so its trust is UNKNOWN.
+
+    Built through a REAL transfer so the copy carries whatever digest the transfer
+    recorded -- which is the thing resolution has to check against.
+    """
+    h, o, mp = fabric()
+    h.verify_transfers = verify
+    p = h.plan_acquire("W42", "MOCK_EXTERNAL_VRAM")
+    h.execute("W42", p, "MOCK_EXTERNAL_VRAM")
+    h.transfer_timeout_s = 0.05
+    mp.hang_next_s = 0.6
+    r = h.device_partially_lost("MOCK_EXTERNAL_VRAM", "reset, probe hung")
+    assert r["unknown"] == ["W42"], r
+    return h, o, mp
+
+
+def test_releasing_a_quarantine_does_not_resolve_an_unknown_copy():
+    """The asymmetry the previous receipt named against itself. Releasing says THE
+    LINK IS FINE; it must not also say AND EVERY COPY ON IT IS GOOD."""
+    h, o, mp = _unknown_copy()
+    m = o.materializations["MOCK_EXTERNAL_VRAM"]
+    assert m.trust == "UNKNOWN" and m.state is State.CLEAN   # state untouched
+    r = h.release_quarantine("MOCK_EXTERNAL_VRAM")
+    assert "MOCK_EXTERNAL_VRAM" not in h.quarantined          # the link is back
+    assert r["still_unresolved"] == ["W42"]                   # the copy is not
+    assert m.trust == "UNKNOWN"
+    # and the refusal is real, not just a report: the copy is still out of service
+    o.materializations["APPLE_UM"].transition(State.EVICTED)
+    o.recompute_cost_s = None
+    p = h.plan_acquire("W42", "APPLE_UM")
+    assert p.action == "IMPOSSIBLE" and "UNRESOLVED" in p.detail
+
+
+def test_resolve_unknown_verifies_against_the_recorded_digest():
+    h, o, mp = _unknown_copy()
+    h.release_quarantine("MOCK_EXTERNAL_VRAM")
+    r = h.resolve_unknown("MOCK_EXTERNAL_VRAM", "W42")
+    assert r["verdict"] == "VERIFIED", r
+    assert o.materializations["MOCK_EXTERNAL_VRAM"].trust == "TRUSTED"
+    # back in service, which is the direction a check that only ever refuses lacks
+    o.materializations["APPLE_UM"].transition(State.EVICTED)
+    assert h.plan_acquire("W42", "APPLE_UM").action == "TRANSFER"
+
+
+def test_a_probe_with_nothing_to_compare_against_is_presence_only():
+    """PRESENCE IS NOT INTEGRITY. Without a recorded digest the probe proves the copy
+    answered and nothing whatever about its bytes, so trust stays UNKNOWN."""
+    h, o, mp = _unknown_copy(verify=False)
+    assert o.materializations["MOCK_EXTERNAL_VRAM"].digest is None
+    r = h.resolve_unknown("MOCK_EXTERNAL_VRAM", "W42")
+    assert r["verdict"] == "PRESENT_BUT_UNVERIFIABLE", r
+    assert o.materializations["MOCK_EXTERNAL_VRAM"].trust == "UNKNOWN"
+
+
+def test_resolve_unknown_catches_a_copy_that_was_there_and_wrong():
+    """The case a timeout can hide: the copy answers, and the bytes are wrong."""
+    h, o, mp = _unknown_copy()
+    mp.corrupt_next = True
+    r = h.resolve_unknown("MOCK_EXTERNAL_VRAM", "W42")
+    assert r["verdict"] == "CORRUPT", r
+    m = o.materializations["MOCK_EXTERNAL_VRAM"]
+    assert m.state is State.INVALID and m.payload is None
+    assert "MOCK_EXTERNAL_VRAM" not in o.valid_copies()
+
+
+def test_a_probe_that_times_out_again_changes_nothing():
+    h, o, mp = _unknown_copy()
+    mp.hang_next_s = 0.6
+    r = h.resolve_unknown("MOCK_EXTERNAL_VRAM", "W42")
+    assert r["verdict"] == "STILL_UNKNOWN", r
+    m = o.materializations["MOCK_EXTERNAL_VRAM"]
+    assert m.trust == "UNKNOWN" and m.state is State.CLEAN and m.payload == PAYLOAD
+
+
+def test_accept_unknown_is_recorded_as_an_assertion_not_a_verification():
+    h, o, mp = _unknown_copy(verify=False)
+    h.accept_unknown("MOCK_EXTERNAL_VRAM", "W42", "operator inspected the bus by hand")
+    assert o.materializations["MOCK_EXTERNAL_VRAM"].trust == "ASSERTED"
+    entry = [e for e in h.log if e["action"] == "ACCEPT_UNKNOWN"][-1]
+    assert entry["evidence"] == "NONE -- operator assertion"
+    # AND THE ASYMMETRY RUNS BOTH WAYS, which this caught: accepting the COPY does
+    # not clear the LINK. While the domain is still quarantined the copy is not
+    # offered at all and the planner falls back to RECOMPUTE; only once the link is
+    # released too does the accepted copy return to service. Two axes, both cleared
+    # separately, neither standing in for the other.
+    o.materializations["APPLE_UM"].transition(State.EVICTED)
+    assert h.plan_acquire("W42", "APPLE_UM").action == "RECOMPUTE"
+    h.release_quarantine("MOCK_EXTERNAL_VRAM")
+    p = h.plan_acquire("W42", "APPLE_UM")
+    assert p.action == "TRANSFER" and p.source == "MOCK_EXTERNAL_VRAM"
+
+
+def test_the_mover_uses_the_source_the_plan_named():
+    """A plan whose source is not what executes is not an audit trail. DEMONSTRATED
+    against the pre-fix code: a plan reading `from TRUSTED_SRC` moved the bytes out
+    of a QUARANTINED domain, because _move re-derived `the first CLEAN copy`."""
+    GOOD, BAD = b"G" * NB, b"B" * NB
+    doms = {"QUARANTINED_SRC": Domain("QUARANTINED_SRC", 1 << 30, 5.0, physical=True),
+            "TRUSTED_SRC": Domain("TRUSTED_SRC", 1 << 30, 5.0, physical=True),
+            "SCRATCH": Domain("SCRATCH", 1 << 30, 100.0, physical=True)}
+    h = Humf(doms)
+    o = HumfObject("W", "tensor", N, "f32")
+    # insertion order puts the quarantined domain FIRST, which is all _move looked at
+    o.place(Materialization("QUARANTINED_SRC", "dense_f32", "row_major", NB,
+                            State.CLEAN, payload=BAD))
+    o.place(Materialization("TRUSTED_SRC", "dense_f32", "row_major", NB,
+                            State.CLEAN, payload=GOOD))
+    h.register(o)
+    h.quarantined["QUARANTINED_SRC"] = "bus reset"
+    p = h.plan_acquire("W", "SCRATCH")
+    assert p.source == "TRUSTED_SRC"
+    assert h.execute("W", p, "SCRATCH").payload == GOOD
+
+
+def test_the_mover_refuses_to_substitute_a_source_the_plan_did_not_name():
+    """If the named source went bad between plan and execute, re-plan -- do not pick
+    another one silently. A quiet substitution is how the log stops matching reality."""
+    h, o, mp = fabric()
+    doms = dict(h.domains); doms["SCRATCH"] = Domain("SCRATCH", 1 << 30, 100.0, physical=True)
+    h.domains = doms
+    p = h.plan_acquire("W42", "SCRATCH")
+    assert p.source == "APPLE_UM"
+    o.place(Materialization("MOCK_EXTERNAL_VRAM", "dense_f32", "row_major", NB,
+                            State.CLEAN, payload=PAYLOAD))
+    o.materializations["APPLE_UM"].transition(State.EVICTED)   # the named source dies
+    with pytest.raises(HumfError, match="refusing to substitute"):
+        h.execute("W42", p, "SCRATCH")
+
+
+def test_an_unknown_copy_is_not_counted_as_a_survivor_in_data_loss():
+    """valid_copies() is about STATE and still names it. trusted_copies() is about
+    what may be relied upon, and DATA-LOSS accounting must ask the second: counting
+    an UNKNOWN copy as a survivor reports `you still have it` about a copy nobody
+    can vouch for."""
+    h, o, mp = _unknown_copy()
+    assert "MOCK_EXTERNAL_VRAM" in o.valid_copies()
+    assert "MOCK_EXTERNAL_VRAM" not in o.trusted_copies()
+    o.recompute_cost_s, o.recompute = None, None
+    r = h.device_lost("APPLE_UM", "the other domain went away too")
+    assert r["data_lost"] == ["W42"], r
+
+
+def _forge_crc(payload: bytes, free_at: int, want: int) -> bytes:
+    """crc32 is affine over GF(2), so repairing a checksum is a 32x32 linear solve
+    over 4 chosen bytes -- not a search."""
+    import zlib
+    crc = lambda b: zlib.crc32(b) & 0xFFFFFFFF
+    n = len(payload); k = crc(bytes(n)); piv = {}
+    for i in range(32):
+        e = bytearray(n); e[free_at + i // 8] = 1 << (i % 8)
+        v, tag = crc(bytes(e)) ^ k, 1 << i
+        while v:
+            b = v.bit_length() - 1
+            if b not in piv:
+                piv[b] = (v, tag); break
+            pv, pt = piv[b]; v ^= pv; tag ^= pt
+    t, sol = crc(payload) ^ want, 0
+    while t:
+        b = t.bit_length() - 1
+        pv, pt = piv[b]; t ^= pv; sol ^= pt
+    out = bytearray(payload)
+    for i in range(32):
+        if sol >> i & 1:
+            out[free_at + i // 8] ^= 1 << (i % 8)
+    return bytes(out)
+
+
+def test_the_transfer_check_accepts_a_forged_checksum():
+    from humf import _digest
+    """WATCH THE CHECK FAIL TO FIRE. A payload with a flipped weight byte and four
+    repaired padding bytes passes the fabric's integrity check, is marked CLEAN and
+    counts as TRUSTED. This is not a flaw in crc32 -- it catches every accidental
+    corruption class measured -- it is the difference between error detection and
+    identity, and the reason _identity_digest exists."""
+    h, o, mp = fabric()
+    bad = bytearray(PAYLOAD); bad[8] ^= 0x80
+    forged = _forge_crc(bytes(bad), len(PAYLOAD) - 4, _digest(PAYLOAD))
+    assert _digest(forged) == _digest(PAYLOAD) and forged != PAYLOAD
+    mp.substitute_next = forged
+    h.execute("W42", h.plan_acquire("W42", "MOCK_EXTERNAL_VRAM"), "MOCK_EXTERNAL_VRAM")
+    dst = o.materializations["MOCK_EXTERNAL_VRAM"]
+    assert dst.state is State.CLEAN
+    assert "MOCK_EXTERNAL_VRAM" in o.trusted_copies()
+    assert dst.payload != PAYLOAD                      # while holding wrong bytes
+    # and the digest the fabric recorded is the RIGHT one, for the WRONG bytes
+    assert dst.digest == _digest(PAYLOAD)
+
+
+def test_a_source_that_rotted_in_place_propagates_through_a_passing_check():
+    from humf import _digest
+    """The per-transfer check compares SOURCE to DESTINATION, so a faithful copy of
+    corrupt bytes is exactly what it is looking for -- and afterwards the two copies
+    AGREE, so every later check confirms the corruption. Sealing the identity at
+    registration is what closes it; this pins the hole with the seal removed."""
+    h, o, mp = fabric()
+    o.content_digest = None                            # the behaviour before sealing
+    rotted = bytearray(PAYLOAD); rotted[16] ^= 0x80
+    o.materializations["APPLE_UM"].payload = bytes(rotted)
+    h.execute("W42", h.plan_acquire("W42", "MOCK_EXTERNAL_VRAM"), "MOCK_EXTERNAL_VRAM")
+    dst = o.materializations["MOCK_EXTERNAL_VRAM"]
+    assert dst.state is State.CLEAN and dst.payload != PAYLOAD
+    assert _digest(dst.payload) == _digest(o.materializations["APPLE_UM"].payload)
+
+    h2, o2, mp2 = fabric()                             # same rot, seal intact
+    rotted2 = bytearray(PAYLOAD); rotted2[16] ^= 0x80
+    o2.materializations["APPLE_UM"].payload = bytes(rotted2)
+    with pytest.raises(HumfError, match="no longer matches the identity sealed"):
+        h2.execute("W42", h2.plan_acquire("W42", "MOCK_EXTERNAL_VRAM"),
+                   "MOCK_EXTERNAL_VRAM")
+    # the destination is left INVALID holding NOTHING -- the refusal happens before
+    # a single byte is handed to the transport, so the rot never crosses
+    dst2 = o2.materializations["MOCK_EXTERNAL_VRAM"]
+    assert dst2.state is State.INVALID and dst2.payload is None
+    assert "MOCK_EXTERNAL_VRAM" not in o2.valid_copies()
+    assert o2.materializations["APPLE_UM"].trust == "UNKNOWN"
+
+
+def test_audit_finds_rot_nothing_else_would_have_touched():
+    h, o, mp = fabric()
+    h.execute("W42", h.plan_acquire("W42", "MOCK_EXTERNAL_VRAM"), "MOCK_EXTERNAL_VRAM")
+    assert h.audit("W42")["diverged"] == []
+    scrubbed = bytearray(o.materializations["MOCK_EXTERNAL_VRAM"].payload)
+    scrubbed[0:4] = b"\x00\x00\x00\x00"
+    o.materializations["MOCK_EXTERNAL_VRAM"].payload = bytes(scrubbed)
+    after = h.audit("W42")
+    assert after["diverged"] == ["MOCK_EXTERNAL_VRAM"]
+    assert o.materializations["MOCK_EXTERNAL_VRAM"].trust == "UNKNOWN"
+    assert o.materializations["APPLE_UM"].trust == "TRUSTED"
+
+
+def test_trust_has_an_age_and_a_write_unseals_rather_than_false_alarming():
+    h, o, mp = fabric()
+    h.execute("W42", h.plan_acquire("W42", "MOCK_EXTERNAL_VRAM"), "MOCK_EXTERNAL_VRAM")
+    assert h.stale_verifications(5) == []
+    h.epoch += 40
+    assert {x["domain"] for x in h.stale_verifications(5)} == {
+        "APPLE_UM", "MOCK_EXTERNAL_VRAM"}
+    o.mark_written("APPLE_UM")
+    assert o.content_digest is None and "written in APPLE_UM" in o.unsealed_because
+    assert h.audit("W42")["audited"] is False          # nothing to check against
+    o.materializations["APPLE_UM"].transition(State.CLEAN)
+    assert h.seal_value("W42", "APPLE_UM") is not None
+    assert h.audit("W42")["diverged"] == []
+
+
+def test_the_identity_recheck_knob_is_the_decay_model_paying_for_itself():
+    """Re-hashing the source on EVERY transfer is the safe default and it is not
+    free -- blake2b runs ~25x slower than crc32 on this machine. Re-verifying only
+    what has gone unlooked-at is what makes it affordable."""
+    h, o, mp = fabric()
+    h.identity_recheck_age = None                      # registration only
+    rotted = bytearray(PAYLOAD); rotted[16] ^= 0x80
+    o.materializations["APPLE_UM"].payload = bytes(rotted)
+    h.execute("W42", h.plan_acquire("W42", "MOCK_EXTERNAL_VRAM"), "MOCK_EXTERNAL_VRAM")
+    assert o.materializations["MOCK_EXTERNAL_VRAM"].state is State.CLEAN  # not caught
+    h.identity_recheck_age = 0
+    o.materializations.pop("MOCK_EXTERNAL_VRAM")
+    with pytest.raises(HumfError, match="no longer matches the identity sealed"):
+        h.execute("W42", h.plan_acquire("W42", "MOCK_EXTERNAL_VRAM"),
+                  "MOCK_EXTERNAL_VRAM")
+
+
+# ---------------------------------------------------------------------------
+# The device digests its own memory. ACCELERATOR_HUMF_RESIDENT_DIGEST.json.
+# ---------------------------------------------------------------------------
+
+def _fabric_with(cls):
+    mp = cls(capacity_bytes=1 << 30, bandwidth_gb_s=5.0, latency_s=1e-4)
+    doms = {"APPLE_UM": Domain("APPLE_UM", 96 << 30, 589.73, physical=True),
+            mp.domain.name: mp.domain}
+    h = Humf(doms, providers={mp.domain.name: mp})
+    o = HumfObject("W42", "tensor", N, "f32", recompute_cost_s=0.05)
+    o.place(Materialization("APPLE_UM", "dense_f32", "row_major", NB, State.CLEAN,
+                            payload=PAYLOAD))
+    h.register(o)
+    return h, o, mp
+
+
+def test_the_resident_digest_catches_the_skew_the_round_trip_cannot():
+    """Three receipts named this gap and none closed it. The device digesting its own
+    memory through the path a KERNEL reads is what closes it."""
+    h, o, mp = _fabric_with(humf.MockExternalMemoryProvider)
+    mp.compute_skew = True                       # skewed BEFORE the transfer
+    with pytest.raises(humf.HumfError, match="RESIDENT integrity check FAILED"):
+        h.execute("W42", h.plan_acquire("W42", "MOCK_EXTERNAL_VRAM"),
+                  "MOCK_EXTERNAL_VRAM")
+    assert "MOCK_EXTERNAL_VRAM" not in o.valid_copies()
+
+
+def test_a_provider_that_digests_its_READBACK_path_still_passes():
+    """THE CONTROL THAT GIVES THE CHECK ITS MEANING, and the reason this is a NARROWING
+    and not a closure. ReadbackDigestProvider offers the same method, answers, and
+    matches the source -- and a kernel still reads different bytes. The fabric cannot
+    tell the two apart, so it RECORDS the claimed path rather than trusting it."""
+    h, o, bad = _fabric_with(humf.ReadbackDigestProvider)
+    bad.compute_skew = True
+    m = h.execute("W42", h.plan_acquire("W42", "MOCK_EXTERNAL_VRAM"),
+                  "MOCK_EXTERNAL_VRAM")
+    assert m.state is State.CLEAN
+    assert m.resident_verified is True           # true, and NOT a guarantee
+    assert m.resident_digest_path == "readback"  # the boolean is only readable WITH this
+    assert bad.read_for_compute("W42") != PAYLOAD
+
+
+def test_an_honest_transfer_records_the_path_it_was_verified_through():
+    """A check that can only ever refuse is as useless as one that only ever accepts."""
+    h, o, mp = _fabric_with(humf.MockExternalMemoryProvider)
+    m = h.execute("W42", h.plan_acquire("W42", "MOCK_EXTERNAL_VRAM"),
+                  "MOCK_EXTERNAL_VRAM")
+    assert m.state is State.CLEAN
+    assert m.resident_verified is True and m.resident_digest_path == "compute"
+
+
+def test_a_provider_without_a_device_digest_is_not_treated_as_a_failure():
+    """Absence of the capability is not evidence of corruption -- it is absence of
+    evidence, and the field says which."""
+    class NoDigest(humf.MockExternalMemoryProvider):
+        digest_resident = None
+    h, o, mp = _fabric_with(NoDigest)
+    m = h.execute("W42", h.plan_acquire("W42", "MOCK_EXTERNAL_VRAM"),
+                  "MOCK_EXTERNAL_VRAM")
+    assert m.state is State.CLEAN
+    assert m.resident_verified is False and m.resident_digest_path is None
+
+
+def test_the_round_trip_check_is_not_replaced_by_the_resident_one():
+    """They catch different things: corrupt_next damages what comes BACK over the
+    transport, which the resident digest would never see."""
+    h, o, mp = _fabric_with(humf.MockExternalMemoryProvider)
+    mp.corrupt_next = True
+    with pytest.raises(humf.HumfError, match="integrity check FAILED"):
+        h.execute("W42", h.plan_acquire("W42", "MOCK_EXTERNAL_VRAM"),
+                  "MOCK_EXTERNAL_VRAM")

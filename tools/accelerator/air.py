@@ -334,13 +334,24 @@ class AirMatmul:
             return []
         return ["THREADGROUP", "THREADGROUP"]   # one after load, one after accumulate
 
+    def out_shape(self) -> tuple[int, int]:
+        return (self.m, self.n)
+
     def launch(self) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
         """Grid and threadgroup for this strategy. They differ, so the caller must not
         guess."""
         if self.strategy == "simdgroup":
             s = 8 * self.block
             return (self.n // s * 32, self.m // s, 1), (32, 1, 1)
-        return (self.n, self.m, 1), (self.tile, self.tile, 1)
+        # ROUND UP TO WHOLE THREADGROUPS. The kernel body is fully guarded -- it checks
+        # gy < m, gx < n and k0 + lx < k -- so the tile has never been the constraint.
+        # The LAUNCH was: returning (n, m, 1) against a (tile, tile) threadgroup
+        # under-dispatches whenever m is not a multiple of the tile, and the result is
+        # WRONG rather than refused: 8x64x32 at tile 16 was off by 4.65 and the
+        # 60x60x60 the simdgroup receipt cited as tiled's own justification was off by
+        # 3.84. See ACCELERATOR_GRAPH_COMPOSITION.json.
+        t = self.tile
+        return (((self.n + t - 1) // t) * t, ((self.m + t - 1) // t) * t, 1), (t, t, 1)
 
 
 def lower_matmul_to_msl(mm: AirMatmul) -> str:
@@ -467,7 +478,13 @@ def lower_softmax_to_msl(sm: AirSoftmax) -> str:
     uint lid = thread_position_in_threadgroup.x;
     uint lane = lid % 32u;
     uint warp = lid / 32u;
-    threadgroup float red[{lanes}];
+    // WRITE-AFTER-READ: the second reduction gets ITS OWN SLOTS rather than reusing
+    // the first's. Reusing them needs a barrier between every thread's READ of the
+    // first result and the first thread's WRITE of the second, and there was none --
+    // found when the intact LayerNorm came out wrong by 0.061 at threadgroup 1024
+    // while exact at 64 and 256. Separate slots remove the hazard structurally, which
+    // beats a third barrier: there is nothing left to forget.
+    threadgroup float red[{2 * lanes}];
     uint base = row * {sm.cols}u;
 
     // pass 1: row max, for numerical stability
@@ -483,10 +500,10 @@ def lower_softmax_to_msl(sm: AirSoftmax) -> str:
     float s = 0.0f;
     for (uint c = lid; c < {sm.cols}u; c += {sm.threadgroup}u) s += exp(x[base + c] - rowmax);
     float ss = simd_sum(s);
-    if (lane == 0u) red[warp] = ss;
+    if (lane == 0u) red[{lanes}u + warp] = ss;
     threadgroup_barrier(mem_flags::mem_threadgroup);
     float rowsum = 0.0f;
-    for (uint i = 0; i < {lanes}u; ++i) rowsum += red[i];
+    for (uint i = 0; i < {lanes}u; ++i) rowsum += red[{lanes}u + i];
 
     // pass 3: normalise
     float inv = 1.0f / rowsum;
@@ -701,7 +718,13 @@ def lower_attention_to_msl(at: AirAttention) -> str:
     uint lane = lid % 32u;
     uint warp = lid / 32u;
     threadgroup float scores[{at.seq_k}];
-    threadgroup float red[{lanes}];
+    // WRITE-AFTER-READ: the second reduction gets ITS OWN SLOTS rather than reusing
+    // the first's. Reusing them needs a barrier between every thread's READ of the
+    // first result and the first thread's WRITE of the second, and there was none --
+    // found when the intact LayerNorm came out wrong by 0.061 at threadgroup 1024
+    // while exact at 64 and 256. Separate slots remove the hazard structurally, which
+    // beats a third barrier: there is nothing left to forget.
+    threadgroup float red[{2 * lanes}];
 
     // scores = Q . K^T * scale, held in threadgroup memory and never written out
     for (uint j = lid; j < {at.seq_k}u; j += {at.threadgroup}u) {{
@@ -729,10 +752,10 @@ def lower_attention_to_msl(at: AirAttention) -> str:
         acc += e;
     }}
     float ss = simd_sum(acc);
-    if (lane == 0u) red[warp] = ss;
+    if (lane == 0u) red[{lanes}u + warp] = ss;
     threadgroup_barrier(mem_flags::mem_threadgroup);
     float rowsum = 0.0f;
-    for (uint i = 0; i < {lanes}u; ++i) rowsum += red[i];
+    for (uint i = 0; i < {lanes}u; ++i) rowsum += red[{lanes}u + i];
     float inv = 1.0f / rowsum;
     threadgroup_barrier(mem_flags::mem_threadgroup);
 
@@ -1003,12 +1026,61 @@ def execute_scan(sc: AirScan, x):
 
 @dataclass
 class AirGraphNode:
-    """One dispatch in an AIR graph. `inputs` name either externals or other nodes."""
+    """One dispatch in an AIR graph. `inputs` name either externals or other nodes.
+
+    THE GEOMETRY COMES FROM THE OP, NOT FROM A GUESS. For many blocks this node carried
+    only `n` and a scalar threadgroup, and the executor DERIVED a 1-D grid of
+    blocks*threadgroup with an output of shape (n,). That is right for an elementwise
+    dispatch and WRONG for every other AIR primitive -- and it failed in the worst
+    possible way, which is that IT SOMETIMES LOOKED RIGHT. A row-wise norm at
+    8x1024 with threadgroup 256 got 32 threadgroups where it needed 8: the extra 24 ran
+    OUT OF BOUNDS on both buffers and the answer STILL MATCHED THE ORACLE to 2.6e-07.
+    The same defect at 8x64 launched 2 threadgroups for 8 rows and was wrong by 2.62.
+    Correct BY ACCIDENT OF SHAPE. See ACCELERATOR_GRAPH_COMPOSITION.json.
+
+    So grid, threadgroup, output shape, parameter names and output name are all FIELDS,
+    and node_for() fills them from the op's own launch() rather than re-deriving them.
+    """
     name: str
     source: str
     inputs: list[str]
     n: int
     threadgroup: int = 256
+    grid: tuple[int, int, int] | None = None
+    threadgroup3: tuple[int, int, int] | None = None
+    out_shape: tuple[int, ...] | None = None
+    param_names: list[str] | None = None
+    out_name: str = "out"
+    header: str = ""
+
+    def launch(self) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
+        if self.grid is not None and self.threadgroup3 is not None:
+            return self.grid, self.threadgroup3
+        blocks = (self.n + self.threadgroup - 1) // self.threadgroup
+        return (blocks * self.threadgroup, 1, 1), (self.threadgroup, 1, 1)
+
+    def shape(self) -> tuple[int, ...]:
+        return self.out_shape if self.out_shape is not None else (self.n,)
+
+
+def node_for(name: str, op: Any, inputs: list[str], *, source: str,
+             param_names: list[str], out_name: str = "out", header: str = "") -> AirGraphNode:
+    """Build a graph node whose geometry is TAKEN FROM THE OP.
+
+    op must expose launch() and out_shape(). Asking the op is the whole point: the
+    executor cannot infer a row-wise or tiled launch from an element count, and a
+    guess that is right at one shape and silently wrong at another is worse than a
+    refusal.
+    """
+    grid, tg = op.launch()
+    shape = op.out_shape()
+    n = 1
+    for d in shape:
+        n *= d
+    return AirGraphNode(name=name, source=source, inputs=inputs, n=n,
+                        threadgroup=tg[0], grid=grid, threadgroup3=tg,
+                        out_shape=shape, param_names=param_names,
+                        out_name=out_name, header=header)
 
 
 @dataclass
@@ -1087,15 +1159,619 @@ def execute_graph(g: AirGraph, arrays: dict[str, Any], *, eager: bool = False):
     env = {k: mx.array(v, dtype=mx.float32) for k, v in arrays.items()}
     for nd in g.nodes:
         kern = metal_kernel(mx, name=f"air_g_{g.name}_{nd.name}",
-                            input_names=nd.inputs, output_names=["out"],
-                            source=nd.source, ensure_row_contiguous=True)
-        blocks = (nd.n + nd.threadgroup - 1) // nd.threadgroup
-        (env[nd.name],) = kern(inputs=[env[i] for i in nd.inputs],
-                               grid=(blocks * nd.threadgroup, 1, 1),
-                               threadgroup=(nd.threadgroup, 1, 1),
-                               output_shapes=[(nd.n,)], output_dtypes=[mx.float32])
+                            input_names=nd.param_names or nd.inputs,
+                            output_names=[nd.out_name], source=nd.source,
+                            header=nd.header, ensure_row_contiguous=True)
+        grid, tg = nd.launch()
+        (env[nd.name],) = kern(inputs=[env[i] for i in nd.inputs], grid=grid,
+                               threadgroup=tg, output_shapes=[nd.shape()],
+                               output_dtypes=[mx.float32])
         if eager:
             mx.eval(env[nd.name])
     leaves = [nd.name for nd in g.nodes]
     mx.eval(*[env[k] for k in leaves])
     return env
+
+
+@dataclass
+class AirTopKSample:
+    """Top-k filtering and categorical sampling: the decode tail of an LLM.
+
+    S015 §3 names TOP-K and SAMPLING in the required corpus and no receipt has ever
+    claimed or refused either, which by the ledger's own rule means NOT YET STUDIED.
+
+    THE RANDOMNESS IS AN INPUT, NOT A SIDE EFFECT. `u` carries one uniform per row,
+    drawn host-side from a seeded generator, so the kernel is a PURE FUNCTION of
+    (logits, u) and can be graded by exact equality against an independent oracle.
+    A kernel that generated its own randomness could only ever be graded
+    statistically, and a statistical check is far weaker than an exact one -- this
+    design choice is what makes the strongest grading layer available at all.
+
+    Three outputs on purpose: the selected values and indices are returned alongside
+    the sampled choice so top-k can be graded against numpy's sort WITHOUT the
+    sampler in the way. Grading only the final index would confound two mechanisms.
+
+    TIES BREAK TOWARD THE LOWER INDEX, matching a stable argsort. An unspecified
+    tie-break would make the exact grading layer unusable on any logit vector with
+    repeats -- which includes every masked or clamped distribution in practice.
+    """
+    name: str
+    rows: int
+    cols: int
+    k: int
+    temperature: float = 1.0
+    threadgroup: int = 256
+    dtype: str = "f32"
+    device: str = "APPLE_GPU_0"
+
+    def validate(self) -> None:
+        if self.dtype != "f32":
+            raise ValueError("top-k sampling is f32 only here")
+        if self.threadgroup % 32 or not 32 <= self.threadgroup <= 1024:
+            raise ValueError(f"threadgroup {self.threadgroup} must be a multiple of 32 "
+                             f"and within Metal's 1024 limit")
+        if self.rows <= 0 or self.cols <= 0:
+            raise ValueError("rows and cols must be positive")
+        if not 1 <= self.k <= self.cols:
+            raise ValueError(f"k={self.k} must be in 1..cols ({self.cols})")
+        if self.k > 64:
+            # The selection is k rounds of a full-row argmax with an O(k) membership
+            # test per element, so cost grows as k^2. Refusing beyond 64 states the
+            # algorithm's domain instead of quietly becoming the slowest way to sort.
+            raise ValueError(f"k={self.k} exceeds 64; this is iterative extraction, "
+                             f"not a sort, and beyond ~64 a different algorithm is "
+                             f"the right answer rather than this one scaled up")
+        if not self.temperature > 0:
+            raise ValueError("temperature must be positive; temperature 0 is argmax "
+                             "and is a DIFFERENT operation, not a limit this kernel takes")
+        if not self.name.isidentifier():
+            # The name is interpolated into the generated function's SYMBOL, so a dot
+            # or a space produces a Metal compile error twenty lines deep in MLX's
+            # own header with no hint that a Python string caused it. Found by naming
+            # a variant after its temperature. The other AIR lowerings interpolate
+            # their names the same way and are NOT guarded -- named, not silently
+            # fixed, because a guard nobody has watched fire is worth little.
+            raise ValueError(f"name {self.name!r} becomes a Metal symbol and must be a "
+                             f"valid identifier; a '.' or ' ' fails deep inside the "
+                             f"MLX header with no mention of the name")
+
+    def barrier_scopes_emitted(self) -> list[str]:
+        # one per tree-reduction step per extraction round, plus one after each write
+        steps = max(1, self.threadgroup.bit_length() - 1)
+        return ["THREADGROUP"] * (self.k * (steps + 1))
+
+    def executable_on_metal_backend(self) -> tuple[bool, str]:
+        return True, "iterative argmax extraction then a serial CDF walk over k"
+
+    def launch(self) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
+        return (self.rows * self.threadgroup, 1, 1), (self.threadgroup, 1, 1)
+
+
+def lower_topk_sample_to_msl(ts: AirTopKSample) -> str:
+    ts.validate()
+    tg = ts.threadgroup
+    return f"""
+    uint row = threadgroup_position_in_grid.x;
+    uint lid = thread_position_in_threadgroup.x;
+    threadgroup float cv[{tg}];
+    threadgroup uint  ci[{tg}];
+    threadgroup float sel_v[{ts.k}];
+    threadgroup uint  sel_i[{ts.k}];
+    uint base = row * {ts.cols}u;
+
+    for (uint t = 0u; t < {ts.k}u; ++t) {{
+        float bv = -INFINITY; uint bi = 0xFFFFFFFFu;
+        for (uint c = lid; c < {ts.cols}u; c += {tg}u) {{
+            bool taken = false;
+            for (uint s = 0u; s < t; ++s) if (sel_i[s] == c) taken = true;
+            if (taken) continue;
+            float v = x[base + c];
+            // TIES TO THE LOWER INDEX, so the answer matches a stable argsort
+            if (v > bv || (v == bv && c < bi)) {{ bv = v; bi = c; }}
+        }}
+        cv[lid] = bv; ci[lid] = bi;
+        {barrier_msl("THREADGROUP")}
+        // `half` is a METAL TYPE NAME, so the obvious loop variable does not compile
+        for (uint span = {tg}u / 2u; span > 0u; span >>= 1u) {{
+            if (lid < span) {{
+                float ov = cv[lid + span]; uint oi = ci[lid + span];
+                if (ov > cv[lid] || (ov == cv[lid] && oi < ci[lid])) {{
+                    cv[lid] = ov; ci[lid] = oi;
+                }}
+            }}
+            {barrier_msl("THREADGROUP")}
+        }}
+        if (lid == 0u) {{ sel_v[t] = cv[0]; sel_i[t] = ci[0]; }}
+        {barrier_msl("THREADGROUP")}
+    }}
+
+    if (lid == 0u) {{
+        // k is small, so the CDF walk is SERIAL IN ONE THREAD on purpose: a
+        // parallel scan over k <= 64 would cost more in barriers than it saves.
+        float m = -INFINITY;
+        for (uint s = 0u; s < {ts.k}u; ++s) m = max(m, sel_v[s]);
+        float tot = 0.0f;
+        for (uint s = 0u; s < {ts.k}u; ++s) tot += exp((sel_v[s] - m) / {ts.temperature}f);
+        float target = u[row] * tot;
+        float acc = 0.0f;
+        uint pick = sel_i[{ts.k}u - 1u];   // the last bucket absorbs any rounding slack
+        for (uint s = 0u; s < {ts.k}u; ++s) {{
+            acc += exp((sel_v[s] - m) / {ts.temperature}f);
+            if (target < acc) {{ pick = sel_i[s]; break; }}
+        }}
+        choice[row] = (int)pick;
+    }}
+    for (uint s = lid; s < {ts.k}u; s += {tg}u) {{
+        topk_val[row * {ts.k}u + s] = sel_v[s];
+        topk_idx[row * {ts.k}u + s] = (int)sel_i[s];
+    }}
+"""
+
+
+def execute_topk_sample(ts: AirTopKSample, x, u):
+    import mlx.core as mx
+    src = lower_topk_sample_to_msl(ts)
+    kern = mx.fast.metal_kernel(
+        name=f"air_topk_{ts.name}", input_names=["x", "u"],
+        output_names=["choice", "topk_val", "topk_idx"], source=src,
+        ensure_row_contiguous=True)
+    g, tg = ts.launch()
+    choice, tv, ti = kern(
+        inputs=[mx.array(x, dtype=mx.float32), mx.array(u, dtype=mx.float32)],
+        grid=g, threadgroup=tg,
+        output_shapes=[(ts.rows,), (ts.rows, ts.k), (ts.rows, ts.k)],
+        output_dtypes=[mx.int32, mx.float32, mx.int32])
+    mx.eval(choice, tv, ti)
+    return choice, tv, ti
+
+
+def topk_sample_oracle(x, u, k: int, temperature: float = 1.0):
+    """An INDEPENDENT numpy implementation, written from the operation's definition
+    rather than from the kernel: a stable argsort for the top-k, and a searchsorted
+    over the cumulative distribution for the choice.
+
+    Independent in code, NOT in convention -- both sides agree that ties go to the
+    lower index and that the bucket is chosen by `target < cumulative`. A convention
+    error would agree with itself here, which is exactly why the distributional layer
+    with its negative controls exists rather than this oracle alone.
+    """
+    import numpy as np
+    x = np.asarray(x, dtype=np.float32)
+    order = np.argsort(-x, axis=1, kind="stable")[:, :k]
+    vals = np.take_along_axis(x, order, axis=1)
+    p = np.exp((vals - vals.max(axis=1, keepdims=True)) / temperature)
+    cdf = np.cumsum(p, axis=1)
+    target = np.asarray(u, dtype=np.float32)[:, None] * cdf[:, -1:]
+    pos = (target >= cdf).sum(axis=1)
+    pos = np.minimum(pos, k - 1)
+    return order[np.arange(len(order)), pos], vals, order
+
+
+@dataclass
+class AirNorm:
+    """RMSNorm and LayerNorm as ONE fused kernel per row. S015 §3 names NORMALIZATION
+    in the required corpus.
+
+    TWO VARIANCE STRATEGIES ARE KEPT ON PURPOSE, and the reason is numerical, not
+    stylistic. TWO_PASS computes the mean, then sums (x - mean)^2. ONE_PASS computes
+    sum(x) and sum(x^2) in the SAME loop and takes var = E[x^2] - E[x]^2, which saves a
+    pass over the row and a barrier. The second form is a textbook example of
+    CATASTROPHIC CANCELLATION: when the mean is large relative to the spread, E[x^2]
+    and E[x]^2 are two nearly equal large numbers whose difference is the small answer,
+    and f32 has no bits left to express it. ONE_PASS is retained as the DEMONSTRATION
+    of that, with its error measured rather than asserted, because a strategy nobody
+    has watched fail reads as a strategy that merely lost a style argument.
+
+    RMSNorm has NO mean to subtract, so the cancellation question does not arise there
+    at all -- which is worth saying, because it is the reason the modern transformer's
+    choice of RMSNorm removes a numerical hazard as well as an arithmetic step.
+    """
+    name: str
+    rows: int
+    cols: int
+    mode: str = "rms"                 # rms | layer
+    variance: str = "two_pass"        # two_pass | one_pass  (layer only)
+    eps: float = 1e-5
+    threadgroup: int = 256
+    dtype: str = "f32"
+    device: str = "APPLE_GPU_0"
+
+    def validate(self) -> None:
+        if self.dtype != "f32":
+            raise ValueError("norm is f32 only here")
+        if self.mode not in ("rms", "layer"):
+            raise ValueError(f"mode {self.mode!r} must be 'rms' or 'layer'")
+        if self.variance not in ("two_pass", "one_pass"):
+            raise ValueError(f"variance {self.variance!r} must be 'two_pass' or 'one_pass'")
+        if self.mode == "rms" and self.variance != "two_pass":
+            raise ValueError("RMSNorm subtracts no mean, so there is no one-pass "
+                             "variance to choose -- the option does not apply and "
+                             "silently ignoring it would hide that")
+        if self.threadgroup % 32 or not 32 <= self.threadgroup <= 1024:
+            raise ValueError(f"threadgroup {self.threadgroup} must be a multiple of 32 "
+                             f"and within Metal's 1024 limit")
+        if self.rows <= 0 or self.cols <= 0:
+            raise ValueError("rows and cols must be positive")
+        if not self.name.isidentifier():
+            raise ValueError(f"name {self.name!r} becomes a Metal symbol and must be a "
+                             f"valid identifier")
+
+    def out_shape(self) -> tuple[int, int]:
+        return (self.rows, self.cols)
+
+    def barrier_scopes_emitted(self) -> list[str]:
+        n = 1 if (self.mode == "rms" or self.variance == "one_pass") else 2
+        return ["THREADGROUP"] * n
+
+    def executable_on_metal_backend(self) -> tuple[bool, str]:
+        return True, f"fused row {self.mode}norm, {len(self.barrier_scopes_emitted())} barriers"
+
+    def input_names(self) -> list[str]:
+        return ["x", "w"] if self.mode == "rms" else ["x", "w", "b"]
+
+    def launch(self) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
+        return (self.rows * self.threadgroup, 1, 1), (self.threadgroup, 1, 1)
+
+
+def lower_norm_to_msl(nm: AirNorm) -> str:
+    nm.validate()
+    lanes = nm.threadgroup // 32
+    tg, cols = nm.threadgroup, nm.cols
+    # the one-pass form reduces TWO quantities, so its scratch is twice as wide.
+    # This was a real bug for one commit: `head + f"..." .replace(...)` binds the
+    # replace to the f-string alone, so the declaration in `head` never changed.
+    slots = 2 * lanes if nm.mode == "layer" else lanes
+    head = f"""
+    uint row = threadgroup_position_in_grid.x;
+    uint lid = thread_position_in_threadgroup.x;
+    uint lane = lid % 32u;
+    uint warp = lid / 32u;
+    threadgroup float red[{slots}];
+    uint base = row * {cols}u;
+"""
+    if nm.mode == "rms":
+        return head + f"""
+    float s = 0.0f;
+    for (uint c = lid; c < {cols}u; c += {tg}u) {{ float v = x[base + c]; s += v * v; }}
+    float ss = simd_sum(s);
+    if (lane == 0u) red[warp] = ss;
+    {barrier_msl("THREADGROUP")}
+    float tot = 0.0f;
+    for (uint i = 0u; i < {lanes}u; ++i) tot += red[i];
+    float rstd = rsqrt(tot / {float(cols)}f + {nm.eps}f);
+    for (uint c = lid; c < {cols}u; c += {tg}u)
+        out[base + c] = x[base + c] * rstd * w[c];
+"""
+    if nm.variance == "one_pass":
+        return head + f"""
+    // E[x^2] - E[x]^2 IN ONE PASS. Cheaper by a pass and a barrier, and WRONG when the
+    // mean is large relative to the spread -- see ACCELERATOR_NORMALIZATION.json.
+    float s = 0.0f, s2 = 0.0f;
+    for (uint c = lid; c < {cols}u; c += {tg}u) {{ float v = x[base + c]; s += v; s2 += v * v; }}
+    float ss = simd_sum(s), ss2 = simd_sum(s2);
+    if (lane == 0u) {{ red[warp] = ss; red[{lanes}u + warp] = ss2; }}
+    {barrier_msl("THREADGROUP")}
+    float tot = 0.0f, tot2 = 0.0f;
+    for (uint i = 0u; i < {lanes}u; ++i) {{ tot += red[i]; tot2 += red[{lanes}u + i]; }}
+    float mean = tot / {float(cols)}f;
+    float var = tot2 / {float(cols)}f - mean * mean;
+    float rstd = rsqrt(var + {nm.eps}f);
+    for (uint c = lid; c < {cols}u; c += {tg}u)
+        out[base + c] = (x[base + c] - mean) * rstd * w[c] + b[c];
+"""
+    return head + f"""
+    float s = 0.0f;
+    for (uint c = lid; c < {cols}u; c += {tg}u) s += x[base + c];
+    float ss = simd_sum(s);
+    if (lane == 0u) red[warp] = ss;
+    {barrier_msl("THREADGROUP")}
+    float tot = 0.0f;
+    for (uint i = 0u; i < {lanes}u; ++i) tot += red[i];
+    float mean = tot / {float(cols)}f;
+
+    float v = 0.0f;
+    for (uint c = lid; c < {cols}u; c += {tg}u) {{ float d = x[base + c] - mean; v += d * d; }}
+    float sv = simd_sum(v);
+    if (lane == 0u) red[{lanes}u + warp] = sv;
+    {barrier_msl("THREADGROUP")}
+    float tot2 = 0.0f;
+    for (uint i = 0u; i < {lanes}u; ++i) tot2 += red[{lanes}u + i];
+    float rstd = rsqrt(tot2 / {float(cols)}f + {nm.eps}f);
+    for (uint c = lid; c < {cols}u; c += {tg}u)
+        out[base + c] = (x[base + c] - mean) * rstd * w[c] + b[c];
+"""
+
+
+def execute_norm(nm: AirNorm, x, w, b=None):
+    import mlx.core as mx
+    src = lower_norm_to_msl(nm)
+    names = nm.input_names()
+    kern = mx.fast.metal_kernel(name=f"air_norm_{nm.name}", input_names=names,
+                                output_names=["out"], source=src,
+                                ensure_row_contiguous=True)
+    ins = [mx.array(x, dtype=mx.float32), mx.array(w, dtype=mx.float32)]
+    if nm.mode == "layer":
+        ins.append(mx.array(b, dtype=mx.float32))
+    g, tg = nm.launch()
+    (o,) = kern(inputs=ins, grid=g, threadgroup=tg,
+                output_shapes=[(nm.rows, nm.cols)], output_dtypes=[mx.float32])
+    mx.eval(o)
+    return o
+
+
+def norm_oracle(x, w, b, mode: str, eps: float = 1e-5):
+    """float64 reference, written from the definition. RMSNorm has no mean."""
+    import numpy as np
+    xd = np.asarray(x, dtype=np.float64)
+    if mode == "rms":
+        r = 1.0 / np.sqrt((xd * xd).mean(axis=1, keepdims=True) + eps)
+        return xd * r * np.asarray(w, np.float64)
+    m = xd.mean(axis=1, keepdims=True)
+    v = ((xd - m) ** 2).mean(axis=1, keepdims=True)
+    return (xd - m) / np.sqrt(v + eps) * np.asarray(w, np.float64) + np.asarray(b, np.float64)
+
+
+@dataclass
+class AirBatchedMatvec:
+    """B independent matvecs, each with its OWN matrix AND its own vector.
+
+    S015 §3 names BATCHED GEMM in the required corpus. The batched case that matters
+    for MoE needs a distinction nothing here had drawn:
+
+    A DECODE-TIME EXPERT BATCH IS NOT A BATCHED OPERATION. Every routed expert
+    multiplies THE SAME activation, so y_e = W_e @ x for e in 0..B is arithmetically
+    identical to stacking the W_e vertically and doing ONE matvec -- verified bit for
+    bit, not argued. That case needs no batched kernel and never did.
+
+    THIS KERNEL IS FOR THE CASE THAT DOES NOT COLLAPSE: a different x per batch
+    element, which is what prefill and any multi-token batch produce. Keeping the two
+    apart is the point -- calling both `batched` would have hidden that the first is
+    free and only the second needs anything built.
+    """
+    name: str
+    batch: int
+    rows: int
+    cols: int
+    threadgroup: int = 256
+    dtype: str = "f32"
+    device: str = "APPLE_GPU_0"
+
+    def validate(self) -> None:
+        if self.dtype != "f32":
+            raise ValueError("batched matvec is f32 only here")
+        if self.threadgroup % 32 or not 32 <= self.threadgroup <= 1024:
+            raise ValueError(f"threadgroup {self.threadgroup} must be a multiple of 32 "
+                             f"and within Metal's 1024 limit")
+        if min(self.batch, self.rows, self.cols) <= 0:
+            raise ValueError("batch, rows and cols must be positive")
+        if not self.name.isidentifier():
+            raise ValueError(f"name {self.name!r} becomes a Metal symbol and must be a "
+                             f"valid identifier")
+
+    def barrier_scopes_emitted(self) -> list[str]:
+        return []          # one thread owns one output row; nothing to order
+
+    def executable_on_metal_backend(self) -> tuple[bool, str]:
+        return True, "one thread per (batch, row); no cross-thread reads"
+
+    def launch(self) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
+        n = self.batch * self.rows
+        return (n, 1, 1), (min(self.threadgroup, n), 1, 1)
+
+
+def lower_batched_matvec_to_msl(bm: AirBatchedMatvec) -> str:
+    bm.validate()
+    return f"""
+    uint gid = thread_position_in_grid.x;
+    if (gid >= {bm.batch * bm.rows}u) return;
+    uint b = gid / {bm.rows}u;
+    uint r = gid % {bm.rows}u;
+    uint wbase = b * {bm.rows * bm.cols}u + r * {bm.cols}u;
+    uint xbase = b * {bm.cols}u;
+    float acc = 0.0f;
+    for (uint c = 0u; c < {bm.cols}u; ++c) acc += w[wbase + c] * x[xbase + c];
+    out[gid] = acc;
+"""
+
+
+def execute_batched_matvec(bm: AirBatchedMatvec, w, x):
+    import mlx.core as mx
+    kern = mx.fast.metal_kernel(name=f"air_bmv_{bm.name}", input_names=["w", "x"],
+                                output_names=["out"],
+                                source=lower_batched_matvec_to_msl(bm),
+                                ensure_row_contiguous=True)
+    g, tg = bm.launch()
+    (o,) = kern(inputs=[mx.array(w, dtype=mx.float32), mx.array(x, dtype=mx.float32)],
+                grid=g, threadgroup=tg,
+                output_shapes=[(bm.batch, bm.rows)], output_dtypes=[mx.float32])
+    mx.eval(o)
+    return o
+
+
+@dataclass
+class AirSparseMatvec:
+    """CSR sparse matvec. S015 §12 names SPARSE OPERATIONS as a MATH capability.
+
+    WHAT THIS IS NOT FOR, measured rather than assumed: a SPARSE RESIDUAL on top of
+    ws_rtn_q4_g64 does NOT pay on real Qwen3 expert weights -- spending the same bits
+    on a finer group or one more level buys 2.5-3.9x more cosine per bit. See
+    ACCELERATOR_SPARSE.json. The kernel exists because the capability is named and
+    because sparsity has other uses (structured pruning, routing masks), NOT because a
+    sparse residual earned a place in the representation ladder.
+
+    ONE THREAD PER ROW, so no barrier is needed and none is emitted. That makes the
+    load IMBALANCED by construction: a row with 10000 non-zeros and a row with 3 sit in
+    the same threadgroup and the whole group waits for the long one. Naming that is the
+    difference between a kernel with a known limitation and one with a surprise.
+    """
+    name: str
+    rows: int
+    cols: int
+    nnz: int
+    threadgroup: int = 256
+    dtype: str = "f32"
+    device: str = "APPLE_GPU_0"
+
+    def validate(self) -> None:
+        if self.dtype != "f32":
+            raise ValueError("sparse matvec is f32 only here")
+        if self.threadgroup % 32 or not 32 <= self.threadgroup <= 1024:
+            raise ValueError(f"threadgroup {self.threadgroup} must be a multiple of 32 "
+                             f"and within Metal's 1024 limit")
+        if min(self.rows, self.cols) <= 0 or self.nnz < 0:
+            raise ValueError("rows and cols must be positive and nnz non-negative")
+        if self.nnz > self.rows * self.cols:
+            raise ValueError(f"nnz {self.nnz} exceeds the {self.rows * self.cols} "
+                             f"entries the matrix can hold")
+        if not self.name.isidentifier():
+            raise ValueError(f"name {self.name!r} becomes a Metal symbol and must be a "
+                             f"valid identifier")
+
+    def barrier_scopes_emitted(self) -> list[str]:
+        return []
+
+    def executable_on_metal_backend(self) -> tuple[bool, str]:
+        return True, "one thread per row over CSR; no cross-thread reads"
+
+    def density(self) -> float:
+        return self.nnz / float(self.rows * self.cols)
+
+    def launch(self) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
+        return (self.rows, 1, 1), (min(self.threadgroup, self.rows), 1, 1)
+
+
+def lower_sparse_matvec_to_msl(sp: AirSparseMatvec) -> str:
+    sp.validate()
+    return f"""
+    uint r = thread_position_in_grid.x;
+    if (r >= {sp.rows}u) return;
+    int lo = row_ptr[r];
+    int hi = row_ptr[r + 1u];
+    float acc = 0.0f;
+    for (int p = lo; p < hi; ++p) acc += values[p] * x[col_idx[p]];
+    out[r] = acc;
+"""
+
+
+def execute_sparse_matvec(sp: AirSparseMatvec, row_ptr, col_idx, values, x):
+    import mlx.core as mx
+    kern = mx.fast.metal_kernel(
+        name=f"air_spmv_{sp.name}", input_names=["row_ptr", "col_idx", "values", "x"],
+        output_names=["out"], source=lower_sparse_matvec_to_msl(sp),
+        ensure_row_contiguous=True)
+    g, tg = sp.launch()
+    (o,) = kern(inputs=[mx.array(row_ptr, dtype=mx.int32), mx.array(col_idx, dtype=mx.int32),
+                        mx.array(values, dtype=mx.float32), mx.array(x, dtype=mx.float32)],
+                grid=g, threadgroup=tg,
+                output_shapes=[(sp.rows,)], output_dtypes=[mx.float32])
+    mx.eval(o)
+    return o
+
+
+def to_csr(a):
+    """Dense -> CSR, keeping structurally-zero rows as EMPTY rather than dropping them.
+    An empty row is a real case (a fully pruned output) and a kernel that mishandles it
+    returns garbage for that row rather than the zero the maths demands."""
+    import numpy as np
+    a = np.asarray(a, dtype=np.float32)
+    nz = a != 0
+    counts = nz.sum(axis=1)
+    row_ptr = np.zeros(a.shape[0] + 1, np.int32)
+    np.cumsum(counts, out=row_ptr[1:])
+    col_idx = np.tile(np.arange(a.shape[1], dtype=np.int32), (a.shape[0], 1))[nz]
+    return row_ptr, col_idx.astype(np.int32), a[nz].astype(np.float32)
+
+
+@dataclass
+class AirCausalConv1d:
+    """Causal DEPTHWISE conv1d -- the Mamba mixer's convolution.
+
+    S015 §3 says CONVOLUTION WHERE USEFUL, and the qualifier is load-bearing. A census
+    of the four specimens on disk answers it rather than an opinion: Falcon-H1-7B holds
+    88 conv tensors (weight + bias for each of 44 layers, [3584, 1, 4] bf16), and
+    Qwen3-30B-A3B, Qwen3-VL-30B-A3B and Kimi-VL-A3B hold ZERO between them. So this
+    exists because ONE REAL SPECIMEN NEEDS IT, in exactly the shape that specimen uses.
+
+    CAUSALITY IS THE CORRECTNESS, NOT A DETAIL. Left-padding by W-1 is what stops
+    position t reading position t+1; get it wrong and an autoregressive model sees its
+    own future, which changes no norm and shows up as a model that is mysteriously good
+    at teacher forcing. A negative control pins that symmetric padding gives a
+    DIFFERENT answer.
+    """
+    name: str
+    channels: int
+    length: int
+    width: int = 4
+    threadgroup: int = 256
+    dtype: str = "f32"
+    device: str = "APPLE_GPU_0"
+
+    def validate(self) -> None:
+        if self.dtype != "f32":
+            raise ValueError("conv1d is f32 only here")
+        if self.threadgroup % 32 or not 32 <= self.threadgroup <= 1024:
+            raise ValueError(f"threadgroup {self.threadgroup} must be a multiple of 32 "
+                             f"and within Metal's 1024 limit")
+        if min(self.channels, self.length, self.width) <= 0:
+            raise ValueError("channels, length and width must be positive")
+        if self.width > self.length + self.width - 1:
+            raise ValueError("width exceeds the padded input")
+        if not self.name.isidentifier():
+            raise ValueError(f"name {self.name!r} becomes a Metal symbol and must be a "
+                             f"valid identifier")
+
+    def barrier_scopes_emitted(self) -> list[str]:
+        return []          # one thread owns one output position; nothing to order
+
+    def executable_on_metal_backend(self) -> tuple[bool, str]:
+        return True, "one thread per (channel, position); depthwise so no cross-channel reads"
+
+    def launch(self) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
+        n = self.channels * self.length
+        return (n, 1, 1), (min(self.threadgroup, n), 1, 1)
+
+
+def lower_causal_conv1d_to_msl(cv: AirCausalConv1d) -> str:
+    cv.validate()
+    return f"""
+    uint gid = thread_position_in_grid.x;
+    if (gid >= {cv.channels * cv.length}u) return;
+    uint c = gid / {cv.length}u;
+    uint t = gid % {cv.length}u;
+    float acc = bias[c];
+    for (uint k = 0u; k < {cv.width}u; ++k) {{
+        // CAUSAL: tap k reads t - (W-1) + k, and anything before 0 is ZERO, not
+        // wrapped and not clamped. Wrapping would read the END of the sequence.
+        int src = (int)t - {cv.width - 1} + (int)k;
+        if (src >= 0) acc += w[c * {cv.width}u + k] * x[c * {cv.length}u + (uint)src];
+    }}
+    out[gid] = acc;
+"""
+
+
+def execute_causal_conv1d(cv: AirCausalConv1d, x, w, b):
+    import mlx.core as mx
+    kern = mx.fast.metal_kernel(name=f"air_conv1d_{cv.name}", input_names=["x", "w", "bias"],
+                                output_names=["out"],
+                                source=lower_causal_conv1d_to_msl(cv),
+                                ensure_row_contiguous=True)
+    g, tg = cv.launch()
+    (o,) = kern(inputs=[mx.array(x, dtype=mx.float32), mx.array(w, dtype=mx.float32),
+                        mx.array(b, dtype=mx.float32)],
+                grid=g, threadgroup=tg,
+                output_shapes=[(cv.channels, cv.length)], output_dtypes=[mx.float32])
+    mx.eval(o)
+    return o
+
+
+def causal_conv1d_oracle(x, w, b, width: int):
+    """float64 reference from the definition: left-pad by width-1, then correlate."""
+    import numpy as np
+    x = np.asarray(x, dtype=np.float64)
+    w = np.asarray(w, dtype=np.float64).reshape(x.shape[0], width)
+    pad = np.concatenate([np.zeros((x.shape[0], width - 1)), x], axis=1)
+    out = np.empty_like(x)
+    for k in range(width):
+        term = pad[:, k:k + x.shape[1]] * w[:, k:k + 1]
+        out = term if k == 0 else out + term
+    return out + np.asarray(b, dtype=np.float64)[:, None]

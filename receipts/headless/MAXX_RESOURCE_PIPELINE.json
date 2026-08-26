@@ -1,0 +1,168 @@
+{
+ "schema": "hawking.headless.maxx_resource_pipeline.v1",
+ "generated_at": "2026-08-25T01:58:56Z",
+ "generated_by": "tools/headless/maxx_scheduler.py",
+ "obligation": "G014 \u2014 MAXX_RESOURCE_PIPELINE (directive \u00a726, \u00a7109, \u00a779)",
+ "git_head": "eb1494112b61953122262e311cc9243dbd44952e",
+ "hand_authored": false,
+ "objective": {
+  "formula": "verified useful progress / (wall time x resource)",
+  "numerator_is": "obligations at VERIFIED whose evidence cites receipts that exist on disk",
+  "inputs": {
+   "measurable": true,
+   "ledger": "/Users/scammermike/.claude/ultragoal/hawking-odyssey-maxx-ascension/GOAL.md",
+   "n_verified": 23,
+   "n_with_evidence": 23,
+   "n_cited_receipts_present": 27,
+   "n_cited_receipts_missing": 0,
+   "evidence_integrity": 1.0
+  },
+  "law": "MAXX does not mean fill every slot (directive \u00a726)"
+ },
+ "queues": {
+  "GPU_READY": {
+   "n_ready": 3,
+   "ready": [
+    "G005",
+    "G013",
+    "G032"
+   ],
+   "blocked": null
+  },
+  "CPU_READY": {
+   "n_ready": 9,
+   "ready": [
+    "G005",
+    "G011",
+    "G013",
+    "G014",
+    "G015",
+    "G022"
+   ],
+   "blocked": null
+  },
+  "GROK_READY": {
+   "n_ready": 0,
+   "ready": [],
+   "blocked": "Grok Build usage balance exhausted (HTTP 402); lanes terminate immediately [/Users/scammermike/.claude-grok/tasks/g001-clean-rebuild-20260824-195327/grok-stderr.log]"
+  },
+  "NETWORK_READY": {
+   "n_ready": 0,
+   "ready": [],
+   "blocked": null
+  },
+  "HDD_READY": {
+   "n_ready": 0,
+   "ready": [],
+   "blocked": null
+  },
+  "SSD_READY": {
+   "n_ready": 0,
+   "ready": [],
+   "blocked": null
+  },
+  "INTEGRATION_READY": {
+   "n_ready": 9,
+   "ready": [
+    "G005",
+    "G011",
+    "G013",
+    "G014",
+    "G015",
+    "G022"
+   ],
+   "blocked": null
+  }
+ },
+ "n_queues": 7,
+ "queue_independence": {
+  "blocked_queues": [
+   "GROK_READY"
+  ],
+  "still_ready_while_blocked": {
+   "GPU_READY": 3,
+   "CPU_READY": 9,
+   "INTEGRATION_READY": 9
+  },
+  "a_blocked_queue_stalls_nothing": true
+ },
+ "protected_window_demo": {
+  "window": "uncontended TPOT measurement (G005)",
+  "contaminating_queues": [
+   "CPU_READY",
+   "HDD_READY",
+   "NETWORK_READY",
+   "SSD_READY"
+  ],
+  "decisions_with_window_open": [
+   {
+    "queue": "GPU_READY",
+    "admitted": true,
+    "reason": "GPU_READY admitted: no protected window conflicts with it"
+   },
+   {
+    "queue": "CPU_READY",
+    "admitted": false,
+    "reason": "CPU_READY declined: a protected window is open (uncontended TPOT measurement (G005)). CPU_READY moves bytes through the same fabric the measurement is reading, so filling this slot would forge the number."
+   },
+   {
+    "queue": "GROK_READY",
+    "admitted": true,
+    "reason": "GROK_READY admitted: no protected window conflicts with it"
+   },
+   {
+    "queue": "NETWORK_READY",
+    "admitted": false,
+    "reason": "NETWORK_READY declined: a protected window is open (uncontended TPOT measurement (G005)). NETWORK_READY moves bytes through the same fabric the measurement is reading, so filling this slot would forge the number."
+   },
+   {
+    "queue": "HDD_READY",
+    "admitted": false,
+    "reason": "HDD_READY declined: a protected window is open (uncontended TPOT measurement (G005)). HDD_READY moves bytes through the same fabric the measurement is reading, so filling this slot would forge the number."
+   },
+   {
+    "queue": "SSD_READY",
+    "admitted": false,
+    "reason": "SSD_READY declined: a protected window is open (uncontended TPOT measurement (G005)). SSD_READY moves bytes through the same fabric the measurement is reading, so filling this slot would forge the number."
+   },
+   {
+    "queue": "INTEGRATION_READY",
+    "admitted": true,
+    "reason": "INTEGRATION_READY admitted: no protected window conflicts with it"
+   }
+  ],
+  "n_declined": 4,
+  "decisions_with_no_window": [
+   {
+    "queue": "GPU_READY",
+    "admitted": true
+   },
+   {
+    "queue": "CPU_READY",
+    "admitted": true
+   },
+   {
+    "queue": "GROK_READY",
+    "admitted": true
+   },
+   {
+    "queue": "NETWORK_READY",
+    "admitted": true
+   },
+   {
+    "queue": "HDD_READY",
+    "admitted": true
+   },
+   {
+    "queue": "SSD_READY",
+    "admitted": true
+   },
+   {
+    "queue": "INTEGRATION_READY",
+    "admitted": true
+   }
+  ],
+  "all_admitted_when_no_window": true
+ },
+ "pass": true
+}

@@ -1,0 +1,303 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T12:42:10",
+ "experiment_class": "ACCEL-CORRECTNESS",
+ "knowledge_level": "INSTANCE",
+ "git_head": "3572a1076d8981ae796bc6227948aad1651f35fb",
+ "identities": {
+  "experiment": {
+   "id": "GRADING_A_SAMPLER_IS_NOT_GRADING_A_KERNEL",
+   "obligation": "G043/G046",
+   "steer": "S015 \u00a73 required corpus: TOP-K and SAMPLING"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "api": "Metal via MLX mx.fast.metal_kernel JIT"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "synthetic logits; no model executed"
+  },
+  "representation": {
+   "status": "ABSENT",
+   "reason": "dense f32 logits"
+  },
+  "kernel": {
+   "air_op": "AirTopKSample",
+   "algorithm": "k rounds of full-row argmax extraction, then a serial CDF walk over k"
+  },
+  "runtime": {
+   "python": "3.12.6",
+   "mlx": "0.32.1"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device"
+  }
+ },
+ "headline": "TOP-K and SAMPLING are named in S015 \u00a73's required corpus and NO receipt had ever claimed OR refused them, which by the ledger's own rule means NOT YET STUDIED. Building them is the easy half. THE HARD HALF IS THAT A SAMPLER CANNOT BE GRADED THE WAY EVERY OTHER KERNEL HERE HAS BEEN -- `the returned index is one of the top k` PASSES FOR A SAMPLER THAT ALWAYS RETURNS THE ARGMAX, which is this campaign's check-that-cannot-fail in a new place.",
+ "the_design_choice_that_makes_exact_grading_possible": {
+  "randomness_is_an_input": "u carries one uniform per row, drawn host-side from a seeded generator, so the kernel is a PURE FUNCTION of (logits, u). A kernel generating its own randomness could only ever be graded statistically, and a statistical check is far weaker than an exact one.",
+  "three_outputs_on_purpose": "the selected values and indices come back alongside the sampled choice so TOP-K is graded WITHOUT the sampler in the way; grading only the final index confounds two mechanisms",
+  "ties_break_to_the_lower_index": "an unspecified tie-break makes the exact layer unusable on any logit vector with repeats, which is every masked or clamped distribution in practice"
+ },
+ "three_layers_weakest_last": {
+  "layer_1_topk_exact": {
+   "result": [
+    {
+     "rows": 8,
+     "cols": 64,
+     "k": 5,
+     "idx_exact": true,
+     "val_max_abs_err": 0.0
+    },
+    {
+     "rows": 4,
+     "cols": 4096,
+     "k": 8,
+     "idx_exact": true,
+     "val_max_abs_err": 0.0
+    },
+    {
+     "rows": 3,
+     "cols": 517,
+     "k": 1,
+     "idx_exact": true,
+     "val_max_abs_err": 0.0
+    },
+    {
+     "rows": 2,
+     "cols": 128,
+     "k": 64,
+     "idx_exact": true,
+     "val_max_abs_err": 0.0
+    },
+    {
+     "case": "three tied maxima then a tied field of zeros",
+     "kernel_idx": [
+      5,
+      17,
+      30,
+      0
+     ],
+     "oracle_idx": [
+      5,
+      17,
+      30,
+      0
+     ],
+     "idx_exact": true,
+     "val_max_abs_err": 0.0
+    }
+   ],
+   "against": "numpy stable argsort, which knows nothing about this kernel",
+   "shapes": "8x64 k=5, 4x4096 k=8, 3x517 k=1, 2x128 k=64, plus a deliberate tie case",
+   "all_exact": true
+  },
+  "layer_2_choice_exact_given_u": {
+   "result": {
+    "temperature_0.5": {
+     "agree": 512,
+     "of": 512
+    },
+    "temperature_1.0": {
+     "agree": 512,
+     "of": 512
+    },
+    "temperature_2.0": {
+     "agree": 512,
+     "of": 512
+    },
+    "reproducible_with_the_same_u": true,
+    "different_u_changes_the_answer_in": 400
+   },
+   "what_it_cannot_catch": "a shared CONVENTION error -- an oracle that walks the CDF the same wrong way agrees with itself, the same circularity the idiom recognizer had"
+  },
+  "layer_3_distributional": {
+   "draws": 8192,
+   "k": 8,
+   "df": 7,
+   "critical_value_p0.001": 24.322,
+   "true_sampler_chi2": 4.332,
+   "true_sampler_passes": true,
+   "negative_controls_chi2": {
+    "uniform_over_k": 4588.32,
+    "argmax_always": 9901.3,
+    "off_by_one_bucket": 12552.47
+   },
+   "every_control_rejected": true,
+   "power_curve_p_to_the_alpha": {
+    "alpha_1.02": 7.28,
+    "alpha_1.05": 18.13,
+    "alpha_1.1": 67.71,
+    "alpha_1.2": 251.84,
+    "alpha_1.5": 1453.89,
+    "alpha_2.0": 4476.94
+   },
+   "observed_counts": [
+    3708,
+    942,
+    856,
+    761,
+    576,
+    480,
+    466,
+    403
+   ],
+   "expected_counts": [
+    3709.0,
+    928.5999755859375,
+    857.0999755859375,
+    745.5999755859375,
+    589.0999755859375,
+    479.3999938964844,
+    446.29998779296875,
+    437.1000061035156
+   ]
+  }
+ },
+ "the_power_curve_is_the_honest_limit": {
+  "critical_value": 24.322,
+  "draws": 8192,
+  "p_to_the_alpha": {
+   "alpha_1.02": 7.28,
+   "alpha_1.05": 18.13,
+   "alpha_1.1": 67.71,
+   "alpha_1.2": 251.84,
+   "alpha_1.5": 1453.89,
+   "alpha_2.0": 4476.94
+  },
+  "reading": "at 8192 draws the test CATCHES a sampler distorted to p^1.1 (chi2 67.71) and IS BLIND to p^1.05 (18.13, under the 24.322 critical value). So a sampler subtly biased toward the mode passes this check. That is the measurement's resolving power, stated rather than left for someone to assume the check is total."
+ },
+ "I_BROKE_THE_KERNEL_AND_TWO_OF_THREE_MUTATIONS_SURVIVED": {
+  "why_at_all": "val_max_abs_err 0.0 on five shapes is the `too good` signal this program distrusts; the GEMM receipt broke its kernel twice before believing an exact zero",
+  "break_3_off_by_one_cdf": {
+   "aimed_at": "layers 2 and 3; layer 1 must be UNAFFECTED, which is what makes the layers independent rather than three views of one check",
+   "layer1_topk_still_exact": true,
+   "layer2_choice_disagreements": 7957,
+   "of": 8192,
+   "layer3_chi2": 30948.51,
+   "critical": 24.322,
+   "layer3_rejects": true,
+   "verdict": "DETECTED, and it is the load-bearing one -- layer 1 stayed EXACT while layers 2 and 3 both rejected, which is what proves the layers are INDEPENDENT rather than three views of one check"
+  },
+  "break_1_no_tie_break": {
+   "first_attempt": "NOT DETECTED, and that was MY TEST'S FAULT",
+   "why": "at cols=32 with a 256-wide threadgroup every thread saw at most ONE element, so the per-thread tie-break never ran and the tree reduce's own tie-break carried the case",
+   "fixed": {
+    "tied_columns": [
+     5,
+     261,
+     517
+    ],
+    "intact_kernel": [
+     5,
+     261,
+     517
+    ],
+    "oracle": [
+     5,
+     261,
+     517
+    ],
+    "mutated_kernel": [
+     517,
+     261,
+     5
+    ],
+    "intact_matches_oracle": true,
+    "layer1_detects_the_mutation": true
+   },
+   "lesson": "the tie-break lives in TWO places and my test exercised ONE. A guard that is dead code at the shape you test it on is a guard you have not tested. Pinned now by a test whose ties sit a full stride apart."
+  },
+  "break_2_missing_barrier": {
+   "result": {
+    "trials": [
+     {
+      "threadgroup": 64,
+      "simdgroups": 2,
+      "reps": 5,
+      "worst_rows_wrong_of_32": 0
+     },
+     {
+      "threadgroup": 256,
+      "simdgroups": 8,
+      "reps": 5,
+      "worst_rows_wrong_of_32": 0
+     },
+     {
+      "threadgroup": 1024,
+      "simdgroups": 32,
+      "reps": 5,
+      "worst_rows_wrong_of_32": 1
+     }
+    ],
+    "fired_anywhere": true,
+    "reading": "the barrier is REQUIRED BY THE MEMORY MODEL and this hardware does not punish its absence on this access pattern. A RACE THAT DOES NOT FIRE IS NOT A PASSING TEST -- what this establishes is that layer 1 CANNOT be relied on to catch a missing barrier here, not that the barrier is unnecessary."
+   },
+   "firing_rate_at_threadgroup_1024": {
+    "runs_with_any_corruption": 16,
+    "runs": 30,
+    "rows_wrong_per_run_of_32": [
+     1,
+     0,
+     0,
+     0,
+     0,
+     1,
+     1,
+     1,
+     6,
+     0,
+     1,
+     0,
+     0,
+     0,
+     1,
+     1,
+     0,
+     1,
+     0,
+     1,
+     0,
+     0,
+     1,
+     1,
+     0,
+     1,
+     1,
+     0,
+     2,
+     1
+    ],
+    "intact_kernel_wrong_in": "0 of 30 runs"
+   },
+   "THIS_IS_THE_MOST_IMPORTANT_RESULT_HERE": "removing a threadgroup barrier from the tree reduce left the answer EXACTLY CORRECT at threadgroup 64 and 256 across 5 runs each, and fired at 1024 in only 16 OF 30 RUNS, usually corrupting ONE ROW OF 32. A SINGLE RUN OF A CORRECTNESS TEST IS A COIN FLIP ON THIS RACE, and at the DEFAULT width of 256 it is invisible entirely -- a test run once at the default would have reported the barrier as unnecessary.",
+   "contrast_with_this_program_s_earlier_barrier_controls": "GEMM's stripped barriers gave 54.46, softmax's gave 0.973, AIR's matmul 45.12 -- LOUD, because those probes were constructed so a missing fence MUST show. This one was not, and it is nearly silent. The class of control is the same and the evidential value is completely different.",
+   "what_it_does_and_does_not_establish": "the barrier IS required by the memory model and the intact kernel keeps it. What is established is that LAYER 1 CANNOT BE RELIED ON to catch a missing barrier at these widths -- NOT that the barrier is unnecessary, and NOT that the race is absent at 64 and 256 where it merely did not fire in 5 runs."
+  },
+  "score": "3 mutations, 1 detected as designed, 1 a test-design error of mine now fixed, 1 a race that is nearly invisible -- and the last is worth more than three clean detections would have been"
+ },
+ "a_footgun_found_by_using_it": {
+  "what": "naming a variant after its temperature produced `l2_0.5`, which is interpolated into the generated Metal SYMBOL and fails twenty lines deep in MLX's own header with no mention of the name",
+  "also": "`half` is a Metal TYPE NAME, so the obvious tree-reduce loop variable does not compile",
+  "shipped": "validate() refuses a name that is not a Python identifier",
+  "named_not_silently_fixed": "the other AIR lowerings interpolate their names the same way and are NOT guarded -- a guard nobody has watched fire is worth little, and this one has"
+ },
+ "claim_boundary": {
+  "corpus": "TOP-K and SAMPLING now EXIST in AIR and execute; the corpus items still absent are batched GEMM, normalization, sparse, FFT and convolution",
+  "nothing_timed": "NO performance claim. The selection is k rounds of a full-row argmax with an O(k) membership test per element, so cost grows as k^2, and k>64 is REFUSED rather than becoming the slowest way to sort. The CDF walk is SERIAL IN ONE THREAD by choice.",
+  "not_compared_to_mlx": "no baseline was run, so no winner is claimed either way",
+  "f32_only": "one dtype, one machine, INSTANCE",
+  "no_model": "synthetic logits; this is the SHAPE of an LLM decode tail, not a decode"
+ },
+ "tests": {
+  "accelerator_total": 215,
+  "was_total": 210,
+  "test_air": 96
+ },
+ "pass": true
+}

@@ -1,0 +1,194 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T19:19:54Z",
+ "experiment_class": "ACCEL-CCL-CENSUS",
+ "knowledge_level": "INSTANCE",
+ "git_head": "802ba6d49b6772c64094736c3a983c03b74d87ef",
+ "identities": {
+  "experiment": {
+   "id": "CUDA_CAPABILITY_LEDGER_CENSUS_EXPANSION",
+   "obligation": "G055",
+   "answers": "expand the 20-entry CUDA Capability Ledger seed into a systematic census across PROGRAMMING MODEL, MEMORY, EXECUTION, COMPILER, MATH ECOSYSTEM and PROFILING"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra"
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal via MLX"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "this censuses a capability inventory, not a model"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "no NVIDIA hardware exists on this machine; MULTI_DEVICE.peer_access stays the sole MULTI_DEVICE entry and stays blocked"
+  }
+ },
+ "headline": "The ledger grew from 20 entries to 68: every one of the 20 seed entries is byte-identical to what was on disk before this pass, and 48 new entries were added across six families named in G055's brief. Five of the 48 cite a real receipt already in this repo as measured evidence (ACCELERATOR_DEVICE_RESIDENT, ACCELERATOR_GRAPH_SUBMISSION, ACCELERATOR_JIT_COMPILE, ACCELERATOR_EXPERT_BATCH, ACCELERATOR_REGISTER_BLOCKING); the other 43 are honestly UNMEASURED with a specific reason each, not a generic placeholder.",
+ "totals": {
+  "entries_before": 20,
+  "entries_added": 48,
+  "entries_after": 68,
+  "by_class": {
+   "MEMORY": 15,
+   "COMPILER": 9,
+   "EXECUTION": 12,
+   "MATH": 15,
+   "RUNTIME": 9,
+   "PROFILING": 5,
+   "DEBUGGING": 2,
+   "MULTI_DEVICE": 1
+  },
+  "performance_gaps_measured_before": 15,
+  "performance_gaps_measured_after": 20,
+  "performance_gaps_unmeasured_before": 5,
+  "performance_gaps_unmeasured_after": 48,
+  "semantic_gap_NONE_claims_total": 0,
+  "semantic_gap_DELETED_BY_UNIFIED_MEMORY_total": 6
+ },
+ "per_family_counts": {
+  "PROGRAMMING_MODEL": {
+   "entries_added": 9,
+   "measured": 0,
+   "unmeasured": 9,
+   "capability_ids": [
+    "EXECUTION.cooperative_groups",
+    "EXECUTION.warp_collectives",
+    "MEMORY.constant_memory",
+    "EXECUTION.register_pressure_and_occupancy",
+    "EXECUTION.persistent_kernels",
+    "EXECUTION.dynamic_shared_memory",
+    "MEMORY.async_copy_pipeline",
+    "EXECUTION.thread_block_clusters",
+    "EXECUTION.device_side_launch"
+   ]
+  },
+  "MEMORY": {
+   "entries_added": 11,
+   "measured": 1,
+   "unmeasured": 10,
+   "capability_ids": [
+    "MEMORY.stream_ordered_allocation",
+    "MEMORY.memory_pools",
+    "MEMORY.graph_memory_allocations",
+    "MEMORY.managed_unified_memory",
+    "MEMORY.pinned_host_memory",
+    "MEMORY.mapped_memory",
+    "MEMORY.virtual_memory_management",
+    "MEMORY.ipc_memory",
+    "MEMORY.prefetch_and_advise",
+    "MEMORY.copy_engines",
+    "MEMORY.memory_ordering_and_scopes"
+   ]
+  },
+  "EXECUTION_STREAMS_AND_GRAPHS": {
+   "entries_added": 7,
+   "measured": 1,
+   "unmeasured": 6,
+   "capability_ids": [
+    "RUNTIME.stream_priorities",
+    "RUNTIME.graph_capture",
+    "RUNTIME.explicit_graph_construction",
+    "RUNTIME.graph_update_and_instantiation_reuse",
+    "RUNTIME.graph_memory_nodes",
+    "RUNTIME.launch_attributes",
+    "RUNTIME.host_callbacks"
+   ]
+  },
+  "COMPILER": {
+   "entries_added": 5,
+   "measured": 1,
+   "unmeasured": 4,
+   "capability_ids": [
+    "COMPILER.nvrtc_runtime_compilation",
+    "COMPILER.fatbinaries",
+    "COMPILER.link_time_optimization",
+    "COMPILER.launch_bounds",
+    "COMPILER.kernel_metadata"
+   ]
+  },
+  "MATH_ECOSYSTEM": {
+   "entries_added": 11,
+   "measured": 2,
+   "unmeasured": 9,
+   "capability_ids": [
+    "MATH.cublas_library_surface",
+    "MATH.cublaslt_epilogue_fusion",
+    "MATH.cudnn_graph_engine_model",
+    "MATH.cusparse",
+    "MATH.cufft",
+    "MATH.cusolver",
+    "MATH.curand",
+    "MATH.cub_primitives",
+    "MATH.thrust",
+    "MATH.cutlass_concepts",
+    "MATH.nccl_collectives"
+   ]
+  },
+  "PROFILING": {
+   "entries_added": 5,
+   "measured": 0,
+   "unmeasured": 5,
+   "capability_ids": [
+    "PROFILING.cupti",
+    "PROFILING.nsight_systems",
+    "PROFILING.nsight_compute",
+    "DEBUGGING.race_and_memory_diagnostics",
+    "PROFILING.kernel_trace_and_provenance"
+   ]
+  }
+ },
+ "old_entries_verified_byte_identical": true,
+ "old_entries_corrected": [],
+ "hard_rules_upheld": {
+  "no_unqualified_cuda_parity_phrase": "grepped the regenerated ledger and ccl.py for the literal phrase; the only two occurrences in the whole repo are the pre-existing sentences in parity_claim and ccl.py's docstring that NAME the rule itself ('the steer forbids the phrase CUDA parity unqualified'), both unchanged by this pass",
+  "multi_device_peer_access_unchanged": "MULTI_DEVICE class count stayed at exactly 1; MATH.nccl_collectives was filed under MATH instead of MULTI_DEVICE for the identical hardware-blocked reason, on purpose",
+  "no_fabricated_receipts": "every performance_gap marked measured cites a receipt path that exists on disk in receipts/headless/ and was read before being cited; every unmeasured entry states a specific reason, not a template sentence",
+  "unverified_api_claims_flagged": "several entries (MATH.thrust, MEMORY.mapped_memory, COMPILER.fatbinaries and others) explicitly mark a CUDA API behavior claim as reasoned from general knowledge rather than verified against NVIDIA documentation on this machine, per instruction"
+ },
+ "not_yet_censused": {
+  "PROGRAMMING_MODEL": [
+   "texture and surface memory / texture objects (cudaTextureObject_t) -- the read-only texture cache path, distinct from the __ldg-style read-only cache hint",
+   "the raw WMMA API (wmma::load_matrix_sync/mma_sync/store_matrix_sync) as its own capability, as distinct from cuBLAS/CUTLASS using tensor cores internally -- this census discussed tensor cores only through MATH.cublas_library_surface and MATH.cutlass_concepts, never the raw intrinsic",
+   "mma.sync / tensor-core PTX instructions directly",
+   "grid.sync() specifically, as a named sub-feature of EXECUTION.cooperative_groups -- the entry covers the group concept generally but not this one call in isolation",
+   "the CUDA driver API (cuCtxCreate/cuModuleLoad and friends) as distinct from the runtime API (cudaMalloc et al.) that every other entry in this ledger implicitly assumes"
+  ],
+  "MEMORY": [
+   "L2 cache persistence controls (cudaAccessPolicyWindow) for pinning hot data in L2 across kernel launches",
+   "the __ldg() read-only-cache load intrinsic specifically",
+   "ECC memory and its performance/capacity tradeoff -- not applicable to this machine's consumer silicon, but never explicitly ruled in or out the way MULTI_DEVICE.peer_access's hardware block was",
+   "texture/surface memory as a MEMORY concept (see PROGRAMMING_MODEL above -- listed once, not censused twice)"
+  ],
+  "EXECUTION_STREAMS_AND_GRAPHS": [
+   "CUDA Graphs conditional nodes (data-dependent branching inside an instantiated graph, a newer CUDA Graphs feature)",
+   "child graphs / nested graph composition (cudaGraphAddChildGraphNode)",
+   "cudaEvent_t as a distinct capability from RUNTIME.streams_and_events' general treatment -- specifically inter-stream wait (cudaStreamWaitEvent) semantics and event-based timing (cudaEventElapsedTime), which PROFILING.kernel_timing touches only as 'the CUDA mechanism it is compared against', not as its own census line",
+   "CUDA driver-level context and Multi-Process Service (MPS) for sharing one GPU's SMs across processes with hardware partitioning -- distinct from ordinary multi-stream/multi-process time-slicing, and NOT to be confused with Apple's own 'MPS' (Metal Performance Shaders), a naming collision worth flagging so a future pass does not conflate the two",
+   "Multi-Instance GPU (MIG) hardware partitioning"
+  ],
+  "COMPILER": [
+   "the CUDA driver's JIT cache (the on-disk PTX->SASS cache CUDA itself maintains across process runs) as distinct from COMPILER.jit_kernel_compilation's measurement of MLX's JIT, which is a different runtime's cache entirely",
+   "PTX ISA versioning and forward/backward compatibility rules",
+   "separate compilation and cross-object device linking as a build system question (distinct from COMPILER.link_time_optimization, which covers the OPTIMIZATION step, not the linking mechanics themselves)"
+  ],
+  "MATH_ECOSYSTEM": [
+   "cuBLASXt (multi-GPU BLAS) and cuBLASMg -- blocked on the same missing-hardware reason as MATH.nccl_collectives, not separately censused",
+   "cuDNN's specific convolution ALGORITHMS (Winograd, implicit GEMM, FFT-based) as opposed to MATH.cudnn_graph_engine_model's treatment of the engine-selection ARCHITECTURE only",
+   "AmgX / cuSPARSE's iterative-solver-specific pieces beyond the sparse-format/SpMM surface MATH.cusparse names",
+   "nvJPEG, nvCOMP, and other narrow single-purpose CUDA-X libraries outside the eleven named in the census brief"
+  ],
+  "PROFILING": [
+   "the compute-sanitizer initcheck and synccheck tools' SPECIFIC detection mechanisms in more depth than DEBUGGING.race_and_memory_diagnostics' single combined entry gives them",
+   "cuda-gdb's specific debugging feature set (breakpoints, single-stepping device code) as distinct from DEBUGGING.numerical_diagnostics' oracle-comparison practice",
+   "Nsight Graphics (as opposed to Nsight Systems/Compute) -- not relevant to a compute-only workload but never explicitly ruled out as such"
+  ]
+ },
+ "not_yet_censused_reading": "every item above is ABSENT FROM THE LEDGER, which under this campaign's own rule means NOT YET STUDIED, never NOT NEEDED. Several (WMMA intrinsics, MPS/MIG, conditional graph nodes) are plausibly HIGH relevance and were left out only because this pass's 48-entry scope was already large, not because they were judged unimportant.",
+ "test_result": {
+  "command": "/usr/local/bin/python3 -m pytest tools/accelerator/test_ccl.py -q",
+  "note": "recorded by the calling process after this receipt was written; see the session report for the actual pass/fail line"
+ }
+}

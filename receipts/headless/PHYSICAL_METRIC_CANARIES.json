@@ -1,0 +1,77 @@
+{
+ "schema": "hawking.headless.metric_mutation_canaries.v1",
+ "generated_at": "2026-08-26T00:13:54Z",
+ "generated_by": "tools/odyssey/metric_audit.py",
+ "obligation": "G033 \u2014 METRIC_MUTATION_CANARIES (steer S011 \u00a76)",
+ "hand_authored": false,
+ "mutated": "an APFS clone, never a real artifact",
+ "canaries": [
+  {
+   "canary": "A_add_bytes_raises_physical_ebpw",
+   "bytes_added": 67108864,
+   "before": 2.5969939888824647,
+   "after": 2.6169549846684586,
+   "expected_after": 2.6169549846684586,
+   "exact": true,
+   "active_before": 8234453050,
+   "active_after": 8301561914,
+   "active_expected_after": 8301561914,
+   "active_exact": true,
+   "passed": true
+  },
+  {
+   "canary": "B_remove_bytes_lowers_physical_ebpw",
+   "bytes_removed": 25067915,
+   "before": 2.5969939888824647,
+   "after": 2.5895377377130417,
+   "expected_after": 2.5895377377130417,
+   "exact": true,
+   "passed": true
+  },
+  {
+   "canary": "C_genome_only_change_does_not_move_physical_ebpw",
+   "mutation": "genome.mlp.gemv_storage_bpw 2.25 -> 99.0, codec -> fictional",
+   "before": 2.5969939888824647,
+   "after": 2.5969939888824647,
+   "active_before": 8234453050,
+   "active_after": 8234453050,
+   "fields_covered": [
+    "complete_ebpw",
+    "active_bytes_per_token",
+    "active_ebpw_per_token"
+   ],
+   "passed": true
+  },
+  {
+   "canary": "D_artifact_only_change_moves_physical_and_surfaces_mismatch",
+   "bytes_added_to_segment": 33554432,
+   "physical_before": 2.5969939888824647,
+   "physical_after": 2.6069744867754614,
+   "active_before": 8234453050,
+   "active_after": 8268007482,
+   "design_unchanged": 2.5969567265364937,
+   "design_equals_original": true,
+   "mismatch_surfaced": true,
+   "passed": true
+  },
+  {
+   "canary": "E_runtime_fallback_is_exposed_by_runtime_identity",
+   "counter_present": true,
+   "incremented_only_by": "Qwen38HybridDecodeSession::account_dense_w",
+   "not_a_python_literal": true,
+   "decode_reports_fallbacks_field": true,
+   "fallbacks_observed": 0,
+   "passed": true,
+   "honest_limitation": "this verifies the runtime EXPOSES a fallback channel and that the counter is a real Rust field incremented only by account_dense_w, not a literal. It does not INDUCE a fallback: doing so needs a runtime build with a deliberately broken kernel path, which is a code change to the crate rather than an artifact mutation."
+  }
+ ],
+ "n": 5,
+ "n_passed": 5,
+ "restore_check": {
+  "restored_to_baseline": true,
+  "baseline_bytes": 8731093292,
+  "final_bytes": 8731093292
+ },
+ "why": "complete_ebpw was a design constant published under a physical name, and adding 1,288,519,664 bytes did not move it. These exist so that cannot pass silently again.",
+ "pass": true
+}

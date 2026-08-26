@@ -338,5 +338,11 @@
   "ladder_saturates": "the coarse floor is 4 bits nearly everywhere because 3 bits fails the 0.99 bar for every organ measured; the informative axis is the GROUP and the continuous cosine, which is why both are reported rather than the floor alone.",
   "knowledge_level": "MODEL_FAMILY not ARCHITECTURE: two Qwen MoE variants agreeing is one family, and Kimi and Falcon are single specimens each."
  },
- "pass": true
+ "pass": true,
+ "AMENDED_IN_PLACE_2026_08_25": {
+  "by": "receipts/headless/ACCELERATOR_RUNTIME_GATE.json",
+  "what_is_corrected": "this receipt justified weight-space grading with 'no runtime here executes a Qwen3-MoE, Falcon or Mamba forward pass'. THAT CONFLATES TWO RUNTIMES. Hawking's Rust body dispatches only on llama/mistral/qwen2 families and really does cover none of them; mlx_lm 0.31.3 -- already a hard dependency and the runtime every AIR kernel executes through -- carries model classes for qwen3_moe, qwen3_vl_moe, kimi_vl AND falcon_h1.",
+  "what_the_gate_actually_is": "FAST LOCAL STORAGE. Falcon-H1-7B, the smallest specimen, is 15.17 GB and under the operator-prioritised fill a sequential read did not complete 256 MiB in 120 s -- under ~0.5 MB/s against 96-131 MiB/s uncontended.",
+  "what_does_NOT_change": "every weight-space caveat here stands. No forward pass was run and no activations exist for any lake specimen; what changes is the REMEDIATION -- a quiesced window rather than writing a reader."
+ }
 }

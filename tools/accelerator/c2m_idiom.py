@@ -71,6 +71,33 @@ _GEMM_FRAGMENTS = [
     ("store to C row-major", r"C\[row \* N \+ col\] = acc"),
 ]
 
+# THE SEED'S REAL SGEMM. Widening the tiled_gemm fragments to match it would have been
+# the obvious fix and WOULD HAVE SUBSTITUTED A DIFFERENT COMPUTATION: this kernel
+# computes alpha*A@B + beta*C, and AIR's matmul computes A@B. The syntactic difference
+# (1-D shared tiles with a SYMBOLIC size, flattened indexing) is the visible one; the
+# SEMANTIC difference is the one that matters, and it is why this is a SEPARATE idiom
+# rather than a looser version of the first. See ACCELERATOR_C2M_SGEMM_IDIOM.json.
+_SGEMM_FRAGMENTS = [
+    ("shared tile for A, 1-D with a symbolic extent",
+     r"__shared__ float As\[(\w+) \* (\w+)\]"),
+    ("shared tile for B, 1-D with a symbolic extent",
+     r"__shared__ float Bs\[(\w+) \* (\w+)\]"),
+    ("output block row from blockIdx.x", r"cRow = blockIdx\.x"),
+    ("output block column from blockIdx.y", r"cCol = blockIdx\.y"),
+    ("thread column from threadIdx.x %", r"threadCol = threadIdx\.x % \w+"),
+    ("thread row from threadIdx.x /", r"threadRow = threadIdx\.x / \w+"),
+    ("accumulator initialised to zero", r"float tmp = 0\.0f"),
+    ("loop over k-tiles", r"for \(int bkIdx = 0; bkIdx < K; bkIdx \+= \w+\)"),
+    ("A staged row-major into As",
+     r"As\[threadRow \* \w+ \+ threadCol\] = A\[threadRow \* K \+ threadCol\]"),
+    ("B staged row-major into Bs",
+     r"Bs\[threadRow \* \w+ \+ threadCol\] = B\[threadRow \* N \+ threadCol\]"),
+    ("inner product over the tile",
+     r"tmp \+= As\[threadRow \* \w+ \+ dotIdx\] \* Bs\[dotIdx \* \w+ \+ threadCol\]"),
+    ("alpha/beta store, which is what makes this NOT a plain matmul",
+     r"C\[threadRow \* N \+ threadCol\] = alpha \* tmp \+ beta \* C\[threadRow \* N \+ threadCol\]"),
+]
+
 _REDUCE_FRAGMENTS = [
     ("shared buffer", r"__shared__ float sdata\[(\d+)\]"),
     ("thread id", r"int tid = threadIdx\.x"),
@@ -113,6 +140,26 @@ def recognize(src: str) -> RecognizedIdiom:
     flat = _n(src)
 
     if "__shared__ float As" in flat and "__shared__ float Bs" in flat:
+        # THE ALPHA/BETA FORM IS TRIED FIRST, because it is the STRICTER claim: a
+        # kernel that scales and accumulates is not a plain matmul, and letting the
+        # looser idiom match it would be the exact substitution this door refuses.
+        if re.search(r"alpha \* tmp \+ beta \* C", _n(src)):
+            names, ms = _match_all(src, _SGEMM_FRAGMENTS, "sgemm_alpha_beta")
+            for i in (0, 1):
+                if ms[i].group(1) != ms[i].group(2):
+                    raise C2MRefusal(
+                        f"not recognised as sgemm_alpha_beta: the shared tile extent "
+                        f"is {ms[i].group(1)} * {ms[i].group(2)}, and a square tile "
+                        f"needs the same symbol twice.")
+            if _count_syncthreads(src) != 2:
+                raise C2MRefusal(
+                    f"not recognised as sgemm_alpha_beta: found "
+                    f"{_count_syncthreads(src)} __syncthreads() calls and the idiom "
+                    f"has exactly 2. A missing one is a RACE on the tiles.")
+            # THE TILE SIZE IS NOT IN THE KERNEL. It is a template parameter, so
+            # recognition CANNOT supply it and does not pretend to -- execute_idiom
+            # requires dims['tile'] and refuses without it.
+            return RecognizedIdiom("sgemm_alpha_beta", name, None, None, names)
         names, ms = _match_all(src, _GEMM_FRAGMENTS, "tiled_gemm")
         ta, tb = (int(ms[0].group(1)), int(ms[0].group(2)))
         tc, td = (int(ms[1].group(1)), int(ms[1].group(2)))
@@ -158,6 +205,21 @@ def execute_idiom(rec: RecognizedIdiom, operands: dict[str, Any], *, dims: dict[
         mm = air.AirMatmul(rec.kernel_name, dims["M"], dims["K"], dims["N"],
                            tile=rec.tile, strategy="tiled")
         return air.execute_matmul(mm, operands["A"], operands["B"])
+    if rec.idiom == "sgemm_alpha_beta":
+        if "tile" not in dims:
+            raise C2MRefusal(
+                "sgemm_alpha_beta declares its tile as a TEMPLATE PARAMETER, so the "
+                "kernel source does not contain it; pass dims['tile'] from the "
+                "instantiation rather than letting recognition guess one")
+        mm = air.AirMatmul(rec.kernel_name, dims["M"], dims["K"], dims["N"],
+                           tile=dims["tile"], strategy="tiled")
+        prod = air.execute_matmul(mm, operands["A"], operands["B"])
+        # alpha*(A@B) + beta*C. THE SCALING IS PART OF THE ANSWER, not decoration:
+        # handing the bare product back would be the wrong computation whenever
+        # alpha != 1 or beta != 0.
+        import numpy as _np
+        return (operands["alpha"] * _np.asarray(prod)
+                + operands["beta"] * _np.asarray(operands["C"]))
     if rec.idiom == "block_reduce_sum":
         rd = air.AirReduce(rec.kernel_name, dims["n"], "sum", rec.threadgroup)
         return air.execute_reduce(rd, operands["in"])

@@ -11,6 +11,14 @@ from typing import List, Optional, Tuple
 
 MAX_RUNTIME_COUNT = 8
 
+# Delegation verbs dispatch BEFORE parse_haider_args, the same way
+# `install-shims` already does. The single-shot positional grammar
+# (`hcli 4 "do the thing"`, `hcli --task ...`) is untouched: it never
+# begins with one of these tokens. A prompt that literally starts with
+# the bare word "run"/"status"/... must use --task.
+DELEGATE_VERBS = ("run", "status", "steer", "result", "abort")
+DELEGATE_EXEC_VERB = "__delegate_exec"
+
 
 def _prog_name() -> str:
     base = os.path.basename(sys.argv[0] if sys.argv else "hcli")
@@ -195,6 +203,14 @@ def main(argv: Optional[List[str]] = None) -> int:
         if len(raw) >= 3 and raw[1] == "--home":
             home = raw[2]
         return install_shims(home=home)
+    if raw and raw[0] in DELEGATE_VERBS:
+        from .delegate import cli_main
+
+        return cli_main(raw)
+    if raw and raw[0] == DELEGATE_EXEC_VERB:
+        from .delegate import exec_main
+
+        return exec_main(raw[1:])
 
     args = parse_haider_args(raw)
     if args.debug:

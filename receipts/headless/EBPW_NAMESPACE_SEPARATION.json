@@ -1,0 +1,307 @@
+{
+ "schema": "hawking.odyssey.ebpw_namespace_separation.v1",
+ "generated_at": "2026-08-25T23:59:23Z",
+ "generated_by": "tools/odyssey/metric_audit.py --emit-negative-control",
+ "obligation": "G059 \u2014 EBPW namespace separation",
+ "hand_authored": false,
+ "git_head": "b3c4713fb8d4de69ed336d7662feb839df65902c",
+ "claim": "every mutable headline metric is published under the namespace its VALUE comes from, and the checks that enforce that have each been watched failing on an injected defect",
+ "still_frozen_and_flagged": [],
+ "frozen_rule": "a metric classified DESIGN_EXPECTED_* must be PUBLISHED under a DESIGN_EXPECTED_* name. Structural, so it cannot be cleared by editing the note.",
+ "metrics_moved_this_lane": {
+  "active_ebpw_per_token": {
+   "was": "DESIGN_EXPECTED_active_ebpw_per_token published as 'active_ebpw_per_token'",
+   "now": "ARTIFACT_PHYSICAL_active_ebpw_per_token",
+   "derivation": "8 * (payload_bytes_on_disk - embedding_bytes) / parent_params",
+   "design_figure_retained_as": "DESIGN_EXPECTED_active_ebpw_per_token"
+  },
+  "active_bytes_per_token": {
+   "was": "DESIGN_EXPECTED published as 'active_bytes_per_token'",
+   "now": "ARTIFACT_PHYSICAL_active_bytes_per_token",
+   "derivation": "payload_bytes_on_disk - payload_bytes_by_role['embedding']"
+  },
+  "dram_bytes_per_token": {
+   "was": "ARTIFACT_PHYSICAL_dram_bytes_per_token (perf_addendum.py) and 'dram_bytes_per_token' (metric_audit.py)",
+   "now": "DESIGN_EXPECTED_dram_bytes_per_token",
+   "renamed_not_measured": true,
+   "blocking_gate": {
+    "metric": "dram_bytes_per_token",
+    "why_unmeasurable_here": "no userspace DRAM traffic counter is reachable on this box. powermetrics requires root, and Metal memory counters require MTLCounterSampleBuffer instrumentation inside crates/hawking-core, which is a runtime code change and outside this lane.",
+    "probe_command": "powermetrics --samplers gpu_power -n 1 -i 200",
+    "probe_exit_code": 1,
+    "probe_observed": "powermetrics must be invoked as the superuser",
+    "what_is_published_instead": "an UPPER BOUND computed from artifact bytes (one full read of every non-embedding organ per decoded token, assumed-zero inter-token reuse). The bound moves with the artifact; the reuse assumption is the part that is unmeasured, and it is a design assumption, so the figure is published under DESIGN_EXPECTED_dram_bytes_per_token."
+   }
+  }
+ },
+ "frozen_design_evidence": {
+  "bodies": {
+   "clean-2.60": {
+    "payload_bytes": 8731093292,
+    "DESIGN_EXPECTED_active_bytes_per_token": 8234330016.0,
+    "DESIGN_EXPECTED_active_ebpw_per_token": 2.4492357186951987,
+    "ARTIFACT_PHYSICAL_active_bytes_per_token": 8234453050,
+    "ARTIFACT_PHYSICAL_active_ebpw_per_token": 2.449272,
+    "role_split_reconciles_with_disk": true
+   },
+   "variantA-2.98": {
+    "payload_bytes": 10019612956,
+    "DESIGN_EXPECTED_active_bytes_per_token": 8234330016.0,
+    "DESIGN_EXPECTED_active_ebpw_per_token": 2.4492357186951987,
+    "ARTIFACT_PHYSICAL_active_bytes_per_token": 9344182314,
+    "ARTIFACT_PHYSICAL_active_ebpw_per_token": 2.779352,
+    "role_split_reconciles_with_disk": true
+   }
+  },
+  "payload_bytes_differ": true,
+  "design_constant_identical_across_both": true,
+  "physical_figures_differ_by_rel": 0.11876151670728201,
+  "reading": "the two bodies differ in payload bytes, the ARTIFACT_PHYSICAL active figure differs with them, and the MIX_REPORT design figure is bit-identical across both. That is the frozen-constant defect observed directly rather than recalled from a prior receipt."
+ },
+ "negative_control": [
+  {
+   "name": "C_genome_literal_into_complete_ebpw",
+   "defect_injected": "route a genome literal into the ARTIFACT_PHYSICAL complete_ebpw field",
+   "patch": {
+    "file": "tools/odyssey/metric_audit.py",
+    "old": "    return 8.0 * total / PARENT_PARAMS, total\n",
+    "new": "    _g = json.load(open(Path(root) / \"MIX_REPORT.json\"))[\"genome\"][\"mlp\"][\"gemv_storage_bpw\"]\n    return float(_g), total\n"
+   },
+   "target": {
+    "kind": "canary",
+    "canary": "C_genome_only_change"
+   },
+   "exit_code": 1,
+   "observed_stdout": [
+    "audit: 17 metrics (4 design / 7 physical / 6 runtime)",
+    "  still frozen and flagged: []",
+    "  FAIL  A_add_bytes_raises_physical_ebpw",
+    "  FAIL  B_remove_bytes_lowers_physical_ebpw",
+    "  FAIL  C_genome_only_change_does_not_move_physical_ebpw",
+    "  FAIL  D_artifact_only_change_moves_physical_and_surfaces_mismatch",
+    "  PASS  E_runtime_fallback_is_exposed_by_runtime_identity",
+    "canaries 1/5  restored=True",
+    "audit pass=True"
+   ],
+   "observed_canary_row": {
+    "canary": "C_genome_only_change_does_not_move_physical_ebpw",
+    "mutation": "genome.mlp.gemv_storage_bpw 2.25 -> 99.0, codec -> fictional",
+    "before": 2.25,
+    "after": 99.0,
+    "active_before": 8234453050,
+    "active_after": 8234453050,
+    "fields_covered": [
+     "complete_ebpw",
+     "active_bytes_per_token",
+     "active_ebpw_per_token"
+    ],
+    "passed": false
+   },
+   "target_canary_passed": false,
+   "watched_failing": true,
+   "other_canaries_still_passing": [
+    "E_runtime_fallback_is_exposed_by_runtime_identity"
+   ],
+   "clone_restored_under_the_defect": true
+  },
+  {
+   "name": "C_genome_literal_into_active_bytes",
+   "defect_injected": "scale the newly-derived ARTIFACT_PHYSICAL active bytes by a genome literal. On an unmutated artifact the factor is 1.0, so this defect is INVISIBLE to canaries A, B and D -- only C can see it",
+   "patch": {
+    "file": "tools/odyssey/metric_audit.py",
+    "old": "    active = disk_total - embed\n",
+    "new": "    active = int(disk_total * m[\"genome\"][\"mlp\"][\"gemv_storage_bpw\"] / 2.25) - embed\n"
+   },
+   "target": {
+    "kind": "canary",
+    "canary": "C_genome_only_change"
+   },
+   "exit_code": 1,
+   "observed_stdout": [
+    "audit: 17 metrics (4 design / 7 physical / 6 runtime)",
+    "  still frozen and flagged: []",
+    "  PASS  A_add_bytes_raises_physical_ebpw",
+    "  PASS  B_remove_bytes_lowers_physical_ebpw",
+    "  FAIL  C_genome_only_change_does_not_move_physical_ebpw",
+    "  PASS  D_artifact_only_change_moves_physical_and_surfaces_mismatch",
+    "  PASS  E_runtime_fallback_is_exposed_by_runtime_identity",
+    "canaries 4/5  restored=True",
+    "audit pass=True"
+   ],
+   "observed_canary_row": {
+    "canary": "C_genome_only_change_does_not_move_physical_ebpw",
+    "mutation": "genome.mlp.gemv_storage_bpw 2.25 -> 99.0, codec -> fictional",
+    "before": 2.5969939888824647,
+    "after": 2.5969939888824647,
+    "active_before": 8234453050,
+    "active_after": 383671464606,
+    "fields_covered": [
+     "complete_ebpw",
+     "active_bytes_per_token",
+     "active_ebpw_per_token"
+    ],
+    "passed": false
+   },
+   "target_canary_passed": false,
+   "watched_failing": true,
+   "other_canaries_still_passing": [
+    "A_add_bytes_raises_physical_ebpw",
+    "B_remove_bytes_lowers_physical_ebpw",
+    "D_artifact_only_change_moves_physical_and_surfaces_mismatch",
+    "E_runtime_fallback_is_exposed_by_runtime_identity"
+   ],
+   "clone_restored_under_the_defect": true
+  },
+  {
+   "name": "A_accountant_stops_counting_a_codec",
+   "defect_injected": "drop .f32v2 from the payload suffix set, so bytes really on disk stop reaching the physical total",
+   "patch": {
+    "file": "tools/odyssey/metric_audit.py",
+    "old": "        if f.is_file() and f.suffix in PAYLOAD_SUFFIXES:\n",
+    "new": "        if f.is_file() and f.suffix in tuple(\n                s for s in PAYLOAD_SUFFIXES if s != \".f32v2\"):\n"
+   },
+   "target": {
+    "kind": "canary",
+    "canary": "A_add_bytes"
+   },
+   "exit_code": 1,
+   "observed_stdout": [
+    "audit: 17 metrics (4 design / 7 physical / 6 runtime)",
+    "  still frozen and flagged: []",
+    "  FAIL  A_add_bytes_raises_physical_ebpw",
+    "  PASS  B_remove_bytes_lowers_physical_ebpw",
+    "  PASS  C_genome_only_change_does_not_move_physical_ebpw",
+    "  PASS  D_artifact_only_change_moves_physical_and_surfaces_mismatch",
+    "  PASS  E_runtime_fallback_is_exposed_by_runtime_identity",
+    "canaries 4/5  restored=True",
+    "audit pass=True"
+   ],
+   "observed_canary_row": {
+    "canary": "A_add_bytes_raises_physical_ebpw",
+    "bytes_added": 67108864,
+    "before": 2.593845612735978,
+    "after": 2.593845612735978,
+    "expected_after": 2.6138066085219718,
+    "exact": false,
+    "active_before": 8223868210,
+    "active_after": 8223868210,
+    "active_expected_after": 8290977074,
+    "active_exact": false,
+    "passed": false
+   },
+   "target_canary_passed": false,
+   "watched_failing": true,
+   "other_canaries_still_passing": [
+    "B_remove_bytes_lowers_physical_ebpw",
+    "C_genome_only_change_does_not_move_physical_ebpw",
+    "D_artifact_only_change_moves_physical_and_surfaces_mismatch",
+    "E_runtime_fallback_is_exposed_by_runtime_identity"
+   ],
+   "clone_restored_under_the_defect": true
+  },
+  {
+   "name": "D_design_crosscheck_silently_tracks_physical",
+   "defect_injected": "make the DESIGN cross-check recompute itself from bytes, so a design/physical divergence can never surface",
+   "patch": {
+    "file": "tools/odyssey/metric_audit.py",
+    "old": "    return json.load(open(m)).get(\"complete_ebpw\")\n",
+    "new": "    return physical_ebpw(root)[0]\n"
+   },
+   "target": {
+    "kind": "canary",
+    "canary": "D_artifact_only_change"
+   },
+   "exit_code": 1,
+   "observed_stdout": [
+    "audit: 17 metrics (4 design / 7 physical / 6 runtime)",
+    "  still frozen and flagged: []",
+    "  PASS  A_add_bytes_raises_physical_ebpw",
+    "  PASS  B_remove_bytes_lowers_physical_ebpw",
+    "  PASS  C_genome_only_change_does_not_move_physical_ebpw",
+    "  FAIL  D_artifact_only_change_moves_physical_and_surfaces_mismatch",
+    "  PASS  E_runtime_fallback_is_exposed_by_runtime_identity",
+    "canaries 4/5  restored=True",
+    "audit pass=True"
+   ],
+   "observed_canary_row": {
+    "canary": "D_artifact_only_change_moves_physical_and_surfaces_mismatch",
+    "bytes_added_to_segment": 33554432,
+    "physical_before": 2.5969939888824647,
+    "physical_after": 2.6069744867754614,
+    "active_before": 8234453050,
+    "active_after": 8268007482,
+    "design_unchanged": 2.6069744867754614,
+    "design_equals_original": false,
+    "mismatch_surfaced": false,
+    "passed": false
+   },
+   "target_canary_passed": false,
+   "watched_failing": true,
+   "other_canaries_still_passing": [
+    "A_add_bytes_raises_physical_ebpw",
+    "B_remove_bytes_lowers_physical_ebpw",
+    "C_genome_only_change_does_not_move_physical_ebpw",
+    "E_runtime_fallback_is_exposed_by_runtime_identity"
+   ],
+   "clone_restored_under_the_defect": true
+  },
+  {
+   "name": "NS_design_constant_republished_under_a_physical_name",
+   "defect_injected": "publish the DESIGN_EXPECTED dram figure under the bare physical name 'dram_bytes_per_token' again",
+   "patch": {
+    "file": "tools/odyssey/metric_audit.py",
+    "old": "        cls(\"DESIGN_EXPECTED_dram_bytes_per_token\", \"DESIGN_EXPECTED_dram_bytes_per_token\",\n",
+    "new": "        cls(\"dram_bytes_per_token\", \"DESIGN_EXPECTED_dram_bytes_per_token\",\n"
+   },
+   "target": {
+    "kind": "audit"
+   },
+   "exit_code": 1,
+   "observed_stdout": [
+    "audit: 17 metrics (4 design / 7 physical / 6 runtime)",
+    "  still frozen and flagged: ['dram_bytes_per_token']",
+    "  PASS  A_add_bytes_raises_physical_ebpw",
+    "  PASS  B_remove_bytes_lowers_physical_ebpw",
+    "  PASS  C_genome_only_change_does_not_move_physical_ebpw",
+    "  PASS  D_artifact_only_change_moves_physical_and_surfaces_mismatch",
+    "  PASS  E_runtime_fallback_is_exposed_by_runtime_identity",
+    "canaries 5/5  restored=True",
+    "audit pass=False"
+   ],
+   "observed_still_frozen_and_flagged": [
+    "dram_bytes_per_token"
+   ],
+   "observed_audit_pass": false,
+   "watched_failing": true
+  }
+ ],
+ "restored": {
+  "exit_code": 0,
+  "observed_stdout": [
+   "audit: 17 metrics (4 design / 7 physical / 6 runtime)",
+   "  still frozen and flagged: []",
+   "  PASS  A_add_bytes_raises_physical_ebpw",
+   "  PASS  B_remove_bytes_lowers_physical_ebpw",
+   "  PASS  C_genome_only_change_does_not_move_physical_ebpw",
+   "  PASS  D_artifact_only_change_moves_physical_and_surfaces_mismatch",
+   "  PASS  E_runtime_fallback_is_exposed_by_runtime_identity",
+   "canaries 5/5  restored=True",
+   "audit pass=True"
+  ],
+  "all_canaries_pass": true,
+  "still_frozen_and_flagged": [],
+  "audit_pass": true,
+  "clone_restored_to_baseline": true
+ },
+ "pass": true,
+ "claim_boundary": [
+  "This does NOT measure DRAM traffic. No userspace DRAM counter is reachable on this box (powermetrics requires root), so dram_bytes_per_token is a modelled upper bound that was RENAMED into DESIGN_EXPECTED_*, not measured.",
+  "This does NOT prove the assumed-zero inter-token reuse model is correct. It proves only that the assumption is now labelled as an assumption.",
+  "The ACTIVE figures are anchored on bytes on disk, but the organ ROLE split is read from MIX_REPORT.payload_bytes_by_role. If the packer mislabels a role, the split is wrong and only the reconciliation flag would show it.",
+  "The 'one whole read per organ per token' rule behind active bytes is a dense-body assumption. It is not verified against runtime memory traffic.",
+  "Canary E still does not INDUCE a runtime fallback; it verifies the channel exists. That limit is unchanged by this lane.",
+  "RUNTIME_MEASURED_model_reachable_roof is measured TIME over MODELLED bytes. Its numerator is the design bound above, so it inherits that assumption. It is flagged in the audit rather than renamed, because renaming it would break tools/odyssey/pareto_archive.py, which is outside this lane's scope.",
+  "Only PHYSICAL_METRIC_AUDIT / PHYSICAL_METRIC_CANARIES were regenerated. receipts/headless/QWEN_PERFORMANCE_ADDENDUM.json still carries the old ARTIFACT_PHYSICAL_dram_bytes_per_token key; the source that writes it is fixed, but that receipt is outside this lane's permitted scope and must be regenerated by re-running perf_addendum.py.",
+  "Negative controls patch a COPY of metric_audit.py in a temp directory. They prove the CHECKS bite; they do not prove the checks are exhaustive."
+ ]
+}

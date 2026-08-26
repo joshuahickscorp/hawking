@@ -523,5 +523,7 @@
     }
    ]
   }
- }
+ },
+ "identity_sufficient": false,
+ "identity_verdict": "UNIDENTIFIED (G073, amended 2026-08-26): this receipt records target='/Users/scammermike/models/qwen3.8-27b-abliterated-mlx-huihui-4bit' and label='mlx-4bit' and carries NO artifact hash, NO executable-closure hash and NO chat-template field. The score stands as a MEASUREMENT; what is NOT established is WHICH BODY earned it. It must not be compared against another row -- G067 measured the same body at 0/43 and 14/43 across two chat-template arms, and no row here records its arm. tools/headless/capability_suite.py now refuses such a receipt."
 }

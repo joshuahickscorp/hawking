@@ -1,0 +1,69 @@
+{
+ "schema": "hawking.headless.composition_isolation.v1",
+ "generated_at": "2026-08-25T02:53:51Z",
+ "generated_by": "tools/odyssey/composition_isolation.py",
+ "obligation": "G004 follow-on \u2014 which representation change broke whole-model capability",
+ "git_head": "eb1494112b61953122262e311cc9243dbd44952e",
+ "hand_authored": false,
+ "variant": {
+  "mlp": "q2f_g64 2.25 bpw (no per-group bias)",
+  "held_at_q4_incumbent": [
+   "deltanet",
+   "attention_gqa",
+   "embedding",
+   "output"
+  ]
+ },
+ "artifact_root": "/Users/scammermike/noetic/VARIANT_A_MLP_ONLY",
+ "build": {
+  "complete_ebpw": 2.5969567265364937,
+  "n_tensors": 755,
+  "n_hardlink": 353,
+  "wall_s": 4215.9,
+  "storage_bpw": null
+ },
+ "capability_probe": {
+  "probes": [
+   {
+    "probe": "math",
+    "expect": "21",
+    "exit_code": 0,
+    "n_new_tokens": 3,
+    "unique_ratio": 1.0,
+    "longest_identical_run": 1,
+    "closed_think": true,
+    "contains_expected": false,
+    "newline_only": false,
+    "text_head": "\n\n</think>"
+   },
+   {
+    "probe": "code",
+    "expect": "```python",
+    "exit_code": 0,
+    "n_new_tokens": 128,
+    "unique_ratio": 0.516,
+    "longest_identical_run": 1,
+    "closed_think": true,
+    "contains_expected": true,
+    "newline_only": false,
+    "text_head": "The user wants a Python function that revers a string.\nThe constraint is to reply with only a Python code block.\n\nI can use a simple slice to reverse the string, like `s[::-1]`, or I can use a loop.\nA"
+   },
+   {
+    "probe": "fact",
+    "expect": "Paris",
+    "exit_code": 0,
+    "n_new_tokens": 39,
+    "unique_ratio": 0.718,
+    "longest_identical_run": 1,
+    "closed_think": true,
+    "contains_expected": true,
+    "newline_only": false,
+    "text_head": "The user is asking for the capital of France and wants the answer to be just the city name.\nThe capital of France is Paris.\nI will output \"Paris\".\n</think>\n"
+   }
+  ],
+  "n_passed": 2,
+  "n_probes": 3,
+  "coherent": false
+ },
+ "pass": false
+}

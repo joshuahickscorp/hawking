@@ -1,0 +1,306 @@
+{
+ "schema": "hawking.headless.capability_contract.v1",
+ "generated_at": "2026-08-25T05:03:17Z",
+ "generated_by": "tools/headless/capability_contract.py",
+ "obligation": "G004 \u2014 QWEN_CAPABILITY_QUALIFICATION (directive \u00a711)",
+ "git_head": "eb1494112b61953122262e311cc9243dbd44952e",
+ "hand_authored": false,
+ "threshold_rule": {
+  "basis": "the artifact production runs today, llama.cpp Q5_K",
+  "rule": "per-axis rate >= incumbent rate - 0.1",
+  "why_not_the_candidate_s_own_score": "a threshold read off the candidate cannot fail, which is the whole point of setting it against the incumbent instead",
+  "tolerance": 0.1
+ },
+ "scoring": "every item scores through a deterministic predicate over the reply text \u2014 exact string, parsed JSON, compiled AST. No model grades any model, because that would make the gate inherit the unreliability it exists to detect.",
+ "axes": [
+  "coding",
+  "hygiene",
+  "knowledge",
+  "mutation",
+  "reasoning",
+  "self_correction",
+  "structured_output"
+ ],
+ "substantive_axes": [
+  "coding",
+  "knowledge",
+  "mutation",
+  "reasoning",
+  "self_correction",
+  "structured_output"
+ ],
+ "vacuous_if_empty": [
+  "hygiene"
+ ],
+ "vacuous_axis_finding": "the hygiene axis is no-think-leak, a must_not_contain('</think>') predicate, and the 2.5970-EBPW body passed it 3/3 for a reason worth stating exactly: that body NEVER EMITS </think>. The chat template ends the prompt with an open <think>, so a generation that never closes it never left the reasoning block and never produced an answer -- and a 'do not leak your thinking' check cannot fail on a model that never finishes thinking. Two fixes: an empty reply now fails the predicate, and an unterminated think block is scored as no reply at all rather than having its raw reasoning prose graded as if it were the answer.",
+ "token_budget_fairness": {
+  "issue": "a reasoning backend spends budget on the <think> block before it writes a word of the answer, so an identical max_tokens measures BUDGET rather than capability",
+  "evidence_it_was_binding": "the sealed body failed code-compiles with 'unterminated string literal' at exactly 512 tokens and passed at 544 when given room",
+  "evidence_it_was_binding_only_on_one_side": {
+   "llamacpp_q5k_max_completion_tokens": 104,
+   "mlx_4bit_max_completion_tokens": 106,
+   "cap": 512,
+   "reading": "neither baseline came close to the cap, so raising the noetic budget restores the comparison rather than loosening it"
+  },
+  "fix": "the noetic backend multiplies each item's max_tokens by 3 and records hit_budget_cap per call"
+ },
+ "harness_artifact_corrected": "the noetic backend first returned the raw generation including the <think> preamble, while the llama and mlx baselines are scored on post-</think> content. Stripping it moved the sealed body from 19/43 to 27/43. The earlier 14/43 figure was worse still, measured with the no-think template, which on this model makes the parent emit <|im_end|> immediately and score zero everywhere.",
+ "results": [
+  {
+   "run": "CAPABILITY_llamacpp-q5k",
+   "label": "llama.cpp Q5_K",
+   "density": "~5.5 bpw",
+   "role": "incumbent (production)",
+   "overall": {
+    "passed": 40,
+    "total": 43,
+    "rate": 0.9302
+   },
+   "substantive_axes_rate": 0.9167,
+   "per_axis": {
+    "coding": {
+     "rate": 1.0,
+     "threshold": 0.9,
+     "incumbent_rate": 1.0,
+     "meets": true
+    },
+    "hygiene": {
+     "rate": 1.0,
+     "threshold": 0.9,
+     "incumbent_rate": 1.0,
+     "meets": true
+    },
+    "knowledge": {
+     "rate": 1.0,
+     "threshold": 0.9,
+     "incumbent_rate": 1.0,
+     "meets": true
+    },
+    "mutation": {
+     "rate": 1.0,
+     "threshold": 0.9,
+     "incumbent_rate": 1.0,
+     "meets": true
+    },
+    "reasoning": {
+     "rate": 0.5,
+     "threshold": 0.4,
+     "incumbent_rate": 0.5,
+     "meets": true
+    },
+    "self_correction": {
+     "rate": 1.0,
+     "threshold": 0.9,
+     "incumbent_rate": 1.0,
+     "meets": true
+    },
+    "structured_output": {
+     "rate": 1.0,
+     "threshold": 0.9,
+     "incumbent_rate": 1.0,
+     "meets": true
+    }
+   },
+   "axes_below_threshold": [],
+   "meets_contract": true
+  },
+  {
+   "run": "CAPABILITY_mlx-4bit",
+   "label": "MLX 4bit",
+   "density": "~4.5 bpw",
+   "role": "candidate",
+   "overall": {
+    "passed": 35,
+    "total": 43,
+    "rate": 0.814
+   },
+   "substantive_axes_rate": 0.8612,
+   "per_axis": {
+    "coding": {
+     "rate": 1.0,
+     "threshold": 0.9,
+     "incumbent_rate": 1.0,
+     "meets": true
+    },
+    "hygiene": {
+     "rate": 1.0,
+     "threshold": 0.9,
+     "incumbent_rate": 1.0,
+     "meets": true
+    },
+    "knowledge": {
+     "rate": 1.0,
+     "threshold": 0.9,
+     "incumbent_rate": 1.0,
+     "meets": true
+    },
+    "mutation": {
+     "rate": 1.0,
+     "threshold": 0.9,
+     "incumbent_rate": 1.0,
+     "meets": true
+    },
+    "reasoning": {
+     "rate": 0.5,
+     "threshold": 0.4,
+     "incumbent_rate": 0.5,
+     "meets": true
+    },
+    "self_correction": {
+     "rate": 1.0,
+     "threshold": 0.9,
+     "incumbent_rate": 1.0,
+     "meets": true
+    },
+    "structured_output": {
+     "rate": 0.667,
+     "threshold": 0.9,
+     "incumbent_rate": 1.0,
+     "meets": false
+    }
+   },
+   "axes_below_threshold": [
+    "structured_output"
+   ],
+   "meets_contract": false
+  },
+  {
+   "run": "CAPABILITY_noetic-sealed-3.14",
+   "label": "noetic sealed",
+   "density": "3.1393 EBPW",
+   "role": "candidate",
+   "overall": {
+    "passed": 30,
+    "total": 43,
+    "rate": 0.6977
+   },
+   "substantive_axes_rate": 0.8055,
+   "per_axis": {
+    "coding": {
+     "rate": 1.0,
+     "threshold": 0.9,
+     "incumbent_rate": 1.0,
+     "meets": true
+    },
+    "hygiene": {
+     "rate": 1.0,
+     "threshold": 0.9,
+     "incumbent_rate": 1.0,
+     "meets": true
+    },
+    "knowledge": {
+     "rate": 1.0,
+     "threshold": 0.9,
+     "incumbent_rate": 1.0,
+     "meets": true
+    },
+    "mutation": {
+     "rate": 1.0,
+     "threshold": 0.9,
+     "incumbent_rate": 1.0,
+     "meets": true
+    },
+    "reasoning": {
+     "rate": 0.5,
+     "threshold": 0.4,
+     "incumbent_rate": 0.5,
+     "meets": true
+    },
+    "self_correction": {
+     "rate": 1.0,
+     "threshold": 0.9,
+     "incumbent_rate": 1.0,
+     "meets": true
+    },
+    "structured_output": {
+     "rate": 0.333,
+     "threshold": 0.9,
+     "incumbent_rate": 1.0,
+     "meets": false
+    }
+   },
+   "axes_below_threshold": [
+    "structured_output"
+   ],
+   "meets_contract": false
+  },
+  {
+   "run": "CAPABILITY_noetic-clean-2.60",
+   "label": "noetic clean rebuild",
+   "density": "2.5970 EBPW",
+   "role": "candidate",
+   "overall": {
+    "passed": 0,
+    "total": 43,
+    "rate": 0.0
+   },
+   "substantive_axes_rate": 0.0,
+   "per_axis": {
+    "coding": {
+     "rate": 0.0,
+     "threshold": 0.9,
+     "incumbent_rate": 1.0,
+     "meets": false
+    },
+    "hygiene": {
+     "rate": 0.0,
+     "threshold": 0.9,
+     "incumbent_rate": 1.0,
+     "meets": false
+    },
+    "knowledge": {
+     "rate": 0.0,
+     "threshold": 0.9,
+     "incumbent_rate": 1.0,
+     "meets": false
+    },
+    "mutation": {
+     "rate": 0.0,
+     "threshold": 0.9,
+     "incumbent_rate": 1.0,
+     "meets": false
+    },
+    "reasoning": {
+     "rate": 0.0,
+     "threshold": 0.4,
+     "incumbent_rate": 0.5,
+     "meets": false
+    },
+    "self_correction": {
+     "rate": 0.0,
+     "threshold": 0.9,
+     "incumbent_rate": 1.0,
+     "meets": false
+    },
+    "structured_output": {
+     "rate": 0.0,
+     "threshold": 0.9,
+     "incumbent_rate": 1.0,
+     "meets": false
+    }
+   },
+   "axes_below_threshold": [
+    "coding",
+    "hygiene",
+    "knowledge",
+    "mutation",
+    "reasoning",
+    "self_correction",
+    "structured_output"
+   ],
+   "meets_contract": false
+  }
+ ],
+ "verdict": {
+  "meets_contract": [
+   "llama.cpp Q5_K"
+  ],
+  "fails_contract": [
+   "MLX 4bit",
+   "noetic sealed",
+   "noetic clean rebuild"
+  ]
+ },
+ "qualification_was_performed": true,
+ "pass": true
+}

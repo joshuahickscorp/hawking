@@ -1,0 +1,58 @@
+{
+ "schema": "hawking.headless.capability_identity.v1",
+ "generated_at": "2026-08-26T03:33:35Z",
+ "generated_by": "tools/headless/capability_suite.py artifact_identity()",
+ "hand_authored": false,
+ "obligation": "G073 (S029), G071 (the seal S027 \u00a713 requires)",
+ "git_head": "74b39043947feeafbae88be221d5e02c22e5b46f",
+ "headline": "THE DOCTOR GATE GRADED TEN BODIES AND COULD NAME NONE OF THEM: EVERY NOETIC RECEIPT RECORDED THE LLAMA ENDPOINT DEFAULT FOR A BODY LOADED FROM DISK",
+ "the_defect": {
+  "line": "target = args.model_path or args.endpoint",
+  "why_it_lied": "the noetic backend loads from --artifact-root and sets NEITHER model_path NOR endpoint, so the expression fell through to the argparse DEFAULT 'http://127.0.0.1:8080' -- a URL naming a server that was never in the path. This is worse than an omission: the field was POPULATED AND WRONG, which reads as provenance.",
+  "found_by": "answering 'was doctor used' by reading the receipts instead of the leaderboard"
+ },
+ "what_was_missing": [
+  "artifact hash or inventory",
+  "executable-closure hash",
+  "binary hash",
+  "tokenizer hash",
+  "chat-template hash",
+  "the chat-template ARM"
+ ],
+ "why_the_arm_is_the_sharp_one": "G067 measured the SAME BODY, ZERO BYTES CHANGED, at 0/43 with an open <think> and 14/43 with enable_thinking=false. The suite HAS a --no-think flag, so the arm was known at runtime and simply never written down. Every leaderboard row is therefore incomparable to every other on the one variable measured to be worth 14 points.",
+ "leaderboard_now_marked_UNIDENTIFIED": {
+  "llamacpp-q5k": 40,
+  "mlx-4bit": 35,
+  "noetic-sealed-3.14": 30,
+  "noetic-sealed-3.14-sysprompt": 27,
+  "noetic-variantB-2.76-sysprompt": 27,
+  "noetic-variantB-2.76": 24,
+  "noetic-clean-rebuild": 14,
+  "ARM_D_NOTHINK": 14,
+  "noetic-variantA-2.98": 0,
+  "noetic-clean-2.60": 0,
+  "ARM_A_THINK": 0
+ },
+ "the_scores_are_not_retracted": "each number is a real measurement of a real run. What is withdrawn is the ATTRIBUTION -- which body earned it -- and therefore every cross-row comparison, including the density-vs-capability reading I gave one block earlier.",
+ "shipped": {
+  "artifact_identity()": "artifact root, file count, total bytes, inventory sha, binary sha, tokenizer sha, chat_template sha, no_think, chat_template_arm",
+  "identity_is_sufficient()": "REFUSES a receipt that cannot name its body; a served llama endpoint is refused BY NAME because a port does not disclose an artifact",
+  "printed": "the arm is printed with every run, and UNIDENTIFIED is printed when it is"
+ },
+ "the_honest_limit_kept_visible": "weight shards are keyed by (name, size), NOT content-hashed: a full hash of a multi-GB body costs minutes and this runs before every suite. A SAME-LENGTH EDIT IS INVISIBLE, identity_is_content_hash is False, and a test PINS that blindness so the field cannot be read as stronger than it is. The binary, tokenizer and chat template ARE content-hashed because they are small.",
+ "tests": {
+  "count": 6,
+  "file": "tools/headless/test_capability_identity.py",
+  "both_directions": "a served endpoint is REFUSED and a noetic run is ACCEPTED, because a check that refuses everything is not a safer check -- it is a check that has stopped measuring",
+  "discriminates": "a different-size body yields a different inventory sha and byte count",
+  "blind_where_stated": "a same-length edit yields the SAME sha, and the receipt says so"
+ },
+ "claim_boundary": [
+  "NO BODY WAS RE-SCORED. Re-scoring needs a live server, the artifacts and a quiesced machine; the ModelLake fill is operator-prioritised and three of the five noetic artifacts are in reaped worktrees. What is fixed is that the NEXT receipt cannot repeat it.",
+  "The existing rows are AMENDED IN PLACE with the verdict rather than deleted -- the score is evidence, the attribution was not.",
+  "Identity is recorded, NOT verified against a registry: nothing yet checks that a recorded hash matches a body anyone else can find."
+ ],
+ "pass": true,
+ "a_hazard_found_while_verifying_this": "Running the full `pytest tools/headless/` executes test_genome_libraries.py, whose producer OVERWRITES receipts/headless/REPRESENTATION_LIBRARY.json and KERNEL_LIBRARY.json with a v1 form at the canonical v2 paths. test_odyssey_gates.py::test_canonical_libraries_are_not_silently_downgraded caught it and its docstring PREDICTS it in those words. Restored from git; the message's suggested fix (rerun representation_library.py) ALSO emits v1, so the v2 producer is a third file and the remediation line is stale. NOT MINE and NOT FIXED HERE -- recorded because a test suite with a destructive side effect on a canonical artifact is a hazard for anyone who runs it, and it is invisible unless you diff the receipts afterwards.",
+ "suite_delta": "24 failures in the three affected files BEFORE this change and 24 after, measured by stashing and re-running rather than asserted. The 39 failures in a full tools/headless/ run are PRE-EXISTING and untouched by this work."
+}

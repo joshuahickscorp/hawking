@@ -118,8 +118,16 @@
    "2048": "36.7%"
   },
   "the_finding_is_the_2048_collapse": "Reaching 91-98% of MLX at 512 and 1024 says the simdgroup matrix units were indeed most of the gap at those sizes. But at 2048 MLX jumps to 12799 GFLOP/s while this reaches 4703, so MLX's advantage AT SCALE is NOT simdgroup ops -- it already had those. It is hierarchical blocking: multiple simdgroups per threadgroup, threadgroup-level staging and reuse that this kernel has none of. One 8x8 tile per simdgroup streams A and B straight from device memory every step, so at 2048 it is bandwidth-bound on operands MLX reuses from faster storage.",
-  "both_strategies_kept": "simdgroup wins on speed everywhere measured but REQUIRES every dimension to be a multiple of 8 and refuses otherwise rather than reading out of bounds. tiled has no shape constraint. Deleting the loser would have removed the only strategy that handles a 60x60 matmul."
+  "both_strategies_kept": "simdgroup wins on speed everywhere measured but REQUIRES every dimension to be a multiple of 8 and refuses otherwise rather than reading out of bounds. tiled has no shape constraint. Deleting the loser would have removed the only strategy that handles a 60x60 matmul. [AMENDED 2026-08-25 -- THE SECOND HALF OF THIS IS REFUTED. The 60x60x60 cited here as tiled's own justification was WRONG BY 3.84 when it was finally run: tiled's LAUNCH under-dispatched whenever m was not a multiple of the tile, so the strategy this receipt kept for odd shapes was silently incorrect at exactly those shapes. The KERNEL was always guarded and always could; the launch never asked it. Every GEMM measured in this program was a square multiple of 16, so the defect could not appear here. Fixed by rounding the grid up to whole threadgroups; all 7 shapes correct after, 60x60x60 included. The conclusion -- keep both strategies -- SURVIVES; the evidence offered for it did not. See ACCELERATOR_GRAPH_COMPOSITION.json.]"
  },
  "claim_boundary": "AIR now produces a simdgroup-matrix matmul reaching 97.6% of MLX at 512 and 91.3% at 1024 -- but only 36.7% at 2048, and the 2048 number is the honest headline because it is the size that matters for real work. MLX REMAINS THE QUALIFIED WINNER at every size. f32 only, square-ish shapes only, dimensions must be multiples of 8, no batching, no transpose, no mixed precision. Nothing here was run inside a model.",
- "pass": true
+ "pass": true,
+ "amendments": [
+  {
+   "date": "2026-08-25",
+   "field": "result.both_strategies_kept",
+   "kind": "CLAIM REFUTED BY ITS OWN CITED EXAMPLE, CONCLUSION UNCHANGED",
+   "found_by": "composing a gated MLP block, not by auditing the matmul -- the block was wrong at T=8 and right at T=64 and T=96, and T=8 is the only one where m < tile"
+  }
+ ]
 }

@@ -1,0 +1,175 @@
+{
+ "schema": "hawking.headless.matched_bits_probe.v1",
+ "generated_at": "2026-08-25T04:18:15Z",
+ "generated_by": "tools/odyssey/matched_bits_probe.py",
+ "obligation": "G028 extension \u2014 can LAW-FITTED-AFFINE-BEATS-RTN reach ARCHITECTURE_GENERAL (directive \u00a791)",
+ "git_head": "eb1494112b61953122262e311cc9243dbd44952e",
+ "hand_authored": false,
+ "specimen": {
+  "label": "Falcon-H1-7B-Instruct",
+  "model_dir": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+  "architecture_family": "falcon_h1 (hybrid mamba+attention, tiiuae)",
+  "model_type": "falcon_h1",
+  "mlp_resolved_as": "feed_forward.{gate_proj,up_proj,down_proj}"
+ },
+ "activations": {
+  "real_not_synthetic": true,
+  "n_tokens": 134,
+  "n_held_out": 67,
+  "exact_because": "layers 0..K-1 do not depend on any later layer, so truncation does not change their activations",
+  "all_layers_finite": true
+ },
+ "layer": 2,
+ "full_grid": {
+  "uniform_q4_g64": {
+   "candidate": "uniform_q4_g64",
+   "bpw": 4.25,
+   "held_out_rel_fro": 0.131545,
+   "weight_space_rel_fro": 0.11087
+  },
+  "uniform_q4_g128": {
+   "candidate": "uniform_q4_g128",
+   "bpw": 4.125,
+   "held_out_rel_fro": 0.145388,
+   "weight_space_rel_fro": 0.121766
+  },
+  "uniform_q3_g64": {
+   "candidate": "uniform_q3_g64",
+   "bpw": 3.25,
+   "held_out_rel_fro": 0.303963,
+   "weight_space_rel_fro": 0.258596
+  },
+  "uniform_q3_g128": {
+   "candidate": "uniform_q3_g128",
+   "bpw": 3.125,
+   "held_out_rel_fro": 0.334821,
+   "weight_space_rel_fro": 0.283841
+  },
+  "uniform_q2_g64": {
+   "candidate": "uniform_q2_g64",
+   "bpw": 2.25,
+   "held_out_rel_fro": 0.797759,
+   "weight_space_rel_fro": 0.722286
+  },
+  "affine_q4_g64": {
+   "candidate": "affine_q4_g64",
+   "bpw": 4.5,
+   "held_out_rel_fro": 0.101216,
+   "weight_space_rel_fro": 0.08562
+  },
+  "affine_q4_g128": {
+   "candidate": "affine_q4_g128",
+   "bpw": 4.25,
+   "held_out_rel_fro": 0.117203,
+   "weight_space_rel_fro": 0.096299
+  },
+  "affine_q3_g64": {
+   "candidate": "affine_q3_g64",
+   "bpw": 3.5,
+   "held_out_rel_fro": 0.210934,
+   "weight_space_rel_fro": 0.173907
+  },
+  "affine_q3_g128": {
+   "candidate": "affine_q3_g128",
+   "bpw": 3.25,
+   "held_out_rel_fro": 0.22911,
+   "weight_space_rel_fro": 0.188709
+  },
+  "affine_q2_g64": {
+   "candidate": "affine_q2_g64",
+   "bpw": 2.5,
+   "held_out_rel_fro": 0.414955,
+   "weight_space_rel_fro": 0.330605
+  },
+  "affine_q2_g128": {
+   "candidate": "affine_q2_g128",
+   "bpw": 2.25,
+   "held_out_rel_fro": 0.436429,
+   "weight_space_rel_fro": 0.341673
+  },
+  "ternary_g64": {
+   "candidate": "ternary_g64",
+   "bpw": 1.835,
+   "held_out_rel_fro": 0.577876,
+   "weight_space_rel_fro": 0.439685
+  },
+  "binary_g64": {
+   "candidate": "binary_g64",
+   "bpw": 1.25,
+   "held_out_rel_fro": 0.795103,
+   "weight_space_rel_fro": 0.605559
+  }
+ },
+ "matched_bits_tiers": [
+  {
+   "bpw": 2.25,
+   "seeded_family_candidate": "affine_q2_g128",
+   "seeded_family_rel_fro": 0.436429,
+   "generic_candidate": "uniform_q2_g64",
+   "generic_rel_fro": 0.797759,
+   "seeded_is_better": true,
+   "error_ratio_generic_over_seeded": 1.828
+  },
+  {
+   "bpw": 3.25,
+   "seeded_family_candidate": "affine_q3_g128",
+   "seeded_family_rel_fro": 0.22911,
+   "generic_candidate": "uniform_q3_g64",
+   "generic_rel_fro": 0.303963,
+   "seeded_is_better": true,
+   "error_ratio_generic_over_seeded": 1.327
+  },
+  {
+   "bpw": 4.25,
+   "seeded_family_candidate": "affine_q4_g128",
+   "seeded_family_rel_fro": 0.117203,
+   "generic_candidate": "uniform_q4_g64",
+   "generic_rel_fro": 0.131545,
+   "seeded_is_better": true,
+   "error_ratio_generic_over_seeded": 1.122
+  }
+ ],
+ "n_tiers": 3,
+ "n_tiers_seeded_wins": 3,
+ "law_holds_here": true,
+ "weight_space_vs_activations": {
+  "question": "does weight-space error rank candidates the same way held-out real activations do, on THIS architecture?",
+  "ranking_by_activations": [
+   "affine_q4_g64",
+   "affine_q4_g128",
+   "uniform_q4_g64",
+   "uniform_q4_g128",
+   "affine_q3_g64",
+   "affine_q3_g128",
+   "uniform_q3_g64",
+   "uniform_q3_g128",
+   "affine_q2_g64",
+   "affine_q2_g128",
+   "ternary_g64",
+   "binary_g64",
+   "uniform_q2_g64"
+  ],
+  "ranking_by_weight_space": [
+   "affine_q4_g64",
+   "affine_q4_g128",
+   "uniform_q4_g64",
+   "uniform_q4_g128",
+   "affine_q3_g64",
+   "affine_q3_g128",
+   "uniform_q3_g64",
+   "uniform_q3_g128",
+   "affine_q2_g64",
+   "affine_q2_g128",
+   "ternary_g64",
+   "binary_g64",
+   "uniform_q2_g64"
+  ],
+  "n_candidates_ranked_differently": 0,
+  "disagreements": [],
+  "matched_tier_winner_flips": [],
+  "orderings_identical": true,
+  "why_it_matters": "TR-METHOD-HELDOUT-ACTIVATIONS is sealed at FAMILY_TRANSFERRED because both prior measurements were Qwen. A disagreement here is a second architecture family for it."
+ },
+ "wall_s": 42.0,
+ "pass": true
+}

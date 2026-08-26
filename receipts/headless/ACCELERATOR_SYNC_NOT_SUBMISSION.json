@@ -1,0 +1,28 @@
+{
+ "experiment": "ACCEL-SUBMISSION-FLOOR-DECOMPOSITION",
+ "date": "2026-08-25",
+ "question": "Five receipts sighted a ~0.157-0.25 ms floor and every one AMORTISED it by batching. Batching requires the work to be known up front; autoregressive decode does not have that. So: is the floor a property of SUBMISSION or of WAITING? The two have opposite consequences.",
+ "prediction_written_first": "scratchpad/sync_floor_prediction.json -- P1 a graph-expressible serial chain costs ~11us/step not ~157; P2 a host-dependent loop pays the full floor per step, gap 5-8x; P3 therefore the floor argues against HOST-VISIBLE CONTROL FLOW, not against small kernels.",
+ "result": {
+  "K_steps": 16, "n": 16384, "reps": 200, "warmup": 40,
+  "serial_chain_one_eval": {"median_ms": 0.6572, "per_step_us": 41.1, "iqr_pct": 37.17},
+  "serial_chain_eval_each": {"median_ms": 4.0664, "per_step_us": 254.1, "iqr_pct": 38.71},
+  "host_dependent_branch": {"median_ms": 4.2778, "per_step_us": 267.4, "iqr_pct": 34.06},
+  "ratio_eval_each_over_one_eval": 6.19,
+  "ratio_host_dependent_over_one_eval": 6.51
+ },
+ "the_finding": "THE FLOOR IS WAITING, NOT SUBMITTING. A strictly SERIAL dependency chain -- every step needs the previous -- costs 41.1us per step when MLX can express the dependency in its own lazy graph, against 254.1us when the host blocks each step. Serial does NOT imply per-step sync, and five receipts' worth of 'batch it' was answering a narrower question than it appeared to.",
+ "the_sub_finding_that_matters_more_for_decode": "eval-each (254.1us) and a REAL host-dependent branch (267.4us) are 5.1% apart, INSIDE the noise -- INDISTINGUISHABLE. The data-dependent DECISION is free; the SYNCHRONISATION is the entire cost. So a decode loop is not expensive because it branches, it is expensive because the branch forces a host round trip.",
+ "predictions_graded": {
+  "P1_magnitude": "MISSED HIGH -- predicted ~11us/step from the AirGraph within-command-buffer constant, measured 41.1us, 3.7x above. The direction (far below the floor) holds; the constant did NOT reproduce and the contended machine is the obvious candidate, unverified.",
+  "P2": "CONFIRMED -- predicted a 5-8x gap, measured 6.19x and 6.51x, both inside the band. This is the FIRST prediction in a long run to land inside rather than above.",
+  "P3": "SUPPORTED by P1+P2 holding directionally, and it is a CONSEQUENCE not a measurement."
+ },
+ "claim_boundary": {
+  "noise": "ALL THREE ARMS carry 34-39% IQR, far ABOVE this program's 10% gate, because the operator's model-lake fill is deliberately saturating the machine. Admitted ONLY by margin-over-noise: 519% margin against 38.71% worst-arm noise = 13.4x, clearing the 5x hatch. THE DIRECTION IS CERTAIN, THE MAGNITUDES ARE NOT, and no per-step microsecond figure here may be quoted as a measured constant.",
+  "not_reproduced": "the ~11us within-command-buffer dispatch cost did NOT reproduce here (41.1us). Either contention or a different code path; not established which.",
+  "scope": "one elementwise chain, f32, 16 steps, one machine, INSTANCE. No model executed. This is the SHAPE of a decode dependency, not a decode.",
+  "what_it_does_not_show": "it does NOT show the round trip can be removed for a genuinely host-dependent workload -- it shows what that round trip COSTS. Keeping the decision on device (on-GPU sampling, on-GPU routing) is the implied lever and is NOT built or measured here."
+ },
+ "tests": "no kernel changed, no test count moves, no performance claim about any kernel moves"
+}

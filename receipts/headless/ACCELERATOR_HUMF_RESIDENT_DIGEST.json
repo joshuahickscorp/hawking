@@ -1,0 +1,85 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T14:43:30",
+ "experiment_class": "ACCEL-MEMORY",
+ "knowledge_level": "INSTANCE",
+ "git_head": "a7266715881f985f6f0d8857458f2cdbd0b35a5b",
+ "identities": {
+  "experiment": {
+   "id": "THE_DEVICE_DIGESTS_ITS_OWN_MEMORY",
+   "obligation": "G050",
+   "answers": "the blind spot three consecutive receipts named and none closed -- 'catching it needs a check that reads through THE SAME PATH THE COMPUTATION USES, meaning the DEVICE computing a digest of its own memory'"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "status": "ABSENT",
+   "reason": "MOCK external domain; no external GPU exists and \u00a721 forbids citing a simulated transport number as physical evidence"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "a fabric experiment; no model executed"
+  },
+  "representation": {
+   "name": "opaque bytes"
+  },
+  "kernel": {
+   "status": "ABSENT",
+   "reason": "nothing executed on the GPU"
+  },
+  "runtime": {
+   "python": "/usr/local/bin/python3"
+  },
+  "transport": {
+   "status": "SIMULATED",
+   "bandwidth_gb_s": 5.0,
+   "reason": "a knob, not a measurement"
+  }
+ },
+ "headline": "The device now digests its own memory through the path a KERNEL reads, and compute_skew -- which passed every previous version of the check -- is CAUGHT. But this is a NARROWING, not a closure, and the control proves it: a provider that digests its READ-BACK path exposes an identical API, answers, matches the source, and a kernel still reads different bytes.",
+ "WHAT_CLOSED": {
+  "before": "the integrity check compared the SOURCE with what copy_out RETURNS, so it validated THE ROUND TRIP and not the resident copy. On a real bridge copy_out and a kernel are not the same path.",
+  "after": "MockExternalMemoryProvider.digest_resident computes blake2b-128 over read_for_compute -- the same path a kernel uses -- and the fabric compares it against the source's identity digest before marking the copy CLEAN.",
+  "demonstrated": {
+   "honest_provider_with_compute_skew": "RAISES 'RESIDENT integrity check FAILED', destination out of valid_copies()",
+   "the_round_trip_check_PASSED_the_same_case": "so the two checks are independent, not two views of one; corrupt_next still fires on the round-trip check alone and the resident digest would never see it, pinned by its own test"
+  }
+ },
+ "WHY_IT_IS_A_NARROWING_AND_NOT_A_CLOSURE": {
+  "the_control": "ReadbackDigestProvider offers digest_resident, answers it, and returns a digest that MATCHES THE SOURCE -- because it digests copy_out. With compute_skew armed the transfer completes, the state is CLEAN, resident_verified is TRUE, and read_for_compute still returns different bytes.",
+  "what_that_establishes": "the check's strength is a property of THE DEVICE'S IMPLEMENTATION, not of the fabric's protocol. Two providers indistinguishable through the API give opposite guarantees. THE FABRIC CANNOT VERIFY THE CLAIM, so resident_digest_path is RECORDED rather than trusted and resident_verified is unreadable without it -- a test asserts True and 'readback' together on a copy a kernel would misread.",
+  "the_blind_spot_moved_rather_than_vanishing": "from 'copy_out is not a kernel' to 'the digest kernel may not be the compute kernel'. The second is narrower AND it is a stated device property somebody can ask a vendor about, where the first was an unconditional hole.",
+  "absence_is_not_failure": "a provider with no digest_resident gets resident_verified False and path None, and the transfer still succeeds -- absence of the capability is absence of evidence, and the two fields say which. Pinned by a test."
+ },
+ "THE_COST_ARGUMENT_IS_ARITHMETIC_NOT_A_MEASUREMENT": {
+  "the_structural_point": "a round-trip check must bring the WHOLE PAYLOAD back across the link; a resident digest brings back SIXTEEN BYTES.",
+  "worked_at_24_MiB": {
+   "return_leg_at_2_GB_s_ms": 12.583,
+   "return_leg_at_5_GB_s_ms": 5.033,
+   "return_leg_at_40_GB_s_ms": 0.629,
+   "sixteen_bytes_at_5_GB_s_ns": 3.2
+  },
+  "and_it_does_NOT_follow_that_the_resident_check_is_cheaper": "the device still has to digest the payload. The resident check wins iff THE DEVICE'S DIGEST THROUGHPUT EXCEEDS THE LINK BANDWIDTH -- transport saved is B/R, digest paid is B/D, so the condition is simply D > R.",
+  "using_the_only_digest_rates_this_program_has_MEASURED": "blake2b-128 at 1.387 GB/s (host, from ACCELERATOR_HUMF_IDENTITY.json) digests 24 MiB in 18.14 ms. A device digesting at THAT rate LOSES to the round trip by 1.44x on a 2 GB/s link, 3.60x at 5 GB/s and 28.84x at 40 GB/s. A device digesting at unified-memory bandwidth would take 0.043 ms and win ~118x at 5 GB/s -- BUT THAT RATE IS HYPOTHETICAL AND UNMEASURED HERE.",
+  "the_honest_caution": "blake2b is a SERIAL chain per block, so a naive device implementation does NOT reach memory bandwidth and the favourable branch is not automatic. What is established is the CONDITION D > R, not which side of it a real bridge lands on.",
+  "it_also_converges_with_the_identity_block": "that receipt measured a host re-hash costing MORE THAN THE MOVE and resolved it with identity_recheck_age. Moving the digest to the device attacks the blind spot AND the affordability problem with one change -- if D > R holds, which is exactly the thing not measured."
+ },
+ "an_artifact_of_the_mock_named_rather_than_papered_over": "in this mock the fabric learns the destination payload BY CALLING copy_out, so the return leg is not optional here and the transport saving is a statement about a REAL bridge where the destination is not read back at all. Saying that beats quoting a saving the mock does not actually realise.",
+ "shipped": [
+  "Humf._check_resident -- asks the destination provider to digest its own memory and refuses the transfer when it disagrees with the source identity",
+  "Materialization.resident_verified and .resident_digest_path -- the verdict and the provider's UNVERIFIABLE claim about which path produced it, kept together",
+  "MockExternalMemoryProvider.digest_resident over read_for_compute (declares 'compute')",
+  "ReadbackDigestProvider -- the control that passes on skewed memory through an identical API"
+ ],
+ "claim_boundary": [
+  "MOCK ONLY. No external GPU exists, every transport number is a knob, and what is proven is the STATE MACHINE and THE SCOPE OF THE CHECK -- no hardware property.",
+  "THE DEVICE-SIDE DIGEST RATE IS UNMEASURED, so the D > R condition is derived and its answer for any real bridge is not established.",
+  "STILL NOT MODELLED, unchanged: a provider that corrupts CONSISTENTLY IN BOTH DIRECTIONS so every digest agrees with itself, and any adversary who can recompute a crc32 or observe the sealed identity.",
+  "the resident check runs ON TRANSFER, so it is a boundary check like the others -- a scrub AFTER it still needs audit(), which the identity block built.",
+  "nothing timed on the GPU; no performance claim moves."
+ ],
+ "tests": "tools/accelerator/test_humf.py 59 passed (was 54, 49, 40, 35, 32, 24, 19, 12); 278 accelerator tests pass",
+ "pass": true
+}

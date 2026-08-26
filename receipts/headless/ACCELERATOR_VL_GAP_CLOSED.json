@@ -1,0 +1,23 @@
+{
+ "experiment_class": "ACCEL-ODYSSEY-PASS",
+ "date": "2026-08-25",
+ "obligations": [
+  "G048",
+  "G043"
+ ],
+ "era": "I",
+ "civilization": "I-E_ODYSSEY_I",
+ "headline": "FOUR OF FOUR NOW BUILD AND RUN, AND THE REPAIR IS NOT A LIBRARY PATCH",
+ "closes": "ACCELERATOR_RUNTIME_EXECUTES.json measured 3 of 4 and diagnosed the fourth exactly: qwen3_vl_moe.Model builds its language model as qwen3_moe.ModelArgs.from_dict(args.text_config), while tie_word_embeddings sits at the config's TOP LEVEL and is ABSENT from text_config, and qwen3_moe.ModelArgs requires it with no default.",
+ "result": "all four specimens BUILD from their real config, return FINITE full-vocab logits, and are CAUSAL -- changing the token at position 2 leaves 0 and 1 bitwise unchanged. Qwen3-VL logits (4, 151936), matching its own language model exactly as expected.",
+ "why_not_patched_in_mlx_lm": "a site-package edit is invisible, unversioned and lost on the next upgrade, and it would make THIS machine disagree with every other one running the same library -- the opposite of a reproducible receipt. The repair lives in odyssey_pass.prepare_config where it is read, tested and travels with Hawking. The library gap is a separate fact and the receipt keeps saying so.",
+ "the_widening_is_exactly_one_key": "inheriting the whole top-level dict would silently overwrite fields the nested config sets on purpose. C2M measured twice that a wider door which mistranslates is worse than a narrow one, so BOTH DIRECTIONS ARE PINNED: one test asserts a MISSING key is supplied and an unrelated key is NOT copied, a second asserts a key the nested config already sets is LEFT ALONE, and a third asserts the caller's dict is not mutated in place.",
+ "claim_boundary": [
+  "ONE LAYER, RANDOM WEIGHTS, four tokens -- a capability and structure claim only.",
+  "TEXT PATH ONLY for both vision-language models; no image was passed.",
+  "NO REAL WEIGHTS LOADED. The FAST_LOCAL_STORAGE gate is untouched and every weight-space caveat in the G048 receipts stands exactly as written.",
+  "The library defect is UNFIXED UPSTREAM; nothing was contributed to mlx_lm here.",
+  "no kernel changed, no performance claim moves."
+ ],
+ "tests": "460 accelerator tests pass (was 458), read from the run."
+}

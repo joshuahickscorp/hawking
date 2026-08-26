@@ -1,0 +1,47 @@
+{
+ "schema": "hawking.headless.grok_delegation_unavailable.v1",
+ "generated_at": "2026-08-26T00:20:25Z",
+ "generated_by": "read directly from the four lane task directories",
+ "hand_authored": false,
+ "git_head": "d212741f67fa956032f43bee9dc6c7ea63847a60",
+ "obligation": "G060, G062 -- execution strategy, not a scientific result",
+ "headline": "GROK DELEGATION IS DOWN: FOUR LANES DIED AT LAUNCH AND ALL FOUR STATUS FILES SAID done",
+ "error": "API error (status 402 Payment Required): Grok Build usage balance exhausted",
+ "lanes": [
+  {
+   "lane": "a-ebpw-namespaces-20260825-194409",
+   "exit_code": "1",
+   "status_file_says": "done",
+   "diff_bytes": 0,
+   "stderr_tail": "Error: Internal error: {\n  \"message\": \"API error (status 402 Payment Required): Grok Build usage balance exhausted\",\n  \"http_status\": 402\n}"
+  },
+  {
+   "lane": "b-specimen-live-coverage-20260825-194419",
+   "exit_code": "1",
+   "status_file_says": "done",
+   "diff_bytes": 0,
+   "stderr_tail": "Error: Internal error: {\n  \"message\": \"API error (status 402 Payment Required): Grok Build usage balance exhausted\",\n  \"http_status\": 402\n}"
+  },
+  {
+   "lane": "c-akb-device-genome-20260825-194525",
+   "exit_code": "1",
+   "status_file_says": "done",
+   "diff_bytes": 0,
+   "stderr_tail": "Error: Internal error: {\n  \"message\": \"API error (status 402 Payment Required): Grok Build usage balance exhausted\",\n  \"http_status\": 402\n}"
+  },
+  {
+   "lane": "d-sync-diagnostic-20260825-194505",
+   "exit_code": "1",
+   "status_file_says": "done",
+   "diff_bytes": 0,
+   "stderr_tail": "Error: Internal error: {\n  \"message\": \"API error (status 402 Payment Required): Grok Build usage balance exhausted\",\n  \"http_status\": 402\n}"
+  }
+ ],
+ "why_this_is_recorded": "The standing division of labour on this machine is 'Claude decides, Grok types'. It cannot execute while the balance is exhausted, so every implementation lane in this campaign moved to Claude workflow agents. That is a roadmap-level change and needs a receipt, not a memory.",
+ "the_trap_this_reproduces": "swgrok documents in its own source that `grok-run status` carries no pid and reports long-dead lanes as running. This is the same class one step earlier: a lane that NEVER STARTED is indistinguishable from one that finished, if you read `status`. All four read done. Judge a lane by exit_code and diff.patch size, never by status.",
+ "claim_boundary": [
+  "This says nothing about Grok's capability. It is an account-balance fact observed at one moment on one machine.",
+  "It does not establish that Claude agents are a better executor -- only that they were the available one."
+ ],
+ "pass": true
+}

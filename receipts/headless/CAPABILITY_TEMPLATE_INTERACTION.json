@@ -1,0 +1,52 @@
+{
+ "schema": "hawking.headless.template_interaction_refutation.v1",
+ "generated_at": "2026-08-26T02:13:12Z",
+ "generated_by": "live two-arm run of ascension_qwen38_hybrid_greedy",
+ "hand_authored": false,
+ "git_head": "5dc5d8e98280710a57415d6c8445fe3923f2bf43",
+ "obligations": [
+  "G004",
+  "G011",
+  "G064"
+ ],
+ "experiment_class": "GRAVITY-CAPABILITY-CONTROL",
+ "headline": "THE 2.5970-EBPW BODY IS NOT CAPABILITY-DEAD: IT ANSWERS CORRECTLY ON A RAW PROMPT AND EMITS ONE <think> TOKEN THEN STOPS UNDER THE CHAT TEMPLATE",
+ "what_prompted_it": "The operator asked what happened to the 2-EBPW body that ran 30+ TPS. QWEN_CAPABILITY_QUALIFICATION.json records it at 0/43, failing all seven axes. Every one of those 43 items is asked THROUGH THE CHAT TEMPLATE.",
+ "artifact": "/Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors",
+ "artifact_ebpw": 2.596957,
+ "binary": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+ "two_arms_same_body_same_binary_same_prompts": {
+  "RAW_PROMPT": {
+   "The capital of France is": " Paris, and the capital of the United States is Washington, D.C.",
+   "The three primary colors are": " red, yellow and blue.",
+   "2 + 2 =": " 4?",
+   "Q: What language runs in a browser? A:": " JavaScript",
+   "def add(a, b):": ""
+  },
+  "CHAT_TEMPLATE": {
+   "The three primary colors are": " <think>",
+   "Q: What language runs in a browser? A:": " <think>",
+   "What is the capital of France?": ""
+  }
+ },
+ "mechanism": "Under the chat template the body emits a single <think> token and then a stop token. It never enters the reasoning block, never closes it, and never reaches an answer. decode_steps=0 on the templated run with FALLBACKS=0 and no error.",
+ "throughput_raw_arm": {
+  "steady_decode_wall_ns_per_token": 47036608,
+  "steady_tps": 21.26,
+  "median_gpu_ns_per_token": 37484875,
+  "fallbacks": 0,
+  "note": "NOT comparable to the 33.31/34.15/34.24 single_stream_tps in QWEN_PERFORMANCE_QUALIFICATION.json: different profile, prompt, token count and build. Quoting a regression from that pair would be the stale-baseline error this program has already sealed. Both are real; they measure different runs."
+ },
+ "what_this_ESTABLISHES": [
+  "The 0/43 capability score is NOT a pure capability measurement. It conflates the body's capability with a TEMPLATE INTERACTION that emits <think> and halts.",
+  "The body produces correct, coherent answers on 3 of 4 raw prompts with zero fallbacks.",
+  "The body, the fast runtime and the 8.2 GB artifact are all intact on disk. Nothing was lost."
+ ],
+ "what_this_DOES_NOT_ESTABLISH": [
+  "What the body would score on the 43-item contract with a corrected template. That needs the suite re-run and has NOT been done. 3 of 4 greedy single-sample prompts is a REFUTATION of 'capability-dead', not a capability qualification.",
+  "That the body can do structured output, coding, or multi-turn work -- the code prompt `def add(a, b):` returned empty even on the raw arm.",
+  "Anything about the 3.1393-EBPW sealed body, which scores 30/43 through the same template and is therefore NOT affected the same way."
+ ],
+ "consequence": "G004's retirement reasoning and G011 rest on the 0/43 number. That number's MEANING changes: it is a template-interaction result. The capability gate needs a raw-prompt control arm so a template incompatibility can never again be recorded as a capability verdict.",
+ "pass": true
+}

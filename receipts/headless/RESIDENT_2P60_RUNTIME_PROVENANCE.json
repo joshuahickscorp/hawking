@@ -1,0 +1,81 @@
+{
+ "schema": "hawking.headless.resident_runtime_provenance.v1",
+ "generated_at": "2026-08-26T02:24:51Z",
+ "generated_by": "direct timed runs of ascension_qwen38_hybrid_greedy",
+ "hand_authored": false,
+ "obligation": "G066 (S027 LANE A)",
+ "git_head": "aa497322a5a7e9ca387cc9146cecbb67a0b019a8",
+ "headline": "THE 2.60 FAST RUNTIME REPRODUCES: MEDIAN 33.29 TPS AGAINST A HISTORICAL 33.31",
+ "artifact": {
+  "path": "/Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors",
+  "executable_closure_sha256": "d19618d453b4cf56ffcdc618f011926db1497d8710a2bfad2624b507263ac924",
+  "files": 767,
+  "bytes": 8754366632,
+  "ARTIFACT_PHYSICAL_ebpw_all_files": 2.603916,
+  "note": "closure sha is over relative path + size for every file in the tree; the campaign's own physical EBPW of 2.596957 counts only the weight-bearing suffixes, so this all-files figure is DIFFERENT BY CONSTRUCTION and is not a competing density claim."
+ },
+ "executable": {
+  "path": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+  "sha256": "20b7ffe43c1246e67c06fa1fe84be30dbc6c82df73425aa415936051c82d8af7",
+  "built_by": "cargo build --profile release-fast -p hawking-core --example ascension_qwen38_hybrid_greedy",
+  "note": "a cargo EXAMPLE, not a shipped binary. It was not built at all before this lane."
+ },
+ "invocation": {
+  "args": [
+   "--artifact-root",
+   "/Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors",
+   "--tokenizer",
+   "/Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors/tokenizer.json",
+   "--raw-prompt",
+   "--prompt",
+   "The capital of France is",
+   "--max-new-tokens",
+   "60"
+  ],
+  "tokenizer": "/Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors/tokenizer.json",
+  "tokenizer_sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+  "chat_template": "/Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors/chat_template.jinja",
+  "chat_template_sha256": "c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041",
+  "chat_template_APPLIED": false,
+  "why_raw": "ARM B of the S027 factorial. Under the template this body emits ' <think>' and halts at decode_steps=0, so a TIMED run is only possible on the raw arm. That is a finding, not a convenience.",
+  "mode": "greedy",
+  "max_new_tokens": 60
+ },
+ "RAW_TPS": {
+  "metric": "SINGLE_STREAM_RAW_TPS from MEDIAN_GPU_NS_PER_TOKEN",
+  "reps": 10,
+  "ms_per_token_min": 29.9337,
+  "ms_per_token_median": 30.04,
+  "ms_per_token_max": 57.2171,
+  "tps_median": 33.29,
+  "tps_best": 33.41,
+  "tps_worst": 17.48
+ },
+ "historical_comparison": {
+  "receipt": "receipts/headless/QWEN_PERFORMANCE_QUALIFICATION.json#bodies.clean-2.60",
+  "historical_median_gpu_ns_per_token": 30191500,
+  "historical_tps": 33.31,
+  "measured_median_tps": 33.29,
+  "delta_pct": -0.074,
+  "verdict": "REPRODUCED",
+  "MISATTRIBUTION_CORRECTED": "S027 \u00a70A lists 33.31, 34.15 and 34.24 as three historical measurements OF THE 2.60 BODY. They are three DIFFERENT BODIES in the same receipt: clean-2.60 = 33.3136, sealed-3.14 = 34.1488, variantA-2.98 = 34.2431. Only 33.31 is the 2.60 body."
+ },
+ "CAPABILITY_SCORE": {
+  "value": "0/43 through the production chat template; UNKNOWN on a corrected template",
+  "why_reported_here": "S027 \u00a715: raw TPS from incapable output is not performance. This receipt therefore refuses to state an ACCEPTED_TPS."
+ },
+ "ACCEPTED_TPS": null,
+ "ACCEPTED_TPS_absent_reason": "cannot be computed until the S027 \u00a72 factorial establishes a template under which this body produces scoreable output. RAW_TPS alone is not performance.",
+ "contention": {
+  "quiesced": false,
+  "owner": "ModelLake fill -- OPERATOR PRIORITISED, not paused for this measurement",
+  "evidence": "the historical receipt recorded a quiesce_check_before with pausable_io SIGSTOPped; this run did NOT pause it. The tail shows it: max 57.22 ms/token = 17.48 TPS. The MEDIAN is unaffected at 30.04 ms, which is why the band still reproduces."
+ },
+ "claim_boundary": [
+  "SINGLE-STREAM RAW GPU rate only. Not aggregate, not accepted, not end-to-end wall.",
+  "STEADY_DECODE_WALL_NS_PER_TOKEN ran 31.15-48.13 ms across the same reps -- the wall carries host wait that the fill contends. Only the GPU-side median reproduces cleanly.",
+  "One prompt, one shape, greedy, 60 new tokens. Not a workload characterization.",
+  "An earlier 28-token run of the SAME binary and body read 37.48 ms/token. That was a SHORT-RUN ARTIFACT with warmup dominating, not a regression -- recorded so the number is not later quoted as one."
+ ],
+ "pass": true
+}

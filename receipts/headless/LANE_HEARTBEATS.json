@@ -1,0 +1,373 @@
+{
+ "schema": "hawking.headless.lane_heartbeats.v1",
+ "generated_at": "2026-08-25T01:59:48Z",
+ "generated_by": "tools/headless/maxx_heartbeat.py",
+ "obligation": "G015 \u2014 ANTI_STALL + LANE_HEARTBEATS (directive \u00a727, \u00a728)",
+ "git_head": "eb1494112b61953122262e311cc9243dbd44952e",
+ "hand_authored": false,
+ "uncertainty_classes": {
+  "SCIENTIFIC": {
+   "resolve": "run the experiment",
+   "may_block": false
+  },
+  "ARCHITECTURAL": {
+   "resolve": "read the canon or the library",
+   "may_block": false
+  },
+  "REVERSIBLE_IMPLEMENTATION": {
+   "resolve": "choose one, or A/B it",
+   "may_block": false
+  },
+  "USER_PREFERENCE": {
+   "resolve": "ask, but only if the answer changes the work",
+   "may_block": true
+  },
+  "IRREVERSIBLE_OR_EXTERNAL": {
+   "resolve": "require explicit authority",
+   "may_block": true
+  }
+ },
+ "only_these_may_block": [
+  "USER_PREFERENCE",
+  "IRREVERSIBLE_OR_EXTERNAL"
+ ],
+ "heartbeat_fields": [
+  "phase",
+  "last_physical_progress_s_ago",
+  "blocking_resource",
+  "next_action",
+  "expected_evidence"
+ ],
+ "n_live_lanes": 24,
+ "lanes": [
+  {
+   "lane": "g001-clean-rebuild-20260824-195327",
+   "phase": "done",
+   "last_physical_progress_s_ago": 7571.5,
+   "diff_bytes": 0,
+   "exit_code": "1",
+   "blocking_resource": "GROK: usage balance exhausted (HTTP 402)",
+   "next_action": "relaunch when the balance is restored",
+   "expected_evidence": "diff.patch plus the contract's named receipt"
+  },
+  {
+   "lane": "g024-model2-selection-20260824-195313",
+   "phase": "done",
+   "last_physical_progress_s_ago": 7586.0,
+   "diff_bytes": 0,
+   "exit_code": "1",
+   "blocking_resource": "GROK: usage balance exhausted (HTTP 402)",
+   "next_action": "relaunch when the balance is restored",
+   "expected_evidence": "diff.patch plus the contract's named receipt"
+  },
+  {
+   "lane": "g021-negative-science-20260824-195307",
+   "phase": "done",
+   "last_physical_progress_s_ago": 7592.2,
+   "diff_bytes": 0,
+   "exit_code": "1",
+   "blocking_resource": "GROK: usage balance exhausted (HTTP 402)",
+   "next_action": "relaunch when the balance is restored",
+   "expected_evidence": "diff.patch plus the contract's named receipt"
+  },
+  {
+   "lane": "g019-kernel-library-20260824-195300",
+   "phase": "done",
+   "last_physical_progress_s_ago": 7598.5,
+   "diff_bytes": 0,
+   "exit_code": "1",
+   "blocking_resource": "GROK: usage balance exhausted (HTTP 402)",
+   "next_action": "relaunch when the balance is restored",
+   "expected_evidence": "diff.patch plus the contract's named receipt"
+  },
+  {
+   "lane": "g018-representation-library-20260824-195253",
+   "phase": "done",
+   "last_physical_progress_s_ago": 7605.1,
+   "diff_bytes": 0,
+   "exit_code": "1",
+   "blocking_resource": "GROK: usage balance exhausted (HTTP 402)",
+   "next_action": "relaunch when the balance is restored",
+   "expected_evidence": "diff.patch plus the contract's named receipt"
+  },
+  {
+   "lane": "g017-organ-frontier-matrix-20260824-195247",
+   "phase": "done",
+   "last_physical_progress_s_ago": 7611.3,
+   "diff_bytes": 0,
+   "exit_code": "1",
+   "blocking_resource": "GROK: usage balance exhausted (HTTP 402)",
+   "next_action": "relaunch when the balance is restored",
+   "expected_evidence": "diff.patch plus the contract's named receipt"
+  },
+  {
+   "lane": "g016-arch-recognizer-20260824-195241",
+   "phase": "done",
+   "last_physical_progress_s_ago": 7618.1,
+   "diff_bytes": 0,
+   "exit_code": "1",
+   "blocking_resource": "GROK: usage balance exhausted (HTTP 402)",
+   "next_action": "relaunch when the balance is restored",
+   "expected_evidence": "diff.patch plus the contract's named receipt"
+  },
+  {
+   "lane": "g014-maxx-pipeline-20260824-195235",
+   "phase": "done",
+   "last_physical_progress_s_ago": 7624.4,
+   "diff_bytes": 0,
+   "exit_code": "1",
+   "blocking_resource": "GROK: usage balance exhausted (HTTP 402)",
+   "next_action": "relaunch when the balance is restored",
+   "expected_evidence": "diff.patch plus the contract's named receipt"
+  },
+  {
+   "lane": "g012-model-lake-20260824-195228",
+   "phase": "done",
+   "last_physical_progress_s_ago": 7630.6,
+   "diff_bytes": 0,
+   "exit_code": "1",
+   "blocking_resource": "GROK: usage balance exhausted (HTTP 402)",
+   "next_action": "relaunch when the balance is restored",
+   "expected_evidence": "diff.patch plus the contract's named receipt"
+  },
+  {
+   "lane": "g006-qwen-textbook-20260824-195222",
+   "phase": "done",
+   "last_physical_progress_s_ago": 7635.4,
+   "diff_bytes": 0,
+   "exit_code": "1",
+   "blocking_resource": "GROK: usage balance exhausted (HTTP 402)",
+   "next_action": "relaunch when the balance is restored",
+   "expected_evidence": "diff.patch plus the contract's named receipt"
+  },
+  {
+   "lane": "g024-model2-selection-20260824-195036",
+   "phase": "unknown",
+   "last_physical_progress_s_ago": 7751.5,
+   "diff_bytes": 0,
+   "exit_code": null,
+   "blocking_resource": null,
+   "next_action": "await",
+   "expected_evidence": "diff.patch plus the contract's named receipt"
+  },
+  {
+   "lane": "g021-negative-science-20260824-195036",
+   "phase": "unknown",
+   "last_physical_progress_s_ago": 7751.9,
+   "diff_bytes": 0,
+   "exit_code": null,
+   "blocking_resource": null,
+   "next_action": "await",
+   "expected_evidence": "diff.patch plus the contract's named receipt"
+  }
+ ],
+ "detectors": [
+  "dead_gpu_lock",
+  "dead_lane_reported_running",
+  "no_progress_loop",
+  "orphan_worker",
+  "stale_worktree"
+ ],
+ "injected_fault_proofs": [
+  {
+   "class": "dead_lane_reported_running",
+   "injected": "INJECTED-dead-but-running",
+   "detected": true,
+   "control_clean": true
+  },
+  {
+   "class": "orphan_worker",
+   "injected": "exit_code=None, phase=running, stale",
+   "detected": true,
+   "control_clean": true
+  },
+  {
+   "class": "no_progress_loop",
+   "injected": "done, exit 1, empty diff",
+   "detected": true,
+   "control_clean": true
+  },
+  {
+   "class": "dead_gpu_lock",
+   "injected": "/tmp/hawking-INJECTED-gpu.lock",
+   "detected": true,
+   "control_clean": true
+  },
+  {
+   "class": "stale_worktree",
+   "injected": "/Users/scammermike/.claude-grok/worktrees/INJECTED-stale-worktree",
+   "detected": true,
+   "auto_removed": false,
+   "control_clean": true,
+   "note": "detected but NOT marked safe to auto-remove, because its dirty state could not be established -- unknown is treated as holding work"
+  }
+ ],
+ "n_detectors_proven": 5,
+ "findings_on_real_state": {
+  "dead_lane_reported_running": 9,
+  "orphan_worker": 9,
+  "no_progress_loop": 10,
+  "dead_gpu_lock": 0,
+  "stale_worktree": 4
+ },
+ "real_findings": {
+  "dead_lane_reported_running": [
+   {
+    "lane": "g024-model2-selection-20260824-195036",
+    "phase": "unknown",
+    "last_physical_progress_s_ago": 7751.5,
+    "diff_bytes": 0,
+    "exit_code": null,
+    "blocking_resource": null,
+    "next_action": "await",
+    "expected_evidence": "diff.patch plus the contract's named receipt"
+   },
+   {
+    "lane": "g021-negative-science-20260824-195036",
+    "phase": "unknown",
+    "last_physical_progress_s_ago": 7751.9,
+    "diff_bytes": 0,
+    "exit_code": null,
+    "blocking_resource": null,
+    "next_action": "await",
+    "expected_evidence": "diff.patch plus the contract's named receipt"
+   },
+   {
+    "lane": "g019-kernel-library-20260824-195035",
+    "phase": "unknown",
+    "last_physical_progress_s_ago": 7752.2,
+    "diff_bytes": 0,
+    "exit_code": null,
+    "blocking_resource": null,
+    "next_action": "await",
+    "expected_evidence": "diff.patch plus the contract's named receipt"
+   },
+   {
+    "lane": "g018-representation-library-20260824-195035",
+    "phase": "unknown",
+    "last_physical_progress_s_ago": 7752.6,
+    "diff_bytes": 0,
+    "exit_code": null,
+    "blocking_resource": null,
+    "next_action": "await",
+    "expected_evidence": "diff.patch plus the contract's named receipt"
+   }
+  ],
+  "orphan_worker": [
+   {
+    "lane": "g024-model2-selection-20260824-195036",
+    "phase": "unknown",
+    "last_physical_progress_s_ago": 7751.5,
+    "diff_bytes": 0,
+    "exit_code": null,
+    "blocking_resource": null,
+    "next_action": "await",
+    "expected_evidence": "diff.patch plus the contract's named receipt"
+   },
+   {
+    "lane": "g021-negative-science-20260824-195036",
+    "phase": "unknown",
+    "last_physical_progress_s_ago": 7751.9,
+    "diff_bytes": 0,
+    "exit_code": null,
+    "blocking_resource": null,
+    "next_action": "await",
+    "expected_evidence": "diff.patch plus the contract's named receipt"
+   },
+   {
+    "lane": "g019-kernel-library-20260824-195035",
+    "phase": "unknown",
+    "last_physical_progress_s_ago": 7752.2,
+    "diff_bytes": 0,
+    "exit_code": null,
+    "blocking_resource": null,
+    "next_action": "await",
+    "expected_evidence": "diff.patch plus the contract's named receipt"
+   },
+   {
+    "lane": "g018-representation-library-20260824-195035",
+    "phase": "unknown",
+    "last_physical_progress_s_ago": 7752.6,
+    "diff_bytes": 0,
+    "exit_code": null,
+    "blocking_resource": null,
+    "next_action": "await",
+    "expected_evidence": "diff.patch plus the contract's named receipt"
+   }
+  ],
+  "no_progress_loop": [
+   {
+    "lane": "g001-clean-rebuild-20260824-195327",
+    "phase": "done",
+    "last_physical_progress_s_ago": 7571.5,
+    "diff_bytes": 0,
+    "exit_code": "1",
+    "blocking_resource": "GROK: usage balance exhausted (HTTP 402)",
+    "next_action": "relaunch when the balance is restored",
+    "expected_evidence": "diff.patch plus the contract's named receipt"
+   },
+   {
+    "lane": "g024-model2-selection-20260824-195313",
+    "phase": "done",
+    "last_physical_progress_s_ago": 7586.0,
+    "diff_bytes": 0,
+    "exit_code": "1",
+    "blocking_resource": "GROK: usage balance exhausted (HTTP 402)",
+    "next_action": "relaunch when the balance is restored",
+    "expected_evidence": "diff.patch plus the contract's named receipt"
+   },
+   {
+    "lane": "g021-negative-science-20260824-195307",
+    "phase": "done",
+    "last_physical_progress_s_ago": 7592.2,
+    "diff_bytes": 0,
+    "exit_code": "1",
+    "blocking_resource": "GROK: usage balance exhausted (HTTP 402)",
+    "next_action": "relaunch when the balance is restored",
+    "expected_evidence": "diff.patch plus the contract's named receipt"
+   },
+   {
+    "lane": "g019-kernel-library-20260824-195300",
+    "phase": "done",
+    "last_physical_progress_s_ago": 7598.5,
+    "diff_bytes": 0,
+    "exit_code": "1",
+    "blocking_resource": "GROK: usage balance exhausted (HTTP 402)",
+    "next_action": "relaunch when the balance is restored",
+    "expected_evidence": "diff.patch plus the contract's named receipt"
+   }
+  ],
+  "stale_worktree": [
+   {
+    "worktree": "/Users/scammermike/.claude-grok/worktrees/egress-proxy-lifetime-20260824-184633",
+    "age_s": 10746.0,
+    "holds_uncommitted_work": true,
+    "safe_to_auto_remove": false,
+    "repair": "PRESERVE FIRST: never remove a worktree with uncommitted work"
+   },
+   {
+    "worktree": "/Users/scammermike/.claude-grok/worktrees/device-bound-enrolment-20260824-152147",
+    "age_s": 23330.2,
+    "holds_uncommitted_work": true,
+    "safe_to_auto_remove": false,
+    "repair": "PRESERVE FIRST: never remove a worktree with uncommitted work"
+   },
+   {
+    "worktree": "/Users/scammermike/.claude-grok/worktrees/rung2-grading-python-20260823-224828",
+    "age_s": 83089.5,
+    "holds_uncommitted_work": false,
+    "safe_to_auto_remove": true,
+    "repair": "reap"
+   },
+   {
+    "worktree": "/Users/scammermike/.claude-grok/worktrees/tests-integration-rebuild-20260823-224839",
+    "age_s": 82324.1,
+    "holds_uncommitted_work": null,
+    "safe_to_auto_remove": false,
+    "repair": "leave: still fresh"
+   }
+  ]
+ },
+ "repair_law": "auto-repair only where safe; a worktree whose dirty state is unknown is treated as holding work and is never auto-removed",
+ "pass": true
+}

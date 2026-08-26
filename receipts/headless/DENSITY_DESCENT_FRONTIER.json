@@ -1,7 +1,7 @@
 {
  "schema": "hawking.headless.density_descent_frontier.v1",
- "generated_at": "2026-08-24T21:57:49Z",
- "git_head": "3048963996c6ed32df3712a805c7f5918ea86fd8",
+ "generated_at": "2026-08-26T03:39:09Z",
+ "git_head": "e665c7319eb06bc1611d1ede67e091160dea83c0",
  "generated_by": "tools/headless/density_descent_frontier.py",
  "obligation": "N037 \u2014 DENSITY_DESCENT_FRONTIER (S024 \u00a72, \u00a73, \u00a718). Track the two coupled frontiers: COHERENCE (lowest complete EBPW that still generates coherently) and EXECUTION (lowest COMPLETE_TOKEN_NS among coherent candidates). Density ladder 2.25..0.1 are coordinates, not pass literals.",
  "hand_authored": false,

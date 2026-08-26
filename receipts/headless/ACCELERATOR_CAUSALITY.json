@@ -1,0 +1,96 @@
+{
+ "experiment_class": "ACCEL-ODYSSEY-PASS",
+ "date": "2026-08-25",
+ "obligations": [
+  "G048",
+  "G043"
+ ],
+ "headline": "THE FORWARD PASS IS CAUSAL, WHICH IS THE PROPERTY FINITE LOGITS CANNOT SEE",
+ "boundary_this_closes": "ACCELERATOR_RUNTIME_EXECUTES.json: 'finite logits from random weights is a WEAK correctness signal that rules out a NaN-producing graph and nothing more'.",
+ "prediction_written_first": {
+  "written_before_the_run": true,
+  "boundary": "ACCELERATOR_RUNTIME_EXECUTES.json: 'finite logits from random weights is a WEAK correctness signal that rules out a NaN-producing graph and nothing more.'",
+  "what_a_finite_check_cannot_see": "a graph that IGNORES ITS INPUT entirely returns finite logits and passes. So does one that leaks information BACKWARDS in time, which is the exact hazard ACCELERATOR_CONVOLUTION.json already named -- a conv that reads t+1 CHANGES NO NORM, it just makes teacher forcing mysteriously easy and shows up nowhere else.",
+  "P1_determinism": "the same token sequence twice gives BITWISE identical logits on all three.",
+  "P2_input_sensitivity": "changing a token changes the logits. A graph that ignored its input would pass the finite check and fail this.",
+  "P3_causality": "changing the token at position k leaves logits at every position < k BITWISE UNCHANGED and changes position k. All three are autoregressive decoders so all three should be causal, and Falcon-H1 is the interesting one because its Mamba mixer's causality lives in a width-4 conv this program has already built and controlled.",
+  "why_random_weights_are_legitimate_here": "causality and input-dependence are STRUCTURAL properties of the graph, not of the weights -- a wrong-direction read is wrong at every weight setting. This says NOTHING about adequacy and does not touch the 2026-07-27 gaussian-proxy law, which governs grading compression.",
+  "how_it_could_refute_me": "a model whose earlier positions move when a later token changes is NOT causal as built here; a model whose logits do not move at all is ignoring its input; either would mean the previous block's 'forward pass runs' was weaker than it read."
+ },
+ "what_the_weak_check_could_not_see": "a graph that IGNORES ITS INPUT ENTIRELY returns finite logits and passes it, and so does one that LEAKS INFORMATION BACKWARDS IN TIME -- the hazard ACCELERATOR_CONVOLUTION.json already named in its own words, that a conv reading t+1 CHANGES NO NORM and shows up nowhere else.",
+ "measured": {
+  "Qwen3-30B-A3B": {
+   "deterministic": true,
+   "moved_per_position": [
+    false,
+    false,
+    true,
+    true
+   ],
+   "causal": true,
+   "input_sensitive": true,
+   "last_token_only": [
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  "Kimi-VL-A3B": {
+   "deterministic": true,
+   "moved_per_position": [
+    false,
+    false,
+    true,
+    true
+   ],
+   "causal": true,
+   "input_sensitive": true,
+   "last_token_only": [
+    false,
+    false,
+    false,
+    true
+   ]
+  },
+  "Falcon-H1-7B": {
+   "deterministic": true,
+   "moved_per_position": [
+    false,
+    false,
+    true,
+    true
+   ],
+   "causal": true,
+   "input_sensitive": true,
+   "last_token_only": [
+    false,
+    false,
+    false,
+    true
+   ]
+  }
+ },
+ "result": "ALL THREE specimens that build are DETERMINISTIC, INPUT-SENSITIVE and CAUSAL. Changing the token at position 2 moves logits at positions 2 and 3 and leaves 0 and 1 BITWISE UNCHANGED; changing the LAST token moves ONLY the last. That is the autoregressive property, on the MoE core, on a vision-language decoder and on the MAMBA HYBRID whose causality lives in the width-4 conv this program built and controlled two dozen blocks ago.",
+ "why_random_weights_are_legitimate_for_this_and_not_for_adequacy": "causality and input-dependence are properties of the GRAPH, not of the weights -- a wrong-direction read is wrong at EVERY weight setting. So this is a real structural claim that random weights cannot mask, and it still says NOTHING about adequacy; the 2026-07-27 gaussian-proxy law governs grading compression and is untouched.",
+ "the_control_is_what_makes_three_of_three_a_result": {
+  "why_it_was_needed": "three of three passing is EXACTLY the shape of a check that cannot fail, a thing this program has sealed five times -- a gate blind to magnitude, a predicate accepting an all-zeros pack, a tie-break mutation on dead code, a coverage curve counting probed blockers, a shape fuzz reporting zero failures for four primitives it never ran.",
+  "design": "a bidirectional attention block, IDENTICAL but for the mask, run through the SAME check function.",
+  "measured": "CAUSAL moves [False, False, True, True]; BIDIRECTIONAL moves [True, True, True, True] -- it leaks to positions 0 and 1, exactly where a decoder must not.",
+  "reading": "the check demonstrably separates the two, so the three passes are evidence rather than a tautology."
+ },
+ "shipped": {
+  "execution_coverage": "now carries deterministic / input_sensitive / causal beside builds and forward, with the comment saying WHY random weights are legitimate for a structural property and not for adequacy.",
+  "two_tests_side_by_side": "one asserts the REAL Falcon-H1 config is causal (chosen because its config is on LOCAL storage and a test must not fight the operator's fill), and one asserts the BIDIRECTIONAL control FAILS the same check with a message saying that if it does not, the first test is measuring nothing. Both directions pinned, which is the rule this program applies to every control."
+ },
+ "claim_boundary": [
+  "ONE LAYER, RANDOM WEIGHTS, four tokens. Causality at depth 1 does not prove it at depth 44, though the layer is the unit where the mask lives.",
+  "TEXT PATH ONLY for both vision-language models; no image was passed.",
+  "Qwen3-VL still does not construct -- the one-field VL gap from the previous block is unchanged and untested here.",
+  "Determinism is measured WITHIN one process on one machine; nothing is claimed across processes or devices.",
+  "This is a CAPABILITY and STRUCTURE claim. No real weights were loaded, the storage gate is unchanged, and every weight-space caveat in the G048 receipts stands exactly as written.",
+  "no kernel changed and no performance claim moves."
+ ],
+ "tests_total": "458 accelerator tests pass (was 456).",
+ "a_slip_that_recurred_one_block_after_i_corrected_it": "I wrote 459 from arithmetic rather than from the run, the IDENTICAL mistake the previous receipt corrected in its own last line. Naming a habit once does not stop it; the durable fix is that the number is read off the suite before the receipt is written, not after. Recorded because a correction that does not change behaviour is not a correction."
+}

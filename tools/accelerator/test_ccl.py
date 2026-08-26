@@ -113,3 +113,75 @@ def test_recount_repairs_a_drifted_ledger():
     assert led["count"] == 1
     assert led["performance_gaps_measured"] == 0
     assert led["performance_gaps_unmeasured"] == 1
+
+
+# --- G055 census expansion pins -------------------------------------------
+# The census added 48 entries across PROGRAMMING MODEL, MEMORY, EXECUTION,
+# COMPILER, MATH ECOSYSTEM and PROFILING. These pin that the same two
+# disciplines the seed ledger enforced still hold at 68 entries, not just at
+# the original 20 -- a validator that only gets exercised by the fixture in
+# `good()` could pass while a real new-family entry sails through unchecked.
+
+
+def test_new_family_entry_still_refuses_incomplete():
+    """The validator must refuse an incomplete entry from one of the NEW
+    families too, not just the `good()` fixture shape."""
+    real = dict(ccl.NEW_ENTRIES[0])
+    real.pop("cuda_mechanism")
+    with pytest.raises(ccl.CCLError, match="missing"):
+        ccl.entry(**real)
+
+
+def test_new_family_measured_gap_without_receipt_still_refused():
+    """One of the census's own measured entries, with its receipt stripped,
+    must still be refused -- proving the discipline was applied by the
+    validator and not just by the author's discipline."""
+    measured_entries = [e for e in ccl.NEW_ENTRIES
+                         if isinstance(e["performance_gap"], dict)
+                         and e["performance_gap"].get("measured")]
+    assert measured_entries, "expected at least one measured new entry to test against"
+    broken = dict(measured_entries[0])
+    broken["performance_gap"] = {"measured": True, "value": "some value"}
+    with pytest.raises(ccl.CCLError, match="needs a receipt"):
+        ccl.entry(**broken)
+
+
+def test_census_expansion_covers_the_six_families_without_touching_multi_device():
+    """MULTI_DEVICE.peer_access is blocked on hardware and this campaign's own
+    rule is to keep it that way -- the census must add zero MULTI_DEVICE
+    entries even though it adds 48 entries everywhere else."""
+    led = ccl.census_ledger()
+    assert led["count"] == 68
+    assert led["by_class"]["MULTI_DEVICE"] == 1
+    assert led["classes_with_no_entry"] == []
+    # every CLASS gained at least one census-era entry except MULTI_DEVICE
+    new_by_class: dict[str, int] = {}
+    for e in ccl.NEW_ENTRIES:
+        c = e["capability_id"].split(".")[0]
+        new_by_class[c] = new_by_class.get(c, 0) + 1
+    assert "MULTI_DEVICE" not in new_by_class
+    assert set(new_by_class) == set(ccl.CLASSES) - {"MULTI_DEVICE"}
+
+
+def test_census_ledger_never_writes_unqualified_cuda_parity():
+    """The steer's own rule: never write 'CUDA parity' unqualified anywhere in
+    the ledger. The one place the phrase legitimately appears is inside the
+    ledger's own parity_claim statement NAMING the rule -- that mention is
+    itself quoted and qualified by the sentence around it, so it is excluded
+    here by construction rather than the check being a blind string search."""
+    led = ccl.census_ledger()
+    for e in led["entries"]:
+        blob = json.dumps(e).lower()
+        assert "cuda parity" not in blob, f"{e['capability_id']} writes the forbidden phrase"
+
+
+def test_census_new_entries_gap_counts_match_the_receipt_plan():
+    """Pins the specific split this campaign measured: 5 of the 48 new entries
+    cite a real receipt as measured, the other 43 are honestly unmeasured. A
+    silent change to either number means an entry's performance_gap was edited
+    without the corresponding receipt work actually happening."""
+    measured = sum(1 for e in ccl.NEW_ENTRIES
+                    if isinstance(e["performance_gap"], dict)
+                    and e["performance_gap"].get("measured"))
+    assert measured == 5
+    assert len(ccl.NEW_ENTRIES) - measured == 43

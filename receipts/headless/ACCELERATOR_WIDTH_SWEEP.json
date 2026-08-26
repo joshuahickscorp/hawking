@@ -1,0 +1,143 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T14:20:53",
+ "experiment_class": "ACCEL-CORRECTNESS",
+ "knowledge_level": "INSTANCE",
+ "git_head": "99b47a6697983fa4520def58dcc5cab6105dc914",
+ "identities": {
+  "experiment": {
+   "id": "THE_CONTROL_HAS_ITS_OWN_BLIND_WIDTH",
+   "obligation": "G043 / G047",
+   "answers": "the shape sweep's own claim boundary -- 'width is a SECOND AXIS THIS SWEEP DOES NOT COVER'"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal via MLX 0.32.1 JIT"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "synthetic operands; correctness only"
+  },
+  "representation": {
+   "name": "dense_f32"
+  },
+  "kernel": {
+   "swept": [
+    "rms norm",
+    "layer norm",
+    "softmax",
+    "reduce sum",
+    "reduce max",
+    "attention",
+    "top-k"
+   ],
+   "widths": [
+    32,
+    64,
+    128,
+    256,
+    512,
+    1024
+   ]
+  },
+  "runtime": {
+   "python": "3.12.6",
+   "mlx": "0.32.1"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device"
+  }
+ },
+ "headline": "The shape sweep named width as the axis it did not cover. Sweeping it found the kernels width-robust -- 42 configurations, 336 executions, zero wrong. THE RESULT THAT MATTERS IS THE POSITIVE CONTROL'S: a barrier stripped from AirNorm is caught 8 of 8 runs at threadgroups 64 through 1024 AND IS EXACT AT 32, because there the whole threadgroup is ONE SIMDGROUP and lockstep makes the fence unnecessary. A control run only at 32 would have reported the broken kernel fine.",
+ "why_width_is_not_shape": "a shape-dependent defect is DETERMINISTIC -- wrong every run at the wrong shape, which is why 2885 single runs settled it. A width-dependent one is usually a RACE and therefore PROBABILISTIC: the top-k barrier fired in 16 of 30 runs at 1024 and 0 of 30 at 256. So this sweep REPEATS, and its resolving power comes from the repeat count rather than the width list.",
+ "the_sweep": {
+  "widths": [
+   32,
+   64,
+   128,
+   256,
+   512,
+   1024
+  ],
+  "runs_per_configuration": 8,
+  "configurations": 42,
+  "total_executions": 336,
+  "wrong": 0,
+  "worst_relative_error": 1.49e-06,
+  "reading": "the write-after-read the normalization block fixed structurally in norm, softmax and attention does not reappear at any width, and neither does anything else"
+ },
+ "THE_POSITIVE_CONTROL_IS_THE_EVIDENCE": {
+  "what_was_broken": "one threadgroup_barrier removed from AirNorm's lowering",
+  "per_width": {
+   "32": {
+    "runs_wrong": 0,
+    "of": 8,
+    "worst_rel_err": 1.2377682679600794e-07
+   },
+   "64": {
+    "runs_wrong": 8,
+    "of": 8,
+    "worst_rel_err": 0.42705121743888746
+   },
+   "128": {
+    "runs_wrong": 8,
+    "of": 8,
+    "worst_rel_err": 0.9552515350804892
+   },
+   "256": {
+    "runs_wrong": 8,
+    "of": 8,
+    "worst_rel_err": 1.6849129631561097
+   },
+   "512": {
+    "runs_wrong": 8,
+    "of": 8,
+    "worst_rel_err": 2.763634963926412
+   },
+   "1024": {
+    "runs_wrong": 8,
+    "of": 8,
+    "worst_rel_err": 3.272793208679504
+   }
+  },
+  "detected_at": [
+   64,
+   128,
+   256,
+   512,
+   1024
+  ],
+  "BLIND_AT": [
+   32
+  ],
+  "why_32_is_blind": "a 32-wide threadgroup is exactly ONE SIMDGROUP, and this program already measured that within a simdgroup 32 lanes exchanging through threadgroup memory are exact with NO fence because lockstep makes it unnecessary. The control reproduces that finding from a completely different direction -- it was built to prove the sweep can fail, and it also proves WHERE it cannot.",
+  "the_error_grows_with_width": "0.427 at 64, 0.955 at 128, 1.685 at 256, 2.764 at 512, 3.273 at 1024 -- more simdgroups, more disagreement, which is the mechanism showing itself rather than a threshold",
+  "why_this_matters_beyond_this_kernel": "a probabilistic sweep reporting zero failures is exactly the shape of a check that cannot fail, and the previous block found precisely that in its own instrument. A control is what separates 'nothing is wrong' from 'nothing was looked at'."
+ },
+ "shipped": {
+  "kernel_forge.swept_with_control": "runs the real check AND a deliberately broken one over the same cases, and REFUSES the result if the broken arm passes everywhere -- not because the kernel is wrong but because the sweep proved nothing. Reports control_blind_at as a first-class field.",
+  "detection_floor_per_run": "1 - 0.5**(1/repeat), reported with every sweep, so a clean result cannot be read as proof that no race exists. At repeat=8 the sweep is blind to anything under ~8.3% per run.",
+  "kernel_forge.WIDTH_PRIOR": "32 through 1024, the legal Metal range in simdgroup steps"
+ },
+ "prediction": {
+  "written": "the fixed kernels are correct at all widths, and the honest limit is that N runs cannot detect a race whose per-run probability is under ~1/N",
+  "verdict": "CONFIRMED on both halves, and the control added a third thing I did not predict -- that the control ITSELF has a blind width"
+ },
+ "claim_boundary": {
+  "eight_runs": "repeat=8 detects a race with per-run probability above ~8.3% about half the time; the top-k race at 1024 ran at 53% and would be caught, a 2% race would not. ZERO FAILURES IS NOT ABSENCE OF RACES.",
+  "one_shape_per_primitive": "width is varied and shape is held FIXED, the mirror of the previous sweep's boundary rather than its closure",
+  "one_control": "AirNorm's barrier. The control demonstrates the sweep can fail on a TOTAL dependency; the top-k receipt already showed an INCIDENTAL one is far quieter, so a control's loudness is not transferable evidence",
+  "f32_one_machine": "INSTANCE, and lockstep at simd width 32 remains an M3 Ultra observation not a property of Apple GPUs",
+  "nothing_timed": "correctness only"
+ },
+ "tests": {
+  "accelerator_total": 258,
+  "was_total": 255
+ },
+ "pass": true
+}

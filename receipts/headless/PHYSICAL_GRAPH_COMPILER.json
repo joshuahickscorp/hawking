@@ -1,0 +1,171 @@
+{
+ "schema": "hawking.headless.physical_graph_compiler.v1",
+ "generated_at": "2026-08-25T02:05:40Z",
+ "generated_by": "tools/odyssey/physical_graph_compiler.py",
+ "obligation": "G022 \u2014 PHYSICAL_GRAPH_COMPILER (directive \u00a753, \u00a768, \u00a769)",
+ "git_head": "eb1494112b61953122262e311cc9243dbd44952e",
+ "hand_authored": false,
+ "foreign_model": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+ "architecture": "qwen3_moe",
+ "source_graph": {
+  "n_tensors": 18867,
+  "index": "model.safetensors.index.json"
+ },
+ "organ_graph": {
+  "nodes": [
+   {
+    "organ": "embed",
+    "n_tensors": 1,
+    "n_layers": 0,
+    "status": "KNOWN"
+   },
+   {
+    "organ": "gqa_attention",
+    "n_tensors": 192,
+    "n_layers": 48,
+    "status": "KNOWN"
+   },
+   {
+    "organ": "lm_head",
+    "n_tensors": 1,
+    "n_layers": 0,
+    "status": "DECLARED_UNMEASURED"
+   },
+   {
+    "organ": "moe_expert",
+    "n_tensors": 18432,
+    "n_layers": 48,
+    "status": "DECLARED_UNMEASURED"
+   },
+   {
+    "organ": "moe_router",
+    "n_tensors": 48,
+    "n_layers": 48,
+    "status": "DECLARED_UNMEASURED"
+   },
+   {
+    "organ": "rmsnorm",
+    "n_tensors": 193,
+    "n_layers": 48,
+    "status": "DECLARED_UNMEASURED"
+   }
+  ],
+  "n_nodes": 6,
+  "n_unrecognized": 0,
+  "folded_organ": null,
+  "law": "an organ is a ROLE, not a tensor name; feed_forward.w1 and mlp.gate_proj are the same node"
+ },
+ "physical_operator_graph": {
+  "n_nodes_after_collapse": 18863,
+  "collapses": [
+   {
+    "collapse": "gate_up_swiglu",
+    "source_nodes": [
+     "gate_proj matvec",
+     "up_proj matvec",
+     "silu",
+     "elementwise multiply"
+    ],
+    "physical_nodes": [
+     "gate_up_swiglu (one fused operator)"
+    ],
+    "n_source_nodes": 4,
+    "n_physical_nodes": 1,
+    "semantic_justification": "gate and up read the same activation vector and their outputs are consumed only by the SwiGLU, so the intermediates are not observable outside the region",
+    "max_abs_diff": 0.0,
+    "max_abs_value": 2.696756039067613,
+    "relative": 0.0,
+    "tolerance": 1e-09,
+    "numerically_equivalent": true,
+    "weight_reads_before": 3,
+    "weight_reads_after": 2,
+    "intermediates_materialized_before": 2,
+    "intermediates_materialized_after": 0
+   },
+   {
+    "collapse": "route_expert_select",
+    "source_nodes": [
+     "router matvec",
+     "softmax",
+     "top_k"
+    ],
+    "physical_nodes": [
+     "router matvec",
+     "top_k (softmax deferred to the weighting)"
+    ],
+    "n_source_nodes": 3,
+    "n_physical_nodes": 2,
+    "semantic_justification": "softmax is monotone, so it cannot reorder the top-k; it is still needed for the mixing weights but not for the SELECTION, and deferring it removes a full vocabulary-width normalization from the selection path",
+    "n_tokens": 112,
+    "n_identical_selections": 112,
+    "selection_identical": true,
+    "tolerance": "exact set equality"
+   }
+  ]
+ },
+ "transformation_dag": [
+  {
+   "stage": "source_graph",
+   "input": "checkpoint tensor map",
+   "output": "18867 named tensors",
+   "cost_delta": null,
+   "evidence": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-30B-A3B@ad44e777bcd1/model.safetensors.index.json"
+  },
+  {
+   "stage": "organ_graph",
+   "input": "source graph",
+   "output": "6 semantic organs",
+   "cost_delta": {
+    "nodes": -18861,
+    "meaning": "naming collapsed to roles; no physical change"
+   },
+   "evidence": "receipts/headless/ARCHITECTURE_RECOGNIZER.json"
+  },
+  {
+   "stage": "physical_operator_graph",
+   "input": "organ graph",
+   "output": "fused operators",
+   "cost_delta": {
+    "weight_reads_per_mlp": -1,
+    "intermediates_materialized": -2,
+    "meaning": "measured on the collapse itself, not estimated"
+   },
+   "evidence": "this receipt: collapses[].numerically_equivalent"
+  }
+ ],
+ "interactions": [
+  {
+   "a": "fitted-affine representation",
+   "b": "low bit rate",
+   "relation": "A HELPS B",
+   "measured": {
+    "error_ratio_generic_over_seeded_at_lowest_bits": 1.899,
+    "at_highest_bits": 1.138,
+    "reading": "the advantage GROWS as bits fall (1.138x at 4.25 bpw, 1.899x at 2.25 bpw), so the fit matters more exactly where the budget is tightest"
+   },
+   "evidence": "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json#matched_bits_comparison"
+  },
+  {
+   "a": "per-organ local adequacy",
+   "b": "whole-model capability",
+   "relation": "A DOES NOT IMPLY B",
+   "measured": {
+    "note": "every organ of the 2.5970-EBPW body passed its own held-out probe and the composed model scores 3 of 43",
+    "evidence_receipt": "receipts/headless/QWEN_CAPABILITY_QUALIFICATION.json"
+   },
+   "evidence": "receipts/headless/QWEN_CAPABILITY_QUALIFICATION.json#results"
+  },
+  {
+   "a": "gate_up_swiglu fusion",
+   "b": "representation choice",
+   "relation": "A NEUTRAL to B",
+   "measured": {
+    "why": "the fusion is exact for any codec whose dequantization is elementwise, which every codec in the library is"
+   },
+   "evidence": "this receipt: collapses[0]"
+  }
+ ],
+ "law": "source-framework boundaries are not physical law; a collapse is permitted when the intermediates it removes are not observable outside the region",
+ "wall_s": 1.08,
+ "pass": true
+}

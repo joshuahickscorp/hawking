@@ -1,0 +1,529 @@
+{
+ "schema": "hawking.headless.capability_suite.v1",
+ "generated_at": "2026-08-25T04:37:55Z",
+ "label": "noetic-variantA-2.98",
+ "backend": "noetic",
+ "target": "http://127.0.0.1:8080",
+ "scoring": "every item scores through a deterministic predicate over the reply text \u2014 exact string, parsed JSON, compiled AST. No model grades any model, because that would make the gate inherit the unreliability it exists to detect.",
+ "overall": {
+  "passed": 0,
+  "total": 43,
+  "rate": 0.0
+ },
+ "per_axis": {
+  "knowledge": {
+   "passed": 0,
+   "total": 3,
+   "rate": 0.0
+  },
+  "reasoning": {
+   "passed": 0,
+   "total": 6,
+   "rate": 0.0
+  },
+  "structured_output": {
+   "passed": 0,
+   "total": 15,
+   "rate": 0.0
+  },
+  "mutation": {
+   "passed": 0,
+   "total": 10,
+   "rate": 0.0
+  },
+  "coding": {
+   "passed": 0,
+   "total": 3,
+   "rate": 0.0
+  },
+  "self_correction": {
+   "passed": 0,
+   "total": 3,
+   "rate": 0.0
+  },
+  "hygiene": {
+   "passed": 0,
+   "total": 3,
+   "rate": 0.0
+  }
+ },
+ "per_item": {
+  "fact-capital": {
+   "axis": "knowledge",
+   "repeats": 3,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "expected all of ('paris',)",
+     "finish_reason": "stop",
+     "completion_tokens": 31,
+     "wall_s": 5.974,
+     "reply_head": ""
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "expected all of ('paris',)",
+     "finish_reason": "stop",
+     "completion_tokens": 31,
+     "wall_s": 5.289,
+     "reply_head": ""
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "expected all of ('paris',)",
+     "finish_reason": "stop",
+     "completion_tokens": 31,
+     "wall_s": 5.321,
+     "reply_head": ""
+    }
+   ]
+  },
+  "fact-arith": {
+   "axis": "reasoning",
+   "repeats": 3,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "expected 323 among the numbers emitted, got []",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 59.575,
+     "reply_head": ""
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "expected 323 among the numbers emitted, got []",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 59.578,
+     "reply_head": ""
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "expected 323 among the numbers emitted, got []",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 59.492,
+     "reply_head": ""
+    }
+   ]
+  },
+  "fact-multistep": {
+   "axis": "reasoning",
+   "repeats": 3,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "expected 21 among the numbers emitted, got [15]",
+     "finish_reason": "stop",
+     "completion_tokens": 372,
+     "wall_s": 17.3,
+     "reply_head": "15"
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "expected 21 among the numbers emitted, got [15]",
+     "finish_reason": "stop",
+     "completion_tokens": 372,
+     "wall_s": 17.318,
+     "reply_head": "15"
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "expected 21 among the numbers emitted, got [15]",
+     "finish_reason": "stop",
+     "completion_tokens": 372,
+     "wall_s": 17.366,
+     "reply_head": "15"
+    }
+   ]
+  },
+  "json-answer": {
+   "axis": "structured_output",
+   "repeats": 5,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 105,
+     "wall_s": 8.643,
+     "reply_head": ""
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 105,
+     "wall_s": 8.733,
+     "reply_head": ""
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 105,
+     "wall_s": 8.673,
+     "reply_head": ""
+    },
+    {
+     "rep": 3,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 105,
+     "wall_s": 8.563,
+     "reply_head": ""
+    },
+    {
+     "rep": 4,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 105,
+     "wall_s": 8.573,
+     "reply_head": ""
+    }
+   ]
+  },
+  "json-kind-correct": {
+   "axis": "structured_output",
+   "repeats": 5,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 529,
+     "wall_s": 22.539,
+     "reply_head": ""
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 529,
+     "wall_s": 22.623,
+     "reply_head": ""
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 529,
+     "wall_s": 22.918,
+     "reply_head": ""
+    },
+    {
+     "rep": 3,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 529,
+     "wall_s": 23.031,
+     "reply_head": ""
+    },
+    {
+     "rep": 4,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 529,
+     "wall_s": 22.864,
+     "reply_head": ""
+    }
+   ]
+  },
+  "json-no-prose": {
+   "axis": "structured_output",
+   "repeats": 5,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 73,
+     "wall_s": 7.149,
+     "reply_head": "{\"\n  \"kind\": \"\n  \"answer\",\n  \"content\": \"\n  \"ok\",\n  \"operations\": [],,\n  \"tests\": []"
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 73,
+     "wall_s": 7.125,
+     "reply_head": "{\"\n  \"kind\": \"\n  \"answer\",\n  \"content\": \"\n  \"ok\",\n  \"operations\": [],,\n  \"tests\": []"
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 73,
+     "wall_s": 7.136,
+     "reply_head": "{\"\n  \"kind\": \"\n  \"answer\",\n  \"content\": \"\n  \"ok\",\n  \"operations\": [],,\n  \"tests\": []"
+    },
+    {
+     "rep": 3,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 73,
+     "wall_s": 7.202,
+     "reply_head": "{\"\n  \"kind\": \"\n  \"answer\",\n  \"content\": \"\n  \"ok\",\n  \"operations\": [],,\n  \"tests\": []"
+    },
+    {
+     "rep": 4,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 73,
+     "wall_s": 7.143,
+     "reply_head": "{\"\n  \"kind\": \"\n  \"answer\",\n  \"content\": \"\n  \"ok\",\n  \"operations\": [],,\n  \"tests\": []"
+    }
+   ]
+  },
+  "mutation-anchor-exact": {
+   "axis": "mutation",
+   "repeats": 5,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1097,
+     "wall_s": 45.165,
+     "reply_head": ""
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1097,
+     "wall_s": 45.285,
+     "reply_head": ""
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1097,
+     "wall_s": 45.217,
+     "reply_head": ""
+    },
+    {
+     "rep": 3,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1097,
+     "wall_s": 45.244,
+     "reply_head": ""
+    },
+    {
+     "rep": 4,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1097,
+     "wall_s": 45.226,
+     "reply_head": ""
+    }
+   ]
+  },
+  "mutation-refuses-invention": {
+   "axis": "mutation",
+   "repeats": 5,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 840,
+     "wall_s": 34.211,
+     "reply_head": "{\"\n  \"kind\": \"answer\",\n  \"content\": \"I cannot rename the function in `totally_unseen_module.py` because I have not been shown the file's contents. I cannot invent or guess the function's name or the file's content. Pleas"
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 840,
+     "wall_s": 34.173,
+     "reply_head": "{\"\n  \"kind\": \"answer\",\n  \"content\": \"I cannot rename the function in `totally_unseen_module.py` because I have not been shown the file's contents. I cannot invent or guess the function's name or the file's content. Pleas"
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 840,
+     "wall_s": 34.129,
+     "reply_head": "{\"\n  \"kind\": \"answer\",\n  \"content\": \"I cannot rename the function in `totally_unseen_module.py` because I have not been shown the file's contents. I cannot invent or guess the function's name or the file's content. Pleas"
+    },
+    {
+     "rep": 3,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 840,
+     "wall_s": 34.145,
+     "reply_head": "{\"\n  \"kind\": \"answer\",\n  \"content\": \"I cannot rename the function in `totally_unseen_module.py` because I have not been shown the file's contents. I cannot invent or guess the function's name or the file's content. Pleas"
+    },
+    {
+     "rep": 4,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 840,
+     "wall_s": 34.22,
+     "reply_head": "{\"\n  \"kind\": \"answer\",\n  \"content\": \"I cannot rename the function in `totally_unseen_module.py` because I have not been shown the file's contents. I cannot invent or guess the function's name or the file's content. Pleas"
+    }
+   ]
+  },
+  "code-compiles": {
+   "axis": "coding",
+   "repeats": 3,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "no python code block in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 60.48,
+     "reply_head": ""
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "no python code block in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 60.474,
+     "reply_head": ""
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "no python code block in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 60.384,
+     "reply_head": ""
+    }
+   ]
+  },
+  "code-self-correct": {
+   "axis": "self_correction",
+   "repeats": 3,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "the corrected function must drop the spurious + 1",
+     "finish_reason": "stop",
+     "completion_tokens": 120,
+     "wall_s": 9.319,
+     "reply_head": "The bug is that it adds  to the result.\n\n```python\ndef mean(x):\n    return sum(x) / len(x)\n```"
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "the corrected function must drop the spurious + 1",
+     "finish_reason": "stop",
+     "completion_tokens": 120,
+     "wall_s": 9.255,
+     "reply_head": "The bug is that it adds  to the result.\n\n```python\ndef mean(x):\n    return sum(x) / len(x)\n```"
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "the corrected function must drop the spurious + 1",
+     "finish_reason": "stop",
+     "completion_tokens": 120,
+     "wall_s": 9.265,
+     "reply_head": "The bug is that it adds  to the result.\n\n```python\ndef mean(x):\n    return sum(x) / len(x)\n```"
+    }
+   ]
+  },
+  "no-think-leak": {
+   "axis": "hygiene",
+   "repeats": 3,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "empty reply: nothing was produced to be clean",
+     "finish_reason": "stop",
+     "completion_tokens": 35,
+     "wall_s": 6.135,
+     "reply_head": ""
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "empty reply: nothing was produced to be clean",
+     "finish_reason": "stop",
+     "completion_tokens": 35,
+     "wall_s": 6.135,
+     "reply_head": ""
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "empty reply: nothing was produced to be clean",
+     "finish_reason": "stop",
+     "completion_tokens": 35,
+     "wall_s": 6.154,
+     "reply_head": ""
+    }
+   ]
+  }
+ },
+ "identity_sufficient": false,
+ "identity_verdict": "UNIDENTIFIED (G073, amended 2026-08-26): this receipt records target='http://127.0.0.1:8080' and label='noetic-variantA-2.98' and carries NO artifact hash, NO executable-closure hash and NO chat-template field. The score stands as a MEASUREMENT; what is NOT established is WHICH BODY earned it. It must not be compared against another row -- G067 measured the same body at 0/43 and 14/43 across two chat-template arms, and no row here records its arm. tools/headless/capability_suite.py now refuses such a receipt."
+}

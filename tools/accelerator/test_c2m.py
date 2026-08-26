@@ -296,3 +296,214 @@ def test_recognised_idioms_execute_and_match_numpy():
     s = float(np.array(ci.execute_idiom(ci.recognize(_RED), {"in": mx.array(x)},
                                         dims={"n": n}))[0])
     assert abs(s - float(np.sum(x.astype(np.float64)))) / abs(float(np.sum(x.astype(np.float64)))) < 1e-4
+
+
+def test_the_index_variable_is_discovered_not_assumed():
+    """Three kernels in the pinned seed compute EXACTLY a[index] + b[index] -- a
+    supported operation -- and were refused because the frontend hardcoded `i`. A
+    supported operation rejected over a VARIABLE NAME. See
+    ACCELERATOR_C2M_CORPUS_CENSUS.json."""
+    for idx in ("i", "id", "index", "gid"):
+        src = ("__global__ void vector_add(const float* a, const float* b, float* c) {"
+               f"  int {idx} = blockIdx.x * blockDim.x + threadIdx.x;"
+               f"  c[{idx}] = a[{idx}] + b[{idx}];"
+               "}")
+        t = c2m.translate(src, elements=64)
+        assert t.program.ops[0].kind == "add"
+        assert t.inputs == ["a", "b"]
+
+
+def test_a_computed_index_that_is_never_named_is_refused():
+    """The subset indexes THROUGH the name, so an index computed inline has nothing to
+    match against and is refused with that reason rather than mistranslated."""
+    src = ("__global__ void k(const float* a, const float* b, float* c) {"
+           "  c[blockIdx.x * blockDim.x + threadIdx.x] = a[0] + b[0];"
+           "}")
+    with pytest.raises(c2m.C2MRefusal, match="not bound to a named variable"):
+        c2m.translate(src, elements=64)
+
+
+def test_the_recogniser_misses_the_real_idioms_on_a_DECLARATION_not_an_algorithm():
+    """The seed carries a real tiled GEMM and a real block reduction, and the T2 door
+    matched NEITHER -- failing on the first required fragment both times, because the
+    real code writes `__shared__ float As[BLOCKSIZE * BLOCKSIZE]` where the recogniser
+    demands a 2-D literal, and `extern __shared__ float sdata[]` where it demands a
+    sized array. The T2 receipt PREDICTED this brittleness; this measures it."""
+    gemm = ("__global__ void sgemm(const float* A, const float* B, float* C, int M,"
+            " int N, int K) { __shared__ float As[BLOCKSIZE * BLOCKSIZE];"
+            " __shared__ float Bs[BLOCKSIZE * BLOCKSIZE]; __syncthreads(); }")
+    with pytest.raises(c2m.C2MRefusal, match="shared tile for A"):
+        ci.recognize(gemm)
+    red = ("__global__ void reduce(const float* in, float* out, int n) {"
+           " extern __shared__ float sdata[]; int tid = threadIdx.x; }")
+    with pytest.raises(c2m.C2MRefusal, match="shared buffer"):
+        ci.recognize(red)
+
+
+_REAL_SGEMM = """
+template <const int BLOCKSIZE>
+__global__ void sgemm_shared_mem_block(int M, int N, int K, float alpha,
+                                       const float *A, const float *B,
+                                       float beta, float *C) {
+    const int cRow = blockIdx.x;
+    const int cCol = blockIdx.y;
+    __shared__ float As[BLOCKSIZE * BLOCKSIZE];
+    __shared__ float Bs[BLOCKSIZE * BLOCKSIZE];
+    const int threadCol = threadIdx.x % BLOCKSIZE;
+    const int threadRow = threadIdx.x / BLOCKSIZE;
+    float tmp = 0.0f;
+    for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
+        As[threadRow * BLOCKSIZE + threadCol] = A[threadRow * K + threadCol];
+        Bs[threadRow * BLOCKSIZE + threadCol] = B[threadRow * N + threadCol];
+        __syncthreads();
+        for (int dotIdx = 0; dotIdx < BLOCKSIZE; ++dotIdx)
+            tmp += As[threadRow * BLOCKSIZE + dotIdx] * Bs[dotIdx * BLOCKSIZE + threadCol];
+        __syncthreads();
+    }
+    C[threadRow * N + threadCol] = alpha * tmp + beta * C[threadRow * N + threadCol];
+}
+"""
+
+
+def test_the_real_sgemm_is_its_own_idiom_because_alpha_beta_is_a_different_function():
+    """Widening tiled_gemm to match the seed's real kernel was the obvious fix and
+    would have SUBSTITUTED A DIFFERENT COMPUTATION: this computes alpha*A@B + beta*C.
+    The tiled door must still refuse it, and the new door must not claim the tile,
+    which is a template parameter the kernel source does not contain."""
+    rec = ci.recognize(_REAL_SGEMM)
+    assert rec.idiom == "sgemm_alpha_beta"
+    assert rec.tile is None
+    with pytest.raises(c2m.C2MRefusal, match="shared tile for A"):
+        ci._match_all(_REAL_SGEMM, ci._GEMM_FRAGMENTS, "tiled_gemm")
+    with pytest.raises(c2m.C2MRefusal, match="TEMPLATE PARAMETER"):
+        ci.execute_idiom(rec, {}, dims={"M": 8, "K": 8, "N": 8})
+
+
+def test_the_naive_widening_would_have_passed_the_seeds_own_test():
+    """The seed's main() calls this kernel with alpha=1 and beta=0, where a plain
+    matmul agrees EXACTLY. A recogniser loosened to match the shape would have been
+    correct on the only inputs the corpus exercises and wrong everywhere else."""
+    pytest.importorskip("mlx.core")
+    import numpy as _np, air, c2m_idiom
+    rng = _np.random.default_rng(3)
+    M = K = N = 32
+    A = (rng.standard_normal((M, K)) * 0.3).astype(_np.float32)
+    B = (rng.standard_normal((K, N)) * 0.3).astype(_np.float32)
+    C0 = (rng.standard_normal((M, N)) * 0.3).astype(_np.float32)
+    rec = ci.recognize(_REAL_SGEMM)
+    plain = _np.asarray(air.execute_matmul(
+        air.AirMatmul("plain", M, K, N, tile=16, strategy="tiled"), A, B))
+    for alpha, beta, must_agree in ((1.0, 0.0, True), (2.0, 0.5, False)):
+        got = _np.asarray(c2m_idiom.execute_idiom(
+            rec, {"A": A, "B": B, "C": C0, "alpha": alpha, "beta": beta},
+            dims={"M": M, "K": K, "N": N, "tile": 16}))
+        ref = alpha * (A.astype(_np.float64) @ B.astype(_np.float64)) + beta * C0
+        assert float(_np.max(_np.abs(got - ref)) / _np.max(_np.abs(ref))) < 1e-5
+        plain_err = float(_np.max(_np.abs(plain - ref)) / _np.max(_np.abs(ref)))
+        assert (plain_err < 1e-5) is must_agree
+
+
+@pytest.mark.parametrize("label,old,new", [
+    ("beta dropped", "alpha * tmp + beta * C[threadRow * N + threadCol]", "alpha * tmp"),
+    ("B index transposed", "Bs[dotIdx * BLOCKSIZE + threadCol]",
+     "Bs[threadCol * BLOCKSIZE + dotIdx]"),
+    ("accumulator starts at one", "float tmp = 0.0f", "float tmp = 1.0f"),
+    ("rectangular tile", "As[BLOCKSIZE * BLOCKSIZE]", "As[BLOCKSIZE * OTHERSIZE]"),
+])
+def test_sgemm_near_misses_are_refused(label, old, new):
+    """Widening recognition without near-miss evidence is how a loose match ships."""
+    with pytest.raises(c2m.C2MRefusal):
+        ci.recognize(_REAL_SGEMM.replace(old, new, 1))
+
+
+# ---------------------------------------------------------------------------
+# The corpus denominator. ACCELERATOR_C2M_CORPUS_DENOMINATOR.json.
+# ---------------------------------------------------------------------------
+
+_EMPTY_PROBE = 'extern "C" __global__ void p(const float*, int64_t, float*) {}'
+
+
+def test_empty_body_is_refused_for_being_empty_not_for_its_parameters():
+    """The nine seed stubs were refused with 'cannot parse parameter const float*'.
+
+    True, and the wrong cause: an unnamed parameter is fixable, a kernel with no body
+    is not translatable by anything, ever. A refusal naming the wrong cause sends the
+    reader to fix a parameter parser for a kernel that computes nothing.
+    """
+    with pytest.raises(c2m.C2MRefusal) as e:
+        c2m.translate(_EMPTY_PROBE, elements=8)
+    assert "EMPTY BODY" in str(e.value)
+    assert "parameter" not in str(e.value)
+
+
+def test_commuted_index_product_is_the_same_index():
+    """blockDim.x * blockIdx.x is integer multiplication written the other way round.
+
+    The addend order was already accepted and the factor order was not, which is what
+    hid it. Two seed kernels spell it this way.
+    """
+    src = ("__global__ void t(const float* a, const float* b, float* c, int n) {"
+           " int id = blockDim.x * blockIdx.x + threadIdx.x;"
+           " if (id < n) { c[id] = a[id] + b[id]; } }")
+    tk = c2m.translate(src, elements=64)
+    assert tk.program.ops[0].kind == "add"
+
+
+@pytest.mark.parametrize("idx,why", [
+    ("int id = blockIdx.x + blockDim.x * threadIdx.x;", "a different index entirely"),
+    ("int id = blockDim.y * blockIdx.x + threadIdx.x;", "wrong axis on the factor"),
+    ("int id = blockIdx.x * blockDim.x + threadIdx.y;", "wrong axis on the addend"),
+    ("int id = blockIdx.x * blockIdx.x + threadIdx.x;", "the same factor twice"),
+])
+def test_index_near_misses_stay_refused(idx, why):
+    """The widening is exactly commutativity. Each of these MEANS something else."""
+    src = ("__global__ void t(const float* a, const float* b, float* c, int n) {"
+           f" {idx} if (id < n) {{ c[id] = a[id] + b[id]; }} }}")
+    with pytest.raises(c2m.C2MRefusal):
+        c2m.translate(src, elements=64)
+
+
+def test_split_kernels_finds_every_kernel_in_one_file():
+    """translate()'s greedy `\\{(.*)\\}` swallows every kernel after the first."""
+    src = (f"__global__ void one(float* c) {{ {IDX} c[i] = 1.0f; }}\n"
+           f"__global__ void two(float* c) {{ {IDX} c[i] = 2.0f; }}\n")
+    assert [n for n, _, _ in c2m.split_kernels(src)] == ["one", "two"]
+
+
+def test_census_keeps_empty_kernels_out_of_the_computing_denominator():
+    r = c2m.census({"a.cu": _EMPTY_PROBE + "\n" + k("c[i] = a[i] + b[i];")})
+    assert r["kernels"] == 2
+    assert r["empty_body"] == 1
+    assert r["computing_kernels"] == 1
+    assert r["translated"] == 1
+
+
+def test_census_counts_one_computation_written_two_ways_as_one():
+    """Seven of the seed's kernels compute a[idx] + b[idx] under four spellings.
+
+    Counting kernels instead of computations is how a corpus of one trivial map reads
+    as coverage.
+    """
+    a = ("__global__ void one(const float* a, const float* b, float* c, int n)"
+         " { int i = blockIdx.x * blockDim.x + threadIdx.x;"
+         " if (i < n) { c[i] = a[i] + b[i]; } }")
+    b = ("__global__ void two(const float* a, const float* b, float* c, int n)"
+         " { int id = blockDim.x * blockIdx.x + threadIdx.x;"
+         " if (id < n) { c[id] = a[id] + b[id]; } }")
+    r = c2m.census({"a.cu": a, "b.cu": b})
+    assert r["elementwise_shaped_upper_bound"] == 2
+    assert r["distinct_elementwise_computations"] == 1
+
+
+def test_elementwise_shaped_is_an_upper_bound_not_a_classification():
+    """The cooperative check is a regex over the body, so a shuffle one function call
+    away is invisible. The seed's softmax_warp is counted elementwise-shaped and is a
+    warp reduction. Pinned as a KNOWN blindness rather than left for a reader to trust
+    the count."""
+    hidden = ("__global__ void t(const float* a, float* c, int n) {"
+              " int i = blockIdx.x * blockDim.x + threadIdx.x;"
+              " float v = warp_reduce_sum(a[i]);"
+              " if (i < n) { c[i] = v; } }")
+    r = c2m.census({"a.cu": hidden})
+    assert r["elementwise_shaped_upper_bound"] == 1   # counted, and it is not one
+    assert r["translated"] == 0                       # translate is not fooled

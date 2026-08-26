@@ -1,0 +1,83 @@
+{
+ "schema": "hawking.headless.noetic_archaeology.v1",
+ "generated_at": "2026-08-26T02:40:26Z",
+ "generated_by": "receipt archaeology + worktree existence checks; NOTHING re-run",
+ "hand_authored": false,
+ "obligation": "G068 (LANE C), G069 (LANE D)",
+ "git_head": "886f255f15261851ce7694094cc40433c52bb3a8",
+ "headline": "THE HISTORICAL BODIES ARE GONE AS BYTES BUT THEIR RECIPES SURVIVE; AND S027's 2.25 MIDPOINT IS A 2.98-EBPW BODY THAT NEVER GENERATED COHERENTLY",
+ "WHERE_THE_BODIES_WENT": {
+  "mechanism": "every historical body path in the receipts points inside a Grok worktree under ~/.claude-grok/worktrees/. All three are REAPED.",
+  "checked": {
+   "nq2fgen-20260823-225458 (q2f g64 2.25)": "REAPED",
+   "n036binheal-20260824-150234 (binary g64 1.25)": "REAPED",
+   "n042native-20260824-180050 (sealed native)": "REAPED"
+  },
+  "surviving_worktrees": [
+   "device-bound-enrolment-20260824-152147",
+   "rung2-grading-python-20260823-224828",
+   "tests-integration-rebuild-20260823-224839"
+  ],
+  "precedent": "this is the SAME failure that produced CLEAN_REBUILD_A: the 2.60 executable quoted as authority did not exist as bytes because its worktree was reaped. It was rebuilt from parent + recipe, and the rebuild proved the incumbent held NO unique weight bytes.",
+  "consequence": "RECONSTRUCTIBLE, not lost. The bf16 parent is on disk at 52 GB and the recipes are in the receipts, so rebuilding is from a RECEIPT, not from memory -- which is what S027 \u00a70B permits when the original is truly gone."
+ },
+ "S027_0B_CORRECTED_q2f": {
+  "steer_says": "~2.25 BPW, 27.55 ms/token, ~36.3 TPS, historically coherent",
+  "receipt_says": {
+   "source": "receipts/headless/Q2F_G64_GENERATION.json",
+   "body_bpw": 2.25,
+   "complete_ebpw": 2.9802419191571827,
+   "THE_CORRECTION": "2.25 is the MLP BODY rate. The COMPLETE EXECUTABLE is 2.980 EBPW, which is LARGER than the 2.596957 clean rebuild. It is not a smaller midpoint at all. This is precisely the Variant-A discrepancy S027 \u00a712 warns about, sitting inside S027 \u00a70B.",
+   "generation_finding": "Q2F g64 greedy-with-EOS emitted 2 tokens (' IR') then im_end. Forced 16-token sample judged VARIED, not coherent: ' IR<think>\\n\\nThe user is asking me to explain, in ordinary' with ids 15769, 248046, 248046, 248046, ...",
+   "NOT_HISTORICALLY_COHERENT": true,
+   "measured_tok_s": 33.09,
+   "dispatches_per_token": 964
+  },
+  "reconciling_27_55_ms": "27.55 ms IS real -- QWEN_COMPLETION_RECEIPT.json records 'COHERENCE=q2f_g64 2.25 bpw; EXECUTION=q2f_g64 27.55 ms'. It is a DIFFERENT measurement from the 33.09 tok/s whole-model decode. Both are true; they measure different things, and the steer fuses them into one body claim.",
+  "what_2_25_actually_names": "the MLP ORGAN coherence floor, which is a real and useful law. It is not a whole-model body. The AKB already demoted a sibling claim -- 'attention sets the representation floor' -- to architecture-specific for the same class of reason."
+ },
+ "LANE_D_LARGELY_ALREADY_ANSWERED": {
+  "source": "receipts/headless/BINARY_HEALING.json",
+  "question_it_asked": "Where does the 1.25-bpw binary g64 body diverge from q2f on real activations, and what is the smallest protected island that restores coherent generation while staying faster than q2f (27.55 ms)?",
+  "injured_body": {
+   "id": "binary_g64",
+   "bpw": 1.25,
+   "COMPLETE_TOKEN_NS": 23431791,
+   "died_at": "coherent_generation",
+   "why": "16 copies of token 271"
+  },
+  "THE_ANSWER_TO_WHAT_INFORMATION_WAS_MISSING": {
+   "uniformly_injured": true,
+   "n_layers_scanned": 64,
+   "n_layers_over_threshold": 64,
+   "mean_rel_l2_binary_vs_q2f_by_organ": {
+    "gate_proj": 0.4202,
+    "up_proj": 0.4476,
+    "down_proj": 0.4683
+   },
+   "earliest_layer": 0,
+   "earliest_organ": "up_proj",
+   "earliest_token_logit_divergence": "generated token 0. binary emits 271 sixteen times; q2f emits a varied sample from 15769. Dead before any later token can recover.",
+   "reading": "S027 \u00a76 asks for a SPARSE information set. The measured injury is UNIFORM -- 64 of 64 layers over threshold and all three MLP organs within 0.05 of each other. That is the physical reason no sparse island was found, and it is a MECHANISM, not a failure to search."
+  },
+  "healing_candidates_tried": 4,
+  "n_that_reached_coherent_generation": 0,
+  "coherent_healed_body_still_faster_than_q2f": false,
+  "best_candidate_cost": {
+   "id": "sparse_05",
+   "nnz_frac": 0.005,
+   "mlp_body_bpw": 1.4962503590303309,
+   "complete_ebpw": 2.500641071303714,
+   "COHERENCE_TAX_EBPW": 1.250641071303714,
+   "reading": "even 0.5% protection costs 1.2506 EBPW of tax, lands at 2.50 complete EBPW -- essentially the 2.60 body -- and STILL did not cohere."
+  }
+ },
+ "what_this_DOES_NOT_ESTABLISH": [
+  "That the q2f or binary bodies cannot be rebuilt. They can, from parent + recipe; that has NOT been attempted here.",
+  "That no sparse healing set exists. FOUR were tried. Uniform injury makes one unlikely, but 'unlikely given a uniform rel-L2 map' is not 'proven impossible'.",
+  "Any modern 43-case capability score for q2f or binary. Neither has been run under the current harness -- the bodies do not currently exist to run.",
+  "That 27.55 ms would reproduce today. It has not been re-measured."
+ ],
+ "recommendation": "LANE C's premise needs revising before it is executed: rebuilding q2f yields a 2.98-EBPW body that historically emitted 2 tokens then stopped, so it is NOT a stronger resident candidate than the 2.60 body it was supposed to beat. The genuinely open question the ladder should ask is the ORGAN one -- 2.25 is an MLP floor -- combined with cheaper NON-MLP organs, rather than a uniform whole-model rate.",
+ "pass": true
+}

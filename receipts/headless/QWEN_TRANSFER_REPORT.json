@@ -1,0 +1,619 @@
+{
+ "schema": "hawking.headless.qwen_transfer_report.v1",
+ "generated_at": "2026-08-25T02:04:14Z",
+ "generated_by": "tools/headless/transfer_report.py",
+ "obligation": "G007 \u2014 QWEN_TRANSFER_REPORT (directive \u00a714)",
+ "git_head": "eb1494112b61953122262e311cc9243dbd44952e",
+ "hand_authored": false,
+ "question_this_answers": "WHAT SHOULD A FUTURE MODEL INHERIT",
+ "not_the_question": "what happened",
+ "parent": "qwen3.8-27b-abliterated",
+ "parent_architecture_class": "dense_hybrid_transformer",
+ "required_fields": [
+  "applicability_conditions",
+  "successful_architecture_classes",
+  "failed_architecture_classes",
+  "required_kernel_shape",
+  "reopening_conditions"
+ ],
+ "law": "values do not transfer, methods do. Every number in this report is a Qwen measurement; every recommendation is a method with an applicability condition.",
+ "built_from": [
+  "receipts/headless/REPRESENTATION_LIBRARY.json",
+  "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+  "receipts/headless/ORGAN_FRONTIER_MATRIX.json",
+  "receipts/headless/KERNEL_LIBRARY.json"
+ ],
+ "input_audit": {
+  "n_opens_recorded": 39,
+  "n_forbidden_reads": 0,
+  "forbidden_reads": [],
+  "n_reads_outside_allowlist": 0,
+  "reads_outside_allowlist": [],
+  "allowlist_receipts": [
+   "BINARY_HEALING.json",
+   "BYTES_FRONTIER.json",
+   "COORDINATE_TRANSFORM_PROBE.json",
+   "DECODING_GRAVITY.json",
+   "HYBRID_OPERATOR.json",
+   "KERNEL_LIBRARY.json",
+   "NOETIC_NEGATIVE_SCIENCE.json",
+   "ONEBIT_FAMILIES.json",
+   "ORGAN_DENSITY_FLOORS.json",
+   "ORGAN_FRONTIER_MATRIX.json",
+   "ORGAN_LIBRARY.json",
+   "QWEN_TRANSFER_REPORT.json",
+   "REPRESENTATION_LIBRARY.json",
+   "SHARED_BASIS_COHERENT.json",
+   "SHARED_BASIS_KERNEL.json",
+   "STATE_GRAVITY.json",
+   "STRUCTURAL_ELIMINATION.json",
+   "SUPEROPERATOR_LIBRARY.json"
+  ],
+  "allowlist_is": "the canonical libraries plus every receipt this report cites",
+  "forbidden_prefixes": [
+   "/Users/scammermike/noetic",
+   "/Users/scammermike/models",
+   "/Users/scammermike/Downloads/hawking/workspace",
+   "/Users/scammermike/Downloads/hawking/artifacts",
+   "/Users/scammermike/Downloads/hawking/crates"
+  ],
+  "clean": true
+ },
+ "n_entries": 25,
+ "n_rejected": 0,
+ "rejected": [],
+ "n_methods": 5,
+ "n_representations": 11,
+ "n_negatives": 9,
+ "entries": [
+  {
+   "id": "TR-METHOD-PER-ORGAN-FLOOR",
+   "inherit": "Measure the information floor PER ORGAN, never per model.",
+   "why": "attention, DeltaNet and embedding/output all survive held-out activations at ws_rtn_q3_g128 and all fail at q2f_g64 -- the same codec the MLP survives. A uniform bit rate therefore either wastes bits on the MLP or breaks every other organ.",
+   "applicability_conditions": [
+    "the model has more than one organ family",
+    "held-out real activations can be captured per organ"
+   ],
+   "successful_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "failed_architecture_classes": [],
+   "required_kernel_shape": "one GEMV kernel per (representation, group size) pair; the runtime must be able to read a MIXED artifact",
+   "reopening_conditions": [
+    "a model whose organs share a floor would make per-organ search wasted effort; measure two organs before committing"
+   ],
+   "evidence": [
+    "receipts/headless/ORGAN_DENSITY_FLOORS.json#organs.gqa_attention.candidates.5.complete_ebpw",
+    "receipts/headless/ORGAN_DENSITY_FLOORS.json#organs.gqa_attention.candidates.6.complete_ebpw",
+    "receipts/headless/ORGAN_FRONTIER_MATRIX.json#n_measured"
+   ]
+  },
+  {
+   "id": "TR-METHOD-HELDOUT-ACTIVATIONS",
+   "inherit": "Judge a candidate on held-out REAL activations, never on weight-space error and never on synthetic or Gaussian activations.",
+   "why": "weight-space error ranked candidates wrongly at every rate on this specimen; the held-out probe is what separates 2.25 from everything below it.",
+   "applicability_conditions": [
+    "activations can be captured from the parent",
+    "a probe layer set is chosen before candidates are scored"
+   ],
+   "successful_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "failed_architecture_classes": [],
+   "required_kernel_shape": "none -- this is a scoring rule, not an operator",
+   "reopening_conditions": [
+    "never; a synthetic-activation ranking has been refuted twice here and is not a candidate method"
+   ],
+   "evidence": [
+    "receipts/headless/SHARED_BASIS_COHERENT.json#finding.reason",
+    "receipts/headless/HYBRID_OPERATOR.json#finding.reason"
+   ]
+  },
+  {
+   "id": "TR-METHOD-COMPETENT-KERNEL-FIRST",
+   "inherit": "Never evaluate a representation with an incompetent kernel. Fewer stored bits is not fewer nanoseconds.",
+   "why": "the shared basis proves it in both directions: its density did not survive, yet a competent fused kernel cut dispatches 384->192 and COMPLETE_TOKEN_NS 110201749->24554625.",
+   "applicability_conditions": [
+    "a native kernel exists or can be written for the candidate"
+   ],
+   "successful_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "failed_architecture_classes": [],
+   "required_kernel_shape": "in-register dequantization, no dense weight materialization on GEMV, geometry tpr64/tg128 on this device",
+   "reopening_conditions": [
+    "a device whose dispatch overhead is negligible would let a naive kernel rank representations fairly"
+   ],
+   "evidence": [
+    "receipts/headless/SHARED_BASIS_KERNEL.json#finding.reason",
+    "receipts/headless/KERNEL_LIBRARY.json#n_complete"
+   ]
+  },
+  {
+   "id": "TR-METHOD-MEASURE-BEFORE-ELIMINATING",
+   "inherit": "Compute head cosine (and channel deadness, and layer near-identity) BEFORE proposing structural elimination.",
+   "why": "head sharing is refuted here because the heads are near-orthogonal here: Q mean cosine 0.0438, zero dead MLP channels, zero near-identity layers. The refutation is a property of this model's geometry, not of the technique.",
+   "applicability_conditions": [
+    "weights can be streamed one tensor at a time"
+   ],
+   "successful_architecture_classes": [],
+   "failed_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "required_kernel_shape": "none -- elimination removes structure before any kernel exists",
+   "reopening_conditions": [
+    "any model whose measured head cosine is high",
+    "any model with measurably dead channels or near-identity layers"
+   ],
+   "evidence": [
+    "receipts/headless/STRUCTURAL_ELIMINATION.json#attention_heads.headline.q_mean_cosine_all_layers"
+   ]
+  },
+  {
+   "id": "TR-METHOD-BROAD-INJURY-TEST",
+   "inherit": "When a body is fast and injured, measure how BROAD the injury is before spending on healing.",
+   "why": "binary at ~1.25 bpw is physically fast and generation-injured, and the injury was broad enough that 0 of 4 island schemes reached coherent generation. Localizing first would have cost less than four healing attempts.",
+   "applicability_conditions": [
+    "a candidate is fast but incoherent"
+   ],
+   "successful_architecture_classes": [],
+   "failed_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "required_kernel_shape": "the injured representation's kernel plus a fallback path for protected regions",
+   "reopening_conditions": [
+    "a sensitivity map that localizes the injury to a region small enough that protecting it costs less than the next codec up"
+   ],
+   "evidence": [
+    "receipts/headless/BINARY_HEALING.json#finding.n_that_reached_coherent_generation"
+   ]
+  },
+  {
+   "id": "TR-REPR-BINARY",
+   "inherit": "binary: it failed here on ['mlp_down', 'mlp_gate_up'] -- rank it lower, do not exclude it",
+   "why": "1-bit sign code",
+   "zero_kind": "REPRESENTATION",
+   "applicability_conditions": [
+    "organ operator shape matches one of ['mlp_down', 'mlp_gate_up']",
+    "a native kernel for this family exists on the target device"
+   ],
+   "successful_architecture_classes": [],
+   "failed_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "required_kernel_shape": "GEMV with in-register dequantization at the family's group size; fused gate_up_swiglu where the intermediate is not observable",
+   "reopening_conditions": [
+    "a healing scheme that restores coherent generation while the healed body stays faster than q2f_g64 at 27.55 ms COMPLETE_TOKEN_NS"
+   ],
+   "evidence": [
+    "receipts/headless/BINARY_HEALING.json#finding.n_that_reached_coherent_generation",
+    "receipts/headless/ONEBIT_FAMILIES.json#verdict.decision"
+   ],
+   "measured_density_frontier": 1.25
+  },
+  {
+   "id": "TR-REPR-BINARY_SPARSE_RESIDUAL",
+   "inherit": "binary_sparse_residual: it failed here on ['mlp_down', 'mlp_gate_up'] -- rank it lower, do not exclude it",
+   "why": "carried forward from the v1 library",
+   "zero_kind": "REPRESENTATION",
+   "applicability_conditions": [
+    "organ operator shape matches one of ['mlp_down', 'mlp_gate_up']",
+    "a native kernel for this family exists on the target device"
+   ],
+   "successful_architecture_classes": [],
+   "failed_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "required_kernel_shape": "GEMV with in-register dequantization at the family's group size; fused gate_up_swiglu where the intermediate is not observable",
+   "reopening_conditions": [
+    "no failure recorded; reopening is not applicable"
+   ],
+   "evidence": [
+    "receipts/headless/REPRESENTATION_LIBRARY.json#n_families"
+   ],
+   "measured_density_frontier": 2.216250359030331
+  },
+  {
+   "id": "TR-REPR-CONVENTIONAL_LOW_BIT",
+   "inherit": "conventional_low_bit: SEED IT for organs like ['gqa_attention', 'deltanet', 'embed', 'lm_head']",
+   "why": "grouped absmax / RTN at 3-4 bits",
+   "zero_kind": "REPRESENTATION",
+   "applicability_conditions": [
+    "organ operator shape matches one of ['gqa_attention', 'deltanet', 'embed', 'lm_head']",
+    "a native kernel for this family exists on the target device"
+   ],
+   "successful_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "failed_architecture_classes": [],
+   "required_kernel_shape": "GEMV with in-register dequantization at the family's group size; fused gate_up_swiglu where the intermediate is not observable",
+   "reopening_conditions": [
+    "no failure recorded; reopening is not applicable"
+   ],
+   "evidence": [
+    "receipts/headless/REPRESENTATION_LIBRARY.json#n_families"
+   ],
+   "measured_density_frontier": null
+  },
+  {
+   "id": "TR-REPR-LEFTOVER_F32",
+   "inherit": "leftover_f32: SEED IT for organs like ['normalization']",
+   "why": "not quantized at all: kept as flat f32",
+   "zero_kind": "REPRESENTATION",
+   "applicability_conditions": [
+    "organ operator shape matches one of ['normalization']",
+    "a native kernel for this family exists on the target device"
+   ],
+   "successful_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "failed_architecture_classes": [],
+   "required_kernel_shape": "GEMV with in-register dequantization at the family's group size; fused gate_up_swiglu where the intermediate is not observable",
+   "reopening_conditions": [
+    "no failure recorded; reopening is not applicable"
+   ],
+   "evidence": [
+    "receipts/headless/REPRESENTATION_LIBRARY.json#n_families"
+   ],
+   "measured_density_frontier": 32.0
+  },
+  {
+   "id": "TR-REPR-LOW_RANK",
+   "inherit": "low_rank: it failed here on [] -- rank it lower, do not exclude it",
+   "why": "UV factorization",
+   "zero_kind": "ZERO_INDEPENDENT_INFORMATION",
+   "applicability_conditions": [
+    "organ operator shape matches one of []",
+    "a native kernel for this family exists on the target device"
+   ],
+   "successful_architecture_classes": [],
+   "failed_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "required_kernel_shape": "GEMV with in-register dequantization at the family's group size; fused gate_up_swiglu where the intermediate is not observable",
+   "reopening_conditions": [
+    "a correction whose extra bpw keeps the body under 2.25 while rel_fro on real held-out X drops below the q2f baseline"
+   ],
+   "evidence": [
+    "receipts/headless/HYBRID_OPERATOR.json#finding.reason"
+   ],
+   "measured_density_frontier": null
+  },
+  {
+   "id": "TR-REPR-LOW_RANK_PLUS_SPARSE",
+   "inherit": "low_rank_plus_sparse: it failed here on ['mlp_down', 'mlp_gate_up'] -- rank it lower, do not exclude it",
+   "why": "UV plus a sparse exception set",
+   "zero_kind": "REPRESENTATION",
+   "applicability_conditions": [
+    "organ operator shape matches one of ['mlp_down', 'mlp_gate_up']",
+    "a native kernel for this family exists on the target device"
+   ],
+   "successful_architecture_classes": [],
+   "failed_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "required_kernel_shape": "GEMV with in-register dequantization at the family's group size; fused gate_up_swiglu where the intermediate is not observable",
+   "reopening_conditions": [
+    "no failure recorded; reopening is not applicable"
+   ],
+   "evidence": [
+    "receipts/headless/REPRESENTATION_LIBRARY.json#n_families"
+   ],
+   "measured_density_frontier": null
+  },
+  {
+   "id": "TR-REPR-PROTECTED_ISLANDS",
+   "inherit": "protected_islands: it failed here on [] -- rank it lower, do not exclude it",
+   "why": "ultra-low bulk plus tiny high-precision regions",
+   "zero_kind": "REPRESENTATION",
+   "applicability_conditions": [
+    "organ operator shape matches one of []",
+    "a native kernel for this family exists on the target device"
+   ],
+   "successful_architecture_classes": [],
+   "failed_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "required_kernel_shape": "GEMV with in-register dequantization at the family's group size; fused gate_up_swiglu where the intermediate is not observable",
+   "reopening_conditions": [
+    "a sensitivity map that localizes the injury to a region small enough that protecting it costs less than the 2.25-bpw q2f body"
+   ],
+   "evidence": [
+    "receipts/headless/BINARY_HEALING.json#finding.best_by_capability_per_tax"
+   ],
+   "measured_density_frontier": null
+  },
+  {
+   "id": "TR-REPR-Q2_AFFINE",
+   "inherit": "q2_affine: SEED IT for organs like ['mlp_gate_up', 'mlp_down']",
+   "why": "4-level fitted affine at group 64",
+   "zero_kind": "REPRESENTATION",
+   "applicability_conditions": [
+    "organ operator shape matches one of ['mlp_gate_up', 'mlp_down']",
+    "a native kernel for this family exists on the target device"
+   ],
+   "successful_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "failed_architecture_classes": [],
+   "required_kernel_shape": "GEMV with in-register dequantization at the family's group size; fused gate_up_swiglu where the intermediate is not observable",
+   "reopening_conditions": [
+    "no failure recorded; reopening is not applicable"
+   ],
+   "evidence": [
+    "receipts/headless/REPRESENTATION_LIBRARY.json#n_families"
+   ],
+   "measured_density_frontier": 2.25
+  },
+  {
+   "id": "TR-REPR-SHARED_BASIS",
+   "inherit": "shared_basis: it failed here on ['mlp_down', 'mlp_gate_up'] -- rank it lower, do not exclude it",
+   "why": "K shared basis vectors plus per-row coefficients",
+   "zero_kind": "ZERO_INDEPENDENT_INFORMATION",
+   "applicability_conditions": [
+    "organ operator shape matches one of ['mlp_down', 'mlp_gate_up']",
+    "a native kernel for this family exists on the target device"
+   ],
+   "successful_architecture_classes": [],
+   "failed_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "required_kernel_shape": "GEMV with in-register dequantization at the family's group size; fused gate_up_swiglu where the intermediate is not observable",
+   "reopening_conditions": [
+    "a shared-basis point that is coherent at held-out activation AND beats q2f on both density and COMPLETE_TOKEN_NS",
+    "a shared-K variant that is coherent on held-out X at a total body bpw below 2.25"
+   ],
+   "evidence": [
+    "receipts/headless/SHARED_BASIS_COHERENT.json#finding.reason",
+    "receipts/headless/SHARED_BASIS_KERNEL.json#finding.reason",
+    "receipts/headless/HYBRID_OPERATOR.json#finding.reason"
+   ],
+   "measured_density_frontier": 0.53125
+  },
+  {
+   "id": "TR-REPR-STRUCTURAL_ELIMINATION",
+   "inherit": "structural_elimination: it failed here on [] -- rank it lower, do not exclude it",
+   "why": "the structure is removed, not compressed",
+   "zero_kind": "ZERO_STORAGE",
+   "applicability_conditions": [
+    "organ operator shape matches one of []",
+    "a native kernel for this family exists on the target device"
+   ],
+   "successful_architecture_classes": [],
+   "failed_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "required_kernel_shape": "GEMV with in-register dequantization at the family's group size; fused gate_up_swiglu where the intermediate is not observable",
+   "reopening_conditions": [
+    "an organ or model where head cosine similarity is high enough that sharing costs less capability than the bits it saves"
+   ],
+   "evidence": [
+    "receipts/headless/STRUCTURAL_ELIMINATION.json#verdict.one_line"
+   ],
+   "measured_density_frontier": null
+  },
+  {
+   "id": "TR-REPR-TERNARY",
+   "inherit": "ternary: it failed here on ['mlp_down', 'mlp_gate_up', 'whole_model'] -- rank it lower, do not exclude it",
+   "why": "{-1,0,+1}",
+   "zero_kind": "REPRESENTATION",
+   "applicability_conditions": [
+    "organ operator shape matches one of ['mlp_down', 'mlp_gate_up', 'whole_model']",
+    "a native kernel for this family exists on the target device"
+   ],
+   "successful_architecture_classes": [],
+   "failed_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "required_kernel_shape": "GEMV with in-register dequantization at the family's group size; fused gate_up_swiglu where the intermediate is not observable",
+   "reopening_conditions": [
+    "no failure recorded; reopening is not applicable"
+   ],
+   "evidence": [
+    "receipts/headless/REPRESENTATION_LIBRARY.json#n_families"
+   ],
+   "measured_density_frontier": 1.85
+  },
+  {
+   "id": "TR-NEG-QN-BINARY-INJURY",
+   "inherit": "Do not spend an experiment on binary_quantization for an organ like mlp_gate_up+mlp_down without first checking its reopening condition.",
+   "why": "the 1.25-bpw binary body is physically fast but generation-injured; 0 of 4 healing candidates reached coherent generation",
+   "level": "MODEL_SPECIFIC",
+   "applicability_conditions": [
+    "organ resembles mlp_gate_up+mlp_down",
+    "technique is binary_quantization"
+   ],
+   "successful_architecture_classes": [],
+   "failed_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "required_kernel_shape": "qwen_binary_matvec (sign-code GEMV)",
+   "reopening_conditions": [
+    "a healing scheme that restores coherent generation while the healed body stays faster than q2f_g64 at 27.55 ms COMPLETE_TOKEN_NS"
+   ],
+   "evidence": [
+    "receipts/headless/BINARY_HEALING.json#finding.n_that_reached_coherent_generation",
+    "receipts/headless/ONEBIT_FAMILIES.json#verdict.decision"
+   ],
+   "scope_law": "MODEL_SPECIFIC: this warns another architecture, it never prunes there"
+  },
+  {
+   "id": "TR-NEG-QN-BINARY-HEALING",
+   "inherit": "Do not spend an experiment on protected_islands_healing for an organ like mlp_gate_up+mlp_down without first checking its reopening condition.",
+   "why": "the injury is broad, not localized: no small protected island cheaply restored it; 0/4 candidates reached coherent generation",
+   "level": "MODEL_SPECIFIC",
+   "applicability_conditions": [
+    "organ resembles mlp_gate_up+mlp_down",
+    "technique is protected_islands_healing"
+   ],
+   "successful_architecture_classes": [],
+   "failed_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "required_kernel_shape": "qwen_binary_matvec + island fallback",
+   "reopening_conditions": [
+    "a sensitivity map that localizes the injury to a region small enough that protecting it costs less than the 2.25-bpw q2f body"
+   ],
+   "evidence": [
+    "receipts/headless/BINARY_HEALING.json#finding.best_by_capability_per_tax"
+   ],
+   "scope_law": "MODEL_SPECIFIC: this warns another architecture, it never prunes there"
+  },
+  {
+   "id": "TR-NEG-QN-SHARED-BASIS-DENSITY",
+   "inherit": "Do not spend an experiment on shared_basis for an organ like mlp_gate_up+mlp_down without first checking its reopening condition.",
+   "why": "the KERNEL is competent and the byte win does translate to nanoseconds, but no K below ~2.25 bpw composes coherently for the MLP: the local functional probe dies at held-out activation",
+   "level": "MODEL_SPECIFIC",
+   "applicability_conditions": [
+    "organ resembles mlp_gate_up+mlp_down",
+    "technique is shared_basis"
+   ],
+   "successful_architecture_classes": [],
+   "failed_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "required_kernel_shape": "fused shared-basis matvec (competent: dispatches 384->192, COMPLETE_TOKEN_NS 110201749->24554625)",
+   "reopening_conditions": [
+    "a shared-basis point that is coherent at held-out activation AND beats q2f on both density and COMPLETE_TOKEN_NS"
+   ],
+   "evidence": [
+    "receipts/headless/SHARED_BASIS_COHERENT.json#finding.reason",
+    "receipts/headless/SHARED_BASIS_KERNEL.json#finding.reason"
+   ],
+   "scope_law": "MODEL_SPECIFIC: this warns another architecture, it never prunes there"
+  },
+  {
+   "id": "TR-NEG-QN-LOWRANK-HEALING",
+   "inherit": "Do not spend an experiment on low_rank_correction for an organ like mlp_gate_up+mlp_down without first checking its reopening condition.",
+   "why": "no distributed correction under the 1.0 bpw budget restored held-out activations on real X; even r=256 at 1.035 extra bpw pushed the body to 2.285 > 2.25 with rel_fro 0.4798",
+   "level": "MODEL_SPECIFIC",
+   "applicability_conditions": [
+    "organ resembles mlp_gate_up+mlp_down",
+    "technique is low_rank_correction"
+   ],
+   "successful_architecture_classes": [],
+   "failed_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "required_kernel_shape": "hybrid operator (low-rank + quantized body)",
+   "reopening_conditions": [
+    "a correction whose extra bpw keeps the body under 2.25 while rel_fro on real held-out X drops below the q2f baseline"
+   ],
+   "evidence": [
+    "receipts/headless/HYBRID_OPERATOR.json#finding.reason"
+   ],
+   "scope_law": "MODEL_SPECIFIC: this warns another architecture, it never prunes there"
+  },
+  {
+   "id": "TR-NEG-QN-SHARED-K-HYBRID",
+   "inherit": "Do not spend an experiment on shared_k_hybrid for an organ like mlp_gate_up+mlp_down without first checking its reopening condition.",
+   "why": "shared K=2 costs 0.531 extra bpw and still fails to restore held-out activations; the hybrid remained slower and incoherent",
+   "level": "MODEL_SPECIFIC",
+   "applicability_conditions": [
+    "organ resembles mlp_gate_up+mlp_down",
+    "technique is shared_k_hybrid"
+   ],
+   "successful_architecture_classes": [],
+   "failed_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "required_kernel_shape": "hybrid operator",
+   "reopening_conditions": [
+    "a shared-K variant that is coherent on held-out X at a total body bpw below 2.25"
+   ],
+   "evidence": [
+    "receipts/headless/HYBRID_OPERATOR.json#finding.reason"
+   ],
+   "scope_law": "MODEL_SPECIFIC: this warns another architecture, it never prunes there"
+  },
+  {
+   "id": "TR-NEG-QN-COORDINATE-TRANSFORM",
+   "inherit": "Do not spend an experiment on coordinate_transform for an organ like mlp_gate_up+mlp_down without first checking its reopening condition.",
+   "why": "the tested rotation families did not materially move the Qwen MLP information floor; ~2.25 bpw held under coordinate change",
+   "level": "MODEL_SPECIFIC",
+   "applicability_conditions": [
+    "organ resembles mlp_gate_up+mlp_down",
+    "technique is coordinate_transform"
+   ],
+   "successful_architecture_classes": [],
+   "failed_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "required_kernel_shape": "transform-then-quantize matvec",
+   "reopening_conditions": [
+    "a transform family not in the probe (learned orthogonal, Kronecker, head-specific, blockwise) that moves the measured floor below 2.25"
+   ],
+   "evidence": [
+    "receipts/headless/COORDINATE_TRANSFORM_PROBE.json#ROTATION_MOVES_BARRIER"
+   ],
+   "scope_law": "MODEL_SPECIFIC: this warns another architecture, it never prunes there"
+  },
+  {
+   "id": "TR-NEG-QN-HEAD-REDUNDANCY",
+   "inherit": "Do not spend an experiment on structural_elimination_heads for an organ like gqa_attention without first checking its reopening condition.",
+   "why": "Q heads mean cosine 0.0438 and K/V/O similarly near-orthogonal, so there is no shared-head structure to exploit; MLP dead channels 0 of 1114112; near-identity layers 0",
+   "level": "MODEL_SPECIFIC",
+   "applicability_conditions": [
+    "organ resembles gqa_attention",
+    "technique is structural_elimination_heads"
+   ],
+   "successful_architecture_classes": [],
+   "failed_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "required_kernel_shape": "n/a (elimination)",
+   "reopening_conditions": [
+    "an organ or model where head cosine similarity is high enough that sharing costs less capability than the bits it saves"
+   ],
+   "evidence": [
+    "receipts/headless/STRUCTURAL_ELIMINATION.json#verdict.one_line"
+   ],
+   "scope_law": "MODEL_SPECIFIC: this warns another architecture, it never prunes there"
+  },
+  {
+   "id": "TR-NEG-QN-STATE-MERGING",
+   "inherit": "Do not spend an experiment on depth_state_merging for an organ like kv_state+deltanet_state without first checking its reopening condition.",
+   "why": "depth-state and KV merging measured negative on this Qwen under the tested conditions",
+   "level": "MODEL_SPECIFIC",
+   "applicability_conditions": [
+    "organ resembles kv_state+deltanet_state",
+    "technique is depth_state_merging"
+   ],
+   "successful_architecture_classes": [],
+   "failed_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "required_kernel_shape": "n/a (state)",
+   "reopening_conditions": [
+    "a state topology (recurrent, latent-attention, or a longer-context regime) where merged state preserves capability"
+   ],
+   "evidence": [
+    "receipts/headless/STATE_GRAVITY.json#answer"
+   ],
+   "scope_law": "MODEL_SPECIFIC: this warns another architecture, it never prunes there"
+  },
+  {
+   "id": "TR-NEG-QN-BINARY-AS-DRAFT",
+   "inherit": "Do not spend an experiment on speculative_decoding_draft for an organ like whole_model without first checking its reopening condition.",
+   "why": "the 1.25 binary is not a useful draft: token acceptance alpha = 0 at position 0, so no expensive forward pass is saved",
+   "level": "MODEL_SPECIFIC",
+   "applicability_conditions": [
+    "organ resembles whole_model",
+    "technique is speculative_decoding_draft"
+   ],
+   "successful_architecture_classes": [],
+   "failed_architecture_classes": [
+    "dense_hybrid_transformer"
+   ],
+   "required_kernel_shape": "binary GEMV draft + full verify",
+   "reopening_conditions": [
+    "a cheap draft whose measured acceptance at position 0 is high enough that accepted tokens per expensive forward pass rises"
+   ],
+   "evidence": [
+    "receipts/headless/DECODING_GRAVITY.json#one_line"
+   ],
+   "scope_law": "MODEL_SPECIFIC: this warns another architecture, it never prunes there"
+  }
+ ],
+ "pass": true
+}

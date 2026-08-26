@@ -1,7 +1,7 @@
 {
  "schema": "hawking.headless.doctor_technique_registry.v1",
- "generated_at": "2026-08-24T22:40:56Z",
- "git_head": "f6a4fe7c9ee4ec3a3f5763bf020e7abe29f6bb94",
+ "generated_at": "2026-08-26T03:39:10Z",
+ "git_head": "e665c7319eb06bc1611d1ede67e091160dea83c0",
  "generated_by": "tools/headless/doctor_technique_registry.py",
  "obligation": "N043 \u2014 DOCTOR_TECHNIQUE_REGISTRY (S026 \u00a75, \u00a776; DOC-DIAGNOSIS family, PHASE A; CPU). Register the paper mechanisms as HYPOTHESES with provenance + Hawking experiment mapping + CURRENT VERDICT, seeded from this campaign's negative science. Literature is not authority.",
  "s026": [
@@ -1539,5 +1539,5 @@
   }
  },
  "docs": "docs/ultragoals/DOCTOR_TECHNIQUE_REGISTRY.md",
- "elapsed_s": 0.022
+ "elapsed_s": 0.031
 }

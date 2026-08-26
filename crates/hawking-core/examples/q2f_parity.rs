@@ -348,6 +348,15 @@ mod macos {
             )
             .into());
         }
+        // max_abs_diff_reuse was printed but never gated. A corruption of affine2_w --
+        // the exact function this path exercises -- reached 2.53e-2, 2.5x PASS_TOL, and
+        // the contract still reported PASS. Watched failing before this gate existed.
+        if !max_abs_diff_reuse.is_finite() || max_abs_diff_reuse >= PASS_TOL {
+            return Err(format!(
+                "native q2f affine2-reuse diverged: max_abs_diff_reuse_affine2={max_abs_diff_reuse} >= {PASS_TOL}"
+            )
+            .into());
+        }
         if dense_w_materialized_on_gemv != 0 {
             return Err("production GEMV materialized dense W".into());
         }

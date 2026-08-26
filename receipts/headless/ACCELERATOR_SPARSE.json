@@ -1,0 +1,134 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T12:59:04",
+ "experiment_class": "ACCEL-REPRESENTATION",
+ "knowledge_level": "MODEL_FAMILY",
+ "git_head": "4c5490a186376ff7b298490c662c38f87e8e0738",
+ "identities": {
+  "experiment": {
+   "id": "THE_OUTLIER_HURTS_BY_SETTING_THE_SCALE_NOT_BY_BEING_STORED_BADLY",
+   "obligation": "G043/G046",
+   "steer": "S015 \u00a712 SPARSE OPERATIONS; \u00a718 SPARSE RESIDUAL as a representation"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "api": "Metal via MLX mx.fast.metal_kernel JIT"
+  },
+  "model": {
+   "id": "Qwen3-30B-A3B",
+   "tensors": "8 REAL routed-expert gate_proj [768, 2048] bf16"
+  },
+  "representation": {
+   "base": "ws_rtn_q4_g64",
+   "candidates": [
+    "q4_g32",
+    "q5_g64",
+    "q4_g64 + sparse residual"
+   ]
+  },
+  "kernel": {
+   "new_air_op": "AirSparseMatvec (CSR)"
+  },
+  "runtime": {
+   "python": "3.12.6",
+   "mlx": "0.32.1"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device"
+  }
+ },
+ "headline": "SPARSE was the next named-absent corpus item, and the question that decides whether it earns a place is a REPRESENTATION question. MY PREDICTION WAS REFUTED: a sparse residual is BEATEN 2.5-3.9x PER BIT by simply spending the same bits on a finer group or one more level. Then the failure was diagnosed and the diagnosis holds: THE OUTLIER HURTS BY SETTING THE GROUP SCALE, not by being stored badly, so the error it causes is DENSE and a sparse fix cannot reach it.",
+ "the_question_was_framed_so_it_could_fail": "measuring only that a residual IMPROVES cosine would be the check-that-cannot-fail -- ANY residual improves cosine. The falsifiable form is COSINE PER ADDED BIT against the obvious alternative, and the alternative is what a reader would otherwise never see.",
+ "prediction_written_before_the_run": {
+  "sparse_2pct_8bit": [
+   0.997,
+   0.999
+  ],
+  "g32_alternative": [
+   0.995,
+   0.997
+  ],
+  "expectation": "sparse wins per bit"
+ },
+ "measured_per_added_bit": {
+  "baseline_q4_g64_median_cos": 0.994142,
+  "table": {
+   "q4_g32": {
+    "added_bpw": 0.25,
+    "median_cos": 0.99526,
+    "median_delta_cos": 0.001111,
+    "cos_gain_per_added_bit": 0.004443
+   },
+   "q5_g64": {
+    "added_bpw": 1.0,
+    "median_cos": 0.998713,
+    "median_delta_cos": 0.004569,
+    "cos_gain_per_added_bit": 0.004569
+   },
+   "sparse_0.005": {
+    "added_bpw": 0.095,
+    "median_cos": 0.994318,
+    "median_delta_cos": 0.000168,
+    "cos_gain_per_added_bit": 0.00177
+   },
+   "sparse_0.02": {
+    "added_bpw": 0.38,
+    "median_cos": 0.994683,
+    "median_delta_cos": 0.000532,
+    "cos_gain_per_added_bit": 0.001399
+   },
+   "sparse_0.05": {
+    "added_bpw": 0.95,
+    "median_cos": 0.995261,
+    "median_delta_cos": 0.001112,
+    "cos_gain_per_added_bit": 0.00117
+   }
+  },
+  "verdict": "REFUTED, and not narrowly. Predicted sparse 2% at 0.997-0.999; measured 0.994683, barely off the 0.994142 baseline. Uniform spend wins per bit: q5_g64 0.004569 and q4_g32 0.004443 against sparse 0.001770 / 0.001399 / 0.001170 at 0.5% / 2% / 5%.",
+  "and_sparse_gets_WORSE_as_it_densifies": "1.77 -> 1.40 -> 1.17 milli-cosine per bit. The first outliers are the biggest so returns diminish, while the INDEX TAX is constant per stored element -- 11 bits of column index for every 8 bits of value at cols=2048.",
+  "the_index_tax_has_a_precedent": "a prior campaign result measured rice+q1 coding reaching 8.24 bits per outlier against 48 naive, so the index dominating is a shape this program had already seen"
+ },
+ "THE_DIAGNOSIS_AND_IT_HOLDS": {
+  "what_I_reasoned_and_where_it_broke": "the organ-floor receipt measured PEARSON -0.9841 between cosine and mean(amax/rms), so grouped absmax loses on OUTLIERS -- TRUE. I inferred that a residual targeting the largest errors should therefore win -- FALSE. An outlier hurts by SETTING THE GROUP SCALE, which inflates the quantisation step for EVERY OTHER WEIGHT IN THE GROUP. It does not hurt by being badly stored itself, and fixing its own value leaves every other weight's inflated step exactly where it was.",
+  "falsifiable_form": "if the error were outlier-concentrated the top 2% of |residual| would hold FAR more than 2% of the squared error; if it is round-off spread over everything it holds only a few times its share",
+  "measured": {
+   "top_2pct_of_energy": 0.0917,
+   "top_5pct_of_energy": 0.1915,
+   "top_10pct_of_energy": 0.3263,
+   "top_50pct_of_energy": 0.8909,
+   "median_|r|_over_half_step": 0.4922,
+   "frac_above_half_step": 0.00128,
+   "uniform_expectation": {
+    "top_2pct": 0.02,
+    "top_50pct": 0.5
+   }
+  },
+  "reading": "TOP 2% HOLDS 9.17% OF THE ENERGY -- 4.6x its share, nowhere near the 50-90x that would make a sparse fix pay. TOP 50% HOLDS 89.09%: half the elements carry nearly all the error, which is what DENSE means. And the residual is round-off almost exactly: median |r| is 0.4922 of a half-step where uniform round-to-nearest predicts 0.5, with only 0.128% of elements exceeding a half step (the clipped ones).",
+  "and_it_explains_the_WINNER_too": "q4_g32 wins because halving the group means FEWER weights share each outlier-set scale -- it attacks the actual mechanism, where the sparse residual attacks a symptom that carries 9% of the error"
+ },
+ "what_shipped_anyway_and_why": {
+  "AirSparseMatvec": "CSR sparse matvec, verified against a dense float64 oracle at three densities including a NON-POWER-OF-TWO 17x513 and a fully dense 5x32",
+  "why_build_it_when_the_representation_lost": "\u00a712 names SPARSE OPERATIONS as a capability and absence from the ledger means NOT YET STUDIED; sparsity has uses this experiment says nothing about -- structured pruning, routing masks, attention masks. What the measurement forecloses is the SPARSE RESIDUAL as a Gravity ladder rung on THESE weights, and the module docstring says exactly that so the kernel cannot be cited as endorsement.",
+  "an_edge_case_pinned_because_it_is_real": "a STRUCTURALLY EMPTY ROW -- a fully pruned output -- must return 0, and a kernel walking a stale range returns plausible nonsense for exactly the rows nobody inspects. Pinned with two empty rows among four.",
+  "a_limitation_named_not_discovered_later": "one thread per row means NO BARRIER and also IMBALANCED LOAD by construction: a 10000-nonzero row and a 3-nonzero row sit in one threadgroup and the group waits for the long one"
+ },
+ "claim_boundary": {
+  "weight_space_only": "cosine and magnitude on WEIGHTS, no activations, no model executed -- this campaign sealed on 2026-07-27 that sub-bit negatives judged on synthetic activations were artifacts, and on 2026-08-17 that LOCAL ADEQUACY DOES NOT COMPOSE. Neither is contradicted and neither is relied on.",
+  "one_organ_one_family": "8 expert gate_proj tensors of ONE model; MODEL_FAMILY at most, and the organ-floor receipt already measured that the organ ranking does NOT transfer across architectures, so this must not be read as a law about sparse residuals in general",
+  "one_residual_coding": "8-bit values plus a raw 11-bit column index. A smarter coding -- delta indices, rice, a per-group bitmap -- would lower the tax, and the 4.6x concentration says the CEILING is still far from the 2.5x gap, but that is an argument this receipt does not measure",
+  "nothing_timed": "the sparse kernel is verified, not benchmarked; no performance claim",
+  "corpus_still_absent": [
+   "FFT",
+   "convolution"
+  ]
+ },
+ "tests": {
+  "accelerator_total": 227,
+  "was_total": 224
+ },
+ "pass": true
+}

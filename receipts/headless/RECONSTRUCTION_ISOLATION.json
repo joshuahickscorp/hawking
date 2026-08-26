@@ -1,0 +1,109 @@
+{
+ "schema": "hawking.headless.reconstruction_isolation.v1",
+ "generated_at": "2026-08-25T03:06:55Z",
+ "generated_by": "tools/odyssey/reconstruction_isolation.py",
+ "obligation": "G032 \u2014 which representation change broke whole-model capability",
+ "git_head": "eb1494112b61953122262e311cc9243dbd44952e",
+ "hand_authored": false,
+ "decoder_self_check": {
+  "tensor": "language_model.model.layers.3.self_attn.q_proj.weight",
+  "round_trip_cos": 0.9620388150215149,
+  "independent_reference_cos": 0.9620477867792602,
+  "agrees": true
+ },
+ "why_self_check": "the first run of this measurement reported attention at cosine 0.68 because the offset-binary offset was taken as 1<<(bits-1) instead of (1<<(bits-1))-1. It pointed at the right organ for the wrong reason. Every decoder is now round-tripped against an independently written reference before use.",
+ "per_tensor": [
+  {
+   "tensor": "language_model.model.layers.0.mlp.gate_proj.weight",
+   "organ_group": "mlp",
+   "clean_2.60_cos": 0.9404654502868652,
+   "clean_codec": "fourlevel_q2_group64_fp16_delta",
+   "sealed_3.14_cos": 0.9454048275947571,
+   "sealed_codec": "affine_q2_group64_fp16_scale_bias"
+  },
+  {
+   "tensor": "language_model.model.layers.0.mlp.up_proj.weight",
+   "organ_group": "mlp",
+   "clean_2.60_cos": 0.9408020377159119,
+   "clean_codec": "fourlevel_q2_group64_fp16_delta",
+   "sealed_3.14_cos": 0.9456055164337158,
+   "sealed_codec": "affine_q2_group64_fp16_scale_bias"
+  },
+  {
+   "tensor": "language_model.model.layers.0.mlp.down_proj.weight",
+   "organ_group": "mlp",
+   "clean_2.60_cos": 0.9396347403526306,
+   "clean_codec": "fourlevel_q2_group64_fp16_delta",
+   "sealed_3.14_cos": 0.9448627233505249,
+   "sealed_codec": "affine_q2_group64_fp16_scale_bias"
+  },
+  {
+   "tensor": "language_model.model.layers.3.self_attn.q_proj.weight",
+   "organ_group": "non_mlp",
+   "clean_2.60_cos": 0.9620388150215149,
+   "clean_codec": "uniform_q3_group_scale",
+   "sealed_3.14_cos": 0.9939296999754185,
+   "sealed_codec": "ws_rtn_q4_g64 (reference-computed; HQ30UQ4 container has a non-JSON header)"
+  },
+  {
+   "tensor": "language_model.model.layers.3.self_attn.k_proj.weight",
+   "organ_group": "non_mlp",
+   "clean_2.60_cos": 0.958946943283081,
+   "clean_codec": "uniform_q3_group_scale",
+   "sealed_3.14_cos": 0.9935351322749197,
+   "sealed_codec": "ws_rtn_q4_g64 (reference-computed; HQ30UQ4 container has a non-JSON header)"
+  },
+  {
+   "tensor": "language_model.model.layers.3.self_attn.v_proj.weight",
+   "organ_group": "non_mlp",
+   "clean_2.60_cos": 0.9618458151817322,
+   "clean_codec": "uniform_q3_group_scale",
+   "sealed_3.14_cos": 0.9938726162851261,
+   "sealed_codec": "ws_rtn_q4_g64 (reference-computed; HQ30UQ4 container has a non-JSON header)"
+  },
+  {
+   "tensor": "language_model.model.embed_tokens.weight",
+   "organ_group": "non_mlp",
+   "clean_2.60_cos": 0.9758215546607971,
+   "clean_codec": "uniform_q3_group_scale",
+   "sealed_3.14_cos": 1.0041214427013583,
+   "sealed_codec": "ws_rtn_q4_g64 (reference-computed; HQ30UQ4 container has a non-JSON header)"
+  },
+  {
+   "tensor": "language_model.model.layers.0.linear_attn.out_proj.weight",
+   "organ_group": "non_mlp",
+   "clean_2.60_cos": 0.9667133688926697,
+   "clean_codec": "uniform_q3_group_scale",
+   "sealed_3.14_cos": 0.9934989598428209,
+   "sealed_codec": "ws_rtn_q4_g64 (reference-computed; HQ30UQ4 container has a non-JSON header)"
+  }
+ ],
+ "summary": {
+  "mlp": {
+   "sealed_mean_cos": 0.9452910224596659,
+   "clean_mean_cos": 0.9403007427851359,
+   "drop": 0.004990279674530029,
+   "n_tensors": 3
+  },
+  "non_mlp": {
+   "sealed_mean_cos": 0.9957915702159287,
+   "clean_mean_cos": 0.9650732994079589,
+   "drop": 0.03071827080796974,
+   "n_tensors": 5
+  }
+ },
+ "non_mlp_drop_over_mlp_drop": 6.16,
+ "finding": "the MLP change is nearly free in fidelity terms and the non-MLP change is not. Going from the sealed body to the 2.60 body costs the MLP about 0.0050 of cosine and the attention/state/embed/head organs about 0.0307 -- 6.2x more. The MLP sits at ~0.94 in BOTH bodies and the sealed body works, so 0.94 on the MLP is survivable; dropping the residual-stream organs from ~0.994 to ~0.961 is what the composed model does not survive. THIS READING IS REFUTED -- see REFUTED_BY_PHYSICAL_MEASUREMENT.",
+ "REFUTED_BY_PHYSICAL_MEASUREMENT": {
+  "what_this_receipt_predicted": "the non-MLP drop is 6.2x the MLP drop, so restoring the non-MLP organs to q4 should recover most of the lost capability",
+  "what_was_measured": "a body with the MLP at 2.25 and the non-MLP organs restored to q4 scores 8 of 43. The sealed body, which differs from it ONLY in the MLP codec, scores 27 of 43. Restoring the non-MLP organs is worth +5 points; changing the MLP is worth +19.",
+  "conclusion": "weight-space cosine got the ORDERING BACKWARDS. The change with the 6.2x SMALLER weight-space drop is the one that costs most of the capability.",
+  "why_this_was_predictable": "it is the campaign's own transferred law, stated in the transfer report as TR-METHOD-HELDOUT-ACTIVATIONS: judge a candidate on held-out REAL activations, never on weight-space error. This measurement used weight-space error and inverted the answer, which is the law demonstrating itself.",
+  "evidence": [
+   "receipts/headless/CAPABILITY_noetic-variantA-2.98.json",
+   "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+   "receipts/headless/CAPABILITY_noetic-clean-2.60.json"
+  ]
+ },
+ "pass": true
+}

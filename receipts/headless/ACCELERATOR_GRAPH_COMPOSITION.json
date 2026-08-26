@@ -1,0 +1,250 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T13:12:44",
+ "experiment_class": "ACCEL-CORRECTNESS",
+ "knowledge_level": "INSTANCE",
+ "git_head": "b29dafdcbe7fe3719c9150d6922bc2aab42aeda6",
+ "identities": {
+  "experiment": {
+   "id": "COMPOSING_THE_PIECES_FOUND_TWO_LAUNCHES_THAT_NEVER_ASKED_THE_KERNEL",
+   "obligation": "G043/G046",
+   "steer": "S015 \u00a73 the corpus; RUNTIME.graphs; the 2026-08-17 composition law"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "api": "Metal via MLX mx.fast.metal_kernel JIT"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "Qwen3-30B-A3B expert SHAPES (C=2048, H=768), synthetic weights; no model executed"
+  },
+  "representation": {
+   "status": "ABSENT",
+   "reason": "dense f32"
+  },
+  "kernel": {
+   "composed": [
+    "AirNorm rms",
+    "AirMatmul tiled x2",
+    "two elementwise nodes"
+   ],
+   "as": "one AirGraph, one submission"
+  },
+  "runtime": {
+   "python": "3.12.6",
+   "mlx": "0.32.1"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device"
+  }
+ },
+ "headline": "The \u00a73 corpus closed last block with every primitive verified ALONE. This campaign's own law says LOCAL ADEQUACY DOES NOT COMPOSE -- stated about representations and equally open about KERNELS. Composing five of them into one graph found TWO INDEPENDENT DEFECTS, both of the same kind: A LAUNCH THAT NEVER ASKED THE KERNEL WHAT IT NEEDED. One was mine this block; the other had been shipped for many blocks and REFUTES A PUBLISHED CLAIM.",
+ "DEFECT_1_the_graph_could_not_hold_its_own_primitives": {
+  "what_the_graph_receipt_claimed": "RUNTIME.graphs moved LARGE -> PARTIAL and the runtime was said to give 'most of the ORDERING/BATCHING value'. Every number in that receipt came from ELEMENTWISE nodes.",
+  "the_defect": "AirGraphNode carried only an element count and a scalar threadgroup, so the executor DERIVED a 1-D grid of blocks*threadgroup and an output of shape (n,). A row-wise norm needs grid = rows*threadgroup and (rows, cols); a tiled matmul needs a 3-D grid, a (tile, tile) threadgroup, parameters named A and B and an output named C. NONE of AIR's real primitives fit.",
+  "AND_IT_FAILED_IN_THE_WORST_WAY_-_IT_SOMETIMES_LOOKED_RIGHT": {
+   "8x1024": {
+    "rows_the_norm_needs": 8,
+    "threadgroups_the_graph_launches": 32,
+    "rows_computed": 8,
+    "rows_never_computed": 0,
+    "threadgroups_out_of_bounds": 24,
+    "max_abs_err_vs_oracle": 2.6481966042268823e-07,
+    "looks_correct": true
+   },
+   "8x64": {
+    "rows_the_norm_needs": 8,
+    "threadgroups_the_graph_launches": 2,
+    "rows_computed": 2,
+    "rows_never_computed": 6,
+    "threadgroups_out_of_bounds": 0,
+    "max_abs_err_vs_oracle": 2.6222069831810426,
+    "looks_correct": false
+   },
+   "64x128": {
+    "rows_the_norm_needs": 64,
+    "threadgroups_the_graph_launches": 32,
+    "rows_computed": 32,
+    "rows_never_computed": 32,
+    "threadgroups_out_of_bounds": 0,
+    "max_abs_err_vs_oracle": 5.208378283252325,
+    "looks_correct": false
+   },
+   "reading": "SAME DEFECT, OPPOSITE APPEARANCES. Where the derived block count EXCEEDS the row count the extra threadgroups run OUT OF BOUNDS and the answer still looks right; where it FALLS SHORT rows are never computed and the answer is visibly wrong. A graph that holds a row-wise kernel is correct BY ACCIDENT OF SHAPE."
+  },
+  "reading": "SAME DEFECT, OPPOSITE APPEARANCES. At 8x1024 the graph launched 32 threadgroups where the norm needed 8 -- 24 ran OUT OF BOUNDS on both buffers -- AND THE ANSWER MATCHED THE ORACLE TO 2.6e-07. At 8x64 it launched 2 for 8 rows and was wrong by 2.62; at 64x128, 32 for 64 rows, wrong by 5.21. An out-of-bounds access that happens to be benign is the same class as a race that does not fire: correct BY ACCIDENT OF SHAPE.",
+  "fix": "grid, threadgroup, output shape, parameter names and output name are now FIELDS, and node_for() fills them from the op's own launch() and out_shape(). THE GEOMETRY COMES FROM THE OP, NOT FROM A GUESS -- the same principle as the HUMF block's 'the plan names its source', arrived at independently."
+ },
+ "DEFECT_2_a_published_claim_refuted_by_its_own_example": {
+  "the_claim": "ACCELERATOR_SIMDGROUP_GEMM.json justified keeping the tiled strategy in its own words: 'simdgroup ... REQUIRES every dimension to be a multiple of 8 and REFUSES otherwise ... while TILED HAS NO SHAPE CONSTRAINT -- deleting tiled would have removed the only strategy that handles a 60x60 matmul.'",
+  "measured": [
+   {
+    "m": 8,
+    "k": 64,
+    "n": 32,
+    "tile": 16,
+    "m_mult_of_tile": false,
+    "n_mult_of_tile": true,
+    "k_mult_of_tile": true,
+    "max_abs_err": 9.108206526775575e-07,
+    "correct": true
+   },
+   {
+    "m": 60,
+    "k": 60,
+    "n": 60,
+    "tile": 16,
+    "m_mult_of_tile": false,
+    "n_mult_of_tile": false,
+    "k_mult_of_tile": false,
+    "max_abs_err": 1.682173495609618e-06,
+    "correct": true
+   },
+   {
+    "m": 16,
+    "k": 64,
+    "n": 32,
+    "tile": 16,
+    "m_mult_of_tile": true,
+    "n_mult_of_tile": true,
+    "k_mult_of_tile": true,
+    "max_abs_err": 1.3017981022045433e-06,
+    "correct": true
+   },
+   {
+    "m": 17,
+    "k": 64,
+    "n": 32,
+    "tile": 16,
+    "m_mult_of_tile": false,
+    "n_mult_of_tile": true,
+    "k_mult_of_tile": true,
+    "max_abs_err": 2.9215782513247746e-06,
+    "correct": true
+   },
+   {
+    "m": 64,
+    "k": 128,
+    "n": 64,
+    "tile": 16,
+    "m_mult_of_tile": true,
+    "n_mult_of_tile": true,
+    "k_mult_of_tile": true,
+    "max_abs_err": 4.012052208679506e-06,
+    "correct": true
+   },
+   {
+    "m": 8,
+    "k": 64,
+    "n": 32,
+    "tile": 8,
+    "m_mult_of_tile": true,
+    "n_mult_of_tile": true,
+    "k_mult_of_tile": true,
+    "max_abs_err": 1.2415340613358694e-06,
+    "correct": true
+   },
+   {
+    "m": 48,
+    "k": 80,
+    "n": 32,
+    "tile": 16,
+    "m_mult_of_tile": true,
+    "n_mult_of_tile": true,
+    "k_mult_of_tile": true,
+    "max_abs_err": 2.0528685240606137e-06,
+    "correct": true
+   }
+  ],
+  "verdict": "REFUTED BY THE EXAMPLE IT CITED. 60x60x60 on the tiled strategy was WRONG BY 3.84. 8x64x32 wrong by 4.65, 17x64x32 by 5.84. Every wrong case has m NOT a multiple of the tile and every right case has m a multiple -- n and k do not matter, and 48x80x32 with k=80 is fine.",
+  "where_the_bug_was_NOT": "the kernel body is FULLY GUARDED -- it checks gy < m, gx < n and k0 + lx < k -- so the tile was never the constraint and the kernel could always handle any shape",
+  "where_it_was": "launch() returned (n, m, 1) against a (tile, tile) threadgroup, which UNDER-DISPATCHES whenever m is not a multiple of the tile. One line: round both grid dimensions up to whole threadgroups. All 7 cases correct after, including the 60x60x60.",
+  "why_it_survived": "every GEMM receipt in this program measured square multiples of 16 -- 512, 1024, 2048, 4096 -- so the grid was always already a multiple of the tile and the defect could not appear. The claim about odd shapes was never TESTED at an odd shape.",
+  "how_it_was_found": "not by auditing the matmul. The composed block was wrong at T=8 and right at T=64 and T=96, and T=8 is the only one where m < tile."
+ },
+ "the_composition_itself": {
+  "block": "y = x + W_down @ silu(W_gate @ rmsnorm(x)) -- the gated MLP that follows attention in all four specimens, at Qwen3-30B-A3B expert shapes C=2048 H=768",
+  "verified_end_to_end_against_f64": [
+   {
+    "T": 8,
+    "nodes": 5,
+    "serial_depth": 5,
+    "max_abs_err": 1.4042122283841607e-06,
+    "rel_err": 6.330864561447789e-07
+   },
+   {
+    "T": 64,
+    "nodes": 5,
+    "serial_depth": 5,
+    "max_abs_err": 1.7483924983352495e-06,
+    "rel_err": 6.521018924009398e-07
+   },
+   {
+    "T": 96,
+    "nodes": 5,
+    "serial_depth": 5,
+    "max_abs_err": 1.771329968036639e-06,
+    "rel_err": 6.051264849558883e-07
+   }
+  ],
+  "attention_not_included_and_not_claimed": true,
+  "what_composition_bought": "two defects that ALL the per-primitive checks passed over. The kernels were right; the way they were LAUNCHED was not, and a launch is exactly the thing a single-primitive test never varies because it uses the op's own execute()."
+ },
+ "one_submission_against_one_per_node": {
+  "prediction_written_before_the_run": {
+   "graph_vs_per_op": [
+    1.5,
+    3.0
+   ],
+   "margin_shrinks_with_T": true
+  },
+  "measured": [
+   {
+    "T": 8,
+    "graph_ms": 0.618,
+    "graph_iqr": 7.02,
+    "per_op_ms": 1.3693,
+    "per_op_iqr": 9.52,
+    "verdict": "CANDIDATE_WINS",
+    "speedup": 2.216
+   },
+   {
+    "T": 64,
+    "graph_ms": 0.6946,
+    "graph_iqr": 19.41,
+    "per_op_ms": 1.4133,
+    "per_op_iqr": 11.45,
+    "verdict": "CANDIDATE_WINS_DESPITE_NOISE",
+    "speedup": 2.035
+   },
+   {
+    "T": 512,
+    "graph_ms": 1.7698,
+    "graph_iqr": 2.53,
+    "per_op_ms": 2.5047,
+    "per_op_iqr": 3.75,
+    "verdict": "CANDIDATE_WINS",
+    "speedup": 1.415
+   }
+  ],
+  "verdict": "PREDICTED 1.5-3.0x and SHRINKING WITH T. Measured 2.216x at T=8, 2.035x at T=64 -- both inside the band -- and 1.415x at T=512, BELOW the band. The SHRINK was predicted and is confirmed; the magnitude at the largest size MISSED LOW, which is the first miss in that direction after six consecutive misses HIGH, and it is reported rather than the band widened.",
+  "why_the_shrink": "four extra submissions cost a fixed ~0.16-0.25 ms each; at T=512 the real GPU work is 1.77 ms, so the same fixed saving is a smaller fraction. The FIFTH sighting of the submission floor, and the first on a COMPOSITE rather than a single primitive.",
+  "noise_stated": "the T=64 graph arm carries 19.41% IQR and is admitted by a 5.3x margin-over-noise rather than a clean gate; T=8 and T=512 are clean"
+ },
+ "claim_boundary": {
+  "not_a_transformer_block": "no attention, no KV cache, no rotary, no residual stream across layers -- this is the MLP half of one block",
+  "no_model_executed": "real shapes, synthetic weights",
+  "eager_is_the_control_not_a_mode": "the per-node arm exists only to give the batched number a baseline; nobody would run a graph that way",
+  "the_graph_still_serialises": "serial_depth is 5 of 5 nodes, so this measures ORDERING and BATCHING and says NOTHING about concurrency -- the same split the AirGraph receipt insisted on",
+  "f32_only": "one dtype, one machine, INSTANCE"
+ },
+ "tests": {
+  "accelerator_total": 234,
+  "was_total": 231
+ },
+ "pass": true
+}

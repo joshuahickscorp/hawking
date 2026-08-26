@@ -1,0 +1,322 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T14:02:25",
+ "experiment_class": "ACCEL-GRAVITY",
+ "knowledge_level": "GENERAL",
+ "git_head": "0736263474f382ca77a676707221cca46124f7f2",
+ "identities": {
+  "experiment": {
+   "id": "HEADROOM_IS_THE_VARIABLE_NOT_SAMPLE_SIZE_OR_DOMAIN",
+   "obligation": "G048",
+   "answers": "the claim boundary of ACCELERATOR_GATE_DISAGREEMENT.json in its own words -- 'says how fast a subsample approaches 176 rows, NOT whether 176 is enough'"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra"
+  },
+  "device": {
+   "status": "ABSENT",
+   "reason": "numpy and torch CPU"
+  },
+  "model": {
+   "executed": "sentence-transformers/all-MiniLM-L6-v2 (BertModel)",
+   "read_not_executed": [
+    "Qwen3-30B-A3B",
+    "Qwen3-VL-30B-A3B-Instruct",
+    "Falcon-H1-7B-Instruct",
+    "Kimi-VL-A3B-Instruct"
+   ]
+  },
+  "representation": {
+   "name": "rtn_grouped",
+   "bits": [
+    2,
+    3,
+    4,
+    8
+   ],
+   "groups": [
+    32,
+    64,
+    128
+   ]
+  },
+  "kernel": {
+   "status": "ABSENT",
+   "reason": "representation fidelity only"
+  },
+  "runtime": {
+   "python": "3.12.6",
+   "torch": "2.6.0",
+   "transformers": "5.5.4"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single machine"
+  }
+ },
+ "headline": "BOTH KNOBS I REACHED FOR ARE THE WRONG ONES. 176 rows agrees with a 1518-row pooled capture on 98.7% of packs -- prediction confirmed -- but NOT because 176 is enough: 512 rows is NO BETTER (1.39% flip against 176's 1.27%). And the calibration DOMAIN barely matters, refuting my own prediction. ALL the instability, from sampling AND from domain, lives in packs with under 0.002 of headroom: those flip on 20.8% of resamples while packs beyond 0.01 flip on NONE and never disagree across any domain. HEADROOM IS THE VARIABLE.",
+ "the_banding_is_the_result": {
+  "bands": {
+   "0-0.002": {
+    "n": 4,
+    "mean_flip_176": 0.2084,
+    "domain_disagree": 4
+   },
+   "0.002-0.01": {
+    "n": 43,
+    "mean_flip_176": 0.0019,
+    "domain_disagree": 1
+   },
+   "0.01-1": {
+    "n": 25,
+    "mean_flip_176": 0.0,
+    "domain_disagree": 0
+   }
+  },
+  "reading": "4 packs of 72 carry a 20.8% flip rate; the 43 in the middle band carry 0.19%; the 25 beyond 0.01 carry ZERO and no domain ever disagrees about them. This is not a gradient, it is a cliff, and it explains BOTH measurements at once.",
+  "more_rows_do_not_help": {
+   "64": {
+    "mean_gap": 0.001027,
+    "flip_rate": 0.0197
+   },
+   "176": {
+    "mean_gap": 0.000382,
+    "flip_rate": 0.0127
+   },
+   "512": {
+    "mean_gap": 0.000182,
+    "flip_rate": 0.0139
+   }
+  },
+  "why": "the mean cosine gap keeps falling with N (0.00103 at 64, 0.00038 at 176, 0.00018 at 512) while the FLIP RATE does not, because a flip needs the estimate to cross a threshold and the packs that cross are the ones sitting on it. Sampling error shrinks; the distance to the bar does not.",
+  "small_n_stated": "the 20.8% rests on 4 packs x 12 resamples = 48 draws"
+ },
+ "prediction_a_confirmed_for_the_wrong_reason": {
+  "written": "176 rows agrees with the pooled answer on >=95% of packs",
+  "measured": "98.7% (flip rate 1.27% over 72 packs against a 1518-row pooled capture)",
+  "verdict": "CONFIRMED, and the reasoning behind it was wrong -- I expected agreement to come from 176 being a sufficient sample, and it comes from 68 of 72 packs being so far from the threshold that any N decides them"
+ },
+ "prediction_b_refuted": {
+  "written": "domain changes >=5% of verdicts, and the dangerous direction is a narrow domain ACCEPTING what the pool rejects",
+  "measured": {
+   "prose": {
+    "rows_captured": 172,
+    "disagreements": 2,
+    "of": 72,
+    "rate": 0.0278,
+    "accepts_what_pool_rejects": 1,
+    "rejects_what_pool_accepts": 1
+   },
+   "code": {
+    "rows_captured": 330,
+    "disagreements": 0,
+    "of": 72,
+    "rate": 0.0,
+    "accepts_what_pool_rejects": 0,
+    "rejects_what_pool_accepts": 0
+   },
+   "numeric": {
+    "rows_captured": 374,
+    "disagreements": 2,
+    "of": 72,
+    "rate": 0.0278,
+    "accepts_what_pool_rejects": 1,
+    "rejects_what_pool_accepts": 1
+   },
+   "multilingual": {
+    "rows_captured": 238,
+    "disagreements": 4,
+    "of": 72,
+    "rate": 0.0556,
+    "accepts_what_pool_rejects": 1,
+    "rejects_what_pool_accepts": 3
+   },
+   "structured": {
+    "rows_captured": 404,
+    "disagreements": 1,
+    "of": 72,
+    "rate": 0.0139,
+    "accepts_what_pool_rejects": 1,
+    "rejects_what_pool_accepts": 0
+   }
+  },
+  "verdict": "REFUTED IN BOTH HALVES. Mean disagreement 2.6%; only multilingual reaches the 5% bar at 5.56% and code disagrees on NOTHING. And the direction is symmetric -- 4 domains accept one pack the pool rejects while 3 of them also reject packs the pool accepts, multilingual rejecting 3. Only 5 of 72 packs see any inter-domain disagreement at all, and 4 of those 5 sit in the tightest headroom band.",
+  "what_it_does_not_say": "this measures ONE small encoder whose activations may be less domain-sensitive than a decoder's. It is evidence against my prediction, not a licence to calibrate on whatever text is nearest."
+ },
+ "the_float32_bar_was_28x_too_optimistic": {
+  "float32_bar": 0.000285,
+  "cases": 72,
+  "unstable_packs": 6,
+  "unstable_that_PASS_the_float32_bar": [
+   {
+    "layer": 2,
+    "organ": "mlp_down",
+    "bits": 3,
+    "headroom": 0.006321,
+    "flip_176": 0.0833,
+    "domains_disagree": false
+   },
+   {
+    "layer": 3,
+    "organ": "attn_v",
+    "bits": 4,
+    "headroom": 0.000808,
+    "flip_176": 0.0,
+    "domains_disagree": true
+   },
+   {
+    "layer": 4,
+    "organ": "mlp_down",
+    "bits": 4,
+    "headroom": 0.008151,
+    "flip_176": 0.0,
+    "domains_disagree": true
+   }
+  ],
+  "largest_unstable_headroom": 0.008151,
+  "ratio_sampling_bar_to_float32_bar": 28.6,
+  "reading": "near_threshold_headroom already reported safe_at_float32 at 100x the measured 2.85e-06 float32 disagreement = 2.85e-04. THREE OF SIX unstable packs PASS that bar, one of them flipping on 8.3% of 176-row resamples at headroom 0.00632 and another disagreeing across domains at 0.00815. When the gate's inputs are a SAMPLE, arithmetic precision is not the widest source of disagreement and was being reported as if it were."
+ },
+ "shipped": {
+  "near_threshold_headroom.decided_under_resampling": "at a 0.002 bar, where the flip rate collapses from 20.8% to 0.19%",
+  "why_the_bar_is_not_at_the_widest_unstable_pack": "cosine headroom for an ACCEPTED pack is capped at 1 - min_cosine, so a 0.01 bar with min_cosine 0.99 would call EVERY acceptance undecided -- a bar that refuses everything is not a safer bar. Pinned by a test so nobody tightens it into vacuity.",
+  "and_it_is_labelled_an_indicator": "2 of 72 packs above the bar were still unstable, and the field says so rather than reading as a guarantee"
+ },
+ "the_lake_sweep_landed_and_it_saturates_everywhere": {
+  "what_ran": {
+   "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb": {
+    "mlp_down": [
+     [
+      3072,
+      12288
+     ],
+     4.125
+    ],
+    "mlp_gate": [
+     [
+      12288,
+      3072
+     ],
+     4.125
+    ],
+    "attn_o": [
+     [
+      3072,
+      1536
+     ],
+     4.125
+    ]
+   },
+   "Qwen--Qwen3-30B-A3B@ad44e777bcd1": {
+    "mlp_down": [
+     [
+      2048,
+      768
+     ],
+     4.125
+    ],
+    "mlp_gate": [
+     [
+      768,
+      2048
+     ],
+     4.125
+    ],
+    "attn_o": [
+     [
+      2048,
+      4096
+     ],
+     4.125
+    ]
+   },
+   "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c": {
+    "mlp_down": [
+     [
+      2048,
+      11264
+     ],
+     4.125
+    ],
+    "mlp_gate": [
+     [
+      11264,
+      2048
+     ],
+     4.125
+    ],
+    "attn_o": [
+     [
+      2048,
+      2048
+     ],
+     4.125
+    ]
+   },
+   "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba": {
+    "mlp_down": [
+     [
+      768,
+      2048
+     ],
+     4.125
+    ],
+    "attn_o": [
+     [
+      2048,
+      4096
+     ],
+     4.125
+    ]
+   }
+  },
+  "every_organ_of_every_specimen_floors_at": 4.125,
+  "cosine_spread_across_11_organs_and_4_architectures": {
+   "b3g64": {
+    "n": 11,
+    "min": 0.965044,
+    "max": 0.970051,
+    "spread": 0.005007
+   },
+   "b4g64": {
+    "n": 11,
+    "min": 0.993218,
+    "max": 0.994266,
+    "spread": 0.001048
+   },
+   "b4g128": {
+    "n": 11,
+    "min": 0.991706,
+    "max": 0.993203,
+    "spread": 0.001497
+   }
+  },
+  "reading": "at 4 bits / group 64 ELEVEN organs across FOUR architectures -- a sparse MoE decoder, its VL variant, a Mamba hybrid and a different MoE -- span 0.00105 of cosine. The weight-space number is nearly invariant not only across organs but across ARCHITECTURES, which is the strongest form of the previous block's finding that it measures the distribution's scale.",
+  "prediction_from_two_blocks_ago_now_settled": "'a setting adequate for one architecture's MLP is adequate for another's' -- CONFIRMED under this metric, and the confirmation is nearly worthless because the metric cannot distinguish them in the first place"
+ },
+ "a_defect_in_my_own_probe_and_i_blamed_the_drive": {
+  "what_happened": "the sweep ran 40 minutes without printing a line and I attributed it to the USB volume, which a dd measurement showed delivering 0.22-0.42 MB/s under an unrelated filler writing 25-43 MB/s",
+  "the_actual_defect": "safetensors framework='np' CANNOT READ bf16 -- 'data type bfloat16 not understood' -- and these shards are all bf16. My loader would have raised on EVERY tensor, inside a broad except that recorded the error and printed NOTHING.",
+  "how_it_was_found": "a single bounded probe on ONE tensor, which also showed the index and open costing 5.24 s and 2.77 s -- not the wall I had been assuming",
+  "what_is_and_is_not_established": "the bf16 defect is CERTAIN, demonstrated. Whether the 40-minute stall was I/O is NOT established -- the process sat in uninterruptible disk wait with 1.08 s of CPU, which points at I/O, and the fixed run completed in ~5 minutes with per-tensor loads of 2.9 to 65 s. Both were probably true and only one of them was measured.",
+  "lesson_recorded": "a broad except around an I/O call makes a TYPE error look like a SLOW disk, and the environment was blamed for a bug in the probe"
+ },
+ "claim_boundary": {
+  "activations_from_one_model": "MiniLM only; the four lake specimens are graded in WEIGHT space because no runtime here executes a Qwen3-MoE, Falcon or Mamba forward pass",
+  "the_bar_rests_on_72_packs_of_one_model": "0.002 is where THIS model's flip rate collapses; it is not measured elsewhere",
+  "four_packs_carry_the_headline": "the 20.8% band holds 4 packs of 72",
+  "domains_are_10_sentences_each": "1518 pooled rows from 50 sentences across 5 domains -- enough to show the domains mostly AGREE, not enough to characterise any one of them",
+  "still_a_proxy": "one layer's output cosine is not coherence"
+ },
+ "tests": {
+  "accelerator_total": 243,
+  "was_total": 242
+ },
+ "pass": true,
+ "AMENDED_IN_PLACE_2026_08_25": {
+  "by": "receipts/headless/ACCELERATOR_RUNTIME_GATE.json",
+  "what_is_corrected": "this receipt justified weight-space grading with 'no runtime here executes a Qwen3-MoE, Falcon or Mamba forward pass'. THAT CONFLATES TWO RUNTIMES. Hawking's Rust body dispatches only on llama/mistral/qwen2 families and really does cover none of them; mlx_lm 0.31.3 -- already a hard dependency and the runtime every AIR kernel executes through -- carries model classes for qwen3_moe, qwen3_vl_moe, kimi_vl AND falcon_h1.",
+  "what_the_gate_actually_is": "FAST LOCAL STORAGE. Falcon-H1-7B, the smallest specimen, is 15.17 GB and under the operator-prioritised fill a sequential read did not complete 256 MiB in 120 s -- under ~0.5 MB/s against 96-131 MiB/s uncontended.",
+  "what_does_NOT_change": "every weight-space caveat here stands. No forward pass was run and no activations exist for any lake specimen; what changes is the REMEDIATION -- a quiesced window rather than writing a reader."
+ }
+}

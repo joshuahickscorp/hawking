@@ -1,116 +1,196 @@
 {
  "schema": "hawking.headless.physical_metric_audit.v1",
- "generated_at": "2026-08-25T05:42:03Z",
+ "generated_at": "2026-08-26T00:13:54Z",
  "generated_by": "tools/odyssey/metric_audit.py",
- "obligation": "G033 \u2014 PHYSICAL_METRIC_AUDIT (steer S011 \u00a75)",
- "git_head": "eb1494112b61953122262e311cc9243dbd44952e",
+ "obligation": "G033 \u2014 PHYSICAL_METRIC_AUDIT (steer S011 \u00a75); G059 namespaces",
+ "git_head": "b3c4713fb8d4de69ed336d7662feb839df65902c",
  "hand_authored": false,
  "metrics": [
   {
    "metric": "complete_ebpw",
    "classification": "ARTIFACT_PHYSICAL_complete_ebpw",
    "source_of_value": "8 * (payload_bytes - header_bytes) / parent_params",
-   "note": "WAS a design constant published under a physical name; corrected so it follows the payload, with the design figure kept beside it as a cross-check"
+   "note": "WAS a design constant published under a physical name; corrected so it follows the payload, with the design figure kept beside it as a cross-check",
+   "blocking_gate": null,
+   "measured_twin": null
   },
   {
-   "metric": "complete_ebpw_from_design_constants",
+   "metric": "DESIGN_EXPECTED_complete_ebpw",
    "classification": "DESIGN_EXPECTED_complete_ebpw",
    "source_of_value": "hardcoded per-organ rates: mlp*2.25, dn*3.25, gqa/embed/out*3.125",
-   "note": "cannot move when the genome or the artifact moves; retained only to surface a design/physical divergence"
+   "note": "cannot move when the genome or the artifact moves; retained only to surface a design/physical divergence. G059 gave it the namespace prefix it was already entitled to -- it used to be published as 'complete_ebpw_from_design_constants', which is not a physical name but is not a declared one either.",
+   "blocking_gate": null,
+   "measured_twin": "complete_ebpw"
   },
   {
    "metric": "active_ebpw_per_token",
-   "classification": "DESIGN_EXPECTED_active_ebpw_per_token",
-   "source_of_value": "same hardcoded per-organ rates",
-   "note": "STILL FROZEN. Identical 8234330016.0 was reported for two artifacts differing by 1.29 GB. Not corrected because no measurement in this campaign depends on it; flagged here so nobody quotes it as physical."
+   "classification": "ARTIFACT_PHYSICAL_active_ebpw_per_token",
+   "source_of_value": "8 * (payload_bytes_on_disk - embedding_bytes) / parent_params",
+   "note": "G059: was DESIGN_EXPECTED wearing a physical name -- identical 8234330016.0 bytes was reported for two artifacts differing by 1.29 GB. Now anchored on the disk total, so canaries A and D move it and canary C cannot.",
+   "blocking_gate": null,
+   "measured_twin": null
   },
   {
    "metric": "active_bytes_per_token",
+   "classification": "ARTIFACT_PHYSICAL_active_bytes_per_token",
+   "source_of_value": "payload_bytes_on_disk - payload_bytes_by_role['embedding']",
+   "note": "same derivation as above in bytes. The role split is read from MIX_REPORT; its reconciliation against the bytes on disk is reported per body rather than assumed.",
+   "blocking_gate": null,
+   "measured_twin": null
+  },
+  {
+   "metric": "DESIGN_EXPECTED_active_ebpw_per_token",
+   "classification": "DESIGN_EXPECTED_active_ebpw_per_token",
+   "source_of_value": "MIX_REPORT.active_ebpw_per_token: hardcoded organ element counts x design rates",
+   "note": "kept as the cross-check partner of the physical figure. Frozen by construction: see observed_values.frozen_design_evidence, where both bodies publish the same number while their physical figures differ.",
+   "blocking_gate": null,
+   "measured_twin": "active_ebpw_per_token"
+  },
+  {
+   "metric": "DESIGN_EXPECTED_active_bytes_per_token",
    "classification": "DESIGN_EXPECTED_active_bytes_per_token",
-   "source_of_value": "hardcoded organ element counts x design rates",
-   "note": "same defect as above"
+   "source_of_value": "MIX_REPORT.active_bytes_per_token: hardcoded organ element counts x design rates",
+   "note": "same defect, same treatment",
+   "blocking_gate": null,
+   "measured_twin": "active_bytes_per_token"
   },
   {
    "metric": "payload_bytes",
    "classification": "ARTIFACT_PHYSICAL_payload_bytes",
    "source_of_value": "sum of bytes written by the packer",
-   "note": "moves with the artifact"
+   "note": "moves with the artifact",
+   "blocking_gate": null,
+   "measured_twin": null
   },
   {
    "metric": "resident_bytes",
    "classification": "ARTIFACT_PHYSICAL_resident_bytes",
    "source_of_value": "du over the artifact root",
-   "note": "measured, not declared"
+   "note": "measured, not declared",
+   "blocking_gate": null,
+   "measured_twin": null
   },
   {
    "metric": "dispatches_per_token",
    "classification": "RUNTIME_MEASURED_dispatches_per_token",
    "source_of_value": "counted by the runtime during decode",
-   "note": "964 for all three bodies, which is itself informative: representation change did not alter dispatch count"
+   "note": "964 for all three bodies, which is itself informative: representation change did not alter dispatch count",
+   "blocking_gate": null,
+   "measured_twin": null
   },
   {
    "metric": "median_gpu_ns_per_token",
    "classification": "RUNTIME_MEASURED_tpot",
    "source_of_value": "GPU timestamps per decode step",
-   "note": "carries the machine's standing CPU floor"
+   "note": "carries the machine's standing CPU floor",
+   "blocking_gate": null,
+   "measured_twin": null
   },
   {
    "metric": "TTFT / prefill_wall_ns",
    "classification": "RUNTIME_MEASURED_latency",
    "source_of_value": "wall clock around prefill",
-   "note": "contaminated by any concurrent work; measured inside a protected window"
+   "note": "contaminated by any concurrent work; measured inside a protected window",
+   "blocking_gate": null,
+   "measured_twin": null
   },
   {
-   "metric": "dram_bytes_per_token",
+   "metric": "DESIGN_EXPECTED_dram_bytes_per_token",
    "classification": "DESIGN_EXPECTED_dram_bytes_per_token",
-   "source_of_value": "derived from the design active-bytes figure",
-   "note": "inherits the frozen active-bytes defect; treat as design until re-derived from a counter"
+   "source_of_value": "artifact active bytes under an ASSUMED-ZERO inter-token reuse model",
+   "note": "G059: this used to be published as 'dram_bytes_per_token' and (in perf_addendum) as ARTIFACT_PHYSICAL_dram_bytes_per_token. The byte count is physical; the claim that the memory system moves exactly those bytes per token is a design assumption nothing on this box can check. Renamed rather than fabricated.",
+   "blocking_gate": "powermetrics requires root; Metal memory counters require MTLCounterSampleBuffer instrumentation inside crates/, which is a runtime code change and out of this lane's scope. See observed_values.dram_gate for the probe that was actually run.",
+   "measured_twin": null
   },
   {
    "metric": "model_reachable_roof",
    "classification": "RUNTIME_MEASURED_roof_input",
    "source_of_value": "measured achieved GB/s against the executable's own traffic",
-   "note": "per-executable and per-regime; explicitly forbidden from being copied across models"
+   "note": "per-executable and per-regime; explicitly forbidden from being copied across models. HONEST LIMIT: the numerator is the DESIGN_EXPECTED dram bound above, so this is measured-time over modelled-bytes, not a measured bandwidth.",
+   "blocking_gate": null,
+   "measured_twin": null
   },
   {
    "metric": "DEVICE_MEASURED_SUSTAINED (778.8) / DEVICE_THEORETICAL (819.0)",
    "classification": "RUNTIME_MEASURED_machine_roof",
    "source_of_value": "sealed bandwidth probe",
-   "note": "machine constants, valid on this box only"
+   "note": "machine constants, valid on this box only",
+   "blocking_gate": null,
+   "measured_twin": null
   },
   {
    "metric": "representation_identity",
    "classification": "ARTIFACT_PHYSICAL_identity",
    "source_of_value": "codec + group + bits recorded per segment header",
-   "note": "readable from the artifact"
+   "note": "readable from the artifact",
+   "blocking_gate": null,
+   "measured_twin": null
   },
   {
    "metric": "kernel_identity",
    "classification": "ARTIFACT_PHYSICAL_identity",
    "source_of_value": "kernel name + shader sha256 in KERNEL_LIBRARY",
-   "note": "sha256 of the shader source, not of the compiled metallib, which the runtime compiles from source"
+   "note": "sha256 of the shader source, not of the compiled metallib, which the runtime compiles from source",
+   "blocking_gate": null,
+   "measured_twin": null
   },
   {
    "metric": "runtime_identity",
    "classification": "RUNTIME_MEASURED_identity",
    "source_of_value": "genome_bind string plus dense_w_materialized counter emitted at decode",
-   "note": "the counter is incremented only by Qwen38HybridDecodeSession::account_dense_w"
+   "note": "the counter is incremented only by Qwen38HybridDecodeSession::account_dense_w",
+   "blocking_gate": null,
+   "measured_twin": null
   }
  ],
- "n_metrics": 15,
+ "n_metrics": 17,
  "n_design_expected": 4,
- "n_artifact_physical": 5,
+ "n_artifact_physical": 7,
  "n_runtime_measured": 6,
- "still_frozen_and_flagged": [
-  "active_ebpw_per_token",
-  "dram_bytes_per_token"
- ],
+ "still_frozen_and_flagged": [],
+ "frozen_rule": "a metric classified DESIGN_EXPECTED_* must be PUBLISHED under a DESIGN_EXPECTED_* name. Structural, so it cannot be cleared by editing the note.",
+ "design_metrics_without_gate_or_measured_twin": [],
  "law": "never expose a design constant under a physical label",
  "observed_values": {
   "clean_design_ebpw": 2.5969567265364937,
   "clean_physical_ebpw": 2.596994,
   "wmn_complete_ebpw": 2.5969567265364937,
-  "mix_payload_bytes": 8731093292
+  "mix_payload_bytes": 8731093292,
+  "clean_ARTIFACT_PHYSICAL_active_bytes_per_token": 8234453050,
+  "clean_ARTIFACT_PHYSICAL_active_ebpw_per_token": 2.449272,
+  "clean_DESIGN_EXPECTED_active_bytes_per_token": 8234330016.0,
+  "frozen_design_evidence": {
+   "bodies": {
+    "clean-2.60": {
+     "payload_bytes": 8731093292,
+     "DESIGN_EXPECTED_active_bytes_per_token": 8234330016.0,
+     "DESIGN_EXPECTED_active_ebpw_per_token": 2.4492357186951987,
+     "ARTIFACT_PHYSICAL_active_bytes_per_token": 8234453050,
+     "ARTIFACT_PHYSICAL_active_ebpw_per_token": 2.449272,
+     "role_split_reconciles_with_disk": true
+    },
+    "variantA-2.98": {
+     "payload_bytes": 10019612956,
+     "DESIGN_EXPECTED_active_bytes_per_token": 8234330016.0,
+     "DESIGN_EXPECTED_active_ebpw_per_token": 2.4492357186951987,
+     "ARTIFACT_PHYSICAL_active_bytes_per_token": 9344182314,
+     "ARTIFACT_PHYSICAL_active_ebpw_per_token": 2.779352,
+     "role_split_reconciles_with_disk": true
+    }
+   },
+   "payload_bytes_differ": true,
+   "design_constant_identical_across_both": true,
+   "physical_figures_differ_by_rel": 0.11876151670728201,
+   "reading": "the two bodies differ in payload bytes, the ARTIFACT_PHYSICAL active figure differs with them, and the MIX_REPORT design figure is bit-identical across both. That is the frozen-constant defect observed directly rather than recalled from a prior receipt."
+  },
+  "dram_gate": {
+   "metric": "dram_bytes_per_token",
+   "why_unmeasurable_here": "no userspace DRAM traffic counter is reachable on this box. powermetrics requires root, and Metal memory counters require MTLCounterSampleBuffer instrumentation inside crates/hawking-core, which is a runtime code change and outside this lane.",
+   "probe_command": "powermetrics --samplers gpu_power -n 1 -i 200",
+   "probe_exit_code": 1,
+   "probe_observed": "powermetrics must be invoked as the superuser",
+   "what_is_published_instead": "an UPPER BOUND computed from artifact bytes (one full read of every non-embedding organ per decoded token, assumed-zero inter-token reuse). The bound moves with the artifact; the reuse assumption is the part that is unmeasured, and it is a design assumption, so the figure is published under DESIGN_EXPECTED_dram_bytes_per_token."
+  }
  },
  "pass": true
 }

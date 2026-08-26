@@ -1,0 +1,71 @@
+{
+ "experiment_class": "ACCEL-ODYSSEY-PASS",
+ "date": "2026-08-25",
+ "obligations": [
+  "G048",
+  "G043"
+ ],
+ "headline": "IMPORTS IS NOT EXECUTES: THREE OF FOUR RUN A FORWARD PASS, THE FOURTH DOES NOT BUILD",
+ "boundary_this_closes": "ACCELERATOR_RUNTIME_GATE.json, one block earlier: 'mlx_lm class presence is an IMPORT not an execution, so a class that imports can still fail on a real config and that is untested'.",
+ "prediction_written_first": {
+  "written_before_the_run": true,
+  "boundary": "ACCELERATOR_RUNTIME_GATE.json: 'mlx_lm class presence is an IMPORT not an execution, so a class that imports can still fail on a real config and that is untested.'",
+  "P1": "all four real configs resolve to a model class through mlx_lm's OWN dispatch (model_type -> module), not through module names I guessed.",
+  "P2": "all four construct ModelArgs from the real config dict without raising. If any fails, the previous block's claim narrows from 'the runtime exists' to 'the module exists and the config is rejected', which is a DIFFERENT gate and would have to be recorded as one.",
+  "why_this_is_the_right_next_step": "it is the strongest statement obtainable WITHOUT weights, and weights are behind the storage gate the operator's fill owns.",
+  "how_it_could_refute_me": "a config field mlx_lm does not know, a model_type string that maps nowhere, or a required arg with no default."
+ },
+ "step_1_the_real_config_through_mlx_lm_own_dispatch": {
+  "method": "resolve model_type -> module the way mlx_lm itself does, rather than by module names I guessed, then ModelArgs.from_dict on the REAL config read from disk",
+  "result": "4 of 4 -- qwen3_moe, qwen3_vl_moe, kimi_vl, falcon_h1 all resolve and accept their own config",
+  "reading": "P1 and P2 CONFIRMED. This is already stronger than an import: the dispatch is mlx_lm's and the config is the specimen's."
+ },
+ "step_2_the_architecture_built_and_run": {
+  "method": "the REAL config with num_hidden_layers cut to 1, model constructed, one token sequence pushed through",
+  "Qwen3-30B-A3B": "BUILT 1245.5M params, FORWARD logits (1,4,151936), finite",
+  "Kimi-VL-A3B": "BUILT 754.1M, FORWARD (1,4,163840), finite",
+  "Falcon-H1-7B": "BUILT 953.3M, FORWARD (1,4,130049), finite -- the MAMBA HYBRID runs",
+  "Qwen3-VL-30B-A3B": "FAILS TO CONSTRUCT",
+  "peak_rss_gib": 0.44,
+  "reading": "the import check was RIGHT ABOUT THREE SPECIMENS AND WRONG ABOUT ONE, which is exactly why the stronger check had to be run rather than inherited."
+ },
+ "the_failure_is_exact_and_is_not_the_config_being_unusual": {
+  "mechanism": "qwen3_vl_moe.Model.__init__ builds its language model as qwen3_moe.ModelArgs.from_dict(args.text_config). tie_word_embeddings sits at the TOP LEVEL of the real config (False) and is ABSENT from text_config, while qwen3_moe.ModelArgs requires it with NO DEFAULT.",
+  "confirmed_by_a_two_arm_control": "arm A, the shrunken config unchanged, raises the TypeError; arm B, the SAME config with that ONE key copied into text_config, BUILDS 1245.5M and runs to finite (1,4,151936) logits. One key is the whole difference.",
+  "why_the_control_matters": "without it the failure could have been MY OWN shrink dropping a field, and a defect I introduced reads identically to a runtime gap in a summary line."
+ },
+ "two_defects_in_my_own_probe_and_one_mislabelled_what_happened": {
+  "mx_utils": "the parameter count used mx.utils.tree_flatten, which does not exist -- it is mlx.utils. That line runs AFTER Model(args) SUCCEEDED, so three specimens had already built and my probe printed 'FAILED at build' for all three. A PROBE THAT LABELS ITS OWN CRASH AS THE SUBJECT'S FAILURE is the same class this program keeps finding, and the label was wrong in the direction that would have parked the obligation.",
+  "shallow_copy": "the first shrink copied nested config dicts shallowly; replaced with a deep copy so no arm can share substructure with another.",
+  "how_the_first_was_caught": "the error text named mx.core, not the model -- an exception that mentions MY module and not the library under test is mine."
+ },
+ "what_this_changes_and_what_it_does_not": {
+  "changes": "the G048 blocker moves again: not 'no reader' (refuted last block), not 'the reader imports' (weaker than it read), but THREE ARCHITECTURES EXECUTE and one has a named one-field gap. The storage gate is unchanged and is still what stands between this and real activations.",
+  "does_not_change": "NO REAL WEIGHTS WERE LOADED. Every weight-space caveat in the G048 receipts stands exactly as written, and no adequacy claim moves."
+ },
+ "shipped": {
+  "odyssey_pass.execution_coverage": "the MEASURED build/forward table kept separate from the import table, with one_layer_only and random_weights as first-class fields and VL_GAP naming the missing key.",
+  "tests": "the import test now also asserts built_and_ran == 3, so the weaker claim can never again be read as the stronger one; a second test pins that imports and executes DISAGREE ON EXACTLY ONE specimen and that the gap is named; and a third ACTUALLY REBUILDS Falcon-H1 from its real config and runs a token through, so the recorded table has something behind it rather than being a string somebody could edit into agreement.",
+  "why_falcon_for_the_live_test": "its config is on LOCAL storage -- the lake bus is the named gate and a test must not fight the operator's fill."
+ },
+ "claim_boundary": [
+  "ONE LAYER of each model. The other layers are identical by the index and were NOT built, so this establishes that the layer graph and the forward path construct and execute, not that a full-depth model does.",
+  "RANDOM WEIGHTS. This is a CAPABILITY claim about the runtime and says NOTHING about adequacy; the 2026-07-27 gaussian-proxy law governs grading compression, which this does not do.",
+  "Kimi-VL and Qwen3-VL are VISION-LANGUAGE models and only the TEXT path was exercised -- no image was passed.",
+  "The VL gap is diagnosed in mlx_lm 0.31.3 against THIS config; whether upstream considers it a bug or the config unconventional is not settled here, and nothing was patched in the library.",
+  "finite logits from random weights is a WEAK correctness signal -- it rules out a graph that produces NaN and nothing more.",
+  "no kernel changed and no performance claim moves."
+ ],
+ "tests_total": "456 accelerator tests pass (was 454). I first wrote 457 from arithmetic rather than from the run; the suite says 456 and the receipt says what the suite says.",
+ "AMENDED_IN_PLACE_2026_08_25": {
+  "by": "receipts/headless/ACCELERATOR_CAUSALITY.json",
+  "what_is_STRENGTHENED": "this receipt's own boundary said finite logits rule out a NaN graph and nothing more. All three specimens that build are now measured DETERMINISTIC, INPUT-SENSITIVE and CAUSAL: changing the token at position 2 leaves positions 0 and 1 bitwise unchanged and moves 2 and 3; changing the last token moves only the last.",
+  "the_control": "a bidirectional block identical but for the mask leaks to positions 0 and 1 through the SAME check, so three of three is a result rather than a check that cannot fail.",
+  "unchanged": "one layer, random weights, text path only, Qwen3-VL still does not construct, and no adequacy claim moves."
+ },
+ "AMENDED_IN_PLACE_2026_08_25_VL_CLOSED": {
+  "by": "receipts/headless/ACCELERATOR_VL_GAP_CLOSED.json",
+  "what_changed": "this receipt's 'THREE OF FOUR' is superseded: odyssey_pass.prepare_config supplies the one field the wrapper does not inherit and all FOUR now build, run and test causal. The measurement of 3/4 is KEPT because a gap that was measured and then closed is different evidence from one that never existed.",
+  "unchanged": "no real weights, storage gate open, library defect unfixed upstream."
+ }
+}

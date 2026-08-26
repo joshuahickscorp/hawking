@@ -1,0 +1,116 @@
+{
+ "checkpoint": "ERA_I_CHECKPOINT_001",
+ "date": "2026-08-25",
+ "roadmap": "HAWKING_CIVILIZATION_ASCENSION_V1",
+ "active_era": "I (SOVEREIGN)",
+ "civilizations": {
+  "I-A_AGENTOS_HCLI": {
+   "status": "ADVERSARIALLY_VERIFIED",
+   "completion_pct": 100.0,
+   "evidence_pct": 100.0,
+   "obligation_pct": 100.0,
+   "open_gates": [
+    "S016 civilization-grade scheduler: Era/Civilization/Program/Gate as first-class scheduler concepts -- NOT_STARTED"
+   ]
+  },
+  "I-B_DOCTOR": {
+   "status": "PHYSICALLY_RUNNING",
+   "completion_pct": 66.7,
+   "evidence_pct": 66.7,
+   "obligation_pct": 100.0,
+   "open_gates": [
+    "gate: on an UNSEEN model, reduce a huge hypothesis space to a small high-information experimental set and explain why -- not run"
+   ]
+  },
+  "I-C_GRAVITY_NOETIC": {
+   "status": "ADVERSARIALLY_VERIFIED",
+   "completion_pct": 88.9,
+   "evidence_pct": 88.9,
+   "obligation_pct": 93.8,
+   "open_gates": [
+    "G023 Noetic compiler pipeline",
+    "real-weight execution gate",
+    "EBPW namespace separation not yet permanent in code"
+   ]
+  },
+  "I-D_ACCELERATOR": {
+   "status": "ADVERSARIALLY_VERIFIED",
+   "completion_pct": 0.0,
+   "evidence_pct": 100.0,
+   "obligation_pct": 0.0,
+   "open_gates": [
+    "C2M T3: several real open CUDA codebases -- NOT CLAIMED",
+    "P2 CUDA differential -- blocked on NVIDIA hardware",
+    "AIR multi-backend (G058) -- Metal only"
+   ]
+  },
+  "I-E_ODYSSEY_I": {
+   "status": "ADVERSARIALLY_VERIFIED",
+   "completion_pct": 77.8,
+   "evidence_pct": 77.8,
+   "obligation_pct": 87.5,
+   "open_gates": [
+    "model #2 is not a Noetic executable",
+    "no real weights have executed (blocked on FAST_LOCAL_STORAGE)",
+    "G056 lake fast-forward in flight"
+   ]
+  }
+ },
+ "what_became_physically_true": [
+  "ALL FOUR lake specimens build from their real config, return finite full-vocab logits and are CAUSAL. Was 3 of 4 one block ago.",
+  "A civilization control plane exists on disk: ROADMAP_STATE.json derived from GOAL.md + receipts + git + a real pytest run, with an adversarial validator and 8 mutation tests, 7 of which watch it REFUSE.",
+  "All 58 obligations map into the five-era topology with zero unmapped and zero orphans."
+ ],
+ "what_was_refuted_this_block": [
+  "MY OWN FIRST COMPLETION METRIC. Evidence-category coverage reported I-D at 100% with ZERO of 8 obligations verified -- precisely the inflation S015 \u00a7II forbids, committed in the first build of the very ledger meant to prevent it. completion_pct is now min(evidence, obligations) and a mutation test refuses the inflated form.",
+  "MY OWN VALIDATOR, on its first run, reported three false violations by comparing a rounded percentage against an unrounded one with exact equality -- the same exact-equality-on-a-derived-number defect this program sealed on a pagein counter. It fired on real data, which is how it was caught."
+ ],
+ "laws_strengthened": [
+  "A CHECK NOBODY HAS WATCHED REFUSE IS INDISTINGUISHABLE FROM ONE THAT CANNOT: the validator's 8 tests are 1 acceptance and 7 refusals.",
+  "DISK STATE IS AUTHORITY: the ledger derives status counts from GOAL.md and refuses any hand-typed count that disagrees; the test count comes from a pytest run and is flagged as such, after two consecutive blocks where I wrote it from arithmetic."
+ ],
+ "regressions": "none. 460 tests pass, up from 458; no kernel changed.",
+ "blockers": {
+  "NVIDIA_CUDA_HARDWARE": "P2 differential. No local NVIDIA execution exists.",
+  "FAST_LOCAL_STORAGE": "real weights for G048. Falcon-H1-7B is 15.17 GB and the contended USB bus measured under ~0.5 MB/s against 96-131 MiB/s quiet.",
+  "SUDO_POWERMETRICS": "thermal_envelope; sudo not available to this process.",
+  "SUDO_PURGE_OR_96GiB_WORKING_SET": "a repeatable cold read.",
+  "XCRUN_METAL": "AOT metallib and generated-code inspection. Toolchain absent."
+ },
+ "physical_resource_state": {
+  "USB_BUS_corpdrive": "ModelLake fill (4 hf download workers) -- OPERATOR PRIORITISED",
+  "GPU": "free for zero-I/O accelerator science",
+  "TIER1_SSD": "~/noetic/stage holds 202 MB: 64 Qwen3 expert tensors + Falcon config",
+  "lake_used_TiB": 1.266,
+  "downloads_live": 4,
+  "contention": "USB bus owned by the fill. Every experiment this block was ZERO-I/O except tiny config reads (KB). No resource war."
+ },
+ "wave_4_critical_path_ranked": [
+  {
+   "rank": 1,
+   "lane": "I-C",
+   "work": "separate DESIGN_EXPECTED / ARTIFACT_PHYSICAL / RUNTIME_MEASURED EBPW namespaces permanently in code, with a mutation canary",
+   "why": "the freeze names a REAL accounting bug (Variant A reported 2.597 while honestly ~2.98 EBPW). Zero I/O, high roadmap value, and it makes a whole class of false claim impossible rather than merely corrected once."
+  },
+  {
+   "rank": 2,
+   "lane": "I-D/I-E",
+   "work": "convert measured Accelerator laws into DeviceGenome / AKB entries carrying exact applicability domains",
+   "why": "compounding. The laws exist across 76 receipts as prose; as genomes they become what model N+1 does not rediscover. Zero I/O."
+  },
+  {
+   "rank": 3,
+   "lane": "I-E",
+   "work": "real weights for G048",
+   "why": "highest information, but RESOURCE-CONFLICTED: needs a quiesced window or a 15.17 GB stage that competes with the operator-prioritised fill. Scheduled only when the fill yields or no higher-value download remains."
+  },
+  {
+   "rank": 4,
+   "lane": "I-A",
+   "work": "S016 civilization-grade scheduler concepts",
+   "why": "real gate, but the control plane shipped this block covers the immediate need; deeper scheduler work should follow a measured scheduling failure, not precede one."
+  }
+ ],
+ "next_decisive_experiment": "EBPW namespace separation with a mutation canary: if a genome literal can still reach a physical accounting field, the canary must fail.",
+ "honest_reading_of_the_percentages": "I-D reports 0.0% completion against 100% evidence coverage. That is not a bug and not modesty: it is the deepest-evidenced civilization in the program with every one of its eight obligations still open. Both numbers are published side by side because either alone misleads -- evidence alone inflates, obligations alone erases 76 receipts."
+}

@@ -27,7 +27,7 @@ loop turns a 20% failure into a repair cycle.
 """
 from __future__ import annotations
 
-import argparse
+import argparse, hashlib
 import ast
 import json
 import os
@@ -418,6 +418,81 @@ def build_items(default_system=None):
     return out
 
 
+def _sha(path: Path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()[:16]
+
+
+def artifact_identity(args) -> dict:
+    """What body was graded, and under which chat template.
+
+    G073: every CAPABILITY_noetic-*.json ever written recorded
+    target="http://127.0.0.1:8080" -- the llama ENDPOINT DEFAULT -- because
+    `args.model_path or args.endpoint` has no noetic branch, and the noetic
+    backend loads from --artifact-root. So the field named a URL for a body
+    that was never served over one, and no receipt could say which artifact
+    earned its score.
+
+    The template is recorded for the same reason: G067 measured the SAME BODY
+    scoring 0/43 with an open <think> and 14/43 with enable_thinking=false.
+    A score without its template is not comparable to another score.
+
+    Weight shards are identified by (name, size) rather than content hash:
+    a full hash of a multi-GB body costs minutes and this runs before every
+    suite. Sizes catch a different artifact; they do NOT catch an edit that
+    preserves length, and identity_is_content_hash says so rather than
+    letting the field read stronger than it is.
+    """
+    ident = {
+        "backend": args.backend,
+        "no_think": bool(args.no_think),
+        "chat_template_arm": "pre_closed_think" if args.no_think else "open_think",
+        "default_system": args.default_system,
+        "identity_is_content_hash": False,
+        "identity_note": "weight shards keyed by (name, size); a same-length edit is invisible",
+    }
+    if args.backend == "noetic":
+        root = Path(args.artifact_root)
+        ident["artifact_root"] = str(root)
+        shards = sorted((f.name, f.stat().st_size) for f in root.rglob("*") if f.is_file())
+        ident["artifact_files"] = len(shards)
+        ident["artifact_bytes"] = sum(s for _, s in shards)
+        ident["artifact_inventory_sha"] = hashlib.sha256(
+            repr(shards).encode()).hexdigest()[:16]
+        ident["binary"] = args.noetic_binary
+        ident["binary_sha256_16"] = _sha(Path(args.noetic_binary))
+        tok = Path(args.tokenizer_dir or args.artifact_root)
+        ident["tokenizer_dir"] = str(tok)
+        for name, key in (("tokenizer.json", "tokenizer_sha256_16"),
+                          ("chat_template.jinja", "chat_template_sha256_16")):
+            f = tok / name
+            ident[key] = _sha(f) if f.is_file() else None
+    elif args.backend == "mlx":
+        ident["artifact_root"] = args.model_path
+    else:
+        ident["endpoint"] = args.endpoint
+        ident["served_artifact"] = None
+        ident["identity_note"] = ("a served endpoint does not disclose its artifact; the body "
+                                  "behind this port is NOT established by this receipt")
+    return ident
+
+
+def identity_is_sufficient(ident: dict) -> tuple[bool, str]:
+    """Refuse a receipt that cannot name the body it graded.
+
+    A score bound to a hand-typed label and a URL is a claim about a LABEL.
+    """
+    if ident.get("backend") == "llama" and not ident.get("served_artifact"):
+        return False, ("llama backend: the endpoint does not disclose which artifact answered, "
+                       "so this score cannot be attributed to a body")
+    if not ident.get("artifact_root"):
+        return False, "no artifact_root recorded"
+    return True, "artifact named"
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--backend", choices=["llama", "mlx", "noetic"], required=True)
@@ -484,6 +559,8 @@ def main() -> int:
             print(f"  {it['id']}[{it['rep']}] {r.get('finish_reason')} "
                   f"{r.get('completion_tokens')}tok {r.get('wall_s')}s", flush=True)
 
+    _ident = artifact_identity(args)
+    _ident_ok, _ident_why = identity_is_sufficient(_ident)
     per_item, per_axis = score(responses)
     overall_pass = sum(v["passed"] for v in per_item.values())
     overall_total = sum(v["repeats"] for v in per_item.values())
@@ -493,7 +570,10 @@ def main() -> int:
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "label": args.label,
         "backend": args.backend,
-        "target": args.model_path or args.endpoint,
+        "target": args.model_path or args.artifact_root or args.endpoint,
+        "artifact_identity": _ident,
+        "identity_sufficient": _ident_ok,
+        "identity_verdict": _ident_why,
         "scoring": ("every item scores through a deterministic predicate over the reply text — "
                     "exact string, parsed JSON, compiled AST. No model grades any model, because "
                     "that would make the gate inherit the unreliability it exists to detect."),
@@ -508,6 +588,9 @@ def main() -> int:
 
     print(f"\n=== CAPABILITY {args.label} ===")
     print(f"  overall {overall_pass}/{overall_total} = {doc['overall']['rate']}")
+    print(f"  arm     {_ident['chat_template_arm']}")
+    if not _ident_ok:
+        print(f"  UNIDENTIFIED: {_ident_why} -- this score names a LABEL, not a body")
     for axis, v in sorted(per_axis.items()):
         print(f"    {axis:<20} {v['passed']:>3}/{v['total']:<3} = {v['rate']}")
     weak = [(k, v) for k, v in sorted(per_item.items()) if v["rate"] < 1.0]

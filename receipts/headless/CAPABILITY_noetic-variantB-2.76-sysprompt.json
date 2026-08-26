@@ -523,5 +523,7 @@
     }
    ]
   }
- }
+ },
+ "identity_sufficient": false,
+ "identity_verdict": "UNIDENTIFIED (G073, amended 2026-08-26): this receipt records target='http://127.0.0.1:8080' and label='noetic-variantB-2.76-sysprompt' and carries NO artifact hash, NO executable-closure hash and NO chat-template field. The score stands as a MEASUREMENT; what is NOT established is WHICH BODY earned it. It must not be compared against another row -- G067 measured the same body at 0/43 and 14/43 across two chat-template arms, and no row here records its arm. tools/headless/capability_suite.py now refuses such a receipt."
 }

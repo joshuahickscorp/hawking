@@ -1,0 +1,403 @@
+{
+ "schema": "hawking.headless.qwen_clean_rebuild.v1",
+ "generated_at": "2026-08-25T00:28:46Z",
+ "generated_by": "tools/odyssey/clean_rebuild.py",
+ "obligation": "G001 \u2014 QWEN_CLEAN_REBUILD (directive \u00a78)",
+ "git_head": "eb1494112b61953122262e311cc9243dbd44952e",
+ "hand_authored": false,
+ "unmeasured_is_absent": true,
+ "recon": {
+  "final_executable": "mix_hetero_n041_floors",
+  "final_executable_present": false,
+  "candidates": {
+   "NOETIC_PARENT_A": {
+    "path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+    "present": true,
+    "bytes": 10557370368,
+    "complete_ebpw": 3.139300850311054,
+    "mix_id": "mix_all_mlp_affine_g64_ls",
+    "builder": "tools/headless/affine2_g64_lsfit.py",
+    "hardlinks": {
+     "present": true,
+     "n_segments": 755,
+     "n_shared_inodes": 563,
+     "shared_with": {
+      "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/tensors": 563
+     },
+     "example": [
+      "00233ead6accf5188892b942fdcba8a6d214c2aae17aa251c70d7030d9ef0689.f32v2",
+      "0087624ec92c8ab3c751d3bbfe0aeeb6fd629c22f52506a0d9200af1c04070e1.hq30uq4",
+      "00e18b86b9e948eb0d23dbf243e7352c6212c5520e1e0a9ceaa5475b03bdb5cc.f32v2"
+     ]
+    }
+   },
+   "mix_hetero_n041_floors": {
+    "path": "/Users/scammermike/Downloads/hawking/artifacts/qwen38-hetero-n041/mix_hetero_n041_floors",
+    "present": false,
+    "bytes": 0,
+    "complete_ebpw": 2.5969567265364937,
+    "mix_id": "mix_hetero_n041_floors",
+    "builder": "tools/headless/whole_model_native.py",
+    "artifact_root_env": "QWEN38_HETERO_ARTIFACT_ROOT",
+    "default_root_is_inside_repo": true
+   },
+   "mix_hetero_n041_floors_CLEAN_REBUILD": {
+    "path": "/Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors",
+    "present": true,
+    "bytes": 8757137408,
+    "n_shared_inodes": 0,
+    "builder": "tools/odyssey/clean_rebuild.py --rebuild --dehardlink",
+    "role": "the clean-room reproduction; independent of the q4 incumbent"
+   }
+  },
+  "closure_inputs": {
+   "parent_bf16": {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
+    "present": true,
+    "bytes": 55586271232,
+    "registered_identity": "c72e6dbb668f33b8c3a764d22d5a3b4c33f9940b3a2479a0fdde17c12f26553a"
+   },
+   "q4_incumbent": {
+    "path": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1",
+    "present": true,
+    "bytes": 14300786688,
+    "role": "manifest + source of hardlinked attention/embed segments"
+   },
+   "builder": {
+    "path": "/Users/scammermike/Downloads/hawking/tools/headless/whole_model_native.py",
+    "present": true
+   },
+   "representation_genome": {
+    "mlp": {
+     "codec": "q2f_g64",
+     "family": "fourlevel_fitted",
+     "gemv_storage_bpw": 2.25,
+     "group": 64,
+     "bits": 2,
+     "kernel": "qwen_q2f_group64_matvec_geo_tpr64_tg128",
+     "shader": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+     "container": "HGRAVF01",
+     "catalog_codec": 5
+    },
+    "deltanet": {
+     "codec": "ws_rtn_q3_g64",
+     "family": "grouped_absmax",
+     "gemv_storage_bpw": 3.25,
+     "group": 64,
+     "bits": 3,
+     "kernel": "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128",
+     "shader": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+     "container": "HGRAVU01",
+     "catalog_codec": 3,
+     "transition_program": true
+    },
+    "attention_gqa": {
+     "codec": "ws_rtn_q3_g128",
+     "family": "grouped_absmax",
+     "gemv_storage_bpw": 3.125,
+     "group": 128,
+     "bits": 3,
+     "kernel": "qwen_uniform_q3_group128_matvec_geo_tpr64_tg128",
+     "shader": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+     "container": "HGRAVU01",
+     "catalog_codec": 3
+    },
+    "embedding": {
+     "codec": "ws_rtn_q3_g128",
+     "family": "grouped_absmax",
+     "gemv_storage_bpw": 3.125,
+     "group": 128,
+     "bits": 3,
+     "kernel": "qwen38_hgravu_embedding_lookup",
+     "shader": "crates/hawking-core/shaders/qwen38_device_activations.metal",
+     "container": "HGRAVU01",
+     "catalog_codec": 3
+    },
+    "output": {
+     "codec": "ws_rtn_q3_g128",
+     "family": "grouped_absmax",
+     "gemv_storage_bpw": 3.125,
+     "group": 128,
+     "bits": 3,
+     "kernel": "qwen_uniform_q3_group128_matvec_geo_tpr64_tg128",
+     "shader": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+     "container": "HGRAVU01",
+     "catalog_codec": 3
+    }
+   },
+   "shaders": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders"
+  },
+  "closure_gaps": [
+   {
+    "gap": "FINAL_EXECUTABLE_NOT_MATERIALIZED",
+    "detail": "mix_hetero_n041_floors is quoted as current authority (complete_ebpw 2.5969567265364937) but no bytes exist at /Users/scammermike/Downloads/hawking/artifacts/qwen38-hetero-n041/mix_hetero_n041_floors",
+    "why": "the builder defaults its artifact root to REPO/artifacts/, so a run inside a throwaway git worktree writes the artifact into that worktree and it dies with it",
+    "evidence": [
+     "/Users/scammermike/Downloads/hawking/receipts/headless/WHOLE_MODEL_NATIVE.json",
+     "ls /Users/scammermike/Downloads/hawking/artifacts/qwen38-hetero-n041/mix_hetero_n041_floors"
+    ],
+    "severity": "blocking",
+    "resolved": true,
+    "resolved_by": "clean-room rebuild materialized at /Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors (8757137408 bytes, 0 shared inodes)"
+   },
+   {
+    "gap": "HARDLINKED_INCUMBENT",
+    "detail": "563 of 755 segments in NOETIC_PARENT_A share inodes with ['/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/tensors']",
+    "why": "attention and embed/head segments were hardlinked from the q4 incumbent rather than produced into the artifact; a clean room without that incumbent cannot reproduce them by hardlink and must repack them",
+    "evidence": [
+     "find ~/noetic/NOETIC_PARENT_A/segments -type f -links +1"
+    ],
+    "severity": "closure",
+    "resolved": true,
+    "resolved_by": "every leftover in the clean rebuild was regenerated from the bf16 parent and compared byte-for-byte against the incumbent's copy; all matched, so the incumbent holds no unique weight bytes"
+   },
+   {
+    "gap": "ZERO_PARENT_PROVEN_BY_COUNTER_NOT_BY_ABSENCE",
+    "detail": "the zero-parent PASS rests on an in-runtime dense_w_materialized counter, not on the parent being unavailable during the run",
+    "why": "directive \u00a710 requires the parent to be moved or removed and the run to still succeed; a counter cannot detect a path the runtime never took but could",
+    "evidence": [
+     "/Users/scammermike/Downloads/hawking/receipts/headless/WHOLE_MODEL_NATIVE.json#zero_parent.proven_by"
+    ],
+    "severity": "gate",
+    "resolved": true,
+    "resolved_by": "the parent directory was renamed away, its tokenizer was absent, the HF cache held no copy, and the rebuilt executable still generated coherently from the sealed closure",
+    "owned_by": "G003 \u2014 the parent must be moved away and the run must still succeed"
+   }
+  ]
+ },
+ "rebuild": {
+  "exit_code": 0,
+  "wall_s": 1291.0,
+  "root": "/Users/scammermike/noetic/CLEAN_REBUILD_A",
+  "stdout_tail": "s.61.linear_attn.in_proj_ba.weight shape=[96, 5120] group=64\n  [mix_hetero_n041_floors] deltanet ws_rtn_q3_g64 language_model.model.layers.61.linear_attn.out_proj.weight shape=[5120, 6144] group=64\n  [mix_hetero_n041_floors] mlp q2f_g64 language_model.model.layers.61.mlp.gate_proj.weight shape=[17408, 5120] group=64\n  [mix_hetero_n041_floors] mlp q2f_g64 language_model.model.layers.61.mlp.up_proj.weight shape=[17408, 5120] group=64\n  [mix_hetero_n041_floors] mlp q2f_g64 language_model.model.layers.61.mlp.down_proj.weight shape=[5120, 17408] group=64\n  [mix_hetero_n041_floors] deltanet ws_rtn_q3_g64 language_model.model.layers.62.linear_attn.in_proj_qkvz.weight shape=[16384, 5120] group=64\n  [mix_hetero_n041_floors] deltanet ws_rtn_q3_g64 language_model.model.layers.62.linear_attn.in_proj_ba.weight shape=[96, 5120] group=64\n  [mix_hetero_n041_floors] deltanet ws_rtn_q3_g64 language_model.model.layers.62.linear_attn.out_proj.weight shape=[5120, 6144] group=64\n  [mix_hetero_n041_floors] mlp q2f_g64 language_model.model.layers.62.mlp.gate_proj.weight shape=[17408, 5120] group=64\n  [mix_hetero_n041_floors] mlp q2f_g64 language_model.model.layers.62.mlp.up_proj.weight shape=[17408, 5120] group=64\n  [mix_hetero_n041_floors] mlp q2f_g64 language_model.model.layers.62.mlp.down_proj.weight shape=[5120, 17408] group=64\n  [mix_hetero_n041_floors] attention_gqa ws_rtn_q3_g128 language_model.model.layers.63.self_attn.q_proj.weight shape=[12288, 5120] group=128\n  [mix_hetero_n041_floors] attention_gqa ws_rtn_q3_g128 language_model.model.layers.63.self_attn.k_proj.weight shape=[1024, 5120] group=128\n  [mix_hetero_n041_floors] attention_gqa ws_rtn_q3_g128 language_model.model.layers.63.self_attn.v_proj.weight shape=[1024, 5120] group=128\n  [mix_hetero_n041_floors] attention_gqa ws_rtn_q3_g128 language_model.model.layers.63.self_attn.o_proj.weight shape=[5120, 6144] group=128\n  [mix_hetero_n041_floors] mlp q2f_g64 language_model.model.layers.63.mlp.gate_proj.weight shape=[17408, 5120] group=64\n  [mix_hetero_n041_floors] mlp q2f_g64 language_model.model.layers.63.mlp.up_proj.weight shape=[17408, 5120] group=64\n  [mix_hetero_n041_floors] mlp q2f_g64 language_model.model.layers.63.mlp.down_proj.weight shape=[5120, 17408] group=64\n  [mix_hetero_n041_floors] output ws_rtn_q3_g128 language_model.lm_head.weight shape=[248320, 5120] group=128\n[mix_hetero_n041_floors] tensors=755 packed=402 leftover=353 ebpw=2.596957 (N041 2.596888) in 1261.5s\n== kernel autopsy ==\n== native generate 16 tokens ==\n[generate] exit=0 dense_w=0 coherent=True text='<think>\\nThe user is asking me to explain, in ordinary prose and at length'\n== complete-wall >=7 warm reps ==\n[complete-wall] exit=0 n_reps=8 min=31364583 median=31471167 max=31537417\n== parity vs oracle ==\nq2f_parity ok=True status=PASS q3_g128_parity ok=True status=PASS\n== reprofile from zero ==\nroofs 819 / 778.8 / MODEL_REACHABLE=690.8064962384027\nwrote /Users/scammermike/Downloads/hawking/receipts/headless/WHOLE_MODEL_NATIVE.json\n",
+  "stderr_tail": ""
+ },
+ "compare": {
+  "root": "/Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors",
+  "present": true,
+  "n_shared_inodes": 0,
+  "hardlink_smuggling": false,
+  "shared_examples": [],
+  "n_segments": 755,
+  "bytes": 8734195712
+ },
+ "dehardlink": {
+  "n_hardlinked_before": 349,
+  "n_regenerated_byte_identical": 349,
+  "n_mismatched": 0,
+  "mismatched": [],
+  "n_unmapped": 0,
+  "unmapped": [],
+  "n_still_shared_after": 0,
+  "incumbent_holds_unique_weight_bytes": false,
+  "method": "for each hardlinked leftover, load the tensor from the bf16 parent, encode f32v2 (u64 element count + little-endian f32), and compare byte-for-byte against the incumbent's copy; substitute only on an exact match",
+  "note": "353 segments arrived hardlinked from the first rebuild; 4 were regenerated during the shape-tolerance fix and 349 in the completing run. Re-running now finds 0 to do and 0 shared inodes, which is the idempotent confirmation.",
+  "residual_gap": "the q4 incumbent's manifest still supplies the tensor-name -> segment-filename mapping; that is recipe metadata, not weights, and belongs in the recipe rather than in a preserved artifact"
+ },
+ "closure_state": {
+  "closure_root": "/Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors",
+  "copied": [
+   {
+    "file": "tokenizer.json",
+    "bytes": 12809320,
+    "sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3"
+   },
+   {
+    "file": "tokenizer_config.json",
+    "bytes": 17928,
+    "sha256": "b11349aafa7cdc6a320767cf7ceb29ed82f7eda5d65e8e0819e76f0ce947bf27"
+   },
+   {
+    "file": "vocab.json",
+    "bytes": 6722759,
+    "sha256": "ce99b4cb2983d118806ce0a8b777a35b093e2000a503ebde25853284c9dfa003"
+   },
+   {
+    "file": "merges.txt",
+    "bytes": 3353259,
+    "sha256": "a9d356d7bdf1ef4949e3e748e95b8e10ad9d4e2e838eddc38a0a7b6b94d1db8d"
+   },
+   {
+    "file": "chat_template.jinja",
+    "bytes": 8952,
+    "sha256": "c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041"
+   },
+   {
+    "file": "generation_config.json",
+    "bytes": 202,
+    "sha256": "e70c136c1b78ddc1fb0905bac8e733a4dc448d4f852a5dd75143fffc70be550e"
+   },
+   {
+    "file": "config.json",
+    "bytes": 4312,
+    "sha256": "191e0af232104ed8b65258cf3fb2b842e288008baca7633c11b82a1ac7203aab"
+   }
+  ],
+  "n_copied": 7,
+  "missing_in_parent": [],
+  "why": "tokenizer/vocab/merges/chat template/config are model-specific state the packed segments do not contain; without them the executable cannot run without the parent directory"
+ },
+ "zero_parent": {
+  "ran": true,
+  "exit_code": 0,
+  "wall_s": 3.5,
+  "n_new_tokens": 16,
+  "n_unique_ids": 16,
+  "generated_text_verbatim": "<think>\nThe user is asking me to explain, in ordinary prose and at length",
+  "coherent": true,
+  "dense_w_materialized": {
+   "dense_w_materialized": 0,
+   "from_generate_json": 0,
+   "from_census_parse": null,
+   "from_stderr_counter": 0,
+   "genome_bind": "qwen38-decode mixed genome: q2f=192 q3_g64=144 q3_g128=66 embed_q3=1 mlp_kernel=qwen_q2f_group64_matvec_geo_tpr64_tg128 dn_kernel=qwen_uniform_q3_group64_matvec_geo_tpr64_tg128 gqa_kernel=qwen_uniform_q3_group128_matvec_geo_tpr64_tg128 embed_kernel=qwen38_hgravu_embedding_lookup dense_w_materialized=0",
+   "counter_not_literal": true,
+   "incremented_only_by": "Qwen38HybridDecodeSession::account_dense_w"
+  },
+  "stderr_tail": "ed upload 100/755\nqwen38-decode mixed upload 150/755\nqwen38-decode mixed upload 200/755\nqwen38-decode mixed upload 250/755\nqwen38-decode mixed upload 300/755\nqwen38-decode mixed upload 350/755\nqwen38-decode mixed upload 400/755\nqwen38-decode mixed upload 450/755\nqwen38-decode mixed upload 500/755\nqwen38-decode mixed upload 550/755\nqwen38-decode mixed upload 600/755\nqwen38-decode mixed upload 650/755\nqwen38-decode mixed upload 700/755\nqwen38-decode mixed upload 750/755\nqwen38-decode mixed census: tensors=755 binary=0 residual=0 hgravs=0 uniform=210 affine=192 q4=0 f32=353 refused=0 expanded_to_q4=0 expanded_to_float_gemv=0 dense_w_materialized=0\nqwen38-decode mixed bind: K-complete; recon_fuse=ON uses q80_binary_group_matvec_simd_bytes / q80_binary_group_csr_matvec_bytes when cols>2048 (256-col tiles; this model K in {5120,6144}); cols<=2048 stay on tg256; recon_fuse=0 walks every column via gk_matvec_binary\nqwen38-decode mixed genome: q2f=192 q3_g64=144 q3_g128=66 embed_q3=1 mlp_kernel=qwen_q2f_group64_matvec_geo_tpr64_tg128 dn_kernel=qwen_uniform_q3_group64_matvec_geo_tpr64_tg128 gqa_kernel=qwen_uniform_q3_group128_matvec_geo_tpr64_tg128 embed_kernel=qwen38_hgravu_embedding_lookup dense_w_materialized=0\nqwen38-decode mixed bind: HGRAVF01 q2f qwen_q2f_group64_matvec_geo_tpr64_tg128 group=64 (delta only, w=(q-1.5)*delta, 4 codes/byte)\n[hawking] HAWKING_TCB_TRACE=\"(unset)\" \u2192 mode=Off\nwrote /Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors/decode_zero_parent.json\n",
+  "adversarial_probes": [
+   {
+    "probe": "parent_path_absent",
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
+    "exists": false
+   },
+   {
+    "probe": "parent_tokenizer_absent",
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json",
+    "exists": false
+   },
+   {
+    "probe": "hf_cache_holds_no_qwen38_parent",
+    "entries": [
+     "models--sentence-transformers--all-MiniLM-L6-v2",
+     "models--unsloth--Llama-3.2-1B-Instruct",
+     "models--unsloth--Llama-3.2-1B-Instruct-GGUF"
+    ],
+    "holds_parent": false
+   }
+  ],
+  "parent_restored": true,
+  "QWEN_ZERO_PARENT_RUNTIME_DEPENDENCY": "PASS"
+ },
+ "accounting": {
+  "closure_root": "/Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors",
+  "classes": {
+   "leftover_f32_state": {
+    "n_files": 353,
+    "bytes": 10584840,
+    "examples": [
+     "00233ead6accf5188892b942fdcba8a6d214c2aae17aa251c70d7030d9ef0689.f32v2",
+     "00e18b86b9e948eb0d23dbf243e7352c6212c5520e1e0a9ceaa5475b03bdb5cc.f32v2"
+    ]
+   },
+   "uniform_q3_codes_and_scales": {
+    "n_files": 210,
+    "bytes": 3907468772,
+    "examples": [
+     "0087624ec92c8ab3c751d3bbfe0aeeb6fd629c22f52506a0d9200af1c04070e1.hgravu01",
+     "0177b2187332f8cd46e6be398cb78fe1439d7d36f43db118160b64e0f35b46c1.hgravu01"
+    ]
+   },
+   "mlp_q2f_codes_and_scales": {
+    "n_files": 192,
+    "bytes": 4813039680,
+    "examples": [
+     "0131459de7a29b9225ad574e30451d9e5802692ed10ab918194814e07c3d15db.hgrafv01",
+     "02892dd8f7f5eb64f48dc82e5a226a6776a104320fdbf018945b9b726e608b55.hgrafv01"
+    ]
+   },
+   "recipe_record": {
+    "n_files": 1,
+    "bytes": 29520,
+    "examples": [
+     "MIX_REPORT.json"
+    ]
+   },
+   "catalog_metadata": {
+    "n_files": 1,
+    "bytes": 224763,
+    "examples": [
+     "catalog.hq38m20"
+    ]
+   },
+   "model_config_state": {
+    "n_files": 4,
+    "bytes": 31394,
+    "examples": [
+     "chat_template.jinja",
+     "config.json"
+    ]
+   },
+   "run_outputs_not_part_of_the_executable": {
+    "n_files": 3,
+    "bytes": 102325,
+    "examples": [
+     "decode_complete_wall.json",
+     "decode_generate.json"
+    ]
+   },
+   "tokenizer_state": {
+    "n_files": 3,
+    "bytes": 22885338,
+    "examples": [
+     "merges.txt",
+     "tokenizer.json"
+    ]
+   }
+  },
+  "total_bytes_in_classes": 8754366632,
+  "total_bytes_on_disk": 8754366632,
+  "reconciles": true,
+  "executable_bytes": 8754264307,
+  "n_unclassified_files": 0,
+  "canary": {
+   "class_removed": "tokenizer_state",
+   "file": "/Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors/tokenizer.json",
+   "exit_code": 2,
+   "refused": true,
+   "stderr_tail": "ascension_qwen38_hybrid_greedy: model: tokenizer load: No such file or directory (os error 2)\n",
+   "restored": true
+  },
+  "pass": true
+ },
+ "closure_gaps": [
+  {
+   "gap": "FINAL_EXECUTABLE_NOT_MATERIALIZED",
+   "detail": "mix_hetero_n041_floors is quoted as current authority (complete_ebpw 2.5969567265364937) but no bytes exist at /Users/scammermike/Downloads/hawking/artifacts/qwen38-hetero-n041/mix_hetero_n041_floors",
+   "why": "the builder defaults its artifact root to REPO/artifacts/, so a run inside a throwaway git worktree writes the artifact into that worktree and it dies with it",
+   "evidence": [
+    "/Users/scammermike/Downloads/hawking/receipts/headless/WHOLE_MODEL_NATIVE.json",
+    "ls /Users/scammermike/Downloads/hawking/artifacts/qwen38-hetero-n041/mix_hetero_n041_floors"
+   ],
+   "severity": "blocking",
+   "resolved": true,
+   "resolved_by": "clean-room rebuild materialized at /Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors (8757137408 bytes, 0 shared inodes)"
+  },
+  {
+   "gap": "HARDLINKED_INCUMBENT",
+   "detail": "563 of 755 segments in NOETIC_PARENT_A share inodes with ['/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/tensors']",
+   "why": "attention and embed/head segments were hardlinked from the q4 incumbent rather than produced into the artifact; a clean room without that incumbent cannot reproduce them by hardlink and must repack them",
+   "evidence": [
+    "find ~/noetic/NOETIC_PARENT_A/segments -type f -links +1"
+   ],
+   "severity": "closure",
+   "resolved": true,
+   "resolved_by": "every leftover in the clean rebuild was regenerated from the bf16 parent and compared byte-for-byte against the incumbent's copy; all matched, so the incumbent holds no unique weight bytes"
+  },
+  {
+   "gap": "ZERO_PARENT_PROVEN_BY_COUNTER_NOT_BY_ABSENCE",
+   "detail": "the zero-parent PASS rests on an in-runtime dense_w_materialized counter, not on the parent being unavailable during the run",
+   "why": "directive \u00a710 requires the parent to be moved or removed and the run to still succeed; a counter cannot detect a path the runtime never took but could",
+   "evidence": [
+    "/Users/scammermike/Downloads/hawking/receipts/headless/WHOLE_MODEL_NATIVE.json#zero_parent.proven_by"
+   ],
+   "severity": "gate",
+   "resolved": true,
+   "resolved_by": "the parent directory was renamed away, its tokenizer was absent, the HF cache held no copy, and the rebuilt executable still generated coherently from the sealed closure",
+   "owned_by": "G003 \u2014 the parent must be moved away and the run must still succeed"
+  }
+ ],
+ "n_closure_gaps_open": 0,
+ "final_executable": "mix_hetero_n041_floors",
+ "pass": true
+}

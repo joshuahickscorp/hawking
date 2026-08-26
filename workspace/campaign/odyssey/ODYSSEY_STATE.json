@@ -791,7 +791,7 @@
       "id": "AUTO-O006-nx-gather-moe",
       "oxx": "O006",
       "title": "NX gather accounting (selected-expert bytes/token)",
-      "status": "RUNNING",
+      "status": "READY",
       "info": 7.0,
       "wall_cost": 2.0,
       "gpu_cost": 1.0,
@@ -800,7 +800,7 @@
       "template": "nx-gather-moe",
       "mechanism": "nx-gather-moe",
       "mechanism_id": "nx-gather-moe",
-      "pid": 6130,
+      "pid": null,
       "started": "2026-08-22T22:19:22Z",
       "started_epoch": 1787437162.824461,
       "receipt_path": "receipts/odyssey-i/O006_NX_gather.json",
@@ -821,8 +821,8 @@
         "--nx-gather"
       ],
       "log": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/lanes/O006-nx-gather-moe.log",
-      "task": "pid:6130",
-      "retries": 0,
+      "task": null,
+      "retries": 1,
       "fail_reason": "exited-no-receipt"
     },
     {

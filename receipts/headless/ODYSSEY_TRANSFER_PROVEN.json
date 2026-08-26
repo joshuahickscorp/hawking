@@ -1,0 +1,393 @@
+{
+ "schema": "hawking.headless.cold_vs_transfer.v1",
+ "generated_at": "2026-08-25T00:41:06Z",
+ "generated_by": "tools/odyssey/cold_vs_transfer.py",
+ "obligation": "G009/G025 \u2014 COLD CONTROL vs ODYSSEY TRANSFER START (directive \u00a716, \u00a788)",
+ "git_head": "eb1494112b61953122262e311cc9243dbd44952e",
+ "hand_authored": false,
+ "specimen": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+ "organ": "moe_expert",
+ "layer": 2,
+ "activations": {
+  "source": "/Users/scammermike/noetic/captures/qwen3-30b-a3b/X_layer2.npy",
+  "real_not_synthetic": true,
+  "exact_because": "layers 0..K-1 do not depend on any later layer, so truncation does not change their activations",
+  "n_tokens": 112,
+  "n_fit": 56,
+  "n_held_out": 56,
+  "routed": true,
+  "top_k": 8,
+  "expert_mapping_verified": true
+ },
+ "pre_registered_target": {
+  "rule": "held-out output rel_fro <= 1.15x the uniform q4 g64 baseline, and bpw strictly below the q4 baseline",
+  "baseline_rel_fro": 0.149519,
+  "target_rel_fro": 0.171947,
+  "fixed_before_either_arm_ran": true
+ },
+ "full_grid": {
+  "uniform_q4_g64": {
+   "candidate": "uniform_q4_g64",
+   "n_experts_scored": 6,
+   "mean_held_out_rel_fro": 0.149519,
+   "worst_held_out_rel_fro": 0.16783,
+   "bpw": 4.25
+  },
+  "uniform_q4_g128": {
+   "candidate": "uniform_q4_g128",
+   "n_experts_scored": 6,
+   "mean_held_out_rel_fro": 0.163679,
+   "worst_held_out_rel_fro": 0.183526,
+   "bpw": 4.125
+  },
+  "uniform_q3_g64": {
+   "candidate": "uniform_q3_g64",
+   "n_experts_scored": 6,
+   "mean_held_out_rel_fro": 0.358701,
+   "worst_held_out_rel_fro": 0.424963,
+   "bpw": 3.25
+  },
+  "uniform_q3_g128": {
+   "candidate": "uniform_q3_g128",
+   "n_experts_scored": 6,
+   "mean_held_out_rel_fro": 0.395019,
+   "worst_held_out_rel_fro": 0.472149,
+   "bpw": 3.125
+  },
+  "uniform_q2_g64": {
+   "candidate": "uniform_q2_g64",
+   "n_experts_scored": 6,
+   "mean_held_out_rel_fro": 0.9471,
+   "worst_held_out_rel_fro": 1.093768,
+   "bpw": 2.25
+  },
+  "affine_q4_g64": {
+   "candidate": "affine_q4_g64",
+   "n_experts_scored": 6,
+   "mean_held_out_rel_fro": 0.115191,
+   "worst_held_out_rel_fro": 0.130246,
+   "bpw": 4.5
+  },
+  "affine_q4_g128": {
+   "candidate": "affine_q4_g128",
+   "n_experts_scored": 6,
+   "mean_held_out_rel_fro": 0.131346,
+   "worst_held_out_rel_fro": 0.144427,
+   "bpw": 4.25
+  },
+  "affine_q3_g64": {
+   "candidate": "affine_q3_g64",
+   "n_experts_scored": 6,
+   "mean_held_out_rel_fro": 0.238596,
+   "worst_held_out_rel_fro": 0.267765,
+   "bpw": 3.5
+  },
+  "affine_q3_g128": {
+   "candidate": "affine_q3_g128",
+   "n_experts_scored": 6,
+   "mean_held_out_rel_fro": 0.26904,
+   "worst_held_out_rel_fro": 0.298299,
+   "bpw": 3.25
+  },
+  "affine_q2_g64": {
+   "candidate": "affine_q2_g64",
+   "n_experts_scored": 6,
+   "mean_held_out_rel_fro": 0.469259,
+   "worst_held_out_rel_fro": 0.506143,
+   "bpw": 2.5
+  },
+  "affine_q2_g128": {
+   "candidate": "affine_q2_g128",
+   "n_experts_scored": 6,
+   "mean_held_out_rel_fro": 0.498769,
+   "worst_held_out_rel_fro": 0.522305,
+   "bpw": 2.25
+  },
+  "ternary_g64": {
+   "candidate": "ternary_g64",
+   "n_experts_scored": 6,
+   "mean_held_out_rel_fro": 0.624037,
+   "worst_held_out_rel_fro": 0.641287,
+   "bpw": 1.835
+  },
+  "binary_g64": {
+   "candidate": "binary_g64",
+   "n_experts_scored": 6,
+   "mean_held_out_rel_fro": 0.836417,
+   "worst_held_out_rel_fro": 0.859391,
+   "bpw": 1.25
+  }
+ },
+ "grid_wall_s": 4.3,
+ "best_qualifying_in_grid": {
+  "candidate": "uniform_q4_g128",
+  "n_experts_scored": 6,
+  "mean_held_out_rel_fro": 0.163679,
+  "worst_held_out_rel_fro": 0.183526,
+  "bpw": 4.125
+ },
+ "cold": {
+  "arm": "COLD",
+  "order": [
+   "uniform_q4_g64",
+   "uniform_q4_g128",
+   "uniform_q3_g64",
+   "uniform_q3_g128",
+   "uniform_q2_g64",
+   "binary_g64",
+   "ternary_g64",
+   "affine_q4_g64",
+   "affine_q4_g128",
+   "affine_q3_g64",
+   "affine_q3_g128",
+   "affine_q2_g64",
+   "affine_q2_g128"
+  ],
+  "evaluations_run": 2,
+  "landed_on": "uniform_q4_g128",
+  "landed_bpw": 4.125,
+  "landed_rel_fro": 0.163679,
+  "first_candidate": "uniform_q4_g64",
+  "first_candidate_qualifies": true,
+  "first_candidate_bpw": 4.25,
+  "trace": [
+   {
+    "candidate": "uniform_q4_g64",
+    "bpw": 4.25,
+    "mean_held_out_rel_fro": 0.149519,
+    "qualifies": true
+   },
+   {
+    "candidate": "uniform_q4_g128",
+    "bpw": 4.125,
+    "mean_held_out_rel_fro": 0.163679,
+    "qualifies": true
+   }
+  ]
+ },
+ "transfer": {
+  "arm": "ODYSSEY_TRANSFER",
+  "order": [
+   "affine_q2_g64",
+   "affine_q2_g128",
+   "affine_q3_g128",
+   "affine_q3_g64",
+   "affine_q4_g128",
+   "affine_q4_g64",
+   "uniform_q4_g64",
+   "uniform_q3_g128",
+   "uniform_q3_g64",
+   "uniform_q4_g128",
+   "uniform_q2_g64",
+   "binary_g64",
+   "ternary_g64"
+  ],
+  "evaluations_run": 10,
+  "landed_on": "uniform_q4_g128",
+  "landed_bpw": 4.125,
+  "landed_rel_fro": 0.163679,
+  "first_candidate": "affine_q2_g64",
+  "first_candidate_qualifies": false,
+  "first_candidate_bpw": 2.5,
+  "trace": [
+   {
+    "candidate": "affine_q2_g64",
+    "bpw": 2.5,
+    "mean_held_out_rel_fro": 0.469259,
+    "qualifies": false
+   },
+   {
+    "candidate": "affine_q2_g128",
+    "bpw": 2.25,
+    "mean_held_out_rel_fro": 0.498769,
+    "qualifies": false
+   },
+   {
+    "candidate": "affine_q3_g128",
+    "bpw": 3.25,
+    "mean_held_out_rel_fro": 0.26904,
+    "qualifies": false
+   },
+   {
+    "candidate": "affine_q3_g64",
+    "bpw": 3.5,
+    "mean_held_out_rel_fro": 0.238596,
+    "qualifies": false
+   },
+   {
+    "candidate": "affine_q4_g128",
+    "bpw": 4.25,
+    "mean_held_out_rel_fro": 0.131346,
+    "qualifies": true
+   },
+   {
+    "candidate": "affine_q4_g64",
+    "bpw": 4.5,
+    "mean_held_out_rel_fro": 0.115191,
+    "qualifies": true
+   },
+   {
+    "candidate": "uniform_q4_g64",
+    "bpw": 4.25,
+    "mean_held_out_rel_fro": 0.149519,
+    "qualifies": true
+   },
+   {
+    "candidate": "uniform_q3_g128",
+    "bpw": 3.125,
+    "mean_held_out_rel_fro": 0.395019,
+    "qualifies": false
+   },
+   {
+    "candidate": "uniform_q3_g64",
+    "bpw": 3.25,
+    "mean_held_out_rel_fro": 0.358701,
+    "qualifies": false
+   },
+   {
+    "candidate": "uniform_q4_g128",
+    "bpw": 4.125,
+    "mean_held_out_rel_fro": 0.163679,
+    "qualifies": true
+   }
+  ]
+ },
+ "matched_bits_comparison": {
+  "what": "the seeded family (fitted affine, transferred from the Qwen MLP as a METHOD) against the generic family (uniform round-to-nearest) at the SAME bits per weight, so no rate change can hide the difference",
+  "tiers": [
+   {
+    "bpw": 2.25,
+    "seeded_family_candidate": "affine_q2_g128",
+    "seeded_family_rel_fro": 0.498769,
+    "generic_candidate": "uniform_q2_g64",
+    "generic_rel_fro": 0.9471,
+    "seeded_is_better": true,
+    "error_ratio_generic_over_seeded": 1.899
+   },
+   {
+    "bpw": 3.25,
+    "seeded_family_candidate": "affine_q3_g128",
+    "seeded_family_rel_fro": 0.26904,
+    "generic_candidate": "uniform_q3_g64",
+    "generic_rel_fro": 0.358701,
+    "seeded_is_better": true,
+    "error_ratio_generic_over_seeded": 1.333
+   },
+   {
+    "bpw": 4.25,
+    "seeded_family_candidate": "affine_q4_g128",
+    "seeded_family_rel_fro": 0.131346,
+    "generic_candidate": "uniform_q4_g64",
+    "generic_rel_fro": 0.149519,
+    "seeded_is_better": true,
+    "error_ratio_generic_over_seeded": 1.138
+   }
+  ],
+  "n_tiers": 3,
+  "n_tiers_seeded_wins": 3
+ },
+ "pareto_frontier": [
+  {
+   "candidate": "binary_g64",
+   "bpw": 1.25,
+   "rel_fro": 0.836417
+  },
+  {
+   "candidate": "ternary_g64",
+   "bpw": 1.835,
+   "rel_fro": 0.624037
+  },
+  {
+   "candidate": "affine_q2_g128",
+   "bpw": 2.25,
+   "rel_fro": 0.498769
+  },
+  {
+   "candidate": "affine_q2_g64",
+   "bpw": 2.5,
+   "rel_fro": 0.469259
+  },
+  {
+   "candidate": "uniform_q3_g128",
+   "bpw": 3.125,
+   "rel_fro": 0.395019
+  },
+  {
+   "candidate": "uniform_q3_g64",
+   "bpw": 3.25,
+   "rel_fro": 0.358701
+  },
+  {
+   "candidate": "affine_q3_g128",
+   "bpw": 3.25,
+   "rel_fro": 0.26904
+  },
+  {
+   "candidate": "affine_q3_g64",
+   "bpw": 3.5,
+   "rel_fro": 0.238596
+  },
+  {
+   "candidate": "uniform_q4_g128",
+   "bpw": 4.125,
+   "rel_fro": 0.163679
+  },
+  {
+   "candidate": "uniform_q4_g64",
+   "bpw": 4.25,
+   "rel_fro": 0.149519
+  },
+  {
+   "candidate": "affine_q4_g128",
+   "bpw": 4.25,
+   "rel_fro": 0.131346
+  },
+  {
+   "candidate": "affine_q4_g64",
+   "bpw": 4.5,
+   "rel_fro": 0.115191
+  }
+ ],
+ "first_touch_of_frontier": {
+  "cold": {
+   "evaluations": 1,
+   "candidate": "uniform_q4_g64",
+   "bpw": 4.25,
+   "rel_fro": 0.149519
+  },
+  "transfer": {
+   "evaluations": 1,
+   "candidate": "affine_q2_g64",
+   "bpw": 2.5,
+   "rel_fro": 0.469259
+  },
+  "discriminates": false
+ },
+ "evaluations_to_beat_the_generic_baseline": {
+  "rule": "strictly lower held-out rel_fro than uniform_q4_g64 at no more bits",
+  "cold": {
+   "evaluations": 9,
+   "candidate": "affine_q4_g128",
+   "bpw": 4.25,
+   "rel_fro": 0.131346
+  },
+  "transfer": {
+   "evaluations": 5,
+   "candidate": "affine_q4_g128",
+   "bpw": 4.25,
+   "rel_fro": 0.131346
+  }
+ },
+ "delta": {
+  "evaluations_avoided": -8,
+  "cold_evaluations": 2,
+  "transfer_evaluations": 10,
+  "cold_first_candidate_qualifies": true,
+  "transfer_first_candidate_qualifies": false,
+  "cold_landed_bpw": 4.125,
+  "transfer_landed_bpw": 4.125,
+  "same_landing": true
+ },
+ "honest_note": "Under the loose landing target the COLD arm wins: q4 g128 clears a 1.15x-of-q4 bar on its second try, so there is nothing for a seed to save. That result is reported rather than retuned. The transfer signal is in the matched-bits comparison and in which arm reaches the quality-per-bit frontier first.",
+ "pass": true
+}

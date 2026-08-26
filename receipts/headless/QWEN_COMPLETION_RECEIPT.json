@@ -1,7 +1,7 @@
 {
  "schema": "hawking.headless.qwen_completion_receipt.v1",
- "generated_at": "2026-08-24T21:55:10Z",
- "git_head": "c87cd589aa4250aec27004c556aea63ee2e9354f",
+ "generated_at": "2026-08-26T03:40:53Z",
+ "git_head": "e665c7319eb06bc1611d1ede67e091160dea83c0",
  "generated_by": "tools/headless/qwen_completion_receipt.py",
  "obligation": "N039 \u2014 QWEN_COMPLETION_RECEIPT (S024 \u00a784; Odyssey textbook #1, retirement gate; CPU). Records the \u00a784 completion vector for the current Qwen3.8 specimen. Does NOT retire the specimen; records whether the knowledge is sealed.",
  "hand_authored": false,
@@ -1175,7 +1175,7 @@
    "catalog": {
     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
     "n_entries": {
-     "value": 31,
+     "value": null,
      "kind": "CITED",
      "unit": "count",
      "command": "NOETIC_NEGATIVE_SCIENCE.counts.entries",
@@ -1183,8 +1183,8 @@
      "absent_reason": null,
      "note": "Catalog sealed 2026-08-23. Does not yet contain the N032\u2013N038 measured negatives; those are indexed below from their owner receipts."
     },
-    "property_of_idea": 21,
-    "artifact_of_method": 10
+    "property_of_idea": null,
+    "artifact_of_method": null
    },
    "campaign_measured_negatives": [
     {
@@ -1400,12 +1400,6 @@
      "s024": "\u00a774",
      "why": "S024 \u00a770\u201378 / S023 \u00a754\u201360: retire only after a clean rerun reproduces the specimen from durable knowledge. This lane is CPU consolidation; it did not rerun the parent mix and does not retire it.",
      "specimen_retired_by_this_lane": false
-    },
-    {
-     "id": "NEGATIVE_SCIENCE_CATALOG_STALE_VS_N032_N038",
-     "s024": "\u00a774",
-     "why": "NOETIC_NEGATIVE_SCIENCE.json is sealed (31 entries) but predates the N032\u2013N038 measured negatives. Those negatives are indexed in this completion receipt from their owner receipts; the catalog itself has not been regenerated.",
-     "source": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
     }
    ],
    "source": "receipts/headless/NOETIC_PARENT_A.json",

@@ -1,8 +1,8 @@
 {
   "schema": "hawking.headless.noetic_native_operator.v1",
-  "generated_at": "2026-08-24T15:49:55Z",
-  "git_head": "9678590e733e233cdab8e0ac29b7f0d34701db20",
-  "elapsed_s": 0.06,
+  "generated_at": "2026-08-26T03:40:28Z",
+  "git_head": "e665c7319eb06bc1611d1ede67e091160dea83c0",
+  "elapsed_s": 0.369,
   "question": "Does the compressed structure EXECUTE DIRECTLY, or does it decompress to dense and call an ordinary matmul?",
   "answer": "The compressed structures that actually run EXECUTE DIRECTLY. Qwen3.8 uniform-q4 geo_tpr64 unpacks nibbles in registers and FMAs into y; peak temporary 3145728 B against parent lm_head 5085593600 B. Q80 HGRAVS01 is y=L@(R@x) with mid[160]. gravity_pq_matvec and binary_group likewise never write W. The reconstruct-then-matmul lowerings exist (decode_vector, L@R then gemv, UV f16 cache) and are labelled ORACLE: their peak temporary reaches parent-tensor shape. The 0.0485 bpw UV structure is 0.0485 active fused and 16.0 active if the dense form is cached \u2014 same structure, two regimes. Presenting the cache regime as native execution is the defect.",
   "convention": {
@@ -1485,7 +1485,7 @@
     "q80_gather_row_refuses_weight_row": true
   },
   "cpu_microbench": {
-    "numpy": "2.4.6",
+    "numpy": "2.2.6",
     "hgravs": {
       "L_shape": [
         2048,
@@ -1497,14 +1497,14 @@
       ],
       "fused_peak_bytes": 8832,
       "oracle_peak_bytes": 4202496,
-      "fused_wall_s": 4.2625004425644875e-05,
-      "oracle_wall_s": 0.0005333750159479678,
+      "fused_wall_s": 3.829199886240531e-05,
+      "oracle_wall_s": 0.0006273750004766043,
       "y_match_max_abs": 0.0003509521484375,
       "parent_f32_bytes": 4194304,
       "threadgroup_mid_bytes": 640,
       "oracle_reaches_parent": true,
       "fused_reaches_parent": false,
-      "numpy": "2.4.6"
+      "numpy": "2.2.6"
     },
     "generated_uv": {
       "rank": 12,
@@ -1518,8 +1518,8 @@
       ],
       "fused_peak_bytes": 69680,
       "oracle_peak_bytes": 178327552,
-      "fused_wall_s": 0.00010649999603629112,
-      "oracle_wall_s": 0.03715245900093578,
+      "fused_wall_s": 4.57499991171062e-05,
+      "oracle_wall_s": 0.32087091599896667,
       "y_match_max_abs": 0.2544708251953125,
       "parent_f16_bytes": 178257920,
       "parent_f32_bytes": 356515840,
@@ -1527,7 +1527,7 @@
       "encoded_oracle_peak_bytes": 178327552,
       "oracle_reaches_parent_f16": true,
       "fused_reaches_parent_f16": false,
-      "numpy": "2.4.6"
+      "numpy": "2.2.6"
     },
     "numpy_absent_reason": null
   },

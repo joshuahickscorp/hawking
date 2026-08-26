@@ -1,7 +1,7 @@
 {
   "schema": "hawking.headless.whole_model_native.v1",
-  "generated_at": "2026-08-24T22:42:40Z",
-  "git_head": "f6a4fe7c9ee4ec3a3f5763bf020e7abe29f6bb94",
+  "generated_at": "2026-08-25T00:22:32Z",
+  "git_head": "eb1494112b61953122262e311cc9243dbd44952e",
   "generated_by": "tools/headless/whole_model_native.py",
   "obligation": "N042 \u2014 WHOLE-MODEL NATIVE EXECUTION: run the 2.60-EBPW heterogeneous body, zero parent, reprofile (S025 \u00a715-17)",
   "hand_authored": false,
@@ -95,9 +95,9 @@
         "ascension_qwen38_hybrid_greedy"
       ],
       "exit_code": 0,
-      "wall_s": 0.504883665998932,
+      "wall_s": 3.3344652500236407,
       "stdout_tail": "",
-      "stderr_tail": "warning: value assigned to `ended_on_eog` is never read\n    --> crates/hawking-core/src/model/qwen30_complete_runtime.rs:5962:32\n     |\n5962 |         let mut ended_on_eog = false;\n     |                                ^^^^^\n     |\n     = help: maybe it is overwritten before being read?\n     = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default\n\nwarning: unused variable: `groups`\n    --> crates/hawking-core/src/model/qwen_complete_binary/q80_mixed_decode.rs:1466:17\n     |\n1466 |             let groups = header_usize(&header, \"groups\", \"HGRAVB01\")?;\n     |                 ^^^^^^ help: if this is intentional, prefix it with an underscore: `_groups`\n     |\n     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default\n\nwarning: type `qwen30_source_bf16_layer_major::TensorLoc` is more private than the item `qwen30_source_bf16_layer_major::SourceBf16Index::require`\n    --> crates/hawking-core/src/model/qwen30_source_bf16_layer_major.rs:1304:5\n     |\n1304 |     pub fn require(&self, name: &str) -> Result<&TensorLoc> {\n     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method `qwen30_source_bf16_layer_major::SourceBf16Index::require` is reachable at visibility `pub`\n     |\nnote: but type `qwen30_source_bf16_layer_major::TensorLoc` is only usable at visibility `pub(self)`\n    --> crates/hawking-core/src/model/qwen30_source_bf16_layer_major.rs:1218:1\n     |\n1218 | struct TensorLoc {\n     | ^^^^^^^^^^^^^^^^\n     = note: `#[warn(private_interfaces)]` on by default\n\nwarning: type `qwen80_source_bf16_layer_major::TensorLoc` is more private than the item `qwen80_source_bf16_layer_major::SourceBf16Index::require`\n    --> crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs:1371:5\n     |\n1371 |     pub fn require(&self, name: &str) -> Result<&TensorLoc> {\n     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method `qwen80_source_bf16_layer_major::SourceBf16Index::require` is reachable at visibility `pub`\n     |\nnote: but type `qwen80_source_bf16_layer_major::TensorLoc` is only usable at visibility `pub(self)`\n    --> crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs:1276:1\n     |\n1276 | struct TensorLoc {\n     | ^^^^^^^^^^^^^^^^\n\nwarning: field `name` is never read\n   --> crates/hawking-core/src/gravity_deepseek_v4_fullseq_attention_device.rs:147:5\n    |\n146 | struct VerifiedTensor {\n    |        -------------- field in this struct\n147 |     name: String,\n    |     ^^^^\n    |\n    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: associated function `debug_slice` is never used\n   --> crates/hawking-core/src/model/mixtral.rs:963:8\n    |\n893 | impl MixtralEngine {\n    | ------------------ associated function in this implementation\n...\n963 |     fn debug_slice(label: &str, xs: &[f32], first: usize) {\n    |        ^^^^^^^^^^^\n\nwarning: field `dtype` is never read\n    --> crates/hawking-core/src/model/qwen30_source_bf16_layer_major.rs:1224:5\n     |\n1218 | struct TensorLoc {\n     |        --------- field in this struct\n...\n1224 |     dtype: String,\n     |     ^^^^^\n     |\n     = note: `TensorLoc` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis\n\nwarning: field `dtype` is never read\n    --> crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs:1281:5\n     |\n1276 | struct TensorLoc {\n     |        --------- field in this struct\n...\n1281 |     dtype: String,\n     |     ^^^^^\n     |\n     = note: `TensorLoc` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis\n\nwarning: function `median_snap` is never used\n   --> crates/hawking-core/src/model/qwen80_mixed_token_ns_ledger.rs:206:4\n    |\n206 | fn median_snap(snaps: &[MixedExclusiveSnap]) -> MixedExclusiveSnap {\n    |    ^^^^^^^^^^^\n\nwarning: `hawking-core` (lib) generated 9 warnings (run `cargo fix --lib -p hawking-core` to apply 1 suggestion)\n    Finished `release-fast` profile [optimized] target(s) in 0.44s\n",
+      "stderr_tail": "warning: value assigned to `ended_on_eog` is never read\n    --> crates/hawking-core/src/model/qwen30_complete_runtime.rs:5962:32\n     |\n5962 |         let mut ended_on_eog = false;\n     |                                ^^^^^\n     |\n     = help: maybe it is overwritten before being read?\n     = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default\n\nwarning: unused variable: `groups`\n    --> crates/hawking-core/src/model/qwen_complete_binary/q80_mixed_decode.rs:1466:17\n     |\n1466 |             let groups = header_usize(&header, \"groups\", \"HGRAVB01\")?;\n     |                 ^^^^^^ help: if this is intentional, prefix it with an underscore: `_groups`\n     |\n     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default\n\nwarning: type `qwen30_source_bf16_layer_major::TensorLoc` is more private than the item `qwen30_source_bf16_layer_major::SourceBf16Index::require`\n    --> crates/hawking-core/src/model/qwen30_source_bf16_layer_major.rs:1304:5\n     |\n1304 |     pub fn require(&self, name: &str) -> Result<&TensorLoc> {\n     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method `qwen30_source_bf16_layer_major::SourceBf16Index::require` is reachable at visibility `pub`\n     |\nnote: but type `qwen30_source_bf16_layer_major::TensorLoc` is only usable at visibility `pub(self)`\n    --> crates/hawking-core/src/model/qwen30_source_bf16_layer_major.rs:1218:1\n     |\n1218 | struct TensorLoc {\n     | ^^^^^^^^^^^^^^^^\n     = note: `#[warn(private_interfaces)]` on by default\n\nwarning: type `qwen80_source_bf16_layer_major::TensorLoc` is more private than the item `qwen80_source_bf16_layer_major::SourceBf16Index::require`\n    --> crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs:1371:5\n     |\n1371 |     pub fn require(&self, name: &str) -> Result<&TensorLoc> {\n     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method `qwen80_source_bf16_layer_major::SourceBf16Index::require` is reachable at visibility `pub`\n     |\nnote: but type `qwen80_source_bf16_layer_major::TensorLoc` is only usable at visibility `pub(self)`\n    --> crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs:1276:1\n     |\n1276 | struct TensorLoc {\n     | ^^^^^^^^^^^^^^^^\n\nwarning: field `name` is never read\n   --> crates/hawking-core/src/gravity_deepseek_v4_fullseq_attention_device.rs:147:5\n    |\n146 | struct VerifiedTensor {\n    |        -------------- field in this struct\n147 |     name: String,\n    |     ^^^^\n    |\n    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: associated function `debug_slice` is never used\n   --> crates/hawking-core/src/model/mixtral.rs:963:8\n    |\n893 | impl MixtralEngine {\n    | ------------------ associated function in this implementation\n...\n963 |     fn debug_slice(label: &str, xs: &[f32], first: usize) {\n    |        ^^^^^^^^^^^\n\nwarning: field `dtype` is never read\n    --> crates/hawking-core/src/model/qwen30_source_bf16_layer_major.rs:1224:5\n     |\n1218 | struct TensorLoc {\n     |        --------- field in this struct\n...\n1224 |     dtype: String,\n     |     ^^^^^\n     |\n     = note: `TensorLoc` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis\n\nwarning: field `dtype` is never read\n    --> crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs:1281:5\n     |\n1276 | struct TensorLoc {\n     |        --------- field in this struct\n...\n1281 |     dtype: String,\n     |     ^^^^^\n     |\n     = note: `TensorLoc` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis\n\nwarning: function `median_snap` is never used\n   --> crates/hawking-core/src/model/qwen80_mixed_token_ns_ledger.rs:206:4\n    |\n206 | fn median_snap(snaps: &[MixedExclusiveSnap]) -> MixedExclusiveSnap {\n    |    ^^^^^^^^^^^\n\nwarning: `hawking-core` (lib) generated 9 warnings (run `cargo fix --lib -p hawking-core` to apply 1 suggestion)\n   Compiling hawking-core v0.2.2 (/Users/scammermike/Downloads/hawking/crates/hawking-core)\n    Finished `release-fast` profile [optimized] target(s) in 3.29s\n",
       "ok": true
     },
     "q3_g128_parity": {
@@ -112,7 +112,7 @@
         "q3_g128_parity"
       ],
       "exit_code": 0,
-      "wall_s": 0.10138162499060854,
+      "wall_s": 0.09995604201685637,
       "stdout_tail": "",
       "stderr_tail": "warning: value assigned to `ended_on_eog` is never read\n    --> crates/hawking-core/src/model/qwen30_complete_runtime.rs:5962:32\n     |\n5962 |         let mut ended_on_eog = false;\n     |                                ^^^^^\n     |\n     = help: maybe it is overwritten before being read?\n     = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default\n\nwarning: unused variable: `groups`\n    --> crates/hawking-core/src/model/qwen_complete_binary/q80_mixed_decode.rs:1466:17\n     |\n1466 |             let groups = header_usize(&header, \"groups\", \"HGRAVB01\")?;\n     |                 ^^^^^^ help: if this is intentional, prefix it with an underscore: `_groups`\n     |\n     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default\n\nwarning: type `qwen30_source_bf16_layer_major::TensorLoc` is more private than the item `qwen30_source_bf16_layer_major::SourceBf16Index::require`\n    --> crates/hawking-core/src/model/qwen30_source_bf16_layer_major.rs:1304:5\n     |\n1304 |     pub fn require(&self, name: &str) -> Result<&TensorLoc> {\n     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method `qwen30_source_bf16_layer_major::SourceBf16Index::require` is reachable at visibility `pub`\n     |\nnote: but type `qwen30_source_bf16_layer_major::TensorLoc` is only usable at visibility `pub(self)`\n    --> crates/hawking-core/src/model/qwen30_source_bf16_layer_major.rs:1218:1\n     |\n1218 | struct TensorLoc {\n     | ^^^^^^^^^^^^^^^^\n     = note: `#[warn(private_interfaces)]` on by default\n\nwarning: type `qwen80_source_bf16_layer_major::TensorLoc` is more private than the item `qwen80_source_bf16_layer_major::SourceBf16Index::require`\n    --> crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs:1371:5\n     |\n1371 |     pub fn require(&self, name: &str) -> Result<&TensorLoc> {\n     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method `qwen80_source_bf16_layer_major::SourceBf16Index::require` is reachable at visibility `pub`\n     |\nnote: but type `qwen80_source_bf16_layer_major::TensorLoc` is only usable at visibility `pub(self)`\n    --> crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs:1276:1\n     |\n1276 | struct TensorLoc {\n     | ^^^^^^^^^^^^^^^^\n\nwarning: field `name` is never read\n   --> crates/hawking-core/src/gravity_deepseek_v4_fullseq_attention_device.rs:147:5\n    |\n146 | struct VerifiedTensor {\n    |        -------------- field in this struct\n147 |     name: String,\n    |     ^^^^\n    |\n    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: associated function `debug_slice` is never used\n   --> crates/hawking-core/src/model/mixtral.rs:963:8\n    |\n893 | impl MixtralEngine {\n    | ------------------ associated function in this implementation\n...\n963 |     fn debug_slice(label: &str, xs: &[f32], first: usize) {\n    |        ^^^^^^^^^^^\n\nwarning: field `dtype` is never read\n    --> crates/hawking-core/src/model/qwen30_source_bf16_layer_major.rs:1224:5\n     |\n1218 | struct TensorLoc {\n     |        --------- field in this struct\n...\n1224 |     dtype: String,\n     |     ^^^^^\n     |\n     = note: `TensorLoc` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis\n\nwarning: field `dtype` is never read\n    --> crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs:1281:5\n     |\n1276 | struct TensorLoc {\n     |        --------- field in this struct\n...\n1281 |     dtype: String,\n     |     ^^^^^\n     |\n     = note: `TensorLoc` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis\n\nwarning: function `median_snap` is never used\n   --> crates/hawking-core/src/model/qwen80_mixed_token_ns_ledger.rs:206:4\n    |\n206 | fn median_snap(snaps: &[MixedExclusiveSnap]) -> MixedExclusiveSnap {\n    |    ^^^^^^^^^^^\n\nwarning: `hawking-core` (lib) generated 9 warnings (run `cargo fix --lib -p hawking-core` to apply 1 suggestion)\n    Finished `release-fast` profile [optimized] target(s) in 0.08s\n",
       "ok": true
@@ -129,16 +129,16 @@
         "q2f_parity"
       ],
       "exit_code": 0,
-      "wall_s": 0.09840241697384045,
+      "wall_s": 0.4703748330066446,
       "stdout_tail": "",
-      "stderr_tail": "warning: value assigned to `ended_on_eog` is never read\n    --> crates/hawking-core/src/model/qwen30_complete_runtime.rs:5962:32\n     |\n5962 |         let mut ended_on_eog = false;\n     |                                ^^^^^\n     |\n     = help: maybe it is overwritten before being read?\n     = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default\n\nwarning: unused variable: `groups`\n    --> crates/hawking-core/src/model/qwen_complete_binary/q80_mixed_decode.rs:1466:17\n     |\n1466 |             let groups = header_usize(&header, \"groups\", \"HGRAVB01\")?;\n     |                 ^^^^^^ help: if this is intentional, prefix it with an underscore: `_groups`\n     |\n     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default\n\nwarning: type `qwen30_source_bf16_layer_major::TensorLoc` is more private than the item `qwen30_source_bf16_layer_major::SourceBf16Index::require`\n    --> crates/hawking-core/src/model/qwen30_source_bf16_layer_major.rs:1304:5\n     |\n1304 |     pub fn require(&self, name: &str) -> Result<&TensorLoc> {\n     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method `qwen30_source_bf16_layer_major::SourceBf16Index::require` is reachable at visibility `pub`\n     |\nnote: but type `qwen30_source_bf16_layer_major::TensorLoc` is only usable at visibility `pub(self)`\n    --> crates/hawking-core/src/model/qwen30_source_bf16_layer_major.rs:1218:1\n     |\n1218 | struct TensorLoc {\n     | ^^^^^^^^^^^^^^^^\n     = note: `#[warn(private_interfaces)]` on by default\n\nwarning: type `qwen80_source_bf16_layer_major::TensorLoc` is more private than the item `qwen80_source_bf16_layer_major::SourceBf16Index::require`\n    --> crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs:1371:5\n     |\n1371 |     pub fn require(&self, name: &str) -> Result<&TensorLoc> {\n     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method `qwen80_source_bf16_layer_major::SourceBf16Index::require` is reachable at visibility `pub`\n     |\nnote: but type `qwen80_source_bf16_layer_major::TensorLoc` is only usable at visibility `pub(self)`\n    --> crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs:1276:1\n     |\n1276 | struct TensorLoc {\n     | ^^^^^^^^^^^^^^^^\n\nwarning: field `name` is never read\n   --> crates/hawking-core/src/gravity_deepseek_v4_fullseq_attention_device.rs:147:5\n    |\n146 | struct VerifiedTensor {\n    |        -------------- field in this struct\n147 |     name: String,\n    |     ^^^^\n    |\n    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: associated function `debug_slice` is never used\n   --> crates/hawking-core/src/model/mixtral.rs:963:8\n    |\n893 | impl MixtralEngine {\n    | ------------------ associated function in this implementation\n...\n963 |     fn debug_slice(label: &str, xs: &[f32], first: usize) {\n    |        ^^^^^^^^^^^\n\nwarning: field `dtype` is never read\n    --> crates/hawking-core/src/model/qwen30_source_bf16_layer_major.rs:1224:5\n     |\n1218 | struct TensorLoc {\n     |        --------- field in this struct\n...\n1224 |     dtype: String,\n     |     ^^^^^\n     |\n     = note: `TensorLoc` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis\n\nwarning: field `dtype` is never read\n    --> crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs:1281:5\n     |\n1276 | struct TensorLoc {\n     |        --------- field in this struct\n...\n1281 |     dtype: String,\n     |     ^^^^^\n     |\n     = note: `TensorLoc` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis\n\nwarning: function `median_snap` is never used\n   --> crates/hawking-core/src/model/qwen80_mixed_token_ns_ledger.rs:206:4\n    |\n206 | fn median_snap(snaps: &[MixedExclusiveSnap]) -> MixedExclusiveSnap {\n    |    ^^^^^^^^^^^\n\nwarning: `hawking-core` (lib) generated 9 warnings (run `cargo fix --lib -p hawking-core` to apply 1 suggestion)\n    Finished `release-fast` profile [optimized] target(s) in 0.07s\n",
+      "stderr_tail": "warning: value assigned to `ended_on_eog` is never read\n    --> crates/hawking-core/src/model/qwen30_complete_runtime.rs:5962:32\n     |\n5962 |         let mut ended_on_eog = false;\n     |                                ^^^^^\n     |\n     = help: maybe it is overwritten before being read?\n     = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default\n\nwarning: unused variable: `groups`\n    --> crates/hawking-core/src/model/qwen_complete_binary/q80_mixed_decode.rs:1466:17\n     |\n1466 |             let groups = header_usize(&header, \"groups\", \"HGRAVB01\")?;\n     |                 ^^^^^^ help: if this is intentional, prefix it with an underscore: `_groups`\n     |\n     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default\n\nwarning: type `qwen30_source_bf16_layer_major::TensorLoc` is more private than the item `qwen30_source_bf16_layer_major::SourceBf16Index::require`\n    --> crates/hawking-core/src/model/qwen30_source_bf16_layer_major.rs:1304:5\n     |\n1304 |     pub fn require(&self, name: &str) -> Result<&TensorLoc> {\n     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method `qwen30_source_bf16_layer_major::SourceBf16Index::require` is reachable at visibility `pub`\n     |\nnote: but type `qwen30_source_bf16_layer_major::TensorLoc` is only usable at visibility `pub(self)`\n    --> crates/hawking-core/src/model/qwen30_source_bf16_layer_major.rs:1218:1\n     |\n1218 | struct TensorLoc {\n     | ^^^^^^^^^^^^^^^^\n     = note: `#[warn(private_interfaces)]` on by default\n\nwarning: type `qwen80_source_bf16_layer_major::TensorLoc` is more private than the item `qwen80_source_bf16_layer_major::SourceBf16Index::require`\n    --> crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs:1371:5\n     |\n1371 |     pub fn require(&self, name: &str) -> Result<&TensorLoc> {\n     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method `qwen80_source_bf16_layer_major::SourceBf16Index::require` is reachable at visibility `pub`\n     |\nnote: but type `qwen80_source_bf16_layer_major::TensorLoc` is only usable at visibility `pub(self)`\n    --> crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs:1276:1\n     |\n1276 | struct TensorLoc {\n     | ^^^^^^^^^^^^^^^^\n\nwarning: field `name` is never read\n   --> crates/hawking-core/src/gravity_deepseek_v4_fullseq_attention_device.rs:147:5\n    |\n146 | struct VerifiedTensor {\n    |        -------------- field in this struct\n147 |     name: String,\n    |     ^^^^\n    |\n    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: associated function `debug_slice` is never used\n   --> crates/hawking-core/src/model/mixtral.rs:963:8\n    |\n893 | impl MixtralEngine {\n    | ------------------ associated function in this implementation\n...\n963 |     fn debug_slice(label: &str, xs: &[f32], first: usize) {\n    |        ^^^^^^^^^^^\n\nwarning: field `dtype` is never read\n    --> crates/hawking-core/src/model/qwen30_source_bf16_layer_major.rs:1224:5\n     |\n1218 | struct TensorLoc {\n     |        --------- field in this struct\n...\n1224 |     dtype: String,\n     |     ^^^^^\n     |\n     = note: `TensorLoc` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis\n\nwarning: field `dtype` is never read\n    --> crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs:1281:5\n     |\n1276 | struct TensorLoc {\n     |        --------- field in this struct\n...\n1281 |     dtype: String,\n     |     ^^^^^\n     |\n     = note: `TensorLoc` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis\n\nwarning: function `median_snap` is never used\n   --> crates/hawking-core/src/model/qwen80_mixed_token_ns_ledger.rs:206:4\n    |\n206 | fn median_snap(snaps: &[MixedExclusiveSnap]) -> MixedExclusiveSnap {\n    |    ^^^^^^^^^^^\n\nwarning: `hawking-core` (lib) generated 9 warnings (run `cargo fix --lib -p hawking-core` to apply 1 suggestion)\n   Compiling hawking-core v0.2.2 (/Users/scammermike/Downloads/hawking/crates/hawking-core)\n    Finished `release-fast` profile [optimized] target(s) in 0.45s\n",
       "ok": true
     }
   },
   "compile": {
     "mix_id": "mix_hetero_n041_floors",
-    "artifact_root": "/Users/scammermike/.claude-grok/worktrees/n042native-20260824-180050/artifacts/qwen38-hetero-n041/mix_hetero_n041_floors",
-    "catalog": "/Users/scammermike/.claude-grok/worktrees/n042native-20260824-180050/artifacts/qwen38-hetero-n041/mix_hetero_n041_floors/catalog.hq38m20",
+    "artifact_root": "/Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors",
+    "catalog": "/Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors/catalog.hq38m20",
     "n_tensors": 755,
     "n_packed": 402,
     "n_hardlink": 353,
@@ -589,11 +589,11 @@
       "output"
     ],
     "pending_tensors": [],
-    "header_bytes_excluded_from_ebpw": 25728,
+    "header_bytes_excluded_from_ebpw": 124452,
     "payload_bytes": 8731093292,
     "parent_params": 26895998464,
     "complete_ebpw": 2.5969567265364937,
-    "complete_ebpw_physical_codes_plus_scales": 2.596986336294282,
+    "complete_ebpw_physical_codes_plus_scales": 2.5969569716287144,
     "active_bytes_per_token": 8234330016.0,
     "active_ebpw_per_token": 2.4492357186951987,
     "n041_target_complete_ebpw": 2.596888,
@@ -665,7 +665,7 @@
       }
     },
     "q4_incumbent_complete_physical_bpw": 4.252735126866492,
-    "wall_s": 4.876464916014811,
+    "wall_s": 1261.5449682500039,
     "did_not_load_second_27b": true,
     "parent_streamed_one_tensor_at_a_time": true,
     "wrote_under_models": false,
@@ -735,9 +735,9 @@
   },
   "decode": {
     "command": [
-      "/Users/scammermike/.claude-grok/worktrees/n042native-20260824-180050/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+      "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
       "--artifact-root",
-      "/Users/scammermike/.claude-grok/worktrees/n042native-20260824-180050/artifacts/qwen38-hetero-n041/mix_hetero_n041_floors",
+      "/Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors",
       "--tokenizer",
       "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json",
       "--prompt",
@@ -747,14 +747,14 @@
       "--max-seq-len",
       "128",
       "--out",
-      "/Users/scammermike/.claude-grok/worktrees/n042native-20260824-180050/artifacts/qwen38-hetero-n041/mix_hetero_n041_floors/decode_generate.json"
+      "/Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors/decode_generate.json"
     ],
-    "binary": "/Users/scammermike/.claude-grok/worktrees/n042native-20260824-180050/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+    "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
     "complete_wall": false,
     "exit_code": 0,
-    "wall_s": 5.534440749994246,
-    "stdout_tail": "GENERATED_TEXT_VERBATIM: <think>\nThe user is asking me to explain, in ordinary prose and at length\nFALLBACKS: 0\nDENSE_W_MATERIALIZED: 0\nPROMPT_LEN: 34\nNEW_TOKENS: [248068, 198, 760, 1156, 369, 9859, 728, 310, 10033, 11, 303, 18541, 58655, 321, 506, 2984]\ngenerated_token_ids=[248068, 198, 760, 1156, 369, 9859, 728, 310, 10033, 11, 303, 18541, 58655, 321, 506, 2984]\nGPU_NS_PER_STEP: [34801583, 30000625, 29863000, 29752583, 29944583, 30104333, 30060375, 30026458, 30051250, 30174999, 30105125, 29897666, 29867624, 30022249, 30162291, 30060749, 30096833, 30068374, 30234291, 30199958, 30054624, 29902166, 29994374, 30189000, 30170000, 30170499, 30170583, 30163791, 30195916, 30073541, 30093583, 30118791, 30188041, 30291874, 30269000, 30228833, 30193875, 30189833, 30163749, 30140125, 30035875, 30308166, 30308125, 30357875, 30421250, 30303833, 30317625, 30317666, 30269749]\nWAIT_NS_PER_STEP: [100220542, 30519375, 30191583, 30254250, 30265042, 30567750, 30376458, 30342792, 30380167, 30542583, 30693917, 30237625, 30200375, 30304250, 30471875, 30367916, 31079125, 31656542, 30662000, 31024042, 30354750, 30219708, 30349709, 30518333, 30480625, 30475875, 30709041, 30467083, 30952833, 30381000, 30484250, 30675167, 30619792, 30613208, 30584292, 30518875, 30496167, 31221250, 30490791, 30427916, 30363125, 30587917, 30841500, 30673083, 30714917, 31700209, 30658708, 30724708, 30578666]\nMEDIAN_GPU_NS_PER_TOKEN: Some(30163749)\nWALL_NS: 1745908500\nPREFILL_WALL_NS: 1271457875\nDECODE_WALL_NS: 474448667\nFIRST_STEP_WALL_NS: 232342542\nSTEADY_DECODE_WALL_NS_PER_TOKEN: Some(31629911)\n",
-    "stderr_tail": "qwen38 prompt tokens=34 text=\"<|im_start|>user\\nExplain, in ordinary prose and at length, how a compiler turns a for-loop into basic blocks and then into machine code.<|im_end|>\\n<|im_start|>assistant\\n\"\nqwen38-decode opening mixed HQ38M20 + 755 catalog tensors (no reconstruct-to-Q4)\nqwen38-decode mixed upload 0/755\nqwen38-decode mixed upload 50/755\nqwen38-decode mixed upload 100/755\nqwen38-decode mixed upload 150/755\nqwen38-decode mixed upload 200/755\nqwen38-decode mixed upload 250/755\nqwen38-decode mixed upload 300/755\nqwen38-decode mixed upload 350/755\nqwen38-decode mixed upload 400/755\nqwen38-decode mixed upload 450/755\nqwen38-decode mixed upload 500/755\nqwen38-decode mixed upload 550/755\nqwen38-decode mixed upload 600/755\nqwen38-decode mixed upload 650/755\nqwen38-decode mixed upload 700/755\nqwen38-decode mixed upload 750/755\nqwen38-decode mixed census: tensors=755 binary=0 residual=0 hgravs=0 uniform=210 affine=192 q4=0 f32=353 refused=0 expanded_to_q4=0 expanded_to_float_gemv=0 dense_w_materialized=0\nqwen38-decode mixed bind: K-complete; recon_fuse=ON uses q80_binary_group_matvec_simd_bytes / q80_binary_group_csr_matvec_bytes when cols>2048 (256-col tiles; this model K in {5120,6144}); cols<=2048 stay on tg256; recon_fuse=0 walks every column via gk_matvec_binary\nqwen38-decode mixed genome: q2f=192 q3_g64=144 q3_g128=66 embed_q3=1 mlp_kernel=qwen_q2f_group64_matvec_geo_tpr64_tg128 dn_kernel=qwen_uniform_q3_group64_matvec_geo_tpr64_tg128 gqa_kernel=qwen_uniform_q3_group128_matvec_geo_tpr64_tg128 embed_kernel=qwen38_hgravu_embedding_lookup dense_w_materialized=0\nqwen38-decode mixed bind: HGRAVF01 q2f qwen_q2f_group64_matvec_geo_tpr64_tg128 group=64 (delta only, w=(q-1.5)*delta, 4 codes/byte)\n[hawking] HAWKING_TCB_TRACE=\"(unset)\" \u2192 mode=Off\nwrote /Users/scammermike/.claude-grok/worktrees/n042native-20260824-180050/artifacts/qwen38-hetero-n041/mix_hetero_n041_floors/decode_generate.json\n",
+    "wall_s": 6.0304984580143355,
+    "stdout_tail": "GENERATED_TEXT_VERBATIM: <think>\nThe user is asking me to explain, in ordinary prose and at length\nFALLBACKS: 0\nDENSE_W_MATERIALIZED: 0\nPROMPT_LEN: 34\nNEW_TOKENS: [248068, 198, 760, 1156, 369, 9859, 728, 310, 10033, 11, 303, 18541, 58655, 321, 506, 2984]\ngenerated_token_ids=[248068, 198, 760, 1156, 369, 9859, 728, 310, 10033, 11, 303, 18541, 58655, 321, 506, 2984]\nGPU_NS_PER_STEP: [39739416, 29858499, 29954625, 30129999, 30130958, 30048250, 30067499, 29981750, 29992666, 30066291, 30067541, 30007749, 30171291, 29927083, 29897458, 30050625, 29901208, 30037874, 30190999, 30060749, 30186249, 30039000, 30218291, 30172124, 30120375, 30285791, 30212624, 30267250, 30224499, 30154208, 30194124, 30268000, 30051458, 30217999, 30065416, 29975916, 30142833, 30281083, 30320541, 30287374, 30453499, 30333000, 30208874, 30344250, 30380375, 30263458, 30376041, 30359083, 30298749]\nWAIT_NS_PER_STEP: [115599875, 30220042, 30326625, 30581250, 30519917, 30465083, 30465292, 30332542, 30342917, 30409167, 30439167, 30445292, 30590333, 30241958, 30261375, 30408250, 30224250, 30532500, 30591208, 30401500, 30617625, 30415041, 30576125, 30530000, 30467667, 30654709, 30575417, 30602708, 30546291, 30487458, 30689333, 30592167, 30356292, 30548792, 30365000, 30254375, 30487166, 30618417, 30975125, 30660417, 30935208, 30680834, 30559458, 30679584, 30715416, 30604250, 30711250, 30674333, 30649709]\nMEDIAN_GPU_NS_PER_TOKEN: Some(30171291)\nWALL_NS: 1634582917\nPREFILL_WALL_NS: 1160156250\nDECODE_WALL_NS: 474424208\nFIRST_STEP_WALL_NS: 120800166\nSTEADY_DECODE_WALL_NS_PER_TOKEN: Some(31628280)\n",
+    "stderr_tail": "qwen38 prompt tokens=34 text=\"<|im_start|>user\\nExplain, in ordinary prose and at length, how a compiler turns a for-loop into basic blocks and then into machine code.<|im_end|>\\n<|im_start|>assistant\\n\"\nqwen38-decode opening mixed HQ38M20 + 755 catalog tensors (no reconstruct-to-Q4)\nqwen38-decode mixed upload 0/755\nqwen38-decode mixed upload 50/755\nqwen38-decode mixed upload 100/755\nqwen38-decode mixed upload 150/755\nqwen38-decode mixed upload 200/755\nqwen38-decode mixed upload 250/755\nqwen38-decode mixed upload 300/755\nqwen38-decode mixed upload 350/755\nqwen38-decode mixed upload 400/755\nqwen38-decode mixed upload 450/755\nqwen38-decode mixed upload 500/755\nqwen38-decode mixed upload 550/755\nqwen38-decode mixed upload 600/755\nqwen38-decode mixed upload 650/755\nqwen38-decode mixed upload 700/755\nqwen38-decode mixed upload 750/755\nqwen38-decode mixed census: tensors=755 binary=0 residual=0 hgravs=0 uniform=210 affine=192 q4=0 f32=353 refused=0 expanded_to_q4=0 expanded_to_float_gemv=0 dense_w_materialized=0\nqwen38-decode mixed bind: K-complete; recon_fuse=ON uses q80_binary_group_matvec_simd_bytes / q80_binary_group_csr_matvec_bytes when cols>2048 (256-col tiles; this model K in {5120,6144}); cols<=2048 stay on tg256; recon_fuse=0 walks every column via gk_matvec_binary\nqwen38-decode mixed genome: q2f=192 q3_g64=144 q3_g128=66 embed_q3=1 mlp_kernel=qwen_q2f_group64_matvec_geo_tpr64_tg128 dn_kernel=qwen_uniform_q3_group64_matvec_geo_tpr64_tg128 gqa_kernel=qwen_uniform_q3_group128_matvec_geo_tpr64_tg128 embed_kernel=qwen38_hgravu_embedding_lookup dense_w_materialized=0\nqwen38-decode mixed bind: HGRAVF01 q2f qwen_q2f_group64_matvec_geo_tpr64_tg128 group=64 (delta only, w=(q-1.5)*delta, 4 codes/byte)\n[hawking] HAWKING_TCB_TRACE=\"(unset)\" \u2192 mode=Off\nwrote /Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors/decode_generate.json\n",
     "ok": true,
     "census": {
       "tensors": 755,
@@ -830,11 +830,11 @@
       "wall_ns",
       "wall_ns_per_step"
     ],
-    "tok_s": 31.615643679319263,
-    "decode_wall_ns": 474448667,
+    "tok_s": 31.617273627824655,
+    "decode_wall_ns": 474424208,
     "decode_steps": 15,
     "dispatches_per_token": 964,
-    "median_gpu_ns_per_token": 30163749,
+    "median_gpu_ns_per_token": 30171291,
     "native_kernel_ran": true,
     "dequant_path": false,
     "expanded_to_q4": 0,
@@ -842,9 +842,9 @@
   },
   "complete_wall": {
     "command": [
-      "/Users/scammermike/.claude-grok/worktrees/n042native-20260824-180050/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+      "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
       "--artifact-root",
-      "/Users/scammermike/.claude-grok/worktrees/n042native-20260824-180050/artifacts/qwen38-hetero-n041/mix_hetero_n041_floors",
+      "/Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors",
       "--tokenizer",
       "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json",
       "--prompt",
@@ -854,17 +854,17 @@
       "--max-seq-len",
       "128",
       "--out",
-      "/Users/scammermike/.claude-grok/worktrees/n042native-20260824-180050/artifacts/qwen38-hetero-n041/mix_hetero_n041_floors/decode_complete_wall.json",
+      "/Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors/decode_complete_wall.json",
       "--complete-wall",
       "--pairs",
       "4"
     ],
-    "binary": "/Users/scammermike/.claude-grok/worktrees/n042native-20260824-180050/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+    "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
     "complete_wall": true,
     "exit_code": 0,
-    "wall_s": 17.53551129202242,
-    "stdout_tail": "COMPLETE_WALL_NS_PER_TOKEN: 31534834\nCOMPLETE_WALL_MS_PER_TOKEN: 31.534834\nCOMPLETE_WALL_TPS: 31.7110\nGPU_NS_PER_TOKEN: 30236499\nWALL_MINUS_GPU_NS: 1298335\nREP_MEDIANS_NS: [31533916, 31534834, 31539125, 31621208, 31550250, 31451167, 31532416, 31430584]\nCONTROL_DECODE_WALL_NS_PER_TOKEN: 31464538\nGENERATED_TEXT_VERBATIM: <think>\nThe user is asking me to explain, in ordinary prose and at length\nFALLBACKS: 0\n",
-    "stderr_tail": "qwen38 prompt tokens=34 text=\"<|im_start|>user\\nExplain, in ordinary prose and at length, how a compiler turns a for-loop into basic blocks and then into machine code.<|im_end|>\\n<|im_start|>assistant\\n\"\nqwen38-decode opening mixed HQ38M20 + 755 catalog tensors (no reconstruct-to-Q4)\nqwen38-decode mixed upload 0/755\nqwen38-decode mixed upload 50/755\nqwen38-decode mixed upload 100/755\nqwen38-decode mixed upload 150/755\nqwen38-decode mixed upload 200/755\nqwen38-decode mixed upload 250/755\nqwen38-decode mixed upload 300/755\nqwen38-decode mixed upload 350/755\nqwen38-decode mixed upload 400/755\nqwen38-decode mixed upload 450/755\nqwen38-decode mixed upload 500/755\nqwen38-decode mixed upload 550/755\nqwen38-decode mixed upload 600/755\nqwen38-decode mixed upload 650/755\nqwen38-decode mixed upload 700/755\nqwen38-decode mixed upload 750/755\nqwen38-decode mixed census: tensors=755 binary=0 residual=0 hgravs=0 uniform=210 affine=192 q4=0 f32=353 refused=0 expanded_to_q4=0 expanded_to_float_gemv=0 dense_w_materialized=0\nqwen38-decode mixed bind: K-complete; recon_fuse=ON uses q80_binary_group_matvec_simd_bytes / q80_binary_group_csr_matvec_bytes when cols>2048 (256-col tiles; this model K in {5120,6144}); cols<=2048 stay on tg256; recon_fuse=0 walks every column via gk_matvec_binary\nqwen38-decode mixed genome: q2f=192 q3_g64=144 q3_g128=66 embed_q3=1 mlp_kernel=qwen_q2f_group64_matvec_geo_tpr64_tg128 dn_kernel=qwen_uniform_q3_group64_matvec_geo_tpr64_tg128 gqa_kernel=qwen_uniform_q3_group128_matvec_geo_tpr64_tg128 embed_kernel=qwen38_hgravu_embedding_lookup dense_w_materialized=0\nqwen38-decode mixed bind: HGRAVF01 q2f qwen_q2f_group64_matvec_geo_tpr64_tg128 group=64 (delta only, w=(q-1.5)*delta, 4 codes/byte)\nqwen38 session open 1.659s\nqwen38 complete-wall COLD generate (discard from authority except first-step)\n[hawking] HAWKING_TCB_TRACE=\"(unset)\" \u2192 mode=Off\nqwen38 COLD first step wall=96390042 ns gpu=33217416 ns prefill=1135766625 ns\nqwen38 complete-wall WARM A1\nqwen38 WARM A1 complete-wall median=31533916 ns (31.534 ms) gpu median=30254874 ns decode_steps=15\nqwen38 complete-wall WARM B1\nqwen38 WARM B1 complete-wall median=31534834 ns (31.535 ms) gpu median=30251124 ns decode_steps=15\nqwen38 complete-wall WARM A2\nqwen38 WARM A2 complete-wall median=31539125 ns (31.539 ms) gpu median=30220750 ns decode_steps=15\nqwen38 complete-wall WARM B2\nqwen38 WARM B2 complete-wall median=31621208 ns (31.621 ms) gpu median=30212374 ns decode_steps=15\nqwen38 complete-wall WARM A3\nqwen38 WARM A3 complete-wall median=31550250 ns (31.550 ms) gpu median=30219083 ns decode_steps=15\nqwen38 complete-wall WARM B3\nqwen38 WARM B3 complete-wall median=31451167 ns (31.451 ms) gpu median=30236499 ns decode_steps=15\nqwen38 complete-wall WARM A4\nqwen38 WARM A4 complete-wall median=31532416 ns (31.532 ms) gpu median=30204125 ns decode_steps=15\nqwen38 complete-wall WARM B4\nqwen38 WARM B4 complete-wall median=31430584 ns (31.431 ms) gpu median=30242000 ns decode_steps=15\nqwen38 complete-wall CONTROL uninstrumented generate_greedy\nwrote /Users/scammermike/.claude-grok/worktrees/n042native-20260824-180050/artifacts/qwen38-hetero-n041/mix_hetero_n041_floors/decode_complete_wall.json\n",
+    "wall_s": 17.556310834013857,
+    "stdout_tail": "COMPLETE_WALL_NS_PER_TOKEN: 31471167\nCOMPLETE_WALL_MS_PER_TOKEN: 31.471167\nCOMPLETE_WALL_TPS: 31.7751\nGPU_NS_PER_TOKEN: 30248083\nWALL_MINUS_GPU_NS: 1223084\nREP_MEDIANS_NS: [31503875, 31537417, 31471167, 31364583, 31405125, 31367875, 31456750, 31516375]\nCONTROL_DECODE_WALL_NS_PER_TOKEN: 31464730\nGENERATED_TEXT_VERBATIM: <think>\nThe user is asking me to explain, in ordinary prose and at length\nFALLBACKS: 0\n",
+    "stderr_tail": "qwen38 prompt tokens=34 text=\"<|im_start|>user\\nExplain, in ordinary prose and at length, how a compiler turns a for-loop into basic blocks and then into machine code.<|im_end|>\\n<|im_start|>assistant\\n\"\nqwen38-decode opening mixed HQ38M20 + 755 catalog tensors (no reconstruct-to-Q4)\nqwen38-decode mixed upload 0/755\nqwen38-decode mixed upload 50/755\nqwen38-decode mixed upload 100/755\nqwen38-decode mixed upload 150/755\nqwen38-decode mixed upload 200/755\nqwen38-decode mixed upload 250/755\nqwen38-decode mixed upload 300/755\nqwen38-decode mixed upload 350/755\nqwen38-decode mixed upload 400/755\nqwen38-decode mixed upload 450/755\nqwen38-decode mixed upload 500/755\nqwen38-decode mixed upload 550/755\nqwen38-decode mixed upload 600/755\nqwen38-decode mixed upload 650/755\nqwen38-decode mixed upload 700/755\nqwen38-decode mixed upload 750/755\nqwen38-decode mixed census: tensors=755 binary=0 residual=0 hgravs=0 uniform=210 affine=192 q4=0 f32=353 refused=0 expanded_to_q4=0 expanded_to_float_gemv=0 dense_w_materialized=0\nqwen38-decode mixed bind: K-complete; recon_fuse=ON uses q80_binary_group_matvec_simd_bytes / q80_binary_group_csr_matvec_bytes when cols>2048 (256-col tiles; this model K in {5120,6144}); cols<=2048 stay on tg256; recon_fuse=0 walks every column via gk_matvec_binary\nqwen38-decode mixed genome: q2f=192 q3_g64=144 q3_g128=66 embed_q3=1 mlp_kernel=qwen_q2f_group64_matvec_geo_tpr64_tg128 dn_kernel=qwen_uniform_q3_group64_matvec_geo_tpr64_tg128 gqa_kernel=qwen_uniform_q3_group128_matvec_geo_tpr64_tg128 embed_kernel=qwen38_hgravu_embedding_lookup dense_w_materialized=0\nqwen38-decode mixed bind: HGRAVF01 q2f qwen_q2f_group64_matvec_geo_tpr64_tg128 group=64 (delta only, w=(q-1.5)*delta, 4 codes/byte)\nqwen38 session open 1.732s\nqwen38 complete-wall COLD generate (discard from authority except first-step)\n[hawking] HAWKING_TCB_TRACE=\"(unset)\" \u2192 mode=Off\nqwen38 COLD first step wall=116484292 ns gpu=36765374 ns prefill=1151000834 ns\nqwen38 complete-wall WARM A1\nqwen38 WARM A1 complete-wall median=31503875 ns (31.504 ms) gpu median=30236333 ns decode_steps=15\nqwen38 complete-wall WARM B1\nqwen38 WARM B1 complete-wall median=31537417 ns (31.537 ms) gpu median=30210041 ns decode_steps=15\nqwen38 complete-wall WARM A2\nqwen38 WARM A2 complete-wall median=31471167 ns (31.471 ms) gpu median=30261499 ns decode_steps=15\nqwen38 complete-wall WARM B2\nqwen38 WARM B2 complete-wall median=31364583 ns (31.365 ms) gpu median=30248083 ns decode_steps=15\nqwen38 complete-wall WARM A3\nqwen38 WARM A3 complete-wall median=31405125 ns (31.405 ms) gpu median=30242625 ns decode_steps=15\nqwen38 complete-wall WARM B3\nqwen38 WARM B3 complete-wall median=31367875 ns (31.368 ms) gpu median=30253374 ns decode_steps=15\nqwen38 complete-wall WARM A4\nqwen38 WARM A4 complete-wall median=31456750 ns (31.457 ms) gpu median=30243708 ns decode_steps=15\nqwen38 complete-wall WARM B4\nqwen38 WARM B4 complete-wall median=31516375 ns (31.516 ms) gpu median=30257999 ns decode_steps=15\nqwen38 complete-wall CONTROL uninstrumented generate_greedy\nwrote /Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors/decode_complete_wall.json\n",
     "ok": true,
     "census": {
       "tensors": 755,
@@ -940,26 +940,26 @@
       "kind": "MEASURED",
       "overlap": "NOT SEPARATED",
       "n_warm_reps": 8,
-      "min": 31430584,
-      "median": 31534834,
-      "max": 31621208,
-      "mean": 31524187.5,
+      "min": 31364583,
+      "median": 31471167,
+      "max": 31537417,
+      "mean": 31452895.875,
       "all_rep_medians": [
-        31533916,
-        31534834,
-        31539125,
-        31621208,
-        31550250,
-        31451167,
-        31532416,
-        31430584
+        31503875,
+        31537417,
+        31471167,
+        31364583,
+        31405125,
+        31367875,
+        31456750,
+        31516375
       ],
-      "headline_complete_wall_ns_per_token": 31534834,
-      "headline_gpu_ns_per_token": 30236499,
+      "headline_complete_wall_ns_per_token": 31471167,
+      "headline_gpu_ns_per_token": 30248083,
       "unit": "ns/token"
     },
     "authority": {
-      "headline_complete_tps": 31.710964452833334,
+      "headline_complete_tps": 31.775116569398268,
       "n_warm_reps": 8
     },
     "native_kernel_ran": true,
@@ -971,29 +971,29 @@
     "kind": "MEASURED",
     "overlap": "NOT SEPARATED",
     "n_warm_reps": 8,
-    "min": 31430584,
-    "median": 31534834,
-    "max": 31621208,
-    "mean": 31524187.5,
+    "min": 31364583,
+    "median": 31471167,
+    "max": 31537417,
+    "mean": 31452895.875,
     "all_rep_medians": [
-      31533916,
-      31534834,
-      31539125,
-      31621208,
-      31550250,
-      31451167,
-      31532416,
-      31430584
+      31503875,
+      31537417,
+      31471167,
+      31364583,
+      31405125,
+      31367875,
+      31456750,
+      31516375
     ],
-    "headline_complete_wall_ns_per_token": 31534834,
-    "headline_gpu_ns_per_token": 30236499,
+    "headline_complete_wall_ns_per_token": 31471167,
+    "headline_gpu_ns_per_token": 30248083,
     "unit": "ns/token"
   },
   "parity": {
     "q2f_group64": {
       "ok": true,
       "exit_code": 0,
-      "binary": "/Users/scammermike/.claude-grok/worktrees/n042native-20260824-180050/workspace/ops/build/rust/release-fast/examples/q2f_parity",
+      "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/q2f_parity",
       "stdout": "codec: HGRAVF01 fourlevel_q2_group64_fp16_delta\nmode: synthetic\nshape: [64, 256]\ngroups: 256\nstorage_bpw_body: 2.25 (2-bit codes + f16 delta @ g64, no bias)\nkernel: q2f_group64_matvec (in-register dequant, no dense W on GEMV)\nkernel_geo: q2f_group64_matvec_geo_tpr64_tg128\nkernel_fused_swiglu: q2f_group64_matvec_gate_up_swiglu_geo_tpr64_tg128\nreuse_affine2_kernel: affine2_group32_matvec_geo_tpr64_tg128 (bias=-1.5*delta)\nmax_abs_diff: 0.000000e0\nmax_abs_diff_matvec: 0.000000e0\nmax_abs_diff_geo_tpr64: 0.000000e0\nmax_abs_diff_reuse_affine2: 0.000000e0\nmax_abs_diff_fused_swiglu: 5.960464e-8\ntolerance: 1.000000e-2\ndense_w_materialized_on_oracle_dequant: 1\ndense_w_materialized_on_gemv: 0\nstatus: PASS\n",
       "stderr": "",
       "build": null,
@@ -1019,7 +1019,7 @@
     "q3_group128": {
       "ok": true,
       "exit_code": 0,
-      "binary": "/Users/scammermike/.claude-grok/worktrees/n042native-20260824-180050/workspace/ops/build/rust/release-fast/examples/q3_g128_parity",
+      "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/q3_g128_parity",
       "stdout": "kernel: qwen_uniform_q3_group128_matvec_geo_tpr64_tg128\nstatus: PASS\nmax_abs_diff: 0\nrows: 64\ncols: 256\nbits: 3\ngroup_size: 128\ndense_w_materialized: 0\noracle: reconstruct_then_matvec_cpu\n",
       "stderr": "",
       "build": null,
@@ -1094,9 +1094,7 @@
       "refused_to_reuse_729_7": true,
       "active_weight_bytes_per_token": 6251811008.941174,
       "sum_organ_reachable_ns": 9050017.68654999,
-      "closure_active_bytes_per_token": 8234330016.0,
-      "current_achieved_gb_s": 272.33080179024694,
-      "current_fraction_of_model_reachable": 0.39422154144923305
+      "closure_active_bytes_per_token": 8234330016.0
     },
     "never_collapsed": true,
     "overlap": "NOT SEPARATED",
@@ -1279,8 +1277,8 @@
     "MODEL_REACHABLE": 690.8064962384027,
     "not_the_q2f_uniform_roof_729_7": true,
     "new_model_reachable": true,
-    "current_achieved_gb_s": 272.33080179024694,
-    "current_fraction_of_model_reachable": 0.39422154144923305,
+    "current_achieved_gb_s": 272.22650823855514,
+    "current_fraction_of_model_reachable": 0.39407056783757816,
     "model_reachable_as_fraction_of_778_8": 0.8870139910611232
   },
   "overlap": "NOT SEPARATED",
@@ -1312,5 +1310,5 @@
     506,
     2984
   ],
-  "elapsed_s": 28.9053160000185
+  "elapsed_s": 1290.7160401660076
 }

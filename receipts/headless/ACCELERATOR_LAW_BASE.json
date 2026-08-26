@@ -1,0 +1,1029 @@
+{
+ "schema": "hawking.accelerator.akb.v1",
+ "axes": [
+  "MODEL",
+  "ARCHITECTURE",
+  "ORGAN",
+  "REPRESENTATION",
+  "SHAPE",
+  "MACHINE",
+  "RUNTIME",
+  "KERNEL",
+  "STORAGE_TIER",
+  "TOPOLOGY",
+  "WORKLOAD_PHASE"
+ ],
+ "evidence_classes": [
+  "Simulated",
+  "Derived",
+  "Measured",
+  "Reproduced",
+  "ProtectedVerified"
+ ],
+ "statuses": [
+  "ACTIVE",
+  "REFUTED",
+  "SUPERSEDED",
+  "CONDITIONAL"
+ ],
+ "corpus_size": 78,
+ "receipts_yielding_laws": 22,
+ "entries": [
+  {
+   "law_id": "AKB-SCAN-VS-CUMSUM",
+   "statement": "A three-phase AIR scan (simd_prefix) WAS 8.09x faster than mx.cumsum FOR a 1-D f32 inclusive prefix sum AT n=2**24 ON this M3 Ultra UNDER MLX 0.32.1: 0.8662 ms against 7.0038 ms. The mechanism named in the receipt is that mx.cumsum reaches 19.16 GB/s on a machine measured at 589.73 GB/s, so this is a statement about MLX's cumsum at this shape, NOT a general claim that these kernels beat MLX -- the same receipt records MLX as the qualified winner at GEMM, softmax, attention and reduction.",
+   "applicability": {
+    "MODEL": "NONE",
+    "ARCHITECTURE": "NONE",
+    "ORGAN": "NONE",
+    "REPRESENTATION": "dense_f32",
+    "SHAPE": "n = 2**24, 1-D",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "MLX 0.32.1 metal_kernel JIT under CPython 3.12",
+    "KERNEL": "air.lower_scan_block_to_msl + lower_scan_offset_to_msl, simd_prefix",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "microbenchmark"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_SCAN.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_SCAN.json#result.performance.16777216.ms_per_call",
+    "receipts/headless/ACCELERATOR_SCAN.json#result.performance.16777216.gbps_2n",
+    "receipts/headless/ACCELERATOR_SCAN.json#claim_boundary"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": false,
+   "confidence_basis": "200 reps, 40 warmup, both arms reliable at 3.79% and 0.38% IQR. SHAPE is deliberately not UNSCOPED: the receipt measures 2**20 and 2**24 only, and states the ratio is about MLX's cumsum on THIS shape."
+  },
+  {
+   "law_id": "AKB-WAIT-DOMINATES-SUBMISSION",
+   "statement": "For an MLX matmul on this box, the per-step cost of WAITING dominated the cost of SUBMITTING. At 128x128 f32 the wait arm read 184.7 / 188.3 / 179.1 us per step across three batteries (4.9% spread, verdict SYNC_TAX all three), while a confound arm that varies SUBMISSION COUNT alone did not reproduce that reading. The direction is what transfers; the microsecond figures are INSTANCE values on a machine contended by the ModelLake fill and MUST NOT be quoted as constants.",
+   "applicability": {
+    "MODEL": "NONE",
+    "ARCHITECTURE": "NONE",
+    "ORGAN": "NONE",
+    "REPRESENTATION": "dense_f32",
+    "SHAPE": "matmul 128x128 (and 2048x2048, unstable)",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "MLX 0.32.1 metal_kernel JIT under CPython 3.12",
+    "KERNEL": "mlx lazy graph + Metal; no custom kernel",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "microbenchmark"
+   },
+   "evidence_class": "Reproduced",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_SYNC_DIAGNOSTIC.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_SYNC_DIAGNOSTIC.json#result.run_to_run.per_arm.held_out_small",
+    "receipts/headless/ACCELERATOR_SYNC_DIAGNOSTIC.json#result.negative_controls",
+    "receipts/headless/ACCELERATOR_SYNC_DIAGNOSTIC.json#claim_boundary"
+   ],
+   "status": "CONDITIONAL",
+   "superseded_by": null,
+   "negative_result": false,
+   "confidence_basis": "CONDITIONAL, not ACTIVE, because the instrument's own run_to_run block records that the 2048x2048 arm did NOT reproduce -- NO_SIGNIFICANT_SYNC_TAX then SYNC_TAX twice, stable=false, detection floor swinging 76-324 us. The small shape reproduced 3/3; the large one did not, and a law that holds at one shape of two is conditional on shape. The instrument also returns a NEGATIVE where one is true, which is what distinguishes it from a confirmation device: the NumPy CPU arm reads -0.083 / 0.055 / -0.050 us per step, NO_SIGNIFICANT_SYNC_TAX stable across all three batteries."
+  },
+  {
+   "law_id": "AKB-GEMM-BLOCK2-PARITY",
+   "statement": "The first sweep's claim that AIR's blocked simdgroup matmul reached 149.5% of MLX at 1024 IS RETRACTED. Careful remeasurement at 120 reps / 40 warmup put block2 at 5800.09 GFLOP/s against MLX's 5800.73 -- 0.9999, exact parity. The apparent win was MLX's own arm being slow in a noisy run (3963 GFLOP/s noisy vs 5801 clean), not a candidate win.",
+   "applicability": {
+    "MODEL": "NONE",
+    "ARCHITECTURE": "NONE",
+    "ORGAN": "NONE",
+    "REPRESENTATION": "dense_f32",
+    "SHAPE": "square GEMM, 1024x1024x1024",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "MLX 0.32.1 metal_kernel JIT under CPython 3.12",
+    "KERNEL": "air.lower_matmul_to_msl strategy='simdgroup' block=2",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "microbenchmark"
+   },
+   "evidence_class": "Reproduced",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_REGISTER_BLOCKING.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_REGISTER_BLOCKING.json#result.a_result_i_retracted",
+    "receipts/headless/ACCELERATOR_REGISTER_BLOCKING.json#result.careful_remeasurement.1"
+   ],
+   "status": "REFUTED",
+   "superseded_by": null,
+   "negative_result": true,
+   "confidence_basis": "The retraction is the result. A 1.495x win reported under a 19.89% IQR arm was refused by the reliability gate and did not survive remeasurement. Kept as REFUTED, not deleted."
+  },
+  {
+   "law_id": "AKB-MACHINE-BANDWIDTH",
+   "statement": "This box's memory bandwidth WAS a 589.73 GB/s median FOR an f32 triad (c = a + b) at 67108864 elements, 30 reps, 8 warmup, with the model-lake fill SIGSTOPped. The receipt states plainly it is NOT the SoC theoretical roof, NOT a workload-reachable roof and NOT sustained. It is a property of THIS machine and must never be inherited by another one.",
+   "applicability": {
+    "MODEL": "NONE",
+    "ARCHITECTURE": "NONE",
+    "ORGAN": "NONE",
+    "REPRESENTATION": "dense_f32",
+    "SHAPE": "67108864 elements, triad",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "MLX 0.32.1 metal_kernel JIT under CPython 3.12",
+    "KERNEL": "mlx elementwise add",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "microbenchmark"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_MACHINE_GENOME.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_MACHINE_GENOME.json#result.measured_bandwidth.median_gb_s",
+    "receipts/headless/ACCELERATOR_MACHINE_GENOME.json#result.measured_bandwidth.is_theoretical_roof",
+    "receipts/headless/ACCELERATOR_MACHINE_GENOME.json#claim_boundary"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": false,
+   "confidence_basis": "1.89% IQR, reliable. Knowledge level INSTANCE in the source: one M3 Ultra is not evidence about M3 Ultras, so MACHINE is the single measured box and is not promoted to a SoC family."
+  },
+  {
+   "law_id": "AKB-DISPATCH-VS-SUBMISSION",
+   "statement": "Eager submission cost WAS linear in dispatch count at 0.16783 ms per node (R2 = 0.99999); batched into one command buffer the marginal added node fell to 0.01084 ms. So ON this machine UNDER this runtime a within-command-buffer dispatch cost about 11 microseconds and a cross-command-buffer submission about 157 microseconds, a 14.5x ratio. The actionable threshold the receipt draws is that a kernel doing under ~0.16 ms of GPU work is submission-bound.",
+   "applicability": {
+    "MODEL": "NONE",
+    "ARCHITECTURE": "NONE",
+    "ORGAN": "NONE",
+    "REPRESENTATION": "dense_f32",
+    "SHAPE": "elementwise, 2**20 and 4096, k up to 16",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "MLX 0.32.1 metal_kernel JIT under CPython 3.12",
+    "KERNEL": "air.AirGraph / air.execute_graph, identical elementwise dispatches",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "UNSCOPED",
+    "WORKLOAD_PHASE": "dispatch"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_GRAPH_SUBMISSION.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_GRAPH_SUBMISSION.json#result.headline_THE_MACHINE_CONSTANT",
+    "receipts/headless/ACCELERATOR_GRAPH_SUBMISSION.json#result.linear_fits"
+   ],
+   "unscoped_basis": {
+    "TOPOLOGY": "receipts/headless/ACCELERATOR_GRAPH_SUBMISSION.json#result.linear_fits"
+   },
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": false,
+   "confidence_basis": "TOPOLOGY is UNSCOPED here and the basis is cited: the sweep fits BOTH wirings -- chain (depth k, width 1) and fan (depth 1, width k) -- so the submission constant is established across topology rather than assumed across it. Every other axis stays at its measured value."
+  },
+  {
+   "law_id": "AKB-LAUNCH-COUNT-NOT-THE-MECHANISM",
+   "statement": "The published claim that GPU KERNEL LAUNCH COUNT drove the reduction result IS REFUTED by direct decomposition. Holding syncs at one and varying only launch count gave NO_CLAIM at 2**20 and 1.019x -- indistinguishable -- at 2**24. Holding launches at three and varying only the sync count gave 2.30x at 2**20 and 1.28x at 2**24, essentially the whole originally-reported effect. The cost WAS host round trips and command-buffer boundaries, not kernel launches.",
+   "applicability": {
+    "MODEL": "NONE",
+    "ARCHITECTURE": "NONE",
+    "ORGAN": "NONE",
+    "REPRESENTATION": "dense_f32",
+    "SHAPE": "f32 sum reduction and scan, 2**20 and 2**24",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "MLX 0.32.1 metal_kernel JIT under CPython 3.12",
+    "KERNEL": "air.lower_reduce_to_msl two-stage, three dispatches",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "dispatch"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_SYNC_CORRECTION.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_SYNC_CORRECTION.json#result.correction_1_launch_count_is_REFUTED",
+    "receipts/headless/ACCELERATOR_SYNC_CORRECTION.json#result.correction_2_the_real_mechanism_is_HOST_ROUND_TRIPS",
+    "receipts/headless/ACCELERATOR_SYNC_CORRECTION.json#result.correction_3_the_recommendation_FLIPS"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": true,
+   "confidence_basis": "A refutation of this campaign's own published mechanism, by factorial decomposition rather than by re-running the same confounded arm. The receipt also records the blast radius."
+  },
+  {
+   "law_id": "AKB-IQR-GATE-UNSTABLE-UNDER-200-REPS",
+   "statement": "This campaign's own 10% IQR reliability gate WAS unstable below roughly 200 reps FOR the fused mul->relu->silu chain at 2**24 f32 ON this machine: at 20 and 40 reps the gate verdict flipped for every candidate probed, with tg256_ept2's IQR estimate ranging 1.84%-13.38% across eight 20-rep runs. The instrument, not the kernel, was the variable.",
+   "applicability": {
+    "MODEL": "NONE",
+    "ARCHITECTURE": "NONE",
+    "ORGAN": "NONE",
+    "REPRESENTATION": "dense_f32",
+    "SHAPE": "2**24 f32 elementwise chain",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "MLX 0.32.1 metal_kernel JIT under CPython 3.12",
+    "KERNEL": "tg256_ept2, tg512_ept1, tg1024_ept4 (three forge variants)",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "microbenchmark"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_IQR_STABILITY_AUDIT.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_IQR_STABILITY_AUDIT.json#result.the_finding",
+    "receipts/headless/ACCELERATOR_IQR_STABILITY_AUDIT.json#result.what_it_means_for_earlier_work"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": true,
+   "confidence_basis": "Eight estimates per cell across three kernels. The source states explicitly that 200 is NOT a universal threshold -- it is this workload's -- so SHAPE and KERNEL stay named, not UNSCOPED."
+  },
+  {
+   "law_id": "AKB-FUSION-BEATS-MATERIALISING",
+   "statement": "A single fused AIR program WAS 1.71x faster than three separate translated kernels and 2.62x faster than MLX FOR the chain mul->relu->silu AT 2**24 f32 ON this machine UNDER MLX 0.32.1. The receipt attributes the win to FUSION and says so: MLX does not fuse this chain and materialises two intermediates the fused program never writes, and the operation is memory bound, so removing passes is the entire mechanism. It is explicitly NOT a claim that Hawking kernels beat MLX kernels in general.",
+   "applicability": {
+    "MODEL": "NONE",
+    "ARCHITECTURE": "NONE",
+    "ORGAN": "NONE",
+    "REPRESENTATION": "dense_f32",
+    "SHAPE": "2**24 f32, chain mul->relu->silu",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "MLX 0.32.1 metal_kernel JIT under CPython 3.12",
+    "KERNEL": "1 fused AIR program vs 3 AIR kernels vs MLX",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "microbenchmark"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_FRONT_D_P5.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_FRONT_D_P5.json#result.fused_vs_naive",
+    "receipts/headless/ACCELERATOR_FRONT_D_P5.json#result.fused_vs_mlx",
+    "receipts/headless/ACCELERATOR_FRONT_D_P5.json#result.correctness_max_abs_err"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": false,
+   "confidence_basis": "Both verdicts CANDIDATE_WINS with arm noise 5.92% and 4.08% against margins of 70.99% and 162.2%. Correctness checked before timing at 9.537e-07. Microbenchmark only -- the receipt notes no sustained or WorkUnit evidence, so WORKLOAD_PHASE is not promoted."
+  },
+  {
+   "law_id": "AKB-UNIFIED-MEMORY-COPY-ELIMINATION",
+   "statement": "Eliminating the per-call host<->device copies WAS worth 7.17x-7.44x FOR the fused mul->relu->silu chain at 2**24 f32 ON this unified-memory machine. The receipt states the fairness caveat itself: the compared arm copies on EVERY call, which is the naive CUDA-era pattern, and a competent CUDA programmer hoists the upload out of the loop and would not pay this. The honest claim is NOT that Apple beats CUDA by 7x -- it is that per-call copying costs this much on this operation, and that on unified memory the elimination is structural rather than something the programmer must remember.",
+   "applicability": {
+    "MODEL": "NONE",
+    "ARCHITECTURE": "NONE",
+    "ORGAN": "NONE",
+    "REPRESENTATION": "dense_f32",
+    "SHAPE": "2**24 f32, chain mul->relu->silu",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "MLX 0.32.1 metal_kernel JIT under CPython 3.12",
+    "KERNEL": "fused mul->relu->silu, identical in both arms",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "single-device unified memory, no discrete GPU present",
+    "WORKLOAD_PHASE": "microbenchmark"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_FRONT_G_P6.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_FRONT_G_P6.json#result.speedups",
+    "receipts/headless/ACCELERATOR_FRONT_G_P6.json#result.reliability_gate",
+    "receipts/headless/ACCELERATOR_FRONT_G_P6.json#claim_boundary"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": false,
+   "confidence_basis": "Three runs at 7.171, 7.401, 7.439. TOPOLOGY is named, not NONE: the whole law is about there being no discrete device memory to cross, which is a topology fact and is why it does not transfer."
+  },
+  {
+   "law_id": "AKB-CONCURRENCY-IS-REGIME-DEPENDENT",
+   "statement": "Process concurrency WAS worth 3.38x aggregate at 8 processes FOR a 4 MiB launch-bound elementwise kernel ON this machine, while this campaign's prior whole-model-body measurement topped out around 1.21x. These are NOT in conflict and the receipt says why: a whole body has a working set of tens of GiB and is bandwidth- and admission-bound, whereas a 4 MiB kernel is launch-bound, so extra processes fill launch gaps instead of competing for bandwidth. Concurrency helped when launch-bound and did not when bandwidth-bound. Per-process efficiency at 8 was only 0.423, so a profile optimising work-per-resource would choose differently from one optimising aggregate throughput.",
+   "applicability": {
+    "MODEL": "NONE",
+    "ARCHITECTURE": "NONE",
+    "ORGAN": "NONE",
+    "REPRESENTATION": "dense_f32",
+    "SHAPE": "4194304 elements (4 MiB), launch-bound regime",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "MLX 0.32.1 metal_kernel JIT under CPython 3.12",
+    "KERNEL": "tg256_ept2",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "concurrent raw kernel rate"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_CONCURRENCY_SWEEP.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_CONCURRENCY_SWEEP.json#result.sweep",
+    "receipts/headless/ACCELERATOR_CONCURRENCY_SWEEP.json#result.knee",
+    "receipts/headless/ACCELERATOR_CONCURRENCY_SWEEP.json#result.reconciles_with_prior_campaign_law"
+   ],
+   "status": "CONDITIONAL",
+   "superseded_by": null,
+   "negative_result": false,
+   "confidence_basis": "CONDITIONAL because the law has two arms and only ONE was measured here. The 3.38x at 4 MiB is measured in this receipt. The ~1.21x whole-body figure is a PRIOR CITED BY the receipt from an earlier campaign and was NOT re-measured in this corpus, so it is recorded as the receipt's own reconciliation text and must not be served as an Accelerator measurement. SHAPE is the conditioning axis and is therefore never UNSCOPED."
+  },
+  {
+   "law_id": "AKB-SPEC-CONSTANTS-BUY-NOTHING",
+   "statement": "Metal specialization constants BOUGHT nothing measurable FOR two probed shapes ON this backend: scalar literal versus buffer read was INDISTINGUISHABLE, and the compute-bound loop bound where unrolling should have paid was also INDISTINGUISHABLE with the literal 3.09% slower, both arms clean. The receipt records that its author's prediction was wrong in both loop cases and that the explanation offered for the first died in the second.",
+   "applicability": {
+    "MODEL": "NONE",
+    "ARCHITECTURE": "NONE",
+    "ORGAN": "NONE",
+    "REPRESENTATION": "dense_f32",
+    "SHAPE": "2**22 elementwise multiply and a 2**20 x 256 fma loop",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "CPython 3.12.6 driving MLX-emitted kernel signatures",
+    "KERNEL": "hand-written MSL pairs differing only in literal vs buffer constant",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "microbenchmark"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_SPEC_CONSTANTS.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_SPEC_CONSTANTS.json#headline",
+    "receipts/headless/ACCELERATOR_SPEC_CONSTANTS.json#claim_boundary"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": true,
+   "confidence_basis": "200 reps, 40 warmup, bit-identical arms verified before timing (max_abs_diff exactly 0.0). The receipt names the untested case that could differ: a constant enabling branch elimination or a different memory layout. A null result, kept because it is one."
+  },
+  {
+   "law_id": "AKB-SIMDGROUP-ATTENTION-LOSES-AT-THIS-BLOCKING",
+   "statement": "Simdgroup matrix ops in attention WERE slower at both sizes measured ON this machine FOR a blocking of one simdgroup per 8 query rows, and the mechanism WAS occupancy rather than instruction throughput. The receipt is explicit that this does NOT show matrix ops are useless in attention: more simdgroups per threadgroup, a larger head_dim, or a flash-style online softmax removing the memory cap could reverse it. It shows THIS blocking loses, and that the earlier receipt's stated reason was wrong.",
+   "applicability": {
+    "MODEL": "NONE",
+    "ARCHITECTURE": "NONE",
+    "ORGAN": "attention",
+    "REPRESENTATION": "dense_f32",
+    "SHAPE": "two sizes, single head, head_dim 64",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "MLX 0.32.1 metal_kernel JIT under CPython 3.12",
+    "KERNEL": "simdgroup_multiply_accumulate for Q@K^T and P@V, one simdgroup per 8 query rows",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "microbenchmark"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_ATTENTION_SIMDGROUP_REFUTED.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_ATTENTION_SIMDGROUP_REFUTED.json#result.verdict",
+    "receipts/headless/ACCELERATOR_ATTENTION_SIMDGROUP_REFUTED.json#result.the_real_mechanism",
+    "receipts/headless/ACCELERATOR_ATTENTION_SIMDGROUP_REFUTED.json#claim_boundary"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": true,
+   "confidence_basis": "A negative result carried as a first-class entry. KERNEL names the specific blocking because the blocking IS the scope of the claim."
+  },
+  {
+   "law_id": "AKB-SPARSE-RESIDUAL-BEATEN-PER-BIT",
+   "statement": "A sparse residual on top of ws_rtn_q4_g64 WAS beaten 2.5x-3.9x PER BIT by spending the same bits on a finer group or one more level, FOR 8 real Qwen3 routed-expert gate_proj tensors in WEIGHT space. The prediction that motivated the arm was refuted, and the diagnosis the receipt then confirms is that the outlier hurts by SETTING THE GROUP SCALE, not by being stored badly, so the error it causes is dense and a sparse fix cannot reach it.",
+   "applicability": {
+    "MODEL": "Qwen3-30B-A3B",
+    "ARCHITECTURE": "Qwen3 MoE",
+    "ORGAN": "routed expert gate_proj",
+    "REPRESENTATION": "ws_rtn_q4_g64 base vs q4_g32 / q5_g64 / q4_g64 + sparse residual",
+    "SHAPE": "8 tensors, [768, 2048] bf16",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "MLX 0.32.1 metal_kernel JIT under CPython 3.12",
+    "KERNEL": "AirSparseMatvec (CSR), verified not timed",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "weight-space fidelity"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_SPARSE.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_SPARSE.json#headline",
+    "receipts/headless/ACCELERATOR_SPARSE.json#claim_boundary"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": true,
+   "confidence_basis": "Weight space only -- no activations, no model executed, no adequacy claim. The source pins itself at MODEL_FAMILY at most and points at the organ-floor receipt showing organ ranking does not transfer across architectures, so ARCHITECTURE is named, never UNSCOPED."
+  },
+  {
+   "law_id": "AKB-ORGAN-FLOOR-DOES-NOT-TRANSFER",
+   "statement": "The prior law that ATTENTION SETS THE REPRESENTATION FLOOR IS ARCHITECTURE-SPECIFIC, not general. Attention set the floor on BOTH Qwen models -- q_proj needed group 32 where every MLP and expert tensor cleared at group 128 -- and DID NOT transfer: on Kimi-VL and Falcon-H1 no organ was more demanding than any other. The mechanism is within-group outliers, at Pearson -0.9841 across 33 organs and 4 architectures.",
+   "applicability": {
+    "MODEL": "UNSCOPED",
+    "ARCHITECTURE": "UNSCOPED",
+    "ORGAN": "UNSCOPED",
+    "REPRESENTATION": "grouped absmax; bits=4 group=64 is exactly ws_rtn_q4_g64",
+    "SHAPE": "256 rows of one tensor per organ per specimen",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "CPython 3.12.6, numpy quantize_grouped",
+    "KERNEL": "NONE",
+    "STORAGE_TIER": "TIER 2 /Volumes/corpdrive model lake",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "weight-space fidelity"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_ORGAN_REPRESENTATION_FLOOR.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_ORGAN_REPRESENTATION_FLOOR.json#headline",
+    "receipts/headless/ACCELERATOR_ORGAN_REPRESENTATION_FLOOR.json#claim_boundary"
+   ],
+   "unscoped_basis": {
+    "MODEL": "receipts/headless/ACCELERATOR_ORGAN_REPRESENTATION_FLOOR.json#identities.model.specimens",
+    "ARCHITECTURE": "receipts/headless/ACCELERATOR_ORGAN_REPRESENTATION_FLOOR.json#identities.model.census",
+    "ORGAN": "receipts/headless/ACCELERATOR_ORGAN_REPRESENTATION_FLOOR.json#identities.model.census"
+   },
+   "status": "CONDITIONAL",
+   "superseded_by": null,
+   "negative_result": true,
+   "confidence_basis": "MODEL, ARCHITECTURE and ORGAN are UNSCOPED here and each cites its breadth: 4 specimens and a per-specimen organ census of 9/7/8/11. This is the one law in the base whose CONTENT is non-transfer, so breadth across those axes is exactly what the evidence establishes. CONDITIONAL rather than ACTIVE because the source carries an AMENDED_IN_PLACE_2026_08_25 key -- the validator refuses ACTIVE here and it is right to. Weight space only; the source pins itself at MODEL_FAMILY."
+  },
+  {
+   "law_id": "AKB-JIT-COMPILE-WAS-MISATTRIBUTED",
+   "statement": "Three receipts blamed MLX KERNEL COMPILE for first-run cost and none measured it. Measured, compile WAS 36.8 ms per distinct kernel and accounted for 23.2% of a WorkUnit's first-run excess, while the dominant term WAS the first mx.array at 151 ms -- device and allocator initialisation. About 21% of the excess remains unattributed and the receipt says so rather than distributing it over the terms it did measure.",
+   "applicability": {
+    "MODEL": "Qwen3-30B-A3B",
+    "ARCHITECTURE": "Qwen3 MoE",
+    "ORGAN": "routed expert gate_proj",
+    "REPRESENTATION": "ws_rtn_q4_g64",
+    "SHAPE": "64 expert gate_proj tensors",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "mx.fast.metal_kernel JIT under CPython 3.12.6",
+    "KERNEL": "unchanged; this measures how long it takes to BUILD one",
+    "STORAGE_TIER": "UNKNOWN",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "first-run / process startup"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_JIT_COMPILE.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_JIT_COMPILE.json#headline",
+    "receipts/headless/ACCELERATOR_JIT_COMPILE.json#full_decomposition_of_the_first_run_excess",
+    "receipts/headless/ACCELERATOR_JIT_COMPILE.json#claim_boundary"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": false,
+   "confidence_basis": "JIT only -- xcrun metal AOT is absent on this machine so no AOT comparison exists, and nvrtc is unmeasured because no NVIDIA hardware is present. These are per-process costs amortised to zero by the second WorkUnit, which is exactly how they contaminated three earlier receipts' baselines."
+  },
+  {
+   "law_id": "AKB-CRC32-VS-SHA256",
+   "statement": "crc32 WAS 12.6x faster than sha256 and 26.9x faster than blake2b FOR bulk checksumming ON this machine: 36.849, 2.932 and 1.368 GB/s respectively. This is the one number in the HUMF fabric work that is measured rather than a knob; every transport rate in the same receipt is a NAMED ASSUMPTION because no external GPU exists here.",
+   "applicability": {
+    "MODEL": "NONE",
+    "ARCHITECTURE": "NONE",
+    "ORGAN": "NONE",
+    "REPRESENTATION": "dense_f32 payload bytes",
+    "SHAPE": "bulk buffer checksum",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "CPython 3.12.6",
+    "KERNEL": "NONE",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "MOCK_EXTERNAL_VRAM, simulated",
+    "WORKLOAD_PHASE": "integrity check"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_HUMF_SILENT_CORRUPTION.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_HUMF_SILENT_CORRUPTION.json#result.measured_checksum_rates_on_this_machine",
+    "receipts/headless/ACCELERATOR_HUMF_SILENT_CORRUPTION.json#claim_boundary"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": false,
+   "confidence_basis": "The checksum rates ARE measured; the affordability conclusion built on them in the same receipt is NOT, because it is conditional on a transport speed nobody here has measured. Only the measured half is recorded as a law. The receipt's own headline ratio is 14.2x sha256; the 12.6x above is recomputed from the cited GB/s field, and the discrepancy is carried rather than smoothed."
+  },
+  {
+   "law_id": "AKB-ERROR-DETECTION-IS-NOT-IDENTITY",
+   "statement": "A crc32 integrity check PASSED ON WRONG BYTES twice, for two unrelated reasons. crc32 can be REPAIRED in 0.035 ms by a linear solve, so a payload with a flipped weight byte and four adjusted padding bytes was accepted, marked CLEAN and counted TRUSTED. And the check compares SOURCE to DESTINATION, so a source that rotted in place was compared against a faithful copy of its own rot and passed -- after which the two copies agree and every later check confirms the corruption. Neither is a flaw in crc32: error detection is not identity.",
+   "applicability": {
+    "MODEL": "NONE",
+    "ARCHITECTURE": "NONE",
+    "ORGAN": "NONE",
+    "REPRESENTATION": "opaque bytes at real object sizes",
+    "SHAPE": "UNKNOWN",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "CPython 3.12.6",
+    "KERNEL": "NONE",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "MockExternalMemoryProvider, not physical",
+    "WORKLOAD_PHASE": "integrity check"
+   },
+   "evidence_class": "Simulated",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_HUMF_IDENTITY.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_HUMF_IDENTITY.json#headline",
+    "receipts/headless/ACCELERATOR_HUMF_IDENTITY.json#claim_boundary"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": true,
+   "confidence_basis": "evidence_class Simulated, not Measured: the fabric is a mock, bandwidth is a knob and no external device exists. What is established is the STATE MACHINE's behaviour and the SCOPE of the check, and the receipt names the blind spot that remains -- the destination check validates copy_out, not what a KERNEL reads."
+  },
+  {
+   "law_id": "AKB-A-CHECK-THAT-CANNOT-FAIL",
+   "statement": "The natural correctness predicate for a top-k sampler -- 'the returned index is one of the top k' -- PASSES for a sampler that always returns the argmax. A sampler cannot be graded the way every other kernel in this corpus was graded, because the property that matters is distributional and the obvious check is satisfied by a degenerate implementation.",
+   "applicability": {
+    "MODEL": "NONE",
+    "ARCHITECTURE": "NONE",
+    "ORGAN": "decode tail (logits -> token)",
+    "REPRESENTATION": "NONE",
+    "SHAPE": "synthetic logits, rows 32 x cols 4096, k=8",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "MLX 0.32.1 metal_kernel JIT under CPython 3.12",
+    "KERNEL": "AirTopKSample: k rounds of full-row argmax, then a serial CDF walk",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "correctness grading"
+   },
+   "evidence_class": "Derived",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_TOPK_SAMPLING.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_TOPK_SAMPLING.json#headline",
+    "receipts/headless/ACCELERATOR_TOPK_SAMPLING.json#claim_boundary"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": true,
+   "confidence_basis": "evidence_class Derived: this is a property of the PREDICATE, established by source inspection plus the receipt's own demonstration, not by a timing run. Nothing was timed in the source and no baseline was run, so no performance axis is claimed."
+  },
+  {
+   "law_id": "AKB-CONTROL-LOUDNESS-IS-NOT-TRANSFERABLE",
+   "statement": "A correctness control's SENSITIVITY is a property of the defect, the width and the shape together, not of the sweep. On the same width list, same repeats and same machine, a barrier on a TOTAL dependency fired in 40 of 48 runs and was blind at 1 of 6 widths; a barrier on an INCIDENTAL dependency fired in 4 of 48 and was blind at 4 of 6 -- a 10x difference in loudness. A sweep whose only control is loud reports a blind list of length 1 and thereby implies a resolving power it does not have.",
+   "applicability": {
+    "MODEL": "NONE",
+    "ARCHITECTURE": "NONE",
+    "ORGAN": "NONE",
+    "REPRESENTATION": "dense_f32",
+    "SHAPE": "AirTopKSample rows 32 cols 4096; AirNorm rms; widths 32-1024",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "MLX 0.32.1 metal_kernel JIT under CPython 3.12",
+    "KERNEL": "AirNorm (loud control) and AirTopKSample (quiet control)",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "correctness grading"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_QUIET_CONTROL.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_QUIET_CONTROL.json#headline",
+    "receipts/headless/ACCELERATOR_QUIET_CONTROL.json#claim_boundary"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": true,
+   "confidence_basis": "The source states its own limit: two controls is one point at each end of a spectrum whose middle is unmeasured, and blind_at_every_control is the union over the controls that RAN, not a proof no defect could hide there."
+  },
+  {
+   "law_id": "AKB-LOCKSTEP-AT-THREADGROUP-32",
+   "statement": "A barrier stripped from AirNorm WAS caught 8 of 8 runs at threadgroups 64 through 1024 and WAS EXACT at 32 ON this M3 Ultra, because at 32 the whole threadgroup is one simdgroup and lockstep makes the fence unnecessary. A positive control run only at width 32 would have reported the broken kernel fine. The receipt refuses to promote this: lockstep at simd width 32 is an M3 Ultra observation, not a property of Apple GPUs.",
+   "applicability": {
+    "MODEL": "NONE",
+    "ARCHITECTURE": "NONE",
+    "ORGAN": "NONE",
+    "REPRESENTATION": "dense_f32",
+    "SHAPE": "one shape per primitive; widths 32-1024",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "MLX 0.32.1 metal_kernel JIT under CPython 3.12",
+    "KERNEL": "AirNorm rms with its first threadgroup_barrier stripped",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "correctness grading"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_WIDTH_SWEEP.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_WIDTH_SWEEP.json#headline",
+    "receipts/headless/ACCELERATOR_WIDTH_SWEEP.json#claim_boundary"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": false,
+   "confidence_basis": "42 configurations, 336 executions, zero wrong. The source is blunt that ZERO FAILURES IS NOT ABSENCE OF RACES: repeat=8 detects a per-run probability above ~8.3% about half the time, so a 2% race would not be caught."
+  },
+  {
+   "law_id": "AKB-DEVICE-RESIDENT-OPERANDS",
+   "statement": "Keeping the correctness gate AND the operands on the device WAS worth 238.56% end to end -- 635,422 to 2,151,304 WorkUnits/hour, 3.39x -- FOR the pack-and-verify pipeline over 64 real Qwen3 expert gate_proj tensors from TIER 1 storage ON this machine. Three arms separated the two changes: the gate moving to the device gave +58.31% and the operands staying there +113.86% on top, both steps completely separated and inside the 10% IQR gate. No kernel changed; what moved is WHERE THE OPERANDS LIVE.",
+   "applicability": {
+    "MODEL": "Qwen3-30B-A3B",
+    "ARCHITECTURE": "Qwen3 MoE",
+    "ORGAN": "routed expert gate_proj",
+    "REPRESENTATION": "ws_rtn_q4_g64, 4.25 bpw",
+    "SHAPE": "64 tensors, 768x2048, bf16 on disk",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "CPython 3.12.6, MLX primitives",
+    "KERNEL": "native matvec and pack MSL byte-identical to the prior block",
+    "STORAGE_TIER": "TIER 1 ~/noetic/stage, internal SSD",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "sustained pack-and-verify pipeline"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_DEVICE_RESIDENT.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_DEVICE_RESIDENT.json#result.C_vs_A_pct",
+    "receipts/headless/ACCELERATOR_DEVICE_RESIDENT.json#result.separation_B_over_A",
+    "receipts/headless/ACCELERATOR_DEVICE_RESIDENT.json#result.separation_C_over_B",
+    "receipts/headless/ACCELERATOR_DEVICE_RESIDENT.json#claim_boundary"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": false,
+   "confidence_basis": "Arm spreads 2.52/5.86/4.04% all inside the 10% gate, both steps completely separated, and arm A reproduced a different process's baseline to 0.18%. But 6 samples per arm is below this program's own 200-rep reliability bar, and the source says nothing here makes ws_rtn_q4_g64 adequate for a MODEL -- local adequacy does not compose."
+  },
+  {
+   "law_id": "AKB-TIER1-CACHE-INFLATION-IS-SMALL",
+   "statement": "The page-cache caveat three receipts carried WAS small: a cold read of the staged shard measured 6265.8 MB/s with 99.76% of pages actually coming from disk, against 8318.4 MB/s cached -- a ratio of only 1.33x. The pipeline's WorkUnits/hour was inflated by cache residency at the level of a few percent, not by a factor.",
+   "applicability": {
+    "MODEL": "Qwen3-30B-A3B",
+    "ARCHITECTURE": "Qwen3 MoE",
+    "ORGAN": "routed expert gate_proj",
+    "REPRESENTATION": "NONE",
+    "SHAPE": "192 MB read as 64 sequential 3 MB chunks",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "CPython 3.12.6, vm_stat Pageins, no sudo",
+    "KERNEL": "NONE",
+    "STORAGE_TIER": "TIER 1 ~/noetic/stage, internal APPLE SSD",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "cold vs cached sequential read"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_TIER1_CACHE_VS_DISK.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_TIER1_CACHE_VS_DISK.json#the_measurement",
+    "receipts/headless/ACCELERATOR_TIER1_CACHE_VS_DISK.json#claim_boundary"
+   ],
+   "status": "CONDITIONAL",
+   "superseded_by": null,
+   "negative_result": false,
+   "confidence_basis": "CONDITIONAL because n=1 for the number that matters. The cold read is a SINGLE sample with no spread -- a direct measurement with a 99.76% pagein fraction proving it was cold, but not a characterised disk rate. The lake fill was running, which makes 6266 MB/s a LOWER bound on the quiet-machine cold rate, which is the safe direction for this particular claim."
+  }
+ ],
+ "entries_by_status": {
+  "ACTIVE": 17,
+  "CONDITIONAL": 4,
+  "REFUTED": 1
+ },
+ "negative_results": 10,
+ "supersession_in_corpus": {
+  "ACCELERATOR_BARRIER_CONTROL_MECHANISM.json": [
+   "ACCELERATOR_BARRIER_CONTROL_MECHANISM.json#AMENDED_IN_PLACE_2026_08_25",
+   "ACCELERATOR_BARRIER_WINDOW.json#boundary_this_closes"
+  ],
+  "ACCELERATOR_C2M_CORPUS_CENSUS.json": [
+   "ACCELERATOR_C2M_CORPUS_CENSUS.json#AMENDED_2026-08-25_ITS_BINDING_CONSTRAINT_IS_REFUTED"
+  ],
+  "ACCELERATOR_CONTROL_SPECTRUM.json": [
+   "ACCELERATOR_BARRIER_CONTROL_MECHANISM.json#boundary_this_closes",
+   "ACCELERATOR_CONTROL_SPECTRUM.json#AMENDED_IN_PLACE_2026_08_25"
+  ],
+  "ACCELERATOR_FRONT_F_ODYSSEY_PASS.json": [
+   "ACCELERATOR_FRONT_F_ODYSSEY_PASS.json#AMENDED_IN_PLACE_2026_08_25"
+  ],
+  "ACCELERATOR_GATE_DISAGREEMENT.json": [
+   "ACCELERATOR_GATE_DISAGREEMENT.json#AMENDED_IN_PLACE_2026_08_25"
+  ],
+  "ACCELERATOR_GATE_HEADROOM.json": [
+   "ACCELERATOR_GATE_HEADROOM.json#AMENDED_IN_PLACE_2026_08_25"
+  ],
+  "ACCELERATOR_GPU_PACK.json": [
+   "ACCELERATOR_GPU_PACK.json#amendment_mlx_compile_attribution"
+  ],
+  "ACCELERATOR_ORGAN_DISCRIMINATION.json": [
+   "ACCELERATOR_ORGAN_DISCRIMINATION.json#amendments",
+   "ACCELERATOR_ORGAN_DISCRIMINATION.json#AMENDED_IN_PLACE_2026_08_25"
+  ],
+  "ACCELERATOR_ORGAN_REPRESENTATION_FLOOR.json": [
+   "ACCELERATOR_ORGAN_REPRESENTATION_FLOOR.json#AMENDED_IN_PLACE_2026_08_25"
+  ],
+  "ACCELERATOR_RUNTIME_EXECUTES.json": [
+   "ACCELERATOR_CAUSALITY.json#boundary_this_closes",
+   "ACCELERATOR_RUNTIME_EXECUTES.json#AMENDED_IN_PLACE_2026_08_25",
+   "ACCELERATOR_RUNTIME_EXECUTES.json#AMENDED_IN_PLACE_2026_08_25_VL_CLOSED"
+  ],
+  "ACCELERATOR_RUNTIME_GATE.json": [
+   "ACCELERATOR_RUNTIME_EXECUTES.json#boundary_this_closes",
+   "ACCELERATOR_RUNTIME_GATE.json#AMENDED_IN_PLACE_2026_08_25"
+  ],
+  "ACCELERATOR_SIMDGROUP_GEMM.json": [
+   "ACCELERATOR_SIMDGROUP_GEMM.json#amendments"
+  ],
+  "ACCELERATOR_TIER1_MEASURED.json": [
+   "ACCELERATOR_TIER1_MEASURED.json#amendment_mlx_compile_attribution"
+  ],
+  "ACCELERATOR_WORKUNIT_THROUGHPUT.json": [
+   "ACCELERATOR_WORKUNIT_THROUGHPUT.json#amendment_mlx_compile_attribution"
+  ]
+ },
+ "unextracted": [
+  {
+   "receipt": "receipts/headless/ACCELERATOR_AIR_COMPLETENESS.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_AIR_MATMUL.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_ATOMICS.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_ATTENTION.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_ATTENTION_OCCUPANCY.json",
+   "reason_code": "SUBSUMED",
+   "reason": "its finding is already carried by an entry above, extracted from the receipt that measured it most directly. Recording it twice would double-count one measurement."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_BANDIT_SEARCH.json",
+   "reason_code": "PROSE_ONLY",
+   "reason": "the finding is real but stated only as prose about a process or an instrument; there is no applicability domain to name without inventing one."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_BARRIER_CONTROL_MECHANISM.json",
+   "reason_code": "SUPERSEDED_IN_FLIGHT",
+   "reason": "carries an AMEND* key or is named by a later receipt's boundary_this_closes, and the amendment changes what the number means. Typing the pre-amendment claim would record a law the corpus has already moved past."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_BARRIER_SCOPES.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_BARRIER_WINDOW.json",
+   "reason_code": "NO_VERDICT_FIELD",
+   "reason": "has no `pass` field and no `result` block, so there is no machine-checkable verdict to anchor an entry on. Absent is recorded as absent, not read as passing."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_C2M_CORPUS_CENSUS.json",
+   "reason_code": "SUPERSEDED_IN_FLIGHT",
+   "reason": "carries an AMEND* key or is named by a later receipt's boundary_this_closes, and the amendment changes what the number means. Typing the pre-amendment claim would record a law the corpus has already moved past."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_C2M_CORPUS_DENOMINATOR.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_C2M_PTX.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_C2M_SGEMM_IDIOM.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_C2M_T1_RUNTIME.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_C2M_T2_IDIOM.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_CAUSALITY.json",
+   "reason_code": "NO_VERDICT_FIELD",
+   "reason": "has no `pass` field and no `result` block, so there is no machine-checkable verdict to anchor an entry on. Absent is recorded as absent, not read as passing."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_CLIFF_TRANSFER.json",
+   "reason_code": "PROSE_ONLY",
+   "reason": "the finding is real but stated only as prose about a process or an instrument; there is no applicability domain to name without inventing one."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_CONTROL_SPECTRUM.json",
+   "reason_code": "SUPERSEDED_IN_FLIGHT",
+   "reason": "carries an AMEND* key or is named by a later receipt's boundary_this_closes, and the amendment changes what the number means. Typing the pre-amendment claim would record a law the corpus has already moved past."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_CONVOLUTION.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_EXPERT_BATCH.json",
+   "reason_code": "SUBSUMED",
+   "reason": "its finding is already carried by an entry above, extracted from the receipt that measured it most directly. Recording it twice would double-count one measurement."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_FORGE_REVERDICT.json",
+   "reason_code": "SUBSUMED",
+   "reason": "its finding is already carried by an entry above, extracted from the receipt that measured it most directly. Recording it twice would double-count one measurement."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_FRONT_A_P3.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_FRONT_C_P4.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_FRONT_D_P7.json",
+   "reason_code": "SUBSUMED",
+   "reason": "its finding is already carried by an entry above, extracted from the receipt that measured it most directly. Recording it twice would double-count one measurement."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_FRONT_E_FORGE.json",
+   "reason_code": "SUBSUMED",
+   "reason": "its finding is already carried by an entry above, extracted from the receipt that measured it most directly. Recording it twice would double-count one measurement."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_FRONT_F_ODYSSEY_PASS.json",
+   "reason_code": "SUPERSEDED_IN_FLIGHT",
+   "reason": "carries an AMEND* key or is named by a later receipt's boundary_this_closes, and the amendment changes what the number means. Typing the pre-amendment claim would record a law the corpus has already moved past."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_FRONT_H_P8.json",
+   "reason_code": "MOCK_ONLY",
+   "reason": "every transport number in it is a knob for hardware that does not exist on this machine, and the receipt forbids citing one as physical evidence."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_GATE_DISAGREEMENT.json",
+   "reason_code": "SUPERSEDED_IN_FLIGHT",
+   "reason": "carries an AMEND* key or is named by a later receipt's boundary_this_closes, and the amendment changes what the number means. Typing the pre-amendment claim would record a law the corpus has already moved past."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_GATE_HEADROOM.json",
+   "reason_code": "SUPERSEDED_IN_FLIGHT",
+   "reason": "carries an AMEND* key or is named by a later receipt's boundary_this_closes, and the amendment changes what the number means. Typing the pre-amendment claim would record a law the corpus has already moved past."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_GEMM.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_GPU_PACK.json",
+   "reason_code": "SUPERSEDED_IN_FLIGHT",
+   "reason": "carries an AMEND* key or is named by a later receipt's boundary_this_closes, and the amendment changes what the number means. Typing the pre-amendment claim would record a law the corpus has already moved past."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_GRAPH_COMPOSITION.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_HMF_CANONICALIZATION.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_HONEST_GATE.json",
+   "reason_code": "SUBSUMED",
+   "reason": "its finding is already carried by an entry above, extracted from the receipt that measured it most directly. Recording it twice would double-count one measurement."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_HUMF_FAILURE_INJECTION.json",
+   "reason_code": "MOCK_ONLY",
+   "reason": "every transport number in it is a knob for hardware that does not exist on this machine, and the receipt forbids citing one as physical evidence."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_HUMF_PARTIAL_LOSS.json",
+   "reason_code": "MOCK_ONLY",
+   "reason": "every transport number in it is a knob for hardware that does not exist on this machine, and the receipt forbids citing one as physical evidence."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_HUMF_QUARANTINE_TRUST.json",
+   "reason_code": "MOCK_ONLY",
+   "reason": "every transport number in it is a knob for hardware that does not exist on this machine, and the receipt forbids citing one as physical evidence."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_HUMF_RESIDENT_DIGEST.json",
+   "reason_code": "MOCK_ONLY",
+   "reason": "every transport number in it is a knob for hardware that does not exist on this machine, and the receipt forbids citing one as physical evidence."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_HUMF_TORN_TIMEOUT_LOST.json",
+   "reason_code": "MOCK_ONLY",
+   "reason": "every transport number in it is a knob for hardware that does not exist on this machine, and the receipt forbids citing one as physical evidence."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_HUMF_TRUST_RESOLUTION.json",
+   "reason_code": "MOCK_ONLY",
+   "reason": "every transport number in it is a knob for hardware that does not exist on this machine, and the receipt forbids citing one as physical evidence."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_KNOWLEDGE_BASE.json",
+   "reason_code": "NO_VERDICT_FIELD",
+   "reason": "has no `pass` field and no `result` block, so there is no machine-checkable verdict to anchor an entry on. Absent is recorded as absent, not read as passing."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_NORMALIZATION.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_ORGAN_DISCRIMINATION.json",
+   "reason_code": "SUPERSEDED_IN_FLIGHT",
+   "reason": "carries an AMEND* key or is named by a later receipt's boundary_this_closes, and the amendment changes what the number means. Typing the pre-amendment claim would record a law the corpus has already moved past."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_PERF_MODEL.json",
+   "reason_code": "PROSE_ONLY",
+   "reason": "the finding is real but stated only as prose about a process or an instrument; there is no applicability domain to name without inventing one."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_REDUCTION.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_RUNTIME_EXECUTES.json",
+   "reason_code": "SUPERSEDED_IN_FLIGHT",
+   "reason": "carries an AMEND* key or is named by a later receipt's boundary_this_closes, and the amendment changes what the number means. Typing the pre-amendment claim would record a law the corpus has already moved past."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_RUNTIME_GATE.json",
+   "reason_code": "SUPERSEDED_IN_FLIGHT",
+   "reason": "carries an AMEND* key or is named by a later receipt's boundary_this_closes, and the amendment changes what the number means. Typing the pre-amendment claim would record a law the corpus has already moved past."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_SHAPE_FUZZ.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_SIMDGROUP_GEMM.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_SOFTMAX.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_SUSTAINED_ADP.json",
+   "reason_code": "PROSE_ONLY",
+   "reason": "the finding is real but stated only as prose about a process or an instrument; there is no applicability domain to name without inventing one."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_SYNC_NOT_SUBMISSION.json",
+   "reason_code": "NO_VERDICT_FIELD",
+   "reason": "has no `pass` field and no `result` block, so there is no machine-checkable verdict to anchor an entry on. Absent is recorded as absent, not read as passing."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_TIER1_MEASURED.json",
+   "reason_code": "SUPERSEDED_IN_FLIGHT",
+   "reason": "carries an AMEND* key or is named by a later receipt's boundary_this_closes, and the amendment changes what the number means. Typing the pre-amendment claim would record a law the corpus has already moved past."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_VL_GAP_CLOSED.json",
+   "reason_code": "NO_VERDICT_FIELD",
+   "reason": "has no `pass` field and no `result` block, so there is no machine-checkable verdict to anchor an entry on. Absent is recorded as absent, not read as passing."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_WORKUNIT_THROUGHPUT.json",
+   "reason_code": "SUPERSEDED_IN_FLIGHT",
+   "reason": "carries an AMEND* key or is named by a later receipt's boundary_this_closes, and the amendment changes what the number means. Typing the pre-amendment claim would record a law the corpus has already moved past."
+  }
+ ],
+ "unextracted_count": 56
+}

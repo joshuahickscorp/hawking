@@ -1,0 +1,1664 @@
+{
+ "schema": "hawking.headless.adversarial_sweep.v1",
+ "generated_at": "2026-08-25T04:14:46Z",
+ "generated_by": "tools/headless/adversarial_sweep.py",
+ "obligation": "G031 \u2014 ADVERSARIAL_SWEEP OF ALL GATES (directive \u00a7102, \u00a794)",
+ "git_head": "eb1494112b61953122262e311cc9243dbd44952e",
+ "hand_authored": false,
+ "independence_limitation": "directive \u00a7102 wants an attacker who is not the gate's implementer. Grok Build is out of balance (HTTP 402) and this campaign's directive bars Claude workflows, so the same operator wrote both sides. The independence that does exist is mechanical: every attack re-resolves the cited receipts and JSON paths rather than re-reading the prose, so a gate that merely LOOKS verified fails here. This is weaker than an independent attacker and is recorded as such.",
+ "self_validation": {
+  "weak_gate_caught": true,
+  "weak_gate_attacks_won": [
+   "self_certified_pass",
+   "vacuous_check"
+  ],
+  "strong_gate_survives": true,
+  "strong_gate_attacks_won": [],
+  "valid": true
+ },
+ "attacks": [
+  "self_certified_pass",
+  "dead_evidence",
+  "vacuous_check",
+  "hand_authored",
+  "stale_cache",
+  "hidden_fallback",
+  "no_op_mutation",
+  "untracked_artifact",
+  "benchmark_contention",
+  "smuggled_prior_state"
+ ],
+ "n_gates_attacked": 27,
+ "n_survives": 26,
+ "n_weakened": 1,
+ "wins_by_attack": {
+  "stale_cache": [
+   "G004"
+  ]
+ },
+ "results": [
+  {
+   "id": "G001",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "1 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/QWEN_CLEAN_REBUILD.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G002",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "1 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/QWEN_CLEAN_REBUILD.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G003",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "1 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/QWEN_CLEAN_REBUILD.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G004",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 1,
+   "attacks_won": [
+    "stale_cache"
+   ],
+   "verdict": "WEAKENED",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "1 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/QWEN_CAPABILITY_QUALIFICATION.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": true,
+     "detail": "['receipts/headless/QWEN_CAPABILITY_QUALIFICATION.json older than tools/headless/capability_contract.py']"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G006",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "1 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/QWEN_TEXTBOOK_V1.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G007",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "1 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/QWEN_TRANSFER_REPORT.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G008",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "1 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/QWEN_TRANSFER_REHEARSAL.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G009",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "1 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/ODYSSEY_TRANSFER_PROVEN.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G010",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "1 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/ODYSSEY_LEARNING_CURVE.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G012",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "1 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/MODEL_LAKE_ROLLING_PIPELINE.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G014",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "1 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/MAXX_RESOURCE_PIPELINE.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G015",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "1 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/LANE_HEARTBEATS.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G016",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "1 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/ARCHITECTURE_RECOGNIZER.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G017",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "3 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/ORGAN_DENSITY_FLOORS.json', 'receipts/headless/ORGAN_FRONTIER_MATRIX.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G018",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "1 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/REPRESENTATION_LIBRARY.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G019",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "2 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/SUPEROPERATOR_LIBRARY.json', 'receipts/headless/KERNEL_LIBRARY.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G020",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "1 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/DOCTOR_TRANSFER.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G021",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "1 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/NOETIC_NEGATIVE_SCIENCE.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G022",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "1 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/PHYSICAL_GRAPH_COMPILER.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G024",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "1 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/MODEL_2_SELECTION.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G025",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "1 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/ODYSSEY_TRANSFER_PROVEN.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G026",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "1 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/MODEL_2_COMPOUNDING.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G027",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "1 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/EXPERT_FAMILY_GENOME.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G028",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "3 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/MATCHED_BITS_FALCON_H1.json', 'receipts/headless/TRANSFER_REHEARSAL_O001.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G029",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "1 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/MODEL_LAKE_ROLLING_PIPELINE.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G030",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "1 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/HAWKING_ACTION_HANDOFF.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  },
+  {
+   "id": "G031",
+   "verified": true,
+   "n_attacks": 10,
+   "n_adversary_wins": 0,
+   "attacks_won": [],
+   "verdict": "SURVIVES",
+   "detail": [
+    {
+     "attack": "self_certified_pass",
+     "adversary_wins": false,
+     "detail": "1 citation(s) an independent party could re-run"
+    },
+    {
+     "attack": "dead_evidence",
+     "adversary_wins": false,
+     "detail": "all citations resolve"
+    },
+    {
+     "attack": "vacuous_check",
+     "adversary_wins": false,
+     "detail": "falsifiability recorded in ['receipts/headless/ODYSSEY_ADVERSARIAL_SWEEP.json']"
+    },
+    {
+     "attack": "hand_authored",
+     "adversary_wins": false,
+     "detail": "every cited receipt names its generator"
+    },
+    {
+     "attack": "stale_cache",
+     "adversary_wins": false,
+     "detail": "no receipt predates its generator"
+    },
+    {
+     "attack": "hidden_fallback",
+     "adversary_wins": false,
+     "detail": "no counter-only availability claim"
+    },
+    {
+     "attack": "no_op_mutation",
+     "adversary_wins": false,
+     "detail": "no unbacked rebuild claim"
+    },
+    {
+     "attack": "untracked_artifact",
+     "adversary_wins": false,
+     "detail": "out-of-repo paths are pinned by hashes, byte counts or receipts"
+    },
+    {
+     "attack": "benchmark_contention",
+     "adversary_wins": false,
+     "detail": "no unguarded timing claim"
+    },
+    {
+     "attack": "smuggled_prior_state",
+     "adversary_wins": false,
+     "detail": "not a transfer claim, or an input audit is recorded"
+    }
+   ]
+  }
+ ],
+ "pass": true
+}

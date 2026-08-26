@@ -1,0 +1,82 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T19:25:44Z",
+ "experiment_class": "ACCEL-HUMF",
+ "knowledge_level": "INSTANCE",
+ "git_head": "303f8d609f12b9af38d78ad92f990978567801e9",
+ "identities": {
+  "experiment": {
+   "id": "HMF_CANONICALIZATION_AND_HAWKGPU0",
+   "obligation": "G053",
+   "answers": "canonicalize HUMF to HMF (hmf.py becomes the canonical import, humf.py stays importable and behaviourally unchanged) and build the HAWKGPU-0 device-abstraction layer on top of it: a nine-name canonical copy-state vocabulary, a separate five-name ownership axis, nine memory classes with per-class (not universal) residency policy, and a logical accelerator holding one or more device domains."
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "status": "ABSENT",
+   "reason": "no external GPU and no Spark device exist on this machine; SPARK_DOMAIN_0 in test_hmf.py is a fictitious placeholder used only to prove the Accelerator structure generalizes to a second domain"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "a fabric/vocabulary experiment; no model executed"
+  },
+  "representation": {
+   "name": "dense_f32",
+   "note": "the only representation string this module's own tests actually exercise; AcceleratorDomain.supported_representations for the fictitious SPARK_DOMAIN_0 also names dense_f16 as an unexercised placeholder value"
+  },
+  "kernel": {
+   "status": "ABSENT",
+   "reason": "nothing executed on the GPU"
+  },
+  "runtime": {
+   "python": "/usr/local/bin/python3"
+  },
+  "transport": {
+   "status": "SIMULATED",
+   "bandwidth_gb_s": {
+    "APPLE_DOMAIN_0": 589.73,
+    "SPARK_DOMAIN_0_example": 40.0
+   },
+   "reason": "every number here is a KNOB, not a measurement. APPLE_DOMAIN_0's 589.73 GB/s is carried over unchanged from the existing APPLE_UM fixture constant already used across test_humf.py and test_air.py (physical=True, matching that established convention, not re-measured by this work); SPARK_DOMAIN_0's 40.0 GB/s is a made-up structural-test value for hardware that does not exist (physical=False, provenance SIMULATED)."
+  }
+ },
+ "result": {
+  "test_count": {
+   "before": {
+    "tools/accelerator/": 361,
+    "test_humf.py": 59
+   },
+   "after": {
+    "tools/accelerator/": 387,
+    "test_humf.py": 59,
+    "test_hmf.py": 26
+   },
+   "command": "/usr/local/bin/python3 -m pytest tools/accelerator/ -q"
+  },
+  "what_moved_pure_rename": {
+   "hmf.py": "re-exports humf.py's LEGAL, MEMORY_CLASS_POLICY, OWNERSHIP_LEGAL, Domain, DeviceLost, Humf, HumfError, HumfObject, Materialization, MemoryClass, MockExternalMemoryProvider, Ownership, Plan, ReadbackDigestProvider, State, TransferTimeout, integrity_policy -- the SAME objects, not copies. hmf.Humf is humf.Humf, pinned by test_hmf.py::test_hmf_is_humf_by_identity (the F24 lesson: this campaign has already shipped one module reachable under two dotted names where that identity check was False).",
+   "humf.py": "unchanged in behaviour; every one of its 59 pre-existing tests passes unmodified. Not touched at all beyond the additions listed under genuinely_new."
+  },
+  "what_is_genuinely_new": {
+   "copy_state_vocabulary": "State gained UNKNOWN, CORRUPT, LOST (humf.py), wired into LEGAL with real, tested, fail-closed transitions -- not just declared. Added ADDITIVELY: every edge legal before G053 is still legal (test_no_previously_legal_transition_became_illegal), and the two pre-existing states the canonical nine-name list does not mention (TRANSFERRING, INVALID) were kept because 59 existing tests depend on them and G053 named no removal. The resulting State enum is an 11-member SUPERSET of the canonical nine, not a like-for-like rename. LOST is deliberately stricter than INVALID (LOST -> only ABSENT; INVALID -> ABSENT or MATERIALIZING) so the new name is not merely a synonym for an old one.",
+   "ownership_axis": "Ownership (APPLE_BIAS, SPARK0_BIAS, SPARK1_BIAS, SHARED_READ, TRANSIT) is a wholly new enum with its own OWNERSHIP_LEGAL fail-closed transition table and its own field (Materialization.ownership) and method (Materialization.transition_ownership), kept structurally separate from State/transition() and pinned by test_ownership_is_a_separate_axis_from_copy_state: moving one axis leaves the other untouched, in both directions.",
+   "memory_classes": "MemoryClass (nine members) and MEMORY_CLASS_POLICY are new, with genuinely enforced (not just documented) behaviour: HumfObject.mark_written() now refuses a write on an object classified into an immutable class, raising HumfError. The load-bearing case from G053 is pinned directly: an IMMUTABLE_WEIGHTS object transferred into a second domain stays CLEAN and valid in both, can be set SHARED_READ on both without any re-stream, and a write is refused outright (test_immutable_weights_stay_valid_across_domains_without_restreaming, test_immutable_weights_refuse_a_write); the contrast is pinned against KV_STATE and RECURRENT_STATE, which stale normally on a write exactly as before (test_kv_state_is_mutable_and_stales_normally_the_contrast_case). Unclassified objects (memory_class=None, every pre-existing caller) are provably unaffected (test_unclassified_objects_are_unaffected_by_the_new_policy).",
+   "hawkgpu0": "Accelerator, AcceleratorDomain, DeviceIdentity, MachineIdentity and build_hawkgpu0() are entirely new (hmf.py only). build_hawkgpu0() registers exactly one real domain today, APPLE_DOMAIN_0, wrapping the existing APPLE_UM fabric domain with no translation (AcceleratorDomain.fabric_domain.name == 'APPLE_UM', fed straight into Humf() and proven identical to what AIR already expects). test_a_second_fictitious_domain_needs_no_architecture_change registers a second, fictitious SPARK_DOMAIN_0 with no code change to Accelerator/AcceleratorDomain, which is the only evidence the abstraction actually generalizes. test_per_domain_asymmetry_is_visible_through_the_accelerator and test_hawkgpu_hides_topology_from_a_caller_using_only_fabric_domains pin both halves of the hiding requirement: Accelerator.domains exposes full per-domain identity/backend/topology, while Accelerator.fabric_domains() returns bare humf.Domain objects with none of it."
+  },
+  "what_is_still_absent": [
+   "No cross-device transport for an AcceleratorDomain: nothing wires an AcceleratorDomain to a humf provider the way MockExternalMemoryProvider already does for a single mock domain.",
+   "No topology cost model: AcceleratorDomain.topology is a bare knob dict with no consumer; no route or multi-hop cost is computed from it.",
+   "No scheduler: HAWKGPU-0 exposes asymmetry, it does not act on it.",
+   "Ownership is not wired into Humf.plan_acquire()/execute() at all -- OWNERSHIP_LEGAL governs Materialization.transition_ownership() in isolation, with no planner or executor logic reading or setting it yet.",
+   "MemoryClass policy beyond the mutability guard in mark_written(): eviction priority, capacity accounting and residency scheduling per class are described in MEMORY_CLASS_POLICY's note strings only; nothing acts on them.",
+   "SPARK0_BIAS/SPARK1_BIAS ownership and any SPARK_DOMAIN_* accelerator domain have no real backing anywhere -- no Spark hardware exists on this machine."
+  ],
+  "surprises": [
+   "The canonical nine-name copy-state list and the pre-existing eight overlap in only six names; TRANSFERRING and INVALID (pre-existing) are absent from the canonical list, and UNKNOWN/CORRUPT/LOST (canonical) already existed as STRING VALUES elsewhere in humf.py -- Materialization.trust uses 'UNKNOWN', and resolve_unknown() returns verdicts including 'CORRUPT' and 'LOST' -- but as TRUST/VERDICT values, not State members, and on a different axis by original design (device_partially_lost's own docstring argues explicitly for leaving .state alone and recording ambiguity only in .trust). Adding State.UNKNOWN/.CORRUPT/.LOST therefore creates a same-spelled-different-axis situation on purpose: State.UNKNOWN means the copy's coherence state itself could not be established, while trust=='UNKNOWN' means a CLEAN copy's bytes are unverified. Existing code paths were left untouched rather than rewired onto the new State members, specifically to avoid weakening any of the 59 pre-existing tests that assert on trust/INVALID today."
+  ]
+ },
+ "claim_boundary": "This receipt covers a Python-level fabric/vocabulary canonicalization and a structural device-abstraction layer, verified by unit tests only. It makes no performance claim, executes nothing on a GPU, and every bandwidth/latency number it cites for a non-Apple domain is a knob for hardware that does not exist on this machine.",
+ "pass": true
+}

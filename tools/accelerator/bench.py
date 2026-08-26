@@ -35,11 +35,20 @@ def time_arm(fn: Callable[[], Any], *, reps: int = 40, warmup: int = 10) -> dict
         s.append(time.perf_counter() - t0)
     s.sort()
     q1, med, q3 = s[len(s) // 4], s[len(s) // 2], s[(3 * len(s)) // 4]
-    iqr = (q3 - q1) / q1 * 100
+    # AN ARM FASTER THAN THE CLOCK IS NOT AN ARM WITH ZERO SPREAD. perf_counter can
+    # return the same value twice for a cheap enough callable, and dividing by that
+    # sample raised ZeroDivisionError in roughly one run of four -- an intermittent
+    # crash where the honest answer is that the arm was never measured. Reported as
+    # UNMEASURABLE with infinite spread so it can never pass the reliability gate,
+    # because a silent 0.00% would read as the most reliable arm ever timed.
+    below_resolution = q1 <= 0.0 or s[0] <= 0.0
+    iqr = float("inf") if below_resolution else (q3 - q1) / q1 * 100
+    rng = float("inf") if below_resolution else (s[-1] - s[0]) / s[0] * 100
     stable = reps >= STABLE_RELIABILITY_MIN_REPS
     return {"median_s": med, "q1_s": q1, "q3_s": q3,
+            "below_timer_resolution": below_resolution,
             "iqr_spread_pct": round(iqr, 2),
-            "full_range_pct": round((s[-1] - s[0]) / s[0] * 100, 2),
+            "full_range_pct": round(rng, 2),
             "reps": reps, "warmup": warmup,
             "reliable": iqr <= IQR_GATE_PCT,
             "reliability_verdict_is_stable": stable,

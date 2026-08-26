@@ -1,235 +1,1201 @@
 {
- "schema": "hawking.odyssey.decoding_gravity.v1",
- "generated_at": "2026-08-25T08:50:00Z",
- "generated_by": "tools/odyssey/decoding_gravity.py",
- "obligation": "G038 \u2014 DECODING_GRAVITY",
+ "schema": "hawking.headless.decoding_gravity.v1",
+ "generated_at": "2026-08-26T03:39:09Z",
+ "git_head": "e665c7319eb06bc1611d1ede67e091160dea83c0",
+ "generated_by": "tools/headless/decoding_gravity.py",
+ "obligation": "N049 \u2014 DECODING GRAVITY (S026 \u00a759-64, \u00a794, \u00a795, \u00a7121; DOC-DECODE). Census native MTP / multi-token-prediction heads on OUR Qwen3.8; self-speculative feasibility of reduced-depth / early-exit / the 1.25-bpw binary child as a DRAFT against q2f; reclassify negatives by PURPOSE. Speculative decoding that rejects most proposals LOSES.",
  "hand_authored": false,
- "git_head": "a6209635ab9dec3c0c4b44894b03e19271330288",
- "why_this_lever": "G005 measured the model-reachable roof at 274-290 GB/s against a 778.8 GB/s device sustained roof, so decode is dispatch-bound and no representation change moves TPOT. Accepted tokens per forward pass is the remaining lever.",
- "census": {
-  "parent": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
-  "n_tensors_total": 1199,
-  "machinery_found": {
-   "mtp": 15,
-   "multi_token": 0,
-   "nextn": 0,
-   "draft": 0,
-   "medusa": 0,
-   "eagle": 0,
-   "exit": 0,
-   "aux": 0
+ "did_not_touch_gpu": true,
+ "did_not_run_cargo_or_metal_benchmarks": true,
+ "did_not_load_second_27b": true,
+ "did_not_mutate_noetic_parent_a": true,
+ "did_not_write_under_models": true,
+ "streamed_parent_headers_only": true,
+ "unmeasured_is_absent": true,
+ "s026": [
+  "\u00a759-64",
+  "\u00a794",
+  "\u00a795",
+  "\u00a7121"
+ ],
+ "question": "Does OUR Qwen3.8 artifact/config/runtime expose native MTP heads, and can a reduced-depth / early-exit / 1.25-bpw binary child serve as a draft of q2f without losing on accepted-tokens/pass?",
+ "answer": "Parent Qwen3.8 BF16 HAS native MTP: text_config.mtp_num_hidden_layers=1, mtp_use_dedicated_embeddings=false, 15 mtp.* tensors, 849,398,784 BF16 bytes, one GQA+MLP layer after the last hidden sharing lm_head. Gravity q4 pack, MLX 4-bit convert/sanitize, and hawking qwen38_pack all drop those heads (n_mtp=0); llama.cpp exposes --spec-type draft-mtp but our Q5_K GGUF is absent here, and a Metal prior on Qwen3.5-9B lost at every n_max. The 1.25-bpw binary is a failed generator (16\u00d7 token 271) and a failed draft: token top-1 vs q2f is 0 at position 0, local SwiGLU channel-argmax mean is 0.3658854166666667, composed-ns is only 15% cheaper than q2f (23.43 vs 27.55 ms) and native greedy tok/s is tied (33.44 vs 33.09). Speculative decoding that rejects most proposals LOSES on accepted-tokens/GPU-second. Full MTP bench deferred.",
+ "one_line": "MTP heads exist in the parent and are dropped at every runtime we run; the 1.25 binary is not a useful draft (token \u03b1=0 at pos 0).",
+ "native_mtp": {
+  "verdict": "PARENT_HAS_NATIVE_MTP_HEADS_RUNTIMES_DROP_THEM",
+  "parent_has_heads": true,
+  "runtimes_drop_heads": true,
+  "parent_config": {
+   "present": true,
+   "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/config.json",
+   "architectures": [
+    "Qwen3_5ForConditionalGeneration"
+   ],
+   "model_type": "qwen3_5",
+   "text_model_type": "qwen3_5_text",
+   "num_hidden_layers": 64,
+   "hidden_size": 5120,
+   "vocab_size": 248320,
+   "tie_word_embeddings": false,
+   "keys_found": {
+    "text_config.mtp_num_hidden_layers": 1,
+    "text_config.mtp_use_dedicated_embeddings": false
+   },
+   "keys_absent": [
+    "eagle_num_layers",
+    "early_exit",
+    "medusa_num_heads",
+    "multi_token_heads",
+    "n_future_tokens",
+    "num_draft_layers",
+    "num_early_exit_layers",
+    "speculative_length"
+   ],
+   "mtp_num_hidden_layers": 1,
+   "mtp_use_dedicated_embeddings": false
   },
-  "mtp_tensors": {
-   "mtp.fc.weight": {
+  "parent_tensors": {
+   "present": true,
+   "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model.safetensors.index.json",
+   "n_weight_map": 1199,
+   "n_mtp_tensors": 15,
+   "mtp_bytes": 849398784,
+   "mtp_elements": 424699392,
+   "tensors": [
+    {
+     "name": "mtp.fc.weight",
+     "shard": "model-00018-of-00018.safetensors",
+     "dtype": "BF16",
+     "shape": [
+      5120,
+      10240
+     ],
+     "bytes": 104857600
+    },
+    {
+     "name": "mtp.layers.0.input_layernorm.weight",
+     "shard": "model-00018-of-00018.safetensors",
+     "dtype": "BF16",
+     "shape": [
+      5120
+     ],
+     "bytes": 10240
+    },
+    {
+     "name": "mtp.layers.0.mlp.down_proj.weight",
+     "shard": "model-00018-of-00018.safetensors",
+     "dtype": "BF16",
+     "shape": [
+      5120,
+      17408
+     ],
+     "bytes": 178257920
+    },
+    {
+     "name": "mtp.layers.0.mlp.gate_proj.weight",
+     "shard": "model-00018-of-00018.safetensors",
+     "dtype": "BF16",
+     "shape": [
+      17408,
+      5120
+     ],
+     "bytes": 178257920
+    },
+    {
+     "name": "mtp.layers.0.mlp.up_proj.weight",
+     "shard": "model-00018-of-00018.safetensors",
+     "dtype": "BF16",
+     "shape": [
+      17408,
+      5120
+     ],
+     "bytes": 178257920
+    },
+    {
+     "name": "mtp.layers.0.post_attention_layernorm.weight",
+     "shard": "model-00018-of-00018.safetensors",
+     "dtype": "BF16",
+     "shape": [
+      5120
+     ],
+     "bytes": 10240
+    },
+    {
+     "name": "mtp.layers.0.self_attn.k_norm.weight",
+     "shard": "model-00018-of-00018.safetensors",
+     "dtype": "BF16",
+     "shape": [
+      256
+     ],
+     "bytes": 512
+    },
+    {
+     "name": "mtp.layers.0.self_attn.k_proj.weight",
+     "shard": "model-00018-of-00018.safetensors",
+     "dtype": "BF16",
+     "shape": [
+      1024,
+      5120
+     ],
+     "bytes": 10485760
+    },
+    {
+     "name": "mtp.layers.0.self_attn.o_proj.weight",
+     "shard": "model-00018-of-00018.safetensors",
+     "dtype": "BF16",
+     "shape": [
+      5120,
+      6144
+     ],
+     "bytes": 62914560
+    },
+    {
+     "name": "mtp.layers.0.self_attn.q_norm.weight",
+     "shard": "model-00018-of-00018.safetensors",
+     "dtype": "BF16",
+     "shape": [
+      256
+     ],
+     "bytes": 512
+    },
+    {
+     "name": "mtp.layers.0.self_attn.q_proj.weight",
+     "shard": "model-00018-of-00018.safetensors",
+     "dtype": "BF16",
+     "shape": [
+      12288,
+      5120
+     ],
+     "bytes": 125829120
+    },
+    {
+     "name": "mtp.layers.0.self_attn.v_proj.weight",
+     "shard": "model-00018-of-00018.safetensors",
+     "dtype": "BF16",
+     "shape": [
+      1024,
+      5120
+     ],
+     "bytes": 10485760
+    },
+    {
+     "name": "mtp.norm.weight",
+     "shard": "model-00018-of-00018.safetensors",
+     "dtype": "BF16",
+     "shape": [
+      5120
+     ],
+     "bytes": 10240
+    },
+    {
+     "name": "mtp.pre_fc_norm_embedding.weight",
+     "shard": "model-00018-of-00018.safetensors",
+     "dtype": "BF16",
+     "shape": [
+      5120
+     ],
+     "bytes": 10240
+    },
+    {
+     "name": "mtp.pre_fc_norm_hidden.weight",
+     "shard": "model-00018-of-00018.safetensors",
+     "dtype": "BF16",
+     "shape": [
+      5120
+     ],
+     "bytes": 10240
+    }
+   ],
+   "expected_names": [
+    "mtp.fc.weight",
+    "mtp.layers.0.input_layernorm.weight",
+    "mtp.layers.0.mlp.down_proj.weight",
+    "mtp.layers.0.mlp.gate_proj.weight",
+    "mtp.layers.0.mlp.up_proj.weight",
+    "mtp.layers.0.post_attention_layernorm.weight",
+    "mtp.layers.0.self_attn.k_norm.weight",
+    "mtp.layers.0.self_attn.k_proj.weight",
+    "mtp.layers.0.self_attn.o_proj.weight",
+    "mtp.layers.0.self_attn.q_norm.weight",
+    "mtp.layers.0.self_attn.q_proj.weight",
+    "mtp.layers.0.self_attn.v_proj.weight",
+    "mtp.norm.weight",
+    "mtp.pre_fc_norm_embedding.weight",
+    "mtp.pre_fc_norm_hidden.weight"
+   ],
+   "expected_present": true,
+   "names_not_in_parent": [],
+   "extra_mtp_names": [],
+   "lm_head": {
+    "name": "lm_head.weight",
+    "shard": "model-00018-of-00018.safetensors",
+    "dtype": "BF16",
     "shape": [
-     5120,
-     10240
-    ],
-    "params": 52428800
-   },
-   "mtp.layers.0.input_layernorm.weight": {
-    "shape": [
+     248320,
      5120
     ],
-    "params": 5120
+    "bytes": 2542796800,
+    "note": "shared with MTP (mtp_use_dedicated_embeddings=false); not extra"
    },
-   "mtp.layers.0.mlp.down_proj.weight": {
-    "shape": [
-     5120,
-     17408
-    ],
-    "params": 89128960
+   "method": "safetensors index + header JSON data_offsets; file bodies not read"
+  },
+  "gravity_q4": {
+   "present": true,
+   "path": "/Users/scammermike/models/qwen38-gravity-uniform-q4-v1/manifest.json",
+   "schema": "hawking.ascent.qwen38_language_uniform_q4.v1",
+   "tensor_count": 755,
+   "skipped_vision_tensors": 333,
+   "n_named": 755,
+   "n_mtp": 0,
+   "mtp_names": [],
+   "prefixes": [
+    "language_model"
+   ],
+   "note": "Language-only pack. skipped_vision_tensors counts vision; MTP is not a vision tensor and is also not in the packed catalog."
+  },
+  "mlx_4bit_artifact": {
+   "present": true,
+   "path": "/Users/scammermike/models/qwen3.8-27b-abliterated-mlx/4bit",
+   "architectures": [
+    "Qwen3_5ForConditionalGeneration"
+   ],
+   "mtp_num_hidden_layers": 1,
+   "mtp_use_dedicated_embeddings": false,
+   "n_weight_map": 2180,
+   "n_mtp": 0,
+   "mtp_names": [],
+   "note": "config still carries mtp_num_hidden_layers but the converted weight map contains zero mtp.* tensors"
+  },
+  "mlx_sanitize": {
+   "present": true,
+   "path": "/Users/scammermike/.local/share/uv/tools/mlx-lm/lib/python3.12/site-packages/mlx_lm/models/qwen3_5.py",
+   "strips_mtp": true,
+   "strip_line": {
+    "line": 313,
+    "text": "weights = {k: v for k, v in weights.items() if \"mtp.\" not in k}"
    },
-   "mtp.layers.0.mlp.gate_proj.weight": {
-    "shape": [
-     17408,
-     5120
-    ],
-    "params": 89128960
+   "mtp_mentions": [
+    {
+     "line": 308,
+     "text": "has_mtp_weights = any(\"mtp.\" in k for k in weights)"
+    },
+    {
+     "line": 312,
+     "text": "should_shift_norm_weights = has_mtp_weights or has_unsanitized_conv1d"
+    },
+    {
+     "line": 313,
+     "text": "weights = {k: v for k, v in weights.items() if \"mtp.\" not in k}"
+    }
+   ],
+   "note": "mlx_lm.models.qwen3_5.Model.sanitize drops every weight whose name contains 'mtp.' before the model is constructed"
+  },
+  "llama_cpp": {
+   "help_ok": true,
+   "spec_type_help": "--spec-type none,draft-simple,draft-eagle3,draft-mtp,ngram-simple,ngram-map-k,ngram-map-k4v,ngram-mod,ngram-cache",
+   "exposes_draft_mtp": true,
+   "llama_h": {
+    "path": "/opt/homebrew/opt/llama.cpp/include/llama.h",
+    "LLAMA_CONTEXT_TYPE_MTP": "LLAMA_CONTEXT_TYPE_MTP     = 1,"
    },
-   "mtp.layers.0.mlp.up_proj.weight": {
-    "shape": [
-     17408,
-     5120
-    ],
-    "params": 89128960
+   "gguf_q5k": {
+    "path": "/Users/scammermike/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf",
+    "present": false,
+    "bytes": null,
+    "note": "HCLI's historical Q5_K GGUF path from MODEL_REGISTRY / DECODE_TOPOLOGY. Absent on this disk, so GGUF tensor names cannot be censused. Not evidence the convert kept MTP."
    },
-   "mtp.layers.0.post_attention_layernorm.weight": {
-    "shape": [
-     5120
-    ],
-    "params": 5120
-   },
-   "mtp.layers.0.self_attn.k_norm.weight": {
-    "shape": [
-     256
-    ],
-    "params": 256
-   },
-   "mtp.layers.0.self_attn.k_proj.weight": {
-    "shape": [
-     1024,
-     5120
-    ],
-    "params": 5242880
-   },
-   "mtp.layers.0.self_attn.o_proj.weight": {
-    "shape": [
-     5120,
-     6144
-    ],
-    "params": 31457280
-   },
-   "mtp.layers.0.self_attn.q_norm.weight": {
-    "shape": [
-     256
-    ],
-    "params": 256
-   },
-   "mtp.layers.0.self_attn.q_proj.weight": {
-    "shape": [
-     12288,
-     5120
-    ],
-    "params": 62914560
-   },
-   "mtp.layers.0.self_attn.v_proj.weight": {
-    "shape": [
-     1024,
-     5120
-    ],
-    "params": 5242880
-   },
-   "mtp.norm.weight": {
-    "shape": [
-     5120
-    ],
-    "params": 5120
-   },
-   "mtp.pre_fc_norm_embedding.weight": {
-    "shape": [
-     5120
-    ],
-    "params": 5120
-   },
-   "mtp.pre_fc_norm_hidden.weight": {
-    "shape": [
-     5120
-    ],
-    "params": 5120
+   "metal_prior": {
+    "kind": "CITED",
+    "url": "https://github.com/ggml-org/llama.cpp/issues/23752",
+    "title": "MTP speculative decoding degrades throughput on Metal (Apple Silicon) \u2014 net loss at every configuration",
+    "not_our_27b": true,
+    "model_in_issue": "Qwen3.5-9B-MTP Q4_K_M",
+    "machine_in_issue": "M1 Max, 32 GB, llama-server b9330",
+    "finding": "No --spec-type draft-mtp configuration beat the non-MTP baseline. n_max=0 at 100% accept was 11% slower; n_max=6 at ~43% accept was 28% slower. Draft-eval overhead on Metal exceeded the speculative gain.",
+    "note": "FOREIGN prior, different size/box. Cited because it is the same llama.cpp Metal MTP path our --spec-type flag exposes. Not a measurement of Qwen3.8-27B on this M3 Ultra."
    }
   },
-  "mtp_params": 424699392,
-  "mtp_share_of_model_pct": 1.579,
-  "mtp_bf16_bytes": 849398784,
-  "structure": "a complete single transformer layer (self_attn + SwiGLU MLP + norms) plus mtp.fc [5120, 10240], which fuses the normalized embedding with the normalized main hidden state. This is the standard MTP arrangement: predict token t+2 from the main model's hidden at t, then decode through the SHARED lm_head.",
-  "status_in_this_campaign": "PRESENT ON DISK AND NEVER PACKED. No noetic artifact in this campaign contains any mtp.* tensor."
- },
- "draft_measurement": {
-  "method": "greedy k=1: the verifier's token sequence is generated once, then each draft is asked for ONE token on each prefix and compared. Acceptance under exact greedy verification is argmax agreement.",
-  "verifier": "sealed-3.14",
-  "n_positions": 20,
-  "round_trip_skipped": 0,
-  "round_trip_note": "every prefix is detokenized back to text because the binary takes text; the round trip is VERIFIED per position and non-round-tripping positions are excluded rather than guessed",
-  "drafts": {
-   "clean-2.60": {
-    "capability_passed": 0,
-    "is_dead_final_generator": true,
-    "agreement": "10/20",
-    "acceptance_rate": 0.5,
-    "acceptance": 0.5,
-    "draft_ms": 30.018,
-    "verify_ms": 29.284,
-    "cost_ratio_draft_over_verify": 1.0251,
-    "break_even_cost_ratio": 0.5,
-    "pays": false,
-    "predicted_speedup_x": 0.7407,
-    "role": "USEFUL_DRAFT_BY_AGREEMENT_BUT_NOT_ECONOMIC"
-   },
-   "variantA-2.98": {
-    "capability_passed": 0,
-    "is_dead_final_generator": true,
-    "agreement": "15/20",
-    "acceptance_rate": 0.75,
-    "acceptance": 0.75,
-    "draft_ms": 29.203,
-    "verify_ms": 29.284,
-    "cost_ratio_draft_over_verify": 0.9972,
-    "break_even_cost_ratio": 0.75,
-    "pays": false,
-    "predicted_speedup_x": 0.8762,
-    "role": "USEFUL_DRAFT_BY_AGREEMENT_BUT_NOT_ECONOMIC"
-   },
-   "variantB-2.76": {
-    "capability_passed": 24,
-    "is_dead_final_generator": false,
-    "agreement": "13/20",
-    "acceptance_rate": 0.65,
-    "acceptance": 0.65,
-    "draft_ms": 30.198,
-    "verify_ms": 29.284,
-    "cost_ratio_draft_over_verify": 1.0312,
-    "break_even_cost_ratio": 0.65,
-    "pays": false,
-    "predicted_speedup_x": 0.8123,
-    "role": "USEFUL_DRAFT_BY_AGREEMENT_BUT_NOT_ECONOMIC"
-   }
+  "hawking_runtime": {
+   "language_prefix": "language_model.",
+   "vision_prefix": "vision_tower.",
+   "accept_config_ignores_mtp": true,
+   "packer_cannot_ingest_mtp_dot_tensors": true,
+   "speculate_crate_is_not_qwen_mtp": true,
+   "hf_layer_path_skips_mtp_keys": true,
+   "citations": [
+    {
+     "file": "crates/hawking-core/src/model/qwen38_geometry.rs",
+     "language_prefix": "language_model.",
+     "vision_prefix": "vision_tower.",
+     "qwen38_accept_config_reads_mtp": false
+    },
+    {
+     "file": "crates/hawking-core/src/model/qwen38_pack.rs",
+     "errors_on_non_language_non_vision": true,
+     "note": "Tensors not starting with language_model. or vision_tower. are rejected. Parent MTP tensors are named mtp.* so they are not packed. Gravity catalog confirms n_mtp=0."
+    },
+    {
+     "file": "crates/hawking-speculate/src/lib.rs",
+     "qwen_mtp_module": false,
+     "paths": "user-draft n-gram and shared-expert (ExactShared); not Qwen3.5 native MTP heads"
+    },
+    {
+     "file": "tools/headless/noetic_composition.py",
+     "text_config_skips_mtp_keys": true,
+     "note": "HF Qwen3_5TextConfig construction explicitly skips mtp_num_hidden_layers and mtp_use_dedicated_embeddings"
+    }
+   ]
+  },
+  "alpha_mtp": {
+   "value": null,
+   "kind": "ABSENT",
+   "unit": "probability",
+   "source": "parent mtp.* present, runtime dropped",
+   "absent_reason": "Would need a forward through mtp.layers.0 + shared lm_head on final hidden+embed(token). Capture is post_attn_norm (wrong site). No second 27B decode."
   }
  },
- "reclassification_S011_21": {
-  "finding": "a DEAD_FINAL_GENERATOR does carry usable draft signal: variantA-2.98 scores 0/43 as a generator and still matches the verifier's argmax 75% of the time, and clean-2.60 matches 50%.",
-  "but": "none of them pays. Every body in this ladder is the same size class with the same 964 dispatches per token, so draft cost and verify cost are within 3% of each other. Break-even needs draft/verify < acceptance; the best case here is 0.997 vs 0.75.",
-  "prior_falsification": "this codebase already measured 87% acceptance at 0.91x. Acceptance alone never proves a speedup, and these numbers are reported with the cost ratio attached for that reason.",
-  "roles": {
-   "clean-2.60": "USEFUL_DRAFT_BY_AGREEMENT_BUT_NOT_ECONOMIC",
-   "variantA-2.98": "USEFUL_DRAFT_BY_AGREEMENT_BUT_NOT_ECONOMIC",
-   "variantB-2.76": "USEFUL_DRAFT_BY_AGREEMENT_BUT_NOT_ECONOMIC"
+ "self_speculative": {
+  "verdict": "BINARY_REJECTED_AS_GENERATOR_AND_AS_DRAFT",
+  "binary_as_draft": {
+   "token_agreement": {
+    "ok": true,
+    "kind": "MEASURED",
+    "source": [
+     "receipts/headless/FIRST_NOETIC_EXECUTABLE.json mixes_attempted mix_c_all_mlp_binary_g64",
+     "receipts/headless/Q2F_G64_GENERATION.json decode.new_token_ids"
+    ],
+    "real_activations": true,
+    "independent_greedy_streams": true,
+    "n": 16,
+    "binary_ids": [
+     271,
+     271,
+     271,
+     271,
+     271,
+     271,
+     271,
+     271,
+     271,
+     271,
+     271,
+     271,
+     271,
+     271,
+     271,
+     271
+    ],
+    "q2f_ids": [
+     15769,
+     248046,
+     248046,
+     248046,
+     248068,
+     271,
+     760,
+     1156,
+     369,
+     9859,
+     728,
+     310,
+     10033,
+     11,
+     303,
+     18541
+    ],
+    "position_wise_agreements": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     1,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "n_agree": 1,
+    "position_wise_top1": 0.0625,
+    "earliest_mismatch": 0,
+    "first_token_agree": false,
+    "binary_token_0": 271,
+    "q2f_token_0": 15769,
+    "speculative_accept_on_this_prompt": 0,
+    "binary_coherent": false,
+    "binary_coherence_reason": "16 copies of the same token (271)",
+    "binary_tok_s_native_greedy": 33.44218765414758,
+    "q2f_tok_s_native_greedy": 33.090193941626694,
+    "q2f_coherent": true,
+    "note": "These are independent greedy streams, not teacher-forced draft verification. For speculative decoding the first mismatch is what matters: binary emits 271 at position 0, q2f emits 15769, so a binary draft of this prompt is rejected immediately (0 accepted draft tokens)."
+   },
+   "local_top1_on_real_X": {
+    "ok": true,
+    "kind": "MEASURED",
+    "source": "receipts/headless/_BINARY_HEALING_local.json",
+    "sealed_receipt": "receipts/headless/BINARY_HEALING.json",
+    "real_activations": true,
+    "not_gaussian": true,
+    "capture": "/Users/scammermike/Downloads/hawking-copy/workspace/campaign/phaseB/capture_diverse2",
+    "split_rule": "prompt_hold: last 3 prompts/family",
+    "n_hold_total": 2212,
+    "n_tokens_used": 48,
+    "n_layers": 64,
+    "site": "gate/up: post_attn_norm capture_diverse2 hold tokens; down_proj / swiglu: teacher SwiGLU hidden. Binary g64 vs q2f g64 channel-argmax, NOT vocab top-1.",
+    "organs": {
+     "gate_proj": {
+      "n_layers": 64,
+      "n_tokens": 48,
+      "disagree_mean": 19.078125,
+      "disagree_median": 18.0,
+      "disagree_min": 6,
+      "disagree_max": 32,
+      "top1_agreement_mean": 0.6025390625,
+      "top1_agreement_median": 0.625,
+      "top1_agreement_min": 0.33333333333333337,
+      "top1_agreement_max": 0.875,
+      "n_layers_perfect": 0,
+      "n_layers_below_0_25": 0,
+      "n_layers_at_least_0_70": 13,
+      "by_band": {
+       "L00-15": {
+        "top1_agreement_mean": 0.6875,
+        "top1_agreement_min": 0.5
+       },
+       "L16-31": {
+        "top1_agreement_mean": 0.5872395833333334,
+        "top1_agreement_min": 0.39583333333333337
+       },
+       "L32-47": {
+        "top1_agreement_mean": 0.5286458333333334,
+        "top1_agreement_min": 0.33333333333333337
+       },
+       "L48-63": {
+        "top1_agreement_mean": 0.6067708333333333,
+        "top1_agreement_min": 0.41666666666666663
+       }
+      }
+     },
+     "up_proj": {
+      "n_layers": 64,
+      "n_tokens": 48,
+      "disagree_mean": 21.671875,
+      "disagree_median": 22.0,
+      "disagree_min": 6,
+      "disagree_max": 35,
+      "top1_agreement_mean": 0.5485026041666666,
+      "top1_agreement_median": 0.5416666666666667,
+      "top1_agreement_min": 0.27083333333333337,
+      "top1_agreement_max": 0.875,
+      "n_layers_perfect": 0,
+      "n_layers_below_0_25": 0,
+      "n_layers_at_least_0_70": 6,
+      "by_band": {
+       "L00-15": {
+        "top1_agreement_mean": 0.6393229166666666,
+        "top1_agreement_min": 0.47916666666666663
+       },
+       "L16-31": {
+        "top1_agreement_mean": 0.56640625,
+        "top1_agreement_min": 0.33333333333333337
+       },
+       "L32-47": {
+        "top1_agreement_mean": 0.53515625,
+        "top1_agreement_min": 0.4375
+       },
+       "L48-63": {
+        "top1_agreement_mean": 0.453125,
+        "top1_agreement_min": 0.27083333333333337
+       }
+      }
+     },
+     "down_proj": {
+      "n_layers": 64,
+      "n_tokens": 48,
+      "disagree_mean": 20.109375,
+      "disagree_median": 23.0,
+      "disagree_min": 0,
+      "disagree_max": 37,
+      "top1_agreement_mean": 0.5810546875,
+      "top1_agreement_median": 0.5208333333333333,
+      "top1_agreement_min": 0.22916666666666663,
+      "top1_agreement_max": 1.0,
+      "n_layers_perfect": 4,
+      "n_layers_below_0_25": 1,
+      "n_layers_at_least_0_70": 20,
+      "by_band": {
+       "L00-15": {
+        "top1_agreement_mean": 0.8151041666666666,
+        "top1_agreement_min": 0.47916666666666663
+       },
+       "L16-31": {
+        "top1_agreement_mean": 0.5325520833333334,
+        "top1_agreement_min": 0.25
+       },
+       "L32-47": {
+        "top1_agreement_mean": 0.51171875,
+        "top1_agreement_min": 0.22916666666666663
+       },
+       "L48-63": {
+        "top1_agreement_mean": 0.46484375,
+        "top1_agreement_min": 0.27083333333333337
+       }
+      }
+     }
+    },
+    "swiglu_mlp_output": {
+     "n_layers": 64,
+     "n_tokens": 48,
+     "disagree_mean": 30.4375,
+     "disagree_median": 35.5,
+     "disagree_min": 0,
+     "disagree_max": 45,
+     "top1_agreement_mean": 0.3658854166666667,
+     "top1_agreement_median": 0.2604166666666667,
+     "top1_agreement_min": 0.0625,
+     "top1_agreement_max": 1.0,
+     "n_layers_perfect": 3,
+     "n_layers_below_0_25": 30,
+     "n_layers_at_least_0_70": 13,
+     "by_band": {
+      "L00-15": {
+       "top1_agreement_mean": 0.7135416666666666,
+       "top1_agreement_min": 0.16666666666666663
+      },
+      "L16-31": {
+       "top1_agreement_mean": 0.20963541666666669,
+       "top1_agreement_min": 0.0625
+      },
+      "L32-47": {
+       "top1_agreement_mean": 0.17057291666666666,
+       "top1_agreement_min": 0.0625
+      },
+      "L48-63": {
+       "top1_agreement_mean": 0.3697916666666667,
+       "top1_agreement_min": 0.08333333333333337
+      }
+     }
+    },
+    "draft_quality_proxy": 0.3658854166666667,
+    "note": "A GEMV channel-argmax of 0.37 is not a 0.37 token-draft \u03b1. Token-level \u03b1 on the sealed greedy streams is 0 at position 0. This local figure is the optimistic operator-level proxy; even using it as if it were token \u03b1, speculation still loses (\u00a795)."
+   },
+   "composed_complete_token_ns": {
+    "binary_g64": 23431791,
+    "q2f": 27547874,
+    "source": "receipts/headless/BYTES_FRONTIER.json"
+   },
+   "g057": {
+    "source": "receipts/ascent-2026-08-16/G057_SELF_SPECULATIVE.json",
+    "verdict_there": "REFUTED ON COST, BEFORE ACCEPTANCE RATE ENTERS",
+    "break_even_ms_at_k4": 15.063,
+    "what_would_change_it": "a draft that is a different SHAPE, not merely a cheaper codec of the same shape \u2014 fewer layers or a smaller hidden",
+    "binary_clears_that_break_even": false
+   },
+   "arithmetic": [
+    {
+     "alpha": 0.0,
+     "gamma": 1,
+     "yield_includes_bonus": true,
+     "accepted_tokens_per_pass": 1.0,
+     "pass_ns": 50979665,
+     "accepted_tokens_per_gpu_second": 19.615664402659373,
+     "baseline_accepted_tokens_per_gpu_second": 36.30044191431978,
+     "ratio_vs_baseline": 0.5403698513907457,
+     "wins_vs_baseline": false,
+     "alpha_kind": "token_greedy"
+    },
+    {
+     "alpha": 0.3658854166666667,
+     "gamma": 1,
+     "yield_includes_bonus": true,
+     "accepted_tokens_per_pass": 1.3658854166666667,
+     "pass_ns": 50979665,
+     "accepted_tokens_per_gpu_second": 26.792749945819903,
+     "baseline_accepted_tokens_per_gpu_second": 36.30044191431978,
+     "ratio_vs_baseline": 0.7380832996209535,
+     "wins_vs_baseline": false,
+     "alpha_kind": "local_swiglu_channel_argmax_proxy"
+    },
+    {
+     "alpha": 1.0,
+     "gamma": 1,
+     "yield_includes_bonus": true,
+     "accepted_tokens_per_pass": 2.0,
+     "pass_ns": 50979665,
+     "accepted_tokens_per_gpu_second": 39.231328805318746,
+     "baseline_accepted_tokens_per_gpu_second": 36.30044191431978,
+     "ratio_vs_baseline": 1.0807397027814913,
+     "wins_vs_baseline": true,
+     "alpha_kind": "perfect_accept_control"
+    },
+    {
+     "alpha": 0.0,
+     "gamma": 2,
+     "yield_includes_bonus": true,
+     "accepted_tokens_per_pass": 1.0,
+     "pass_ns": 74411456,
+     "accepted_tokens_per_gpu_second": 13.43879093025676,
+     "baseline_accepted_tokens_per_gpu_second": 36.30044191431978,
+     "ratio_vs_baseline": 0.370210119259056,
+     "wins_vs_baseline": false,
+     "alpha_kind": "token_greedy"
+    },
+    {
+     "alpha": 0.3658854166666667,
+     "gamma": 2,
+     "yield_includes_bonus": true,
+     "accepted_tokens_per_pass": 1.4997575547960071,
+     "pass_ns": 74411456,
+     "accepted_tokens_per_gpu_second": 20.154928224976636,
+     "baseline_accepted_tokens_per_gpu_second": 36.30044191431978,
+     "ratio_vs_baseline": 0.5552254232207,
+     "wins_vs_baseline": false,
+     "alpha_kind": "local_swiglu_channel_argmax_proxy"
+    },
+    {
+     "alpha": 1.0,
+     "gamma": 2,
+     "yield_includes_bonus": true,
+     "accepted_tokens_per_pass": 3.0,
+     "pass_ns": 74411456,
+     "accepted_tokens_per_gpu_second": 40.31637279077028,
+     "baseline_accepted_tokens_per_gpu_second": 36.30044191431978,
+     "ratio_vs_baseline": 1.1106303577771681,
+     "wins_vs_baseline": true,
+     "alpha_kind": "perfect_accept_control"
+    },
+    {
+     "alpha": 0.0,
+     "gamma": 4,
+     "yield_includes_bonus": true,
+     "accepted_tokens_per_pass": 1.0,
+     "pass_ns": 121275038,
+     "accepted_tokens_per_gpu_second": 8.245719947743904,
+     "baseline_accepted_tokens_per_gpu_second": 36.30044191431978,
+     "ratio_vs_baseline": 0.22715205415973566,
+     "wins_vs_baseline": false,
+     "alpha_kind": "token_greedy"
+    },
+    {
+     "alpha": 0.3658854166666667,
+     "gamma": 4,
+     "yield_includes_bonus": true,
+     "accepted_tokens_per_pass": 1.5666611672028397,
+     "pass_ns": 121275038,
+     "accepted_tokens_per_gpu_second": 12.918249237760202,
+     "baseline_accepted_tokens_per_gpu_second": 36.30044191431978,
+     "ratio_vs_baseline": 0.35587030230241407,
+     "wins_vs_baseline": false,
+     "alpha_kind": "local_swiglu_channel_argmax_proxy"
+    },
+    {
+     "alpha": 1.0,
+     "gamma": 4,
+     "yield_includes_bonus": true,
+     "accepted_tokens_per_pass": 5.0,
+     "pass_ns": 121275038,
+     "accepted_tokens_per_gpu_second": 41.228599738719524,
+     "baseline_accepted_tokens_per_gpu_second": 36.30044191431978,
+     "ratio_vs_baseline": 1.1357602707986785,
+     "wins_vs_baseline": true,
+     "alpha_kind": "perfect_accept_control"
+    },
+    {
+     "alpha": 0.0,
+     "gamma": 1,
+     "yield_includes_bonus": false,
+     "accepted_tokens_per_pass": 1.0,
+     "pass_ns": 50979665,
+     "accepted_tokens_per_gpu_second": 19.615664402659373,
+     "baseline_accepted_tokens_per_gpu_second": 36.30044191431978,
+     "ratio_vs_baseline": 0.5403698513907457,
+     "wins_vs_baseline": false,
+     "alpha_kind": "token_greedy"
+    },
+    {
+     "alpha": 0.3658854166666667,
+     "gamma": 1,
+     "yield_includes_bonus": false,
+     "accepted_tokens_per_pass": 1.0,
+     "pass_ns": 50979665,
+     "accepted_tokens_per_gpu_second": 19.615664402659373,
+     "baseline_accepted_tokens_per_gpu_second": 36.30044191431978,
+     "ratio_vs_baseline": 0.5403698513907457,
+     "wins_vs_baseline": false,
+     "alpha_kind": "local_swiglu_channel_argmax_proxy"
+    },
+    {
+     "alpha": 1.0,
+     "gamma": 1,
+     "yield_includes_bonus": false,
+     "accepted_tokens_per_pass": 1.0,
+     "pass_ns": 50979665,
+     "accepted_tokens_per_gpu_second": 19.615664402659373,
+     "baseline_accepted_tokens_per_gpu_second": 36.30044191431978,
+     "ratio_vs_baseline": 0.5403698513907457,
+     "wins_vs_baseline": false,
+     "alpha_kind": "perfect_accept_control"
+    },
+    {
+     "alpha": 0.0,
+     "gamma": 2,
+     "yield_includes_bonus": false,
+     "accepted_tokens_per_pass": 1.0,
+     "pass_ns": 74411456,
+     "accepted_tokens_per_gpu_second": 13.43879093025676,
+     "baseline_accepted_tokens_per_gpu_second": 36.30044191431978,
+     "ratio_vs_baseline": 0.370210119259056,
+     "wins_vs_baseline": false,
+     "alpha_kind": "token_greedy"
+    },
+    {
+     "alpha": 0.3658854166666667,
+     "gamma": 2,
+     "yield_includes_bonus": false,
+     "accepted_tokens_per_pass": 1.3658854166666667,
+     "pass_ns": 74411456,
+     "accepted_tokens_per_gpu_second": 18.35584854926998,
+     "baseline_accepted_tokens_per_gpu_second": 36.30044191431978,
+     "ratio_vs_baseline": 0.5056646029983721,
+     "wins_vs_baseline": false,
+     "alpha_kind": "local_swiglu_channel_argmax_proxy"
+    },
+    {
+     "alpha": 1.0,
+     "gamma": 2,
+     "yield_includes_bonus": false,
+     "accepted_tokens_per_pass": 2.0,
+     "pass_ns": 74411456,
+     "accepted_tokens_per_gpu_second": 26.87758186051352,
+     "baseline_accepted_tokens_per_gpu_second": 36.30044191431978,
+     "ratio_vs_baseline": 0.740420238518112,
+     "wins_vs_baseline": false,
+     "alpha_kind": "perfect_accept_control"
+    },
+    {
+     "alpha": 0.0,
+     "gamma": 4,
+     "yield_includes_bonus": false,
+     "accepted_tokens_per_pass": 1.0,
+     "pass_ns": 121275038,
+     "accepted_tokens_per_gpu_second": 8.245719947743904,
+     "baseline_accepted_tokens_per_gpu_second": 36.30044191431978,
+     "ratio_vs_baseline": 0.22715205415973566,
+     "wins_vs_baseline": false,
+     "alpha_kind": "token_greedy"
+    },
+    {
+     "alpha": 0.3658854166666667,
+     "gamma": 4,
+     "yield_includes_bonus": false,
+     "accepted_tokens_per_pass": 1.5487394178355183,
+     "pass_ns": 121275038,
+     "accepted_tokens_per_gpu_second": 12.770471511503613,
+     "baseline_accepted_tokens_per_gpu_second": 36.30044191431978,
+     "ratio_vs_baseline": 0.3517993401194911,
+     "wins_vs_baseline": false,
+     "alpha_kind": "local_swiglu_channel_argmax_proxy"
+    },
+    {
+     "alpha": 1.0,
+     "gamma": 4,
+     "yield_includes_bonus": false,
+     "accepted_tokens_per_pass": 4.0,
+     "pass_ns": 121275038,
+     "accepted_tokens_per_gpu_second": 32.982879790975616,
+     "baseline_accepted_tokens_per_gpu_second": 36.30044191431978,
+     "ratio_vs_baseline": 0.9086082166389426,
+     "wins_vs_baseline": false,
+     "alpha_kind": "perfect_accept_control"
+    }
+   ]
+  },
+  "extra_head_and_state_bytes": {
+   "mtp_weight_bytes_bf16": 849398784,
+   "mtp_weight_gib_bf16": 0.7910642623901367,
+   "mtp_as_fraction_of_parent_payload": 0.01528716928207521,
+   "lm_head_not_extra": true,
+   "mtp_kv_bytes_per_token_fp16": 4096,
+   "mtp_kv_note": "mtp.layers.0 is self_attn (GQA), not DeltaNet. Extra decode state is one GQA layer of KV: n_kv_heads=4, head_dim=256, K+V, fp16 \u2192 4096 bytes/token. Negligible vs production_active_bytes 9.88e9 (ORGAN_BANDWIDTH).",
+   "kind": "DERIVED",
+   "source": "parent safetensors headers + config GQA geometry"
+  },
+  "accepted_tokens_per_pass_ceiling": {
+   "binary_token_alpha": 1.0,
+   "binary_if_local_proxy_were_token_alpha_gamma_4_leviathan": 1.5666611672028397,
+   "native_mtp_if_alpha_1": 2.0,
+   "note": "Ceiling is not a forecast. Token \u03b1 of the binary is 0 at pos 0, so the binary ceiling collapses to 1. MTP \u03b1 is ABSENT so 2.0 is an unearned ceiling."
   }
  },
- "where_it_could_pay": {
-  "candidate": "the MTP head already on disk",
-  "draft_cost_ratio": 0.01579,
-  "why": "the MTP head is 1.579% of the model, so a draft pass costs about that fraction of a full forward pass instead of ~100%. Break-even needs only acceptance above 0.0158.",
-  "projected": {
-   "0.5": {
-    "acceptance": 0.5,
-    "draft_ms": 0.46239435999999995,
-    "verify_ms": 29.284,
-    "cost_ratio_draft_over_verify": 0.0158,
-    "break_even_cost_ratio": 0.5,
-    "pays": true,
-    "predicted_speedup_x": 1.4767
+ "purpose_reclassification": [
+  {
+   "id": "binary_g64",
+   "rejected_as": "final_generator",
+   "rejected_because": "mix_c_all_mlp_binary_g64 emits 16 copies of token 271; generation is dead at position 0 (N036 / FIRST_NOETIC)",
+   "evaluated_as": "draft_against_q2f",
+   "why_this_is_the_s026_63_candidate": "Only density-descent body that is both faster than q2f on composed COMPLETE_TOKEN_NS (23.43 vs 27.55 ms) and incoherent",
+   "faster_than_q2f_composed_ns": true,
+   "composed_complete_token_ns": 23431791,
+   "native_greedy_tok_s": 33.44218765414758,
+   "q2f_native_greedy_tok_s": 33.090193941626694,
+   "token_top1_vs_q2f_at_pos_0": false,
+   "local_swiglu_top1_mean": 0.3658854166666667,
+   "draft_verdict": "REJECTED_AS_DRAFT",
+   "draft_verdict_why": "Token-level top-1 vs q2f is 0 at generated token 0, so a speculative pass accepts 0 draft tokens and still pays the draft. Local SwiGLU channel-argmax mean is 0.3658854166666667. Same-shape draft is only 15% cheaper on composed ns (23.43 vs 27.55 ms) and ~1% on native greedy tok/s (33.44 vs 33.09) \u2014 G057: a draft must be several times cheaper, not a quarter. Measured-\u03b1 cycles win_vs_baseline=False.",
+   "source": [
+    "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+    "receipts/headless/BINARY_HEALING.json",
+    "receipts/headless/BYTES_FRONTIER.json"
+   ]
+  },
+  {
+   "id": "ternary_5in8_g64",
+   "rejected_as": "final_generator",
+   "rejected_because": "held_out_activation FAILED; COMPLETE_TOKEN_NS 59.42 ms is slower than q2f 27.55 ms (BYTES_FRONTIER)",
+   "evaluated_as": "draft_against_q2f",
+   "faster_than_q2f_composed_ns": false,
+   "composed_complete_token_ns": 59417374,
+   "draft_verdict": "NOT_A_CHEAPER_DRAFT",
+   "draft_verdict_why": "A draft has to be cheaper than the target. ternary is 2.16x slower than q2f on composed COMPLETE_TOKEN_NS.",
+   "source": [
+    "receipts/headless/BYTES_FRONTIER.json"
+   ]
+  },
+  {
+   "id": "shared_binary_k2",
+   "rejected_as": "final_generator",
+   "rejected_because": "N035: no coherent shared-basis point beats q2f; died at held_out_activation. K=2 composed ns 111.6 ms.",
+   "evaluated_as": "draft_against_q2f",
+   "faster_than_q2f_composed_ns": false,
+   "composed_complete_token_ns": 111626166,
+   "draft_verdict": "NOT_A_CHEAPER_DRAFT",
+   "draft_verdict_why": "4.05x slower than q2f. G057 applies even harder: a slower body cannot be the draft of a faster target.",
+   "source": [
+    "receipts/headless/BYTES_FRONTIER.json",
+    "receipts/headless/SHARED_BASIS_COHERENT.json"
+   ]
+  },
+  {
+   "id": "binary_residual_sparse_2pct",
+   "rejected_as": "final_generator",
+   "rejected_because": "composed COMPLETE_TOKEN_NS 37.15 ms, slower than q2f; coherence untested above local_functional_probe",
+   "evaluated_as": "draft_against_q2f",
+   "faster_than_q2f_composed_ns": false,
+   "composed_complete_token_ns": 37147375,
+   "draft_verdict": "NOT_A_CHEAPER_DRAFT",
+   "draft_verdict_why": "Slower than the target on composed ns.",
+   "source": [
+    "receipts/headless/BYTES_FRONTIER.json"
+   ]
+  },
+  {
+   "id": "hybrid_operator",
+   "rejected_as": "final_generator",
+   "rejected_because": "N038: no coherent hybrid below 2.25 bpw AND faster than 27.55 ms; confirms the 2.25 MLP floor a fourth way",
+   "evaluated_as": "draft_against_q2f",
+   "draft_verdict": "NOT_A_CHEAPER_RESTORED_DRAFT",
+   "draft_verdict_why": "The healing that would make binary a generator destroys the speed that would make it a draft. No leftover hybrid is both cheap and accepted.",
+   "source": [
+    "receipts/headless/HYBRID_OPERATOR.json"
+   ]
+  },
+  {
+   "id": "native_mtp_head",
+   "rejected_as": null,
+   "rejected_because": null,
+   "evaluated_as": "native_multi_token_head",
+   "draft_verdict": "HEADS_PRESENT_RUNTIME_DROPS_THEM",
+   "draft_verdict_why": "Different shape from the 1.25 binary: one extra GQA+MLP layer after the last hidden, sharing lm_head. Parent has the weights. Gravity pack, MLX sanitize, and the HF layer path used here all drop them. Token \u03b1_mtp is ABSENT. llama.cpp exposes --spec-type draft-mtp; a Metal prior on a smaller Qwen3.5 lost at every n_max including 100% accept. Full GPU bench deferred (N042).",
+   "source": [
+    "parent config.json + safetensors headers",
+    "crates/hawking-core/src/model/qwen38_pack.rs",
+    "https://github.com/ggml-org/llama.cpp/issues/23752"
+   ]
+  },
+  {
+   "id": "reduced_depth_early_exit",
+   "rejected_as": null,
+   "evaluated_as": "self_speculative_draft",
+   "draft_verdict": "NO_NATIVE_HEAD_UNMEASURED_ALPHA",
+   "draft_verdict_why": "Config has no early_exit / medusa / eagle / num_draft_layers keys. The only extra head is MTP after layer 63, not an intermediate exit. Capture_diverse2 is post_attn_norm, the wrong site for an early-exit lm_head probe. Token \u03b1 for a K-layer prefix is ABSENT. G057 already named 'a different SHAPE \u2014 fewer layers or a smaller hidden' as what would change the same-shape cost trap; that experiment is not this census and is not a 27B decode.",
+   "source": [
+    "parent config.json keys_absent",
+    "receipts/ascent-2026-08-16/G057_SELF_SPECULATIVE.json"
+   ]
+  }
+ ],
+ "metric_framing": {
+  "bench_deferred": true,
+  "bench_deferred_why": "N042 owns the GPU. Full accepted-tokens/GPU-second bench of native MTP or a binary draft loop is not this lane. Framing uses sealed COMPLETE_TOKEN_NS and harvested \u03b1.",
+  "definition": {
+   "accepted_tokens_per_byte": "accepted_tokens_per_pass / bytes_streamed_per_pass (active body + extra draft or MTP bytes)",
+   "accepted_tokens_per_gpu_second": "accepted_tokens_per_pass / pass_gpu_seconds"
+  },
+  "accepted_tokens_per_byte": {
+   "baseline_q2f": {
+    "accepted_tokens_per_pass": 1.0,
+    "bytes": 4812963840.0,
+    "value": 2.0777218222358387e-10,
+    "kind": "DERIVED"
    },
-   "0.6": {
-    "acceptance": 0.6,
-    "draft_ms": 0.46239435999999995,
-    "verify_ms": 29.284,
-    "cost_ratio_draft_over_verify": 0.0158,
-    "break_even_cost_ratio": 0.6,
-    "pays": true,
-    "predicted_speedup_x": 1.5751
+   "binary_draft_measured_token_alpha": {
+    "accepted_tokens_per_pass": 1.0,
+    "bytes": 7486832640.0,
+    "value": 1.3356783142944677e-10,
+    "vs_baseline": 0.6428571428571428,
+    "wins": false,
+    "kind": "DERIVED",
+    "note": "\u03b1=0 \u2192 1 accepted token, but bytes include the draft body. More bytes, same tokens: LOSES."
    },
-   "0.75": {
-    "acceptance": 0.75,
-    "draft_ms": 0.46239435999999995,
-    "verify_ms": 29.284,
-    "cost_ratio_draft_over_verify": 0.0158,
-    "break_even_cost_ratio": 0.75,
-    "pays": true,
-    "predicted_speedup_x": 1.7228
-   },
-   "0.9": {
-    "acceptance": 0.9,
-    "draft_ms": 0.46239435999999995,
-    "verify_ms": 29.284,
-    "cost_ratio_draft_over_verify": 0.0158,
-    "break_even_cost_ratio": 0.9,
-    "pays": true,
-    "predicted_speedup_x": 1.8705
+   "native_mtp_perfect_alpha_ceiling": {
+    "accepted_tokens_per_pass": 2.0,
+    "bytes": 5662362624.0,
+    "value": 3.5320945209742893e-10,
+    "vs_baseline": 1.6999843208911376,
+    "kind": "DERIVED",
+    "alpha_mtp": {
+     "value": null,
+     "kind": "ABSENT",
+     "unit": "probability",
+     "source": "ABSENT",
+     "absent_reason": "MTP token agreement not measured; wrong-site capture and no second 27B decode"
+    },
+    "note": "Ceiling only. Counts MTP weight bytes, not the unmeasured Metal context overhead from issue 23752."
    }
   },
-  "IS_A_PROJECTION_NOT_A_MEASUREMENT": "these speedups assume the MTP head's acceptance rate lands in the range shown and that its cost scales with its parameter share. Neither is measured: the head has never been packed into a noetic artifact and the runtime has no MTP path. The measured acceptance figures above are for the FULL-SIZE drafts only.",
-  "next_step": "pack mtp.* into an artifact and add a runtime path, then measure its acceptance the same way this receipt measured the full-size drafts"
+  "accepted_tokens_per_gpu_second": {
+   "baseline_q2f_composed": {
+    "value": 36.30044191431978,
+    "complete_token_ns": 27547874,
+    "kind": "CITED",
+    "source": "receipts/headless/BYTES_FRONTIER.json q2_4level_fitted_g64"
+   },
+   "binary_draft_cycles": [
+    {
+     "alpha_kind": "token_greedy",
+     "gamma": 1,
+     "yield_includes_bonus": true,
+     "accepted_tokens_per_pass": 1.0,
+     "value": 19.615664402659373,
+     "ratio_vs_baseline": 0.5403698513907457,
+     "wins": false
+    },
+    {
+     "alpha_kind": "local_swiglu_channel_argmax_proxy",
+     "gamma": 1,
+     "yield_includes_bonus": true,
+     "accepted_tokens_per_pass": 1.3658854166666667,
+     "value": 26.792749945819903,
+     "ratio_vs_baseline": 0.7380832996209535,
+     "wins": false
+    },
+    {
+     "alpha_kind": "perfect_accept_control",
+     "gamma": 1,
+     "yield_includes_bonus": true,
+     "accepted_tokens_per_pass": 2.0,
+     "value": 39.231328805318746,
+     "ratio_vs_baseline": 1.0807397027814913,
+     "wins": true
+    },
+    {
+     "alpha_kind": "token_greedy",
+     "gamma": 2,
+     "yield_includes_bonus": true,
+     "accepted_tokens_per_pass": 1.0,
+     "value": 13.43879093025676,
+     "ratio_vs_baseline": 0.370210119259056,
+     "wins": false
+    },
+    {
+     "alpha_kind": "local_swiglu_channel_argmax_proxy",
+     "gamma": 2,
+     "yield_includes_bonus": true,
+     "accepted_tokens_per_pass": 1.4997575547960071,
+     "value": 20.154928224976636,
+     "ratio_vs_baseline": 0.5552254232207,
+     "wins": false
+    },
+    {
+     "alpha_kind": "perfect_accept_control",
+     "gamma": 2,
+     "yield_includes_bonus": true,
+     "accepted_tokens_per_pass": 3.0,
+     "value": 40.31637279077028,
+     "ratio_vs_baseline": 1.1106303577771681,
+     "wins": true
+    },
+    {
+     "alpha_kind": "token_greedy",
+     "gamma": 4,
+     "yield_includes_bonus": true,
+     "accepted_tokens_per_pass": 1.0,
+     "value": 8.245719947743904,
+     "ratio_vs_baseline": 0.22715205415973566,
+     "wins": false
+    },
+    {
+     "alpha_kind": "local_swiglu_channel_argmax_proxy",
+     "gamma": 4,
+     "yield_includes_bonus": true,
+     "accepted_tokens_per_pass": 1.5666611672028397,
+     "value": 12.918249237760202,
+     "ratio_vs_baseline": 0.35587030230241407,
+     "wins": false
+    },
+    {
+     "alpha_kind": "perfect_accept_control",
+     "gamma": 4,
+     "yield_includes_bonus": true,
+     "accepted_tokens_per_pass": 5.0,
+     "value": 41.228599738719524,
+     "ratio_vs_baseline": 1.1357602707986785,
+     "wins": true
+    },
+    {
+     "alpha_kind": "token_greedy",
+     "gamma": 1,
+     "yield_includes_bonus": false,
+     "accepted_tokens_per_pass": 1.0,
+     "value": 19.615664402659373,
+     "ratio_vs_baseline": 0.5403698513907457,
+     "wins": false
+    },
+    {
+     "alpha_kind": "local_swiglu_channel_argmax_proxy",
+     "gamma": 1,
+     "yield_includes_bonus": false,
+     "accepted_tokens_per_pass": 1.0,
+     "value": 19.615664402659373,
+     "ratio_vs_baseline": 0.5403698513907457,
+     "wins": false
+    },
+    {
+     "alpha_kind": "perfect_accept_control",
+     "gamma": 1,
+     "yield_includes_bonus": false,
+     "accepted_tokens_per_pass": 1.0,
+     "value": 19.615664402659373,
+     "ratio_vs_baseline": 0.5403698513907457,
+     "wins": false
+    },
+    {
+     "alpha_kind": "token_greedy",
+     "gamma": 2,
+     "yield_includes_bonus": false,
+     "accepted_tokens_per_pass": 1.0,
+     "value": 13.43879093025676,
+     "ratio_vs_baseline": 0.370210119259056,
+     "wins": false
+    },
+    {
+     "alpha_kind": "local_swiglu_channel_argmax_proxy",
+     "gamma": 2,
+     "yield_includes_bonus": false,
+     "accepted_tokens_per_pass": 1.3658854166666667,
+     "value": 18.35584854926998,
+     "ratio_vs_baseline": 0.5056646029983721,
+     "wins": false
+    },
+    {
+     "alpha_kind": "perfect_accept_control",
+     "gamma": 2,
+     "yield_includes_bonus": false,
+     "accepted_tokens_per_pass": 2.0,
+     "value": 26.87758186051352,
+     "ratio_vs_baseline": 0.740420238518112,
+     "wins": false
+    },
+    {
+     "alpha_kind": "token_greedy",
+     "gamma": 4,
+     "yield_includes_bonus": false,
+     "accepted_tokens_per_pass": 1.0,
+     "value": 8.245719947743904,
+     "ratio_vs_baseline": 0.22715205415973566,
+     "wins": false
+    },
+    {
+     "alpha_kind": "local_swiglu_channel_argmax_proxy",
+     "gamma": 4,
+     "yield_includes_bonus": false,
+     "accepted_tokens_per_pass": 1.5487394178355183,
+     "value": 12.770471511503613,
+     "ratio_vs_baseline": 0.3517993401194911,
+     "wins": false
+    },
+    {
+     "alpha_kind": "perfect_accept_control",
+     "gamma": 4,
+     "yield_includes_bonus": false,
+     "accepted_tokens_per_pass": 4.0,
+     "value": 32.982879790975616,
+     "ratio_vs_baseline": 0.9086082166389426,
+     "wins": false
+    }
+   ],
+   "native_mtp_cost_model": {
+    "kind": "DERIVED",
+    "source": "receipts/headless/ORGAN_BANDWIDTH.json organ_attribution",
+    "not_a_measured_mtp_forward": true,
+    "production_gpu_ns_median": 27579625.0,
+    "extra_ns_one_gqa_plus_one_mlp_plus_lm_head": 1390487.2541475764,
+    "extra_fraction_of_production_token": 0.050417192189798676,
+    "tokens_per_pass_ceiling_at_alpha_1": 2.0,
+    "pass_ns_at_alpha_1_if_estimate_held": 28970112.254147578,
+    "accepted_tokens_per_gpu_second_ceiling": 69.0366672539788,
+    "baseline_accepted_tokens_per_gpu_second": 36.25865108753292,
+    "note": "Optimistic: ignores MTP context setup, extra dispatch, and the Metal draft-eval overhead llama.cpp issue 23752 measured on a smaller Qwen3.5. \u03b1_mtp is ABSENT (capture is post_attn_norm, wrong site for the MTP module; no second 27B decode)."
+   },
+   "native_greedy_tok_s_is_not_the_composed_ns": {
+    "binary_mix_c": 33.44218765414758,
+    "q2f": 33.090193941626694,
+    "note": "The 15% composed-ns win (23.43 vs 27.55 ms) is the MLP graph plus billed residual. Native hybrid greedy of mix_c vs q2f is 33.44 vs 33.09 tok/s \u2014 the draft is not cheaper on the vehicle that actually emits tokens."
+   }
+  },
+  "g057_break_even": {
+   "source": "receipts/ascent-2026-08-16/G057_SELF_SPECULATIVE.json",
+   "break_even_ms_at_k4": 15.063,
+   "binary_composed_ms": 23.431791,
+   "clears_break_even": false,
+   "quote": "Speculative decoding needs a draft several times cheaper, not a quarter cheaper."
+  },
+  "extra_head_state": {
+   "mtp_weight_bytes_bf16": 849398784,
+   "mtp_weight_gib_bf16": 0.7910642623901367,
+   "mtp_as_fraction_of_parent_payload": 0.01528716928207521,
+   "lm_head_not_extra": true,
+   "mtp_kv_bytes_per_token_fp16": 4096,
+   "mtp_kv_note": "mtp.layers.0 is self_attn (GQA), not DeltaNet. Extra decode state is one GQA layer of KV: n_kv_heads=4, head_dim=256, K+V, fp16 \u2192 4096 bytes/token. Negligible vs production_active_bytes 9.88e9 (ORGAN_BANDWIDTH).",
+   "kind": "DERIVED",
+   "source": "parent safetensors headers + config GQA geometry"
+  },
+  "local_top1_is_not_token_alpha": {
+   "local_swiglu_mean": 0.3658854166666667,
+   "token_pos0": false
+  }
  },
- "pass": true
+ "citations": [
+  "receipts/headless/BYTES_FRONTIER.json",
+  "receipts/headless/BINARY_HEALING.json",
+  "receipts/headless/_BINARY_HEALING_local.json",
+  "receipts/headless/FIRST_NOETIC_EXECUTABLE.json",
+  "receipts/headless/Q2F_G64_GENERATION.json",
+  "receipts/headless/SHARED_BASIS_COHERENT.json",
+  "receipts/headless/HYBRID_OPERATOR.json",
+  "receipts/headless/ORGAN_BANDWIDTH.json",
+  "receipts/headless/NOETIC_METRICS.json",
+  "receipts/ascent-2026-08-16/G057_SELF_SPECULATIVE.json",
+  "receipts/ascent-2026-08-16/G091_MULTI_TOKEN.json",
+  "crates/hawking-core/src/model/qwen38_pack.rs",
+  "crates/hawking-core/src/model/qwen38_geometry.rs",
+  "crates/hawking-speculate/src/lib.rs",
+  "https://github.com/ggml-org/llama.cpp/issues/23752"
+ ]
 }

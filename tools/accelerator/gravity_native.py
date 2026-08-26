@@ -190,7 +190,8 @@ def ref_matvec(packed, scale, cols: int, x):
 def accept_pack(w_true, packed, scale, cols, gpu_out, x, *,
                 kernel_tol_rel: float = 1e-3,
                 min_cosine: float = 0.99,
-                magnitude_band: tuple[float, float] = (0.9, 1.1)) -> dict:
+                magnitude_band: tuple[float, float] = (0.9, 1.1),
+                activations=None) -> dict:
     """Is a packed tensor ACCEPTED? Two INDEPENDENT gates, both required.
 
     THIS EXISTS BECAUSE THE OBVIOUS PREDICATE CERTIFIES NOTHING. Comparing the GPU
@@ -251,6 +252,23 @@ def accept_pack(w_true, packed, scale, cols, gpu_out, x, *,
                         "pack that points the right way at the wrong magnitude"},
         "relative_error_vs_true": float(np.max(np.abs(ref - true)) /
                                         max(1e-30, float(np.max(np.abs(true))))),
+        # OPTIONAL THIRD READING, when real activations are available. Not a third
+        # gate -- accepted stays the two-gate verdict -- because a caller with no
+        # activations must not silently get a weaker answer than one who has them.
+        # It is reported so the DISAGREEMENT is visible. Measured over 108 packs
+        # (6 layers x 6 organs x 3 bit widths of MiniLM): the two gates agree 94.4%
+        # of the time, the 5 disagreements in one direction are ALL output.dense at
+        # 3 bits -- bits the weight gate refuses to save -- and the 1 in the other
+        # direction is layer 4's value projection at 4 bits, which the weight gate
+        # accepts at 0.99273 and real activations reject at 0.98974. See
+        # ACCELERATOR_GATE_DISAGREEMENT.json.
+        "output_space": (None if activations is None else
+                         (lambda o: o | {"ok": bool(o["cosine_real_inputs"] >= min_cosine),
+                                         "agrees_with_single_x_gate":
+                                             bool((o["cosine_real_inputs"] >= min_cosine)
+                                                  == rep_ok)})(
+                             output_space_fidelity(
+                                 w_true, dequantize(packed, scale, cols), activations))),
     }
 
 
@@ -434,10 +452,35 @@ def near_threshold_headroom(cos: float, ratio: float, kernel_err: float,
     # The safety bar is 100x that, so a verdict is only called safe when it would
     # take two orders more error than has ever been observed to flip it.
     scale = 2.85e-06
+    # AND FLOAT32 IS NOT THE WIDEST SOURCE OF DISAGREEMENT WHEN THE INPUTS ARE A
+    # SAMPLE. Measured over 72 packs against a 1518-row pooled capture: packs with
+    # under 0.002 of headroom flip their verdict on 20.8% of 176-row resamples, packs
+    # between 0.002 and 0.01 on 0.19%, and packs beyond 0.01 on NONE -- and the same
+    # band predicts disagreement between calibration DOMAINS (prose, code, numeric,
+    # multilingual, structured), which never disagreed above 0.00815 of headroom.
+    # THE BAR IS 7x WIDER THAN THE FLOAT32 ONE and the widest unstable pack sits 28.6x
+    # out: three of the six unstable packs PASS safe_at_float32, one flipping on 8.3%
+    # of resamples. More rows do not fix it -- 512 rows flip at 1.39% against 176's
+    # 1.27% -- because the flips live where the answer is genuinely undecided.
+    # WHY THE BAR IS NOT SET AT THE WIDEST UNSTABLE PACK: cosine headroom for an
+    # ACCEPTED pack is capped at 1 - min_cosine, so a bar at 0.01 with min_cosine 0.99
+    # would call EVERY acceptance undecided. 0.002 is where the flip rate collapses
+    # from 20.8% to 0.19%, and the two unstable packs above it are why this is
+    # reported as an INDICATOR AND NOT A GUARANTEE.
+    # See ACCELERATOR_GATE_HEADROOM.json.
+    SAMPLING_BAR = 0.002
     return {"min_distance_to_a_threshold": m,
             "float32_disagreement_scale": scale,
             "safe_at_float32": bool(m > 100 * scale),
-            "means": "below this distance the float64 and float32 gates may disagree"}
+            "sampling_bar": SAMPLING_BAR,
+            "decided_under_resampling": bool(m > SAMPLING_BAR),
+            "decided_is_an_indicator_not_a_guarantee":
+                "2 of 72 packs above this bar were still unstable (headroom 0.00632 "
+                "flipping on 8.3% of 176-row resamples, 0.00815 disagreeing across "
+                "calibration domains)",
+            "means": "below float32_disagreement_scale x100 the float64 and float32 "
+                     "gates may disagree; below sampling_bar the verdict depends on "
+                     "WHICH activation rows were captured, which no precision buys back"}
 
 
 def quantize_grouped(w, bits: int, group: int):
@@ -488,3 +531,46 @@ def fidelity(w_true, w_hat) -> dict:
     cos = float(np.dot(a, b) / (na * nb)) if na > 0 and nb > 0 else 0.0
     return {"cosine": cos, "magnitude_ratio": (nb / na) if na > 0 else float("inf"),
             "rel_fro_err": float(np.linalg.norm(a - b) / na) if na > 0 else float("inf")}
+
+
+def output_space_fidelity(w_true, w_hat, x) -> dict:
+    """Fidelity where the question can actually be answered: through the matmul, on
+    REAL activations.
+
+    WHY THIS EXISTS. A per-tensor weight-space gate implicitly weights every input
+    direction equally, which is exactly what a Gaussian x does -- so it is a
+    synthetic-activation evaluation wearing different clothes. Measured on MiniLM
+    layer 0 at 3 bits / group 64: weight-space cosine separates four organs by
+    0.0038, real activations separate them by 0.0269 (7.1x), and feeding GAUSSIAN
+    inputs collapses the separation back to 0.0052. THE RANKING ALSO INVERTS --
+    output.dense is the WORST organ by weight cosine (0.9647) and the BEST by real
+    activations (0.9982). See ACCELERATOR_ORGAN_DISCRIMINATION.json.
+
+    HOW MANY ROWS. Measured over 72 packs by resampling against the full capture: a
+    ONE-ROW gate flips its verdict on 12.6% of packs, and that falls to 11.5% at 2
+    rows, 8.9% at 8, 5.7% at 16, 3.1% at 32 and 0.7% at 64; the mean cosine gap falls
+    0.0104 -> 0.0005 over the same range. AND REALISM IS NOT THE LEVER AT N=1: one
+    real activation row agreed with the full capture LESS often (83.3%) than one
+    Gaussian vector (91.7%), because a single token is high-variance while a Gaussian
+    averages over directions. SAMPLE SIZE FIRST, REALISM SECOND.
+
+    Returns the real number and the two controls beside it, because the real number
+    alone cannot be told apart from the blind one.
+    """
+    import numpy as np
+    X = np.asarray(x, dtype=np.float64)
+    A = np.asarray(w_true, dtype=np.float64)
+    B = np.asarray(w_hat, dtype=np.float64)
+
+    def cos(m):
+        p, q = (m @ A.T).ravel(), (m @ B.T).ravel()
+        np_, nq = np.linalg.norm(p), np.linalg.norm(q)
+        return float(p @ q / (np_ * nq)) if np_ > 0 and nq > 0 else 0.0
+
+    rng = np.random.default_rng(0)
+    return {"cosine_real_inputs": cos(X),
+            "cosine_gaussian_inputs": cos(rng.normal(0, X.std(), X.shape)),
+            "cosine_shuffled_inputs": cos(
+                np.column_stack([rng.permutation(X[:, j]) for j in range(X.shape[1])])),
+            "note": "if real and gaussian agree, the measurement is about the weight "
+                    "DISTRIBUTION and says nothing about this organ"}

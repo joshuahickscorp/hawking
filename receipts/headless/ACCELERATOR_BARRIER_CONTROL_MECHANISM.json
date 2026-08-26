@@ -1,0 +1,319 @@
+{
+ "experiment_class": "ACCEL-CONTROL-CALIBRATION",
+ "date": "2026-08-25",
+ "obligations": [
+  "G047",
+  "G043"
+ ],
+ "headline": "THE STALE/GARBAGE SEPARATION WAS A CONFOUND: THE MECHANISM IS THE UPSTREAM BARRIER",
+ "boundary_this_closes": "ACCELERATOR_CONTROL_SPECTRUM.json's own claim boundary -- 'the stale/garbage separation exists at ONE width of three and is DIRECTIONAL only' and '20 repeats per cell, so a per-run probability under ~3.4% is invisible'.",
+ "prediction_written_first": {
+  "written_before_the_run": true,
+  "boundary_being_closed": "ACCELERATOR_CONTROL_SPECTRUM.json: 'the stale/garbage separation exists at ONE width of three and is DIRECTIONAL only' and '20 repeats per cell, so a per-run probability under ~3.4% is invisible'",
+  "P1_distance_is_the_mechanism": "if a stale slot is quieter BECAUSE what the racer finds is close to the right answer, then the DISTANCE between the stale value and the correct value is the knob. p_fired should rise MONOTONICALLY with delta at fixed width. Band: at width 64, p crosses 0.5 somewhere in delta 0.5-2.0.",
+  "P1_vacuous_anchor_named_in_advance": "delta=0 writes the SAME value in both rounds, so a racing read CANNOT differ from the correct answer. p=0 there is a CHECK THAT CANNOT FAIL, not a quiet control, and must be reported as the deletion control of this sweep rather than as evidence.",
+  "P2_reproduction": "stale at width 64 delta=2.0 reproduces at 200 repeats in 0.40-0.70, point estimate 0.55.",
+  "P3_the_missing_widths": "garbage fires 1.00 at 128; stale at 128 lands 0.7-1.0 (between its 0.55 at 64 and 1.00 at 256).",
+  "P4_width_32_is_ill_posed_as_i_proposed_it": "the previous receipt proposed running width 32. At W=32 the stride (tid+32)%32 == tid, so every thread reads ITS OWN slot and there is NO cross-thread read to race. Reporting p=0 there as a quiet point would be reading a DEGENERATE ARITHMETIC as a finding about lockstep. Width 32 is therefore run at stride 16 (a real cross-thread read INSIDE one simdgroup) and predicted SILENT for both arms, on this program's three prior sightings that lockstep makes the fence unnecessary within a simdgroup.",
+  "how_it_could_be_refuted": "a non-monotone p vs delta curve, or p flat at 1.00 for every delta>0, would mean distance is not the mechanism and the third framing dies like the first two."
+ },
+ "arm1_distance_REFUTED": {
+  "question": "if a stale slot is quieter BECAUSE what the racer finds is close to the right answer, DISTANCE is the knob.",
+  "design": "round 1 writes x*(2-delta), round 2 writes x*2 into the SAME slot; delta is the only variable.",
+  "table_p_fired": {
+   "0.0": {
+    "64": 0.0,
+    "256": 0.0,
+    "1024": 0.0
+   },
+   "1e-06": {
+    "64": 0.0,
+    "256": 0.8,
+    "1024": 1.0
+   },
+   "0.01": {
+    "64": 0.0,
+    "256": 0.55,
+    "1024": 1.0
+   },
+   "0.1": {
+    "64": 0.025,
+    "256": 0.825,
+    "1024": 1.0
+   },
+   "0.5": {
+    "64": 0.0,
+    "256": 0.45,
+    "1024": 1.0
+   },
+   "1.0": {
+    "64": 0.025,
+    "256": 0.825,
+    "1024": 1.0
+   },
+   "2.0": {
+    "64": 0.0,
+    "256": 0.525,
+    "1024": 1.0
+   }
+  },
+  "verdict": "REFUTED. p_fired is NOT monotone in delta and does not fall as delta shrinks. At width 1024 it is FLAT AT 1.00 for every delta > 0 -- an 8-ulp difference is exactly as loud as a 2x one. At width 256 it scatters 0.80/0.55/0.82/0.45/0.82/0.53 with no trend. At width 64 it is ~0 for every delta.",
+  "the_anchor_worked_and_is_not_evidence": "delta=0 writes the same value in both rounds so a race CANNOT be detected; p=0.00 at all three widths, exactly as named in advance. That is the deletion control of this sweep, its answer known before the run, and it is reported as an anchor rather than as a quiet point.",
+  "consequence": "the THIRD candidate mechanism dies like the first two. Any nonzero distance is fully loud, so loudness is not about WHAT the racer finds."
+ },
+ "arm2_the_missing_widths": {
+  "table_p_fired": {
+   "garbage": {
+    "32": 0.0,
+    "64": 1.0,
+    "128": 1.0,
+    "256": 1.0,
+    "512": 1.0,
+    "1024": 1.0
+   },
+   "stale": {
+    "32": 0.0,
+    "64": 0.025,
+    "128": 0.05,
+    "256": 0.525,
+    "512": 0.875,
+    "1024": 1.0
+   }
+  },
+  "stride_per_width": {
+   "32": 16,
+   "64": 32,
+   "128": 32,
+   "256": 32,
+   "512": 32,
+   "1024": 32
+  },
+  "width_32_was_ill_posed_as_i_proposed_it": "the previous receipt proposed running width 32. At W=32 the stride (tid+32)%32 == tid, so every thread reads ITS OWN slot and there is no cross-thread read to race at all. Reporting p=0 there would have read a DEGENERATE ARITHMETIC as a finding about lockstep. Width 32 is therefore run at stride 16 -- a real cross-thread read INSIDE one simdgroup -- and BOTH arms are silent, which is the fourth independent sighting in this program that within a simdgroup lockstep makes the fence unnecessary.",
+  "the_gradient": "with an upstream barrier present the stale arm rises smoothly 0.00 / 0.03 / 0.05 / 0.53 / 0.88 / 1.00 across 32-1024 while garbage is flat at 1.00 above 32. More simdgroups means more skew between them, which is the window mechanism showing itself rather than a threshold."
+ },
+ "arm3_the_previous_separation_DID_NOT_REPRODUCE": {
+  "previous_value": 0.55,
+  "this_run_200_repeats": 0.02,
+  "previous_script_re_run_VERBATIM_today": 0.9,
+  "reading": "three measurements of one cell: 0.55 (previous block), 0.90 (the SAME script re-run today), 0.02 (this block's rewrite). The first two share code, so p ITSELF moved between processes -- 11/20 against 18/20 is far outside sampling noise at a fixed p. The third differs by changes I believed cosmetic. A NUMBER THAT MOVES ON ITS OWN CODE IS NOT A MEASUREMENT OF THE KERNEL.",
+  "the_chi2_here_is_uninformative_and_says_so": "the independence test that worked at p=0.1187 is vacuous at p=0.02: almost every block of 8 holds zero hits, pooling collapses the distribution to one cell, and chi2=5.0487097934144765e-31 on dof=1 CANNOT FAIL. Reported as unusable rather than as a pass.",
+  "block_detection_observed": 0.16,
+  "block_detection_binomial": 0.1492369774182145
+ },
+ "the_factorial_that_settles_it": {
+  "why": "the two arms of the previous block differed in TWO ways, not one: the stale arm needed an UPSTREAM BARRIER to make its prior value valid, and the garbage arm had none. Slot contents and upstream synchronization were CONFOUNDED and only the first was ever named.",
+  "design": "2x2x2x2 at threadgroup 64, n=100 per cell run TWICE in one process: slot (garbage/stale) x upstream barrier (absent/present) x round-2 operand (hoisted into a register / reloaded from global) x input values (arange / unit interval).",
+  "marginal_mean_p_fired": {
+   "slot_garbage": 0.574375,
+   "slot_stale": 0.51,
+   "upstream_absent": 1.0,
+   "upstream_present": 0.08437499999999999,
+   "load_hoisted": 0.505,
+   "load_reloaded": 0.579375,
+   "values_arange": 0.53375,
+   "values_unit": 0.550625
+  },
+  "verdict": "THE UPSTREAM BARRIER IS THE WHOLE EFFECT: 1.000 with none against 0.084 with one. Slot contents 0.574 vs 0.510, load 0.505 vs 0.579, values 0.534 vs 0.551 -- none of the other three moves anything. WITH NO UPSTREAM BARRIER ALL EIGHT CELLS FIRE 1.00, garbage and stale alike.",
+  "mechanism": "a barrier control's loudness is set by HOW SYNCHRONIZED THE THREADGROUP ALREADY IS when it reaches the conflicting access, not by what the racing read finds. An upstream barrier resynchronizes the group, so the race window collapses to the work between the two barriers.",
+  "the_one_interaction_that_survives": "within upstream=present, the garbage+reloaded cells run 0.09/0.37 and 0.30/0.41 -- louder than the rest and UNSTABLE BACK TO BACK IN ONE PROCESS. That instability is the direct explanation of 0.55 vs 0.90: in the intermediate regime p is not a stable quantity at n=20 or even n=100.",
+  "cells": [
+   {
+    "slot": "garbage",
+    "upstream_barrier": false,
+    "load": "hoisted",
+    "values": "arange",
+    "p_rep1": 1.0,
+    "p_rep2": 1.0,
+    "n_per_rep": 100,
+    "intact_wrong": 0
+   },
+   {
+    "slot": "garbage",
+    "upstream_barrier": false,
+    "load": "hoisted",
+    "values": "unit",
+    "p_rep1": 1.0,
+    "p_rep2": 1.0,
+    "n_per_rep": 100,
+    "intact_wrong": 0
+   },
+   {
+    "slot": "garbage",
+    "upstream_barrier": false,
+    "load": "reloaded",
+    "values": "arange",
+    "p_rep1": 1.0,
+    "p_rep2": 1.0,
+    "n_per_rep": 100,
+    "intact_wrong": 0
+   },
+   {
+    "slot": "garbage",
+    "upstream_barrier": false,
+    "load": "reloaded",
+    "values": "unit",
+    "p_rep1": 1.0,
+    "p_rep2": 1.0,
+    "n_per_rep": 100,
+    "intact_wrong": 0
+   },
+   {
+    "slot": "garbage",
+    "upstream_barrier": true,
+    "load": "hoisted",
+    "values": "arange",
+    "p_rep1": 0.0,
+    "p_rep2": 0.0,
+    "n_per_rep": 100,
+    "intact_wrong": 0
+   },
+   {
+    "slot": "garbage",
+    "upstream_barrier": true,
+    "load": "hoisted",
+    "values": "unit",
+    "p_rep1": 0.01,
+    "p_rep2": 0.01,
+    "n_per_rep": 100,
+    "intact_wrong": 0
+   },
+   {
+    "slot": "garbage",
+    "upstream_barrier": true,
+    "load": "reloaded",
+    "values": "arange",
+    "p_rep1": 0.09,
+    "p_rep2": 0.37,
+    "n_per_rep": 100,
+    "intact_wrong": 0
+   },
+   {
+    "slot": "garbage",
+    "upstream_barrier": true,
+    "load": "reloaded",
+    "values": "unit",
+    "p_rep1": 0.3,
+    "p_rep2": 0.41,
+    "n_per_rep": 100,
+    "intact_wrong": 0
+   },
+   {
+    "slot": "stale",
+    "upstream_barrier": false,
+    "load": "hoisted",
+    "values": "arange",
+    "p_rep1": 1.0,
+    "p_rep2": 1.0,
+    "n_per_rep": 100,
+    "intact_wrong": 0
+   },
+   {
+    "slot": "stale",
+    "upstream_barrier": false,
+    "load": "hoisted",
+    "values": "unit",
+    "p_rep1": 1.0,
+    "p_rep2": 1.0,
+    "n_per_rep": 100,
+    "intact_wrong": 0
+   },
+   {
+    "slot": "stale",
+    "upstream_barrier": false,
+    "load": "reloaded",
+    "values": "arange",
+    "p_rep1": 1.0,
+    "p_rep2": 1.0,
+    "n_per_rep": 100,
+    "intact_wrong": 0
+   },
+   {
+    "slot": "stale",
+    "upstream_barrier": false,
+    "load": "reloaded",
+    "values": "unit",
+    "p_rep1": 1.0,
+    "p_rep2": 1.0,
+    "n_per_rep": 100,
+    "intact_wrong": 0
+   },
+   {
+    "slot": "stale",
+    "upstream_barrier": true,
+    "load": "hoisted",
+    "values": "arange",
+    "p_rep1": 0.01,
+    "p_rep2": 0.01,
+    "n_per_rep": 100,
+    "intact_wrong": 0
+   },
+   {
+    "slot": "stale",
+    "upstream_barrier": true,
+    "load": "hoisted",
+    "values": "unit",
+    "p_rep1": 0.01,
+    "p_rep2": 0.03,
+    "n_per_rep": 100,
+    "intact_wrong": 0
+   },
+   {
+    "slot": "stale",
+    "upstream_barrier": true,
+    "load": "reloaded",
+    "values": "arange",
+    "p_rep1": 0.02,
+    "p_rep2": 0.04,
+    "n_per_rep": 100,
+    "intact_wrong": 0
+   },
+   {
+    "slot": "stale",
+    "upstream_barrier": true,
+    "load": "reloaded",
+    "values": "unit",
+    "p_rep1": 0.01,
+    "p_rep2": 0.03,
+    "n_per_rep": 100,
+    "intact_wrong": 0
+   }
+  ]
+ },
+ "it_predicts_the_two_shipped_controls_FROM_STRUCTURE": {
+  "AirNorm_LOUD_40_of_48": "air.py AirNorm writes red[warp] straight after an unsynchronized per-thread scan over the row, so NOTHING is upstream of the stripped barrier -- the group arrives with full accumulated skew.",
+  "AirTopKSample_QUIET_4_of_48": "air.py AirTopKSample's stripped barrier sits inside the tree-reduce loop, where the previous iteration's barrier is ONE compare-and-swap upstream.",
+  "reading": "ACCELERATOR_QUIET_CONTROL.json measured that 10x gap and could name no mechanism. This is the mechanism, and it is readable off the source before anything is run."
+ },
+ "shipped": {
+  "kernel_forge.barrier_control_prior": "given a kernel source and which barrier is being stripped, reports whether an upstream barrier precedes it and the measured expected p_fired, with verdict LOUD_CONTROL or QUIET_CONTROL_WEAK_EVIDENCE. It is a PRIOR ON THE CONTROL and never a claim about the kernel: a quiet control means the sweep proved little, NOT that the barrier is unnecessary. Naming a barrier that is not in the source RAISES rather than silently returning the prior for a different position.",
+  "swept_with_control(control_priors=...)": "each control's prior travels with its own detected/blind lists, because a control blind for a KNOWN structural reason is interpretable and one blind for an unknown reason is not -- and the two read identically in a blind list.",
+  "statement_count_reported_but_NOT_in_the_prior": "statements_since_upstream is returned because a longer gap should widen the window, and it is excluded from the prior because it was never varied on its own."
+ },
+ "a_latent_defect_found_by_running_the_suite": {
+  "where": "bench.py time_arm",
+  "what": "iqr = (q3 - q1) / q1 * 100 and the full-range term both divide by a MEASURED DURATION that can be exactly 0.0, because perf_counter can return the same value twice for a cheap enough callable. It raised ZeroDivisionError in one full-suite run of four.",
+  "why_it_matters_beyond_the_crash": "the obvious fix -- treat it as zero spread -- would report AN ARM THAT WAS NEVER MEASURED as the most reliable arm ever timed, and this program's reliability gate admits results on exactly that number.",
+  "fix": "below_timer_resolution is a first-class field; spread is infinite there, so such an arm can never pass the gate.",
+  "watched_to_fire": "9 of 20 trials on a trivial callable, so the branch is real and the crash was a ~45% per-call hazard rather than a rarity."
+ },
+ "correctness": {
+  "intact_kernel_wrong": 0,
+  "intact_runs": 780,
+  "reading": "a firing control is the stripped barrier and not a broken kernel."
+ },
+ "claim_boundary": [
+  "SYNTHETIC kernels throughout. This maps the CONTROL SPECTRUM; the two real endpoints stay where AirNorm and AirTopKSample were measured, and the structural agreement above is a PREDICTION FROM SOURCE, not a re-measurement of them.",
+  "The factorial is at ONE width (64) and one shape. The width sweep shows p depends on width too, so the 1.000/0.084 marginals are that width's numbers and the DIRECTION is what transfers.",
+  "Four mechanisms have now been eliminated by measurement -- dependency density, maskability, stale-vs-garbage slot contents, and distance-to-the-correct-value -- and ONE confirmed. Confirmation rests on a single factorial and would be strengthened by varying the amount of work between the two barriers, which is not done here.",
+  "n=100 per cell run twice; the intermediate regime is measurably unstable WITHIN a process, so any p between about 0.05 and 0.95 in this family should be read as a range and not a value.",
+  "Nothing timed and the lake fill was NOT quiesced, which cannot bias a correctness count. f32, one machine, INSTANCE.",
+  "NO SHIPPED KERNEL WAS MODIFIED, so no performance or correctness claim about any AIR primitive moves."
+ ],
+ "tests": "450 accelerator tests pass (was 443): 6 new for barrier_control_prior, 1 for the timer-resolution refusal.",
+ "AMENDED_IN_PLACE_2026_08_25": {
+  "by": "receipts/headless/ACCELERATOR_BARRIER_WINDOW.json",
+  "what_is_CONFIRMED": "the RACE WINDOW mechanism this receipt proposed. Work inserted between the upstream barrier and the racing write drives p back to 1.00, and the crossover moves with width -- ~16 fused multiply-adds at 1024, ~256 at 256, ~1024 at 64. That is the first CONTINUOUS knob after four flat or scattered framings.",
+  "what_is_NARROWED": "'a barrier resynchronizes the group' is too strong above width 64. Work placed BEFORE the barrier still raises p at 128/256/512/1024 (0.11->0.60, 0.65->0.90, 0.89->1.00, 0.79->1.00 in one process) and not at 32 or 64. Skew LEAKS THROUGH a barrier in a wide threadgroup; the barrier narrows the window rather than resetting it.",
+  "what_is_RETRACTED": "the 0.084 marginal as an EXPECTATION. The same kernel measured p = 0.05 and 0.65 at width 256 in two processes, so 0.084 is a sample from an unstable distribution. The direction it established -- upstream barrier present means quiet, absent means loud 1.00 -- stands, and the LOUD half is reliable while the QUIET half is not a number. barrier_control_prior now returns None there rather than a figure that gets cited."
+ }
+}

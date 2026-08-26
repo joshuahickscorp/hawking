@@ -1,0 +1,529 @@
+{
+ "schema": "hawking.headless.capability_suite.v1",
+ "generated_at": "2026-08-25T05:03:16Z",
+ "label": "noetic-clean-2.60",
+ "backend": "noetic",
+ "target": "http://127.0.0.1:8080",
+ "scoring": "every item scores through a deterministic predicate over the reply text \u2014 exact string, parsed JSON, compiled AST. No model grades any model, because that would make the gate inherit the unreliability it exists to detect.",
+ "overall": {
+  "passed": 0,
+  "total": 43,
+  "rate": 0.0
+ },
+ "per_axis": {
+  "knowledge": {
+   "passed": 0,
+   "total": 3,
+   "rate": 0.0
+  },
+  "reasoning": {
+   "passed": 0,
+   "total": 6,
+   "rate": 0.0
+  },
+  "structured_output": {
+   "passed": 0,
+   "total": 15,
+   "rate": 0.0
+  },
+  "mutation": {
+   "passed": 0,
+   "total": 10,
+   "rate": 0.0
+  },
+  "coding": {
+   "passed": 0,
+   "total": 3,
+   "rate": 0.0
+  },
+  "self_correction": {
+   "passed": 0,
+   "total": 3,
+   "rate": 0.0
+  },
+  "hygiene": {
+   "passed": 0,
+   "total": 3,
+   "rate": 0.0
+  }
+ },
+ "per_item": {
+  "fact-capital": {
+   "axis": "knowledge",
+   "repeats": 3,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "expected all of ('paris',)",
+     "finish_reason": "stop",
+     "completion_tokens": 42,
+     "wall_s": 6.152,
+     "reply_head": ""
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "expected all of ('paris',)",
+     "finish_reason": "stop",
+     "completion_tokens": 42,
+     "wall_s": 5.52,
+     "reply_head": ""
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "expected all of ('paris',)",
+     "finish_reason": "stop",
+     "completion_tokens": 42,
+     "wall_s": 5.524,
+     "reply_head": ""
+    }
+   ]
+  },
+  "fact-arith": {
+   "axis": "reasoning",
+   "repeats": 3,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "expected 323 among the numbers emitted, got []",
+     "finish_reason": "stop",
+     "completion_tokens": 427,
+     "wall_s": 18.318,
+     "reply_head": ""
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "expected 323 among the numbers emitted, got []",
+     "finish_reason": "stop",
+     "completion_tokens": 427,
+     "wall_s": 18.351,
+     "reply_head": ""
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "expected 323 among the numbers emitted, got []",
+     "finish_reason": "stop",
+     "completion_tokens": 427,
+     "wall_s": 18.341,
+     "reply_head": ""
+    }
+   ]
+  },
+  "fact-multistep": {
+   "axis": "reasoning",
+   "repeats": 3,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "expected 21 among the numbers emitted, got []",
+     "finish_reason": "stop",
+     "completion_tokens": 44,
+     "wall_s": 6.649,
+     "reply_head": ""
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "expected 21 among the numbers emitted, got []",
+     "finish_reason": "stop",
+     "completion_tokens": 44,
+     "wall_s": 6.6,
+     "reply_head": ""
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "expected 21 among the numbers emitted, got []",
+     "finish_reason": "stop",
+     "completion_tokens": 44,
+     "wall_s": 6.61,
+     "reply_head": ""
+    }
+   ]
+  },
+  "json-answer": {
+   "axis": "structured_output",
+   "repeats": 5,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 383,
+     "wall_s": 17.933,
+     "reply_head": ""
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 383,
+     "wall_s": 17.916,
+     "reply_head": ""
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 383,
+     "wall_s": 17.977,
+     "reply_head": ""
+    },
+    {
+     "rep": 3,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 383,
+     "wall_s": 17.878,
+     "reply_head": ""
+    },
+    {
+     "rep": 4,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 383,
+     "wall_s": 17.796,
+     "reply_head": ""
+    }
+   ]
+  },
+  "json-kind-correct": {
+   "axis": "structured_output",
+   "repeats": 5,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 32,
+     "wall_s": 6.457,
+     "reply_head": ""
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 32,
+     "wall_s": 6.412,
+     "reply_head": ""
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 32,
+     "wall_s": 6.418,
+     "reply_head": ""
+    },
+    {
+     "rep": 3,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 32,
+     "wall_s": 6.434,
+     "reply_head": ""
+    },
+    {
+     "rep": 4,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 32,
+     "wall_s": 6.531,
+     "reply_head": ""
+    }
+   ]
+  },
+  "json-no-prose": {
+   "axis": "structured_output",
+   "repeats": 5,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1211,
+     "wall_s": 48.563,
+     "reply_head": ""
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1211,
+     "wall_s": 48.868,
+     "reply_head": ""
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1211,
+     "wall_s": 48.556,
+     "reply_head": ""
+    },
+    {
+     "rep": 3,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1211,
+     "wall_s": 48.445,
+     "reply_head": ""
+    },
+    {
+     "rep": 4,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1211,
+     "wall_s": 48.449,
+     "reply_head": ""
+    }
+   ]
+  },
+  "mutation-anchor-exact": {
+   "axis": "mutation",
+   "repeats": 5,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 64.554,
+     "reply_head": "<think>\nI need to change the `add` function in `calc.py so that it returns the sum instead of the difference.\nThe current code is:\n```\ndef add(a, b):\n    return a -\n```\nWait, the prompt says \"File calc.py contains exactl"
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 64.592,
+     "reply_head": "<think>\nI need to change the `add` function in `calc.py so that it returns the sum instead of the difference.\nThe current code is:\n```\ndef add(a, b):\n    return a -\n```\nWait, the prompt says \"File calc.py contains exactl"
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 68.126,
+     "reply_head": "<think>\nI need to change the `add` function in `calc.py so that it returns the sum instead of the difference.\nThe current code is:\n```\ndef add(a, b):\n    return a -\n```\nWait, the prompt says \"File calc.py contains exactl"
+    },
+    {
+     "rep": 3,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 65.877,
+     "reply_head": "<think>\nI need to change the `add` function in `calc.py so that it returns the sum instead of the difference.\nThe current code is:\n```\ndef add(a, b):\n    return a -\n```\nWait, the prompt says \"File calc.py contains exactl"
+    },
+    {
+     "rep": 4,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 65.448,
+     "reply_head": "<think>\nI need to change the `add` function in `calc.py so that it returns the sum instead of the difference.\nThe current code is:\n```\ndef add(a, b):\n    return a -\n```\nWait, the prompt says \"File calc.py contains exactl"
+    }
+   ]
+  },
+  "mutation-refuses-invention": {
+   "axis": "mutation",
+   "repeats": 5,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 806,
+     "wall_s": 34.338,
+     "reply_head": ""
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 806,
+     "wall_s": 34.166,
+     "reply_head": ""
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 806,
+     "wall_s": 34.283,
+     "reply_head": ""
+    },
+    {
+     "rep": 3,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 806,
+     "wall_s": 34.316,
+     "reply_head": ""
+    },
+    {
+     "rep": 4,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 806,
+     "wall_s": 34.179,
+     "reply_head": ""
+    }
+   ]
+  },
+  "code-compiles": {
+   "axis": "coding",
+   "repeats": 3,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "no python code block in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 62.361,
+     "reply_head": ""
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "no python code block in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 62.114,
+     "reply_head": ""
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "no python code block in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 61.735,
+     "reply_head": ""
+    }
+   ]
+  },
+  "code-self-correct": {
+   "axis": "self_correction",
+   "repeats": 3,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "no python code block in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 62.679,
+     "reply_head": ""
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "no python code block in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 63.068,
+     "reply_head": ""
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "no python code block in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 62.66,
+     "reply_head": ""
+    }
+   ]
+  },
+  "no-think-leak": {
+   "axis": "hygiene",
+   "repeats": 3,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "empty reply: nothing was produced to be clean",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 62.129,
+     "reply_head": ""
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "empty reply: nothing was produced to be clean",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 61.919,
+     "reply_head": ""
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "empty reply: nothing was produced to be clean",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 61.738,
+     "reply_head": ""
+    }
+   ]
+  }
+ },
+ "identity_sufficient": false,
+ "identity_verdict": "UNIDENTIFIED (G073, amended 2026-08-26): this receipt records target='http://127.0.0.1:8080' and label='noetic-clean-2.60' and carries NO artifact hash, NO executable-closure hash and NO chat-template field. The score stands as a MEASUREMENT; what is NOT established is WHICH BODY earned it. It must not be compared against another row -- G067 measured the same body at 0/43 and 14/43 across two chat-template arms, and no row here records its arm. tools/headless/capability_suite.py now refuses such a receipt."
+}

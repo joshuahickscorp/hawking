@@ -1,0 +1,46 @@
+{
+ "schema": "hawking.headless.accepted_tps.v1",
+ "generated_at": "2026-08-26T03:21:39Z",
+ "generated_by": "derived from the two paired capability-suite runs",
+ "hand_authored": false,
+ "obligation": "G071 (S027 \u00a715, S028 operational bar)",
+ "git_head": "c824ce09463cb618a6822400bf6eceead32856a1",
+ "headline": "THE FASTER ARM PRODUCES ZERO ACCEPTED WORK: RAW 18.66 TPS AT 0/43 AGAINST RAW 14.36 AT 14/43",
+ "artifact": "/Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors",
+ "artifact_ebpw": 2.596957,
+ "arms": {
+  "A_open_think": {
+   "RAW_TPS": 18.66,
+   "ACCEPTED_TPS": 0.0,
+   "work_weighted_tok_s": 0.0,
+   "capability": "0/43",
+   "tokens": 35203,
+   "wall_s": 1887,
+   "reading": "produces 35,203 tokens and NONE of it is accepted work"
+  },
+  "D_pre_closed": {
+   "RAW_TPS": 14.36,
+   "ACCEPTED_TPS": 15.16,
+   "work_weighted_tok_s": 4.41,
+   "capability": "14/43",
+   "tokens": 5978,
+   "wall_s": 416,
+   "accepted_tokens": 1835,
+   "accepted_wall_s": 121
+  }
+ },
+ "definitions": {
+  "RAW_TPS": "all completion tokens / all wall, both arms",
+  "ACCEPTED_TPS": "completion tokens of PASSING items / wall of those items",
+  "work_weighted_tok_s": "accepted tokens / TOTAL wall -- the honest end-to-end rate"
+ },
+ "THE_LAW_DEMONSTRATED": "S027 \u00a715 says RAW TPS FROM INCAPABLE OUTPUT IS NOT PERFORMANCE. ARM A is 30% FASTER on raw TPS and worth exactly nothing. Reporting a single TPS number for this body would have picked the useless arm.",
+ "MUST_NOT_BE_CONFLATED_WITH_33_29": "these 14-19 TPS figures are PROCESS-LEVEL: each capability item spawns a fresh binary invocation and pays model load and MLX first-use. The 33.29 SINGLE_STREAM_RAW_TPS in RESIDENT_2P60_RUNTIME_PROVENANCE.json is STEADY-STATE DECODE inside one process. Different measurements of different things; neither is the other's regression.",
+ "distance_to_the_S028_bar": "the operational bar is ~50 ACCEPTED single-stream TPS. Steady decode is 33.29 raw and the body is 14/43, so the gap is BOTH capability and speed and neither alone closes it. 964 dispatches/token is where the speed headroom is.",
+ "claim_boundary": [
+  "ONE body, ONE arm pair, ONE machine, contended by the ModelLake fill.",
+  "43 items is a capability suite, not a workload; ACCEPTED_TPS here is per-item pass, not verified useful HCLI work.",
+  "No concurrency measured, so nothing here is an aggregate claim."
+ ],
+ "pass": true
+}

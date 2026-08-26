@@ -1,0 +1,143 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T14:31:15",
+ "experiment_class": "ACCEL-FRONTEND",
+ "knowledge_level": "INSTANCE",
+ "git_head": "332d264c525703907eb6d72df90f58a548a3fb41",
+ "identities": {
+  "experiment": {
+   "id": "THE_PARSER_I_WAS_ABOUT_TO_BUILD_WOULD_HAVE_REACHED_NOTHING",
+   "obligation": "G045",
+   "answers": "the corpus census's own binding-constraint claim, tested on the corpus it was measured on"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal via MLX 0.32.1 JIT"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "a frontend measurement; no model executed"
+  },
+  "representation": {
+   "name": "dense_f32"
+  },
+  "kernel": {
+   "corpus": "Lulzx/cuda-metal @ 19a702303dd29a1b25d668c6a6eca51302a2323c",
+   "files": 24,
+   "global_kernels": 36
+  },
+  "runtime": {
+   "python": "/usr/local/bin/python3",
+   "mlx": "0.32.1"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device"
+  }
+ },
+ "headline": "The corpus census named the binding constraint as the expression set -- 'C2M matches five fixed expression shapes and real kernels write anything else. C2M IS NOT A C COMPILER, and the corpus says that is the whole distance to T3 -- not shared memory, not barriers, not atomics.' I set out to build that parser. MEASURING FIRST REFUTED THE CLAIM ON ITS OWN CORPUS: an unlimited, perfect C expression parser translates ZERO additional kernels here. NOT ONE computing kernel is refused for its expression form.",
+ "THE_DENOMINATOR_WAS_NEVER_WHAT_IT_READ_AS": {
+  "global_kernels": 36,
+  "empty_body": 9,
+  "empty_body_names": [
+   "rms_norm_f32_probe",
+   "rms_norm_f32_plain_probe",
+   "k_bin_bcast_op_addff_probe",
+   "dequantize_block_q8_0_f16_probe",
+   "dequantize_block_q6_KIDF16_E_probe",
+   "unary_gated_op_kernel_op_silu_EEfEv_probe",
+   "rope_normILb1ELb0EfDF16_Ev_probe",
+   "convert_unaryIfDF16_E_probe",
+   "convert_unaryIDF16_fE_probe"
+  ],
+  "computing_kernels": 27,
+  "what_they_are": "extern \"C\" __global__ void f(const float*, int64_t, ...) {} -- signature and ABI probes that exist to check name mangling. They compute nothing, so NO frontend can ever translate them, and nine of the 36 denominator slots are unreachable BY CONSTRUCTION. Every C2M receipt has quoted coverage as a fraction of 35.",
+  "and_they_were_refused_for_the_wrong_reason": "parameter parsing reached them first, because their parameters are UNNAMED, so the refusal read 'cannot parse parameter const float*' -- true, and it invites the reader to go fix a parameter parser for a kernel that computes nothing. This program already sealed that a refusal naming the wrong cause teaches the wrong lesson (the barrier-scopes receipt). Empty bodies are now refused FIRST and by name, and a test asserts the message does NOT mention parameters."
+ },
+ "THE_CLAIM_TESTED_DIRECTLY": {
+  "question": "An elementwise AIR program needs every leaf of the store expression to be a pointer PARAMETER indexed by the thread index, or a literal. That is a DATA-FLOW condition, and no parser however complete can supply it. So: how many computing kernels satisfy it?",
+  "computing_kernels": 27,
+  "reachable_by_ANY_expression_parser": 7,
+  "already_translated_today": 6,
+  "net_yield_of_a_full_C_expression_parser": 0,
+  "the_one_gap_is_not_grammar": "the seventh reachable kernel is add_vectors in double_vector_add.cu, refused for fp64 -- a dtype boundary, not an expression one.",
+  "the_two_kernels_that_DO_have_an_out-of-set_expression": {
+   "softmax_warp": "e / row_sum, where e and row_sum are LOCAL SCALARS produced by warp_reduce_max/warp_reduce_sum; a warp reduction, not an elementwise map, at any expression power",
+   "nested_device_pointer": "descriptor[0].values[0] + addend, where descriptor is a struct parameter; AIR has no struct operand"
+  },
+  "what_the_corpus_actually_says_the_distance_to_T3_is": "loops, shared memory and barriers -- exactly what the census said it was NOT. 20 of 27 computing kernels are blocked on control flow or cooperative execution.",
+  "refusal_histogram": {
+   "shared memory is not in the C2M-T0 subset (found '__shared__": 7,
+   "loops is not in the C2M-T0 subset (found 'for'); refusing ra": 5,
+   "fp64 is not in the C2M-T0 subset (found 'double'); refusing ": 2,
+   "no recognised global thread index (expected blockIdx.x * blo": 2,
+   "parameter type 'bool' is outside the subset": 1,
+   "parameter type 'uint64_t' is outside the subset": 1,
+   "no single assignment indexed by 'px' found in the body": 1,
+   "cannot parse parameter 'float* __restrict__ out'": 1,
+   "parameter type 'NestedPointerDescriptor' is outside the subs": 1
+  }
+ },
+ "WHY_THE_CENSUS_GOT_IT_BACKWARDS": "its curve rested on 'only ONE of the 35 kernels has a store inside the T0 pattern set and THAT NUMBER IS FLAT AT 1 ACROSS THE WHOLE CURVE'. The SAME BLOCK then shipped the index-variable discovery fix that moved translated kernels 1 -> 4. The binding-constraint sentence was written from the pre-fix number and never re-derived after its own fix landed -- the number it rested on was stale by the end of the block that produced it.",
+ "AND_THE_CORPUS_CANNOT_CARRY_A_COVERAGE_CLAIM_AT_ALL": {
+  "elementwise_shaped_upper_bound": 9,
+  "distinct_elementwise_computations": 3,
+  "computations": {
+   "a[_]+b[_]": [
+    "add_vectors",
+    "add_vectors",
+    "vector_add",
+    "vector_add",
+    "vector_add",
+    "vector_add",
+    "vector_add"
+   ],
+   "e/row_sum": [
+    "softmax_warp"
+   ],
+   "descriptor[_].values[_]+addend": [
+    "nested_device_pointer"
+   ]
+  },
+  "reading": "SEVEN of the nine elementwise-shaped kernels compute a[idx] + b[idx]. The corpus holds ONE distinct elementwise computation, written seven times across four spellings that differ in index name, factor order, guard style and dtype. A coverage fraction over this corpus is measuring REPETITION. This is a CUDA-to-Metal project's own test suite, so it skews to small self-contained kernels and to the same trivial map used as a smoke test in five places.",
+  "the_upper_bound_is_labelled_because_it_is_one": "the cooperative check is a regex over the body and is blind to a shuffle or barrier behind a device-function call -- softmax_warp is counted elementwise-shaped and is a warp reduction. Resolving it needs a call graph, which is the C compiler this frontend is not. A test pins the blindness with a kernel calling a helper that hides a shuffle."
+ },
+ "WHAT_DID_MOVE_COVERAGE_WAS_SPELLING_NOT_POWER": {
+  "found": "int id = blockDim.x * blockIdx.x + threadIdx.x; -- integer multiplication written the other way round, identical semantics, REFUSED as 'no recognised global thread index'.",
+  "why_it_hid": "the ADDEND order was already accepted and the FACTOR order was not, so the pattern looked like it had already considered commutativity.",
+  "translated": "5 -> 6 of 27 computing kernels",
+  "second_time": "the census already found the index VARIABLE NAME hardcoded to `i`, rejecting two kernels that compute exactly the supported add. A pattern matcher's misses are dominated by SPELLING, not by expressiveness -- and this is the measured form of that.",
+  "the_widening_is_exactly_commutativity_and_no_wider": "four near misses stay refused, each MEANING something else: blockIdx.x + blockDim.x * threadIdx.x (a different index), blockDim.y * blockIdx.x, blockIdx.x * blockDim.x + threadIdx.y, blockIdx.x * blockIdx.x.",
+  "executed_not_just_parsed": {
+   "kernels": 6,
+   "elements": 4099,
+   "shape_note": "4099 is prime and a multiple of no threadgroup width",
+   "worst_relative_error": 5.0132531613887766e-08,
+   "oracle": "float64 numpy"
+  }
+ },
+ "prediction": {
+  "written_before": "a real C expression parser is the binding constraint and moves corpus coverage substantially, because the census said so.",
+  "outcome": "REFUTED, and refuted BEFORE the parser was built rather than after. The measured yield of an unlimited parser is ZERO kernels.",
+  "third_time": "the PTX receipt found that adding the most-frequent refusal reason moved coverage by nothing; the census found its own coverage curve measured the wrong quantity; this is the same failure a third time and the FIRST time it was caught before spending the block on it."
+ },
+ "a_defect_in_my_own_probe": "the first version of the parser-yield probe counted the THREAD INDEX VARIABLE inside a[id] as a data operand and reported 0 of 27 kernels reachable -- while six kernels demonstrably translate and execute. A probe whose answer contradicts a directly measured fact is BROKEN, not surprising, and that is what caught it.",
+ "shipped": [
+  "c2m.translate refuses an empty body FIRST, naming the empty body",
+  "c2m.split_kernels -- brace-matched, so a file holding several kernels is not swallowed by translate()'s greedy body regex",
+  "c2m.census -- the honest denominator: kernels, empty bodies, computing kernels, elementwise-shaped (labelled an upper bound), DISTINCT COMPUTATIONS, refusals",
+  "the global thread index in all four commutations, from one shared pattern source so INDEX_BINDING and GRID_IDX cannot drift apart"
+ ],
+ "claim_boundary": [
+  "ONE corpus, and it is a CUDA-to-Metal project's own test suite -- the zero yield is a fact about THIS corpus, not a general statement that expression parsing is unnecessary for CUDA. A corpus of real application kernels could invert it.",
+  "the reachability probe is REGEXES not a parse, so anything behind a macro, typedef or device-function call is unseen; reachable=7 is an upper bound in both directions and softmax_warp is a demonstrated misclassification.",
+  "T3 IS STILL NOT CLAIMED and the distance is now named differently, not shortened: loops, shared memory and barriers block 20 of 27.",
+  "nothing timed, no performance claim moves; oracle is float64 numpy, not CUDA, so P2 stays open."
+ ],
+ "tests": "tools/accelerator/test_c2m.py 58 passed; 268 accelerator tests pass",
+ "pass": true
+}

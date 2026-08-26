@@ -1,0 +1,370 @@
+{
+ "receipt": "ACCELERATOR_CONTROL_SPECTRUM",
+ "date": "2026-08-25",
+ "closes_boundary_from": "receipts/headless/ACCELERATOR_QUIET_CONTROL.json",
+ "boundary_text": "ACCELERATOR_QUIET_CONTROL.json: 'TWO controls is one point at each end of a spectrum whose MIDDLE IS UNMEASURED'",
+ "prediction_written_first": {
+  "written_before_the_run": true,
+  "boundary_being_closed": "ACCELERATOR_QUIET_CONTROL.json: 'TWO controls is one point at each end of a spectrum whose MIDDLE IS UNMEASURED'",
+  "why_it_matters": "the program reports control_blind_at and a detection floor with every sweep. Two points -- a TOTAL dependency firing 40/48 and an INCIDENTAL one firing 4/48 -- establish that loudness varies 10x but say NOTHING about how it varies, so a sweep whose control sits in the middle has an UNKNOWN resolving power.",
+  "design": "ONE synthetic kernel with a knob: after the barrier, a FRACTION f of threads read a threadgroup slot written by a DIFFERENT thread. f is the dependency density. Stripping the barrier is the control. Everything else -- shape, width, work per thread -- is held fixed, so f is the only variable.",
+  "P1_monotone": "per-run detection probability rises MONOTONICALLY with f. If it does not, loudness is not a function of dependency density alone and the two-point reading was measuring something else.",
+  "P2_endpoints_reproduce": "f=1 behaves like the LOUD control (fires at nearly every width), small f behaves like the QUIET one (silent at narrow widths). If the endpoints do not reproduce, this synthetic kernel is not a model of the two real ones and the interpolation is worthless.",
+  "P3_shape_unknown": "I do NOT predict the shape between them. The quiet control's OWN width curve was a CLIFF not a gradient (0,0,0,0,0.15,0.975), so a cliff in f is at least as likely as a ramp, and guessing would be the folklore this program refuses.",
+  "what_would_refute_the_whole_framing": "if detection is FLAT in f -- loud at every density or silent at every density -- then dependency density is not the mechanism behind the 10x, and the quiet/loud distinction needs a different explanation."
+ },
+ "arm_1_dependency_density": {
+  "design": "one knob f = fraction of threads reading ACROSS the barrier, 1.0 down to 1/128",
+  "result": [
+   {
+    "stride": 1,
+    "fraction_reading_across": 1.0,
+    "row": [
+     {
+      "width": 64,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     },
+     {
+      "width": 128,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     },
+     {
+      "width": 256,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     },
+     {
+      "width": 512,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     },
+     {
+      "width": 1024,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     }
+    ]
+   },
+   {
+    "stride": 2,
+    "fraction_reading_across": 0.5,
+    "row": [
+     {
+      "width": 64,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     },
+     {
+      "width": 128,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     },
+     {
+      "width": 256,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     },
+     {
+      "width": 512,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     },
+     {
+      "width": 1024,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     }
+    ]
+   },
+   {
+    "stride": 4,
+    "fraction_reading_across": 0.25,
+    "row": [
+     {
+      "width": 64,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     },
+     {
+      "width": 128,
+      "fired": 12,
+      "intact_wrong": 0,
+      "p": 0.6
+     },
+     {
+      "width": 256,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     },
+     {
+      "width": 512,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     },
+     {
+      "width": 1024,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     }
+    ]
+   },
+   {
+    "stride": 8,
+    "fraction_reading_across": 0.125,
+    "row": [
+     {
+      "width": 64,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     },
+     {
+      "width": 128,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     },
+     {
+      "width": 256,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     },
+     {
+      "width": 512,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     },
+     {
+      "width": 1024,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     }
+    ]
+   },
+   {
+    "stride": 32,
+    "fraction_reading_across": 0.03125,
+    "row": [
+     {
+      "width": 64,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     },
+     {
+      "width": 128,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     },
+     {
+      "width": 256,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     },
+     {
+      "width": 512,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     },
+     {
+      "width": 1024,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     }
+    ]
+   },
+   {
+    "stride": 128,
+    "fraction_reading_across": 0.0078125,
+    "row": [
+     null,
+     {
+      "width": 128,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     },
+     {
+      "width": 256,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     },
+     {
+      "width": 512,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     },
+     {
+      "width": 1024,
+      "fired": 20,
+      "intact_wrong": 0,
+      "p": 1.0
+     }
+    ]
+   }
+  ],
+  "verdict": "REFUTED. Detection is FLAT at p=1.00 from f=1.0 to f=0.0078 across widths 64-1024. One cell reads 0.60 (f=0.25, width 128) and is noise against 20 repeats. P1 (monotone rise) is refuted and P2 (the quiet endpoint reproduces) is refuted with it -- even ONE thread in 128 reading across fires 20 of 20.",
+  "consequence": "DEPENDENCY DENSITY IS NOT THE MECHANISM behind the measured 10x."
+ },
+ "arm_2_maskability": {
+  "design": "f held at 1.0; the reading thread takes the partner RAW, or fmax(own,partner), or own+partner. If a compare discards a bad read, max should go quiet.",
+  "result": [
+   {
+    "mode": "raw",
+    "row": [
+     {
+      "width": 64,
+      "p_fired": 1.0,
+      "intact_wrong": 0
+     },
+     {
+      "width": 256,
+      "p_fired": 1.0,
+      "intact_wrong": 0
+     },
+     {
+      "width": 1024,
+      "p_fired": 1.0,
+      "intact_wrong": 0
+     }
+    ]
+   },
+   {
+    "mode": "max",
+    "row": [
+     {
+      "width": 64,
+      "p_fired": 1.0,
+      "intact_wrong": 0
+     },
+     {
+      "width": 256,
+      "p_fired": 1.0,
+      "intact_wrong": 0
+     },
+     {
+      "width": 1024,
+      "p_fired": 1.0,
+      "intact_wrong": 0
+     }
+    ]
+   },
+   {
+    "mode": "sum",
+    "row": [
+     {
+      "width": 64,
+      "p_fired": 1.0,
+      "intact_wrong": 0
+     },
+     {
+      "width": 256,
+      "p_fired": 1.0,
+      "intact_wrong": 0
+     },
+     {
+      "width": 1024,
+      "p_fired": 1.0,
+      "intact_wrong": 0
+     }
+    ]
+   }
+  ],
+  "verdict": "REFUTED. All three arms fire p=1.00 at every width. The OPERATOR does not change loudness here."
+ },
+ "arm_3_what_the_racing_read_finds": {
+  "design": "GARBAGE = the slot is UNINITIALISED before the write. STALE = the same slot already holds a VALID value from a prior round, which is the shape of a real tree reduce reusing its scratch. Identical otherwise.",
+  "result": [
+   {
+    "arm": "garbage",
+    "row": [
+     {
+      "width": 64,
+      "p_fired": 1.0,
+      "intact_wrong": 0
+     },
+     {
+      "width": 256,
+      "p_fired": 1.0,
+      "intact_wrong": 0
+     },
+     {
+      "width": 1024,
+      "p_fired": 1.0,
+      "intact_wrong": 0
+     }
+    ]
+   },
+   {
+    "arm": "stale",
+    "row": [
+     {
+      "width": 64,
+      "p_fired": 0.55,
+      "intact_wrong": 0
+     },
+     {
+      "width": 256,
+      "p_fired": 1.0,
+      "intact_wrong": 0
+     },
+     {
+      "width": 1024,
+      "p_fired": 1.0,
+      "intact_wrong": 0
+     }
+    ]
+   }
+  ],
+  "verdict": "DIRECTIONAL, NOT ESTABLISHED. Stale fires 0.55 against garbage 1.00 at threadgroup 64 -- the FIRST separation in three framings -- and BOTH reach 1.00 at 256 and 1024. So slot contents matter, and they matter at the NARROW widths where the quiet control was blind, but this is one width and 20 repeats.",
+  "why_it_is_plausible": "an uninitialised slot holds arbitrary memory, so ANY racing read differs from the correct answer; a stale-but-valid slot holds something bounded and often equal, so a racing read can leave the answer unchanged."
+ },
+ "intact_control": {
+  "mid_arm_runs": 580,
+  "mid_arm_intact_wrong": 0,
+  "mask_arm_intact_wrong": 0,
+  "stale_arm_intact_wrong": 0,
+  "meaning": "the intact kernel is correct in every run of all three experiments, so a firing control is the stripped barrier and not a broken kernel."
+ },
+ "claim_boundary": [
+  "SYNTHETIC kernels, not the shipped AirNorm or AirTopKSample -- this maps the SPECTRUM, and the two real endpoints are measured in ACCELERATOR_QUIET_CONTROL.json, not here.",
+  "20 repeats per cell, so a per-run probability under ~3.4% is invisible and p=1.00 means 'fired every time in 20', not 'always'.",
+  "ONE shape (64 rows) and ONE stride pattern (partner 32 slots away); the quiet-control receipt already measured that p depends on the defect, the width AND the shape together.",
+  "the stale/garbage separation exists at ONE width of three and is DIRECTIONAL only.",
+  "nothing timed, f32 only, one machine, INSTANCE."
+ ],
+ "what_is_now_known_that_was_not": "the 10x loudness gap is NOT explained by how many threads read across a barrier, and NOT by what they do with the value. Two candidate mechanisms are eliminated by measurement rather than by argument, and a third -- what the slot already holds -- is the only one that has produced any separation at all.",
+ "tests": "443 accelerator tests pass (unchanged; no shipped kernel was modified)",
+ "AMENDED_IN_PLACE_2026_08_25": {
+  "by": "receipts/headless/ACCELERATOR_BARRIER_CONTROL_MECHANISM.json",
+  "what_is_RETRACTED": "arm 3's attribution. This receipt reported that a STALE slot (holding a prior valid value) is quieter than a GARBAGE one (uninitialised) and read that as the first separation in three framings. THE TWO ARMS DIFFERED IN TWO WAYS: the stale arm needed an UPSTREAM BARRIER to make its prior value valid and the garbage arm had none. A 2x2x2x2 factorial varying them independently gives marginal p_fired of 1.000 with no upstream barrier against 0.084 with one, while SLOT CONTENTS move it 0.574 vs 0.510 -- nothing. The separation is real and its stated cause is wrong.",
+  "what_ALSO_did_not_survive": "the number itself. Stale at threadgroup 64 measured 0.55 here, 0.90 when THIS RECEIPT'S OWN SCRIPT was re-run verbatim the same day, and 0.02 under a rewrite. p in the intermediate regime is unstable within a single process (0.09 then 0.37 back to back on one kernel), so it is not a property of the kernel at n=20.",
+  "what_STANDS": "arms 1 and 2 are untouched -- dependency density and maskability are still refuted as mechanisms, by measurement. The intact kernel was wrong in 0 of 580 runs. And the DIRECTION of arm 3 survives in the sense that the quiet cell really was quiet; only WHY is corrected.",
+  "why_it_matters": "a refutation that names the wrong cause teaches the wrong lesson to whoever reads it next -- here, that a control's strength depends on what the racing read finds, which would send someone to design a control around slot contents when the lever is where the barrier sits."
+ }
+}

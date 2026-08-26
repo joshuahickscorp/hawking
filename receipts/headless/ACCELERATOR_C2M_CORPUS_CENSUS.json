@@ -1,0 +1,213 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T14:08:05",
+ "experiment_class": "ACCEL-C2M",
+ "knowledge_level": "INSTANCE",
+ "git_head": "b15edb1d980f5b197605b2ab55e8c121390316b3",
+ "identities": {
+  "experiment": {
+   "id": "TWO_INSTRUMENTS_IN_A_ROW_RANKED_SYMPTOMS",
+   "obligation": "G045",
+   "steer": "S015 \u00a73 / the C2M-T0..T5 ladder",
+   "answers": "the blocker every C2M receipt since T2 has carried -- 'no real open CUDA project has been run, and recognition of 2 idioms will not carry one'"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra"
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal via MLX JIT"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "this grades kernel translation"
+  },
+  "representation": {
+   "name": "dense_f32",
+   "elements": 4096
+  },
+  "kernel": {
+   "origin": "real CUDA source from the pinned seed -> C2M -> AIR -> MSL"
+  },
+  "runtime": {
+   "python": "3.12.6",
+   "mlx": "0.32.1"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device"
+  }
+ },
+ "headline": "The corpus was already on disk: the pinned seed carries 24 real .cu files and 35 __global__ kernels, 11 files under tests/cuda_projects (sgemm, softmax, reduction, transpose, flash attention, a raytracer, ggml ops). C2M TRANSLATED 1 OF 35 AND RECOGNISED 0. Then the instrument built to avoid the PTX receipt's mistake MADE THE SAME MISTAKE.",
+ "the_corpus": {
+  "files": 24,
+  "kernels": 35,
+  "c2m_translated_before_this_block": 1,
+  "recognised_as_an_idiom": 0,
+  "missing_constructs_per_kernel": {
+   "median": 2,
+   "min": 0,
+   "max": 9,
+   "kernels_needing_zero": 2
+  }
+ },
+ "TWO_INSTRUMENTS_IN_A_ROW_RANKED_SYMPTOMS": {
+  "the_first_one_was_already_recorded": "the PTX receipt found that adding the most-frequent refusal reason moved coverage by NOTHING, because a refusal histogram stops at whichever construct the parser reached first",
+  "so_this_block_built_a_better_one": "per kernel, the FULL set of constructs C2M cannot express -- checked independently, not first-wins -- then coverage as a function of supporting the top-k. A question a histogram cannot answer.",
+  "and_it_said": {
+   "0": 5.7,
+   "1": 14.3,
+   "2": 48.6,
+   "3": 54.3,
+   "4": 57.1,
+   "5": 68.6
+  },
+  "which_reads_as": "support the top TWO constructs and reach 48.6% of the corpus",
+  "AND_IT_IS_WRONG": "the curve counts the ABSENCE of blockers I probed for, not TRANSLATABILITY. Adding the store-expression check collapses it: of the 35 kernels only ONE has a store inside the T0 pattern set, and that number is FLAT at 1 across the whole curve -- supporting all 14 constructs takes construct-fit from 2 to 35 and translatable stays at 1.",
+  "tighter_curve": {
+   "0": {
+    "construct_fit": 2,
+    "AND_store_in_the_T0_pattern_set": 0
+   },
+   "1": {
+    "construct_fit": 5,
+    "AND_store_in_the_T0_pattern_set": 1
+   },
+   "2": {
+    "construct_fit": 17,
+    "AND_store_in_the_T0_pattern_set": 1
+   },
+   "3": {
+    "construct_fit": 19,
+    "AND_store_in_the_T0_pattern_set": 1
+   },
+   "4": {
+    "construct_fit": 20,
+    "AND_store_in_the_T0_pattern_set": 1
+   },
+   "5": {
+    "construct_fit": 24,
+    "AND_store_in_the_T0_pattern_set": 1
+   },
+   "6": {
+    "construct_fit": 26,
+    "AND_store_in_the_T0_pattern_set": 1
+   },
+   "7": {
+    "construct_fit": 27,
+    "AND_store_in_the_T0_pattern_set": 1
+   },
+   "8": {
+    "construct_fit": 30,
+    "AND_store_in_the_T0_pattern_set": 1
+   },
+   "9": {
+    "construct_fit": 33,
+    "AND_store_in_the_T0_pattern_set": 1
+   },
+   "10": {
+    "construct_fit": 33,
+    "AND_store_in_the_T0_pattern_set": 1
+   },
+   "11": {
+    "construct_fit": 34,
+    "AND_store_in_the_T0_pattern_set": 1
+   },
+   "12": {
+    "construct_fit": 34,
+    "AND_store_in_the_T0_pattern_set": 1
+   },
+   "13": {
+    "construct_fit": 34,
+    "AND_store_in_the_T0_pattern_set": 1
+   },
+   "14": {
+    "construct_fit": 35,
+    "AND_store_in_the_T0_pattern_set": 1
+   }
+  },
+  "how_it_was_caught": "TWO kernels need ZERO of the probed constructs and C2M refused them anyway. A curve that says 5.7% are reachable at k=0 while the frontend translates 0 of those 2 is a curve measuring something other than what it is named.",
+  "the_binding_constraint_named_at_last": "it is NOT the GPU constructs. It is the EXPRESSION LANGUAGE: C2M matches five fixed expression shapes and real kernels write anything else. C2M IS NOT A C COMPILER, and the corpus says that is the whole distance to T3 -- not shared memory, not barriers, not atomics."
+ },
+ "a_supported_operation_refused_over_a_variable_name": {
+  "found_by": "the two zero-construct kernels",
+  "what_they_compute": "c[index] = a[index] + b[index] -- the T0 add form exactly",
+  "why_they_were_refused": "the frontend hardcoded `i` in its store regex and in every pattern, so `index` and `id` did not match",
+  "fixed": "the index variable is DISCOVERED from the binding of the global thread index and the patterns are rebuilt around that identifier",
+  "effect": "translated kernels 1 -> 4 of 35 (2.9% -> 11.4%)",
+  "and_every_one_EXECUTES": [
+   {
+    "file": "samples/nativeLaunch/nativeLaunch.cu",
+    "kernel": "vector_add",
+    "air_op": "add",
+    "index_variable": "id",
+    "max_abs_err": 0.0,
+    "matches": true
+   },
+   {
+    "file": "samples/vectorAdd/vectorAdd.cu",
+    "kernel": "vector_add",
+    "air_op": "add",
+    "index_variable": "i",
+    "max_abs_err": 0.0,
+    "matches": true
+   },
+   {
+    "file": "tests/air_abi/reference/vector_add.cu",
+    "kernel": "vector_add",
+    "air_op": "add",
+    "index_variable": "id",
+    "max_abs_err": 0.0,
+    "matches": true
+   },
+   {
+    "file": "tests/cuda_projects/vector_add/vector_add.cu",
+    "kernel": "vector_add",
+    "air_op": "add",
+    "index_variable": "index",
+    "max_abs_err": 0.0,
+    "matches": true
+   }
+  ],
+  "why_that_check_matters": "a wider door that mistranslates is worse than a narrow one; all four run on the Apple GPU at max_abs_err 0.0"
+ },
+ "the_recogniser_misses_the_REAL_idioms_on_a_DECLARATION": {
+  "measured": {
+   "tests/cuda_projects/sgemm/sgemm_shmem.cu": "not recognised as tiled_gemm: the required element 'shared tile for A' is absent",
+   "tests/cuda_projects/reduction/reduction_standalone.cu": "not recognised as block_reduce_sum: the required element 'shared buffer' is absent"
+  },
+  "reading": "the seed carries a REAL tiled GEMM and a REAL block reduction -- the two algorithms the T2 door knows -- and it matched NEITHER, failing on the FIRST required fragment both times. The real GEMM writes '__shared__ float As[BLOCKSIZE * BLOCKSIZE]' where the recogniser demands a 2-D literal, and the real reduction writes 'extern __shared__ float sdata[]' where it demands a sized array. THE ALGORITHM IS RIGHT AND THE DECLARATION SYNTAX IS NOT.",
+  "not_a_new_finding_but_a_measured_one": "the T2 receipt PREDICTED exactly this -- 'the SAME GEMM written with different variable names or a different guard style is REFUSED' -- and predicting is not measuring. Now it is measured on code nobody wrote to suit the recogniser.",
+  "not_fixed_and_why": "loosening the fragments to match these two files would be fitting the recogniser to the corpus in front of it, and the hazard the T2 receipt built the near-miss suite against is that a loose match SUBSTITUTES A DIFFERENT COMPUTATION. Widening recognition needs its own near-miss evidence, which is a block's work, not a regex edit."
+ },
+ "predictions": {
+  "kernels_60_to_100": "MISSED LOW -- 35",
+  "c2m_translates_1_to_3": "CONFIRMED at 1 before the fix",
+  "recognised_0_to_2": "CONFIRMED at 0, at the bottom of the band",
+  "top5_unlocks_under_10pct": "REFUTED AS STATED -- the construct curve says 68.6% at k=5 -- AND THE PREDICTION WAS RIGHT ABOUT THE THING THAT MATTERS: real translatability at k=5 is 1 of 35 = 2.9%. I predicted the right answer and the curve I built to check it disagreed, because the curve was measuring the wrong quantity."
+ },
+ "tier": {
+  "claimed": "C2M-T0 and T1 and T2 as before",
+  "T3": "STILL NOT CLAIMED. What changed is that the distance is now a NUMBER: 4 of 35 kernels in a real project translate, 0 of 35 are recognised, and the binding constraint is the expression language."
+ },
+ "claim_boundary": {
+  "one_project": "the pinned seed's own corpus, which is a CUDA-to-Metal project's test suite and therefore skews toward small self-contained kernels",
+  "the_construct_probes_are_regexes": "not a parse; a construct hidden behind a macro or a typedef is not seen",
+  "translatable_is_still_an_upper_bound": "store-in-pattern-set is necessary, not sufficient -- parameter types, store count and pointer-ness are checked separately and can still refuse",
+  "nothing_timed": "no performance claim",
+  "oracle_is_numpy": "P2 stays open; no CUDA differential exists"
+ },
+ "tests": {
+  "accelerator_total": 246,
+  "was_total": 243
+ },
+ "pass": true,
+ "AMENDED_2026-08-25_ITS_BINDING_CONSTRAINT_IS_REFUTED": {
+  "receipt": "receipts/headless/ACCELERATOR_C2M_CORPUS_DENOMINATOR.json",
+  "what_this_receipt_claimed": "'THE BINDING CONSTRAINT IS NAMED AT LAST AND IT IS NOT A GPU FEATURE: C2M matches five fixed expression shapes and real kernels write anything else. C2M IS NOT A C COMPILER, and the corpus says that is the whole distance to T3 -- not shared memory, not barriers, not atomics.'",
+  "measured_since": "NOT ONE computing kernel in this corpus is refused for its expression form. An elementwise AIR program needs every leaf of the store to be a pointer parameter indexed by the thread index -- a DATA-FLOW condition no parser supplies -- and exactly 7 of the 27 computing kernels satisfy it, of which 6 already translate and the 7th is blocked by fp64. A full C expression parser's yield on this corpus is ZERO. The distance to T3 is loops, shared memory and barriers, blocking 20 of 27 -- exactly what this receipt said it was not.",
+  "why_it_went_wrong": "the claim rested on 'store-in-pattern-set is FLAT AT 1 ACROSS THE WHOLE CURVE'. This same block then shipped the index-variable discovery fix that took translated kernels 1 -> 4. The binding-constraint sentence was written from the pre-fix number and never re-derived after its own fix landed.",
+  "and_the_denominator": "9 of the 36 __global__ kernels have EMPTY BODIES -- signature/ABI probes that compute nothing, so 9 slots are unreachable by construction. The computing denominator is 27, not 35. Of its 9 elementwise-shaped kernels, SEVEN compute a[idx] + b[idx]: the corpus holds ONE distinct elementwise computation.",
+  "what_survives": "everything about SPELLING. This receipt's central finding -- that a supported computation was rejected over the index VARIABLE NAME -- is reproduced and extended: the index PRODUCT's factor order was rejected the same way, moving translated kernels 5 -> 6. A pattern matcher's misses are dominated by spelling."
+ }
+}

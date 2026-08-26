@@ -1,0 +1,184 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T13:48:18",
+ "experiment_class": "ACCEL-GRAVITY",
+ "knowledge_level": "GENERAL",
+ "git_head": "6f2230aa6d4cddfaa47e5db951710d4778a6d53c",
+ "identities": {
+  "experiment": {
+   "id": "THE_WEIGHT_GATE_IS_A_GAUSSIAN_INPUT_EVALUATION_IN_DISGUISE",
+   "obligation": "G048 (how does this architecture want to EXIST) / G046",
+   "steer": "S015 \u00a718 Gravity x Accelerator"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra"
+  },
+  "device": {
+   "status": "ABSENT",
+   "reason": "numpy and torch CPU; no GPU kernel graded"
+  },
+  "model": {
+   "name": "sentence-transformers/all-MiniLM-L6-v2",
+   "architecture": "BertModel -- encoder, bidirectional, dense, no gating",
+   "executed": true,
+   "why_this_one": "the ONLY real weights on local storage. The four lake specimens sit on a USB volume that an unrelated model-lake filler is writing at 25-43 MB/s, which starves reads to 0.42 MB/s (measured, 32 MiB cold)."
+  },
+  "representation": {
+   "name": "rtn_grouped",
+   "bits": 3,
+   "group": 64,
+   "bpw": 3.25
+  },
+  "kernel": {
+   "status": "ABSENT",
+   "reason": "representation fidelity only; no kernel"
+  },
+  "runtime": {
+   "python": "3.12.6",
+   "torch": "2.6.0",
+   "transformers": "5.5.4"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single machine"
+  }
+ },
+ "headline": "THE PREDICTION WAS RIGHT AND THE STANDARD GATE COULD NOT SEE IT. Predicted before the run: attention organs need more bits than MLP organs. In WEIGHT space the four organs of MiniLM layer 0 are indistinguishable -- 0.0038 of cosine separates them at 3 bits -- and a GAUSSIAN SURROGATE with the same std scores within 0.002-0.005 of every real tensor. In OUTPUT space on REAL captured activations the same four organs separate by 0.0269, 7.1x more, the two attention organs are the two weakest as predicted, AND THE RANKING INVERTS: output.dense is the WORST organ by weight cosine and the BEST by real activations.",
+ "the_weight_space_table_is_decoration": {
+  "organ_cosines_at_3_bits_group_64": {
+   "attn_o": 0.967685,
+   "attn_q": 0.968375,
+   "mlp_up": 0.968434,
+   "mlp_down": 0.964655
+  },
+  "spread_across_four_organs": 0.003779,
+  "every_organ_floors_at_the_same_setting": {
+   "attn_o": 4.125,
+   "attn_q": 4.125,
+   "mlp_up": 4.125,
+   "mlp_down": 4.125
+  },
+  "gaussian_and_shuffle_controls": {
+   "attn_o": {
+    "real": 0.967685,
+    "gaussian_same_std": 0.969736,
+    "shuffled_same_values": 0.963049,
+    "real_minus_gaussian": -0.002051,
+    "real_minus_shuffled": 0.004636,
+    "kurtosis": 8.237
+   },
+   "attn_q": {
+    "real": 0.968375,
+    "gaussian_same_std": 0.970259,
+    "shuffled_same_values": 0.960939,
+    "real_minus_gaussian": -0.001885,
+    "real_minus_shuffled": 0.007436,
+    "kurtosis": 4.017
+   },
+   "mlp_up": {
+    "real": 0.968434,
+    "gaussian_same_std": 0.970032,
+    "shuffled_same_values": 0.962452,
+    "real_minus_gaussian": -0.001598,
+    "real_minus_shuffled": 0.005982,
+    "kurtosis": 4.751
+   },
+   "mlp_down": {
+    "real": 0.964655,
+    "gaussian_same_std": 0.970109,
+    "shuffled_same_values": 0.963209,
+    "real_minus_gaussian": -0.005454,
+    "real_minus_shuffled": 0.001446,
+    "kurtosis": 1585.393
+   }
+  },
+  "the_decisive_control": "a Gaussian surrogate with the same std scores WITHIN 0.002 to 0.005 of every real organ, and destroying all structure by shuffling the values costs only 0.001-0.007. output.dense has KURTOSIS 1585 against query's 4.0 -- a 400x difference in outlier structure -- and its weight cosine differs by 0.0037. THE NUMBER IS ABOUT THE DISTRIBUTION'S SCALE, NOT THE ORGAN."
+ },
+ "output_space_on_real_activations": {
+  "capture": "5 real sentences through the real model, forward hooks on the four modules, 110 rows of activation",
+  "per_organ": {
+   "attn_q": {
+    "in_features": 384,
+    "weight_space_cosine": 0.968375,
+    "output_space_cosine_REAL_activations": 0.979576,
+    "output_space_cosine_gaussian_inputs": 0.968746,
+    "output_space_cosine_shuffled_inputs": 0.971643,
+    "real_minus_gaussian": 0.010829
+   },
+   "attn_o": {
+    "in_features": 384,
+    "weight_space_cosine": 0.967685,
+    "output_space_cosine_REAL_activations": 0.971326,
+    "output_space_cosine_gaussian_inputs": 0.968099,
+    "output_space_cosine_shuffled_inputs": 0.970985,
+    "real_minus_gaussian": 0.003226
+   },
+   "mlp_up": {
+    "in_features": 384,
+    "weight_space_cosine": 0.968434,
+    "output_space_cosine_REAL_activations": 0.98201,
+    "output_space_cosine_gaussian_inputs": 0.969591,
+    "output_space_cosine_shuffled_inputs": 0.980744,
+    "real_minus_gaussian": 0.012419
+   },
+   "mlp_down": {
+    "in_features": 1536,
+    "weight_space_cosine": 0.964655,
+    "output_space_cosine_REAL_activations": 0.998178,
+    "output_space_cosine_gaussian_inputs": 0.964401,
+    "output_space_cosine_shuffled_inputs": 0.998192,
+    "real_minus_gaussian": 0.033778
+   }
+  },
+  "spread": {
+   "weight_space": 0.003779,
+   "output_space_real": 0.026852,
+   "output_space_gaussian": 0.00519
+  },
+  "THE_INVERSION": "output.dense: weight cosine 0.9647, the WORST of the four. Real activations: 0.9982, the BEST by a wide margin. A gate that ranked organs by weight-space error would spend its bit budget on exactly the wrong tensor. This independently reproduces the Q80 finding that down_proj INVERTS the ranking, on a different architecture family, by a different route.",
+  "the_prediction": {
+   "written": "attention organs need more bits than MLP organs",
+   "verdict": "CONFIRMED IN OUTPUT SPACE, INVISIBLE IN WEIGHT SPACE. Ordering by real activations: attn_o 0.9713 < attn_q 0.9796 < mlp_up 0.9820 < mlp_down 0.9982. The two attention organs are the two weakest."
+  },
+  "the_mechanism_is_shown_not_asserted": "feeding GAUSSIAN inputs through the same packs collapses the organ spread from 0.0269 to 0.0052 -- back to the weight-space value. That is the proof that a per-tensor weight gate IS a directionless-input evaluation: reproduce its blindness by supplying the inputs it implicitly assumes.",
+  "where_the_robustness_comes_from": "for mlp_down, shuffled inputs score 0.99819 against real 0.99818 -- the per-feature MARGINALS carry all of it and cross-feature correlation carries none. For attn_q, real 0.9796 against shuffled 0.9716, so correlation is worth 0.008 there. The organs differ in KIND, not only degree."
+ },
+ "shipped": {
+  "gravity_native.output_space_fidelity": "returns the real number WITH both controls beside it, because the real number alone cannot be told apart from the blind one"
+ },
+ "the_lake_is_io_starved_and_that_is_measured": {
+  "volume": "/Volumes/corpdrive (USB, APFS, disk5s1 on physical store disk4s2)",
+  "cold_read_measured": "0.42 MB/s, 32 MiB at an uncached offset",
+  "cause": "an unrelated model-lake filler process is fetching 7 further specimens (Qwen2.5-72B, GLM-4.5, GLM-4.5-Air, Mistral-Small-3.1-24B, Kimi-Linear-48B, Kimi-K3, DeepSeek-V4-Flash) and writing the same volume at 25-43 MB/s; reads queue behind it",
+  "not_killed": "that is somebody else's running work",
+  "consequence": "the four-specimen cross-architecture sweep is RUNNING and NOT CLAIMED HERE. This receipt rests entirely on a locally-resident model."
+ },
+ "claim_boundary": {
+  "one_model_one_layer": "MiniLM layer 0, four organs. 6 layers exist; 5 not examined.",
+  "one_setting": "3 bits / group 64. The inversion is shown at ONE bpw.",
+  "5_sentences": "the activation capture is 5 sentences / 110 rows -- enough to show the controls disagree, NOT enough to characterise the input distribution",
+  "output_space_is_still_a_proxy": "one layer's output cosine is not coherence. The campaign has already sealed that complete BPW does not predict coherence and that local adequacy does not compose; this receipt makes the weaker claim that the WEIGHT-space gate is blind to something the OUTPUT-space one sees.",
+  "no_bpw_recommendation": "nothing here says what any model should be packed at",
+  "cross_architecture_NOT_claimed": "the four lake specimens are still unmeasured"
+ },
+ "tests": {
+  "accelerator_total": 240,
+  "was_total": 239
+ },
+ "pass": true,
+ "amendments": [
+  {
+   "date": "2026-08-25",
+   "kind": "PRECISION -- a claim a reader could take too widely",
+   "what_this_receipt_measured": "gravity_native.fidelity(), which IS weight-space, and the per-tensor sweep built on it. Every number here stands.",
+   "what_it_must_not_be_read_as": "a claim about accept_pack. accept_pack's representation gate is ALREADY OUTPUT-SPACE -- it compares w_true @ x against a matvec of the packed bytes. The finding does not vanish, it MOVES: a single Gaussian x is exactly the directionless input this receipt shows to be blind, so the question for accept_pack is WHICH x and HOW MANY, not weight versus output.",
+   "measured_in": "ACCELERATOR_GATE_DISAGREEMENT.json"
+  }
+ ],
+ "AMENDED_IN_PLACE_2026_08_25": {
+  "by": "receipts/headless/ACCELERATOR_RUNTIME_GATE.json",
+  "what_is_corrected": "this receipt justified weight-space grading with 'no runtime here executes a Qwen3-MoE, Falcon or Mamba forward pass'. THAT CONFLATES TWO RUNTIMES. Hawking's Rust body dispatches only on llama/mistral/qwen2 families and really does cover none of them; mlx_lm 0.31.3 -- already a hard dependency and the runtime every AIR kernel executes through -- carries model classes for qwen3_moe, qwen3_vl_moe, kimi_vl AND falcon_h1.",
+  "what_the_gate_actually_is": "FAST LOCAL STORAGE. Falcon-H1-7B, the smallest specimen, is 15.17 GB and under the operator-prioritised fill a sequential read did not complete 256 MiB in 120 s -- under ~0.5 MB/s against 96-131 MiB/s uncontended.",
+  "what_does_NOT_change": "every weight-space caveat here stands. No forward pass was run and no activations exist for any lake specimen; what changes is the REMEDIATION -- a quiesced window rather than writing a reader."
+ }
+}

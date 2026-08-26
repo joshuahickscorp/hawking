@@ -1,0 +1,75 @@
+{
+ "schema": "hawking.headless.template_state_factorial.v1",
+ "generated_at": "2026-08-26T02:29:08Z",
+ "generated_by": "ascension_qwen38_hybrid_greedy, --raw-prompt with hand-rendered template arms",
+ "hand_authored": false,
+ "obligation": "G067 (S027 LANE B, \u00a72 and \u00a73)",
+ "git_head": "21b0eaac792b3731002d13fed42ee7a4f4af76a4",
+ "artifact": "/Users/scammermike/noetic/CLEAN_REBUILD_A/mix_hetero_n041_floors",
+ "headline": "CAPABILITY-DEAD IS REFUTED, BUT NO ZERO-BYTE TEMPLATE REPAIR RESTORES IT: ARM D FIXES ONE PROMPT AND NOT THE REST",
+ "the_template_supports_a_legitimate_no_think_form": {
+  "source": "chat_template.jinja, add_generation_prompt branch",
+  "enable_thinking_false": "<think>\\n\\n</think>\\n\\n  -- pre-closed, model starts in ANSWER space",
+  "default": "<think>\\n  -- OPEN, the model must emit </think> itself",
+  "why_it_matters": "ARM D is production-supported, not a benchmark cheat."
+ },
+ "arms": {
+  "A_open_think": "exact production form, open <think>",
+  "B_raw": "bare question, no template",
+  "D_pre_closed": "enable_thinking=false form, reasoning block already closed",
+  "E_explicit_close": "<think>\\n<one sentence>\\n</think>\\n\\n"
+ },
+ "results_40_new_tokens": {
+  "What is the capital of France?": {
+   "A": " The user is asking a simple question: \"What is the capital of France?\"",
+   "B": " ",
+   "D": " The capital of France is **Paris**.",
+   "E": " The capital of France is **Paris**."
+  },
+  "What is 17 + 25?": {
+   "A": " The user is asking me to calculate 17 + 2. This is a simple addition problem.",
+   "D": " "
+  },
+  "Name three primary colors.": {
+   "A": " The user is asking me to name three primary colors. This is a simple question about color theory.",
+   "D": " <think>"
+  },
+  "Write a Python function that adds two numbers.": {
+   "A": " The user wants a simple Python function that adds two numbers. This is a straightforward request. Let me consider what to include:",
+   "D": " ```python"
+  },
+  "Return only JSON: {\"ok\": true}": {
+   "A": " ",
+   "D": " "
+  },
+  "What language runs in a web browser?": {
+   "A": " The user is asking \" \"",
+   "D": " <think>"
+  }
+ },
+ "results_160_new_tokens_ARM_D": {
+  "What is 17 + 25?": " ",
+  "Name three primary colors.": " <think>",
+  "Write a Python function that adds two numbers.": "",
+  "reading": "NOT a truncation artifact. A larger budget does not rescue ARM D."
+ },
+ "AN_OVERCLAIM_I_MADE_AND_RETRACTED": "On the France prompt alone ARM D answered correctly and I said the zero-byte repair WORKS. It does not generalize: 1 of 6 prompts. The claim was made on a single sample and is withdrawn. Recorded because this program's failures are usually exactly this shape -- a real effect at one point promoted to a rule.",
+ "what_this_ESTABLISHES": [
+  "CAPABILITY-DEAD IS REFUTED and stays refuted. The body emits correct, formatted answers ('The capital of France is **Paris**.') and coherent reasoning ('The user is asking me to name three primary colors. This is a simple question about color theory.'). A dead body does not do that.",
+  "The 0/43 is NOT a pure capability measurement: it was taken entirely on ARM A, where this body reasons but does not emit </think> within budget and so never reaches answer space.",
+  "ARM A is not silent. It REASONS. The earlier ' <think>'-and-stop reading came from the binary's own template path, not from ARM A as rendered here."
+ ],
+ "what_this_DOES_NOT_ESTABLISH": [
+  "That a template change repairs the body. It does not -- ARM D succeeds on 1 of 6.",
+  "A capability score under any arm. The 43-case suite has NOT been re-run on ARM D or E.",
+  "That the failure is purely a state transition. ARM D starts in answer space and STILL returns empty or re-opens <think> on most prompts, which points at the body as well.",
+  "Arithmetic competence: ARM A read '17 + 25' back as '17 + 2'."
+ ],
+ "next_experiment": "run the full 43-case suite on ARM D and ARM E and compare against the 0/43 taken on ARM A. That converts this from a refutation into a number.",
+ "claim_boundary": [
+  "Greedy, single sample per cell, 6 prompts, 40 and 160 new tokens. Not a capability suite.",
+  "Arms hand-rendered through --raw-prompt so the template is controlled exactly; this is NOT the binary's own template path, which behaves differently and is recorded separately.",
+  "Machine contended by the ModelLake fill throughout."
+ ],
+ "pass": true
+}

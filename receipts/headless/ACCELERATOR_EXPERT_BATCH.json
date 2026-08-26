@@ -1,0 +1,184 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T12:55:09",
+ "experiment_class": "ACCEL-REPRESENTATION",
+ "knowledge_level": "INSTANCE",
+ "git_head": "fcaf4b74e0209ea548506efea9e5908428e5eb45",
+ "identities": {
+  "experiment": {
+   "id": "THE_EXPERT_BATCH_P7_LEFT_OPEN_IS_A_TALLER_MATVEC",
+   "obligation": "G046/G043",
+   "steer": "S015 \u00a73 BATCHED GEMM; \u00a719 no dense rematerialization"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60
+  },
+  "device": {
+   "api": "Metal via MLX mx.fast.metal_kernel JIT"
+  },
+  "model": {
+   "id": "Qwen3-30B-A3B",
+   "tensors": "64 REAL routed-expert gate_proj [768, 2048] bf16, layer 10 onward, from the staged Tier 1 shard"
+  },
+  "representation": {
+   "id": "ws_rtn_q4_g64",
+   "bpw": 4.25
+  },
+  "kernel": {
+   "native": "gravity_native NATIVE_MATVEC, unchanged",
+   "new_air_op": "AirBatchedMatvec"
+  },
+  "runtime": {
+   "python": "3.12.6",
+   "mlx": "0.32.1"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device"
+  }
+ },
+ "headline": "P7 wrote down an argument and left it: 'the advantage is an argument about BATCHING enough of the expert table to become bandwidth-bound'. Tested on 64 REAL Qwen3 expert tensors. IT HOLDS -- 1.02x at one expert, 2.70x at 64 -- AND THE STRUCTURAL POINT IS THE BIGGER HALF: a decode-time expert batch shares its activation, so it IS a taller matvec, BIT FOR BIT, and P7's own size sweep was already measuring the thing P7 called future work.",
+ "the_collapse_checked_not_asserted": {
+  "B": 4,
+  "max_abs_difference_stacked_vs_separate": 0.0,
+  "means": "a decode-time expert batch with a shared activation IS a taller matvec, bit for bit -- no batched kernel is involved",
+  "why_it_matters": "MoE decode routes one token to k experts and EVERY ONE multiplies THE SAME activation. Stacking the matrices and doing one matvec is the same arithmetic in the same order, so the difference is EXACTLY 0.0 -- not close, identical. No batched kernel is involved and none ever was.",
+  "so_the_new_kernel_is_for_the_other_case": "AirBatchedMatvec handles a DIFFERENT vector per batch element, which is what prefill and any multi-token batch produce and which does NOT collapse. A test pins both directions: shared activation EXACTLY equals the stacked matvec, and a differing one does not."
+ },
+ "the_prediction_and_the_sweep": {
+  "prediction_written_before_the_run": {
+   "B=1": "indistinguishable (reproduces P7 at 6 MiB)",
+   "B=16": "1.2-1.6x",
+   "B=43": "~2x (P7's 256 MiB crossover)",
+   "B=64": "~2x or a little more"
+  },
+  "measured": [
+   {
+    "B": 1,
+    "rows": 768,
+    "dense_MiB": 6.0,
+    "native_MiB": 0.8,
+    "quantisation_rel_err_vs_dense": 0.10979985445737839,
+    "native_ms": 0.268,
+    "native_iqr": 10.54,
+    "dense_ms": 0.2732,
+    "dense_iqr": 6.86,
+    "verdict": "NO_CLAIM",
+    "speedup": 1.019
+   },
+   {
+    "B": 4,
+    "rows": 3072,
+    "dense_MiB": 24.0,
+    "native_MiB": 3.4,
+    "quantisation_rel_err_vs_dense": 0.11190880089998245,
+    "native_ms": 0.2643,
+    "native_iqr": 6.97,
+    "dense_ms": 0.2803,
+    "dense_iqr": 7.3,
+    "verdict": "INDISTINGUISHABLE",
+    "speedup": 1.061
+   },
+   {
+    "B": 16,
+    "rows": 12288,
+    "dense_MiB": 96.0,
+    "native_MiB": 13.5,
+    "quantisation_rel_err_vs_dense": 0.0948595181107521,
+    "native_ms": 0.2608,
+    "native_iqr": 6.94,
+    "dense_ms": 0.3784,
+    "dense_iqr": 6.04,
+    "verdict": "CANDIDATE_WINS",
+    "speedup": 1.451
+   },
+   {
+    "B": 43,
+    "rows": 33024,
+    "dense_MiB": 258.0,
+    "native_MiB": 36.3,
+    "quantisation_rel_err_vs_dense": 0.10582081228494644,
+    "native_ms": 0.2967,
+    "native_iqr": 6.76,
+    "dense_ms": 0.6723,
+    "dense_iqr": 4.12,
+    "verdict": "CANDIDATE_WINS",
+    "speedup": 2.266
+   },
+   {
+    "B": 64,
+    "rows": 49152,
+    "dense_MiB": 384.0,
+    "native_MiB": 54.0,
+    "quantisation_rel_err_vs_dense": 0.10582081228494644,
+    "native_ms": 0.3258,
+    "native_iqr": 13.43,
+    "dense_ms": 0.8795,
+    "dense_iqr": 4.19,
+    "verdict": "CANDIDATE_WINS_DESPITE_NOISE",
+    "speedup": 2.7
+   }
+  ],
+  "verdict": "THREE OF FOUR LAND. B=1 NO_CLAIM at 1.02x reproduces P7's 'no advantage at 6 MiB' from a different process on a different day; B=16 predicted 1.2-1.6x and measured 1.451x; B=43 predicted ~2x and measured 2.266x. B=64 predicted '~2x or a little more' and measured 2.700x -- MISSED HIGH, and that is now the SIXTH consecutive prediction in this program to come in above its band.",
+  "effective_bandwidth_is_what_explains_the_shape": {
+   "dense_GB_s": [
+    21.4,
+    83.6,
+    247.8,
+    374.8,
+    426.4
+   ],
+   "native_GB_s": [
+    2.9,
+    12.6,
+    50.6,
+    119.5,
+    161.9
+   ],
+   "reading": "the DENSE arm climbs to 426 GB/s, 72% of this machine's measured 589.73, so it really does become bandwidth-bound exactly as P7 argued. The NATIVE arm reaches only 161.9 GB/s and is nowhere near the wall -- it is ARITHMETIC-BOUND on the unpack. That is why the win is 2.70x and not the 7.1x byte ratio, and it is the quantitative form of P7's 'trades arithmetic for traffic'."
+  },
+  "A_FITTED_QUANTITY_I_AM_REJECTING": {
+   "fits": {
+    "native": {
+     "intercept_ms": 0.2582,
+     "slope_ms_per_expert": 0.00098,
+     "r2": 0.9059
+    },
+    "dense": {
+     "intercept_ms": 0.2438,
+     "slope_ms_per_expert": 0.00988,
+     "r2": 0.99665
+    }
+   },
+   "what_it_would_have_said": "a linear fit gives a SHARED FIXED FLOOR -- intercepts 0.2582 ms and 0.2438 ms, two completely different kernels agreeing to 6% -- and marginal slopes whose ratio is 10.13",
+   "why_the_10.13_IS_NOT_QUOTED": "10.13 EXCEEDS THE 7.11 BYTE RATIO, and it cannot: the native arm moves its bytes at 162 GB/s while dense moves its at 426, so per marginal byte native is SLOWER, and its marginal ratio must be BELOW the byte ratio. The native fit carries R2 0.906 against dense's 0.997 because its slope is tiny and the noise is not -- a ratio that breaks its own physical bound is evidence the fit is bad, not that the effect is strong, which is the rule bench.compare already encodes for implausible results.",
+   "what_survives": "the SHARED FIXED FLOOR of ~0.25 ms does survive, because both intercepts are well determined and agree. That is the THIRD independent appearance of a per-submission floor in this program -- the AirGraph sweep measured ~0.157 ms directly and the normalization block watched batching shed 0.10-0.20 ms per call -- and it is what holds the observed 2.70x below the marginal ratio at these batch sizes."
+  },
+  "correctness_note_that_must_not_be_misread": {
+   "native_vs_dense_relative_error": 0.1058,
+   "what_it_is": "this is the REPRESENTATION's error, not the kernel's: the arms compute a 4.25 bpw answer and an f32 answer BY DESIGN, and a 2048-term dot product at weight cosine 0.994 lands ~10% relative where the output is near zero",
+   "so_the_real_correctness_evidence_is_elsewhere": "P7 grades the native kernel against THE REPRESENTATION'S OWN answer at 2.861e-06. This comparison is a sanity check that the arms are the same computation, and it is WEAK -- saying so beats letting a 10% number read as either a bug or a pass."
+  }
+ },
+ "what_this_means_for_model_2": {
+  "decode": "a token routed to 8 experts is a 6144-row matvec, 48 MiB dense -- BETWEEN the B=4 INDISTINGUISHABLE point and the B=16 win, so at realistic decode top-k the representation-native path is at best marginal and this is the honest read",
+  "the_whole_layer": "all 128 experts is a 98304-row matvec at 768 MiB dense, past every point measured here, so the win is real for a DENSE-ROUTED or prefill-shaped workload and not for single-token decode",
+  "NOT_an_adequacy_claim": "no model executed; local adequacy still does not compose"
+ },
+ "claim_boundary": {
+  "shared_activation_only_in_the_sweep": "the timed arms all use ONE x, which is the decode case; the genuinely batched kernel is built and verified but NOT timed and no performance claim attaches to it",
+  "arms": "200 reps, 40 warmup, lake fill SIGSTOPped; B=64's native arm carries 13.43% IQR and is admitted by margin-over-noise, not by a clean gate",
+  "one_machine_one_dtype": "INSTANCE; f32 activation, bf16-on-disk weights",
+  "corpus_still_absent": [
+   "sparse",
+   "FFT",
+   "convolution"
+  ]
+ },
+ "tests": {
+  "accelerator_total": 224,
+  "was_total": 221
+ },
+ "pass": true
+}

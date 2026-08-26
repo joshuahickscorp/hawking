@@ -1,0 +1,135 @@
+{
+ "schema": "hawking.headless.model_lake.v1",
+ "generated_at": "2026-08-25T04:14:40Z",
+ "generated_by": "tools/odyssey/modellake.py",
+ "obligation": "G012 \u2014 MODEL_LAKE_ROLLING_PIPELINE (directive \u00a719-\u00a725, \u00a718)",
+ "lake_root": "/Volumes/corpdrive/hawking-modellake",
+ "tier2_budget": 3500000000000,
+ "tier1_budget": 150323855360,
+ "protected_paths_never_touched": [
+  "legal-scans-2026-08-23.tar.zst",
+  "substrate",
+  "legal-scans-2026-08-23.README.txt"
+ ],
+ "externally_removed_not_by_this_tool": [
+  {
+   "name": "substrate-git-backup-20260824-190835.tar",
+   "observed": "absent from /Volumes/corpdrive; .Trashes created the same minute the volume mtime changed",
+   "by": "an external GUI action, not this tool",
+   "lake_delete_surface": "retire() guarded by guard_protected; the demo cycle only removes paths built from PARTIAL/TIER2/SSD_STAGE"
+  }
+ ],
+ "demo_specimen": {
+  "repo": "Qwen/Qwen3-0.6B",
+  "revision": "c1899de289a04d12100db370d81485cdf75e47ca"
+ },
+ "resident_specimens": [
+  "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+  "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb"
+ ],
+ "manifests": [
+  "Qwen--Qwen3-0.6B@c1899de289a0.json",
+  "Qwen--Qwen3-30B-A3B@ad44e777bcd1.json",
+  "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb.json"
+ ],
+ "cycle": [
+  {
+   "step": "budget_refusals",
+   "at": "2026-08-25T04:14:08Z",
+   "tier2_4TB_admitted": false,
+   "tier2_reason": "tier2 budget: 4076267667456 would exceed 3500000000000 (used 76267667456, request 4000000000000)",
+   "tier1_200GiB_admitted": false,
+   "tier1_reason": "tier1 budget: 214748364800 would exceed 150323855360 (used 0, request 214748364800)"
+  },
+  {
+   "step": "interrupted",
+   "at": "2026-08-25T04:14:14Z",
+   "partial_bytes": 229572608,
+   "killed_after_s": 6.0
+  },
+  {
+   "step": "resumed_and_verified",
+   "at": "2026-08-25T04:14:38Z",
+   "acquired": true,
+   "bytes": 1519280128,
+   "n_files": 10,
+   "n_sha256_verified": 2,
+   "n_size_only_verified": 8,
+   "wall_s": 23.5
+  },
+  {
+   "step": "corruption_rejected",
+   "at": "2026-08-25T04:14:39Z",
+   "verified": false,
+   "n_rejected": 1,
+   "first": [
+    {
+     "file": "model.safetensors",
+     "expected": "f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b",
+     "got": "1cd656f0d6721d6254361685959caafc4f0936013e1d76db763ab6ac279ee826"
+    }
+   ]
+  },
+  {
+   "step": "restored_and_reverified",
+   "at": "2026-08-25T04:14:39Z",
+   "verified": true,
+   "n_ok": 10
+  },
+  {
+   "step": "staged_to_tier1",
+   "at": "2026-08-25T04:14:40Z",
+   "staged": true,
+   "path": "/Users/scammermike/noetic/stage/Qwen--Qwen3-0.6B@c1899de289a0",
+   "bytes": 1519280128,
+   "refused": null
+  },
+  {
+   "step": "study_window",
+   "at": "2026-08-25T04:14:40Z",
+   "note": "representation search happens here; not part of this demo"
+  },
+  {
+   "step": "retired",
+   "at": "2026-08-25T04:14:40Z",
+   "retired": true,
+   "bytes_freed": 1519280128,
+   "reacquisition": "hf download Qwen/Qwen3-0.6B --revision c1899de289a04d12100db370d81485cdf75e47ca --local-dir <dest>"
+  },
+  {
+   "step": "capacity_event",
+   "at": "2026-08-25T04:14:40Z",
+   "event": "CAPACITY_RELEASED",
+   "reason": "retired Qwen--Qwen3-0.6B@c1899de289a0",
+   "bytes_freed": 1519280128,
+   "resident_at_event": [
+    "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+    "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb"
+   ],
+   "skipped_already_resident": [
+    {
+     "oxx": "O001",
+     "why": "already resident in tier 2"
+    },
+    {
+     "oxx": "O005",
+     "why": "already resident in tier 2"
+    }
+   ],
+   "scheduler_selected_next": {
+    "oxx": "O006",
+    "repo": "Qwen/Qwen3-VL-30B-A3B-Instruct",
+    "revision": "9c4b90e1e4ba969fd3b5378b57d966d725f1b86c",
+    "download_gib": 57.88,
+    "slug": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba"
+   },
+   "human_step_required": false,
+   "acquisition_started": {
+    "pid": 36266,
+    "log": "/Volumes/corpdrive/hawking-modellake/autoadvance-Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba.log",
+    "started_at": "2026-08-25T04:14:40Z"
+   }
+  }
+ ],
+ "pass": true
+}
