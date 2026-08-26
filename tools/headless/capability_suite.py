@@ -33,6 +33,7 @@ import json
 import os
 import re
 import subprocess
+import sys
 import time
 import urllib.request
 from pathlib import Path
@@ -374,6 +375,40 @@ def run_mlx(model_path, items, mlx_py, timeout):
 
 # --------------------------------------------------------------- scoring
 
+def measurement_weight(per_item) -> dict:
+    """43 cases are not 43 measurements.
+
+    Decoding is greedy at temperature 0, so every repetition of an item is
+    BYTE-IDENTICAL to its siblings -- verified across both arms of the
+    template-arm comparison, where not one of eleven items in either receipt
+    held more than one distinct (completion_tokens, reply_head, pass) triple.
+
+    So a score out of 43 is eleven measurements carrying weights
+    (3,3,3,5,5,5,5,5,3,3,3), and a five-point move is ONE ITEM whose weight
+    happens to be five -- not five independent successes. Reporting x/43 without
+    this invites reading repetition as evidence. The repeats are not useless:
+    they would catch nondeterminism, and this field is what shows they found
+    none rather than leaving that unstated.
+    """
+    per_item = per_item or {}
+    determinism = {}
+    for iid, blk in per_item.items():
+        trips = {(r.get("completion_tokens"), r.get("reply_head"), r.get("pass"))
+                 for r in blk.get("results", [])}
+        determinism[iid] = len(trips)
+    return {
+        "distinct_items": len(per_item),
+        "cases": sum(b.get("repeats", 0) for b in per_item.values()),
+        "weights": {i: b.get("repeats") for i, b in per_item.items()},
+        "distinct_outputs_per_item": determinism,
+        "every_repeat_identical": all(v <= 1 for v in determinism.values()),
+        "how_to_read_it": (
+            "a move of N points is a move of however many ITEMS carry weight N, "
+            "not N independent cases. Repeats detect nondeterminism and add no "
+            "independent evidence when there is none."),
+    }
+
+
 def score(responses):
     """responses: list of {id, rep, text, ...}. Returns per-item and per-axis."""
     by_id = {}
@@ -388,7 +423,20 @@ def score(responses):
             ok, why = spec["check"](r.get("text") or "", r)
             results.append({"rep": r.get("rep"), "pass": bool(ok),
                             "why": "" if ok else why,
+                            # finish_reason is a PROCESS EXIT CODE for the noetic
+                            # backend (see the runner: "stop" iff exit_code == 0), so
+                            # it reads "stop" on a call that was TRUNCATED at its
+                            # budget exactly as on one that hit EOS. It cannot report
+                            # truncation and the flag beside it says so, because a
+                            # field that always says stop is worse than no field.
                             "finish_reason": r.get("finish_reason"),
+                            "finish_reason_is_exit_code": r.get("finish_reason_is_exit_code"),
+                            # Computed by the runner and previously DROPPED here, which
+                            # left no field in any receipt able to distinguish EOS from
+                            # a cap hit -- the eight empty open_think replies at
+                            # 1135-1536 tokens all read finish_reason "stop".
+                            "hit_budget_cap": r.get("hit_budget_cap"),
+                            "token_budget": r.get("token_budget"),
                             "completion_tokens": r.get("completion_tokens"),
                             "wall_s": r.get("wall_s"),
                             "reply_head": (r.get("text") or "")[:220]})
@@ -493,6 +541,93 @@ def identity_is_sufficient(ident: dict) -> tuple[bool, str]:
     return True, "artifact named"
 
 
+def machine_state(responses) -> dict:
+    """The machine this run happened on, RECORDED rather than left to be inferred.
+
+    Two unpaired capability runs of the same artifact once differed by 19% of wall
+    and it took reading per-repetition SPREAD to work out that one arm had run on a
+    contended machine (ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json). That inference
+    worked and is weaker than a field. Sampled at the START and END of the run only:
+    a sample per item would perturb the thing it measures, which is the same reason
+    bench.time_arm does not call it either.
+
+    ``worst_repetition_spread_pct`` is the signal that actually caught it -- a graph
+    change cannot make a kernel more REPEATABLE, so a run whose repeats scatter was
+    sharing the machine. It is derived from the responses already collected and costs
+    nothing.
+    """
+    try:
+        sys.path.insert(0, str(REPO / "tools/accelerator"))
+        import bench
+        before = machine_state._before
+        after = bench.machine_quiescence()
+    except Exception as e:  # never let a diagnostic field fail a scored run
+        return {"recorded": False, "why": f"{type(e).__name__}: {e}"}
+    if not before:
+        # An absent BEFORE sample is NOT a recorded machine state. Returning
+        # recorded=True with a null field is the same failure the quiescence
+        # instrument itself refuses: "I could not look" must not read as "I
+        # looked and found nothing".
+        return {"recorded": False,
+                "why": "no quiescence sample was taken before the items ran"}
+
+    by_id: dict[str, list[float]] = {}
+    for r in responses:
+        w = r.get("wall_s")
+        if isinstance(w, (int, float)):
+            by_id.setdefault(r["id"], []).append(float(w))
+    spreads = {k: round(100 * (max(v) - min(v)) / (sorted(v)[len(v) // 2] or 1), 1)
+               for k, v in by_id.items() if len(v) > 1}
+    return {
+        "recorded": True,
+        "quiescence_before": before,
+        "quiescence_after": after,
+        "quiet_at_both_samples": bool(
+            before and after and before.get("quiet") and after.get("quiet")),
+        "worst_repetition_spread_pct": max(spreads.values()) if spreads else None,
+        "repetition_spread_pct_by_item": dict(sorted(
+            spreads.items(), key=lambda kv: -kv[1])),
+        "how_to_read_it": (
+            "a run whose repeats scatter shared the machine. A graph or model change "
+            "cannot make a kernel more REPEATABLE, so a cross-run timing comparison "
+            "between one run at 40% worst spread and another at 0.8% is not a "
+            "comparison. PASS COUNTS do not drift with load; wall times do."),
+    }
+
+
+def harness_health(responses) -> dict:
+    """Separate A BODY THAT ANSWERED BADLY from A HARNESS THAT NEVER ASKED.
+
+    G073 follow-on, found by running this suite under python3.14 (no
+    transformers): all 43 calls raised, every reply was empty, and the receipt
+    reported overall 0/43 rate 0.0 -- INDISTINGUISHABLE IN A SUMMARY LINE from
+    the 2.60 body's real 0/43 under the open-<think> arm. A score of zero is a
+    claim about a MODEL; a suite that never reached the model has no claim to
+    make, and reporting one is the campaign's probe-crash-labelled-as-the-
+    subject's-failure defect in the scoreboard itself.
+
+    Caught only because 0/43 CONTRADICTED a known 14/43 on the same body and
+    arm. Nothing in the harness would have said so.
+    """
+    total = len(responses)
+    errs = [r for r in responses if str(r.get("finish_reason", "")).startswith("ERROR:")]
+    empties = [r for r in responses if not str(r.get("text", "")).strip()]
+    kinds = sorted({str(r["finish_reason"]).split(":", 1)[1].split(":")[0].strip()
+                    for r in errs}) if errs else []
+    all_errored = bool(total) and len(errs) == total
+    return {
+        "calls": total,
+        "errored": len(errs),
+        "empty_replies": len(empties),
+        "error_kinds": kinds,
+        "every_call_errored": all_errored,
+        "scoreable": not all_errored,
+        "verdict": ("REFUSED: every call raised, so the suite never reached the model and "
+                    f"this is a HARNESS failure, not a capability score. kinds={kinds}"
+                    if all_errored else "the suite reached the model"),
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--backend", choices=["llama", "mlx", "noetic"], required=True)
@@ -519,6 +654,14 @@ def main() -> int:
                     help="system prompt applied ONLY to items that define none")
     args = ap.parse_args()
 
+    # The BEFORE sample must be taken before any item runs, not reconstructed after.
+    try:
+        sys.path.insert(0, str(REPO / "tools/accelerator"))
+        import bench as _bench
+        machine_state._before = _bench.machine_quiescence()
+    except Exception as e:
+        machine_state._before = {"quiet": None, "refused": f"{type(e).__name__}: {e}"}
+
     items = build_items(args.default_system)
     print(f"suite: {len(SUITE)} items, {len(items)} calls, backend={args.backend}", flush=True)
 
@@ -538,6 +681,7 @@ def main() -> int:
                                 it["prompt"], it["max_tokens"], args.no_think, args.timeout,
                                 tokenizer_dir=args.tokenizer_dir)
                 r["finish_reason"] = "stop" if r["exit_code"] == 0 else f"EXIT{r['exit_code']}"
+                r["finish_reason_is_exit_code"] = True
                 r["completion_tokens"] = r.get("n_new_tokens")
             except Exception as e:
                 r = {"text": "", "finish_reason": f"ERROR:{type(e).__name__}: {e}",
@@ -559,6 +703,8 @@ def main() -> int:
             print(f"  {it['id']}[{it['rep']}] {r.get('finish_reason')} "
                   f"{r.get('completion_tokens')}tok {r.get('wall_s')}s", flush=True)
 
+    _machine = machine_state(responses)
+    _health = harness_health(responses)
     _ident = artifact_identity(args)
     _ident_ok, _ident_why = identity_is_sufficient(_ident)
     per_item, per_axis = score(responses)
@@ -578,8 +724,15 @@ def main() -> int:
                     "exact string, parsed JSON, compiled AST. No model grades any model, because "
                     "that would make the gate inherit the unreliability it exists to detect."),
         "overall": {"passed": overall_pass, "total": overall_total,
-                    "rate": round(overall_pass / overall_total, 4) if overall_total else 0.0},
+                    # A rate is a claim about the MODEL. If the suite never reached it,
+                    # there is no rate -- null, not 0.0, which reads as "answered wrong".
+                    "rate": (round(overall_pass / overall_total, 4)
+                             if overall_total and _health["scoreable"] else None),
+                    "scoreable": _health["scoreable"]},
+        "harness_health": _health,
+        "machine_state": _machine,
         "per_axis": per_axis,
+        "measurement_weight": measurement_weight(per_item),
         "per_item": per_item,
     }
     out = Path(args.out or (REPO / f"receipts/headless/CAPABILITY_{args.label}.json"))
@@ -587,6 +740,8 @@ def main() -> int:
     out.write_text(json.dumps(doc, indent=1))
 
     print(f"\n=== CAPABILITY {args.label} ===")
+    if not _health["scoreable"]:
+        print(f"  {_health['verdict']}")
     print(f"  overall {overall_pass}/{overall_total} = {doc['overall']['rate']}")
     print(f"  arm     {_ident['chat_template_arm']}")
     if not _ident_ok:

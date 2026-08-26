@@ -1,0 +1,136 @@
+{
+  "receipt": "ACCELERATOR_HCLI_VERIFIER_PATH_SEMANTICS",
+  "date": "2026-08-26",
+  "obligation": "G076 (S031 \u00a721), S032 \u00a719; unblocks G083",
+  "akb_registration": {
+    "evidence_domain": "accelerator",
+    "civilization": "I-A_AGENTOS_HCLI",
+    "program": "HCLI delegation (S031 \u00a721 / S032 \u00a719)",
+    "machine_scope": "host-agnostic; no GPU and no timing",
+    "representation_scope": "NONE -- this is a path and permission question",
+    "kernel_scope": "NONE -- no kernel is involved",
+    "why_declared": "membership must not depend on what this file was named (S032 \u00a713)"
+  },
+  "question": "G076 names two defects that make 'protected' and 'verifiable' mutually exclusive for receipts -- the class of file that most wants to be both. S031 \u00a721 forbids repairing it by weakening workspace isolation.",
+  "DEFECT_1_THE_REPO_WAS_NOT_NAMEABLE": {
+    "what": "shell_runner ran the verifier with cwd=<workspace>, and the delegation workspace does not contain the repo, so a repo-relative verifier path was unresolvable. Mission 245a88b6d9b5 failed exactly this way.",
+    "fix": "three roots, exported into the command's environment and NAMED rather than inferred -- HAWKING_REPO_ROOT (resolved through hcli.paths.find_repo_root, which walks to a .git or Cargo.toml rather than counting directory levels), HCLI_MISSION_ROOT (mission_dir(ws), the existing authority, not a new layout), HCLI_WORKSPACE_ROOT (the cwd).",
+    "ISOLATION_IS_NOT_WEAKENED_AND_THAT_IS_PINNED": "the cwd is STILL the workspace, the repo is STILL not copied in, and nothing gains write access. A test asserts pwd is the workspace after the change. NAMEABILITY IS NOT REACH, and S031 \u00a721 forbids confusing them.",
+    "a_wrong_root_is_REPORTED_not_substituted": "a root that does not exist yields a path that visibly fails `test -d` rather than a silent fallback to something that happens to work -- a silent substitution is how a verifier ends up checking a different tree than it names."
+  },
+  "DEFECT_2_THE_GUARD_REFUSED_READS": {
+    "what": "the guard was `if str(path) in command: return 126`. A raw substring match on the whole command TEXT, so `cat receipts/x.json` was refused for containing the word 'receipts'. Mission ef3745542c5b returned exit 126 REFUSED that way.",
+    "THE_RULE_NOW_IS_ONE_SENTENCE": "a protected path may not be WRITTEN. Reading it is what it is for.",
+    "three_ways_to_write_one_and_each_is_checked_where_it_lives": [
+      "REDIRECTION TARGET -- checked over the WHOLE line, because > binds to the line and not to a pipeline segment",
+      "A WRITING VERB HANDED THE PATH (tee, rm, mv, sed -i) -- checked PER SEGMENT",
+      "A VERB NOBODY VOUCHED FOR HANDED THE PATH -- refused because it CANNOT BE SHOWN not to write, not because it will. Fails closed."
+    ],
+    "what_this_makes_possible": "`cat receipts/r.json | python3 -c ...` now runs -- the read-only verb names the path, python gets BYTES on stdin and never sees it. That is the verifier shape the old guard made impossible.",
+    "the_read_only_verb_list_is_SHORT_AND_ITS_ABSENCES_ARE_THE_DESIGN": "python3, python, pytest, awk, sed, sort and find are NOT in it, because every one can write a path handed to it -- python3 -c open(p,'w'), awk '{print > p}', sed 's/a/b/w p', sort -o p, find -delete."
+  },
+  "THE_NEGATIVE_CONTROL_CAUGHT_MY_OWN_GUARD_WITHIN_MINUTES": {
+    "what_happened": "the first version put python3 in the read-only set. The control ran a python3 -c that opened the receipt for write, and IT WROTE THE FILE, returning 0.",
+    "why_it_matters": "S031 \u00a721 says the negative control is LOAD-BEARING -- a verifier that WRITES to a protected path must still be refused after the widening or the guard has been traded for a convenience. It was, for about four minutes, and the control is why that is a sentence in a receipt rather than a hole in the runner.",
+    "ten_write_shapes_pinned": [
+      "> ",
+      ">> ",
+      "rm",
+      "mv",
+      "sed -i",
+      "tee onto the path",
+      "python3 -c opening it for write",
+      "git add",
+      "truncate",
+      "chmod"
+    ]
+  },
+  "AND_A_MUTATION_PROVED_MY_OWN_RULE_INCOHERENT": {
+    "what": "a mutation that DELETED the whole-command redirection check changed NOTHING -- 45 passed either way. Dead code.",
+    "what_that_exposed": "the per-segment check was refusing any segment that named a protected path AND contained a redirection, regardless of the redirection's TARGET. So `cat receipts/x | tee copy.json` was ALLOWED and `cat receipts/x > copy.json` was REFUSED -- two commands that both read the protected file and write elsewhere, given opposite verdicts.",
+    "the_fix": "check the redirection TARGET. `cat y > receipts/x` is refused; `cat receipts/x > y` is a read. The rule became consistent because a mutation showed a check was doing nothing.",
+    "reading": "a surviving mutation is usually a missing test. This one was a wrong RULE, and the redundancy was the symptom."
+  },
+  "THREE_OF_MY_OWN_TESTS_ASSERTED_THE_WRONG_THING": {
+    "count": 3,
+    "each_one": [
+      "`cat receipts/x | xxd` required to be REFUSED -- but xxd receives CONTENT on stdin and never sees the path",
+      "`cat receipts/x | tee copy.json` required to be REFUSED -- writes copy.json, not the protected file",
+      "`cat ../../receipts/x > /tmp/y` required to be REFUSED -- traversal that READS"
+    ],
+    "THE_PATTERN_IS_THE_FINDING": "all three encoded WHOLE-COMMAND thinking, which is the exact defect under repair. Writing the test first did not protect me from the assumption the test existed to remove, and each was corrected against the code rather than the code against the test, with the reason recorded in the test's own docstring so the next reader sees why the boundary sits where it does."
+  },
+  "MUTATIONS_WATCHED_FIRING": [
+    {
+      "mutation": "restore the whole-command guard (the original defect)",
+      "result": "5 failed"
+    },
+    {
+      "mutation": "put python3 back in the read-only set",
+      "result": "2 failed"
+    },
+    {
+      "mutation": "stop checking redirection targets",
+      "result": "3 failed"
+    },
+    {
+      "mutation": "allow an unknown verb that names a protected path",
+      "result": "3 failed"
+    },
+    {
+      "mutation": "drop the three roots from the environment",
+      "result": "2 failed"
+    }
+  ],
+  "no_survivors": true,
+  "tests": {
+    "command": "python3.12 -m pytest hcli/ -q",
+    "passed": 45,
+    "skipped": 1,
+    "was": 34
+  },
+  "claim_boundary": [
+    "THIS IS NOT A SHELL PARSER AND THE TESTS SAY SO. A protected path reached by SYMLINK, or reassembled from a shell variable, is NOT caught -- there is a test asserting exactly that, so the boundary is a test rather than a sentence somebody might not read.",
+    "the read-only verb list is an ALLOWLIST and grows only by someone proving a verb cannot write; anything absent is refused, which will refuse legitimate commands and is the safe direction.",
+    "'protected' here means MAY NOT BE MODIFIED, not 'its content may not leave' -- copying a receipt's content to an unprotected file is allowed BY DESIGN, and conflating the two is what made reads impossible.",
+    "NO REAL MISSION HAS BEEN RUN END TO END through the repaired path. G083 stays open: the two failing missions named in G076 were not re-run, and a verifier classification has not been checked against a real Accelerator task.",
+    "nothing here is timed and no kernel changed."
+  ],
+  "next": "run one real Accelerator mission through HCLI end to end with the sealed resident and check the verifier classification -- which is G083 and is what this unblocks",
+  "identities": {
+    "experiment": {
+      "class": "ACCEL-STATE",
+      "knowledge_level": "INSTANCE",
+      "question": "can a verifier read a protected receipt without gaining the power to write it?"
+    },
+    "machine": {
+      "status": "ABSENT",
+      "reason": "host-agnostic path and permission logic; nothing measured about hardware"
+    },
+    "device": {
+      "status": "ABSENT",
+      "reason": "no GPU involvement"
+    },
+    "model": {
+      "status": "ABSENT",
+      "reason": "no model executed"
+    },
+    "representation": {
+      "status": "ABSENT",
+      "reason": "no weights are involved"
+    },
+    "kernel": {
+      "status": "ABSENT",
+      "reason": "no kernel is dispatched"
+    },
+    "runtime": {
+      "module": "hcli/delegate.py shell_runner",
+      "git_head": "9060e603a5942fd3ecb5622e683e957bc52d9b1f",
+      "python": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3"
+    },
+    "transport": {
+      "status": "ABSENT",
+      "reason": "in-process subprocess execution; no transport is crossed"
+    }
+  }
+}

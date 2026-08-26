@@ -1,0 +1,255 @@
+{
+  "receipt": "TOKEN_EXECUTION_ATLAS_COUNTS",
+  "date": "2026-08-26",
+  "obligation": "G075 (S031 \u00a73 token execution atlas, \u00a74 dispatches per accepted token)",
+  "supersedes": "receipts/headless/TOKEN_EXECUTION_ATLAS.json histogram, which this session WITHDREW one block earlier",
+  "artifact": {
+    "root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+    "tag": "sealed-3.14",
+    "complete_ebpw": 3.139300850311054,
+    "tokenizer": "NOETIC_PARENT_A/tokenizer.json"
+  },
+  "instrument": {
+    "binary": "workspace/ops/build/rust/release-fast/examples/qwen38_dispatch_trace",
+    "env": "HAWKING_TRACE_DISPATCH=1",
+    "source_of_counts": "TokenCommandBuffer.structural_kernel_names, a Vec<String> pushed once per dispatch_threads at crates/hawking-core/src/metal/mod.rs:5013",
+    "what_changed_to_make_this_measurable": "Qwen38HybridDecodeSession.seen_kernels was Option<HashSet<String>>. The runtime records an ORDERED list with repeats and the harvest collapsed it to a SET, destroying exactly the multiplicity the question is about. Now Option<BTreeMap<String,u64>> with a non-draining dispatched_kernel_histogram(). drain_dispatched_kernel_names keeps its old observable behaviour (sorted, deduped, draining) via into_keys().",
+    "method": "DELTA, not a single run: the same prompt at max_new_tokens 2 and 6, so prefill and one-time setup cancel and only decode-token cost survives. A single run's total is contaminated by an 11-token prefill."
+  },
+  "headline": {
+    "dispatches_per_decode_token": 964.0,
+    "derivation": "(15424 - 11568) / (6 - 2) = 3856 / 4 = 964.000",
+    "status": "MEASURED on the sealed resident, not declared",
+    "prior_status": "the constant QWEN38_FULL_LAYER_DISPATCHES and the counter compute_dispatches both said 964; neither was a measurement of THIS body"
+  },
+  "per_token_histogram": [
+    {
+      "n": 209,
+      "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+      "attribution": "every mixer projection (48 DeltaNet x 3 + 16 GQA x 4 = 208) plus lm_head"
+    },
+    {
+      "n": 192,
+      "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+      "attribution": "every MLP gate/up/down, 64 x 3"
+    },
+    {
+      "n": 129,
+      "kernel": "qwen80_residual_rmsnorm_tg",
+      "attribution": "64 x 2 plus the final norm"
+    },
+    {
+      "n": 128,
+      "kernel": "qwen_next_add_residual",
+      "attribution": "64 x 2"
+    },
+    {
+      "n": 64,
+      "kernel": "gk_swiglu_f32",
+      "attribution": "64 x 1"
+    },
+    {
+      "n": 48,
+      "kernel": "qwen38_gated_delta_decode_vi_simd",
+      "attribution": "48 DeltaNet layers"
+    },
+    {
+      "n": 48,
+      "kernel": "qwen38_qkvz_rearrange_conv_l2_f32",
+      "attribution": "48 DeltaNet layers"
+    },
+    {
+      "n": 48,
+      "kernel": "qwen80_ba_to_decay_beta_f32",
+      "attribution": "48 DeltaNet layers"
+    },
+    {
+      "n": 48,
+      "kernel": "qwen80_deltanet_gated_rmsnorm_tg",
+      "attribution": "48 DeltaNet layers"
+    },
+    {
+      "n": 16,
+      "kernel": "mha_decode_f32",
+      "attribution": "16 GQA layers"
+    },
+    {
+      "n": 16,
+      "kernel": "qwen38_attention_apply_sigmoid_gate",
+      "attribution": "16 GQA layers"
+    },
+    {
+      "n": 16,
+      "kernel": "qwen38_gqa_qk_norm_rope_cache_tg",
+      "attribution": "16 GQA layers"
+    },
+    {
+      "n": 1,
+      "kernel": "qwen_uniform_q4_embedding_lookup",
+      "attribution": "head/tail"
+    },
+    {
+      "n": 1,
+      "kernel": "sample_argmax_f32",
+      "attribution": "head/tail"
+    }
+  ],
+  "the_arithmetic_is_now_STRUCTURALLY_confirmed": {
+    "formula": "1 + 64*15 + 3 = 964",
+    "embed": 1,
+    "layers": "960 = 64 x 15, and BOTH layer kinds cost exactly 15 by DIFFERENT routes: DeltaNet = 2 rmsnorm + 2 add_residual + 6 matvec + 1 swiglu + 4 dn-specific; GQA = 2 rmsnorm + 2 add_residual + 7 matvec + 1 swiglu + 3 gqa-specific. The single QWEN38_FULL_LAYER_DISPATCHES=15 constant is right for both, which the schedule file never showed and could not have.",
+    "head": "3 = final rmsnorm + lm_head matvec + argmax",
+    "note": "previously every term of this formula was a declaration; every term is now a measured count with an attribution"
+  },
+  "my_withdrawal_was_correct_in_kind_and_too_broad_in_extent": {
+    "withdrawn_one_block_ago": "the whole histogram, pass:false, on the grounds that the schedule file describes a uniform-q4 graph while this body is mixed-codec",
+    "what_actually_survives": "rmsnorm 129 MEASURED CORRECT, add_residual 128 MEASURED CORRECT, total matvec 401 MEASURED CORRECT",
+    "what_was_genuinely_wrong": "attributing all 401 matvecs to one uniform-q4 kernel. This body splits them 209 q4 / 192 affine-q2, and the split is CLEAN BY ORGAN: q4 takes every mixer projection and the lm_head, affine-q2 takes every MLP projection. Nothing is mixed within an organ.",
+    "lesson": "a withdrawal is a claim too. Withdrawing a whole result because part of it is wrong destroys the correct part, and the correct part here was three of four numbers. The right move was to withdraw the ATTRIBUTION and mark the counts UNVERIFIED, which is what the receipt should have said."
+  },
+  "fusion_measurement": {
+    "why_here": "S031 \u00a75 asks for fusion candidate discovery. Four fusion levers ALREADY EXIST in the runtime as env flags and no receipt had ever measured what they are worth on this body.",
+    "flags": [
+      "HAWKING_QWEN38_FUSE_MLP",
+      "HAWKING_QWEN38_FUSE_GQA_QKV",
+      "HAWKING_QWEN38_FUSE_DN_INPROJ",
+      "HAWKING_QWEN38_FUSE_ADD_RMSNORM"
+    ],
+    "dispatches_per_token": 756.0,
+    "derivation": "(12096 - 9072) / 4 = 3024 / 4 = 756.000",
+    "delta": "-208 per token, -21.6%",
+    "correctness_control": {
+      "unfused_tokens": [
+        248068,
+        198,
+        760,
+        1156,
+        369,
+        9859
+      ],
+      "fused_tokens": [
+        248068,
+        198,
+        760,
+        1156,
+        369,
+        9859
+      ],
+      "verdict": "IDENTICAL 6/6, fallbacks 0 in both arms",
+      "STRENGTH_OF_THIS_CHECK_STATED": "this is identical GREEDY OUTPUT, not identical LOGITS. argmax absorbs small numerical differences, so 6/6 token agreement rules out a gross semantic change and does NOT establish bit-identity. A logit comparison is the stronger check and was not run here."
+    },
+    "attribution_of_the_208": [
+      {
+        "lever": "FUSE_ADD_RMSNORM",
+        "saved": 128,
+        "how": "128 add_residual + 129 rmsnorm becomes 128 qwen80_add_residual_rmsnorm_tg + 1 plain final norm"
+      },
+      {
+        "lever": "FUSE_DN_INPROJ",
+        "saved": 48,
+        "how": "DeltaNet qkvz+ba, 2 matvecs to 1 matvec_pair_concat, x48 layers"
+      },
+      {
+        "lever": "FUSE_GQA_QKV",
+        "saved": 32,
+        "how": "GQA q,k,v, 3 matvecs to 1 matvec_qkv, x16 layers"
+      },
+      {
+        "lever": "FUSE_MLP",
+        "saved": 0,
+        "how": "NOTHING. qwen_affine_q2_group32_matvec stays at EXACTLY 192 per token, unchanged."
+      }
+    ],
+    "THE_INERT_LEVER_IS_THE_FINDING": "FUSE_MLP is a no-op on the sealed resident, and it is the lever aimed at the LARGEST single kernel family in the graph -- 192 dispatches/token, 25.4% of the fused graph. Every fusion that fired is on a uniform-q4 mixer projection; the one that did not is on the affine-q2 MLP. The obvious reading is that the fused gate+up path exists for the uniform codec and not for the affine one, which would make this a REPRESENTATION-COVERAGE gap rather than a graph limitation. THAT READING IS NOT VERIFIED HERE -- what is measured is that the flag changes nothing, not why.",
+    "what_it_would_be_worth": "gate+up fusion on the affine-q2 MLP is 64 dispatches/token (192 -> 128), taking 756 -> 692 and under the S031 \u00a74 <750 target with margin"
+  },
+  "pareto_by_count_fused": [
+    {
+      "family": "MLP matvec (affine-q2)",
+      "n": 192,
+      "share": 0.254,
+      "fusable": "gate+up, NOT currently reachable"
+    },
+    {
+      "family": "add_residual_rmsnorm (fused)",
+      "n": 128,
+      "share": 0.169,
+      "fusable": "already fused"
+    },
+    {
+      "family": "DeltaNet-specific",
+      "n": 192,
+      "share": 0.254,
+      "fusable": "4 kernels x 48, unexamined"
+    },
+    {
+      "family": "mixer matvec (q4)",
+      "n": 129,
+      "share": 0.171,
+      "fusable": "48 DN pair_concat + 16 GQA qkv already fused; 65 plain remain"
+    },
+    {
+      "family": "swiglu",
+      "n": 64,
+      "share": 0.085,
+      "fusable": "candidate for folding into the down-projection"
+    }
+  ],
+  "claim_boundary": [
+    "ONE artifact, ONE prompt (11 tokens), ONE machine. Dispatch COUNT is a structural property of the graph and is not expected to vary with prompt content, but it was not varied and that is stated rather than assumed.",
+    "COUNTS ONLY. Nothing was timed. No dispatch here carries a duration, bytes moved, or FLOPs, so this discharges the COUNT column of the S031 \u00a73 atlas and NOT the time/bytes/FLOPs columns. A count Pareto is not a time Pareto and the most numerous kernel need not be the most expensive -- S031 \u00a73 says so explicitly.",
+    "NO TPS MEASURED. 964 -> 756 is a 21.6% dispatch reduction and says NOTHING about wall time; at the measured ~11 us intra-command-buffer dispatch cost the arithmetic ceiling is ~2.3 ms/token, but that is an extrapolation from another regime and is not claimed.",
+    "NO CAPABILITY RUN. The 43-case suite was not re-run under fusion. 6/6 greedy token agreement is a smoke check, not the S031 \u00a718 floor of 30/43.",
+    "The DeltaNet/GQA layer split (48/16) is read off the dispatch counts, not from the config."
+  ],
+  "next": "time the 756 graph and re-run the 43-case capability suite under fusion, because a dispatch reduction that is not a wall-time win and not capability-preserving is not a win",
+  "akb_registration": {
+    "evidence_domain": "accelerator",
+    "civilization": "I-D_ACCELERATOR",
+    "program": "HAWKING ACCELERATOR (S015/S031/S032)",
+    "machine_scope": "Apple M3 Ultra, INSTANCE",
+    "representation_scope": "mixed HQ30UQ4 g64 mixer + affine_q2 g64 MLP (sealed-3.14)",
+    "kernel_scope": "the 964-dispatch production decode graph and its four fusion levers",
+    "why_declared": "membership must not depend on what this file was named (S032 \u00a713). Before this declaration the receipt was INVISIBLE to the AKB -- neither extracted nor refused -- which reads identically to triaged and found empty."
+  },
+  "identities": {
+    "experiment": {
+      "class": "ACCEL-DISPATCH",
+      "knowledge_level": "INSTANCE",
+      "question": "how many dispatches does one decode token of the sealed resident actually run?"
+    },
+    "machine": {
+      "soc": "Apple M3 Ultra",
+      "gpu_cores": 60,
+      "ram_gib": 96,
+      "measured_dram_gbps": 589.73,
+      "receipt": "receipts/headless/MACHINE_GENOME.json"
+    },
+    "device": {
+      "backend": "Metal",
+      "api": "MTLCommandBuffer GPUStartTime/GPUEndTime"
+    },
+    "model": {
+      "root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+      "tag": "sealed-3.14",
+      "complete_ebpw": 3.139300850311054
+    },
+    "representation": {
+      "mixer": "HQ30UQ4 g64",
+      "mlp": "HGRAVF01 affine_q2 group64 LS",
+      "note": "UNCHANGED across every arm in this receipt"
+    },
+    "runtime": {
+      "binary": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+      "git_head": "3a96dbe8042e94005c9a736cb912453660bd9cc3"
+    },
+    "kernel": {
+      "graph": "964-dispatch production decode graph, all four fusion levers off",
+      "trace": "crates/hawking-core/examples/qwen38_dispatch_trace.rs under HAWKING_TRACE_DISPATCH=1"
+    },
+    "transport": {
+      "status": "ABSENT",
+      "reason": "single-device unified-memory Metal run; no bridge and no host<->device transport is crossed"
+    }
+  }
+}

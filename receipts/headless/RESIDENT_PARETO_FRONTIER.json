@@ -1,0 +1,129 @@
+{
+ "schema": "hawking.headless.resident_pareto_frontier.v1",
+ "generated_at": "2026-08-26T03:50:42Z",
+ "hand_authored": false,
+ "obligation": "S030 (Pareto frontier + 50 TPS), G071, G072",
+ "git_head": "de69463adec351a783111c62c1b47894e92d7aa8",
+ "headline": "50 TPS IS NOT REACHABLE BY DENSITY ON ANY BODY ON RECORD: THE FASTEST BODY EVER MEASURED IS 42.7 RAW TPS AND PRODUCES ZERO ACCEPTED WORK, WHILE EVERY BODY THAT SCORES SITS AT 33-34 RAW TPS",
+ "i_am_correcting_my_own_claim": {
+  "what_i_said": "two blocks ago: 'density will not buy TPS -- a 21 percent EBPW range moves decode GPU time 3.2 percent and the smallest body is the slowest'",
+  "it_is_true_and_its_domain_was_too_wide": "true over the range I MEASURED, 2.5970-3.1393 EBPW = 20.9%. Over the FULL historical ladder 1.25-3.14, a 2.5x density range, the recorded times are 23.43 vs 30.19 ms = 1.29x. Density DOES buy speed across a wide enough range. I generalised a narrow measurement.",
+  "the_mechanism_i_missed_was_in_my_own_data": "ALL THREE MEASURED BODIES RUN 964 DISPATCHES PER STEP -- byte-identical graph topology, differing only in codec. They are not three points on a density curve; they are ONE GRAPH wearing three codecs. That is why 20.9% of density moved 3.2% of time, and it is a fact about the GRAPH, not about density.",
+  "what_survives_unchanged": "dropping density from 3.14 to 2.60 buys nothing measurable and costs 16 of 43 capability points. That trade is still bad."
+ },
+ "measured_this_session": {
+  "clean-2.60": {
+   "complete_ebpw": 2.597,
+   "ms": 30.1915,
+   "dispatches": 964,
+   "cap": 14,
+   "cap_arm": "pre_closed_think",
+   "raw_tps": 33.12,
+   "accepted_tps": 10.78
+  },
+  "variantA-2.98": {
+   "complete_ebpw": 2.9802,
+   "ms": 29.3117,
+   "dispatches": 964,
+   "cap": 0,
+   "cap_arm": "unrecorded",
+   "raw_tps": 34.12,
+   "accepted_tps": 0.0
+  },
+  "sealed-3.14": {
+   "complete_ebpw": 3.1393,
+   "ms": 29.2887,
+   "dispatches": 964,
+   "cap": 30,
+   "cap_arm": "unrecorded",
+   "raw_tps": 34.14,
+   "accepted_tps": 23.82
+  }
+ },
+ "historical_record_artifacts_reaped": {
+  "binary_g64-1.25": {
+   "complete_ebpw": null,
+   "mlp_rate": 1.25,
+   "ms": 23.43,
+   "cap": 0,
+   "note": "uniformly_injured 64/64 layers; diverges at generated token 0",
+   "raw_tps": 42.68
+  },
+  "q2f-2.25": {
+   "complete_ebpw": 2.98,
+   "mlp_rate": 2.25,
+   "ms": 27.55,
+   "cap": 0,
+   "note": "2.25 is an MLP ORGAN rate; complete executable is 2.980 EBPW, LARGER than the 2.60 it was meant to beat. Emitted 2 tokens then im_end.",
+   "raw_tps": 36.3
+  },
+  "shared_basis_K2-0.53": {
+   "complete_ebpw": null,
+   "mlp_rate": 0.53,
+   "ms": 111.6,
+   "cap": null,
+   "note": "~384 dispatches, representation-incompetent runtime; NOT re-measured",
+   "raw_tps": 8.96
+  }
+ },
+ "the_pareto_frontier_on_accepted_tps": {
+  "axes": "complete physical EBPW (smaller better) x ACCEPTED tps (raw_tps * capability/43)",
+  "frontier": [
+   {
+    "body": "sealed-3.14",
+    "complete_ebpw": 3.1393,
+    "accepted_tps": 23.82,
+    "why": "highest accepted work of any noetic body"
+   },
+   {
+    "body": "clean-2.60",
+    "complete_ebpw": 2.597,
+    "accepted_tps": 10.78,
+    "why": "smallest body with ANY accepted work"
+   }
+  ],
+  "dominated_or_off_frontier": [
+   {
+    "body": "variantA-2.98",
+    "why": "LARGER than 2.60 and scores 0/43 -- dominated on both axes"
+   },
+   {
+    "body": "q2f-2.25",
+    "why": "complete executable is 2.980 EBPW, not 2.25, and it never cohered. Dominated by 2.60 on size AND capability."
+   },
+   {
+    "body": "binary_g64-1.25",
+    "why": "fastest raw at 42.7 tps and 0 accepted. Fast incoherent output is not on an accepted-work frontier at all."
+   },
+   {
+    "body": "shared_basis_K2-0.53",
+    "why": "9 tps under an incompetent runtime; capability never measured"
+   }
+  ],
+  "the_frontier_has_exactly_two_points": "Every body below 2.60 EBPW produces ZERO accepted work. The descent ladder 2.60 -> 2.25 -> 1.25 -> 0.53 has no surviving member under 2.60."
+ },
+ "the_50_tps_question_answered": {
+  "bar": 50.0,
+  "best_raw_ever_measured": {
+   "body": "binary_g64-1.25",
+   "raw_tps": 42.68,
+   "accepted_tps": 0.0
+  },
+  "best_raw_from_a_body_that_scores": {
+   "body": "sealed-3.14",
+   "raw_tps": 34.14,
+   "cap": "30/43"
+  },
+  "gap_to_bar_from_a_scoring_body": "34.14 -> 50 needs 29.29 ms -> 20.0 ms = a 1.46x GPU-time cut",
+  "density_cannot_supply_it": "extrapolating the historical 1.25-vs-2.60 slope, going from 3.14 all the way to 1.25 EBPW buys 1.29x and lands at 42.7 -- STILL SHORT OF 50, and at 0/43. There is no density on record that reaches 50 tps, and none that reaches it while scoring.",
+  "where_the_1_46x_must_come_from": "964 dispatches per token, IDENTICAL across all three bodies. Host overhead was measured at 0.307-0.342 ms = ~1.1% of wall, so this is NOT submission cost -- the dispatches are already batched. It is 964 units of GPU work per token in one graph. The lever is the GRAPH, and it is the only lever the measurements leave standing.",
+  "honest_status": "UNREACHED, and the mechanism that could reach it is NOT identified"
+ },
+ "claim_boundary": [
+  "The three measured rows are from ONE run each with no IQR, far below this program's 200-rep gate.",
+  "Every historical row is a RECORD, not a re-measurement: the q2f, binary g64 and shared-basis artifacts are all REAPED. Their times cannot be reproduced without rebuilding from receipts.",
+  "capability for variantA-2.98 and sealed-3.14 comes from leaderboard rows G073 marked UNIDENTIFIED -- no receipt records which artifact or which chat-template arm earned them, so accepted_tps for those two rows inherits that uncertainty. Only clean-2.60's 14/43 has a named arm.",
+  "accepted_tps = raw_tps * cap/43 is a DEFINITION, not a measurement: it assumes capability scales linearly with useful token rate, which nothing here establishes."
+ ],
+ "pass": true
+}

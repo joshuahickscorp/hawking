@@ -1,0 +1,309 @@
+{
+  "receipt": "ACCELERATOR_RESIDENT_TEMPLATE_ARM",
+  "date": "2026-08-26",
+  "obligation": "S031 \u00a718 capability floor, \u00a719 accepted TPS, \u00a720 structured output; G071 seal, G074, G077",
+  "question": "ACCELERATOR_DISPATCH_IS_NOT_THE_COST proved the graph cannot reach the \u00a719 target and named capability as the only remaining lever. The resident's capability had been measured on ONE chat-template arm, ever.",
+  "THE_FINDING": {
+    "headline": "the sealed resident scores 35/43 on the pre_closed_think arm against 30/43 on open_think, with ZERO BYTES of the artifact changed",
+    "open_think": {
+      "passed": 30,
+      "total": 43,
+      "rate": 0.6977,
+      "errored": 0,
+      "empty_replies": 8,
+      "completion_tokens_total": 18070
+    },
+    "pre_closed_think": {
+      "passed": 35,
+      "total": 43,
+      "rate": 0.814,
+      "errored": 0,
+      "empty_replies": 0,
+      "completion_tokens_total": 2035
+    },
+    "identity_is_the_same_artifact_not_a_similar_one": {
+      "artifact_inventory_sha": "1aff5df85bda1108",
+      "binary_sha256_16": "d34044cffae8f320",
+      "chat_template_sha256_16": "c3cf9e34abf4f9e3",
+      "all_three_identical_across_arms": true,
+      "what_actually_differs": "tools/headless/capability_suite.py:274 passes enable_thinking=not no_think to THE ARTIFACT'S OWN chat_template.jinja, which references enable_thinking twice. This is a SERVING MODE the artifact itself renders, not a harness edit and not a benchmark manipulation."
+    },
+    "per_axis": {
+      "knowledge": {
+        "open_think": 3,
+        "pre_closed": 3,
+        "total": 3
+      },
+      "reasoning": {
+        "open_think": 3,
+        "pre_closed": 3,
+        "total": 6
+      },
+      "structured_output": {
+        "open_think": 5,
+        "pre_closed": 10,
+        "total": 15
+      },
+      "mutation": {
+        "open_think": 10,
+        "pre_closed": 10,
+        "total": 10
+      },
+      "coding": {
+        "open_think": 3,
+        "pre_closed": 3,
+        "total": 3
+      },
+      "self_correction": {
+        "open_think": 3,
+        "pre_closed": 3,
+        "total": 3
+      },
+      "hygiene": {
+        "open_think": 3,
+        "pre_closed": 3,
+        "total": 3
+      }
+    },
+    "the_axis_that_moved_is_the_one_HCLI_needs": "structured_output 5/15 -> 10/15. S031 \u00a720 names structured output a FIRST-CLASS HCLI ORGAN because the planner consumes machine-readable output; it is the only axis that moved and it doubled.",
+    "the_item_that_flipped": {
+      "id": "json-kind-correct",
+      "result": "0/5 -> 5/5",
+      "open_think_reply_head": "empty after the think block is stripped",
+      "pre_closed_reply_head": "a well-formed {\"kind\":\"answer\",...} object",
+      "reading": "the open_think failure was NEVER about whether the model can emit the right JSON. It emits it. The think block consumed the budget."
+    },
+    "eight_empty_replies_became_zero": "under open_think, 8 of 43 calls returned NOTHING after the think block was stripped, having generated 1135-1536 tokens with finish_reason=stop. Under pre_closed_think, ZERO empty replies."
+  },
+  "THE_BUDGET_CONFOUND_FAVOURS_THE_LOSER": {
+    "what_it_is": "capability_suite.py:277 gives the think arm max_tokens * NOETIC_BUDGET_MULTIPLIER (3) and the no_think arm max_tokens. The arms are NOT budget-matched.",
+    "direction": "the confound favours the arm that LOST. open_think had THREE TIMES the room and scored five points lower.",
+    "so": "a budget-matched comparison could only widen the gap, never narrow it -- which is why the asymmetry is reported rather than corrected. It is evidence FOR the finding.",
+    "and_the_token_cost_is_the_other_half": {
+      "open_think_total_completion_tokens": 18070,
+      "pre_closed_total": 2035,
+      "ratio": 8.88,
+      "reading": "8.88x fewer generated tokens for five more correct answers. Token counts are DETERMINISTIC under greedy decode and do not drift with machine load, unlike the wall times in the same runs."
+    }
+  },
+  "RAW_TPS_IS_ARM_DEPENDENT_AND_I_MEASURED_IT_RATHER_THAN_ASSUMING_IT": {
+    "why_it_had_to_be_checked": "accepted TPS = raw x capability/43 multiplies a raw TPS measured on ONE prompt rendering by a capability measured on ANOTHER. If per-token decode cost depends on the rendering, the product is not a number.",
+    "three_renderings_not_two": "the raw-TPS benchmark used a THIRD form -- render_qwen38_user_chat (qwen38_hybrid_decode.rs:1325) emits a bare assistant turn with NO think block at all, which is neither capability arm. Comparing two arms would have missed that the published 36.25 came from a rendering used by neither.",
+    "measured": [
+      {
+        "rendering": "bare_rust",
+        "prompt_tokens": 21,
+        "ms_per_token": 27.9877,
+        "gpu_ms": 27.3121,
+        "prefill_ms": 663.89,
+        "raw_tps": 35.73,
+        "runs": [
+          27.9634,
+          27.9877,
+          28.0146
+        ]
+      },
+      {
+        "rendering": "jinja_open_think",
+        "prompt_tokens": 65,
+        "ms_per_token": 28.3018,
+        "gpu_ms": 27.4468,
+        "prefill_ms": 1912.51,
+        "raw_tps": 35.33,
+        "runs": [
+          28.2207,
+          28.3018,
+          28.3172
+        ]
+      },
+      {
+        "rendering": "jinja_pre_closed",
+        "prompt_tokens": 25,
+        "ms_per_token": 28.0208,
+        "gpu_ms": 27.3137,
+        "prefill_ms": 774.86,
+        "raw_tps": 35.69,
+        "runs": [
+          27.9729,
+          28.0208,
+          28.0488
+        ]
+      }
+    ],
+    "verdict": "ARM-DEPENDENT BUT SMALL, AND IN THE HELPFUL DIRECTION: pre_closed_think is 1.003% FASTER per token than open_think, so the arm that wins on capability also wins, slightly, on speed.",
+    "mechanism_is_visible_in_the_data": "prompt_len 65 / 25 / 21 tokens for open / pre_closed / bare. The open_think render is 343 chars against pre_closed's 117, so its KV cache is longer at every decode step. Prefill tracks it exactly: 1912.51 / 774.86 / 663.89 ms.",
+    "decomposition": {
+      "capability_pct": 16.67,
+      "per_token_decode_pct": 1.003,
+      "capability_dominates_by": "16.6x"
+    },
+    "AND_IT_CORRECTS_A_NUMBER_I_PUBLISHED_EARLIER_IN_THIS_SESSION": {
+      "what_I_wrote": "accepted 29.51, from raw 36.25 x 35/43",
+      "why_it_was_wrong": "36.25 came from an 11-token 'Say hi.' prompt at 27.5896 ms/token and was applied to BOTH arms. The same graph on a 21-token prompt measures 27.9877 ms = +1.44%, so raw TPS is PROMPT-LENGTH dependent and a single figure cannot serve two arms with different prompt lengths.",
+      "corrected_arm_matched": {
+        "open_think": 24.65,
+        "pre_closed": 29.05,
+        "gain_pct": 17.84
+      },
+      "so_the_headline_is_29.05_not_29.51": "and the open_think baseline moves too, 25.29 -> 24.65, because it was carrying the same borrowed raw TPS."
+    }
+  },
+  "WHAT_IT_DOES_TO_THE_CONSTRAINT_CURVE": {
+    "the_curve": "ACCELERATOR_DISPATCH_IS_NOT_THE_COST derived accepted_ceiling = 187.40/EBPW x capability/43 from 9.879 GB of weight reads per token against this machine's measured 589.73 GB/s",
+    "accepted_ceiling_at_30_of_43": 41.65,
+    "accepted_ceiling_at_35_of_43": 48.59,
+    "cap_over_ebpw_required_for_50": 11.473,
+    "was": 9.556,
+    "now": 11.149,
+    "pct_of_requirement": 97.2,
+    "one_more_capability_point_puts_the_CEILING_at_50": "50 accepted needs capability >= 36.02/43 at this EBPW. The resident is at 35. That is the whole remaining distance IN THE CEILING.",
+    "and_the_binding_constraint_has_now_SWAPPED": "at 30/43 the ceiling (41.65) was the problem, 1.20x short of the target. At 35/43 the ceiling is 48.59 and the MEASUREMENT is 29.05 = 59.8% of it, so the graph is now what is short. The previous block proved the graph cannot supply the ceiling; this block moved the ceiling until the graph became the binding term again. Neither lever alone reaches 50.",
+    "S031_19_rungs": {
+      "baseline": 23.82,
+      "now": 29.05,
+      "gain_pct": 21.9,
+      "rungs_cleared": "none -- TARGET B is 30 accepted and this is 29.05, short by 0.95"
+    }
+  },
+  "WHAT_STILL_FAILS_AND_ONE_OF_THEM_IS_ONE_KEY_AWAY": {
+    "remaining": [
+      {
+        "item": "json-answer",
+        "axis": "structured_output",
+        "score": "0/5",
+        "why": "JSON parsed but missing keys ['operations','tests']",
+        "produced": "{\"kind\":\"answer\",\"content\":\"os.replace guarantees that the operation is atomic ...\"}",
+        "demanded": "the system prompt asks for {\"kind\",\"content\",\"operations\",\"tests\"} and the grader requires all four",
+        "distance": "the model answers CORRECTLY and omits two EMPTY ARRAYS. Five points sit behind two keys.",
+        "and_the_grader_is_right_to_demand_them": "this is HCLI's planner contract, not a formatting preference -- a planner that must branch on `operations` cannot branch on a key that is absent."
+      },
+      {
+        "item": "fact-multistep",
+        "axis": "reasoning",
+        "score": "0/3",
+        "why": "expected 21 among the numbers emitted, got [13]",
+        "produced": "13",
+        "demanded": "21",
+        "distance": "a GENUINE reasoning failure and the honest one in the set. Under open_think it burned 1536 tokens and emitted nothing; under pre_closed_think it commits to a wrong number in 3 tokens.",
+        "reading": "no_think trades deliberation for decisiveness. On the one item that needs multi-step arithmetic NEITHER arm gets it, so the trade costs nothing here and the item is not evidence against no_think."
+      }
+    ],
+    "the_five_that_flipped_and_the_three_that_did_not_are_different_in_kind": "json-kind-correct failed because the reply was EMPTY; json-answer fails because the reply is PRESENT and short two keys. The first is a serving-mode defect and the second is a prompt-adherence defect, and only the first is fixed by the template arm."
+  },
+  "THE_CAMPAIGN_ALREADY_KNEW_THIS_ABOUT_A_DIFFERENT_BODY": {
+    "prior_art": "receipts/headless/CAPABILITY_ARM_A_THINK.json (0/43) and CAPABILITY_ARM_D_NOTHINK.json (14/43) measured the SAME 2.60-EBPW body on the two arms on 2026-08-25, and capability_suite.py:441 carries the lesson in a docstring: 'G067 measured the SAME BODY scoring 0/43 with an open <think> and 14/43 with enable_thinking=false. A score without its template is not comparable to another score.'",
+    "and_it_was_never_carried_to_the_body_that_SHIPS": "every sealed-3.14 capability receipt on disk -- CAPABILITY_noetic-sealed-3.14, -identified-unfused, -identified-fused, -binB-unfused, -binB-fused4-swiglu -- records no_think=false, arm=open_think. FIVE receipts, one arm, and the arm the campaign had already measured to be the worse one on a different body.",
+    "the_shape_of_the_error": "a law was sealed on a SPECIMEN and never applied to the RESIDENT. The 2.60 body's arm effect was published, tested, and written into the harness's own docstring, while the model that carries the seal was scored on the losing arm five times in a row.",
+    "consequence_for_G071": "S031's seal list names TEMPLATE and CAPABILITY SUITE SCORE as things the seal must bind. Both are bound -- to open_think. The seal is not wrong, it is binding a configuration 5 points below the artifact's own best, and that is a different defect from an unbound seal."
+  },
+  "claim_boundary": [
+    "43 CASES ARE 11 ITEMS. Every repeat is byte-identical within every item in both arms, so the five-point move is ONE item weighted five, not five independent successes, and the whole finding rests on json-kind-correct.",
+    "'zero bytes changed' overstates artifact_inventory_sha, which hashes name and size and not content; the binary and chat template ARE byte-verified and the weights are not.",
+    "TWO capability runs, ONE per arm, NOT PAIRED and NOT INTERLEAVED. Pass counts are the claim and they do not drift with machine load; the runs' WALL TIMES are unusable and are not quoted -- the no_think run's own machine_state field (wired into capability_suite.py one block earlier) records worst_repetition_spread_pct 63.8 and quiet_at_both_samples false.",
+    "the arms are NOT budget-matched (3x for the think arm) and the asymmetry favours the LOSING arm, so it cannot explain the result; a budget-matched run is still not done.",
+    "the timing arms are 3 admitted sweeps at ONE user prompt, ONE generation length (64 tokens) and ONE machine. Raw TPS is measured to be PROMPT-LENGTH dependent, so a single raw figure is a proxy for a suite whose prompts vary in length, and the accepted-TPS product is good to about 1%.",
+    "43 cases is a small suite. Five flipped items on 43 is a 11.6% swing whose binomial noise nobody has characterised, and this is one run per arm.",
+    "NOTHING HERE SAYS pre_closed_think IS BETTER IN GENERAL. It is better on THIS suite, on THIS body. A task that genuinely needs chain-of-thought is exactly the case this arm removes, and fact-multistep is the one item in the suite that looks like such a task -- it fails under both arms, so the suite cannot answer the question.",
+    "no kernel changed, no artifact byte changed, and no claim in ACCELERATOR_DISPATCH_IS_NOT_THE_COST moves except the accepted-TPS figures, which are corrected here.",
+    "3 of 43 on BOTH arms come from a leak check the harness disarms before scoring; common-mode, so the comparison is untouched and both absolute scores carry it."
+  ],
+  "next": "json-answer is 5 points behind two empty JSON keys and 36/43 puts the accepted-TPS CEILING at exactly 50; then the graph, which at 59.8% of that ceiling is once again the binding term",
+  "identities": {
+    "experiment": {
+      "class": "ACCEL-REPRESENTATION",
+      "knowledge_level": "INSTANCE",
+      "question": "does the chat-template arm change the sealed resident's capability?"
+    },
+    "machine": {
+      "soc": "Apple M3 Ultra",
+      "gpu_cores": 60,
+      "ram_gib": 96,
+      "measured_dram_gbps": 589.73,
+      "receipt": "receipts/headless/MACHINE_GENOME.json"
+    },
+    "device": {
+      "backend": "Metal",
+      "api": "MTLCommandBuffer GPUStartTime/GPUEndTime"
+    },
+    "model": {
+      "root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+      "tag": "sealed-3.14",
+      "complete_ebpw": 3.139300850311054,
+      "artifact_inventory_sha": "1aff5df85bda1108"
+    },
+    "representation": {
+      "mixer": "HQ30UQ4 g64",
+      "mlp": "HGRAVF01 affine_q2 group64 LS",
+      "note": "UNCHANGED between arms -- this receipt changes no representation"
+    },
+    "kernel": {
+      "graph": "628-dispatch fused decode (FUSE_ADD_RMSNORM + FUSE_GQA_QKV + FUSE_DN_INPROJ + FUSE_MLP=swiglu)"
+    },
+    "runtime": {
+      "binary": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+      "sha256_16": "d34044cffae8f320",
+      "harness": "tools/headless/capability_suite.py",
+      "chat_template_sha256_16": "c3cf9e34abf4f9e3",
+      "git_head": "30df26d9e626ef2d8eb51e0c6525fae56489d2d6"
+    },
+    "transport": {
+      "status": "ABSENT",
+      "reason": "single-device unified-memory Metal run; no bridge and no host<->device transport is crossed"
+    }
+  },
+  "SIX_ADVERSARIAL_ATTACKS_WERE_RUN_AND_FOUR_LANDED_ON_MY_OWN_FRAMING": {
+    "method": "six independent investigators attacked the 35/43 claim, each then verified by a second agent against the files. Every correction below was RE-VERIFIED BY ME directly before being recorded, because an agent's report is a claim and not a receipt.",
+    "REFUTED_ATTACK_grader_asymmetry": "the grader is SYMMETRIC on the item that flipped, and the one real harness asymmetry runs AGAINST the no_think arm. The attack fails.",
+    "CORRECTION_1_43_CASES_ARE_11_MEASUREMENTS": {
+      "what_I_wrote": "30/43 -> 35/43, a five-point move",
+      "what_is_true": "decoding is greedy at temperature 0, and NOT ONE of the eleven items in EITHER receipt holds more than one distinct (completion_tokens, reply_head, pass) triple. So 43 cases are ELEVEN measurements with weights (3,3,3,5,5,5,5,5,3,3,3), and the move is ONE ITEM -- json-kind-correct -- whose weight happens to be five.",
+      "verified_myself": "checked directly across both receipts: items with >1 distinct triple = NONE",
+      "why_it_matters": "five independent successes and one item worth five points are very different evidence, and x/43 invites the first reading. The repeats are not useless -- they would catch nondeterminism -- but they found none, so they add no independent evidence.",
+      "shipped": "capability_suite.measurement_weight() reports distinct_items, weights, distinct_outputs_per_item and every_repeat_identical on every receipt, with an anti-vacuity test requiring the field to come back False on injected nondeterminism"
+    },
+    "CORRECTION_2_ZERO_BYTES_CHANGED_IS_NOT_WHAT_THE_HASH_MEASURES": {
+      "what_I_wrote": "ZERO BYTES of the artifact changed, evidenced by artifact_inventory_sha",
+      "what_is_true": "capability_suite.py:464 hashes repr(sorted((name, st_size))) -- NAME AND SIZE, not content -- and the receipt says so itself: identity_is_content_hash false, 'a same-length edit is invisible'.",
+      "what_IS_byte_verified": "binary_sha256_16 and chat_template_sha256_16 are real content hashes of the files that could plausibly differ between two runs minutes apart, and both match. The 10,577,484,803 bytes of weights across 764 files are matched on NAME AND SIZE.",
+      "corrected_wording": "the two arms ran the SAME BINARY and the SAME CHAT TEMPLATE by content hash against a weight set identical in filename and length. Nothing wrote to the artifact between the runs and nothing could have, but the receipt does not prove that and now says so."
+    },
+    "CORRECTION_3_THE_ONLY_SURVIVING_TRUNCATION_FIELD_CANNOT_REPORT_TRUNCATION": {
+      "what": "finish_reason for the noetic backend is 'stop' if exit_code == 0 -- a PROCESS EXIT CODE. It reads 'stop' on a call truncated at its budget exactly as on one that hit EOS.",
+      "and_the_honest_field_was_being_dropped": "hit_budget_cap IS computed by the runner at :308 and score() at :385 did not carry it into the receipt, so NO field in any capability receipt could distinguish EOS from a cap hit -- including the eight open_think replies that generated 1135-1536 tokens and returned nothing, all reading finish_reason 'stop'.",
+      "shipped": "score() now carries hit_budget_cap, token_budget and finish_reason_is_exit_code, with the comment saying a field that always says stop is worse than no field"
+    },
+    "CORRECTION_4_THREE_OF_43_ARE_A_CHECK_THAT_CANNOT_FAIL_ON_EITHER_ARM": {
+      "what": "no-think-leak forbids '<think>', '</think>' and 'reasoning_content', and call_noetic:305 SPLITS the raw output on '</think>' and scores only what follows -- so two of three needles are removed by the harness before the predicate sees the text, and the third is an API field name a CLI backend never emits. 3/3 on BOTH arms.",
+      "not_fully_vacuous_and_the_difference_is_load_bearing": ":304's `unterminated` guard makes a reply that never leaves the think block score EMPTY, and must_not_contain refuses empty. That guard exists because the 2.5970-EBPW body once passed this exact check BY never finishing thinking; the comment at :299-303 records it. What remains vacuous is the LEAK check itself.",
+      "why_the_comparison_survives": "3 points on BOTH arms is COMMON MODE and cannot move 30 vs 35. Both ABSOLUTE scores carry it, and that is now pinned by a test rather than counted silently as capability."
+    },
+    "CORRECTION_5_THE_BUDGET_CONFOUND_IS_LARGER_THAN_I_STATED_AND_STILL_FAVOURS_THE_LOSER": {
+      "measured": "budget-matching UP at 1536 leaves no_think at 35 unchanged. Budget-matching DOWN at 512 costs open_think its code-compiles item, which passes at EXACTLY 544 tokens -- so matched-low open scores 27, not 30.",
+      "so": "the gap is 35 vs 30 as run, 35 vs 35-or-less matched high, and 35 vs 27 matched low. Every matching makes the confound worse for open_think, never better. It cannot explain the result under any matching.",
+      "and_capability_suite_py_243_documents_the_multiplier_s_ORIGIN_as_this_exact_failure": "'failed at exactly 512 tokens, and passed at 544 when given room' -- the open_think receipt is a live reproduction of the case the 3x multiplier was introduced for."
+    },
+    "CORRECTION_6_MY_RAW_TPS_PREMISE_WAS_FALSE_AND_I_HAD_ALREADY_CAUGHT_IT": {
+      "the_attack": "36.25 was never measured on the open_think arm -- an 11-token prompt cannot be an open_think render, which is 52 tokens even with an EMPTY user message.",
+      "status": "CONFIRMED, and independently found by me in the same block via the three-rendering timing run above, which is why the arm-matched 24.65 / 29.05 figures replace 25.29 / 29.51 in this receipt rather than being defended."
+    },
+    "AND_THE_PRIOR_ART_QUOTE_THAT_MAKES_THE_G071_FINDING_EXACT": {
+      "receipt": "receipts/headless/CAPABILITY_TEMPLATE_FACTORIAL.json",
+      "coverage": "ONE body (2.596957 EBPW) x FOUR arms -- A open_think, B raw, D pre_closed, E explicit close. THE RESIDENT IS NOT IN IT.",
+      "its_own_words": "'A capability score under any arm. The 43-case suite has NOT been re-run on ARM D or E.' and next_experiment: 'run the full 43-case suite on ARM D and ARM E and compare against the 0/43 taken on ARM A.'",
+      "what_happened": "that instruction was executed FOR THE SPECIMEN and never for the resident. The campaign wrote down the experiment, ran it on the body it was not shipping, and left the body it was shipping on the losing arm for five consecutive receipts."
+    }
+  },
+  "tests": {
+    "accelerator": {
+      "command": "python3.12 -m pytest tools/accelerator/ -q",
+      "passed": 522,
+      "failed": 0
+    },
+    "headless": {
+      "command": "python3.12 -m pytest tools/headless/test_capability_identity.py -q",
+      "passed": 17,
+      "failed": 0,
+      "was": 10
+    }
+  }
+}

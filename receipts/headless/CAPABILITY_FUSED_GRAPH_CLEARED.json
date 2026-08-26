@@ -1,0 +1,143 @@
+{
+  "receipt": "CAPABILITY_FUSED_GRAPH_CLEARED",
+  "date": "2026-08-26",
+  "obligation": "S031 \u00a718 capability floor, \u00a719 accepted TPS; G071 seal, G073 identity, G074, G046",
+  "question": "TOKEN_GRAPH_REDUCTION_TIMED left the fused graph NOT CLEARED for the resident: 64/64 greedy token agreement is a smoke check, not the 30/43 floor. This runs the floor.",
+  "artifact": {
+    "root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+    "tag": "sealed-3.14",
+    "complete_ebpw": 3.139300850311054
+  },
+  "FINDING_0_THE_BASELINE_WAS_UNIDENTIFIED": {
+    "what": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json -- the 30/43 this whole campaign quotes as the resident's capability, and the denominator of every accepted-TPS figure -- records target='http://127.0.0.1:8080', the argparse DEFAULT ENDPOINT, with NO artifact_identity block and identity_sufficient=false.",
+    "cause": "the G073 defect at capability_suite.py:496, target = args.model_path or args.endpoint with no noetic branch, so a run that set --artifact-root fell through to the endpoint default",
+    "so_the_number_was_never_bound_to_the_body": "nothing in that receipt ties 30/43 to the 3.1393 artifact",
+    "RE_ESTABLISHED_HERE": "30/43 REPRODUCES EXACTLY under identity, and every axis matches the unidentified receipt digit for digit -- knowledge 3/3, reasoning 3/6, structured_output 5/15, mutation 10/10, coding 3/3, self_correction 3/3, hygiene 3/3.",
+    "reading": "the unidentified receipt's NUMBER was right. What was missing was the binding, and a right number with no binding is not evidence about an artifact. Now it is bound."
+  },
+  "identity_now_bound": {
+    "artifact_inventory_sha": "1aff5df85bda1108",
+    "binary_sha256_16": "20b7ffe43c1246e6",
+    "tokenizer_sha256_16": "0997f410c57a1f4e",
+    "chat_template_sha256_16": "c3cf9e34abf4f9e3",
+    "chat_template_arm": "open_think",
+    "no_think": false,
+    "identical_across_both_arms": true,
+    "AND_IT_SURFACES_A_CROSS_ARM_COMPARISON_NOBODY_HAD_STATED": "the resident scores 30/43 on open_think; the 2.60 body's 14/43 (CAPABILITY_noetic-2.60-identified.json) is on pre_closed_think. The Pareto frontier compares each body's BEST ARM against the other's. That is defensible and it had never been said. What 3.14 scores on pre_closed_think is UNMEASURED."
+  },
+  "THE_FLOOR_HOLDS_AND_THE_EVIDENCE_IS_STRONGER_THAN_THE_SCORE": {
+    "unfused": {
+      "passed": 30,
+      "total": 43,
+      "rate": 0.6977,
+      "scoreable": true,
+      "calls_errored": 0
+    },
+    "fused": {
+      "passed": 30,
+      "total": 43,
+      "rate": 0.6977,
+      "scoreable": true,
+      "calls_errored": 0
+    },
+    "per_axis": "IDENTICAL on all seven axes",
+    "per_repetition": "43 of 43 SEMANTICALLY IDENTICAL -- same pass, same why, same finish_reason, same completion_tokens, same reply_head",
+    "why_that_matters": "30 == 30 could have been two DIFFERENT sets of thirty, compensating flips hiding under an equal total. It is not: the fused graph produced the SAME TEXT on every one of the 43 items. Checking only the total would have been the same-number-different-items version of a check that cannot fail.",
+    "a_diff_of_mine_that_was_wrong_first": "my first per-item comparison reported 11 of 11 entries DIFFERING. It was including wall_s, which differs in every entry by construction. Comparing only the semantic fields gives 43/43 identical. A diff that includes a timestamp reports every record as changed.",
+    "VERDICT": "the fused 756-dispatch graph is CLEARED for the resident on capability grounds"
+  },
+  "SPEED_ON_THE_CAPABILITY_WORKLOAD_AND_THE_NUMBER_I_ALMOST_PUBLISHED": {
+    "naive_aggregate": {
+      "unfused_wall_s": 964.83,
+      "fused_wall_s": 1098.55,
+      "verdict_if_quoted_alone": "FUSED IS 12.17% SLOWER"
+    },
+    "that_is_ONE_ITEM": "fact-capital[2] generated its 43 tokens in 287.45 s under fusion against 6.85 s unfused -- a 42x STALL producing the IDENTICAL 43 tokens with finish_reason=stop. Same work, same output, 280 s longer.",
+    "the_real_shape": {
+      "fused_faster_on": "41 of 43 items",
+      "median_per_item_delta_s": -0.496,
+      "items_with_abs_delta_over_30s": 1
+    },
+    "excluding_that_one_item": {
+      "items": 42,
+      "tokens": 18027,
+      "wall_s": [
+        958.0,
+        811.1
+      ],
+      "fused_faster_pct": 18.11,
+      "raw_tps": [
+        18.818,
+        22.226
+      ],
+      "accepted_tps_at_30_of_43": [
+        13.129,
+        15.506
+      ]
+    },
+    "BOTH_NUMBERS_ALONE_ARE_WRONG": "'fused is 12% slower' is false and driven entirely by one stall; 'fused is 18% faster' is only true with a stated exclusion. Reporting either without the other would be the more dishonest choice.",
+    "same_outlier_class_as_the_decoder_bench": "TOKEN_GRAPH_REDUCTION_TIMED recorded 3 of 12 runs at 1.6-2.0x slow, arm-independent, entirely in gpu_ns, CAUSE UNKNOWN. This is the same event, far more extreme (42x), and its cause is STILL UNKNOWN. It is not investigated here and it is not attributed."
+  },
+  "THE_GAIN_SCALES_WITH_GENERATION_LENGTH": {
+    "method": "median ms/token per item with a common 3.627 s startup subtracted (the unfused linear fit's intercept), the one stall excluded",
+    "bands": [
+      {
+        "tokens": "<=100",
+        "n": 5,
+        "unfused_ms_per_token": 52.46,
+        "fused_ms_per_token": 48.59,
+        "fused_gain_pct": 7.97,
+        "RELIABLE": false,
+        "why": "startup is over half these items' wall, so the per-token figure is dominated by the error in the startup constant"
+      },
+      {
+        "tokens": "101-300",
+        "n": 21,
+        "unfused_ms_per_token": 38.97,
+        "fused_ms_per_token": 37.59,
+        "fused_gain_pct": 3.69
+      },
+      {
+        "tokens": "301-800",
+        "n": 8,
+        "unfused_ms_per_token": 41.02,
+        "fused_ms_per_token": 39.65,
+        "fused_gain_pct": 3.46
+      },
+      {
+        "tokens": ">800",
+        "n": 8,
+        "unfused_ms_per_token": 45.44,
+        "fused_ms_per_token": 35.2,
+        "fused_gain_pct": 29.09
+      }
+    ],
+    "against_the_decoder_bench": "TOKEN_GRAPH_REDUCTION_TIMED measured +2.41% at 64 tokens with max_seq_len 256. The 101-800 bands here sit at 3.5-3.7%, close to it. The >800 band is 29.09%, an ORDER LARGER.",
+    "MECHANISM_NOT_CLAIMED": "why the gain grows with length is NOT measured. The fused add_residual_rmsnorm removes one pass over the residual per layer, which is context-INDEPENDENT, so it does not obviously explain a length-dependent gain. Offering an explanation here would be exactly the untested diagnosis this program has written down five times and found wrong twice.",
+    "biggest_single_items": "fact-multistep[1] 1536 tok 75.77 -> 59.31 s; json-answer[3] 1135 tok 59.86 -> 43.58 s"
+  },
+  "A_HARNESS_FAILURE_THE_NEW_GUARD_CAUGHT": {
+    "what_happened": "the first identified run returned 0 passed of 43 in under 60 seconds",
+    "cause": "ModuleNotFoundError: No module named 'transformers' on all 43 calls",
+    "the_guard_worked": "harness_health (added this session) reported every_call_errored=true, scoreable=false, rate=NULL, verdict 'REFUSED: every call raised, so the suite never reached the model and this is a HARNESS failure, not a capability score'",
+    "what_it_prevented": "without it the receipt reads 0/43 and says THE RESIDENT IS CAPABILITY-DEAD UNDER IDENTITY -- a conclusion about the model drawn from a missing Python package",
+    "THE_ROOT_CAUSE_IS_A_NAME_COLLISION_WORTH_RECORDING": "there are TWO python3.12 interpreters on this machine. /Library/Frameworks/Python.framework/Versions/3.12/bin/python3 is 3.12.6 WITH transformers 5.5.4 and mlx; `python3.12` on PATH is 3.12.13 with NEITHER. ERA_I_CHECKPOINT_002 already sealed 'a test count without its interpreter is not a measurement' -- that rule is right and NOT SPECIFIC ENOUGH, because 'python3.12' names two different interpreters here. An interpreter must be recorded by PATH, not by version."
+  },
+  "claim_boundary": [
+    "THE TWO CAPABILITY RUNS ARE NOT PAIRED. Unfused ran first, fused ~25 minutes later. The 287 s stall proves the machine was not quiet, so the +18.11% carries possible drift. What is paired is the decoder benchmark, which gave +2.41% at 64 tokens in 6 alternating pairs -- so the DIRECTION is confirmed by two instruments and the LONG-LENGTH MAGNITUDE rests on unpaired runs and needs re-measuring.",
+    "ONE RUN PER ARM of the 43-case suite. Capability equality rests on 43 identical repetitions, which is strong for EQUALITY and says nothing about run-to-run variance in the score.",
+    "ONE ARM, open_think. The fused graph is cleared on the arm the resident is scored on and NOT on pre_closed_think, which was never run on this body.",
+    "The startup constant 3.627 s is the unfused fit's intercept applied to BOTH arms; the fused arm's own linear fit has R2 0.0518 because the stall destroys it, so a fused-specific intercept is not available and the band table inherits that assumption.",
+    "The stall's cause is UNKNOWN and uninvestigated. It could recur; nothing here bounds its probability."
+  ],
+  "next": "re-measure the long-length gain PAIRED and alternating, and find the stall -- a 42x pause that produces identical output is either the runtime or the machine, and which one changes what to do about it",
+  "akb_registration": {
+    "evidence_domain": "accelerator",
+    "civilization": "I-D_ACCELERATOR",
+    "program": "HAWKING ACCELERATOR (S015/S031/S032)",
+    "machine_scope": "Apple M3 Ultra, INSTANCE",
+    "representation_scope": "sealed-3.14, unchanged across arms",
+    "kernel_scope": "756-dispatch fused decode graph against the 964 control",
+    "why_declared": "membership must not depend on what this file was named (S032 \u00a713). Before this declaration the receipt was INVISIBLE to the AKB -- neither extracted nor refused -- which reads identically to triaged and found empty."
+  }
+}

@@ -1,0 +1,117 @@
+{
+ "schema": "hawking.headless.token_execution_atlas.v1",
+ "generated_at": "2026-08-26T04:05:10Z",
+ "hand_authored": false,
+ "generated_by": "parsed from crates/hawking-core/src/model/qwen38_64_layer_execution_schedule.rs",
+ "obligation": "G075 (S031 \u00a73), G074",
+ "git_head": "fd2d7d49af9c2e047a541fa0d1ce1748f52f3d76",
+ "headline": "THE ATLAS WAS ALREADY WRITTEN DOWN: A 188-LINE SCHEDULE FILE NAMES ALL 964 DISPATCHES BY KERNEL, AND q4_matvec IS 401 OF THEM WHILE NORM-AND-RESIDUAL GLUE IS 257",
+ "reconciliation": {
+  "formula": "1 embedding + 64 layers * 15 + 3 terminal = 964",
+  "per_layer": {
+   "mixer_prefix": 9,
+   "dense_mlp_suffix": 6,
+   "total": 15
+  },
+  "layer_split": {
+   "deltanet": 48,
+   "gqa": 16
+  },
+  "computed_total": 964,
+  "receipt_total": 964,
+  "reconciles": true,
+  "unattributed": 0
+ },
+ "histogram_by_kernel": {
+  "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128": 401,
+  "qwen80_residual_rmsnorm_f32": 129,
+  "qwen_next_add_residual": 128,
+  "qwen80_silu_mul_f32": 64,
+  "qwen38_qkvz_rearrange_conv_l2_f32": 48,
+  "qwen80_ba_to_decay_beta_f32": 48,
+  "qwen38_gated_delta_decode_vi": 48,
+  "qwen80_deltanet_gated_rmsnorm_f32": 48,
+  "qwen38_gqa_qk_norm_rope_cache_f32": 16,
+  "mha_decode_f32": 16,
+  "qwen38_attention_apply_sigmoid_gate": 16,
+  "embedding_lookup": 1,
+  "sample_argmax_f32": 1
+ },
+ "family_shares": {
+  "q4_matvec": 401,
+  "rmsnorm": 129,
+  "add_residual": 128,
+  "silu_mul": 64,
+  "norm_plus_residual_glue": 257,
+  "glue_pct": 26.7
+ },
+ "pass": false,
+ "what_the_census_workflow_got_wrong_and_why_it_matters": {
+  "it_reported": "580 of 964 located, 384 unattributed (40%), confidence LOW",
+  "the_cause": "23 agents searched qwen38_hybrid_decode.rs (8000+ lines) and the arch census JSON. NONE read qwen38_64_layer_execution_schedule.rs, 188 lines, which NAMES EVERY DISPATCH. The answer was not distributed across a large file -- it was written down in a small one nobody opened.",
+  "it_was_right_to_refuse_to_reconcile": "the workflow explicitly declined to inflate its terms to close the gap, stated 384 as a number, and named the falsifier: 'a per-kernel dispatch histogram from one decode step'. That is exactly this receipt. A decomposition that does not reconcile and SAYS SO is what let the gap be closed by reading one more file.",
+  "and_one_of_its_derivations_was_circular": "it derived '960/64 = 15 exactly' from 964 as though discovering structure. QWEN38_FULL_LAYER_DISPATCHES = 9 + 6 = 15 is a NAMED CONSTANT and 964 is computed FROM it. The 15 was the input, not the finding."
+ },
+ "is_964_measured_or_declared": {
+  "both_exist_and_they_agree": true,
+  "declared": "qwen38_token_ns_ledger.rs:56 production_dispatches_per_token() = 1 + 64*15 + 3 = 964",
+  "measured": "crates/hawking-core/src/metal/mod.rs self.compute_dispatches += 1 at each real dispatch site, surfaced as CommandBufferTiming.dispatches and written to the receipt per step",
+  "why_i_checked": "a constant equal to the number everyone quotes is the genome-literal defect this campaign already sealed for EBPW. Here the counter is a genuine per-dispatch increment, so the receipt's 964 is a MEASUREMENT that happens to agree with a declared figure -- but the ledger test asserts the CONSTANT equals 964, not that the measurement does, so nothing currently fails if the two ever diverge.",
+  "consequence_for_my_own_earlier_claim": "'all three bodies run an identical 964 dispatches, one graph wearing three codecs' SURVIVES -- the counter is real. It would NOT have survived if the receipt had been reading the ledger constant."
+ },
+ "the_two_fusions_the_schedule_makes_visible": {
+  "note": "COUNT-LEVEL ONLY. Nothing here is timed, so these are dispatch-deletion candidates and NOT predicted speedups. This program has measured that collapsing dispatches inside one command buffer bought nothing measurable (ACCELERATOR_SYNC_CORRECTION.json refuted launch count), so the expected value of deleting dispatches WITHIN a single CB is precisely what is unknown.",
+  "candidate_1_add_residual_into_the_next_rmsnorm": {
+   "dispatches": 128,
+   "pct": 13.3,
+   "already_exists": "the decode path has a fuse_add_rmsnorm flag and a fused add_rmsnorm kernel",
+   "why_it_is_the_obvious_first_probe": "qwen_next_add_residual is 128 dispatches whose output is consumed immediately by qwen80_residual_rmsnorm_f32 in the next schedule slot"
+  },
+  "candidate_2_gate_up_swiglu": {
+   "dispatches": 128,
+   "pct": 13.3,
+   "already_exists": "mlp_fusion=GateUpSwiglu collapses gate matvec + up matvec + silu_mul to 1",
+   "arithmetic": "64 layers * (3 -> 1) = 128 dispatches deleted"
+  },
+  "if_both_land": {
+   "from": 964,
+   "to": 708,
+   "deleted": 256,
+   "pct": 26.6
+  },
+  "the_honest_caveat": "both flags ALREADY EXIST in the code. If they are off in the production path the win is available; if they are ON, then the measured 964 already includes them and the schedule file describes the UNFUSED shape -- in which case this atlas describes a graph the runtime does not execute. THAT IS THE NEXT THING TO SETTLE and it is not settled here."
+ },
+ "claim_boundary": [
+  "COUNT ONLY. No time, no bytes, no FLOPs, no synchronization cost -- S031 \u00a73 asks for all of those and this delivers one column of the atlas.",
+  "Derived by PARSING A SOURCE FILE, not by instrumenting a run. drain_dispatched_kernel_names() exists at qwen38_hybrid_decode.rs:2234 and would give the ground-truth histogram from a real decode; running it is the check that would confirm the schedule matches execution.",
+  "The 48/16 DeltaNet/GQA split is taken from the arch census, not re-derived here.",
+  "S031 \u00a73 warns not to assume the most numerous kernel is the most expensive. q4_matvec is 41.6% BY COUNT and its share of TIME is unmeasured -- this receipt must not be cited as a time ranking."
+ ],
+ "REFUTED_BY_A_REAL_RUN_ONE_BLOCK_LATER": {
+  "what_i_predicted_would_settle_it": "this receipt's own caveat: 'if those flags are already ON in production the measured 964 includes them and this schedule describes the UNFUSED shape -- in which case this atlas describes a graph the runtime does not execute. THAT IS THE NEXT THING TO SETTLE.' It is settled, and the answer is worse than the flag question.",
+  "how": "crates/hawking-core/examples/qwen38_dispatch_trace.rs already existed and prints the kernel names the runtime ACTUALLY dispatched, harvested from the TCB structural label list. Ran it on the sealed 3.1393 resident at ~/noetic/NOETIC_PARENT_A, 3 generated tokens, FALLBACKS: 0.",
+  "result": "14 DISTINCT KERNELS DISPATCHED. Only 7 of them appear in the schedule file.",
+  "runtime_only_not_in_the_schedule_at_all": [
+   "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+   "gk_swiglu_f32",
+   "qwen_uniform_q4_embedding_lookup",
+   "qwen38_gated_delta_decode_vi_simd",
+   "qwen38_gqa_qk_norm_rope_cache_tg",
+   "qwen80_deltanet_gated_rmsnorm_tg",
+   "qwen80_residual_rmsnorm_tg"
+  ],
+  "schedule_names_never_dispatched": [
+   "qwen80_residual_rmsnorm_f32",
+   "qwen80_deltanet_gated_rmsnorm_f32",
+   "qwen38_gated_delta_decode_vi",
+   "qwen38_gqa_qk_norm_rope_cache_f32",
+   "qwen80_silu_mul_f32"
+  ],
+  "four_are_variant_renames_and_one_is_not": "_f32 -> _tg and _vi -> _vi_simd are the SAME operation under a different threadgroup or simdgroup strategy, so the STRUCTURE may survive the rename. qwen80_silu_mul_f32 -> gk_swiglu_f32 is a DIFFERENT KERNEL, and qwen_affine_q2_group32 appears NOWHERE in the schedule -- that one is not a rename, it is an operation the schedule does not model.",
+  "the_body_is_not_uniform_q4_and_that_is_the_root": "the runtime's own census prints tensors=755 affine=192 q4=210 f32=353, and its genome line names mlp_kernel=qwen_q2f_group64, dn_kernel=qwen_uniform_q3_group64, gqa_kernel=qwen_uniform_q3_group128. THE SEALED RESIDENT IS A MIXED-CODEC BODY. The schedule file describes qwen_uniform_q4_group64_matvec in every matvec slot, so it is the schedule for A DIFFERENT BODY.",
+  "WHAT_THIS_KILLS": "the per-kernel HISTOGRAM in this receipt -- q4_matvec 401, rmsnorm 129, add_residual 128, silu_mul 64 -- is computed from a schedule that names kernels this body does not dispatch. IT IS WITHDRAWN as a description of the sealed resident. It may still describe the uniform-q4 body the schedule was written for; nothing here establishes that either.",
+  "WHAT_SURVIVES": "the ARITHMETIC 1 + 64*15 + 3 = 964 and the runtime dispatch COUNTER (metal/mod.rs compute_dispatches += 1) are untouched -- this refutes the kernel ATTRIBUTION, not the count. Whether this mixed body also runs 15 dispatches per layer is NOT MEASURED HERE: the trace reports DISTINCT NAMES (14), not per-token counts.",
+  "the_lesson_is_one_this_program_keeps_relearning": "I closed a gap by PARSING A SOURCE FILE and called it an atlas. A schedule file is a DECLARATION; the dispatch trace is a MEASUREMENT; and they disagree on 6 of 13 names plus one operation that is absent entirely. The census workflow refused to reconcile from source and was right; I reconciled from a different source and got a clean 964 that described the wrong graph. A PERFECT RECONCILIATION AGAINST A DECLARATION IS NOT A MEASUREMENT."
+ },
+ "pass_reason": "the histogram is withdrawn: it describes a uniform-q4 schedule and the sealed resident is a mixed affine/q4/f32 body dispatching seven kernels the schedule never names"
+}

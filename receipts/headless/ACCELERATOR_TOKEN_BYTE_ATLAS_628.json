@@ -1,0 +1,220 @@
+{
+  "receipt": "ACCELERATOR_TOKEN_BYTE_ATLAS_628",
+  "date": "2026-08-26",
+  "obligation": "S032 \u00a79 rebuild the 628-dispatch atlas, \u00a76 the byte wall, \u00a77 LM-head ascension; G075",
+  "question": "S032 \u00a79 says the 964-dispatch atlas is stale and the 628 graph must be ranked by what it actually costs. The previous block proved dispatch COUNT does not predict cost and that the token is 60.7% of the byte wall, so BYTES is the column that ranks.",
+  "THE_DERIVATION_RECONCILES_AND_THAT_IS_WHAT_MAKES_IT_A_MEASUREMENT": {
+    "method": "exact element counts from the artifact's own config x the codec's bpw -- affine_q2 g64 at 2.5 bpw for every MLP tensor, HQ30UQ4 g64 at 4.25 bpw for every mixer projection, the embedding and the lm_head",
+    "shapes_used": {
+      "H": 5120,
+      "I": 17408,
+      "L": 64,
+      "V": 248320,
+      "gqa_layers": 16,
+      "deltanet_layers": 48,
+      "head_dim": 256,
+      "num_attention_heads": 24,
+      "num_key_value_heads": 4,
+      "linear_num_key_heads": 16,
+      "linear_num_value_heads": 48,
+      "linear_key_head_dim": 128,
+      "linear_value_head_dim": 128,
+      "full_attention_interval": 4,
+      "attn_output_gate": true
+    },
+    "derived_total_plus_embedding_table": 10543677440,
+    "payload_bytes_on_disk": 10554328856,
+    "unaccounted": 10651416,
+    "unaccounted_pct": 0.101,
+    "and_the_residual_HAS_A_NAME": "MIX_REPORT.json records f32_bytes = 10,584,840 against an unaccounted 10,651,416 -- the residual IS the f32 norms, to within 66,576 bytes of per-tensor headers. A derivation that lands on an independently recorded quantity is checking the accounting; one that leaves a nameless remainder is a story.",
+    "why_this_is_stronger_than_the_first_atlas": "TOKEN_EXECUTION_ATLAS.json's first count column reconciled to 964 EXACTLY by parsing a schedule file, and was then refuted by a real run because it described a uniform-q4 body. This reconciles against the ARTIFACT'S OWN payload, not against a declaration."
+  },
+  "THE_RANKING": {
+    "rows": [
+      {
+        "family": "mlp_gate_up_swiglu (affine-q2)",
+        "dispatches_per_token": 64,
+        "bytes_per_dispatch": 55705600,
+        "bytes_per_token": 3565158400,
+        "pct_of_weight_bytes": 36.128,
+        "note": "gate+up fused, 1 dispatch/layer"
+      },
+      {
+        "family": "deltanet_qkvz_ba (q4, fused)",
+        "dispatches_per_token": 48,
+        "bytes_per_dispatch": 44825600,
+        "bytes_per_token": 2151628800,
+        "pct_of_weight_bytes": 21.804,
+        "note": "pair_concat, 1/layer"
+      },
+      {
+        "family": "mlp_down (affine-q2)",
+        "dispatches_per_token": 64,
+        "bytes_per_dispatch": 27852800,
+        "bytes_per_token": 1782579200,
+        "pct_of_weight_bytes": 18.064,
+        "note": "down_proj, 1 dispatch/layer"
+      },
+      {
+        "family": "deltanet_out (q4)",
+        "dispatches_per_token": 48,
+        "bytes_per_dispatch": 16711680,
+        "bytes_per_token": 802160640,
+        "pct_of_weight_bytes": 8.129,
+        "note": "output projection"
+      },
+      {
+        "family": "lm_head (q4)",
+        "dispatches_per_token": 1,
+        "bytes_per_dispatch": 675430400,
+        "bytes_per_token": 675430400,
+        "pct_of_weight_bytes": 6.844,
+        "note": "READ IN FULL every token; untied"
+      },
+      {
+        "family": "gqa_qkv (q4, fused)",
+        "dispatches_per_token": 16,
+        "bytes_per_dispatch": 22282240,
+        "bytes_per_token": 356515840,
+        "pct_of_weight_bytes": 3.613,
+        "note": "matvec_qkv, 1/layer"
+      },
+      {
+        "family": "gqa_gate (q4)",
+        "dispatches_per_token": 16,
+        "bytes_per_dispatch": 16711680,
+        "bytes_per_token": 267386880,
+        "pct_of_weight_bytes": 2.71,
+        "note": "attn_output_gate=true"
+      },
+      {
+        "family": "gqa_out (q4)",
+        "dispatches_per_token": 16,
+        "bytes_per_dispatch": 16711680,
+        "bytes_per_token": 267386880,
+        "pct_of_weight_bytes": 2.71,
+        "note": "output projection"
+      },
+      {
+        "family": "embed lookup (q4)",
+        "dispatches_per_token": 1,
+        "bytes_per_dispatch": 2720,
+        "bytes_per_token": 2720,
+        "pct_of_weight_bytes": 0.0,
+        "note": "ONE ROW of a 675 MB table"
+      }
+    ],
+    "total_weight_bytes_per_token": 9868249760,
+    "note": "bytes_per_token = dispatches_per_token x bytes_per_dispatch; every figure is weight traffic, which is 99.9% of what a decode token reads"
+  },
+  "ORGAN_ROLLUP": {
+    "MLP": {
+      "bytes": 5347737600,
+      "pct": 54.19,
+      "dispatches": 128,
+      "ms_at_352.5_GBps": 15.171
+    },
+    "DeltaNet_projections": {
+      "bytes": 2953789440,
+      "pct": 29.93,
+      "dispatches": 96,
+      "ms_at_352.5_GBps": 8.38
+    },
+    "GQA_projections": {
+      "bytes": 891289600,
+      "pct": 9.03,
+      "dispatches": 48,
+      "ms_at_352.5_GBps": 2.528
+    },
+    "lm_head": {
+      "bytes": 675430400,
+      "pct": 6.84,
+      "dispatches": 1,
+      "ms_at_352.5_GBps": 1.916
+    },
+    "reading": "THE MLP IS THE BYTE KING AT 54.19% and it is the organ fusion already attacked; the mixer projections are 38.96% across 144 dispatches; the head is 6.84% in ONE."
+  },
+  "S032_7_S_PREMISE_IS_HALF_RIGHT_AND_THE_RANKING_IS_BACKWARDS": {
+    "the_steer_says": "'the current decoder reads approximately 9.879 GB/token and the full lm_head is a major component'",
+    "measured": {
+      "lm_head_pct_of_token_bytes": 6.84,
+      "lm_head_bytes": 675430400,
+      "lm_head_ms_at_the_sealed_effective_bandwidth": 1.916,
+      "pct_of_the_28.0208_ms_token": 6.84
+    },
+    "so_the_CEILING_on_deleting_the_head_entirely_is_6.84_percent": "not a major component of the TOKEN. Removing every byte the head reads -- which no exact algorithm can do -- buys 6.84% of the byte wall.",
+    "AND_YET_IT_IS_THE_MOST_EXPENSIVE_SINGLE_DISPATCH_IN_THE_GRAPH_BY_12x": {
+      "lm_head_bytes_per_dispatch": 675430400,
+      "next_largest": 55705600,
+      "ratio": 12.12,
+      "reading": "BOTH READINGS ARE TRUE AND THEY ANSWER DIFFERENT QUESTIONS. Per DISPATCH the head is the giant of the graph, 675.4 MB against 55.7 MB for the biggest MLP dispatch. Per TOKEN it is 6.84%, because the MLP runs its 55.7 MB one hundred and twenty-eight times. A ranking by dispatch cost and a ranking by token cost disagree, which is the same lesson as dispatch-count-is-not-time arriving on the byte axis."
+    }
+  },
+  "S032_8_ANSWERED_BY_ARITHMETIC_BEFORE_BUILDING_ANYTHING": {
+    "the_question": "WHY MUST FULL LOGITS BE MATERIALIZED?",
+    "what_the_full_logit_tensor_actually_costs": {
+      "vocab": 248320,
+      "dtype": "f32",
+      "bytes_written": 993280,
+      "bytes_written_plus_read_by_argmax": 1986560,
+      "pct_of_token_bytes": 0.0201,
+      "ms_at_352.5_GBps": 0.0056
+    },
+    "plus_the_dispatch": "one sample_argmax_f32 of 628, at the ~2.7 us per-dispatch cost measured in ACCELERATOR_DISPATCH_IS_NOT_THE_COST",
+    "total_available": "~8.3 us of a 28,021 us token = 0.03%",
+    "SO_THE_ANSWER_IS_THAT_IT_COSTS_ALMOST_NOTHING_NOT_TO": "fusing argmax into the head is a real graph-boundary deletion and it is worth three hundredths of a percent. The head's cost is READING 675 MB OF WEIGHTS, and argmax fusion does not touch a single one of those bytes. Building it first would have been optimizing the visible boundary rather than the expensive one -- the same error the dispatch ladder made.",
+    "WHAT_WOULD_ACTUALLY_PAY_IS_A_DIFFERENT_QUESTION": "S032 \u00a77E, a mathematically safe rejection bound that lets the head skip rows. That attacks the 675 MB rather than the 2 MB, and it is EXACT rather than approximate if the bound is sound. It is tested in the next block and predicted to prune little -- see the prediction recorded there before the run."
+  },
+  "WHAT_THIS_ATLAS_IS_NOT": [
+    "IT IS NOT THE TIME COLUMN. Bytes are exact; the ms figures are bytes divided by ONE effective bandwidth (352.5 GB/s, the sealed token's own 9.879 GB / 28.0208 ms) and therefore assume every family moves its bytes at the same rate. They do not -- ACCELERATOR_EXPERT_BATCH measured a q4-native matvec at 161.9 GB/s against a dense arm at 426.4 on the same machine, a 2.6x spread -- so a family's ms here is a LOWER BOUND on its time and the ranking by BYTES is what this receipt claims.",
+    "no per-dispatch duration exists and none is claimed; Metal timestamp sampling is probed as supported and deliberately not encoded (crates/hawking-core/src/metal/mod.rs:704)",
+    "activation traffic, KV-cache reads and the DeltaNet state are EXCLUDED -- they are small against 9.87 GB of weights but they are not zero, and KV grows with context while every figure here is context-independent",
+    "the 628 graph's non-projection dispatches (rmsnorm, add_residual, the DeltaNet-specific four, the GQA-specific three, argmax) read activations and no weights, so they are absent from a WEIGHT-byte ranking by construction and are not thereby free",
+    "one artifact, one machine, INSTANCE"
+  ],
+  "next": "the Cauchy-Schwarz rejection bound on the lm_head: EXACT, attacks the 675 MB rather than the 2 MB, and predicted to prune little",
+  "identities": {
+    "experiment": {
+      "class": "ACCEL-MEMORY",
+      "knowledge_level": "INSTANCE",
+      "question": "what does one decode token of the 628-dispatch graph actually READ, by family?"
+    },
+    "machine": {
+      "soc": "Apple M3 Ultra",
+      "gpu_cores": 60,
+      "ram_gib": 96,
+      "measured_dram_gbps": 589.73,
+      "receipt": "receipts/headless/MACHINE_GENOME.json"
+    },
+    "device": {
+      "backend": "Metal",
+      "api": "MTLCommandBuffer GPUStartTime/GPUEndTime"
+    },
+    "model": {
+      "root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+      "tag": "sealed-3.14",
+      "complete_ebpw": 3.139300850311054,
+      "vocab_size": 248320,
+      "hidden_size": 5120,
+      "intermediate_size": 17408,
+      "num_hidden_layers": 64
+    },
+    "runtime": {
+      "binary": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+      "sha256_16": "d34044cffae8f320",
+      "git_head": "5c93405ecfb33b9f12d093e01e0aeec134338d0a"
+    },
+    "representation": {
+      "mixer": "HQ30UQ4 g64 (4.25 bpw)",
+      "mlp": "HGRAVF01 affine_q2 group64 LS (2.5 bpw)",
+      "head_and_embed": "HQ30UQ4 g64 (4.25 bpw), UNTIED"
+    },
+    "kernel": {
+      "graph": "628-dispatch fused decode (ADD_RMSNORM + GQA_QKV + DN_INPROJ + MLP=swiglu)"
+    },
+    "transport": {
+      "status": "ABSENT",
+      "reason": "single-device unified-memory Metal run; no bridge and no host<->device transport is crossed"
+    }
+  }
+}

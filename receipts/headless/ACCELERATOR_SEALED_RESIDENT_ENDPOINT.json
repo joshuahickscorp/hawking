@@ -1,0 +1,134 @@
+{
+  "receipt": "ACCELERATOR_SEALED_RESIDENT_ENDPOINT",
+  "date": "2026-08-26",
+  "obligation": "S032 \u00a718 HCLI uses its resident; G083, G071",
+  "akb_registration": {
+    "evidence_domain": "accelerator",
+    "civilization": "I-A_AGENTOS_HCLI",
+    "program": "HCLI resident integration (S032 \u00a718)",
+    "machine_scope": "Apple M3 Ultra, INSTANCE",
+    "representation_scope": "sealed-3.14 at 3.1393 complete EBPW, unchanged",
+    "kernel_scope": "the 628-dispatch fused decode graph, configured by env",
+    "why_declared": "membership must not depend on what this file was named (S032 \u00a713)"
+  },
+  "question": "S032 \u00a718 asks HCLI to make sealed-3.14 its canonical cheap resident thinker. It could not, and the reason was concrete rather than architectural.",
+  "THE_BLOCKER_WAS_NAMED_AND_IS_NOW_CLOSED": {
+    "what": "hcli/delegate.py default_caller talks to an OPENAI-COMPATIBLE ENDPOINT. The sealed resident is a Rust greedy example with no server, and `hawking gravity serve` wants model-*.gravity shards that DO NOT EXIST -- every Hawking body on disk is .hq30uq4, .f32v2 or .hgrafv01. That is the exact gap that has kept the fast body and the OpenAI surface from ever talking.",
+    "what_shipped": "tools/hcli_resident/serve_sealed.py -- /v1/chat/completions and /v1/models over the sealed binary, no second runtime invented and no change to the resident."
+  },
+  "THE_SERVER_REFUSES_TO_START_UNLESS_DISK_MATCHES_THE_SEAL": {
+    "why": "a shim can silently serve a DIFFERENT configuration than the seal binds -- a different artifact, a rebuilt binary, the wrong chat-template arm -- and every number downstream would then describe something nobody sealed. This session already killed a capability run mid-flight for exactly that: a rebuild changed the binary hash under a running suite.",
+    "checked_against_HCLI_RESIDENT_SEAL_json": [
+      "runtime binary sha256, byte for byte",
+      "tokenizer.json and chat_template.jinja hashes",
+      "the artifact root exists",
+      "the sealed graph is the 628-dispatch one this server configures",
+      "the sealed arm is pre_closed_think, which is what this server renders",
+      "the four fusion levers it sets are the ones the seal names"
+    ],
+    "EVERY_mismatch_is_reported_not_the_first": "a reader who fixes the first of three otherwise learns about the other two one restart at a time.",
+    "the_escape_hatch_is_LABELLED": "--allow-unsealed serves anyway and stamps EVERY RESPONSE with sealed:false, so the divergence travels with the output instead of being lost at startup.",
+    "live_check": {
+      "sealed": true,
+      "resident": "sealed-3.14",
+      "dispatches_per_decode_token": 628,
+      "arm": "pre_closed_think"
+    }
+  },
+  "A_SAMPLER_REQUEST_IS_REFUSED_RATHER_THAN_IGNORED": {
+    "why": "the sealed decode path is GREEDY ARGMAX. Accepting temperature and then not honouring it is how a benchmark ends up measuring a different sampler than the one it asked for -- and the seal itself records generation_config as PRESENT AND UNUSED for the same reason.",
+    "refused": [
+      "temperature",
+      "top_p",
+      "top_k",
+      "n",
+      "presence_penalty",
+      "frequency_penalty",
+      "logit_bias",
+      "stream"
+    ],
+    "AND_THE_FIRST_VERSION_OF_THAT_GUARD_HAD_A_REAL_HOLE": {
+      "what": "the check was `body[k] not in (None, 1, False)`. In Python TRUE == 1, so `stream: true` passed the guard and the request WAS SERVED NON-STREAMED WITH A 200 -- the caller silently given something other than what it asked for, which is precisely the failure the refusal exists to prevent.",
+      "caught_by": "the mutation test, which took 13 seconds because it actually ran the model; the duration was the tell before the assertion was.",
+      "fixed": "a per-key table of acceptable values with a TYPE-AWARE comparison, so `n: 1` is fine and `stream: 1` is not, pinned by its own test separate from the parameter list because the bug was in the COMPARISON and not the list."
+    }
+  },
+  "IDENTITY_TRAVELS_WITH_EVERY_RESPONSE": {
+    "field": "hawking",
+    "carries": [
+      "sealed",
+      "resident",
+      "artifact_inventory_sha",
+      "runtime_binary_sha256_16",
+      "chat_template_arm",
+      "dispatches_per_decode_token",
+      "fallbacks",
+      "dense_w_materialized",
+      "think_block_seen",
+      "wall_s"
+    ],
+    "why": "a caller that logs only the reply text cannot later say which body produced it -- the defect G073 found across every CAPABILITY_noetic-*.json receipt, which recorded an argparse default endpoint and no artifact identity at all.",
+    "and_wall_s_is_LABELLED_NOT_A_TPS_FIGURE": "the binary reloads the model per call, so this is a correctness and plumbing surface and NOT a throughput one; throughput_authority names the seal explicitly in the response body."
+  },
+  "THE_THINK_RULE_IS_THE_HARNESS_S_RULE_ON_PURPOSE": "the sealed arm pre-closes the think block, so a well-behaved reply has none; if one appears the reply is what FOLLOWS it, and an UNTERMINATED block is an EMPTY reply rather than prose to be scored. That is capability_suite.py's rule, reused deliberately so the server and the suite cannot disagree about what a reply is -- the 2.5970-EBPW body once passed a leak check BY never finishing thinking.",
+  "tests": {
+    "command": "python3.12 -m pytest tools/hcli_resident/ -q",
+    "passed": 10,
+    "failed": 0,
+    "note": "they run in 0.10 s, which is itself the evidence that every refusal happens BEFORE the model is invoked -- the version with the True==1 hole took 13 s because it did not"
+  },
+  "suite_total": {
+    "command": "pytest tools/accelerator/ hcli/ tools/hcli_resident/ tools/odyssey/test_resident_seal.py tools/headless/test_capability_identity.py -q",
+    "passed": 608,
+    "skipped": 1,
+    "failed": 0
+  },
+  "claim_boundary": [
+    "NO REAL HCLI MISSION HAS RUN THROUGH THIS YET. The endpoint exists, refuses correctly and is tested; G083 asks for one real bounded Accelerator mission end to end with a correct verifier classification, and that is NOT done. This closes the BLOCKER, not the obligation.",
+    "ONE REQUEST AT A TIME and the model reloads per call, so this is a plumbing surface. Any throughput number taken from it would be dominated by model load and must not be quoted; the response says so in its own body.",
+    "the seal check is a HASH COMPARISON against the seal's recorded values, and the seal's own artifact_inventory_sha is NAME AND SIZE rather than content -- so this inherits that limit exactly, and a same-length edit to a weight shard is invisible to both.",
+    "greedy only. No streaming, no batching, no KV reuse across requests, no logprobs.",
+    "the server binds 127.0.0.1 and has no authentication, which is correct for a local resident and is stated rather than assumed."
+  ],
+  "next": "one real bounded Accelerator mission through HCLI against this endpoint, with the verifier classification checked -- which is G083 and is what this unblocks",
+  "identities": {
+    "experiment": {
+      "class": "ACCEL-STATE",
+      "knowledge_level": "INSTANCE",
+      "question": "can HCLI talk to the sealed resident without a second runtime or a silent configuration drift?"
+    },
+    "machine": {
+      "soc": "Apple M3 Ultra",
+      "gpu_cores": 60,
+      "ram_gib": 96,
+      "receipt": "receipts/headless/MACHINE_GENOME.json"
+    },
+    "device": {
+      "backend": "Metal via the sealed Rust binary"
+    },
+    "model": {
+      "root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+      "tag": "sealed-3.14",
+      "complete_ebpw": 3.139300850311054,
+      "seal": "receipts/headless/HCLI_RESIDENT_SEAL.json"
+    },
+    "representation": {
+      "mixer": "HQ30UQ4 g64",
+      "mlp": "HGRAVF01 affine_q2 group64 LS",
+      "note": "UNCHANGED -- this receipt changes no representation"
+    },
+    "kernel": {
+      "graph": "628-dispatch fused decode, set by the four sealed env levers"
+    },
+    "runtime": {
+      "server": "tools/hcli_resident/serve_sealed.py",
+      "binary": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+      "sha256_16": "d34044cffae8f320",
+      "git_head": "de0bfc121597968ac9b57270bf4b33f482a4b7b1"
+    },
+    "transport": {
+      "status": "ABSENT",
+      "reason": "HTTP on 127.0.0.1 to a local subprocess; no device transport is crossed"
+    }
+  }
+}

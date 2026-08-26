@@ -1,0 +1,137 @@
+{
+  "receipt": "ACCELERATOR_MLP_OPERAND_REUSE_REFUTED",
+  "date": "2026-08-26",
+  "obligation": "S032 \u00a75 explain the GPU-side MLP fusion win; \u00a73 BENCH_STATE; G079",
+  "akb_registration": {
+    "evidence_domain": "accelerator",
+    "civilization": "I-D_ACCELERATOR",
+    "program": "HAWKING ACCELERATOR (S015/S031/S032)",
+    "machine_scope": "Apple M3 Ultra, INSTANCE",
+    "representation_scope": "affine_q2 group64, 2.5 bpw, at the artifact's real MLP shape",
+    "kernel_scope": "synthetic dual-accumulator matvec; NOT the production kernel",
+    "why_declared": "membership must not depend on what this file was named (S032 \u00a713)"
+  },
+  "question": "ACCELERATOR_DISPATCH_IS_NOT_THE_COST measured the mlp gate_up PAIR lever at 17.35 us per removed dispatch against 2.64 and 2.86 for three other levers, ruled out host and DRAM bandwidth, and said in its own claim boundary that the experiment which would settle it -- a kernel that fuses the dispatch while still loading the input twice -- DOES NOT EXIST AND WAS NOT BUILT. Built.",
+  "THE_CONTROL_AND_WHY_IT_IS_HARD_TO_BUILD": {
+    "arms": "two kernels, ONE dispatch each, SAME weights read, SAME output, SAME grid and threadgroup. The ONLY difference is whether the input slice is loaded once and fed to both accumulators, or loaded twice.",
+    "the_difficulty": "a naive x[i] read twice is common-subexpression-eliminated by the Metal compiler and would have measured NOTHING while looking like a control. The reload arm therefore passes THE SAME MEMORY as two SEPARATE `device const float*` parameters -- without `restrict` the compiler cannot prove they alias, so it cannot fold the second load away.",
+    "shape": "17408 x 5120, group 64, affine_q2 -- the artifact's real MLP gate/up shape, not a toy",
+    "CORRECTNESS_FIRST": {
+      "oracle": "float64 over the same packed bytes, independent of the kernel",
+      "reuse_max_rel_err": 1.913e-07,
+      "reload_max_rel_err": 1.913e-07,
+      "note": "identical to the last digit, which is what proves the two arms compute the same thing"
+    }
+  },
+  "THE_REGIME_CROSS_CHECKS_AGAINST_UNRELATED_WORK": {
+    "bytes_per_dispatch_MB": 55.71,
+    "median_ms": 0.3715,
+    "effective_gbps": 149.9,
+    "independent_comparison": "ACCELERATOR_EXPERT_BATCH measured a native q4 arm at 161.9 GB/s on this machine and concluded it was ARITHMETIC-BOUND ON THE UNPACK rather than near the bandwidth wall",
+    "apart_pct": 7.4,
+    "why_it_matters": "a synthetic kernel is only evidence about production if it sits in the same regime. 149.9 against 161.9 from a different experiment on a different day says it does -- and it also predicts the result below, because a kernel bound on shifts and masks does not care about one extra L1 load."
+  },
+  "PREDICTION_WRITTEN_BEFORE_THE_RUN": "if operand reuse is the mechanism, `reuse` beats `reload` by 8-20% at the real MLP shape. If the two are INDISTINGUISHABLE, operand reuse is REFUTED and the win lives in the prologue, occupancy or the compiler -- candidates F, G and K of S032 \u00a75.",
+  "OUTCOME": "REFUTED, AND NOT IN THE PREDICTED-NULL DIRECTION EITHER",
+  "measured": {
+    "bench_state": "QUIESCED",
+    "sweeps_admitted": 3,
+    "runs_refused": 0,
+    "gate": "pre-registered: machine_quiescence sampled before AND after each sweep, admitted only with no process over 2 GiB RSS at either sample; observed max_rss 0.13-0.15 GiB",
+    "reuse_ms": [
+      0.4465,
+      0.3642,
+      0.3715
+    ],
+    "reload_ms": [
+      0.3777,
+      0.3563,
+      0.3646
+    ],
+    "reuse_median": 0.3715,
+    "reload_median": 0.3646,
+    "reuse_is_slower_by_pct": 1.892,
+    "sign_consistency": "reload is faster in 3 OF 3 admitted sweeps",
+    "within_sweep_iqr_pct": [
+      15.16,
+      14.92
+    ],
+    "HOW_STRONG_THIS_IS_AND_HOW_STRONG_IT_IS_NOT": "the arms carry ~15% IQR, ABOVE the 10% gate, so NO small effect is resolved in either direction and none is claimed. What IS settled is the prediction: an 8-20% advantage for `reuse` cannot hide when the medians differ by -1.9% and the sign is consistent 3/3 in the WRONG direction. The hypothesis is refuted at the size it was proposed at."
+  },
+  "WHAT_THIS_ELIMINATES_FROM_S032_5_S_THIRTEEN_CANDIDATES": {
+    "eliminated": [
+      "E register/threadgroup reuse -- OF THE INPUT VECTOR, which is the specific form the previous receipt proposed",
+      "L producer-consumer staying in a faster hierarchy -- for the INPUT, same measurement"
+    ],
+    "and_the_mechanism_for_the_elimination_is_named": "the kernel does 8 shift-and-mask unpacks plus 2 fused multiply-adds per byte pair. Against that instruction stream one extra L1 load is free, which is exactly what an arithmetic-bound-on-the-unpack kernel predicts -- and the 149.9 GB/s cross-check says this kernel is that.",
+    "NOT_eliminated_and_the_control_did_not_test_them": [
+      "F kernel prologue/epilogue -- the production unfused path pays TWO dispatch prologues",
+      "G occupancy",
+      "K compiler optimization unlocked by fusion",
+      "THE REDUCTION AND EPILOGUE: production unfused does two SEPARATE simd_sum, threadgroup reduces and writes; fused does two accumulators in ONE reduction pass. This control held the reduction FIXED at two accumulators in both arms, so it says nothing about that difference -- and that difference is now the leading candidate."
+    ],
+    "honest_status": "two of thirteen eliminated by measurement, none confirmed. That is less than the steer asked for and more than an untested story."
+  },
+  "THE_ARM_THAT_WOULD_SETTLE_IT_IS_BLOCKED_AND_IS_A_NAMED_GATE_NOT_A_PARKING_LOT": {
+    "what": "a THREE-arm run adding `two_dispatch` -- a single-accumulator kernel run TWICE, which is exactly the shape the unfused production path executes, against the one-dispatch dual-accumulator fused shape. That isolates prologue + reduction + epilogue together.",
+    "status": "BUILT AND CORRECT, NOT TIMED",
+    "why": "the run's own pre-registered gate returned NO ADMITTED SWEEP inside a 1300 s budget -- BENCH_STATE = CONTENDED. tools/mlx_boot.py from the operator's Personal-Model held 45.6 GiB throughout and was NOT killed, on the same rule as the lake fill.",
+    "the_gate_working_is_the_point": "S032 \u00a73 says an unknown machine is not a quiet one and a contended arm may not be silently compared to an uncontended one. The harness refused to produce a number rather than producing one nobody could audit, and that refusal is recorded as the result of the run.",
+    "exact_missing_input": "a quiesced window of about 90 seconds with no process over 2 GiB RSS"
+  },
+  "claim_boundary": [
+    "SYNTHETIC KERNEL, NOT THE PRODUCTION ONE. It reproduces the shape, the codec, the group size and the regime (149.9 vs 161.9 GB/s) but it is my reimplementation, and the production kernel is faster than mine -- 64 of my dispatches would be 23.7 ms against a whole token of 28.02, which cannot be right, so production is doing something mine is not.",
+    "the arms carry ~15% IQR, above the program's own gate; the refutation rests on SIGN CONSISTENCY 3/3 plus a median in the wrong direction, not on a clean gate, and no small effect is resolved.",
+    "ONE shape, ONE machine, INSTANCE. Random codes and scales rather than the artifact's real weights -- correct for a timing question, since the instruction stream does not depend on the values, and NOT correct for anything about adequacy.",
+    "the reload arm's defence against common-subexpression elimination is ARCHITECTURAL (two unaliased parameters) and was not verified by reading generated assembly, which xcrun metal being ABSENT on this machine makes impossible -- the same named gate that blocks AOT metallib.",
+    "NOTHING about the production 17.35 us/dispatch figure moves: this refutes one proposed MECHANISM for it, not the measurement."
+  ],
+  "next": "the two_dispatch arm the moment a quiet window exists -- it tests prologue, reduction and epilogue together, which is what is left after operand reuse",
+  "identities": {
+    "experiment": {
+      "class": "ACCEL-FUSION",
+      "knowledge_level": "INSTANCE",
+      "question": "is the unexplained 84% of the gate/up fusion win operand reuse of the input?"
+    },
+    "machine": {
+      "soc": "Apple M3 Ultra",
+      "gpu_cores": 60,
+      "ram_gib": 96,
+      "measured_dram_gbps": 589.73,
+      "receipt": "receipts/headless/MACHINE_GENOME.json"
+    },
+    "device": {
+      "backend": "Metal",
+      "api": "mx.fast.metal_kernel JIT; xcrun metal ABSENT so no AOT and no generated-assembly inspection"
+    },
+    "model": {
+      "status": "ABSENT",
+      "reason": "no model was executed. This is a synthetic kernel at the artifact's MLP SHAPE with random codes; the shape is real and the weights are not."
+    },
+    "representation": {
+      "codec": "affine_q2 group64, 2.5 bpw",
+      "shape": [
+        17408,
+        5120
+      ],
+      "note": "the artifact's real MLP gate/up shape and codec"
+    },
+    "kernel": {
+      "arms": [
+        "dual-accumulator, input loaded ONCE",
+        "dual-accumulator, input loaded TWICE through two unaliased parameters",
+        "single-accumulator run twice (BUILT, NOT TIMED)"
+      ],
+      "threadgroup": 128,
+      "rows_per_threadgroup": 2
+    },
+    "runtime": {
+      "mlx": "0.32.1 metal_kernel JIT under the framework CPython 3.12",
+      "git_head": "1b1df5235d9969f93a10314b11a6dd503ad6b5a6"
+    },
+    "transport": {
+      "status": "ABSENT",
+      "reason": "single-device unified-memory Metal run; no bridge and no host<->device transport is crossed"
+    }
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "receipt": "FUSION_GAIN_IS_LENGTH_INDEPENDENT",
+  "date": "2026-08-26",
+  "obligation": "G074, G046; closes the two items CAPABILITY_FUSED_GRAPH_CLEARED.json named as next",
+  "question": "That receipt said in its own words: re-measure the long-length gain PAIRED and alternating, and find the stall. Both, and the first REFUTES my own headline from one block ago.",
+  "THE_29_PERCENT_IS_REFUTED": {
+    "what_I_claimed": "CAPABILITY_FUSED_GRAPH_CLEARED.json measured +29.09% median gain in the >800-token band over 8 items and called it 'an ORDER LARGER' than the decoder bench's +2.41% at 64 tokens",
+    "how_it_was_tested": "a PAIRED, ALTERNATING length sweep in ONE session at 64, 256 and 1024 new tokens, max_seq_len 2048, same prompt, same artifact",
+    "clean_floor_unfused_ms_per_token": 30.2791,
+    "clean_floor_fused_ms_per_token": 29.6304,
+    "gain_pct": 2.189,
+    "per_length": {
+      "64": {
+        "U": [
+          30.3125,
+          30.3325
+        ],
+        "F": [
+          29.657
+        ]
+      },
+      "256": {
+        "U": [
+          30.2527
+        ],
+        "F": [
+          29.5978
+        ]
+      },
+      "1024": {
+        "U": [
+          30.2683,
+          30.2282,
+          30.29
+        ],
+        "F": [
+          29.5537,
+          29.6297,
+          29.6653,
+          29.631
+        ]
+      }
+    },
+    "VERDICT": "THE GAIN IS FLAT IN GENERATION LENGTH. Clean unfused sits at 30.25-30.33 ms/token and clean fused at 29.55-29.67 at EVERY length from 64 to 1024 -- a 16x range -- giving 2.1-2.3%, the SAME as the original 64-token measurement. There is no length scaling.",
+    "so_what_was_the_29_percent": "the capability run's >800-token band showed unfused at 45.44 ms/token against a clean floor of 30.29 measured here -- 1.50x INFLATED. The fused arm's 35.20 was inflated too but less. Those runs were UNPAIRED and 25 minutes apart, exactly the drift that receipt's own claim boundary named as the risk, and the band table read contention on the unfused long items as a fused advantage.",
+    "what_survives_from_that_receipt": "the capability equality (30/43 both arms, 43/43 repetitions semantically identical) is UNAFFECTED -- it is a comparison of OUTPUTS, not of times, and outputs do not drift. The fused graph is still cleared on capability grounds.",
+    "and_the_18_percent_too": "CAPABILITY_FUSED_GRAPH_CLEARED's +18.11% excluding-the-stall figure rests on the same unpaired pair of runs and is now SUPERSEDED by the paired 2.1-2.3%. It is retracted as a magnitude; the DIRECTION it reported was right."
+  },
+  "THE_STALL_HAS_A_NAMED_CANDIDATE_AND_IT_DOES_NOT_COVER_EVERYTHING": {
+    "outliers_this_block": "12 of 24 runs, both arms, 1.2x to 2.9x of the clean floor",
+    "worst": 87.869417,
+    "found_by_looking": "ps -Ao pcpu -r rather than the grep I had been using",
+    "the_contender": {
+      "pid": 40536,
+      "cmd": "tools/mlx_boot.py from ~/Downloads/personalmodel/Personal-Model",
+      "pcpu": "50-95%",
+      "rss_gib": 30.9,
+      "pmem": "32.2%",
+      "elapsed_at_discovery": "10:18"
+    },
+    "why_it_is_the_right_MECHANISM_and_not_just_a_busy_process": "it is an MLX MODEL BOOT holding ~31 GiB. This campaign sealed on 2026-08-22 that METAL WORKING SET is the admission gate, NOT free RAM. A 31 GiB MLX resident competing with this 9.9 GiB resident is that gate, exactly.",
+    "ALSO_RUNNING_AND_SPANNING_EVERYTHING": "fileproviderd at 99.6% and mds_stores at 99.0%, BOTH for 5 hours, plus a powermetrics at 14.6% for 2h34m and odyssey_ctl.py cycle --max-lanes 14 (the launchd driver).",
+    "THE_LIMIT_OF_THIS_DIAGNOSIS_STATED": "mlx_boot was only 10 MINUTES OLD when found, so it CANNOT explain the outliers in TOKEN_GRAPH_REDUCTION_TIMED (3 of 12) or the 287 s capability stall, both of which predate it. It explains this block's elevated rate and nothing earlier. The earlier outliers' cause remains UNKNOWN.",
+    "MY_QUIESCENCE_CHECK_WAS_SCOPED_TO_THE_CONTENDER_I_KNEW_ABOUT": "TOKEN_GRAPH_REDUCTION_TIMED recorded 'no lake fill running (pgrep modellake = 0)' and I read that as MACHINE IS QUIET. It greps for the ONE contender this program had met before. Two system daemons had been pegged near 100% for five hours the whole time and the grep could not see them. A quiescence check that names one process family and is read as machine-wide is the same shape as a coverage curve that counts the absence of probed blockers -- it reports what it looked for, not what is there.",
+    "not_killed": "mlx_boot is the operator's work, on the same rule as the lake fill. Nothing was signalled."
+  },
+  "what_this_costs_and_what_survives": {
+    "the_clean_floor_is_reproducible": "unfused 30.2282-30.3325 across 5 clean runs in two sessions (0.35% spread); fused 29.5537-29.6653 across 5 (0.38%). Complete separation, and both floors reproduce a value measured on a different day in a different process (30.2536 / 29.5420).",
+    "the_headline_number": "the four pre-existing fusion levers are worth 2.1-2.3% of wall at every generation length measured, for 21.6% fewer dispatches, with output identical",
+    "and_that_TIGHTENS_the_ceiling_rather_than_loosening_it": "TOKEN_GRAPH_REDUCTION_TIMED derived 3.42 us per removed dispatch and a ~37 TPS ceiling for deleting every dispatch. A length-independent gain means that ceiling does NOT improve at longer generations either, which the +29% would have implied."
+  },
+  "claim_boundary": [
+    "The clean-floor comparison rests on 5 clean runs per arm after excluding 12 of 24 as outliers. That exclusion rate is enormous and the result is admitted by COMPLETE SEPARATION of two very tight clusters plus reproduction across sessions, NOT by a rep count or a noise gate.",
+    "The outlier cause is a NAMED CANDIDATE with the right mechanism, not a demonstrated cause. Nothing was killed and re-measured, which is the experiment that would settle it and which was not run because the process is the operator's.",
+    "Three lengths, one prompt, one artifact, one machine. 'Length-independent' is established over 64 to 1024 new tokens and says nothing beyond 1024.",
+    "No capability was re-run in this block; the 30/43 equality stands on the previous block's evidence.",
+    "No kernel was written or changed."
+  ],
+  "next": "a quiescence check that enumerates every process over a CPU or RSS threshold rather than grepping for known names, and a re-measurement in a genuinely quiet window to settle whether 2.1-2.3% is the floor or still contended",
+  "akb_registration": {
+    "evidence_domain": "accelerator",
+    "civilization": "I-D_ACCELERATOR",
+    "program": "HAWKING ACCELERATOR (S015/S031/S032)",
+    "machine_scope": "Apple M3 Ultra, INSTANCE",
+    "representation_scope": "sealed-3.14, unchanged across arms",
+    "kernel_scope": "964 vs 756 decode graphs at 64 / 256 / 1024 generated tokens",
+    "why_declared": "membership must not depend on what this file was named (S032 \u00a713). Before this declaration the receipt was INVISIBLE to the AKB -- neither extracted nor refused -- which reads identically to triaged and found empty."
+  },
+  "identities": {
+    "experiment": {
+      "class": "ACCEL-FUSION",
+      "knowledge_level": "INSTANCE",
+      "question": "does the fusion gain grow with generation length?"
+    },
+    "machine": {
+      "soc": "Apple M3 Ultra",
+      "gpu_cores": 60,
+      "ram_gib": 96,
+      "measured_dram_gbps": 589.73,
+      "receipt": "receipts/headless/MACHINE_GENOME.json"
+    },
+    "device": {
+      "backend": "Metal",
+      "api": "MTLCommandBuffer GPUStartTime/GPUEndTime"
+    },
+    "model": {
+      "root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+      "tag": "sealed-3.14",
+      "complete_ebpw": 3.139300850311054
+    },
+    "representation": {
+      "mixer": "HQ30UQ4 g64",
+      "mlp": "HGRAVF01 affine_q2 group64 LS",
+      "note": "UNCHANGED across every arm in this receipt"
+    },
+    "runtime": {
+      "binary": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+      "git_head": "3a96dbe8042e94005c9a736cb912453660bd9cc3"
+    },
+    "kernel": {
+      "graph": "964-dispatch control against the 756-dispatch three-lever fused graph"
+    },
+    "transport": {
+      "status": "ABSENT",
+      "reason": "single-device unified-memory Metal run; no bridge and no host<->device transport is crossed"
+    }
+  }
+}

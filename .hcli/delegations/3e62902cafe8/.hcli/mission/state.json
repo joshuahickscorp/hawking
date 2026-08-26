@@ -1,0 +1,30 @@
+{
+  "accepted_count": 0,
+  "cancel_reason": null,
+  "checkpoint_id": "3e62902cafe8:1787716556.587940",
+  "child_pids": [
+    86313
+  ],
+  "compiled": {
+    "acceptance_criteria": [
+      "named files exist and a non-tautological check of the claim fails when unmet: /Users/scammermike/Downloads/hawking/receipts/headless/QWEN_PERFORMANCE_QUALIFICATION.js; observable evidence exists that 'Verify with this exact command and report its output verbatim: /Library/Frameworks/Python.framework/Versions/3.12/bin/python3 -c \"import json;d=json.load(open(\\'/Users/scammermike/Downloads/hawking/receipts/headless/QWEN_PERFORMANCE_QUALIFICATION.json\\'));print(sorted({v[\\'runs\\'][0][\\'dispatches_per_step\\'][0] for v in d[\\'bodies\\'].values()}))\"' is discharged; a command that cannot fail does not satisfy this"
+    ],
+    "goal_summary": "Determine whether dispatches_per_step is identical across all three bodies in the JSON file /Users/scammermike/Downloads/hawking/receipts/headless/QWEN_PERFORMANCE_QUALIFICATION.json.",
+    "invariants": [],
+    "referenced_files": [
+      "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN_PERFORMANCE_QUALIFICATION.js"
+    ]
+  },
+  "goal": "Determine whether dispatches_per_step is identical across all three bodies in the JSON file /Users/scammermike/Downloads/hawking/receipts/headless/QWEN_PERFORMANCE_QUALIFICATION.json. Verify with this exact command and report its output verbatim: /Library/Frameworks/Python.framework/Versions/3.12/bin/python3 -c \"import json;d=json.load(open('/Users/scammermike/Downloads/hawking/receipts/headless/QWEN_PERFORMANCE_QUALIFICATION.json'));print(sorted({v['runs'][0]['dispatches_per_step'][0] for v in d['bodies'].values()}))\"",
+  "id": "3e62902cafe8",
+  "in_flight": [],
+  "last_checkpoint": 1787716611.362122,
+  "no_progress_threshold": 3,
+  "no_progress_warning": null,
+  "phase": "completed",
+  "session_id": "3e62902cafe8",
+  "started_at": 1787716556.564907,
+  "strategy": "default",
+  "units": {},
+  "version": 1
+}

@@ -110,3 +110,98 @@ def compare(arms: dict[str, dict[str, Any]], *, baseline: str,
     return {"verdict": "CANDIDATE_WINS" if speedup > 1 else "BASELINE_WINS",
             "speedup": round(speedup, 4),
             "margin_pct": round(margin, 2), "arm_noise_pct": round(noise, 2)}
+
+
+# --- QUIESCENCE -------------------------------------------------------------
+#
+# The steer asks for UNCONTENDED measurement and until now this program checked
+# for it with an ad-hoc `pgrep modellake` in a shell command, whose silence was
+# then written into a receipt as "the machine is quiet". That is the wrong shape
+# of check twice over: it was never a recorded FIELD, so no receipt could be
+# audited for it; and it MATCHES NAMES, so it can only ever find the one
+# contender this program had already met.
+#
+# It failed exactly that way. TOKEN_GRAPH_REDUCTION_TIMED recorded "no lake fill
+# running (pgrep modellake = 0)" while fileproviderd and mds_stores had been
+# pegged near 100% for five hours and an unrelated 31 GiB MLX model boot later
+# joined them. A quiescence check that names one process family and is read as
+# machine-wide reports WHAT IT LOOKED FOR, NOT WHAT IS THERE.
+#
+# So this ENUMERATES. There is no name list and there is deliberately no way to
+# pass one: the whole defect was a filter, and an instrument whose blind spot is
+# configurable is an instrument someone will configure blind.
+
+# RSS matters more than CPU for the claims this program makes. The 2026-08-22 law
+# is that METAL WORKING SET is the admission gate on this machine, not free RAM,
+# so a large-RSS neighbour competes with a resident model in the one dimension
+# that decides. CPU is reported too because it is real, not because it is equal.
+QUIET_CPU_PCT = 20.0
+QUIET_RSS_GIB = 2.0
+
+
+def machine_quiescence(*, cpu_pct: float = QUIET_CPU_PCT,
+                       rss_gib: float = QUIET_RSS_GIB) -> dict[str, Any]:
+    """Every process over either threshold, found by ENUMERATION not by name.
+
+    Returns quiet=False with the contenders named. The caller's own process is
+    reported like any other rather than excluded: a benchmark harness that is
+    itself burning CPU is a fact about the measurement, and hiding it would be
+    the same self-exemption the name filter made by accident.
+    """
+    import subprocess
+    r = subprocess.run(["ps", "-Ao", "pid,pcpu,rss,comm"],
+                       capture_output=True, text=True)
+    if r.returncode != 0:
+        # An enumeration that FAILED must never read as an enumeration that found
+        # nothing -- that is the 0-of-0-cases shape this program has sealed four
+        # times. quiet is None, not True.
+        return {"quiet": None, "method": "enumerate",
+                "refused": f"ps exited {r.returncode}", "contenders": []}
+    out = []
+    for line in r.stdout.splitlines()[1:]:
+        f = line.split(None, 3)
+        if len(f) < 4:
+            continue
+        try:
+            pid, pc, rss = int(f[0]), float(f[1]), int(f[2])
+        except ValueError:
+            continue
+        gib = rss / (1024 * 1024)
+        if pc >= cpu_pct or gib >= rss_gib:
+            out.append({"pid": pid, "cpu_pct": pc, "rss_gib": round(gib, 2),
+                        "comm": f[3].strip()})
+    out.sort(key=lambda d: (-d["rss_gib"], -d["cpu_pct"]))
+    return {
+        "quiet": not out,
+        "method": "enumerate",
+        "no_name_filter": True,
+        "thresholds": {"cpu_pct": cpu_pct, "rss_gib": rss_gib},
+        "contenders": out,
+        "n_contenders": len(out),
+        "total_cpu_pct": round(sum(d["cpu_pct"] for d in out), 1),
+        "max_rss_gib": max((d["rss_gib"] for d in out), default=0.0),
+        "rss_is_the_gate_not_cpu": (
+            "Metal working set is this machine's admission gate (2026-08-22), so a "
+            "large-RSS neighbour contends with a resident model in the dimension "
+            "that decides; CPU is reported because it is real, not because it is "
+            "equally predictive."),
+    }
+
+
+def name_filter_quiescence(names: tuple[str, ...]) -> dict[str, Any]:
+    """The BROKEN check, kept executable as the control for the one above.
+
+    This is what `pgrep modellake` did. It is retained ONLY so a test can watch
+    it report quiet while the enumerating check names real contenders -- a
+    refutation nobody has watched is indistinguishable from a rule nobody needed.
+    Never call this to decide whether a measurement is admissible.
+    """
+    import subprocess
+    hits = []
+    for n in names:
+        r = subprocess.run(["pgrep", "-f", n], capture_output=True, text=True)
+        hits += [int(x) for x in r.stdout.split()]
+    return {"quiet": not hits, "method": "match_names", "names": list(names),
+            "hits": hits,
+            "why_this_is_kept": "executable demonstration that a name filter "
+                                "reports what it looked for, not what is there"}

@@ -14,6 +14,8 @@
  "civilization_status": {
   "I-A_AGENTOS_HCLI": {
    "obligations": [
+    "G083",
+    "G076",
     "G013",
     "G014",
     "G015",
@@ -25,14 +27,16 @@
    ],
    "verified": 6,
    "open": [
+    "G083",
+    "G076",
     "G064",
     "G065"
    ],
    "evidence_satisfied": 9,
    "evidence_of": 9,
    "evidence_pct": 100.0,
-   "obligation_pct": 75.0,
-   "completion_pct": 75.0,
+   "obligation_pct": 60.0,
+   "completion_pct": 60.0,
    "completion_basis": "min(evidence categories satisfied / 9, obligations verified / total). The MINIMUM on purpose: I-D has all nine categories and zero verified obligations, and reporting 100% there is the inflation S015 \u00a7II forbids. Never a file count.",
    "open_gates": [
     "S016 civilization-grade scheduler: Era/Civilization/Program/Gate as first-class scheduler concepts -- NOT_STARTED"
@@ -53,6 +57,7 @@
   },
   "I-B_DOCTOR": {
    "obligations": [
+    "G077",
     "G016",
     "G017",
     "G018",
@@ -64,12 +69,13 @@
    ],
    "verified": 7,
    "open": [
+    "G077",
     "G073"
    ],
    "evidence_satisfied": 6,
    "evidence_of": 9,
    "evidence_pct": 66.7,
-   "obligation_pct": 87.5,
+   "obligation_pct": 77.8,
    "completion_pct": 66.7,
    "completion_basis": "min(evidence categories satisfied / 9, obligations verified / total). The MINIMUM on purpose: I-D has all nine categories and zero verified obligations, and reporting 100% there is the inflation S015 \u00a7II forbids. Never a file count.",
    "open_gates": [
@@ -91,6 +97,8 @@
   },
   "I-C_GRAVITY_NOETIC": {
    "obligations": [
+    "G082",
+    "G074",
     "G001",
     "G002",
     "G003",
@@ -116,22 +124,23 @@
     "G071",
     "G072"
    ],
-   "verified": 18,
+   "verified": 20,
    "open": [
+    "G082",
     "G023",
     "G068",
     "G069",
     "G070",
-    "G071",
     "G072"
    ],
    "evidence_satisfied": 8,
    "evidence_of": 9,
    "evidence_pct": 88.9,
-   "obligation_pct": 75.0,
-   "completion_pct": 75.0,
+   "obligation_pct": 76.9,
+   "completion_pct": 76.9,
    "completion_basis": "min(evidence categories satisfied / 9, obligations verified / total). The MINIMUM on purpose: I-D has all nine categories and zero verified obligations, and reporting 100% there is the inflation S015 \u00a7II forbids. Never a file count.",
    "open_gates": [
+    "G074",
     "G023 Noetic compiler pipeline",
     "real-weight execution gate",
     "EBPW namespace separation not yet permanent in code"
@@ -152,6 +161,11 @@
   },
   "I-D_ACCELERATOR": {
    "obligations": [
+    "G078",
+    "G079",
+    "G080",
+    "G081",
+    "G075",
     "G043",
     "G044",
     "G045",
@@ -165,6 +179,11 @@
    ],
    "verified": 2,
    "open": [
+    "G078",
+    "G079",
+    "G080",
+    "G081",
+    "G075",
     "G043",
     "G044",
     "G045",
@@ -177,10 +196,11 @@
    "evidence_satisfied": 9,
    "evidence_of": 9,
    "evidence_pct": 100.0,
-   "obligation_pct": 20.0,
-   "completion_pct": 20.0,
+   "obligation_pct": 13.3,
+   "completion_pct": 13.3,
    "completion_basis": "min(evidence categories satisfied / 9, obligations verified / total). The MINIMUM on purpose: I-D has all nine categories and zero verified obligations, and reporting 100% there is the inflation S015 \u00a7II forbids. Never a file count.",
    "open_gates": [
+    "G075",
     "C2M T3: several real open CUDA codebases -- NOT CLAIMED",
     "P2 CUDA differential -- blocked on NVIDIA hardware",
     "AIR multi-backend (G058) -- Metal only"
@@ -331,20 +351,20 @@
   }
  },
  "obligation_status_counts": {
-  "VERIFIED": 48,
+  "VERIFIED": 50,
   "BLOCKED": 1,
-  "IN_PROGRESS": 14,
+  "IN_PROGRESS": 20,
   "NOT_STARTED": 2,
-  "PENDING": 7,
-  "OPEN": 1
+  "PENDING": 6,
+  "OPEN": 4
  },
- "obligations_total": 73,
+ "obligations_total": 83,
  "unmapped_obligations": [],
  "orphan_map_entries": [],
- "receipt_count": 418,
- "accelerator_receipt_count": 80,
- "last_verified_commit": "be05019f7",
- "last_verified_test_count": 510,
+ "receipt_count": 441,
+ "accelerator_receipt_count": 89,
+ "last_verified_commit": "8ee0f9d93",
+ "last_verified_test_count": 524,
  "test_count_is_from_a_run_not_arithmetic": true,
  "test_environment": {
   "interpreter": "/usr/local/bin/python3",
@@ -448,10 +468,12 @@
  ],
  "dependencies": {
   "I-C_GRAVITY_NOETIC": [
+   "G074",
    "I-D_ACCELERATOR: a representation is not condemned until its native execution is competent, so a Gravity floor needs an Accelerator kernel",
    "I-E_ODYSSEY_I: real weights on fast local storage (FAST_LOCAL_STORAGE gate)"
   ],
   "I-D_ACCELERATOR": [
+   "G075",
    "I-E_ODYSSEY_I: Accelerator work must be driven by real specimen bottlenecks, not synthetic ones",
    "EXTERNAL: NVIDIA hardware for any CUDA differential (no local execution exists)"
   ],
@@ -462,7 +484,9 @@
   "I-B_DOCTOR": [
    "I-E_ODYSSEY_I: more than one architecture, or the library is Qwen folklore"
   ],
-  "I-A_AGENTOS_HCLI": []
+  "I-A_AGENTOS_HCLI": [
+   "G076"
+  ]
  },
  "running_lanes": [
   {
@@ -580,6 +604,12 @@
    ]
   },
   {
+   "receipt": "ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
+   "markers": [
+    "REFUT"
+   ]
+  },
+  {
    "receipt": "ACCELERATOR_FRONT_F_ODYSSEY_PASS.json",
    "markers": [
     "AMENDED_IN_PLACE"
@@ -627,6 +657,18 @@
    ]
   },
   {
+   "receipt": "ACCELERATOR_LM_HEAD_EXACT_BOUNDS_REFUTED.json",
+   "markers": [
+    "REFUT"
+   ]
+  },
+  {
+   "receipt": "ACCELERATOR_MLP_OPERAND_REUSE_REFUTED.json",
+   "markers": [
+    "REFUT"
+   ]
+  },
+  {
    "receipt": "ACCELERATOR_ORGAN_DISCRIMINATION.json",
    "markers": [
     "AMENDED_IN_PLACE"
@@ -640,9 +682,21 @@
    ]
   },
   {
+   "receipt": "ACCELERATOR_QUIESCENCE_INSTRUMENT.json",
+   "markers": [
+    "REFUT"
+   ]
+  },
+  {
    "receipt": "ACCELERATOR_REGISTER_BLOCKING.json",
    "markers": [
     "RETRACT"
+   ]
+  },
+  {
+   "receipt": "ACCELERATOR_RESIDENT_TEMPLATE_ARM.json",
+   "markers": [
+    "REFUT"
    ]
   },
   {
@@ -697,6 +751,12 @@
   },
   {
    "receipt": "ACCELERATOR_TIER1_MEASURED.json",
+   "markers": [
+    "REFUT"
+   ]
+  },
+  {
+   "receipt": "ACCELERATOR_TOKEN_BYTE_ATLAS_628.json",
    "markers": [
     "REFUT"
    ]
@@ -879,6 +939,14 @@
    "receipt": "FRONTIER_ADVERSARY.json",
    "markers": [
     "REFUT"
+   ]
+  },
+  {
+   "receipt": "FUSION_GAIN_IS_LENGTH_INDEPENDENT.json",
+   "markers": [
+    "REFUT",
+    "RETRACT",
+    "superseded"
    ]
   },
   {
@@ -1156,6 +1224,18 @@
    ]
   },
   {
+   "receipt": "TOKEN_EXECUTION_ATLAS.json",
+   "markers": [
+    "REFUT"
+   ]
+  },
+  {
+   "receipt": "TOKEN_GRAPH_REDUCTION_TIMED.json",
+   "markers": [
+    "REFUT"
+   ]
+  },
+  {
    "receipt": "VARIANT_LOCALIZATION.json",
    "markers": [
     "REFUT"
@@ -1173,17 +1253,28 @@
   "heuristic": true,
   "why_heuristic": "mtime is not provenance; an untouched-but-amended receipt is missed",
   "receipts": [
+   "ACCELERATOR_628_BOUNDARY_CENSUS.json",
    "ACCELERATOR_AKB_CONSTRUCTION.json",
+   "ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
+   "ACCELERATOR_HCLI_VERIFIER_PATH_SEMANTICS.json",
    "ACCELERATOR_LAW_BASE.json",
+   "ACCELERATOR_LM_HEAD_EXACT_BOUNDS_REFUTED.json",
+   "ACCELERATOR_MLP_OPERAND_REUSE_REFUTED.json",
+   "ACCELERATOR_QUIESCENCE_INSTRUMENT.json",
+   "ACCELERATOR_RESIDENT_TEMPLATE_ARM.json",
+   "ACCELERATOR_SEALED_RESIDENT_ENDPOINT.json",
    "ACCELERATOR_SYNC_DIAGNOSTIC.json",
+   "ACCELERATOR_TOKEN_BYTE_ATLAS_628.json",
    "CAPABILITY_ARM_A_THINK.json",
    "CAPABILITY_ARM_D_NOTHINK.json",
+   "CAPABILITY_FUSED_GRAPH_CLEARED.json",
    "CAPABILITY_IDENTITY_GATE.json",
    "CAPABILITY_TEMPLATE_ARM_PAIRED.json",
    "CAPABILITY_TEMPLATE_FACTORIAL.json",
    "CAPABILITY_TEMPLATE_INTERACTION.json",
    "CAPABILITY_llamacpp-q5k.json",
    "CAPABILITY_mlx-4bit.json",
+   "CAPABILITY_noetic-2.60-identified.json",
    "CAPABILITY_noetic-clean-2.60.json",
    "CAPABILITY_noetic-clean-rebuild.json",
    "CAPABILITY_noetic-sealed-3.14-sysprompt.json",
@@ -1191,6 +1282,11 @@
    "CAPABILITY_noetic-variantA-2.98.json",
    "CAPABILITY_noetic-variantB-2.76-sysprompt.json",
    "CAPABILITY_noetic-variantB-2.76.json",
+   "CAPABILITY_sealed-3.14-binB-fused4-NOTHINK.json",
+   "CAPABILITY_sealed-3.14-binB-fused4-swiglu.json",
+   "CAPABILITY_sealed-3.14-binB-unfused.json",
+   "CAPABILITY_sealed-3.14-identified-fused.json",
+   "CAPABILITY_sealed-3.14-identified-unfused.json",
    "DECODE_NOT_SUBMISSION_BOUND.json",
    "DECODING_GRAVITY.json",
    "DENSITY_DESCENT_FRONTIER.json",
@@ -1198,10 +1294,13 @@
    "DOCTOR_TECHNIQUE_REGISTRY.json",
    "DOCTOR_V2_PRESCRIPTION.json",
    "EBPW_NAMESPACE_SEPARATION.json",
+   "FUSION_GAIN_IS_LENGTH_INDEPENDENT.json",
    "GRAVITY_COMPILER_SEARCH.json",
    "GROK_DELEGATION_UNAVAILABLE.json",
    "HAWKING_ACTION_HANDOFF.json",
    "HCLI_CRASH_CHECKPOINT.json",
+   "HCLI_FABRICATION_CONTROL.json",
+   "HCLI_RESIDENT_SEAL.json",
    "KERNEL_LIBRARY.json",
    "NOETIC_ASCENSION_HANDOFF.json",
    "NOETIC_BODY_ARCHAEOLOGY.json",
@@ -1219,10 +1318,14 @@
    "REPRESENTATION_LIBRARY.json",
    "RESIDENT_2P60_RUNTIME_PROVENANCE.json",
    "RESIDENT_ACCEPTED_TPS.json",
+   "RESIDENT_PARETO_FRONTIER.json",
    "RUNTIME_EXPERIMENT_ADVERSARY.json",
    "RUNTIME_GENOME.json",
    "SELF_OPT_CANDIDATE_PROMOTED.json",
    "SUPEROPERATOR_LIBRARY.json",
+   "TOKEN_EXECUTION_ATLAS.json",
+   "TOKEN_EXECUTION_ATLAS_COUNTS.json",
+   "TOKEN_GRAPH_REDUCTION_TIMED.json",
    "WHOLE_MODEL_RECOMPOSE.json"
   ]
  }

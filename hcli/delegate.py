@@ -37,6 +37,7 @@ import argparse
 import json
 import os
 import signal
+import pathlib
 import subprocess
 import sys
 import time
@@ -46,6 +47,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 from .mission import Mission, mission_dir, mission_state_path
+from .paths import find_repo_root
 from .persist import atomic_write_json
 from .resources import MutationLock
 from .steering import STEER_KINDS, SteeringQueue
@@ -1033,28 +1035,207 @@ def default_caller(endpoint: str, model: Optional[str] = None) -> Callable[..., 
     return caller
 
 
-def shell_runner(
-    workspace: Union[str, Path], protected_paths: Sequence[str] = ()
-) -> Callable[[str], Tuple[int, str]]:
-    """Run a verifier command. Refuses anything naming a protected path.
+# ---------------------------------------------------------------- G076 roots
+# Three roots, named, so a mission never has to hardcode an absolute path and a
+# repo-relative verifier resolves the same way every time (S032 §19).
+#
+#   REPO_ROOT      the hawking checkout. Where `tools/`, `crates/` and
+#                  `receipts/` live. READ-ONLY to a verifier.
+#   MISSION_ROOT   <workspace>/.hcli/<mission> -- the mission's own state.
+#   WORKSPACE_ROOT the delegation workspace, and the verifier's cwd.
+#
+# THE ISOLATION IS NOT WEAKENED, which S031 §21 forbids: the cwd is still the
+# workspace, the repo is still not copied in, and nothing gains write access.
+# What changes is that a verifier can now NAME the repo deterministically.
+ROOT_ENV = ("HAWKING_REPO_ROOT", "HCLI_MISSION_ROOT", "HCLI_WORKSPACE_ROOT")
 
-    ponytail: substring match on the protected path, not path resolution. A
-    command that reaches a protected file by symlink or `cd ..` is not caught;
-    upgrade to resolving argv paths if the blast radius ever justifies it.
+# Verbs that cannot write a file they are handed. DELIBERATELY SHORT, and the
+# absences are the design: `python3`, `python`, `pytest`, `awk`, `sed`, `sort`
+# and `find` are NOT here, because every one of them can write a path given to
+# it -- `python3 -c "open(p,\'w\')"`, `awk \'{print > p}\'`, `sed \'s/a/b/w p\'`,
+# `sort -o p`, `find -delete`. One of those was in this list until the negative
+# control below wrote the protected file and failed.
+READ_ONLY_VERBS = frozenset({
+    "cat", "head", "tail", "less", "more", "wc", "grep", "egrep", "fgrep", "rg",
+    "cut", "tr", "diff", "cmp", "md5", "shasum", "sha256sum", "stat", "ls",
+    "file", "jq", "echo", "true", "false", "basename", "dirname", "realpath",
+    "readlink", "test", "[",
+})
+
+# Anything here can MUTATE regardless of verb, so a command carrying one may not
+# name a protected path at all.
+WRITE_TOKENS = (
+    # ">" and ">>" are NOT here: _guard_verdict checks the redirection TARGET,
+    # which is the difference between reading a receipt into a file and writing
+    # over one.
+    "|&", "tee", "rm ", "mv ", "cp ", "install ", "truncate",
+    "dd ", "chmod", "chown", "chgrp", "ln ", "mkdir", "rmdir", "touch",
+    # NOT a bare "-i " or "-o ": those match `grep -i` and `grep -o` and would
+    # refuse ordinary reads. Name the in-place writers instead.
+    "sed -i", "perl -i", "ruby -i", "--in-place", "-delete", "-exec",
+    "sort -o", "shred", "unlink",
+    "git add", "git commit", "git checkout", "git rm", "git mv", "git clean",
+    "git reset", "git stash", "git push",
+)
+
+def _names_protected(command: str, guarded: Sequence[str]) -> Optional[str]:
+    """The protected path this text names, or None."""
+    for path in guarded:
+        if str(path) in command:
+            return str(path)
+    return None
+
+
+_SEPARATORS = ("|", "&&", "||", ";", "&")
+
+
+def _segments(command: str) -> List[str]:
+    """Split a command into pipeline/list segments, keeping each one's text.
+
+    Crude on purpose: this is not a shell parser and does not claim to be. It
+    exists so the guard can ask its question PER SEGMENT rather than over the
+    whole line, which is the difference between refusing
+    `cat receipts/x.json | python3 -c ...` and allowing it.
     """
+    parts, buf, i = [], [], 0
+    while i < len(command):
+        for sep in ("&&", "||"):
+            if command.startswith(sep, i):
+                parts.append("".join(buf)); buf = []; i += 2; break
+        else:
+            ch = command[i]
+            if ch in ("|", ";", "&"):
+                parts.append("".join(buf)); buf = []
+            else:
+                buf.append(ch)
+            i += 1
+    parts.append("".join(buf))
+    return [p.strip() for p in parts if p.strip()]
+
+
+def _segment_is_read_only(segment: str) -> Tuple[bool, str]:
+    """Can this ONE segment write the path it names? FAILS CLOSED."""
+    import shlex
+
+    # Redirection is NOT checked here -- _guard_verdict checks the TARGET, so
+    # `cat receipts/x > copy.json` is a read and `cat y > receipts/x` is not.
+    low = segment.lower()
+    for tok in WRITE_TOKENS:
+        if tok in low:
+            return False, f"segment carries write operator {tok.strip()!r}"
+    try:
+        parts = shlex.split(segment.split(">")[0])
+    except ValueError as exc:
+        return False, f"segment does not parse ({exc}); refused rather than guessed"
+    if not parts:
+        return False, "empty segment"
+    verb = pathlib.PurePath(parts[0]).name
+    if verb not in READ_ONLY_VERBS:
+        return False, f"verb {verb!r} is not in the read-only set"
+    return True, ""
+
+
+def _redirect_targets(command: str) -> List[str]:
+    """Every path a `>`/`>>` redirection writes to."""
+    import re as _re
+    return [m.group(2) for m in _re.finditer(r"(>>|>\|?)\s*([^\s;|&]+)", command)]
+
+
+def _guard_verdict(command: str, guarded: Sequence[str]) -> Optional[str]:
+    """None to allow, or the reason to refuse. THE RULE IS ONE SENTENCE:
+
+        a protected path may not be WRITTEN. Reading it is what it is for.
+
+    Three ways a command can write one, and each is checked where it lives:
+
+    1. REDIRECTION TARGET -- `> receipts/x` or `>> receipts/x`. Checked over the
+       whole line, because `>` binds to the line and not to a pipeline segment.
+    2. A WRITING VERB HANDED THE PATH -- `tee receipts/x`, `rm receipts/x`,
+       `sed -i ... receipts/x`. Checked per segment.
+    3. A VERB NOBODY VOUCHED FOR HANDED THE PATH -- `python3 receipts/x`,
+       `awk ... receipts/x`. Refused because it CANNOT BE SHOWN not to write, not
+       because it will. Fails closed.
+
+    WHAT IS DELIBERATELY ALLOWED, and an earlier version of this guard got it
+    wrong in both directions: `cat receipts/x > copy.json` and
+    `cat receipts/x | tee copy.json` both READ the protected file and write
+    somewhere else. The protected path is unharmed. Refusing one while allowing
+    the other -- which is what checking `is there a redirection in a segment that
+    names a protected path` produced -- was incoherent, and a mutation test that
+    deleted the redundant check and changed NOTHING is what exposed it.
+
+    This is not a shell parser. It cannot see through a variable, a subshell that
+    rebuilds a path from pieces, or an alias, and it says so rather than implying
+    a completeness it does not have.
+    """
+    if _names_protected(command, guarded) is None:
+        return None
+
+    for tgt in _redirect_targets(command):
+        hit = _names_protected(tgt, guarded)
+        if hit is not None:
+            return f"redirection would write protected path {hit!r}"
+
+    for seg in _segments(command):
+        named = _names_protected(seg, guarded)
+        if named is None:
+            continue
+        ok, why = _segment_is_read_only(seg)
+        if not ok:
+            return (f"segment naming protected path {named!r} is not provably "
+                    f"read-only ({why})")
+    return None
+
+
+def shell_runner(
+    workspace: Union[str, Path],
+    protected_paths: Sequence[str] = (),
+    *,
+    repo_root: Optional[Union[str, Path]] = None,
+) -> Callable[[str], Tuple[int, str]]:
+    """Run a verifier command inside the workspace, with the repo NAMEABLE.
+
+    TWO DEFECTS THIS REPAIRS, both recorded under G076:
+
+    1. The workspace does not contain the repo, so a repo-relative verifier path
+       was unresolvable. The three roots are now exported into the command's
+       environment, so `$HAWKING_REPO_ROOT/tools/...` resolves deterministically
+       from anywhere without the mission hardcoding an absolute path.
+
+    2. The protected-path guard matched a SUBSTRING OF THE COMMAND TEXT, so it
+       refused READS as well as WRITES. A verifier that reads a receipt is
+       exactly what a receipt is for. Reads that provably cannot write are now
+       allowed; everything else is still refused, and the refusal says which
+       rule fired.
+
+    The cwd is still the workspace and the repo is still not copied in, so the
+    isolation S031 §21 protects is untouched -- what changed is nameability, not
+    reach.
+    """
+    ws = Path(workspace).resolve()
     guarded = [p for p in protected_paths if str(p).strip()]
+    try:
+        root = Path(repo_root).resolve() if repo_root else find_repo_root()
+    except Exception:
+        root = None
 
     def runner(command: str) -> Tuple[int, str]:
-        for path in guarded:
-            if str(path) in command:
-                return 126, f"REFUSED: command names protected path {path!r}"
+        refusal = _guard_verdict(command, guarded)
+        if refusal is not None:
+            return 126, f"REFUSED: {refusal}"
+        env = dict(os.environ)
+        if root is not None:
+            env["HAWKING_REPO_ROOT"] = str(root)
+        env["HCLI_MISSION_ROOT"] = str(mission_dir(ws))
+        env["HCLI_WORKSPACE_ROOT"] = str(ws)
         proc = subprocess.run(
             command,
             shell=True,
-            cwd=str(workspace),
+            cwd=str(ws),
             capture_output=True,
             text=True,
             timeout=COMMAND_TIMEOUT_S,
+            env=env,
         )
         return proc.returncode, (proc.stdout or "") + (proc.stderr or "")
 

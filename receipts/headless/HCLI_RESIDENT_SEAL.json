@@ -1,0 +1,234 @@
+{
+  "schema": "hawking.odyssey.resident_seal.v1",
+  "resident": "sealed-3.14",
+  "status": "SEALED",
+  "graph": {
+    "dispatches_per_decode_token": 628,
+    "levers": [
+      "HAWKING_QWEN38_FUSE_ADD_RMSNORM=1",
+      "HAWKING_QWEN38_FUSE_GQA_QKV=1",
+      "HAWKING_QWEN38_FUSE_DN_INPROJ=1",
+      "HAWKING_QWEN38_FUSE_MLP=swiglu"
+    ],
+    "control_retained": "the 964-dispatch unfused graph is kept as the control and is no longer production reality",
+    "source": "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json#FINDING_4_THE_GRAPH_REDUCTION_AND_WHAT_IT_IS_WORTH"
+  },
+  "physical_bound": {
+    "weight_bytes_per_decode_token": 9878898416,
+    "measured_dram_gbps": 589.73,
+    "effective_gbps_at_seal": 352.5,
+    "fraction_of_byte_wall": 0.598,
+    "raw_tps_ceiling": "187.40 / complete_EBPW = 59.69",
+    "accepted_tps_ceiling_at_this_capability": 48.59,
+    "capability_needed_for_50_accepted_at_this_ebpw": 36.02,
+    "source": "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json#FINDING_7_THE_BANDWIDTH_WALL_TURNS_S031_19_INTO_A_CONSTRAINT_CURVE"
+  },
+  "supersedes": "no earlier receipt declares a canonical resident with its arm bound. Five sealed-3.14 capability receipts exist and all five use open_think.",
+  "fields": {
+    "artifact_root": {
+      "value": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+      "source": "receipts/headless/CAPABILITY_sealed-3.14-binB-fused4-NOTHINK.json#artifact_identity.artifact_root"
+    },
+    "artifact_inventory_sha": {
+      "value": "1aff5df85bda1108",
+      "source": "receipts/headless/CAPABILITY_sealed-3.14-binB-fused4-NOTHINK.json#artifact_identity.artifact_inventory_sha",
+      "note": "NAME AND SIZE over 764 shards, NOT a content hash. capability_suite.py:464 hashes repr(sorted((name, st_size))); a same-length edit is invisible and the receipt's own identity_is_content_hash field says false."
+    },
+    "artifact_bytes": {
+      "value": 10577484803,
+      "source": "receipts/headless/CAPABILITY_sealed-3.14-binB-fused4-NOTHINK.json#artifact_identity.artifact_bytes"
+    },
+    "artifact_files": {
+      "value": 764,
+      "source": "receipts/headless/CAPABILITY_sealed-3.14-binB-fused4-NOTHINK.json#artifact_identity.artifact_files"
+    },
+    "complete_ebpw": {
+      "value": 3.139300850311054,
+      "source": "NOETIC_PARENT_A/MIX_REPORT.json#complete_ebpw"
+    },
+    "physical_closure": {
+      "value": {
+        "payload_bytes": 10554328856,
+        "parent_params": 26895998464,
+        "affine_bytes": 5347795776,
+        "q4_bytes": 5195948240,
+        "f32_bytes": 10584840,
+        "reconciles": true,
+        "weight_bytes_read_per_decode_token": 9878898416,
+        "embedding_table_bytes_read_as_one_row": 675430440
+      },
+      "source": "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json#FINDING_7_THE_BANDWIDTH_WALL_TURNS_S031_19_INTO_A_CONSTRAINT_CURVE.inputs"
+    },
+    "runtime_binary": {
+      "value": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+      "source": "receipts/headless/CAPABILITY_sealed-3.14-binB-fused4-NOTHINK.json#artifact_identity.binary"
+    },
+    "runtime_binary_sha256_16": {
+      "value": "d34044cffae8f320",
+      "source": "computed live off the binary",
+      "note": "matches the value recorded in both capability receipts"
+    },
+    "runtime_commit": {
+      "value": "5e365a5c08c3497d8ed7553d9fb00eeb2cdbc07f",
+      "source": "git rev-parse HEAD"
+    },
+    "tokenizer_sha256_16": {
+      "value": "0997f410c57a1f4e",
+      "source": "receipts/headless/CAPABILITY_sealed-3.14-binB-fused4-NOTHINK.json#artifact_identity.tokenizer_sha256_16"
+    },
+    "chat_template_sha256_16": {
+      "value": "c3cf9e34abf4f9e3",
+      "source": "receipts/headless/CAPABILITY_sealed-3.14-binB-fused4-NOTHINK.json#artifact_identity.chat_template_sha256_16"
+    },
+    "generation_config": {
+      "value": {
+        "bos_token_id": 248044,
+        "do_sample": true,
+        "eos_token_id": [
+          248046,
+          248044
+        ],
+        "pad_token_id": 248044,
+        "temperature": 1.0,
+        "top_k": 20,
+        "top_p": 0.95
+      },
+      "source": "NOETIC_PARENT_A/generation_config.json",
+      "note": "RECORDED, NOT USED: the sealed decode path is GREEDY ARGMAX, so do_sample, temperature, top_k and top_p in this file describe the parent's sampling defaults and describe nothing the resident executes. Naming that beats letting a reader assume temperature 1.0 was in play."
+    },
+    "capability_suite": {
+      "value": {
+        "harness": "tools/headless/capability_suite.py",
+        "schema": "hawking.headless.capability_suite.v1",
+        "cases": 43,
+        "distinct_items": 11,
+        "weights_note": "greedy at temperature 0 makes every repeat byte-identical, so 43 cases are 11 measurements weighted (3,3,3,5,5,5,5,5,3,3,3)",
+        "three_of_43_are_common_mode_vacuous": "no-think-leak forbids needles the harness strips before scoring; 3/3 on both arms"
+      },
+      "source": "receipts/headless/CAPABILITY_sealed-3.14-binB-fused4-NOTHINK.json#schema"
+    },
+    "capability_score": {
+      "value": {
+        "best_arm": {
+          "arm": "pre_closed_think",
+          "passed": 35,
+          "total": 43,
+          "rate": 0.814,
+          "receipt": "receipts/headless/CAPABILITY_sealed-3.14-binB-fused4-NOTHINK.json"
+        },
+        "arm_previous_receipts_used": {
+          "arm": "open_think",
+          "passed": 30,
+          "total": 43,
+          "rate": 0.6977,
+          "receipt": "receipts/headless/CAPABILITY_sealed-3.14-binB-fused4-swiglu.json"
+        },
+        "delta_is_ONE_ITEM": "json-kind-correct, weight 5",
+        "per_axis_best_arm": {
+          "knowledge": {
+            "passed": 3,
+            "total": 3,
+            "rate": 1.0
+          },
+          "reasoning": {
+            "passed": 3,
+            "total": 6,
+            "rate": 0.5
+          },
+          "structured_output": {
+            "passed": 10,
+            "total": 15,
+            "rate": 0.667
+          },
+          "mutation": {
+            "passed": 10,
+            "total": 10,
+            "rate": 1.0
+          },
+          "coding": {
+            "passed": 3,
+            "total": 3,
+            "rate": 1.0
+          },
+          "self_correction": {
+            "passed": 3,
+            "total": 3,
+            "rate": 1.0
+          },
+          "hygiene": {
+            "passed": 3,
+            "total": 3,
+            "rate": 1.0
+          }
+        }
+      },
+      "source": "receipts/headless/CAPABILITY_sealed-3.14-binB-fused4-NOTHINK.json#overall"
+    },
+    "chat_template_arm": {
+      "value": "pre_closed_think",
+      "source": "receipts/headless/CAPABILITY_sealed-3.14-binB-fused4-NOTHINK.json#artifact_identity.chat_template_arm",
+      "note": "THE SEAL RECORDS BOTH ARMS ON PURPOSE. Five prior sealed-3.14 receipts used open_think and quoted 30/43; re-binding silently to the better arm would make this seal unauditable against them."
+    },
+    "raw_tps": {
+      "value": 35.69,
+      "source": "receipts/headless/ACCELERATOR_RESIDENT_TEMPLATE_ARM.json#RAW_TPS_IS_ARM_DEPENDENT_AND_I_MEASURED_IT_RATHER_THAN_ASSUMING_IT",
+      "note": "ARM-MATCHED on the pre_closed_think rendering at one 21-token prompt, 64 new tokens. Raw TPS is measured to be PROMPT-LENGTH dependent at the ~1.4% level, so this is a point on a curve and not a constant."
+    },
+    "accepted_tps": {
+      "value": 29.05,
+      "source": "receipts/headless/ACCELERATOR_RESIDENT_TEMPLATE_ARM.json#RAW_TPS_IS_ARM_DEPENDENT_AND_I_MEASURED_IT_RATHER_THAN_ASSUMING_IT",
+      "note": "raw x capability/43 = 35.69 x 35/43. The open_think arm's matched figure is 24.65."
+    },
+    "ms_per_token": {
+      "value": 28.0208,
+      "source": "receipts/headless/ACCELERATOR_RESIDENT_TEMPLATE_ARM.json#RAW_TPS_IS_ARM_DEPENDENT_AND_I_MEASURED_IT_RATHER_THAN_ASSUMING_IT",
+      "note": "median of 3 admitted sweeps, per-arm spread 0.271%"
+    },
+    "bench_state": {
+      "value": "QUIESCED",
+      "source": "receipts/headless/ACCELERATOR_RESIDENT_TEMPLATE_ARM.json#RAW_TPS_IS_ARM_DEPENDENT_AND_I_MEASURED_IT_RATHER_THAN_ASSUMING_IT",
+      "note": "3 sweeps admitted and 0 refused under a PRE-REGISTERED gate: bench.machine_quiescence sampled before AND after each run, admitted only with no process over 2 GiB RSS at either sample. The CAPABILITY runs are a separate matter and are NOT quiesced -- the no_think run's own machine_state records quiet false -- which is admissible because a pass count does not drift with load and is why those runs' wall times are not sealed here."
+    },
+    "fallbacks": {
+      "value": 0,
+      "source": "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json#FINDING_4_THE_GRAPH_REDUCTION_AND_WHAT_IT_IS_WORTH.output_control"
+    },
+    "dense_parent_dependency": {
+      "value": {
+        "dense_w_materialized": 0,
+        "meaning": "no dense tensor is written during execution; the packed representation is consumed in-register (S015 \u00a719)"
+      },
+      "source": "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json#FINDING_4_THE_GRAPH_REDUCTION_AND_WHAT_IT_IS_WORTH.output_control"
+    },
+    "hardware_genome": {
+      "value": {
+        "soc": "Apple M3 Ultra",
+        "gpu_cores": 60,
+        "ram_gib": 96,
+        "measured_dram_gbps": 589.73
+      },
+      "source": "receipts/headless/MACHINE_GENOME.json"
+    },
+    "verifier_receipts": {
+      "value": [
+        "receipts/headless/CAPABILITY_sealed-3.14-binB-fused4-swiglu.json",
+        "receipts/headless/CAPABILITY_sealed-3.14-binB-fused4-NOTHINK.json",
+        "receipts/headless/ACCELERATOR_RESIDENT_TEMPLATE_ARM.json",
+        "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
+        "receipts/headless/MACHINE_GENOME.json",
+        "receipts/headless/ACCELERATOR_QUIESCENCE_INSTRUMENT.json"
+      ],
+      "source": "receipts/headless/ACCELERATOR_RESIDENT_TEMPLATE_ARM.json#receipt"
+    }
+  },
+  "akb_registration": {
+    "evidence_domain": "accelerator",
+    "civilization": "I-D_ACCELERATOR",
+    "program": "HAWKING ACCELERATOR (S015/S031/S032)",
+    "machine_scope": "Apple M3 Ultra, INSTANCE",
+    "representation_scope": "sealed-3.14 at 3.1393 complete EBPW",
+    "kernel_scope": "the 628-dispatch fused decode graph",
+    "note": "declared so it is VISIBLE to the tripwire rather than invisible; it is a DECLARATION DERIVED FROM RECEIPTS ALREADY IN THE CORPUS and carries no new measurement, so it is classified SUBSUMED rather than extracted.",
+    "why_declared": "membership must not depend on what this file was named (S032 \u00a713). Before this declaration the receipt was INVISIBLE to the AKB -- neither extracted nor refused -- which reads identically to triaged and found empty."
+  }
+}

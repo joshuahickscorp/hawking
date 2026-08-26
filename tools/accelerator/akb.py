@@ -73,15 +73,116 @@ class Refused(Exception):
 
 # --------------------------------------------------------------------------- corpus
 
-def corpus(root: Path = REPO) -> list[Path]:
-    """Every Accelerator receipt on disk, sorted. The real 77, not a fixture.
+# S032 §13. Membership was decided by a FILENAME PREFIX, which is the same
+# name-filter defect this program fixed in bench.machine_quiescence: a receipt
+# named otherwise is INVISIBLE, and invisible reads identically to "triaged and
+# found empty". The steer forbids both available shortcuts -- do not widen to every
+# receipt in the directory, and do not let a classifier GUESS which civilization
+# owns the 348 foreign ones. So a receipt DECLARES itself instead.
+EVIDENCE_DOMAIN = "accelerator"
 
-    Excludes this module's OWN outputs. They match the corpus glob, and without this
-    the base would ingest itself: each build would add a receipt, and the AKB would
-    end up citing itself as evidence for its own laws.
+# The six scopes S032 §13 names. A declaring receipt must carry all of them, so a
+# half-filled declaration cannot buy membership -- the same rule the AKB already
+# applies to an entry's eleven applicability axes.
+REGISTRATION_KEYS = ("evidence_domain", "civilization", "program",
+                     "machine_scope", "representation_scope", "kernel_scope")
+
+
+def registration(path: Path) -> dict | None:
+    """The receipt's own membership declaration, or None if it does not declare.
+
+    A declaration that is INCOMPLETE is not a declaration: it returns None rather
+    than a partial dict, because a receipt that names its domain and nothing else
+    would otherwise join the corpus while telling the reader nothing about what its
+    evidence covers.
     """
-    return sorted(p for p in (root / "receipts/headless").glob("ACCELERATOR_*.json")
-                  if p.name not in OWN_OUTPUTS)
+    try:
+        doc = json.loads(path.read_text())
+    except Exception:
+        return None
+    reg = doc.get("akb_registration")
+    if not isinstance(reg, dict):
+        return None
+    if any(k not in reg for k in REGISTRATION_KEYS):
+        return None
+    if reg.get("evidence_domain") != EVIDENCE_DOMAIN:
+        return None
+    return reg
+
+
+def corpus(root: Path = REPO) -> list[Path]:
+    """Every Accelerator receipt on disk, sorted. Two routes, and the AKB reports
+    which one each receipt arrived by.
+
+    DECLARED -- the receipt carries a complete `akb_registration` naming this
+    evidence_domain. This is the route S032 §13 asks for and the only one that
+    does not depend on what a file was called.
+
+    LEGACY GLOB -- the filename starts with ACCELERATOR_. Retained because 80-odd
+    receipts predate the declaration and rewriting them all in one pass would be a
+    bulk edit nobody reviewed; the build reports how many arrive this way so the
+    legacy route's size is visible and can shrink.
+
+    Excludes this module's OWN outputs either way: they match the glob, and without
+    this the base would ingest itself -- each build adding a receipt until the AKB
+    cited itself as evidence for its own laws.
+    """
+    d = root / "receipts/headless"
+    by_glob = {p for p in d.glob("ACCELERATOR_*.json")}
+    by_decl = {p for p in d.glob("*.json") if registration(p) is not None}
+    return sorted((by_glob | by_decl) - {d / n for n in OWN_OUTPUTS},
+                  key=lambda q: q.name)
+
+
+def membership_routes(root: Path = REPO) -> dict:
+    """How each corpus member got in. A route nobody can see is a route nobody
+    can shrink."""
+    d = root / "receipts/headless"
+    out = {"declared": [], "legacy_glob_only": []}
+    for p in corpus(root):
+        (out["declared"] if registration(p) is not None
+         else out["legacy_glob_only"]).append(p.name)
+    out["declared_count"] = len(out["declared"])
+    out["legacy_glob_only_count"] = len(out["legacy_glob_only"])
+    out["note"] = (
+        "membership by DECLARATION does not depend on the filename; membership by "
+        "the legacy glob does. The legacy count is the size of the remaining "
+        "filename dependence and should fall, never rise.")
+    return out
+
+
+def outside_scope(root: Path = REPO) -> list[str]:
+    """Receipts in the same directory that the corpus glob CANNOT SEE.
+
+    The corpus scopes itself by FILENAME PREFIX, which is a name filter with the
+    same defect this program just fixed in bench: a receipt named TOKEN_*, or
+    CAPABILITY_*, or FUSION_* is neither extracted NOR refused by
+    test_every_unextracted_receipt_carries_a_reason -- IT IS INVISIBLE, and
+    invisible reads identically to `triaged and found empty`.
+
+    The scope itself is defensible (this is the ACCELERATOR knowledge base) and it
+    is NOT widened here by guesswork, because pulling in every headless receipt
+    would ingest Q80, noetic and civilization work this lane cannot type. What
+    changes is that the exclusion is now REPORTED rather than silent, so a reader
+    can see that membership depends on what a file was named.
+    """
+    seen = {p.name for p in corpus(root)} | set(OWN_OUTPUTS)
+    return sorted(p.name for p in (root / "receipts/headless").glob("*.json")
+                  if p.name not in seen)
+
+
+# Accelerator receipts that do NOT start with ACCELERATOR_ and are therefore
+# invisible to the corpus glob. Listed EXPLICITLY rather than inferred, because a
+# content classifier would be this lane guessing which of 348 headless receipts
+# are its own -- and a wrong guess ingests another campaign's work as Accelerator
+# evidence. Named here, the gap is a short auditable list instead of a silence.
+KNOWN_ACCELERATOR_OUTSIDE_SCOPE = (
+    "TOKEN_EXECUTION_ATLAS.json",
+    "TOKEN_EXECUTION_ATLAS_COUNTS.json",
+    "TOKEN_GRAPH_REDUCTION_TIMED.json",
+    "CAPABILITY_FUSED_GRAPH_CLEARED.json",
+    "FUSION_GAIN_IS_LENGTH_INDEPENDENT.json",
+)
 
 
 def resolve(citation: str, root: Path = REPO) -> Any:
@@ -192,6 +293,22 @@ def validate(entry: dict[str, Any], *, superseded: dict[str, list[str]] | None =
                 f"{n} value. One measured value is not breadth -- name the value, or "
                 f"say UNKNOWN.")
 
+    # A value that READS as a sentinel but is not one. "NONE -- holds for any
+    # kernel" looks like NONE to a reviewer and is a named value to every check
+    # below, so it slips the grounding rule while claiming its breadth. Same for
+    # a prose UNSCOPED. Caught after writing one by accident in this lane's own
+    # bandwidth-ceiling law.
+    for axis, value in entry["applicability"].items():
+        if not isinstance(value, str):
+            continue
+        head = value.strip().upper()
+        for sentinel in (NONE, UNSCOPED, UNKNOWN):
+            if value != sentinel and head.startswith(sentinel):
+                raise Refused(
+                    f"{lid}: axis {axis} is {value[:60]!r}, which READS as {sentinel} and is "
+                    f"treated as a named value by every check below. Use the bare sentinel and "
+                    f"ground it, or name the value the evidence actually covers.")
+
     # NONE must be grounded in the receipt recording that identity ABSENT.
     for axis, value in entry["applicability"].items():
         if value != NONE or axis not in IDENTITY_OF_AXIS:
@@ -200,7 +317,18 @@ def validate(entry: dict[str, Any], *, superseded: dict[str, list[str]] | None =
         for rel in entry["source_receipts"]:
             ids = resolve(rel.partition("#")[0], root=root).get("identities")
             if ids is None:
-                continue  # receipt predates the identity schema; recorded, not assumed
+                # The receipt predates the identity schema, so the NONE cannot be
+                # checked against anything. Skipping SILENTLY is the check that
+                # cannot fail: an ungrounded NONE on MACHINE would read exactly like
+                # a grounded one, and NONE on MACHINE is the widest over-claim
+                # available -- it turns an M3 Ultra result into a universal. Record
+                # it so "checked and grounded" is distinguishable from "could not
+                # check". Not raised, because refusing here would retroactively
+                # invalidate every law citing a pre-schema receipt.
+                entry.setdefault("none_claims_not_grounded", []).append(
+                    {"axis": axis, "identity": ident, "receipt": rel,
+                     "why": "source receipt has no identities block to check against"})
+                continue
             got = ids.get(ident)
             if not (isinstance(got, dict) and got.get("status") in ("ABSENT", "MOCK", "SIMULATED")):
                 raise Refused(
@@ -240,8 +368,446 @@ def validate(entry: dict[str, Any], *, superseded: dict[str, list[str]] | None =
 
 M3 = "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)"
 MLX = "MLX 0.32.1 metal_kernel JIT under CPython 3.12"
+HK = "hawking-core release-fast Rust/Metal decoder, binary d34044cffae8f320"
 
 LAWS: list[dict[str, Any]] = [
+    dict(
+        law_id="AKB-GRAPH-BOUNDARY-LEVER-IS-NEARLY-EXHAUSTED",
+        statement=(
+            "The 628-dispatch decode graph holds 401 dispatches at boundaries whose intermediate "
+            "is consumed once and never escapes -- 63.9% of the graph, and deleting all of them "
+            "would leave 227. Together they are worth about 1.10 ms of a 28.0208 ms token (3.9%) "
+            "in dispatch cost at the 2.75 us marginal measured for non-operand-sharing levers, "
+            "plus 31.68 MB of intermediate traffic = 0.32% of the token's weight bytes. Against "
+            "the 1.65x of headroom the byte wall leaves, EVERY REMAINING GRAPH BOUNDARY TOGETHER "
+            "IS ABOUT 4% OF A 65% GAP. Two of twelve boundaries are undeletable and marked so: "
+            "GQA's qkv and rope/cache outputs ESCAPE into the KV cache. The clearest abstraction "
+            "tax by ratio is ba_to_decay_beta -> gated_delta_decode, which spends a whole "
+            "dispatch moving 384 BYTES, 48 times per token."),
+        applicability={
+            "MODEL": "Qwen3.8-27B sealed-3.14 (NOETIC_PARENT_A)",
+            "ARCHITECTURE": ("Qwen3.8 hybrid; fused, the two layer kinds DIVERGE -- 48 DeltaNet "
+                             "at 10 dispatches, 16 GQA at 9, where unfused both were 15"),
+            "ORGAN": "whole decode graph, resolved to producer/consumer pairs",
+            "REPRESENTATION": "HQ30UQ4 g64 mixer + affine_q2 g64 MLP",
+            "SHAPE": "batch 1 decode; intermediate sizes assume f32 activations",
+            "MACHINE": M3, "RUNTIME": HK,
+            "KERNEL": "the 628-dispatch fused graph, histogram from a real 6-token trace",
+            "STORAGE_TIER": NONE, "TOPOLOGY": NONE,
+            "WORKLOAD_PHASE": "single-request decode"},
+        evidence_class="Derived",
+        source_receipts=["receipts/headless/ACCELERATOR_628_BOUNDARY_CENSUS.json"],
+        citations=[
+            "receipts/headless/ACCELERATOR_628_BOUNDARY_CENSUS.json#THE_BOUNDARY_CENSUS",
+            "receipts/headless/ACCELERATOR_628_BOUNDARY_CENSUS.json"
+            "#AND_THAT_IS_THE_CEILING_ON_EVERY_REMAINING_BOUNDARY_TOGETHER",
+            "receipts/headless/ACCELERATOR_628_BOUNDARY_CENSUS.json#claim_boundary"],
+        status="ACTIVE", superseded_by=None, negative_result=True,
+        confidence_basis=(
+            "Derived, and the class says so. The dispatch COUNTS are exact -- the histogram "
+            "reconciles to 628 and the layer arithmetic closes. The 3.9% is 401 multiplied by a "
+            "rate measured on three OTHER levers, and the one lever that broke that rate broke "
+            "it by 6.6x, so a boundary of an unanticipated shape would make this LOW rather than "
+            "high. The boundary list is STRUCTURAL: producer/consumer pairs read off the "
+            "histogram and the layer shape, with no buffer traced to prove single consumption -- "
+            "the two escapes are marked because their escape is known, not because a tool found "
+            "them. Nothing here was built or timed."),
+    ),
+    dict(
+        law_id="AKB-DELTANET-STATE-IS-3-PERCENT-OF-THE-TOKEN",
+        statement=(
+            "The DeltaNet recurrent state is 48 value heads x 128 value dim x 128 key dim of f32 "
+            "= 3.146 MB PER LAYER, read and written every token across 48 layers = 301.99 MB per "
+            "decode token, 3.06% of the 9.868 GB of weights -- and it appears in no weight "
+            "ranking because it is not a weight. With the conv cache (22.02 MB) and the GQA KV "
+            "read at context 60 (7.86 MB), non-weight traffic is 331.87 MB per token, 3.36%. So "
+            "the token reads about 10.20 GB rather than 9.87 and the byte-wall fraction moves "
+            "from 60.7% to about 62.7%. THE KV TERM IS THE ONLY ONE THAT GROWS WITH CONTEXT: at "
+            "8192 tokens it would be 1.07 GB per token, 10.9% of the weight bytes, which is the "
+            "first term in this accounting that makes the ceiling context-dependent."),
+        applicability={
+            "MODEL": "Qwen3.8-27B sealed-3.14 (NOETIC_PARENT_A)",
+            "ARCHITECTURE": ("Qwen3.8 hybrid: 48 DeltaNet layers with 48 value heads at 128x128 "
+                             "state, 16 GQA layers with 4 kv heads at head_dim 256"),
+            "ORGAN": "DeltaNet recurrent state, DeltaNet conv cache, GQA KV cache",
+            "REPRESENTATION": "f32 state; the state is NOT quantized and this is why it is "
+                              "invisible to an EBPW accounting",
+            "SHAPE": "batch 1 decode; the KV figure is at context 60 and is linear in context",
+            "MACHINE": M3, "RUNTIME": HK,
+            "KERNEL": "the 628-dispatch fused graph",
+            "STORAGE_TIER": NONE, "TOPOLOGY": NONE,
+            "WORKLOAD_PHASE": "single-request decode"},
+        evidence_class="Derived",
+        source_receipts=["receipts/headless/ACCELERATOR_628_BOUNDARY_CENSUS.json"],
+        citations=[
+            "receipts/headless/ACCELERATOR_628_BOUNDARY_CENSUS.json"
+            "#WHAT_THE_WEIGHT_ATLAS_EXCLUDED_IS_NOW_A_NUMBER",
+            "receipts/headless/ACCELERATOR_628_BOUNDARY_CENSUS.json#claim_boundary"],
+        status="ACTIVE", superseded_by=None, negative_result=False,
+        confidence_basis=(
+            "Derived from the artifact's own config -- linear_num_value_heads, "
+            "linear_value_head_dim and linear_key_head_dim -- times f32 and the layer count. It "
+            "upgrades a NAMED EXCLUSION in ACCELERATOR_TOKEN_BYTE_ATLAS_628 to a number, which "
+            "is what that receipt asked for. It assumes the state is read AND written once per "
+            "layer per token, which is what a recurrence does and was not traced. The activation "
+            "floor is excluded as too crude to state."),
+    ),
+    dict(
+        law_id="AKB-INPUT-OPERAND-REUSE-IS-NOT-THE-MLP-FUSION-WIN",
+        statement=(
+            "Loading the input vector ONCE for two accumulators instead of twice did NOT make a "
+            "dual-accumulator affine_q2 matvec faster at the sealed resident's real MLP shape. "
+            "Two arms, one dispatch each, identical weights read and identical output to "
+            "1.913e-07 against a float64 oracle, differing only in whether the input slice is "
+            "loaded once or twice through two unaliased parameters: the REUSE arm measured 0.3715 "
+            "ms against RELOAD's 0.3646, 1.9% SLOWER, with reload faster in 3 of 3 admitted "
+            "sweeps. An 8-20% advantage for reuse -- the size at which it was proposed as the "
+            "mechanism behind 84% of the gate_up fusion win -- is excluded. MECHANISM: the kernel "
+            "issues 8 shift-and-mask unpacks plus 2 fused multiply-adds per byte pair, and "
+            "against that instruction stream one extra L1 load is free. The regime cross-checks "
+            "-- 149.9 GB/s here against the 161.9 GB/s ACCELERATOR_EXPERT_BATCH measured for a "
+            "native q4 arm it independently called arithmetic-bound on the unpack."),
+        applicability={
+            "MODEL": NONE,
+            "ARCHITECTURE": NONE,
+            "ORGAN": "MLP gate/up projection pair",
+            "REPRESENTATION": "affine_q2 group64 at 2.5 bpw, the artifact's own MLP codec",
+            "SHAPE": "17408 x 5120, the artifact's real MLP shape; one shape only",
+            "MACHINE": M3, "RUNTIME": MLX,
+            "KERNEL": ("synthetic dual-accumulator matvec, threadgroup 128, 2 rows per "
+                       "threadgroup -- NOT the production kernel"),
+            "STORAGE_TIER": NONE, "TOPOLOGY": NONE,
+            "WORKLOAD_PHASE": "single-token decode shape (one input vector)"},
+        evidence_class="Measured",
+        source_receipts=["receipts/headless/ACCELERATOR_MLP_OPERAND_REUSE_REFUTED.json"],
+        citations=[
+            "receipts/headless/ACCELERATOR_MLP_OPERAND_REUSE_REFUTED.json#measured",
+            "receipts/headless/ACCELERATOR_MLP_OPERAND_REUSE_REFUTED.json"
+            "#WHAT_THIS_ELIMINATES_FROM_S032_5_S_THIRTEEN_CANDIDATES",
+            "receipts/headless/ACCELERATOR_MLP_OPERAND_REUSE_REFUTED.json#claim_boundary"],
+        status="ACTIVE", superseded_by=None, negative_result=True,
+        confidence_basis=(
+            "3 sweeps admitted and 0 refused under a pre-registered quiescence gate (max_rss "
+            "0.13-0.15 GiB). The arms carry ~15% IQR, ABOVE the program's 10% gate, so this "
+            "refutes the hypothesis AT THE SIZE IT WAS PROPOSED and resolves no small effect in "
+            "either direction -- it rests on sign consistency 3/3 plus a median in the wrong "
+            "direction, not on a clean gate. The control's defence against common-subexpression "
+            "elimination is ARCHITECTURAL (two unaliased buffer parameters) and unverified "
+            "against generated assembly, because xcrun metal is ABSENT on this machine. Says "
+            "NOTHING about the production 17.35 us/dispatch measurement -- it refutes one "
+            "proposed mechanism for it. The arm that would settle what IS left -- prologue, "
+            "reduction and epilogue together -- is BUILT, CORRECT and UNTIMED, blocked on a "
+            "quiesced window."),
+    ),
+    dict(
+        law_id="AKB-964-DISPATCHES-PER-DECODE-TOKEN",
+        statement=(
+            "The sealed-3.14 resident's production decode graph runs 964 dispatches per token, "
+            "MEASURED by delta so prefill cancels: (15424 - 11568) / (6 - 2) = 964.000 exactly. "
+            "The arithmetic 1 + 64*15 + 3 is structurally confirmed and BOTH LAYER KINDS COST "
+            "EXACTLY 15 BY DIFFERENT ROUTES -- a DeltaNet layer spends 2 rmsnorm + 2 "
+            "add_residual + 6 matvec + 1 swiglu + 4 DeltaNet-specific, a GQA layer 2 + 2 + 7 "
+            "matvec + 1 + 3 GQA-specific -- which the schedule file could not have shown. The "
+            "matvecs split CLEANLY BY ORGAN with nothing mixed inside one: 209 uniform-q4 take "
+            "every mixer projection plus the lm_head, 192 affine-q2 take every MLP projection."),
+        applicability={
+            "MODEL": "Qwen3.8-27B sealed-3.14 (NOETIC_PARENT_A), 3.1393 complete EBPW",
+            "ARCHITECTURE": "Qwen3.8 hybrid, 48 DeltaNet + 16 GQA layers",
+            "ORGAN": "whole decode graph, resolved per kernel family",
+            "REPRESENTATION": "mixed HQ30UQ4 g64 mixer + affine_q2 g64 MLP",
+            "SHAPE": "batch 1 decode, 11-token prompt; dispatch count is structural and was "
+                     "not varied over prompts",
+            "MACHINE": M3, "RUNTIME": HK,
+            "KERNEL": "the 964-dispatch production graph, all four fusion levers off",
+            "STORAGE_TIER": NONE, "TOPOLOGY": NONE,
+            "WORKLOAD_PHASE": "single-request decode"},
+        evidence_class="Measured",
+        source_receipts=["receipts/headless/TOKEN_EXECUTION_ATLAS_COUNTS.json"],
+        citations=["receipts/headless/TOKEN_EXECUTION_ATLAS_COUNTS.json#headline",
+                   "receipts/headless/TOKEN_EXECUTION_ATLAS_COUNTS.json"
+                   "#the_arithmetic_is_now_STRUCTURALLY_confirmed",
+                   "receipts/headless/TOKEN_EXECUTION_ATLAS_COUNTS.json#claim_boundary"],
+        status="ACTIVE", superseded_by=None, negative_result=False,
+        confidence_basis=(
+            "The delta method removes prefill exactly and lands on a whole number, 964.000. It "
+            "became measurable only after a real defect was fixed: the runtime pushed one label "
+            "per dispatch into a Vec and the session harvest collapsed it into a HashSet, "
+            "destroying the multiplicity the question is about. COUNTS ONLY -- nothing here is "
+            "timed, and AKB-DISPATCH-COUNT-DOES-NOT-PREDICT-COST establishes that this count "
+            "does not predict the graph's cost. This receipt's OWN earlier histogram was "
+            "withdrawn for describing a uniform-q4 body; what is recorded here is the "
+            "re-measured version."),
+    ),
+    dict(
+        law_id="AKB-FUSION-GAIN-IS-LENGTH-INDEPENDENT",
+        statement=(
+            "The four pre-existing fusion levers were worth 2.1-2.3% of wall at EVERY generation "
+            "length measured -- 64, 256 and 1024 new tokens -- for 21.6% fewer dispatches, with "
+            "output identical: clean floors 30.2791 ms/token unfused against 29.6304 fused, "
+            "unfused reproducing 30.2282-30.3325 across 5 clean runs in two sessions (0.35% "
+            "spread) and fused 29.5537-29.6653 (0.38%), with complete separation. THIS TIGHTENS "
+            "THE CEILING RATHER THAN LOOSENING IT: a length-independent gain means the dispatch "
+            "ladder does not improve at longer generations either, which the +29.09% it replaced "
+            "would have implied."),
+        applicability={
+            "MODEL": "Qwen3.8-27B sealed-3.14 (NOETIC_PARENT_A)",
+            "ARCHITECTURE": "Qwen3.8 hybrid, 48 DeltaNet + 16 GQA layers",
+            "ORGAN": "whole decode graph", "REPRESENTATION": "sealed-3.14, unchanged across arms",
+            "SHAPE": "64, 256 and 1024 new tokens at max_seq_len 2048, one prompt",
+            "MACHINE": M3, "RUNTIME": HK,
+            "KERNEL": "964-dispatch control against the 756-dispatch three-lever graph",
+            "STORAGE_TIER": NONE, "TOPOLOGY": NONE,
+            "WORKLOAD_PHASE": "single-request decode"},
+        evidence_class="Reproduced",
+        source_receipts=["receipts/headless/FUSION_GAIN_IS_LENGTH_INDEPENDENT.json"],
+        citations=["receipts/headless/FUSION_GAIN_IS_LENGTH_INDEPENDENT.json"
+                   "#THE_29_PERCENT_IS_REFUTED",
+                   "receipts/headless/FUSION_GAIN_IS_LENGTH_INDEPENDENT.json"
+                   "#what_this_costs_and_what_survives",
+                   "receipts/headless/FUSION_GAIN_IS_LENGTH_INDEPENDENT.json#claim_boundary"],
+        status="ACTIVE", superseded_by=None, negative_result=True,
+        confidence_basis=(
+            "Reproduced: both floors recur across two sessions and two processes at 0.35-0.38% "
+            "spread. Admitted by COMPLETE SEPARATION of two tight clusters after excluding 12 of "
+            "24 runs as outliers -- an enormous exclusion rate, stated as such, and the reason "
+            "the receipt refuses a rep count as its basis. This law REFUTES the +29.09% its own "
+            "predecessor published, which came from unpaired runs on a contended machine. SHAPE "
+            "is not UNSCOPED: length-independence is established over 64 to 1024 and says "
+            "nothing beyond 1024."),
+    ),
+    dict(
+        law_id="AKB-DECODE-BYTES-ARE-THE-MLP-NOT-THE-HEAD",
+        statement=(
+            "One decode token of the sealed-3.14 resident reads 9,868,249,760 weight bytes, and "
+            "the ranking by TOKEN bytes is MLP 54.19% over 128 dispatches, DeltaNet projections "
+            "29.93% over 96, GQA projections 9.03% over 48, lm_head 6.84% in ONE. The derivation "
+            "from element counts and codec bpw reconciles against the artifact's own "
+            "payload_bytes to 0.101%, and the residual has a name -- MIX_REPORT records "
+            "f32_bytes 10,584,840 against an unaccounted 10,651,416. THE PER-DISPATCH RANKING "
+            "DISAGREES WITH THE PER-TOKEN ONE: the head moves 675,430,400 bytes in one dispatch "
+            "against 55,705,600 for the largest MLP dispatch, 12.13x, and is still 6.84% of the "
+            "token because the MLP runs its dispatch 128 times. Deleting the head entirely -- "
+            "which no exact algorithm can do -- caps at 6.84%, and the full logit tensor that "
+            "argmax fusion would remove is 0.0201% of the token's bytes."),
+        applicability={
+            "MODEL": "Qwen3.8-27B sealed-3.14 (NOETIC_PARENT_A), 3.1393 complete EBPW",
+            "ARCHITECTURE": ("Qwen3.8 hybrid: 48 DeltaNet + 16 GQA (full_attention_interval 4), "
+                             "H 5120, I 17408, V 248320, untied head"),
+            "ORGAN": "whole body, resolved by organ",
+            "REPRESENTATION": "HQ30UQ4 g64 mixer/head at 4.25 bpw + affine_q2 g64 MLP at 2.5 bpw",
+            "SHAPE": "batch 1 decode, one token; KV and activation traffic EXCLUDED",
+            "MACHINE": M3, "RUNTIME": HK,
+            "KERNEL": "the 628-dispatch fused decode graph",
+            "STORAGE_TIER": "weights resident in unified memory; not a storage-read accounting",
+            "TOPOLOGY": NONE,
+            "WORKLOAD_PHASE": "single-request decode (prefill amortises the head differently)"},
+        evidence_class="Derived",
+        source_receipts=["receipts/headless/ACCELERATOR_TOKEN_BYTE_ATLAS_628.json"],
+        citations=[
+            "receipts/headless/ACCELERATOR_TOKEN_BYTE_ATLAS_628.json"
+            "#THE_DERIVATION_RECONCILES_AND_THAT_IS_WHAT_MAKES_IT_A_MEASUREMENT",
+            "receipts/headless/ACCELERATOR_TOKEN_BYTE_ATLAS_628.json#ORGAN_ROLLUP",
+            "receipts/headless/ACCELERATOR_TOKEN_BYTE_ATLAS_628.json#WHAT_THIS_ATLAS_IS_NOT"],
+        status="ACTIVE", superseded_by=None, negative_result=False,
+        confidence_basis=(
+            "Derived, not Measured, and the class says so: exact element counts times codec bpw. "
+            "Its strength is the reconciliation -- 0.101% unaccounted landing on an "
+            "independently recorded f32_bytes. Its weakness is that the ms figures divide bytes "
+            "by ONE effective bandwidth and families demonstrably do not share one "
+            "(ACCELERATOR_EXPERT_BATCH measured 161.9 vs 426.4 GB/s on this machine), so only "
+            "the BYTE ranking is claimed. Non-projection dispatches read activations and no "
+            "weights and are absent from a weight-byte ranking by construction, not free."),
+    ),
+    dict(
+        law_id="AKB-NORM-BOUNDS-CANNOT-PRUNE-THIS-HEAD",
+        statement=(
+            "No exact norm-based rejection bound prunes the sealed-3.14 lm_head. Row norms are "
+            "near-equinorm -- coefficient of variation 0.1288 on the likely head and 0.1646 on "
+            "the companion table -- so the Cauchy-Schwarz test |x.w| <= ||x|| ||w|| rejects "
+            "0.000% and 0.073% of the 248320 rows at an alignment cos of 0.10 and 0.236% and "
+            "0.976% at 0.30; pruning half would need cos about 0.63. The two-stage prefix bound "
+            "dies the same way because energy is uniform across dimensions: median tail-norm "
+            "ratio tracks sqrt(1-k/D) at 0.995-1.023 for k from 0.25D to 0.90D on both tables, "
+            "and the top 10% of 64-dimension groups holds 13.3-13.7% of the squared norm against "
+            "a uniform 10%, so a prefix bound at k=D/2 is 1.41x tighter than one that already "
+            "prunes under 1%. MECHANISM: the head has no preferred magnitude and no preferred "
+            "dimension subspace, and its discrimination is entirely full-dimensional DIRECTION, "
+            "which is what every norm bound discards."),
+        applicability={
+            "MODEL": "Qwen3.8-27B sealed-3.14 (NOETIC_PARENT_A), untied [248320, 5120] head",
+            "ARCHITECTURE": "Qwen3.8 hybrid, tie_word_embeddings false",
+            "ORGAN": "lm_head (and the companion embedding table, which refutes less strongly)",
+            "REPRESENTATION": "HQ30UQ4 g64 at 4.25 bpw; norms taken on the QUANTIZED weights",
+            "SHAPE": "248320 rows x 5120 dims; tail profile on 4096 seeded rows at 64-dim groups",
+            "MACHINE": M3, "RUNTIME": HK,
+            # The bare sentinel, GROUNDED: the source receipt records KernelIdentity
+            # ABSENT with a reason, because nothing was dispatched. Writing this as
+            # prose starting with the word NONE is what the sentinel guard caught --
+            # it reads as NONE to a reviewer and validates as a named value.
+            "KERNEL": NONE,
+            "STORAGE_TIER": NONE, "TOPOLOGY": NONE,
+            "WORKLOAD_PHASE": "greedy single-token selection at decode"},
+        evidence_class="Measured",
+        source_receipts=["receipts/headless/ACCELERATOR_LM_HEAD_EXACT_BOUNDS_REFUTED.json"],
+        citations=[
+            "receipts/headless/ACCELERATOR_LM_HEAD_EXACT_BOUNDS_REFUTED.json"
+            "#MEASURED_WITHOUT_DEQUANTIZING_ANYTHING",
+            "receipts/headless/ACCELERATOR_LM_HEAD_EXACT_BOUNDS_REFUTED.json"
+            "#THE_SECOND_FAMILY_DIES_THE_SAME_WAY_AND_I_PREDICTED_THAT_TOO",
+            "receipts/headless/ACCELERATOR_LM_HEAD_EXACT_BOUNDS_REFUTED.json#claim_boundary"],
+        status="ACTIVE", superseded_by=None, negative_result=True,
+        confidence_basis=(
+            "Both halves were PREDICTED IN WRITING BEFORE THE RUN with a named falsifier and "
+            "both confirmed -- CV under 0.30 as predicted, and tail decay tracking the uniform "
+            "sqrt(1-k/D) within 2.3% as predicted. Norms are exact over all 248320 rows of both "
+            "tables, computed from the packed codes with no dequantization. The weakness is that "
+            "NO FORWARD PASS RAN: cos(theta) is a free parameter and the curve is reported "
+            "across it, so what is established is that no plausible alignment prunes materially, "
+            "not that a measured alignment obtains. MODEL is deliberately not UNSCOPED -- a "
+            "heavy-tailed head elsewhere would reopen the family. Says NOTHING about low-rank "
+            "factorization: a matrix can be per-row isotropic and still low rank."),
+    ),
+    dict(
+        law_id="AKB-CHAT-TEMPLATE-ARM-MOVES-CAPABILITY",
+        statement=(
+            "The chat-template arm changed the sealed-3.14 resident's measured capability by "
+            "five of forty-three cases with no byte of the artifact altered: 30/43 on "
+            "open_think against 35/43 on pre_closed_think, same artifact_inventory_sha "
+            "1aff5df85bda1108, same binary, same chat_template file. The whole movement is on "
+            "structured_output, 5/15 -> 10/15, and eight empty replies become zero -- under "
+            "open_think eight calls generated 1135-1536 tokens and returned nothing after the "
+            "think block was stripped. The think arm held THREE TIMES the token budget "
+            "(capability_suite.py:277) and still lost, so the budget asymmetry favours the "
+            "losing arm. Per-token decode is arm-dependent and small in the same direction: at "
+            "one fixed prompt, pre_closed_think reads 28.0208 ms/token against open_think's "
+            "28.3018, a 1.003% advantage, because the open render is 65 prompt tokens against "
+            "25 and carries a longer KV cache. Capability outweighs decode 16.6x, taking "
+            "arm-matched accepted TPS 24.65 -> 29.05."),
+        applicability={
+            "MODEL": "Qwen3.8-27B sealed-3.14 (NOETIC_PARENT_A), 3.1393 complete EBPW",
+            "ARCHITECTURE": "Qwen3.8 hybrid, 48 DeltaNet + 16 GQA layers",
+            "ORGAN": NONE,
+            "REPRESENTATION": ("UNCHANGED across arms: HQ30UQ4 g64 mixer + affine_q2 g64 MLP. "
+                               "The arm is a SERVING MODE, not a representation."),
+            "SHAPE": "batch 1 decode; 43-case capability suite; timing at one 21-token prompt",
+            "MACHINE": M3, "RUNTIME": HK,
+            "KERNEL": "the 628-dispatch fused decode graph, identical in both arms",
+            "STORAGE_TIER": NONE, "TOPOLOGY": NONE,
+            "WORKLOAD_PHASE": "single-request decode with a rendered chat prompt"},
+        evidence_class="Measured",
+        source_receipts=["receipts/headless/ACCELERATOR_RESIDENT_TEMPLATE_ARM.json"],
+        citations=[
+            "receipts/headless/ACCELERATOR_RESIDENT_TEMPLATE_ARM.json#THE_FINDING",
+            "receipts/headless/ACCELERATOR_RESIDENT_TEMPLATE_ARM.json"
+            "#RAW_TPS_IS_ARM_DEPENDENT_AND_I_MEASURED_IT_RATHER_THAN_ASSUMING_IT",
+            "receipts/headless/ACCELERATOR_RESIDENT_TEMPLATE_ARM.json#claim_boundary"],
+        status="ACTIVE", superseded_by=None, negative_result=False,
+        confidence_basis=(
+            "ONE capability run per arm, unpaired -- admissible because the claim is a PASS "
+            "COUNT, which does not drift with machine load, and the same runs' wall times are "
+            "explicitly refused (the no_think run's own machine_state records "
+            "worst_repetition_spread_pct 63.8). The timing half is 3 admitted sweeps under the "
+            "pre-registered quiescence gate with per-arm spreads of 0.18-0.34%, 0 refused. "
+            "MODEL is deliberately not UNSCOPED: the same effect was measured on the 2.60-EBPW "
+            "body at 0/43 vs 14/43, which is two bodies of one family and not breadth. Nothing "
+            "here says the arm is better in general -- a task that needs chain-of-thought is "
+            "exactly what it removes, and the suite's one such item fails under both arms."),
+    ),
+    dict(
+        law_id="AKB-BANDWIDTH-CEILING-BOUNDS-ACCEPTED-TPS",
+        statement=(
+            "Single-request decode of the sealed-3.14 body reads 9,878,898,416 weight bytes per "
+            "token -- the whole payload except the embedding table, which is read as one row "
+            "while the untied lm_head is read in full. Against this box's measured 589.73 GB/s "
+            "that sets a floor of 16.752 ms per token, so the raw-TPS ceiling is 187.40 divided "
+            "by complete EBPW and the accepted-TPS ceiling is that times capability over 43. The "
+            "measured graph sits at 27.5896 ms, which is 358.1 GB/s or 60.7% of the wall, leaving "
+            "1.65x of total headroom for ALL execution-graph work combined. 50 accepted TPS "
+            "therefore requires capability/EBPW >= 11.473; the resident is at 30/3.1393 = 9.556, "
+            "20.1% short, so at 30/43 the target is unreachable by 1.20x even at infinite graph "
+            "efficiency. The 2.5970-EBPW specimen's accepted CEILING at 14/43 is 23.49, below the "
+            "resident's present accepted measurement of 25.29."),
+        applicability={
+            "MODEL": "Qwen3.8-27B sealed-3.14 (NOETIC_PARENT_A), 26,895,998,464 parent params",
+            "ARCHITECTURE": "Qwen3.8 hybrid, 64 layers, untied 248320x5120 embed and lm_head",
+            "ORGAN": "whole body; the bound is over total resident weight bytes",
+            "REPRESENTATION": "complete EBPW 3.1393 (HQ30UQ4 g64 mixer + affine_q2 g64 MLP)",
+            "SHAPE": "batch 1, one token, KV traffic EXCLUDED so the bound is optimistic",
+            "MACHINE": M3, "RUNTIME": HK,
+            # NOT the NONE sentinel. A descriptive string starting with the word
+            # NONE would read as NONE to a human and as a named value to
+            # validate(), which is the worst of both. The FLOOR is kernel-
+            # independent arithmetic; the 358.1 GB/s and 60.7% figures are not,
+            # so the axis names the kernels that produced them.
+            "KERNEL": ("the 628-dispatch fused graph: qwen80_add_residual_rmsnorm_tg, "
+                       "qwen_uniform_q4_group64_matvec_{qkv,pair_concat,geo_tpr64}, "
+                       "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128"),
+            "STORAGE_TIER": "resident in unified memory; not a storage-read bound",
+            "TOPOLOGY": NONE,
+            "WORKLOAD_PHASE": "single-request decode (prefill amortises the lm_head differently)"},
+        evidence_class="Derived",
+        source_receipts=["receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json"],
+        citations=[
+            "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json"
+            "#FINDING_7_THE_BANDWIDTH_WALL_TURNS_S031_19_INTO_A_CONSTRAINT_CURVE",
+            "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json"
+            "#FINDING_7_THE_BANDWIDTH_WALL_TURNS_S031_19_INTO_A_CONSTRAINT_CURVE.claim_boundary"],
+        status="ACTIVE", superseded_by=None, negative_result=True,
+        confidence_basis=(
+            "Derived, NOT Measured, and the class says so: it is arithmetic over two independent "
+            "measurements -- the artifact's payload_bytes and MACHINE_GENOME's 589.73 GB/s triad "
+            "median at 1.89% IQR. Its weakest input is that KV-cache traffic is excluded, which "
+            "makes every ceiling here an UPPER BOUND; that is the safe direction for the "
+            "unreachability claim and the unsafe direction for the 59.7 raw figure, which must "
+            "not be quoted as attainable. KERNEL is NONE because the bound is over bytes and no "
+            "kernel can move fewer than the weights it reads; TOPOLOGY is NONE and is grounded in "
+            "the source receipt recording transport ABSENT."),
+    ),
+    dict(
+        law_id="AKB-DISPATCH-COUNT-DOES-NOT-PREDICT-COST",
+        statement=(
+            "Two decode graphs at the SAME dispatch count differed in wall time. On the "
+            "sealed-3.14 mixed-codec Qwen3.8 body, add_rmsnorm+gqa_qkv+dn_inproj fusion and "
+            "mlp_swiglu+gqa_qkv+dn_inproj fusion BOTH measure 756 dispatches per decode "
+            "token -- byte-identical trace totals of 9072 at n=2 and 12096 at n=6 -- and "
+            "read 28.8697 ms and 27.7872 ms per token, 3.75% apart with complete separation "
+            "and per-arm spreads of 0.25% and 0.21%. The metric fails in the other direction "
+            "too: a 692-dispatch graph measured 27.7757 ms, indistinguishable from the "
+            "756-dispatch one at 0.04%. The marginal cost of a removed dispatch was 2.64, "
+            "2.86 and 17.35 us on the GPU for three levers measured in one session, a 6.6x "
+            "range, so no single us-per-dispatch constant can be multiplied by a count. "
+            "DISPATCHES_PER_TOKEN is a structural fact about the graph and was NOT a "
+            "predictor of its cost here."),
+        applicability={
+            "MODEL": "Qwen3.8-27B sealed-3.14 (NOETIC_PARENT_A), 3.1393 complete EBPW",
+            "ARCHITECTURE": "Qwen3.8 hybrid, 48 DeltaNet + 16 GQA layers",
+            "ORGAN": "whole decode graph; the outlier lever is the MLP gate/up pair",
+            "REPRESENTATION": "mixed: HQ30UQ4 g64 mixer + HGRAVF01 affine_q2 g64 MLP",
+            "SHAPE": "batch 1 decode, 11-token prompt, 49 generated tokens, max_seq_len 2048",
+            "MACHINE": M3, "RUNTIME": HK,
+            "KERNEL": ("qwen80_add_residual_rmsnorm_tg, qwen_uniform_q4_*_matvec_{qkv,"
+                       "pair_concat}, qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128"),
+            "STORAGE_TIER": NONE, "TOPOLOGY": NONE,
+            "WORKLOAD_PHASE": "single-request decode (NOT prefill; S031 §7 keeps them separate)"},
+        evidence_class="Measured",
+        source_receipts=["receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json"],
+        citations=[
+            "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json"
+            "#FINDING_2_TWO_GRAPHS_AT_THE_SAME_DISPATCH_COUNT_DIFFER_BY_3_75_PERCENT",
+            "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json"
+            "#FINDING_3_A_DISPATCH_IS_NOT_A_UNIT_OF_COST.marginal_us_per_removed_dispatch",
+            "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json#claim_boundary"],
+        status="ACTIVE", superseded_by=None, negative_result=True,
+        confidence_basis=(
+            "3 admitted sweeps per arm under a PRE-REGISTERED admission gate -- "
+            "bench.machine_quiescence sampled before and after each run, admitted only with "
+            "no process over 2 GiB RSS at either sample, 0 runs refused. Admitted by complete "
+            "separation of clusters spreading 0.12-0.37%, not by a rep count. SHAPE and "
+            "WORKLOAD_PHASE are deliberately not UNSCOPED: one prompt, one length, decode "
+            "only. The 17.35 us outlier's MECHANISM is not established -- the receipt rules "
+            "out host (flat at 1.5-1.8% of wall) and DRAM bandwidth (a 34.8x overshoot of "
+            "this machine's measured 589.73 GB/s) and names no third cause."),
+    ),
     dict(
         law_id="AKB-SCAN-VS-CUMSUM",
         statement=(
@@ -860,6 +1426,18 @@ UNEXTRACTED_REASONS = {
 }
 
 UNEXTRACTED: dict[str, str] = {
+    # An endpoint that now EXISTS and refuses correctly; no measured relation.
+    "ACCELERATOR_SEALED_RESIDENT_ENDPOINT.json": "CAPABILITY_NOT_LAW",
+    # A path-and-permission repair, not a measured relation about execution.
+    "ACCELERATOR_HCLI_VERIFIER_PATH_SEMANTICS.json": "CAPABILITY_NOT_LAW",
+    # Newly VISIBLE via akb_registration (S032 §13) rather than via a filename.
+    # Each carries a real result and each is superseded or subsumed by something
+    # already in LAWS, so being visible earns a REASON rather than an entry.
+    "TOKEN_GRAPH_REDUCTION_TIMED.json": "SUPERSEDED_IN_FLIGHT",
+    "CAPABILITY_FUSED_GRAPH_CLEARED.json": "SUPERSEDED_IN_FLIGHT",
+    "HCLI_RESIDENT_SEAL.json": "SUBSUMED",
+    # an instrument, not a measured relation
+    "ACCELERATOR_QUIESCENCE_INSTRUMENT.json": "PROSE_ONLY",
     # capability, not a measured relation
     "ACCELERATOR_AIR_COMPLETENESS.json": "CAPABILITY_NOT_LAW",
     "ACCELERATOR_AIR_MATMUL.json": "CAPABILITY_NOT_LAW",
@@ -957,7 +1535,23 @@ def build(*, root: Path = REPO) -> dict[str, Any]:
         "evidence_classes": list(EVIDENCE_CLASSES),
         "statuses": list(STATUSES),
         "corpus_size": len(paths),
+        "outside_scope_count": len(outside_scope(root)),
+        "known_accelerator_outside_scope": [
+            n for n in KNOWN_ACCELERATOR_OUTSIDE_SCOPE
+            if n in set(outside_scope(root))],
+        "scope_is_a_filename_prefix": (
+            "membership is decided by the ACCELERATOR_* glob, so a receipt named "
+            "otherwise is neither extracted nor refused -- it is invisible. The "
+            "excluded names are listed rather than silently dropped."),
         "receipts_yielding_laws": len(cited),
+        "membership_routes": membership_routes(root),
+        "none_claims_not_grounded_count": sum(
+            len(e.get("none_claims_not_grounded", [])) for e in entries),
+        "none_claims_not_grounded_note": (
+            "a NONE on an identity-backed axis that could not be checked because its "
+            "source receipt predates the identity schema. Reported, not refused: these "
+            "are unverified breadth claims, and an unreported one reads identically to "
+            "a verified one."),
         "entries": entries,
         "entries_by_status": by_status,
         "negative_results": sum(1 for e in entries if e["negative_result"]),

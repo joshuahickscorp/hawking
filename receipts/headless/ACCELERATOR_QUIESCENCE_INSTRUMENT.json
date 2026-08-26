@@ -1,0 +1,113 @@
+{
+  "receipt": "ACCELERATOR_QUIESCENCE_INSTRUMENT",
+  "date": "2026-08-26",
+  "obligation": "G046/G047 (the gate every timed claim passes through), S015 \u00a773/\u00a774 uncontended measurement",
+  "question": "FUSION_GAIN_IS_LENGTH_INDEPENDENT named this as its own next step: 'a quiescence check that enumerates every process over a CPU or RSS threshold rather than grepping for known names'.",
+  "THE_DEFECT_IS_OLDER_AND_WIDER_THAN_ONE_RECEIPT": {
+    "what_I_expected_to_find": "a quiescence function in bench.py with a name filter in it",
+    "what_is_actually_there": "NOTHING. `grep -n 'quiesc' tools/accelerator/bench.py` returns nothing. There has never BEEN a quiescence instrument.",
+    "so_what_was_the_check": "an ad-hoc `pgrep modellake` typed into a shell command, whose silence was then written into a receipt as prose",
+    "TWO_FAILURES_NOT_ONE": [
+      "IT WAS NEVER A FIELD. S015 \u00a773/\u00a774 require uncontended measurement, and no receipt in this program carries a machine-state field, so no timed claim here can be audited for the condition its own steer demands. It was carried as a SENTENCE.",
+      "IT MATCHED NAMES. A filter can only find the contender you already met. TOKEN_GRAPH_REDUCTION_TIMED recorded 'no lake fill running (pgrep modellake = 0)' while fileproviderd and mds_stores had been pegged near 100% for five hours."
+    ],
+    "the_class": "it reports WHAT IT LOOKED FOR, NOT WHAT IS THERE -- the same shape as the coverage curve that counted the absence of probed blockers, and as the shape sweep that reported 0 wrong of 0 cases"
+  },
+  "SHIPPED": {
+    "bench.machine_quiescence": "enumerates every process via ps and returns each one over a CPU or RSS threshold, with quiet, contenders, total_cpu_pct and max_rss_gib as FIELDS a receipt can carry",
+    "THERE_IS_DELIBERATELY_NO_NAMES_PARAMETER": "the blind spot WAS a filter, so the fix must not ship a filter. An instrument whose blind spot is configurable is one somebody will configure blind. A test asserts the signature is exactly {cpu_pct, rss_gib} and FAILS if a names= is ever added.",
+    "RSS_IS_THE_GATE_NOT_CPU_AND_THE_REASON_IS_A_MEASURED_LAW": "this campaign sealed on 2026-08-22 that METAL WORKING SET is this machine's admission gate and NOT free RAM, so a large-RSS neighbour contends with a resident model in the dimension that decides. CPU is reported because it is real, not because it is equally predictive.",
+    "the_caller_is_not_exempt": "the harness's own process is reported like any other. Excluding it would be the same self-exemption the name filter made by accident, and a benchmark burning CPU is a fact about the measurement.",
+    "bench.name_filter_quiescence": "THE BROKEN CHECK, KEPT EXECUTABLE as the control, with a docstring saying never to decide admissibility with it -- because a refutation nobody has watched is indistinguishable from a rule nobody needed"
+  },
+  "THE_TWO_CHECKS_DISAGREE_AND_IT_WAS_WATCHED_LIVE": {
+    "same_machine_same_moment": true,
+    "enumerate": {
+      "quiet": false,
+      "n_contenders": 2,
+      "total_cpu_pct": 195.6,
+      "max_rss_gib": 17.6
+    },
+    "name_filter": {
+      "quiet": true,
+      "hits": [],
+      "names": [
+        "modellake",
+        "hf_transfer"
+      ]
+    },
+    "what_the_grep_missed": [
+      {
+        "comm": "Python (Personal-Model MLX run)",
+        "cpu_pct": 95.6,
+        "rss_gib": 17.6
+      },
+      {
+        "comm": "fileproviderd",
+        "cpu_pct": 100.0,
+        "rss_gib": 0.01
+      }
+    ],
+    "reading": "the check every timed receipt in this program used reports QUIET while 195.6% of CPU and 17.6 GiB are held. This is not a reconstruction: both were called in one process, one after the other."
+  },
+  "A_FAILED_ENUMERATION_IS_NOT_A_QUIET_MACHINE": {
+    "rule": "if ps exits non-zero, quiet is None and a `refused` reason is recorded -- NEVER True",
+    "why": "0 of 0 reads identically to 0 of many. 'I could not look' and 'I looked and found nothing' are different facts, and this program has already confused them four times."
+  },
+  "SIX_TESTS_AND_THREE_MUTATIONS_WATCHED_FIRING": {
+    "tests": [
+      "the enumerator actually enumerates (anti-vacuity: at threshold 0 it must find something)",
+      "a quiet verdict is REACHABLE (a check that can only say BUSY is as useless as one that can only say QUIET)",
+      "the name filter and the enumerator DISAGREE",
+      "machine_quiescence CANNOT be given a name list",
+      "a failed enumeration is not a quiet machine",
+      "the caller is not exempt from its own check"
+    ],
+    "mutations": [
+      {
+        "mutation": "quiet always True",
+        "caught_by": [
+          "enumerator actually enumerates",
+          "the two disagree"
+        ]
+      },
+      {
+        "mutation": "a failed ps reads as quiet",
+        "caught_by": [
+          "a failed enumeration is not a quiet machine"
+        ]
+      },
+      {
+        "mutation": "a names= parameter sneaks back in",
+        "caught_by": [
+          "cannot be given a name list"
+        ]
+      }
+    ],
+    "all_three_caught_by_exactly_the_intended_test": true
+  },
+  "claim_boundary": [
+    "THIS DETECTS CONTENTION; IT DOES NOT ATTRIBUTE SLOWNESS TO IT. The 42x capability stall and the 3-of-12 decoder outliers remain UNEXPLAINED -- this instrument would have RECORDED which processes were present, not proven they caused anything. Naming a contender is not naming a cause.",
+    "THE THRESHOLDS ARE CHOICES, NOT MEASUREMENTS. 20% CPU and 2 GiB are set by judgement; a contender under both is invisible, and nothing here establishes that a process below them cannot perturb a measurement.",
+    "ps pcpu ON macOS IS A DECAYED AVERAGE over the process's life, not an instantaneous sample, so a process that spiked and stopped reads low and one that just started reads low too. The RSS column has no such lag, which is a second reason to prefer it.",
+    "NOT WIRED INTO time_arm AUTOMATICALLY, and the reason is cost not principle: time_arm is called hundreds of times inside a sweep and a subprocess per call would be real overhead that could itself perturb the thing being measured. So a caller must attach it, WHICH MEANS THE OLD FAILURE MODE -- forgetting to check -- IS STILL POSSIBLE. Named rather than papered over.",
+    "NO TIMED CLAIM ANYWHERE IN THIS PROGRAM IS RETROACTIVELY VALIDATED by this. Every prior receipt's quiescence evidence is still the sentence it always was.",
+    "One machine, macOS ps. Nothing timed; no kernel changed; no performance claim moves."
+  ],
+  "tests": {
+    "file": "tools/accelerator/test_bench.py",
+    "new": 8,
+    "suite": "518 passed under /Library/Frameworks/Python.framework/Versions/3.12/bin/python3 -m pytest tools/accelerator/ -q, re-derived AFTER the last change in this block rather than before it",
+    "interpreter_recorded_by_path": "because `python3.12` names TWO different interpreters on this machine, one with transformers and mlx and one with neither"
+  },
+  "next": "attach machine_quiescence to the next timed receipt so the field exists at least once, and decide whether the per-arm cost is worth paying inside sweeps",
+  "THE_SAME_DEFECT_WAS_IN_A_SECOND_INSTRUMENT_AND_MY_OWN_VALIDATOR_CAUGHT_ME": {
+    "how_it_surfaced": "I published 516 tests pass. civilization/validate.py refused: '1 tests FAILED in the run this count came from; a passed-count published unreported failures is a half-truth'. That is a rule THIS session added, firing on me.",
+    "the_count_was_stale_by_the_end_of_the_block_that_produced_it": "my 516 was measured BEFORE I wrote this receipt. Writing it made the suite 515+1. ERA_I_CHECKPOINT_002 sealed exactly this shape -- 'the sentence was written from the pre-fix number and never re-derived after its own fix landed' -- and I repeated it with a test count in the block that fixed a different instrument.",
+    "the_failing_test_was_correct": "test_every_unextracted_receipt_carries_a_reason refused ACCELERATOR_QUIESCENCE_INSTRUMENT.json as an UNCLASSIFIED newcomer. The AKB tripwire the checkpoint already recorded, doing its job. Classified PROSE_ONLY, whose own wording fits: the finding is real but stated only as prose about an instrument, with no applicability domain to name without inventing one.",
+    "AND_THEN_THE_BIGGER_ONE": "the AKB corpus globs ACCELERATOR_*.json. THE FOUR RECEIPTS THIS SESSION PRODUCED -- TOKEN_EXECUTION_ATLAS_COUNTS, TOKEN_GRAPH_REDUCTION_TIMED, CAPABILITY_FUSED_GRAPH_CLEARED, FUSION_GAIN_IS_LENGTH_INDEPENDENT -- ARE INVISIBLE TO IT. They carry this session's largest measured results (964 dispatches/token, the 2.19% fusion gain, the identity-bound 30/43) and the knowledge base can neither extract nor refuse them.",
+    "it_is_the_SAME_CLASS_as_the_defect_this_block_fixed": "membership decided by a NAME. A receipt outside the glob is neither extracted NOR refused -- INVISIBLE, which reads identically to 'triaged and found empty'. The tripwire that refuses unclassified newcomers only sees newcomers it is allowed to look at. Found in the AKB in the same block that removed it from bench, by my own validator rather than by re-reading anything.",
+    "NOT_FIXED_BY_WIDENING_AND_THE_REASON": "348 receipts sit outside the glob and most are Q80, noetic and civilization work this lane cannot type. Widening would ingest another campaign's evidence as Accelerator evidence, and a content classifier would be this lane GUESSING which 348 are its own. So the scope is UNCHANGED and the exclusion is REPORTED: outside_scope_count plus KNOWN_ACCELERATOR_OUTSIDE_SCOPE, an explicit short list, with a test that the list cannot go stale silently -- if one is ever renamed into the glob it must LEAVE the list, because a gap list that only grows is one nobody reads.",
+    "what_is_still_open": "those four receipts are NAMED as outside scope and still not extracted into laws. The gap is now a short auditable list instead of a silence, which is a different thing from being closed."
+  }
+}

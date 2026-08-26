@@ -1,0 +1,211 @@
+{
+  "receipt": "ACCELERATOR_LM_HEAD_EXACT_BOUNDS_REFUTED",
+  "date": "2026-08-26",
+  "obligation": "S032 \u00a77 LM-HEAD ASCENSION (C, D, E, M), \u00a78 fuse selection into the head, \u00a76 the byte wall",
+  "question": "S032 \u00a77 asks whether the output head can require less physical work WITHOUT changing model function, and names a mathematically safe rejection bound as one route. \u00a77 also insists on separating EXACT from APPROXIMATE. This tests the EXACT family and refutes it.",
+  "WHY_THIS_AND_NOT_ARGMAX_FUSION_FIRST": {
+    "S032_8_asks_why_full_logits_must_be_materialized": "answered by arithmetic in ACCELERATOR_TOKEN_BYTE_ATLAS_628 before anything was built: the full logit tensor is 248320 f32 = 993,280 bytes written and read again = 0.0201% of the token's bytes, plus one dispatch of 628 at the ~2.7 us measured marginal. Fusing argmax into the head is a genuine graph-boundary deletion worth about 8.3 us of a 28,021 us token = 0.03%.",
+    "so_the_boundary_that_LOOKS_expensive_is_not": "the head's cost is READING 675,430,400 BYTES OF WEIGHTS, and argmax fusion does not touch one of them. Building the visible boundary first would have repeated the dispatch ladder's error at a new address.",
+    "what_is_tested_here_instead": "whether the 675 MB itself can shrink under an EXACT algorithm."
+  },
+  "THE_EXACT_BOUND_AND_WHY_IT_IS_THE_RIGHT_THING_TO_TEST": {
+    "form": "|x . w_v| <= ||x|| ||w_v|| (Cauchy-Schwarz). A row is PROVABLY not the argmax when ||x|| ||w_v|| < L*, any lower bound on the true max logit.",
+    "why_it_is_exact": "it never rejects a row that could have won, so greedy decode returns the SAME TOKEN. This is the one shape in S032 \u00a77 that is not an approximation.",
+    "the_key_simplification": "||x|| factors out of both sides, so a row is prunable iff ||w_v|| < r with r = L*/||x||. The best achievable r is max_v |x.w_v|/||x|| = ||w_best|| cos(theta). SO PRUNING DEPENDS ONLY ON THE ROW-NORM DISTRIBUTION AND ONE ALIGNMENT NUMBER, and the distribution is computable from the artifact with no forward pass."
+  },
+  "MEASURED_WITHOUT_DEQUANTIZING_ANYTHING": {
+    "method": "for a q4 group with f16 scale s and codes q, ||w_group||^2 = s^2 * sum (q_i - 8)^2, so one pass over the packed codes gives every row norm EXACTLY. No dense tensor is written, which is also what S015 \u00a719 asks of anything touching this representation.",
+    "tables": {
+      "7cf1b122be1f8265": {
+        "dims": [
+          248320,
+          5120
+        ],
+        "bytes": 675430440,
+        "mean_norm": 0.90472,
+        "cv": 0.16464,
+        "min": 0.00082,
+        "p50": 0.93457,
+        "max": 1.20049,
+        "zero_rows": 0,
+        "prunable_fraction_at_cos": {
+          "0.05": 0.00017,
+          "0.10": 0.00073,
+          "0.20": 0.00519,
+          "0.30": 0.00976,
+          "0.50": 0.03354,
+          "0.70": 0.28304,
+          "0.90": 0.93246,
+          "0.99": 0.99998
+        }
+      },
+      "9a327c6eaaee2b1b": {
+        "dims": [
+          248320,
+          5120
+        ],
+        "bytes": 675430440,
+        "mean_norm": 0.98206,
+        "cv": 0.12881,
+        "min": 0.34583,
+        "p50": 0.98009,
+        "max": 1.69639,
+        "zero_rows": 0,
+        "prunable_fraction_at_cos": {
+          "0.05": 0.0,
+          "0.10": 0.0,
+          "0.20": 0.0,
+          "0.30": 0.00236,
+          "0.50": 0.14073,
+          "0.70": 0.94154,
+          "0.90": 1.0,
+          "0.99": 1.0
+        }
+      }
+    },
+    "which_table_is_the_HEAD_is_REASONED_NOT_PROVEN": "tie_word_embeddings is false and the segments hold exactly two 675,430,440-byte q4 tables of [248320, 5120]. Table 7cf1b122be1f8265 has a minimum row norm of 0.0008 against table 9a327c6eaaee2b1b's 0.3458 -- near-dead rows are what an EMBEDDING table has for unused vocabulary slots, so 7cf1b122be1f8265 reads as embed_tokens and 9a327c6eaaee2b1b as the lm_head. THE VERDICT DOES NOT DEPEND ON IT: both refute, and the likely head refutes harder.",
+    "PREDICTION_WRITTEN_BEFORE_THE_RUN": "coefficient of variation under 0.30, and under a realistic cos(theta) of 0.1-0.3 the bound prunes UNDER 5% of the vocabulary. The falsifier named in advance was a heavy-tailed norm distribution with most rows far below the max.",
+    "OUTCOME": "CONFIRMED WITH MARGIN. CV is 0.1646 and 0.1288. At cos 0.10 the prunable fraction is 0.073% and 0.000%; at cos 0.30 it is 0.976% and 0.236%.",
+    "what_it_would_take_to_prune_half": "cos(theta) around 0.63-0.66, i.e. the hidden state 63% aligned with its own argmax row in 5120 dimensions. Nothing in a trained head produces that."
+  },
+  "THE_SECOND_FAMILY_DIES_THE_SAME_WAY_AND_I_PREDICTED_THAT_TOO": {
+    "the_next_bound": "a TWO-STAGE EXACT selection -- dot the first k dimensions exactly, bound the remainder by ||x_{k:}|| ||w_{v,k:}||. This uses partial DIRECTION, which is precisely what the norm-only bound discards, so it is the right next thing and not a rephrasing.",
+    "its_best_case_is_set_by_TAIL_ENERGY_DECAY": "if a row's energy concentrates in early dimensions the tail norm collapses with k and the bound tightens fast",
+    "PREDICTION_WRITTEN_BEFORE_THE_RUN": "an output embedding has NO canonical dimension order -- nothing in training privileges dimension 0 over 5119 -- so energy should be near-UNIFORM and the tail should track sqrt(1-k/D) within a few percent, making a prefix bound at k=D/2 only ~1.41x tighter than full Cauchy-Schwarz. Predicted REFUTED below about k=0.9D.",
+    "OUTCOME": "CONFIRMED TO WITHIN 2.3%",
+    "measured_tail_norm_over_full_norm": {
+      "7cf1b122be1f8265": {
+        "k=0.25D": {
+          "tail_norm_ratio_median": 0.86764,
+          "uniform_prediction": 0.86603,
+          "ratio_to_uniform": 1.00186
+        },
+        "k=0.50D": {
+          "tail_norm_ratio_median": 0.70698,
+          "uniform_prediction": 0.70711,
+          "ratio_to_uniform": 0.99982
+        },
+        "k=0.75D": {
+          "tail_norm_ratio_median": 0.49756,
+          "uniform_prediction": 0.5,
+          "ratio_to_uniform": 0.99512
+        },
+        "k=0.90D": {
+          "tail_norm_ratio_median": 0.3138,
+          "uniform_prediction": 0.31623,
+          "ratio_to_uniform": 0.99233
+        }
+      },
+      "9a327c6eaaee2b1b": {
+        "k=0.25D": {
+          "tail_norm_ratio_median": 0.86276,
+          "uniform_prediction": 0.86603,
+          "ratio_to_uniform": 0.99623
+        },
+        "k=0.50D": {
+          "tail_norm_ratio_median": 0.71031,
+          "uniform_prediction": 0.70711,
+          "ratio_to_uniform": 1.00454
+        },
+        "k=0.75D": {
+          "tail_norm_ratio_median": 0.51168,
+          "uniform_prediction": 0.5,
+          "ratio_to_uniform": 1.02336
+        },
+        "k=0.90D": {
+          "tail_norm_ratio_median": 0.32093,
+          "uniform_prediction": 0.31623,
+          "ratio_to_uniform": 1.01486
+        }
+      }
+    },
+    "energy_concentration": {
+      "7cf1b122be1f8265": {
+        "median_frac_in_top_10pct_of_groups": 0.13329,
+        "uniform_would_be": 0.1,
+        "median_frac_in_top_half": 0.57079,
+        "uniform_would_be_half": 0.5
+      },
+      "9a327c6eaaee2b1b": {
+        "median_frac_in_top_10pct_of_groups": 0.13674,
+        "uniform_would_be": 0.1,
+        "median_frac_in_top_half": 0.57516,
+        "uniform_would_be_half": 0.5
+      }
+    },
+    "reading": "median tail/full tracks sqrt(1-k/D) at ratios 0.995-1.023 across k = 0.25D to 0.90D on BOTH tables, and the top 10% of 64-dimension groups holds 13.3-13.7% of the squared norm against a uniform 10%. Energy is flat. At k=D/2 the bound is 1.41x tighter than a bound that already prunes under 1%, and at k=0.9D the tail is still 31.6% of the norm after 90% of the work is done."
+  },
+  "THE_MECHANISM_IS_ONE_SENTENCE_AND_IT_FORECLOSES_THE_FAMILY": {
+    "statement": "the head has NO PREFERRED MAGNITUDE (CV 0.13-0.16) and NO PREFERRED DIMENSION SUBSPACE (energy uniform to 2%). Its discriminative power is entirely in the FULL-DIMENSIONAL DIRECTION -- which is exactly what every norm-based bound throws away.",
+    "what_this_forecloses": "any exact bound of the form |x.w| <= ||x|| f(w) where f ignores direction, on THIS artifact. That covers S032 \u00a77's C (avoid materializing logits when only selection is required), D (hierarchical two-stage exact selection), E (vocabulary partitioning with safe rejection bounds) and M (delete the full-vocabulary operation) IN THEIR EXACT FORMS.",
+    "why_the_result_is_unsurprising_in_hindsight_and_still_worth_measuring": "a trained output embedding SHOULD be near-equinorm and isotropic -- magnitude would waste capacity that direction can carry. The prediction was made on exactly that reasoning and confirmed twice. But this program has written down five diagnoses and found two wrong, so an untested argument does not get to close a lane in the steer's own priority list."
+  },
+  "WHAT_SURVIVES_AND_ITS_SIZE_IS_COMPUTED_NOT_GUESSED": {
+    "the_approximate_and_task_conditional_branch": "S032 \u00a77 F and G (grammar-aware candidate restriction, active-vocabulary routing) are untouched by this refutation because they are NOT exact -- they change which tokens are reachable. The steer's own instruction is not to call an approximate shortlist exact, and this receipt does not.",
+    "the_representation_branch_is_the_one_with_a_number": {
+      "what": "S032 \u00a77A, a more compact native head representation. The head is HQ30UQ4 at 4.25 bpw while EVERY MLP TENSOR IN THE SAME ARTIFACT runs affine_q2 g64 at 2.5 bpw.",
+      "if_the_head_tolerated_2.5_bpw": {
+        "head_bytes_now": 675430400,
+        "head_bytes_at_2.5_bpw": 397312000,
+        "saving_bytes_per_token": 278118400,
+        "pct_of_the_token_byte_wall": 2.818
+      },
+      "for_scale": "2.82% of the byte wall, against the 6.54% the entire four-lever fusion campaign bought and the 0.03% argmax fusion offers -- so this single representation question is worth ~94x the graph boundary S032 \u00a78 proposed and about 43% of everything fusion achieved.",
+      "and_it_is_NOT_free": "the head is where a representation error becomes a WRONG TOKEN directly rather than propagating through more layers, and the organ-floor sweep that measured attention as the floor-setter on both Qwen models NEVER INCLUDED THE HEAD. Its adequacy at 2.5 bpw is UNMEASURED and is the next question, not an assumption."
+    },
+    "the_low_rank_branch_is_NOT_tested_here": "S032 \u00a77H asks about head factorization. Nothing in this receipt measures the spectrum of the head, and the isotropy finding is about per-row energy across dimensions, NOT about the rank of the 248320x5120 matrix -- a matrix can be perfectly isotropic per row and still low rank. Naming that distinction beats letting this refutation read wider than it is."
+  },
+  "claim_boundary": [
+    "ONE artifact. The norm distribution of a different model's head could be heavy-tailed and would reopen the bound -- this refutes the family ON THIS HEAD, not in general.",
+    "NO FORWARD PASS WAS RUN and no real hidden state x exists in this measurement. cos(theta) is treated as a FREE PARAMETER and the pruning curve is reported across it rather than at a measured value; what is established is that no plausible cos prunes materially, not that a particular cos obtains. Measuring the real alignment needs runtime instrumentation to dump one x and is NOT done.",
+    "the tail-decay profile is 4096 rows sampled of 248320 per table, seeded, and resolves the tail at 64-dimension GROUP granularity because that is the codec's group -- a within-group concentration finer than 64 dimensions is invisible to it.",
+    "row norms are computed on the QUANTIZED weights, which is the right target since those are the bytes the kernel reads, but they are not the parent's norms and no claim is made about those.",
+    "which of the two tables is the head is REASONED from the near-zero rows, not read from the catalog; the verdict holds for both.",
+    "nothing was timed, no kernel changed, and no performance claim moves."
+  ],
+  "next": "the head's adequacy at 2.5 bpw -- 2.82% of the byte wall, the largest single lever the head offers, and the one place a representation error becomes a wrong token with no layers left to absorb it",
+  "identities": {
+    "experiment": {
+      "class": "ACCEL-REPRESENTATION",
+      "knowledge_level": "INSTANCE",
+      "question": "can an EXACT norm-based bound let the lm_head skip rows?"
+    },
+    "machine": {
+      "soc": "Apple M3 Ultra",
+      "gpu_cores": 60,
+      "ram_gib": 96,
+      "measured_dram_gbps": 589.73,
+      "receipt": "receipts/headless/MACHINE_GENOME.json"
+    },
+    "device": {
+      "backend": "Metal",
+      "api": "MTLCommandBuffer GPUStartTime/GPUEndTime"
+    },
+    "model": {
+      "root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+      "tag": "sealed-3.14",
+      "complete_ebpw": 3.139300850311054,
+      "vocab_size": 248320,
+      "hidden_size": 5120,
+      "intermediate_size": 17408,
+      "num_hidden_layers": 64
+    },
+    "runtime": {
+      "binary": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+      "sha256_16": "d34044cffae8f320",
+      "git_head": "5c93405ecfb33b9f12d093e01e0aeec134338d0a"
+    },
+    "representation": {
+      "head": "HQ30UQ4 g64 (4.25 bpw), [248320, 5120], untied",
+      "note": "row norms computed on the QUANTIZED weights, which are the bytes the kernel reads"
+    },
+    "kernel": {
+      "status": "ABSENT",
+      "reason": "NO KERNEL WAS EXECUTED. This measures the PACKED WEIGHTS -- row norms and tail energy computed directly from the q4 codes and f16 scales with no dequantization and no dispatch -- so KernelIdentity does not apply. Recording a kernel here would imply a run that did not happen."
+    },
+    "transport": {
+      "status": "ABSENT",
+      "reason": "single-device unified-memory Metal run; no bridge and no host<->device transport is crossed"
+    }
+  }
+}

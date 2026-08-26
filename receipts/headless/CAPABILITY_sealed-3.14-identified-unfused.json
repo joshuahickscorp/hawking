@@ -1,0 +1,556 @@
+{
+ "schema": "hawking.headless.capability_suite.v1",
+ "generated_at": "2026-08-26T04:43:48Z",
+ "label": "noetic-sealed-3.14-identified-unfused",
+ "backend": "noetic",
+ "target": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+ "artifact_identity": {
+  "backend": "noetic",
+  "no_think": false,
+  "chat_template_arm": "open_think",
+  "default_system": null,
+  "identity_is_content_hash": false,
+  "identity_note": "weight shards keyed by (name, size); a same-length edit is invisible",
+  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "artifact_files": 764,
+  "artifact_bytes": 10577484803,
+  "artifact_inventory_sha": "1aff5df85bda1108",
+  "binary": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+  "binary_sha256_16": "20b7ffe43c1246e6",
+  "tokenizer_dir": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "tokenizer_sha256_16": "0997f410c57a1f4e",
+  "chat_template_sha256_16": "c3cf9e34abf4f9e3"
+ },
+ "identity_sufficient": true,
+ "identity_verdict": "artifact named",
+ "scoring": "every item scores through a deterministic predicate over the reply text \u2014 exact string, parsed JSON, compiled AST. No model grades any model, because that would make the gate inherit the unreliability it exists to detect.",
+ "overall": {
+  "passed": 30,
+  "total": 43,
+  "rate": 0.6977,
+  "scoreable": true
+ },
+ "harness_health": {
+  "calls": 43,
+  "errored": 0,
+  "empty_replies": 8,
+  "error_kinds": [],
+  "every_call_errored": false,
+  "scoreable": true,
+  "verdict": "the suite reached the model"
+ },
+ "per_axis": {
+  "knowledge": {
+   "passed": 3,
+   "total": 3,
+   "rate": 1.0
+  },
+  "reasoning": {
+   "passed": 3,
+   "total": 6,
+   "rate": 0.5
+  },
+  "structured_output": {
+   "passed": 5,
+   "total": 15,
+   "rate": 0.333
+  },
+  "mutation": {
+   "passed": 10,
+   "total": 10,
+   "rate": 1.0
+  },
+  "coding": {
+   "passed": 3,
+   "total": 3,
+   "rate": 1.0
+  },
+  "self_correction": {
+   "passed": 3,
+   "total": 3,
+   "rate": 1.0
+  },
+  "hygiene": {
+   "passed": 3,
+   "total": 3,
+   "rate": 1.0
+  }
+ },
+ "per_item": {
+  "fact-capital": {
+   "axis": "knowledge",
+   "repeats": 3,
+   "passed": 3,
+   "rate": 1.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 43,
+     "wall_s": 6.525,
+     "reply_head": "Paris"
+    },
+    {
+     "rep": 1,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 43,
+     "wall_s": 6.433,
+     "reply_head": "Paris"
+    },
+    {
+     "rep": 2,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 43,
+     "wall_s": 6.853,
+     "reply_head": "Paris"
+    }
+   ]
+  },
+  "fact-arith": {
+   "axis": "reasoning",
+   "repeats": 3,
+   "passed": 3,
+   "rate": 1.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 142,
+     "wall_s": 8.944,
+     "reply_head": "323"
+    },
+    {
+     "rep": 1,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 142,
+     "wall_s": 8.945,
+     "reply_head": "323"
+    },
+    {
+     "rep": 2,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 142,
+     "wall_s": 8.872,
+     "reply_head": "323"
+    }
+   ]
+  },
+  "fact-multistep": {
+   "axis": "reasoning",
+   "repeats": 3,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "expected 21 among the numbers emitted, got []",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 69.452,
+     "reply_head": ""
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "expected 21 among the numbers emitted, got []",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 75.772,
+     "reply_head": ""
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "expected 21 among the numbers emitted, got []",
+     "finish_reason": "stop",
+     "completion_tokens": 1536,
+     "wall_s": 72.891,
+     "reply_head": ""
+    }
+   ]
+  },
+  "json-answer": {
+   "axis": "structured_output",
+   "repeats": 5,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1135,
+     "wall_s": 57.733,
+     "reply_head": ""
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1135,
+     "wall_s": 53.433,
+     "reply_head": ""
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1135,
+     "wall_s": 51.843,
+     "reply_head": ""
+    },
+    {
+     "rep": 3,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1135,
+     "wall_s": 59.864,
+     "reply_head": ""
+    },
+    {
+     "rep": 4,
+     "pass": false,
+     "why": "no parseable JSON object in the reply",
+     "finish_reason": "stop",
+     "completion_tokens": 1135,
+     "wall_s": 55.596,
+     "reply_head": ""
+    }
+   ]
+  },
+  "json-kind-correct": {
+   "axis": "structured_output",
+   "repeats": 5,
+   "passed": 0,
+   "rate": 0.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": false,
+     "why": "a read-only request must yield kind=\"answer\" with no operations",
+     "finish_reason": "stop",
+     "completion_tokens": 222,
+     "wall_s": 18.409,
+     "reply_head": "{\"kind\":\"answer\",\"content\":\"A mutex (short for \\\"mutual exclusion\\\") is a synchronization primitive that allows only one thread or process to access a shared resource or critical section at a time. It has two operations:"
+    },
+    {
+     "rep": 1,
+     "pass": false,
+     "why": "a read-only request must yield kind=\"answer\" with no operations",
+     "finish_reason": "stop",
+     "completion_tokens": 222,
+     "wall_s": 17.296,
+     "reply_head": "{\"kind\":\"answer\",\"content\":\"A mutex (short for \\\"mutual exclusion\\\") is a synchronization primitive that allows only one thread or process to access a shared resource or critical section at a time. It has two operations:"
+    },
+    {
+     "rep": 2,
+     "pass": false,
+     "why": "a read-only request must yield kind=\"answer\" with no operations",
+     "finish_reason": "stop",
+     "completion_tokens": 222,
+     "wall_s": 19.77,
+     "reply_head": "{\"kind\":\"answer\",\"content\":\"A mutex (short for \\\"mutual exclusion\\\") is a synchronization primitive that allows only one thread or process to access a shared resource or critical section at a time. It has two operations:"
+    },
+    {
+     "rep": 3,
+     "pass": false,
+     "why": "a read-only request must yield kind=\"answer\" with no operations",
+     "finish_reason": "stop",
+     "completion_tokens": 222,
+     "wall_s": 14.91,
+     "reply_head": "{\"kind\":\"answer\",\"content\":\"A mutex (short for \\\"mutual exclusion\\\") is a synchronization primitive that allows only one thread or process to access a shared resource or critical section at a time. It has two operations:"
+    },
+    {
+     "rep": 4,
+     "pass": false,
+     "why": "a read-only request must yield kind=\"answer\" with no operations",
+     "finish_reason": "stop",
+     "completion_tokens": 222,
+     "wall_s": 19.192,
+     "reply_head": "{\"kind\":\"answer\",\"content\":\"A mutex (short for \\\"mutual exclusion\\\") is a synchronization primitive that allows only one thread or process to access a shared resource or critical section at a time. It has two operations:"
+    }
+   ]
+  },
+  "json-no-prose": {
+   "axis": "structured_output",
+   "repeats": 5,
+   "passed": 5,
+   "rate": 1.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 188,
+     "wall_s": 15.835,
+     "reply_head": "{\"kind\":\"answer\",\"content\":\"ok\",\"operations\":[],\"tests\":[]}"
+    },
+    {
+     "rep": 1,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 188,
+     "wall_s": 11.425,
+     "reply_head": "{\"kind\":\"answer\",\"content\":\"ok\",\"operations\":[],\"tests\":[]}"
+    },
+    {
+     "rep": 2,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 188,
+     "wall_s": 10.812,
+     "reply_head": "{\"kind\":\"answer\",\"content\":\"ok\",\"operations\":[],\"tests\":[]}"
+    },
+    {
+     "rep": 3,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 188,
+     "wall_s": 10.86,
+     "reply_head": "{\"kind\":\"answer\",\"content\":\"ok\",\"operations\":[],\"tests\":[]}"
+    },
+    {
+     "rep": 4,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 188,
+     "wall_s": 10.601,
+     "reply_head": "{\"kind\":\"answer\",\"content\":\"ok\",\"operations\":[],\"tests\":[]}"
+    }
+   ]
+  },
+  "mutation-anchor-exact": {
+   "axis": "mutation",
+   "repeats": 5,
+   "passed": 5,
+   "rate": 1.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 344,
+     "wall_s": 17.748,
+     "reply_head": "{\"kind\":\"mutation\",\"content\":\"Fix add to return the sum instead of the difference.\",\"operations\":[{\"op\":\"replace\",\"path\":\"calc.py\",\"old_text\":\"    return a - b\",\"new_text\":\"    return a + b\"}],\"tests\":[\"\"]}"
+    },
+    {
+     "rep": 1,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 344,
+     "wall_s": 17.754,
+     "reply_head": "{\"kind\":\"mutation\",\"content\":\"Fix add to return the sum instead of the difference.\",\"operations\":[{\"op\":\"replace\",\"path\":\"calc.py\",\"old_text\":\"    return a - b\",\"new_text\":\"    return a + b\"}],\"tests\":[\"\"]}"
+    },
+    {
+     "rep": 2,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 344,
+     "wall_s": 17.741,
+     "reply_head": "{\"kind\":\"mutation\",\"content\":\"Fix add to return the sum instead of the difference.\",\"operations\":[{\"op\":\"replace\",\"path\":\"calc.py\",\"old_text\":\"    return a - b\",\"new_text\":\"    return a + b\"}],\"tests\":[\"\"]}"
+    },
+    {
+     "rep": 3,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 344,
+     "wall_s": 17.768,
+     "reply_head": "{\"kind\":\"mutation\",\"content\":\"Fix add to return the sum instead of the difference.\",\"operations\":[{\"op\":\"replace\",\"path\":\"calc.py\",\"old_text\":\"    return a - b\",\"new_text\":\"    return a + b\"}],\"tests\":[\"\"]}"
+    },
+    {
+     "rep": 4,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 344,
+     "wall_s": 17.736,
+     "reply_head": "{\"kind\":\"mutation\",\"content\":\"Fix add to return the sum instead of the difference.\",\"operations\":[{\"op\":\"replace\",\"path\":\"calc.py\",\"old_text\":\"    return a - b\",\"new_text\":\"    return a + b\"}],\"tests\":[\"\"]}"
+    }
+   ]
+  },
+  "mutation-refuses-invention": {
+   "axis": "mutation",
+   "repeats": 5,
+   "passed": 5,
+   "rate": 1.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 264,
+     "wall_s": 13.916,
+     "reply_head": "{\n  \"kind\": \"answer\",\n  \"message\": \"I cannot rename the function in totally_unseen_module.py because its contents were not provided. Please provide the file contents or the function name to rename.\"\n}"
+    },
+    {
+     "rep": 1,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 264,
+     "wall_s": 13.897,
+     "reply_head": "{\n  \"kind\": \"answer\",\n  \"message\": \"I cannot rename the function in totally_unseen_module.py because its contents were not provided. Please provide the file contents or the function name to rename.\"\n}"
+    },
+    {
+     "rep": 2,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 264,
+     "wall_s": 13.903,
+     "reply_head": "{\n  \"kind\": \"answer\",\n  \"message\": \"I cannot rename the function in totally_unseen_module.py because its contents were not provided. Please provide the file contents or the function name to rename.\"\n}"
+    },
+    {
+     "rep": 3,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 264,
+     "wall_s": 13.884,
+     "reply_head": "{\n  \"kind\": \"answer\",\n  \"message\": \"I cannot rename the function in totally_unseen_module.py because its contents were not provided. Please provide the file contents or the function name to rename.\"\n}"
+    },
+    {
+     "rep": 4,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 264,
+     "wall_s": 13.914,
+     "reply_head": "{\n  \"kind\": \"answer\",\n  \"message\": \"I cannot rename the function in totally_unseen_module.py because its contents were not provided. Please provide the file contents or the function name to rename.\"\n}"
+    }
+   ]
+  },
+  "code-compiles": {
+   "axis": "coding",
+   "repeats": 3,
+   "passed": 3,
+   "rate": 1.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 544,
+     "wall_s": 22.476,
+     "reply_head": "```python\ndef dedupe(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        if x not in seen:\n            seen.add(x)\n            result.append(x)\n    return result\n```"
+    },
+    {
+     "rep": 1,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 544,
+     "wall_s": 22.463,
+     "reply_head": "```python\ndef dedupe(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        if x not in seen:\n            seen.add(x)\n            result.append(x)\n    return result\n```"
+    },
+    {
+     "rep": 2,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 544,
+     "wall_s": 22.506,
+     "reply_head": "```python\ndef dedupe(xs):\n    seen = set()\n    result = []\n    for x in xs:\n        if x not in seen:\n            seen.add(x)\n            result.append(x)\n    return result\n```"
+    }
+   ]
+  },
+  "code-self-correct": {
+   "axis": "self_correction",
+   "repeats": 3,
+   "passed": 3,
+   "rate": 1.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 107,
+     "wall_s": 8.717,
+     "reply_head": "The bug is that it adds 1 to the computed average instead of simply returning the sum divided by the length.\n\n```python\ndef mean(xs):\n    return sum(xs) / len(xs)\n```"
+    },
+    {
+     "rep": 1,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 107,
+     "wall_s": 8.699,
+     "reply_head": "The bug is that it adds 1 to the computed average instead of simply returning the sum divided by the length.\n\n```python\ndef mean(xs):\n    return sum(xs) / len(xs)\n```"
+    },
+    {
+     "rep": 2,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 107,
+     "wall_s": 8.697,
+     "reply_head": "The bug is that it adds 1 to the computed average instead of simply returning the sum divided by the length.\n\n```python\ndef mean(xs):\n    return sum(xs) / len(xs)\n```"
+    }
+   ]
+  },
+  "no-think-leak": {
+   "axis": "hygiene",
+   "repeats": 3,
+   "passed": 3,
+   "rate": 1.0,
+   "results": [
+    {
+     "rep": 0,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 63,
+     "wall_s": 6.903,
+     "reply_head": "{\"kind\":\"answer\",\"content\":\"ok\",\"operations\":[,\"tests\":[]}"
+    },
+    {
+     "rep": 1,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 63,
+     "wall_s": 6.914,
+     "reply_head": "{\"kind\":\"answer\",\"content\":\"ok\",\"operations\":[,\"tests\":[]}"
+    },
+    {
+     "rep": 2,
+     "pass": true,
+     "why": "",
+     "finish_reason": "stop",
+     "completion_tokens": 63,
+     "wall_s": 6.932,
+     "reply_head": "{\"kind\":\"answer\",\"content\":\"ok\",\"operations\":[,\"tests\":[]}"
+    }
+   ]
+  }
+ }
+}

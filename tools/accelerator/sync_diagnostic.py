@@ -478,6 +478,9 @@ def battery(*, n: int, big_n: int, k: int, reps: int, stall_us: float,
             "read_back_us_per_step": round(
                 stalled["wait_cost_per_step_us"] - small["wait_cost_per_step_us"], 3),
             "expected_read_back_us_per_step": round(stall_us * (k - 1) / k, 3),
+            "read_back_fraction_of_expected": round(
+                (stalled["wait_cost_per_step_us"] - small["wait_cost_per_step_us"])
+                / (stall_us * (k - 1) / k), 3),
             "why_not_the_full_injection": "the chained arm syncs ONCE per rep and the "
                                           "synced arm K times, so an injection of S "
                                           "into sync() raises the paired difference "
@@ -523,8 +526,16 @@ def battery(*, n: int, big_n: int, k: int, reps: int, stall_us: float,
         f"widest window measured.",
         f"CALIBRATION: {cal['injected_us_per_sync']}us injected into sync() read back "
         f"as {cal['read_back_us_per_step']}us/step against an expected "
-        f"{cal['expected_read_back_us_per_step']}us/step, a gap of "
-        f"{round(cal['read_back_us_per_step'] - cal['expected_read_back_us_per_step'], 1)}us.",
+        f"{cal['expected_read_back_us_per_step']}us/step -- "
+        f"{cal['read_back_fraction_of_expected']} of the injection. DETECTION is not "
+        f"in doubt ({stalled['wait_cost_per_step_us']}us/step stalled against "
+        f"{small['wait_cost_per_step_us']}us/step clean, against a "
+        f"{stalled['detection_floors_per_step_us']['wait_cost']}us/step floor). "
+        f"MAGNITUDE recovery is imperfect and the gap is much larger than the "
+        f"zero-point noise, so it is NOT noise. The obvious candidate -- the busy "
+        f"spin occupies a core and lets the driver settle, making the NEXT mx.eval "
+        f"cheaper, so part of the injection is absorbed rather than added -- is "
+        f"UNVERIFIED here. Read the stalled arm as a detector, not as a ruler.",
         f"ZERO POINT: at k=1 the two arms are the same program, so the true wait cost "
         f"is exactly 0 and the instrument read {z}us/step. That is this machine's "
         f"noise on this instrument in this run, measured rather than argued.",

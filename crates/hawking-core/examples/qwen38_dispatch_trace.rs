@@ -138,12 +138,20 @@ fn main() {
     if result.fallbacks != 0 {
         fail(format!("fallbacks={}", result.fallbacks));
     }
+    // Histogram FIRST: the drain below clears the same store.
+    let hist = session.dispatched_kernel_histogram();
+    let total: u64 = hist.iter().map(|(_, n)| *n).sum();
     let names = session.drain_dispatched_kernel_names();
     println!("ARTIFACT: {}", args.artifact_root.display());
     println!("PROMPT_LEN: {}", result.prompt_len);
     println!("NEW_TOKENS: {:?}", result.new_tokens());
     println!("FALLBACKS: {}", result.fallbacks);
-    println!("DISPATCHED_COUNT: {}", names.len());
+    println!("DISTINCT_KERNELS: {}", names.len());
+    println!("TOTAL_DISPATCHES: {total}");
+    println!("HISTOGRAM:");
+    for (name, n) in &hist {
+        println!("{n}\t{name}");
+    }
     println!("DISPATCHED_KERNELS:");
     for name in &names {
         println!("{name}");

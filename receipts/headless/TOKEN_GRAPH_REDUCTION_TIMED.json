@@ -1,0 +1,115 @@
+{
+  "receipt": "TOKEN_GRAPH_REDUCTION_TIMED",
+  "date": "2026-08-26",
+  "obligation": "G074 (50 accepted TPS via graph reduction), G046 (S015 P5 at MODEL level), S031 \u00a74/\u00a717",
+  "question": "TOKEN_EXECUTION_ATLAS_COUNTS measured 964 -> 756 dispatches/token under the four existing fusion levers. A dispatch reduction that is not a wall-time win is not a win. This times it on the sealed resident.",
+  "artifact": {
+    "root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+    "tag": "sealed-3.14",
+    "complete_ebpw": 3.139300850311054
+  },
+  "method": "6 ALTERNATING PAIRS unfused/fused, one process each, --complete-wall --pairs 1, 64 new tokens, max_seq_len 256, same prompt. Alternating so drift is common mode. No lake fill running (pgrep modellake = 0).",
+  "correctness_first": {
+    "tokens_unfused_bytes": 292,
+    "tokens_fused_bytes": 292,
+    "verdict": "IDENTICAL 64/64",
+    "fallbacks": "0 in every run",
+    "a_vacuous_check_I_caught": "my first identity check compared two EMPTY files and printed TOKENS IDENTICAL. Both greps had returned nothing because the flags were passed as one shell word. Caught by printing wc -c beside the verdict, not by re-reading the script. A non-empty guard is now in the check. This is the check-that-cannot-fail, in my own one-line verification.",
+    "strength": "identical GREEDY OUTPUT over 64 tokens, not identical logits. argmax absorbs small numerical differences; this rules out a gross semantic change and is not bit-identity."
+  },
+  "headline": {
+    "unfused_ms_per_token": 30.2536,
+    "fused_ms_per_token": 29.542,
+    "unfused_tps": 33.0539,
+    "fused_tps": 33.8502,
+    "delta_ms": 0.7117,
+    "speedup_pct": 2.409,
+    "complete_separation": "max fused 29.5678 < min unfused 30.1148",
+    "clean_arm_spread_pct": {
+      "unfused": 0.579,
+      "fused": 0.123
+    }
+  },
+  "THE_RESULT": "21.6% FEWER DISPATCHES BUYS 2.4% WALL TIME. 208 dispatches removed per token saves 0.712 ms of a 30.254 ms token.",
+  "per_removed_dispatch_us": 3.421,
+  "and_that_corrects_a_machine_constant_in_this_regime": {
+    "prior": "the AirGraph sweep measured ~11 us per WITHIN-command-buffer dispatch and ~157 us per cross-command-buffer submission, on synthetic elementwise kernels",
+    "measured_here": "3.42 us per removed dispatch on the real decoder",
+    "reading": "3.2x cheaper than the synthetic figure. NOT a refutation of the AirGraph number -- different kernels, different regime, and these fusions do more than delete a launch (a concatenated matvec reads the same bytes in one kernel; a fused add+rmsnorm makes one pass over the residual instead of two). So this is a per-REMOVED-DISPATCH cost for THIS fusion set, not a per-dispatch cost in general."
+  },
+  "where_the_saving_actually_LANDED": {
+    "gpu_ns_per_token": {
+      "unfused_ms": 28.9335,
+      "fused_ms": 28.3681,
+      "delta_ms": 0.5654
+    },
+    "host_wall_minus_gpu": {
+      "unfused_ms": 1.2965,
+      "fused_ms": 1.1751,
+      "delta_ms": 0.1214
+    },
+    "split": "79% of the saving is GPU-side, 17% host-side",
+    "why_it_matters": "S031 \u00a71 says host overhead is ~1.1% and is not the lever. Host here is 4.29% of wall and the fusion moved almost none of it. The dispatch cost that fusion removes lives on the GPU TIMELINE, not in host submission -- so \u00a71's premise is CONFIRMED and its conclusion is bounded by the next section."
+  },
+  "THE_CEILING_THIS_PUTS_ON_THE_DISPATCH_LADDER": {
+    "assumption_stated_because_it_is_load_bearing": "LINEAR: every dispatch costs the same 3.42 us of removable overhead. This is FALSE in detail -- a 2048-row matvec and an argmax do not cost the same -- so these are ESTIMATES under an assumption, not measurements.",
+    "delete_every_dispatch_overhead": {
+      "saved_ms": 3.298,
+      "token_ms": 26.955,
+      "raw_tps": 37.1
+    },
+    "S031_target_under_200": {
+      "removed": 764,
+      "saved_ms": 2.614,
+      "token_ms": 27.64,
+      "raw_tps": 36.2,
+      "accepted_tps_at_30_of_43": 25.2
+    },
+    "CONCLUSION": "THE DISPATCH-REDUCTION LADDER CANNOT REACH 50 TPS ON THIS BODY. S031 \u00a74's ladder 964 -> <200 is worth about 36.2 raw TPS, and 50 RAW is above the ceiling of deleting EVERY dispatch. At the capability floor of 30/43 that is 25.2 ACCEPTED TPS against the \u00a719 target of 50 accepted. The reason is arithmetic and was visible in the first measurement: GPU is 95.6% of wall and the bytes still have to move.",
+    "what_this_does_NOT_refute": "S031 \u00a71 called the execution-graph hypothesis 'the current working mechanism, not yet a universal law'. What is bounded is DISPATCH COUNT as the lever. A graph change that removes BYTES rather than launches -- fusing gate+up so the activation is read once, or consuming a packed representation without a separate unpack -- is a DIFFERENT mechanism this measurement says nothing about, and the decoder being 95.6%% GPU-bound is exactly what makes byte elimination the remaining candidate."
+  },
+  "outliers_reported_not_dropped_silently": {
+    "n_runs": 12,
+    "n_outliers": 3,
+    "rate": 0.25,
+    "runs": [
+      {
+        "arm": "fused",
+        "ms": 47.8435,
+        "gpu_ms": 46.677624
+      },
+      {
+        "arm": "fused",
+        "ms": 48.285875,
+        "gpu_ms": 47.065374
+      },
+      {
+        "arm": "unfused",
+        "ms": 59.099792,
+        "gpu_ms": 57.734333
+      }
+    ],
+    "distribution": "2 fused and 1 unfused, so the outlier process is ARM-INDEPENDENT and does not bias the direction",
+    "they_are_GPU_side": "host wall-minus-gpu is 1.14-1.22 ms in all three, indistinguishable from the clean runs; the entire excess is in gpu_ns",
+    "cause": "UNKNOWN. Not investigated here. Candidates not tested: thermal, another GPU client, Metal working-set paging of a 9.9 GB resident.",
+    "how_they_are_handled": "EXCLUDED from the medians, with the raw table published above so the exclusion is auditable. Including them would put unfused at 30.27 and fused at 29.55 medians anyway -- the direction survives either way, but the 2.4%% figure would not.",
+    "honest_reading": "a 25%% outlier rate means this instrument is NOT at the program's own 200-rep standard. n=5 and n=4 clean runs is admitted by COMPLETE SEPARATION and by 0.58%%/0.13%% clean-arm spreads, not by a rep count."
+  },
+  "claim_boundary": [
+    "ONE prompt, ONE artifact, ONE machine, 64 tokens, max_seq_len 256. Dispatch count is prompt-independent; WALL TIME at longer context is not, and no context sweep was run.",
+    "NO CAPABILITY SUITE RUN under fusion. 64/64 greedy token agreement is a smoke check, not the S031 \u00a718 floor of 30/43. The fused graph is NOT cleared for the resident until that runs.",
+    "The ceiling estimates assume a uniform per-dispatch cost and are labelled ESTIMATES; the 2.4%% and the 3.42 us are MEASURED.",
+    "n=5/n=4 after excluding 3 of 12 runs, far below this program's 200-rep gate.",
+    "The four fusion levers pre-existed; nothing about any kernel was written or changed in this block."
+  ],
+  "next": "run the 43-case capability suite under fusion (the \u00a718 floor), then attack BYTES rather than launches -- the affine-q2 MLP gate+up fusion that FUSE_MLP does not reach is the one candidate that removes a read rather than a launch",
+  "akb_registration": {
+    "evidence_domain": "accelerator",
+    "civilization": "I-D_ACCELERATOR",
+    "program": "HAWKING ACCELERATOR (S015/S031/S032)",
+    "machine_scope": "Apple M3 Ultra, INSTANCE",
+    "representation_scope": "sealed-3.14, unchanged across arms",
+    "kernel_scope": "964 vs 756 dispatch decode graphs, paired",
+    "why_declared": "membership must not depend on what this file was named (S032 \u00a713). Before this declaration the receipt was INVISIBLE to the AKB -- neither extracted nor refused -- which reads identically to triaged and found empty."
+  }
+}

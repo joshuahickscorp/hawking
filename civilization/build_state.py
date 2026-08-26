@@ -12,15 +12,15 @@ GOAL = pathlib.Path.home() / ".claude/ultragoal/hawking-odyssey-maxx-ascension/G
 # Judgement, stated in the open. An obligation lands where its EVIDENCE lands,
 # not where its title sounds like it belongs.
 ERA_MAP = {
-    "I-A_AGENTOS_HCLI":   ["G013", "G014", "G015", "G030", "G031", "G063",
+    "I-A_AGENTOS_HCLI":   ["G083", "G076", "G013", "G014", "G015", "G030", "G031", "G063",
                            "G064", "G065"],
-    "I-B_DOCTOR":         ["G016", "G017", "G018", "G019", "G020", "G021", "G035",
+    "I-B_DOCTOR":         ["G077", "G016", "G017", "G018", "G019", "G020", "G021", "G035",
                            "G073"],
-    "I-C_GRAVITY_NOETIC": ["G001", "G002", "G003", "G004", "G005", "G006", "G022",
+    "I-C_GRAVITY_NOETIC": ["G082", "G074", "G001", "G002", "G003", "G004", "G005", "G006", "G022",
                            "G023", "G032", "G033", "G034", "G036", "G037", "G038",
                            "G040", "G042", "G059",
                            "G066", "G067", "G068", "G069", "G070", "G071", "G072"],
-    "I-D_ACCELERATOR":    ["G043", "G044", "G045", "G046", "G047", "G049", "G055", "G058",
+    "I-D_ACCELERATOR":    ["G078", "G079", "G080", "G081", "G075", "G043", "G044", "G045", "G046", "G047", "G049", "G055", "G058",
                            "G060", "G062"],
     "I-E_ODYSSEY_I":      ["G007", "G008", "G009", "G010", "G011", "G012", "G024",
                            "G025", "G026", "G027", "G028", "G029", "G039", "G041",
@@ -48,10 +48,10 @@ OPEN_GATES = {
                        "as first-class scheduler concepts -- NOT_STARTED"],
   "I-B_DOCTOR": ["gate: on an UNSEEN model, reduce a huge hypothesis space to a small "
                  "high-information experimental set and explain why -- not run"],
-  "I-C_GRAVITY_NOETIC": ["G023 Noetic compiler pipeline",
+  "I-C_GRAVITY_NOETIC": ["G074", "G023 Noetic compiler pipeline",
                          "real-weight execution gate",
                          "EBPW namespace separation not yet permanent in code"],
-  "I-D_ACCELERATOR": ["C2M T3: several real open CUDA codebases -- NOT CLAIMED",
+  "I-D_ACCELERATOR": ["G075", "C2M T3: several real open CUDA codebases -- NOT CLAIMED",
                       "P2 CUDA differential -- blocked on NVIDIA hardware",
                       "AIR multi-backend (G058) -- Metal only"],
   "I-E_ODYSSEY_I": ["model #2 is not a Noetic executable",
@@ -309,12 +309,12 @@ def laws_since(checkpoint):
 # Judgement, stated in the open -- like ERA_MAP. Dependencies are what one
 # civilization needs FROM another before its gate can close.
 DEPENDENCIES = {
-    "I-C_GRAVITY_NOETIC": [
+    "I-C_GRAVITY_NOETIC": ["G074", 
         "I-D_ACCELERATOR: a representation is not condemned until its native "
         "execution is competent, so a Gravity floor needs an Accelerator kernel",
         "I-E_ODYSSEY_I: real weights on fast local storage (FAST_LOCAL_STORAGE gate)",
     ],
-    "I-D_ACCELERATOR": [
+    "I-D_ACCELERATOR": ["G075", 
         "I-E_ODYSSEY_I: Accelerator work must be driven by real specimen "
         "bottlenecks, not synthetic ones",
         "EXTERNAL: NVIDIA hardware for any CUDA differential (no local execution exists)",
@@ -324,7 +324,7 @@ DEPENDENCIES = {
         "RESOURCE: the USB bus, currently owned by the ModelLake fill",
     ],
     "I-B_DOCTOR": ["I-E_ODYSSEY_I: more than one architecture, or the library is Qwen folklore"],
-    "I-A_AGENTOS_HCLI": [],
+    "I-A_AGENTOS_HCLI": ["G076", ],
 }
 
 

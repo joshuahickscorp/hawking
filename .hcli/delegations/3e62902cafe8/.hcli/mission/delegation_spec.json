@@ -1,0 +1,19 @@
+{
+  "allowed_resources": [],
+  "budget": {
+    "minutes": 10
+  },
+  "constraints": [],
+  "created_at": 1787716556.564054,
+  "endpoint": "http://127.0.0.1:8080/v1/chat/completions",
+  "fingerprint_at_start": null,
+  "mission_id": "3e62902cafe8",
+  "objective": "Determine whether dispatches_per_step is identical across all three bodies in the JSON file /Users/scammermike/Downloads/hawking/receipts/headless/QWEN_PERFORMANCE_QUALIFICATION.json. Verify with this exact command and report its output verbatim: /Library/Frameworks/Python.framework/Versions/3.12/bin/python3 -c \"import json;d=json.load(open('/Users/scammermike/Downloads/hawking/receipts/headless/QWEN_PERFORMANCE_QUALIFICATION.json'));print(sorted({v['runs'][0]['dispatches_per_step'][0] for v in d['bodies'].values()}))\"",
+  "output_contract": [],
+  "protected_paths": [
+    "crates",
+    "civilization"
+  ],
+  "spec_version": 1,
+  "verification": "strict"
+}

@@ -307,3 +307,145 @@ def test_every_shipped_law_validates():
     sup = akb.superseding_corpus()
     for entry in akb.LAWS:
         akb.validate(copy.deepcopy(entry), superseded=sup)
+
+
+def test_membership_no_longer_depends_ONLY_on_the_filename():
+    """THIS TEST ASSERTED THE OPPOSITE AND WAS RIGHT TO, UNTIL IT WASN'T.
+
+    It used to require `the corpus scope IS a filename prefix and says so`. That was
+    true when written and is a TRANSIENT FACT ENCODED AS A LAW -- the same shape this
+    program caught once before, when a test asserted unmeasured gaps outnumber
+    measured ones and kept failing after the ledger moved past it.
+
+    S032 §13 required membership to stop depending on what a file was named. It now
+    has two routes and the build reports which one each member arrived by."""
+    b = akb.build()
+    m = b["membership_routes"]
+    assert m["declared_count"] > 0, (
+        "no receipt declares itself; membership is still purely a filename glob")
+    # the four that were INVISIBLE are in, and they are in BY DECLARING
+    for name in ("TOKEN_EXECUTION_ATLAS_COUNTS.json", "TOKEN_GRAPH_REDUCTION_TIMED.json",
+                 "CAPABILITY_FUSED_GRAPH_CLEARED.json",
+                 "FUSION_GAIN_IS_LENGTH_INDEPENDENT.json"):
+        assert name in m["declared"], (name, m["declared"])
+        assert name not in m["legacy_glob_only"], name
+
+
+def test_an_INCOMPLETE_declaration_does_not_buy_membership():
+    """A receipt that names its domain and nothing else would join the corpus while
+    telling the reader nothing about what its evidence covers. All six scopes or
+    none -- the same rule the AKB applies to an entry's eleven applicability axes."""
+    import json, tempfile, pathlib as _p
+    full = {"evidence_domain": "accelerator", "civilization": "I-D_ACCELERATOR",
+            "program": "x", "machine_scope": "x", "representation_scope": "x",
+            "kernel_scope": "x"}
+    with tempfile.TemporaryDirectory() as td:
+        f = _p.Path(td) / "r.json"
+        f.write_text(json.dumps({"akb_registration": full}))
+        assert akb.registration(f) is not None, "a complete declaration was refused"
+        for drop in akb.REGISTRATION_KEYS:
+            partial = {k: v for k, v in full.items() if k != drop}
+            f.write_text(json.dumps({"akb_registration": partial}))
+            assert akb.registration(f) is None, f"a declaration missing {drop!r} bought membership"
+        # and a declaration for ANOTHER domain is not this lane's evidence
+        f.write_text(json.dumps({"akb_registration": {**full, "evidence_domain": "q80"}}))
+        assert akb.registration(f) is None, "another campaign's declaration bought membership"
+
+
+def test_the_legacy_glob_route_is_REPORTED_so_it_can_shrink():
+    """83 of 88 members still arrive by filename. That number is the size of the
+    remaining name dependence; reporting it is what makes it shrinkable, and a
+    silent one is a gap nobody can close."""
+    m = akb.build()["membership_routes"]
+    assert m["legacy_glob_only_count"] + m["declared_count"] == akb.build()["corpus_size"]
+    assert m["legacy_glob_only_count"] > 0, (
+        "if this ever hits zero the legacy route is dead and both it and this test "
+        "should go -- that is a good failure, not a bad one")
+
+
+def test_the_named_gap_list_cannot_go_stale_silently():
+    """If a receipt named in the gap list is ever brought INTO the corpus -- by a
+    rename or now by a declaration -- it must LEAVE the list rather than sit in it
+    forever as a false alarm. A gap list that only grows is one nobody reads."""
+    b = akb.build()
+    inside = {p.name for p in akb.corpus()}
+    assert not (set(b["known_accelerator_outside_scope"]) & inside)
+
+
+def test_a_NONE_that_could_not_be_checked_is_REPORTED_not_silently_skipped():
+    """The NONE grounding check skips a receipt with no identities block. Skipping
+    SILENTLY is the check that cannot fail: an ungrounded NONE on MACHINE reads
+    exactly like a grounded one, and NONE on MACHINE turns an M3 Ultra result into
+    a universal. Found by mutating this lane's own newest law."""
+    import json
+    p = akb.RH / "ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json"
+    if not p.is_file():
+        return
+    built = akb.build()
+    assert built["none_claims_not_grounded_count"] == 0, (
+        "a law claims NONE on an identity-backed axis that nothing checked: "
+        f"{[n for e in built['entries'] for n in e.get('none_claims_not_grounded', [])]}")
+
+    # ANTI-VACUITY. Zero is only a result if the counter can move.
+    backup = p.read_text()
+    doc = json.loads(backup)
+    doc.pop("identities", None)
+    p.write_text(json.dumps(doc, indent=2))
+    try:
+        broken = akb.build()
+    finally:
+        p.write_text(backup)
+    assert broken["none_claims_not_grounded_count"] >= 1, (
+        "stripping the identities block off a cited receipt did not raise the "
+        "ungrounded-NONE count, so the counter reports nothing and the zero above "
+        "means nothing")
+    assert akb.build()["none_claims_not_grounded_count"] == 0, "restore failed"
+
+
+def test_a_NONE_contradicted_by_a_PRESENT_identity_is_REFUSED():
+    """The other direction. Reporting the unverifiable ones is worthless if a
+    verifiable over-claim still passes."""
+    import copy
+    law = next(l for l in akb.LAWS
+               if l["law_id"] == "AKB-DISPATCH-COUNT-DOES-NOT-PREDICT-COST")
+    superseded = akb.superseding_corpus(akb.corpus())
+    assert akb.validate(copy.deepcopy(law), superseded=superseded) is not None
+    for axis in ("MACHINE", "RUNTIME", "MODEL", "KERNEL"):
+        bad = copy.deepcopy(law)
+        bad["applicability"][axis] = akb.NONE
+        try:
+            akb.validate(bad, superseded=superseded)
+        except akb.Refused:
+            continue
+        raise AssertionError(f"{axis}=NONE survived though the receipt records it PRESENT")
+
+
+def test_a_value_that_READS_as_a_sentinel_but_is_not_one_is_REFUSED():
+    """'NONE -- the bound holds for any kernel' looks like NONE to a reviewer and
+    is a named value to the grounding check, so it claims the breadth of a
+    sentinel while escaping the rule that grounds one. Written by accident in this
+    lane's own bandwidth-ceiling law and caught before it shipped."""
+    import copy
+    law = next(l for l in akb.LAWS
+               if l["law_id"] == "AKB-BANDWIDTH-CEILING-BOUNDS-ACCEPTED-TPS")
+    superseded = akb.superseding_corpus(akb.corpus())
+    assert akb.validate(copy.deepcopy(law), superseded=superseded) is not None
+
+    for axis, prose in [("KERNEL", "NONE -- the bound is over bytes, any kernel"),
+                        ("SHAPE", "UNSCOPED across every length we tried"),
+                        ("ORGAN", "UNKNOWN, nobody has looked at this")]:
+        bad = copy.deepcopy(law)
+        bad["applicability"][axis] = prose
+        try:
+            akb.validate(bad, superseded=superseded)
+        except akb.Refused:
+            continue
+        raise AssertionError(f"{axis}={prose!r} survived; the sentinel guard is decoration")
+
+
+def test_the_sentinel_guard_did_not_break_the_bare_sentinels():
+    """Anti-vacuity partner. A guard that refused NONE itself would pass the test
+    above and make every honest entry unwritable."""
+    built = akb.build()
+    used = {v for e in built["entries"] for v in e["applicability"].values()}
+    assert akb.NONE in used, "no entry uses the bare NONE sentinel any more"

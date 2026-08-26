@@ -1,0 +1,286 @@
+{
+  "receipt": "ACCELERATOR_628_BOUNDARY_CENSUS",
+  "date": "2026-08-26",
+  "obligation": "S032 \u00a79 top graph-boundary candidates, \u00a710 MLP boundary deletion, \u00a75, \u00a76; G075, G079",
+  "akb_registration": {
+    "evidence_domain": "accelerator",
+    "civilization": "I-D_ACCELERATOR",
+    "program": "HAWKING ACCELERATOR (S015/S031/S032)",
+    "machine_scope": "Apple M3 Ultra, INSTANCE",
+    "representation_scope": "sealed-3.14 mixed HQ30UQ4 g64 mixer + affine_q2 g64 MLP",
+    "kernel_scope": "the 628-dispatch fused decode graph",
+    "why_declared": "membership must not depend on what this file was named (S032 \u00a713)"
+  },
+  "question": "S032 \u00a79 asks for the TOP graph-boundary candidates of the 628 graph and \u00a710 asks how much MLP boundary is left. Both need to know what the remaining boundaries are WORTH, and this session already proved dispatch count does not predict cost -- so the census carries bytes as well as counts.",
+  "THE_STRUCTURE_RECONCILES_EXACTLY": {
+    "histogram_per_token": {
+      "qwen80_add_residual_rmsnorm_tg": 128,
+      "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128": 65,
+      "qwen_affine_q2_group32_matvec_geo_tpr64_tg128": 64,
+      "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128": 64,
+      "qwen38_gated_delta_decode_vi_simd": 48,
+      "qwen38_qkvz_rearrange_conv_l2_f32": 48,
+      "qwen80_ba_to_decay_beta_f32": 48,
+      "qwen80_deltanet_gated_rmsnorm_tg": 48,
+      "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128": 48,
+      "mha_decode_f32": 16,
+      "qwen38_attention_apply_sigmoid_gate": 16,
+      "qwen38_gqa_qk_norm_rope_cache_tg": 16,
+      "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128": 16,
+      "qwen80_residual_rmsnorm_tg": 1,
+      "qwen_uniform_q4_embedding_lookup": 1,
+      "sample_argmax_f32": 1
+    },
+    "sums_to": 628,
+    "layer_structure": {
+      "deltanet_layers": 48,
+      "deltanet_dispatches_per_layer": 10,
+      "gqa_layers": 16,
+      "gqa_dispatches_per_layer": 9,
+      "head_and_embed": 4
+    },
+    "arithmetic": "48 DeltaNet x 10 + 16 GQA x 9 + 4 head/embed = 628",
+    "and_the_asymmetry_is_new": "in the 964 graph BOTH layer kinds cost exactly 15 by different routes. Fused they DIVERGE -- a DeltaNet layer is 10 dispatches and a GQA layer is 9 -- because the levers do not bite equally: FUSE_DN_INPROJ collapses 2 matvecs into 1 on 48 layers while FUSE_GQA_QKV collapses 3 into 1 on 16."
+  },
+  "THE_BOUNDARY_CENSUS": {
+    "boundaries": [
+      {
+        "id": "MLP-1",
+        "producer": "gate_up_swiglu",
+        "consumer": "down_proj (affine_q2)",
+        "per_layer": 1,
+        "layers": 64,
+        "removable": 64,
+        "intermediate_bytes": 69632,
+        "escapes": false,
+        "note": "the swiglu activation, 17408 f32 = 69.6 KB/layer, consumed ONCE by down. S032 \u00a710 asks exactly this. The producer is 2-bit gate+up and the consumer is a 2-bit matvec over a DIFFERENT axis, so fusing needs down to consume producer TILES.",
+        "intermediate_bytes_per_token": 8912896,
+        "pct_of_weight_bytes": 0.0903
+      },
+      {
+        "id": "MLP-2",
+        "producer": "down_proj",
+        "consumer": "add_residual_rmsnorm",
+        "per_layer": 1,
+        "layers": 64,
+        "removable": 64,
+        "intermediate_bytes": 20480,
+        "escapes": false,
+        "note": "down's output feeds the residual add. The consumer is ALREADY a fusion (add+rmsnorm), so this would be a three-way.",
+        "intermediate_bytes_per_token": 2621440,
+        "pct_of_weight_bytes": 0.0266
+      },
+      {
+        "id": "DN-1",
+        "producer": "matvec_pair_concat (qkvz+ba)",
+        "consumer": "qkvz_rearrange_conv_l2",
+        "per_layer": 1,
+        "layers": 48,
+        "removable": 48,
+        "intermediate_bytes": 65920,
+        "escapes": false,
+        "note": "the fused DeltaNet in-projection output goes straight into the rearrange+conv",
+        "intermediate_bytes_per_token": 6328320,
+        "pct_of_weight_bytes": 0.0641
+      },
+      {
+        "id": "DN-2",
+        "producer": "qkvz_rearrange_conv_l2",
+        "consumer": "gated_delta_decode_vi_simd",
+        "per_layer": 1,
+        "layers": 48,
+        "removable": 48,
+        "intermediate_bytes": 57344,
+        "escapes": false,
+        "note": "conv output feeds the recurrence directly",
+        "intermediate_bytes_per_token": 5505024,
+        "pct_of_weight_bytes": 0.0558
+      },
+      {
+        "id": "DN-3",
+        "producer": "ba_to_decay_beta",
+        "consumer": "gated_delta_decode_vi_simd",
+        "per_layer": 1,
+        "layers": 48,
+        "removable": 48,
+        "intermediate_bytes": 384,
+        "escapes": false,
+        "note": "TINY intermediate -- 384 bytes -- for a whole dispatch. The clearest abstraction-tax candidate in the graph by ratio.",
+        "intermediate_bytes_per_token": 36864,
+        "pct_of_weight_bytes": 0.0004
+      },
+      {
+        "id": "DN-4",
+        "producer": "gated_delta_decode_vi_simd",
+        "consumer": "deltanet_gated_rmsnorm",
+        "per_layer": 1,
+        "layers": 48,
+        "removable": 48,
+        "intermediate_bytes": 24576,
+        "escapes": false,
+        "note": "recurrence output into the gated norm",
+        "intermediate_bytes_per_token": 2359296,
+        "pct_of_weight_bytes": 0.0239
+      },
+      {
+        "id": "DN-5",
+        "producer": "deltanet_gated_rmsnorm",
+        "consumer": "out_proj (uniform_q4)",
+        "per_layer": 1,
+        "layers": 48,
+        "removable": 48,
+        "intermediate_bytes": 24576,
+        "escapes": false,
+        "intermediate_bytes_per_token": 2359296,
+        "pct_of_weight_bytes": 0.0239
+      },
+      {
+        "id": "GQA-1",
+        "producer": "matvec_qkv",
+        "consumer": "gqa_qk_norm_rope_cache",
+        "per_layer": 1,
+        "layers": 16,
+        "removable": 16,
+        "intermediate_bytes": 32768,
+        "escapes": true,
+        "note": "ESCAPES: K and V are WRITTEN TO THE KV CACHE and read by every later token. This boundary cannot be deleted without changing what the cache holds.",
+        "intermediate_bytes_per_token": 1048576,
+        "pct_of_weight_bytes": 0.0106
+      },
+      {
+        "id": "GQA-2",
+        "producer": "gqa_qk_norm_rope_cache",
+        "consumer": "mha_decode",
+        "per_layer": 1,
+        "layers": 16,
+        "removable": 16,
+        "intermediate_bytes": 24576,
+        "escapes": true,
+        "note": "same: the cache write is the escape",
+        "intermediate_bytes_per_token": 786432,
+        "pct_of_weight_bytes": 0.008
+      },
+      {
+        "id": "GQA-3",
+        "producer": "mha_decode",
+        "consumer": "attention_apply_sigmoid_gate",
+        "per_layer": 1,
+        "layers": 16,
+        "removable": 16,
+        "intermediate_bytes": 24576,
+        "escapes": false,
+        "intermediate_bytes_per_token": 786432,
+        "pct_of_weight_bytes": 0.008
+      },
+      {
+        "id": "GQA-4",
+        "producer": "attention_apply_sigmoid_gate",
+        "consumer": "out_proj",
+        "per_layer": 1,
+        "layers": 16,
+        "removable": 16,
+        "intermediate_bytes": 24576,
+        "escapes": false,
+        "intermediate_bytes_per_token": 786432,
+        "pct_of_weight_bytes": 0.008
+      },
+      {
+        "id": "HEAD-1",
+        "producer": "lm_head matvec",
+        "consumer": "sample_argmax_f32",
+        "per_layer": 1,
+        "layers": 1,
+        "removable": 1,
+        "intermediate_bytes": 993280,
+        "escapes": false,
+        "note": "MEASURED: worth ~0.03% of wall. The largest intermediate in the graph by far (993 KB) and the smallest win, because the head's cost is its 675 MB of WEIGHTS.",
+        "intermediate_bytes_per_token": 1986560,
+        "pct_of_weight_bytes": 0.0201
+      }
+    ],
+    "how_escape_was_decided": "a boundary is DELETABLE only if its intermediate is consumed once and never leaves. GQA-1 and GQA-2 ESCAPE and are marked so: K and V are WRITTEN TO THE KV CACHE and read by every later token, so that boundary cannot be deleted without changing what the cache holds. Marking two of twelve as undeletable is what keeps the other ten meaningful.",
+    "removable_at_non_escaping": 401,
+    "would_leave": 227,
+    "pct_of_the_graph": 63.9
+  },
+  "AND_THAT_IS_THE_CEILING_ON_EVERY_REMAINING_BOUNDARY_TOGETHER": {
+    "dispatches": 401,
+    "us_per_dispatch_used": 2.75,
+    "note_on_the_rate": "2.64, 2.86 and 2.90 us were measured on this machine for three levers that delete a dispatch WITHOUT sharing an operand. The one lever that measured 17.35 shared the INPUT VECTOR between two accumulators, and no boundary in this census is that shape -- MLP-1's consumer reads the activation along a different axis and DN-1..5 are a serial chain. So 2.75 is the right rate here and the 17.35 outlier is deliberately NOT applied.",
+    "estimated_saving_ms": 1.103,
+    "estimated_pct_of_the_28.0208_ms_token": 3.94,
+    "intermediate_traffic_at_those_boundaries_MB": 31.68,
+    "as_pct_of_weight_bytes": 0.321,
+    "THE_CONCLUSION_AND_IT_IS_A_CEILING_NOT_A_TARGET": "deleting EVERY deletable boundary in the graph -- all 401, which is 63.9% of the dispatches and would take the graph to 227, inside S032 \u00a74's <300 rung -- is worth about 3.9% of wall in dispatch cost and 0.32% in bytes. Against the 1.65x of headroom the byte wall leaves, THE GRAPH-BOUNDARY LEVER IS NEARLY EXHAUSTED: roughly 4% of a 65% gap.",
+    "why_this_matters_more_than_the_number": "S032's final directive is DELETE GRAPH BOUNDARIES. This says how much is there before anyone spends a week on it, which is what the atlas is for -- and it is the third time this session that a count-based ladder has turned out to be worth far less than the count suggested."
+  },
+  "THE_CLEAREST_ABSTRACTION_TAX_IN_THE_GRAPH": {
+    "boundary": "DN-3, ba_to_decay_beta -> gated_delta_decode_vi_simd",
+    "intermediate_bytes": 384,
+    "dispatches_per_token": 48,
+    "ratio": "a whole GPU dispatch to move 384 BYTES, forty-eight times per token",
+    "reading": "S015 \u00a71 asks of every dispatch whether it is COMPUTE or an ABSTRACTION TAX. By the byte ratio this is the answer in the graph -- 0.0004% of weight traffic for 7.6% of the dispatches. It is also the cheapest thing to try, and if a dispatch that moves 384 bytes still costs 2.75 us then the per-dispatch cost really is fixed overhead and not work."
+  },
+  "WHAT_THE_WEIGHT_ATLAS_EXCLUDED_IS_NOW_A_NUMBER": {
+    "previous_status": "ACCELERATOR_TOKEN_BYTE_ATLAS_628 named activation, KV and DeltaNet-state traffic as EXCLUDED and not thereby zero. Naming an exclusion is better than hiding it and worse than measuring it.",
+    "measured": {
+      "deltanet_state_rw_bytes": 301989888,
+      "deltanet_conv_rw_bytes": 22020096,
+      "gqa_kv_read_bytes_at_ctx60": 7864320,
+      "context_assumed": 60,
+      "total_ex_activations": 331874304,
+      "pct_of_weight_bytes": 3.363
+    },
+    "the_big_one": "the DeltaNet RECURRENT STATE is 48 value heads x 128 x 128 f32 = 3.146 MB PER LAYER, read AND written every token across 48 layers = 301.99 MB/token = 3.06% of the weight bytes. That is 4.8x the whole lm_head's share of the graph's dispatches and it appears in NO weight ranking, because it is not a weight.",
+    "total_ex_activations_pct": 3.363,
+    "consequence": "the token reads about 10.20 GB rather than 9.87, so the byte-wall fraction moves from 60.7% to roughly 62.7% and the raw ceiling falls slightly. The direction is the honest one: the previous receipt's ceiling was OPTIMISTIC exactly as its claim boundary said.",
+    "and_the_KV_term_is_the_one_that_GROWS": "7.86 MB at context 60 and linear in context -- at 8192 it would be 1.07 GB/token, 10.9% of the weight bytes, which is the first term in this whole accounting that makes the ceiling context-dependent."
+  },
+  "claim_boundary": [
+    "THE BOUNDARY LIST IS STRUCTURAL, NOT INSTRUMENTED. Producer/consumer pairs are read off the per-token histogram and the known layer shape; nothing traced a buffer to prove an intermediate is consumed exactly once. An escape this method cannot see would make a boundary undeletable, and GQA-1/GQA-2 are marked ESC because their escape is known, not because a tool found it.",
+    "THE 3.9% IS AN ESTIMATE, NOT A MEASUREMENT: 401 x a per-dispatch rate measured on three OTHER levers. The one lever that broke that rate broke it by 6.6x, so a boundary with a shape nobody anticipated could too -- and the estimate would then be low, not high.",
+    "no boundary here was BUILT or TIMED. This ranks candidates; it does not fuse anything.",
+    "intermediate sizes assume f32 activations and no in-register production; a fusion that keeps a tile in registers moves less than the table says, so the byte column is an UPPER bound on what fusing recovers.",
+    "the KV figure is at ONE context (60 tokens) and is the only term here that grows with it; the DeltaNet state does not.",
+    "one artifact, one machine, INSTANCE."
+  ],
+  "next": "DN-3 -- 384 bytes of intermediate for 48 dispatches is the cheapest test of whether the ~2.75 us per-dispatch cost is fixed overhead or work, and it is the one boundary whose answer generalises to the other 353",
+  "identities": {
+    "experiment": {
+      "class": "ACCEL-DISPATCH",
+      "knowledge_level": "INSTANCE",
+      "question": "what graph boundaries remain in the 628 graph and what are they worth?"
+    },
+    "machine": {
+      "soc": "Apple M3 Ultra",
+      "gpu_cores": 60,
+      "ram_gib": 96,
+      "measured_dram_gbps": 589.73,
+      "receipt": "receipts/headless/MACHINE_GENOME.json"
+    },
+    "device": {
+      "backend": "Metal",
+      "api": "dispatch trace via HAWKING_TRACE_DISPATCH=1"
+    },
+    "model": {
+      "root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+      "tag": "sealed-3.14",
+      "complete_ebpw": 3.139300850311054
+    },
+    "representation": {
+      "mixer": "HQ30UQ4 g64",
+      "mlp": "HGRAVF01 affine_q2 group64 LS"
+    },
+    "kernel": {
+      "graph": "628-dispatch fused decode; histogram from a real 6-token run"
+    },
+    "runtime": {
+      "binary": "workspace/ops/build/rust/release-fast/examples/qwen38_dispatch_trace",
+      "git_head": "21b16dd74cd6a095e42d0e6f159ccc5e068e60ad"
+    },
+    "transport": {
+      "status": "ABSENT",
+      "reason": "single-device unified-memory Metal run; no transport is crossed"
+    }
+  }
+}

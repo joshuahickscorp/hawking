@@ -1,0 +1,30 @@
+{
+  "accepted_count": 0,
+  "cancel_reason": null,
+  "checkpoint_id": "245a88b6d9b5:1787716191.922725",
+  "child_pids": [
+    81917
+  ],
+  "compiled": {
+    "acceptance_criteria": [
+      "an independent check of the requested behavior can fail; restating the request is not acceptance"
+    ],
+    "goal_summary": "Report dispatches_per_step and median_gpu_ns_per_token for each of the three bodies in receipts/headless/QWEN_PERFORMANCE_QUALIFICATION.json.",
+    "invariants": [],
+    "referenced_files": [
+      "receipts/headless/QWEN_PERFORMANCE_QUALIFICATION.js"
+    ]
+  },
+  "goal": "Report dispatches_per_step and median_gpu_ns_per_token for each of the three bodies in receipts/headless/QWEN_PERFORMANCE_QUALIFICATION.json. State whether the dispatch count differs between bodies. Cite the receipt path.",
+  "id": "245a88b6d9b5",
+  "in_flight": [],
+  "last_checkpoint": 1787716366.678545,
+  "no_progress_threshold": 3,
+  "no_progress_warning": null,
+  "phase": "failed",
+  "session_id": "245a88b6d9b5",
+  "started_at": 1787716191.885128,
+  "strategy": "default",
+  "units": {},
+  "version": 1
+}
