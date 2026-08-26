@@ -114,3 +114,97 @@ def test_TRUE_EQUALS_ONE_does_not_smuggle_a_streaming_request_through():
     # and the mirror: 1 is not True, so n=1 is fine while stream=1 is not a bool
     assert S._acceptable("n", 1) and not S._acceptable("stream", True)
     assert S._acceptable("temperature", 0) and not S._acceptable("temperature", 0.7)
+
+
+# --------------------------------------------------------------------------
+# The arm and the grammar are not sampler parameters, and both were found by
+# WIRING THE REAL CALLER rather than by reading the code.
+# --------------------------------------------------------------------------
+
+def test_the_real_hcli_payload_is_accepted_because_it_agrees_with_the_seal():
+    """hcli/delegate.py default_caller posts exactly this shape. If it is refused,
+    the endpoint cannot be HCLI's resident and G083 is unreachable."""
+    sl = seal()
+    body = {"messages": [{"role": "user", "content": "hi"}],
+            "temperature": 0.0, "stream": False,
+            "chat_template_kwargs": {"enable_thinking": False},
+            "max_tokens": 4096}
+    bad = [k for k in S.UNSUPPORTED
+           if k in body and not S._acceptable(k, body[k])]
+    assert bad == [], f"the real caller would be refused on {bad}"
+    assert S._arm_verdict(body, sl) is None
+
+
+def test_the_other_arm_is_refused_not_silently_served():
+    """enable_thinking=true asks for open_think. The two arms scored 30/43 and
+    35/43 on the SAME bytes this session, so serving one for the other with a 200
+    is handing the caller a different model."""
+    sl = seal()
+    v = S._arm_verdict(
+        {"chat_template_kwargs": {"enable_thinking": True}}, sl)
+    assert v and "enable_thinking" in v and "pre_closed_think" in v
+
+
+def test_an_unknown_chat_template_kwarg_is_refused():
+    sl = seal()
+    assert S._arm_verdict(
+        {"chat_template_kwargs": {"enable_reasoning": False}}, sl)
+    assert S._arm_verdict({"chat_template_kwargs": "no"}, sl)
+
+
+def test_response_format_is_refused_because_it_would_be_ignored():
+    code, payload = S.handle_chat(
+        {"messages": [{"role": "user", "content": "hi"}],
+         "response_format": {"type": "json_schema", "json_schema": {"name": "x"}}},
+        seal=seal(), sealed=True)
+    assert code == 400
+    assert "response_format" in payload["error"]["message"]
+
+
+def test_finish_reason_is_not_a_constant():
+    """A reply that ate the whole budget did not stop for the same reason as one
+    that emitted an end token. HCLI branches on this field."""
+    src = pathlib.Path(S.__file__).read_text()
+    assert '"finish_reason": "stop"' not in src, \
+        "finish_reason is hardcoded, so it is a fabricated field"
+    assert 'finish = "length" if' in src
+
+
+def test_total_tokens_is_never_a_sum_over_an_unknown():
+    """A None prompt_tokens coerced to 0 reports a total that is not a total. The
+    live request measured prompt_tokens=null, completion=2, total=2."""
+    src = pathlib.Path(S.__file__).read_text()
+    assert '(g["prompt_tokens"] or 0)' not in src
+    assert 'if g["prompt_tokens"] is not None else {}' in src
+
+
+# --------------------------------------------------------------------------
+# Found by RUNNING A REAL MISSION, not by reading the code: the first end-to-end
+# HCLI mission died with `GQA position 1024 exceeds max_seq_len 1024` because
+# max_seq_len was `max_tokens + 512` -- a guess that every prompt fits in 512
+# tokens. HCLI's planner prompt does not.
+# --------------------------------------------------------------------------
+
+def test_max_seq_len_is_sized_from_the_real_prompt_not_guessed():
+    src = pathlib.Path(S.__file__).read_text()
+    assert 'str(max_tokens + 512)' not in src, \
+        "max_seq_len is guessed from max_tokens; a long prompt aborts the resident"
+    assert '(prompt_tokens or 0) + max_tokens' in src
+
+
+def test_the_context_ceiling_is_read_from_the_artifact_and_is_not_none():
+    """Qwen3.5 nests max_position_embeddings under text_config, so the obvious
+    top-level read returns None -- a ceiling that silently becomes zero."""
+    art = pathlib.Path(seal()["fields"]["artifact_root"]["value"])
+    n = S.context_limit(art)
+    assert isinstance(n, int) and n > 1024, n
+
+
+def test_a_context_overflow_is_a_400_not_a_resident_crash():
+    art = pathlib.Path(seal()["fields"]["artifact_root"]["value"])
+    limit = S.context_limit(art)
+    code, payload = S.handle_chat(
+        {"messages": [{"role": "user", "content": "hi"}], "max_tokens": limit + 1},
+        seal=seal(), sealed=True)
+    assert code == 400 and payload["error"]["type"] == "context_length_exceeded"
+    assert str(limit) in payload["error"]["message"]

@@ -1,0 +1,178 @@
+{
+  "receipt": "HCLI_RESIDENT_END_TO_END",
+  "date": "2026-08-26",
+  "obligation": "G083 / S032 \u00a718 -- HCLI actually uses its resident, one real bounded mission end to end with correct verifier classification",
+  "akb_registration": {
+    "evidence_domain": "accelerator",
+    "civilization": "I-A_AGENTOS_HCLI",
+    "program": "HCLI resident integration (S032 \u00a718)",
+    "machine_scope": "Apple M3 Ultra, INSTANCE",
+    "representation_scope": "sealed-3.14 at 3.1393 complete EBPW, unchanged",
+    "kernel_scope": "the 628-dispatch fused decode graph",
+    "why_declared": "membership must not depend on what this file was named (S032 \u00a713)"
+  },
+  "what_was_asked": "not 'can it serve', which the endpoint receipt already showed, but 'does a REAL mission survive the whole pipeline and does the verifier classify it correctly'.",
+  "THE_MISSION": {
+    "goal": "determine how many JSON files under receipts/headless contain the string akb_registration, then PROVE the number with a command that exits non-zero if it is anything else",
+    "why_this_question": "S032 \u00a713 makes AKB membership depend on explicit registration, so the coverage count is a number this program actually needs -- and one I can compute myself afterwards, which is what makes the mission gradeable rather than merely completable.",
+    "ground_truth_at_run_time": 11,
+    "runs": 9,
+    "accepted": 0
+  },
+  "EVERY_LAYER_BEHAVED_AND_THE_EVIDENCE_IS_A_DIFFERENT_FAILURE_EACH_TIME": [
+    {
+      "layer": "sealed endpoint",
+      "evidence": "every reply carried artifact sha, binary sha, arm, 628 dispatches, fallbacks 0, dense_w 0"
+    },
+    {
+      "layer": "planner",
+      "evidence": "4 and later 2 obligations, produced only after the key-repair described below; before it, six retries in a row failed"
+    },
+    {
+      "layer": "shell guard (G076)",
+      "evidence": "run 8 refused the resident's own python3 check with exit 126 -- python3 is deliberately NOT in READ_ONLY_VERBS because it can write, and the mission had protected the very directory the question was about. THE GUARD WAS RIGHT AND THE MISSION DESIGN WAS SELF-DEFEATING; run 9 protected civilization and crates instead and the same command ran."
+    },
+    {
+      "layer": "verifier admissibility",
+      "evidence": "`test -d ...` and `grep -l ... | wc -l` refused as COMMAND_NOT_ADMITTED, verdict FALSE. Correct: grep|wc EXITS 0 WHETHER THE ANSWER IS 9 OR 900, so it prints a number and checks nothing."
+    },
+    {
+      "layer": "verifier execution",
+      "evidence": "run 9's python3 check RAN and exited 1 on a Python SyntaxError; classified UNVERIFIABLE, not FALSE and not TRUE"
+    },
+    {
+      "layer": "envelope",
+      "evidence": "verified_facts EMPTY in every run; every claim demoted to hypothesis with its reason; verdict BLOCKED"
+    },
+    {
+      "layer": "human rendering",
+      "evidence": "_render_result never prints the model's free-text answer at all -- only verified facts and hypotheses -- so the fabricated count never reaches a human through the CLI. Found by reading the code after seeing the answer field."
+    }
+  ],
+  "NINE_RUNS_AND_NOT_ONE_FAKE_ACCEPT": "that is the result. The pipeline refused a wrong answer every time, by a different mechanism each time, and never once promoted a plausible-sounding claim to a verified fact.",
+  "THE_RESIDENT_S_ANSWER_WAS_WRONG_AND_STAYED_WRONG": {
+    "answered": 3,
+    "truth": 11,
+    "and_it_was_never_verified": "the count came from the synthesize step, which reads verdicts; with every verdict FALSE or UNVERIFIABLE it had nothing to read and produced a number anyway. The envelope did not carry it as a fact and the CLI does not print it.",
+    "this_is_the_capability_limit_S032_\u00a714_names": "the resident cannot yet earn an ACCEPT on a mission this small. That is a capability number, not a plumbing defect, and it is the honest stopping point of this obligation."
+  },
+  "FIVE_DEFECTS_FOUND_BY_RUNNING_IT_THAT_READING_DID_NOT_FIND": [
+    {
+      "defect": "max_seq_len was `max_tokens + 512`",
+      "symptom": "`GQA position 1024 exceeds max_seq_len 1024`, a Rust abort surfaced as an HTTP 500 stderr dump on the FIRST mission",
+      "cause": "a guess that every prompt fits in 512 tokens; HCLI's planner prompt is 687",
+      "fix": "sized from the tokenized prompt, and a context overflow is now a 400 naming prompt tokens, max_tokens and the model's own 262144 ceiling read from text_config"
+    },
+    {
+      "defect": "the planner schema was rejected six times over one key",
+      "symptom": "`missing required property 'consequential'` -- and the model had written 'consequent' on obligations 1..3 while getting obligations[0] right",
+      "cause": "the rejection named what was ABSENT and nothing about what had been WRITTEN, so a greedy model had no information to converge on",
+      "fix": "the violation names the near miss, and an unambiguous near-miss key is REPAIRED and the rename RECORDED into the receipt. A repair nobody can see would be worse than the drift."
+    },
+    {
+      "defect": "a syntax error upstream was reported as a shape error downstream",
+      "symptom": "`$: missing required property 'obligations'` on a reply whose top level WAS obligations",
+      "cause": "the model emitted an unescaped quote inside a string; the outer object failed to decode and extract_json_object silently salvaged the SECOND OBLIGATION as if it were the root. Six more retries chased a phantom.",
+      "fix": "a salvage from a non-first offset is reported, and the rejection now leads with the JSON parse error and keeps the schema complaint after it"
+    },
+    {
+      "defect": "the harness enforced an admissibility rule it never stated",
+      "symptom": "two consecutive missions proposed `test -d` and `grep|wc`, both refused unrun",
+      "cause": "_COMMAND_FIRST is enforced in verify() and appears in no prompt. A rule the model cannot read is a rule it cannot follow.",
+      "fix": "the propose prompt now lists the admitted first words BUILT FROM THE ALLOWLIST ITSELF so it cannot drift, says WHY (the proof is the exit code), and warns that a `bash -c` wrapper recurses into its body. The first draft of that note recommended `bash -c '[ ... ]'` -- which the harness REFUSES -- and a test caught it before it ever reached a model. After disclosure the resident proposed a python3 assert."
+    },
+    {
+      "defect": "the shell guard named a verb it read out of Python source",
+      "symptom": "\"verb 'path' is not in the read-only set\"",
+      "cause": "_segments() split on ';' inside a quoted argument, so `python3 -c \"...; path = os.path.join(...)\"` became several segments and the guard reported a token from the middle of the program. THE VERDICT WAS STILL CORRECT because it fails closed; the REASON was unusable.",
+      "fix": "quote-aware splitting, with a test that a write hidden inside quotes is still refused so the precision gain did not become an allow"
+    },
+    {
+      "defect": "a hardcoded 180 s call timeout",
+      "symptom": "a mission died at 722 s having exceeded it on one generate",
+      "cause": "180.0 written literally in three places; correct against a warm server and wrong against a resident that RELOADS THE MODEL PER CALL",
+      "fix": "HCLI_DELEGATE_TIMEOUT_S, read at call time, default unchanged"
+    }
+  ],
+  "AND_TWO_OF_MY_OWN_TESTS_WERE_WRONG": {
+    "what": "mutation testing found two tests asserting the wrong surface. One checked `contract.repairs` -- the object nothing downstream reads -- so deleting the line that puts repairs into result.raw passed all 18 tests. The other never exercised the re-validation after a repair, so deleting the re-validation also passed.",
+    "fixed": "both rewritten to drive the real path; each names in its docstring the mutation that survived it",
+    "and_one_guard_was_deleted": "a third mutation showed the per-property type check on a rename changed no outcome -- the outer re-validation already refuses the same objects. Redundant code that looks like a safeguard is worse than none, so it is gone and the re-validation has its own test."
+  },
+  "tests": {
+    "hcli": "80 passed, 1 skipped",
+    "new_files": [
+      "hcli/test_near_miss_key.py -- 25",
+      "hcli/test_admissibility_is_disclosed.py -- 5"
+    ],
+    "mutations_watched_failing": 8
+  },
+  "claim_boundary": [
+    "NO MISSION WAS ACCEPTED. Nine runs, zero ACCEPT. The verifier classification is correct and demonstrated three ways -- FALSE on an inadmissible command, UNVERIFIABLE on an admissible one that could not settle the claim, and an empty verified_facts every time -- but a green mission is not among the evidence and this receipt does not claim one.",
+    "the answer the resident synthesized was WRONG (3 against a true 11) in every run that reached synthesis. It was never promoted to a fact and the CLI never prints it, but a reader who opened pipeline_result.json directly would see a confident wrong number.",
+    "the near-miss REPAIR changes what the pipeline accepts from a model. It is bounded to renaming one unknown key onto one missing required key and every rename is recorded, but it is a leniency and it is the reason planning succeeded at all.",
+    "ONE MISSION SHAPE, one machine, one resident. Nothing here says what a different goal or a different backend would do.",
+    "the machine was CONTENDED throughout (the operator's mlx_boot.py held 39-53 GiB at ~100% CPU). No timing claim is made from these runs; the 380-893 s elapsed figures are plumbing, not throughput, and the resident reloads the model on every call."
+  ],
+  "next": "the resident writes syntactically invalid Python one-liners -- `import os; p = ...; if not p: raise ...` is a SyntaxError -- and that single defect is what stands between this pipeline and an ACCEPT. It is a capability target under S032 \u00a714, not a plumbing one.",
+  "identities": {
+    "experiment": {
+      "class": "ACCEL-STATE",
+      "knowledge_level": "INSTANCE",
+      "question": "does a real bounded mission survive the whole HCLI pipeline against the sealed resident, and does the verifier classify it correctly?"
+    },
+    "machine": {
+      "soc": "Apple M3 Ultra",
+      "gpu_cores": 60,
+      "ram_gib": 96,
+      "receipt": "receipts/headless/MACHINE_GENOME.json"
+    },
+    "device": {
+      "backend": "Metal via the sealed Rust binary"
+    },
+    "model": {
+      "root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+      "tag": "sealed-3.14",
+      "complete_ebpw": 3.139300850311054,
+      "capability": "35/43 on pre_closed_think",
+      "seal": "receipts/headless/HCLI_RESIDENT_SEAL.json"
+    },
+    "representation": {
+      "mixer": "HQ30UQ4 g64",
+      "mlp": "HGRAVF01 affine_q2 group64 LS",
+      "note": "UNCHANGED -- this receipt changes no representation"
+    },
+    "kernel": {
+      "graph": "628-dispatch fused decode, set by the four sealed env levers"
+    },
+    "runtime": {
+      "server": "tools/hcli_resident/serve_sealed.py on 127.0.0.1:8099",
+      "pipeline": "hcli/delegate.py + hcli/verifier_pipeline.py",
+      "git_head": "91142d7bda692b09c38a55957912730bd471f636"
+    },
+    "transport": {
+      "status": "ABSENT",
+      "reason": "HTTP on loopback to a local subprocess; no device transport is crossed"
+    }
+  },
+  "bench": {
+    "state": "CONTENDED",
+    "recorded_at": "2026-08-26T07:30:00Z",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB",
+    "quiescence": {
+      "quiet": false,
+      "method": "enumerate",
+      "n_contenders": 1,
+      "max_rss_gib": 53.0,
+      "contenders": [
+        {
+          "comm": "mlx_boot.py",
+          "rss_gib": 53.0,
+          "cpu_pct": 100.9
+        }
+      ]
+    },
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "observed during the runs; no timing claim is made from them"
+  }
+}

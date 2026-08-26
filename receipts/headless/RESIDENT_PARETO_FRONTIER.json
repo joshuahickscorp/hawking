@@ -125,5 +125,14 @@
   "capability for variantA-2.98 and sealed-3.14 comes from leaderboard rows G073 marked UNIDENTIFIED -- no receipt records which artifact or which chat-template arm earned them, so accepted_tps for those two rows inherits that uncertainty. Only clean-2.60's 14/43 has a named arm.",
   "accepted_tps = raw_tps * cap/43 is a DEFINITION, not a measurement: it assumes capability scales linearly with useful token rate, which nothing here establishes."
  ],
- "pass": true
+ "pass": true,
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

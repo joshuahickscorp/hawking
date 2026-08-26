@@ -3729,7 +3729,7 @@
       "exactness": {
         "class": "heuristic",
         "says_which": "partial",
-        "notes": "On a successful image capture: width/height are integer pixel counts (exact for the *normalized* raster, which may have been resized; original_width/original_height are also returned). perceptual_hash is an 8x8 average hash — a heuristic — labelled only as perceptual_hash, no error class. region confidence is min(0.95, area/pixels), a heuristic with authority=DERIVED. limitations[] does say contour/OCR are DERIVED. mean_rgb is rounded to 3 decimal places. Capture identity is sha256 of the canonical request (exact)."
+        "notes": "On a successful image capture: width/height are integer pixel counts (exact for the *normalized* raster, which may have been resized; original_width/original_height are also returned). perceptual_hash is an 8x8 average hash \u2014 a heuristic \u2014 labelled only as perceptual_hash, no error class. region confidence is min(0.95, area/pixels), a heuristic with authority=DERIVED. limitations[] does say contour/OCR are DERIVED. mean_rgb is rounded to 3 decimal places. Capture identity is sha256 of the canonical request (exact)."
       },
       "determinism": {
         "compared": true,
@@ -4446,7 +4446,7 @@
       "exactness": {
         "class": "exact_over_derived_graph",
         "says_which": false,
-        "notes": "Wraps query; explanations copy authority/confidence/uncertainty from nodes. confidence on image regions is the heuristic above. A miss returns explanations:[] *with a citation* when the graph loaded — distinguishable from a missing capture, which raises KeyError."
+        "notes": "Wraps query; explanations copy authority/confidence/uncertainty from nodes. confidence on image regions is the heuristic above. A miss returns explanations:[] *with a citation* when the graph loaded \u2014 distinguishable from a missing capture, which raises KeyError."
       },
       "determinism": {
         "compared": true,
@@ -4932,7 +4932,7 @@
       "exactness": {
         "class": "exact_counts_silent_blockers",
         "says_which": false,
-        "notes": "artifact_count is SQL COUNT(*). overview.captures is a full table read. blockers is hardcoded [] in core_server.py — never computed, never labelled as 'not implemented'."
+        "notes": "artifact_count is SQL COUNT(*). overview.captures is a full table read. blockers is hardcoded [] in core_server.py \u2014 never computed, never labelled as 'not implemented'."
       },
       "determinism": {
         "compared": true,
@@ -5421,7 +5421,7 @@
             "items": [],
             "count": 0
           },
-          "why": "frontend_patch_proposals was dropped; the tool skipped the missing table and returned {items:[], count:0} — the same shape as a real empty review queue (LEGITIMATE_EMPTY on an intact schema)."
+          "why": "frontend_patch_proposals was dropped; the tool skipped the missing table and returned {items:[], count:0} \u2014 the same shape as a real empty review queue (LEGITIMATE_EMPTY on an intact schema)."
         }
       ]
     }
@@ -5556,7 +5556,7 @@
         "items": [],
         "count": 0
       },
-      "why": "frontend_patch_proposals was dropped; the tool skipped the missing table and returned {items:[], count:0} — the same shape as a real empty review queue (LEGITIMATE_EMPTY on an intact schema)."
+      "why": "frontend_patch_proposals was dropped; the tool skipped the missing table and returned {items:[], count:0} \u2014 the same shape as a real empty review queue (LEGITIMATE_EMPTY on an intact schema)."
     }
   ],
   "false_available": [
@@ -5937,7 +5937,7 @@
     "vision.compare never inspects the captures: ObservationQueryService is constructed without a CaptureBus, so verify() raises RuntimeError: verification requires a CaptureBus.",
     "vision.review_queue after DROP TABLE frontend_patch_proposals (dropped=True): EMPTY_SUCCESS {\"count\":0,\"items\":[]}",
     "vision.progress after cv2 observe: 3 capture(s), statuses=['COMPLETE', 'INTERRUPTED', 'INTERRUPTED'], blockers=[], classification=EMPTY_SUCCESS.",
-    "Supplementary ~/.grok-vision/bin/python observe probes: {\"empty_png\":{\"cause\":\"cannot identify image file '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/empty.png'\",\"cause_type\":\"UnidentifiedImageError\",\"error\":\"Error executing tool …",
+    "Supplementary ~/.grok-vision/bin/python observe probes: {\"empty_png\":{\"cause\":\"cannot identify image file '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/vmcp-capability-probe-ap_t48vj/projects/probe-main/empty.png'\",\"cause_type\":\"UnidentifiedImageError\",\"error\":\"Error executing tool \u2026",
     "Empty-success cases named: 3 (vision.progress, vision.review_queue)."
   ],
   "handoff": {
@@ -6014,5 +6014,14 @@
     "payload": null,
     "seconds": 0.0002
   },
-  "schema_project_ok": true
+  "schema_project_ok": true,
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+  }
 }

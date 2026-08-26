@@ -1832,5 +1832,14 @@
     "skip_decode": false,
     "tokenizer": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json"
   },
-  "verdict": "complete EBPW 3.1393 beside incumbent 4.2527; dispatches 964 -> 756 (incumbent unfused 964); decode tok/s 34.873 vs incumbent 33.717 (faster); 16 tokens verbatim; mlp fused-vs-unfused max_abs_diff=2.9802322387695312e-08; affine2 slowness was a fixable kernel problem (runtime group divide)"
+  "verdict": "complete EBPW 3.1393 beside incumbent 4.2527; dispatches 964 -> 756 (incumbent unfused 964); decode tok/s 34.873 vs incumbent 33.717 (faster); 16 tokens verbatim; mlp fused-vs-unfused max_abs_diff=2.9802322387695312e-08; affine2 slowness was a fixable kernel problem (runtime group divide)",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+  }
 }

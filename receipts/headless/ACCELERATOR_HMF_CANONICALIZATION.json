@@ -78,5 +78,14 @@
   ]
  },
  "claim_boundary": "This receipt covers a Python-level fabric/vocabulary canonicalization and a structural device-abstraction layer, verified by unit tests only. It makes no performance claim, executes nothing on a GPU, and every bandwidth/latency number it cites for a non-Apple domain is a knob for hardware that does not exist on this machine.",
- "pass": true
+ "pass": true,
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

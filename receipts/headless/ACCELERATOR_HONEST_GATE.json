@@ -219,5 +219,14 @@
   "what_it_does_not_show": "nothing about the kernels changed -- the native matvec and the GPU packer are byte-identical to the previous block, so no Metal claim moves. This is a CPU-side verifier change measured through a GPU pipeline. Bit-exactness of a pack and a faithful gate still say NOTHING about whether ws_rtn_q4_g64 is adequate for a MODEL; local adequacy does not compose.",
   "the_thing_that_would_falsify_the_headline": "if the cheap gate accepted anything the dense one rejected. 96 accept_pack calls on real tensors, 32 of them negative controls, ZERO verdict mismatches and worst numeric disagreement 4.3e-16."
  },
- "headline": "THE GATE GOT 2.15x CHEAPER BY DOING LESS OF WHAT IT SHOULD NEVER HAVE BEEN DOING. 84% of the honest predicate was a DENSE REMATERIALIZATION inside the verifier -- \u00a719's forbidden shape, in the one place nobody had looked for it. Contracting the packed nibbles where they lie is 2.15x faster on the phase and +52.3% on WorkUnits/hour, at 4.3e-16 disagreement and zero verdict changes."
+ "headline": "THE GATE GOT 2.15x CHEAPER BY DOING LESS OF WHAT IT SHOULD NEVER HAVE BEEN DOING. 84% of the honest predicate was a DENSE REMATERIALIZATION inside the verifier -- \u00a719's forbidden shape, in the one place nobody had looked for it. Contracting the packed nibbles where they lie is 2.15x faster on the phase and +52.3% on WorkUnits/hour, at 4.3e-16 disagreement and zero verdict changes.",
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

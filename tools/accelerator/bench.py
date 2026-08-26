@@ -24,6 +24,11 @@ STABLE_RELIABILITY_MIN_REPS = 200
 LARGE_MARGIN_RATIO = 5.0
 
 
+# Fewer than this many samples at or above p95 and the figure is an order
+# statistic rather than a percentile estimate. 40 reps gives 3; 200 gives 11.
+TAIL_SAMPLES_FOR_A_STABLE_P95 = 5
+
+
 def time_arm(fn: Callable[[], Any], *, reps: int = 40, warmup: int = 10) -> dict[str, Any]:
     import time
     for _ in range(warmup):
@@ -35,6 +40,16 @@ def time_arm(fn: Callable[[], Any], *, reps: int = 40, warmup: int = 10) -> dict
         s.append(time.perf_counter() - t0)
     s.sort()
     q1, med, q3 = s[len(s) // 4], s[len(s) // 2], s[(3 * len(s)) // 4]
+    # S032 §16: latency is first class, and a median alone hides the tail a caller
+    # actually waits on. p95 is reported with the SAMPLE COUNT BEHIND IT, because
+    # at the default 40 reps only THREE samples sit at or above p95 -- order
+    # statistics, not an estimate of the 95th percentile. A tail figure whose
+    # resolution is invisible is how a three-sample tail gets quoted as a
+    # distribution.
+    def _pct(p: float) -> float:
+        return s[min(len(s) - 1, int(round(p * (len(s) - 1))))]
+    p95, p99 = _pct(0.95), _pct(0.99)
+    tail_samples = max(1, len(s) - int(round(0.95 * (len(s) - 1))))
     # AN ARM FASTER THAN THE CLOCK IS NOT AN ARM WITH ZERO SPREAD. perf_counter can
     # return the same value twice for a cheap enough callable, and dividing by that
     # sample raised ZeroDivisionError in roughly one run of four -- an intermittent
@@ -46,6 +61,13 @@ def time_arm(fn: Callable[[], Any], *, reps: int = 40, warmup: int = 10) -> dict
     rng = float("inf") if below_resolution else (s[-1] - s[0]) / s[0] * 100
     stable = reps >= STABLE_RELIABILITY_MIN_REPS
     return {"median_s": med, "q1_s": q1, "q3_s": q3,
+            "p50_s": med, "p95_s": p95, "p99_s": p99,
+            "p95_over_p50": None if med <= 0 else round(p95 / med, 4),
+            "samples_at_or_above_p95": tail_samples,
+            "tail_resolution": (
+                "p95 here is one sample of %d; it is an ORDER STATISTIC, not an "
+                "estimate of the 95th percentile" % len(s))
+                if tail_samples < TAIL_SAMPLES_FOR_A_STABLE_P95 else None,
             "below_timer_resolution": below_resolution,
             "iqr_spread_pct": round(iqr, 2),
             "full_range_pct": round(rng, 2),
@@ -205,3 +227,44 @@ def name_filter_quiescence(names: tuple[str, ...]) -> dict[str, Any]:
             "hits": hits,
             "why_this_is_kept": "executable demonstration that a name filter "
                                 "reports what it looked for, not what is there"}
+
+
+def bench_block(*, machine: str, note: str | None = None,
+                before: dict[str, Any] | None = None,
+                after: dict[str, Any] | None = None) -> dict[str, Any]:
+    """The S032 §3 machine-state block a performance receipt must carry.
+
+    The state is DERIVED from the samples, never asserted alongside them. Pass
+    the quiescence samples taken around the measurement; if none were taken the
+    state is UNKNOWN, which is the steer's rule verbatim: "If quiescence is
+    unknown: BENCH_STATE = UNKNOWN, not quiet."
+
+    A sample whose enumeration FAILED (quiet is None) is also UNKNOWN, not quiet
+    -- a `ps` that exited non-zero found nothing because it could not look.
+    """
+    import time as _t
+    samples = [s for s in (before, after) if isinstance(s, dict)]
+    if not samples:
+        state, worst = "UNKNOWN", None
+    elif any(s.get("quiet") is None for s in samples):
+        state, worst = "UNKNOWN", max(samples, key=lambda s: s.get("n_contenders") or 0)
+    elif all(s.get("quiet") is True for s in samples):
+        # BOTH ENDS OR IT IS NOT QUIESCED. A single quiet sample says the machine
+        # was quiet at one instant, not across the window -- contention that
+        # started after a quiet `before` and ended before there was an `after` to
+        # see it leaves no trace. Evidence of noise is evidence; absence of
+        # observed noise on ONE side is not evidence of quiet, and this is the
+        # same asymmetry the enumeration failure above already respects.
+        state, worst = (("QUIESCED", samples[0]) if before is not None and after is not None
+                        else ("UNKNOWN", samples[0]))
+    else:
+        state, worst = "CONTENDED", max(samples, key=lambda s: s.get("max_rss_gib") or 0.0)
+    return {
+        "state": state,
+        "recorded_at": _t.strftime("%Y-%m-%dT%H:%M:%SZ", _t.gmtime()),
+        "machine": machine,
+        "quiescence": worst,
+        "samples": {"before": before, "after": after},
+        "note": note,
+        "rule": "S032 §3 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    }

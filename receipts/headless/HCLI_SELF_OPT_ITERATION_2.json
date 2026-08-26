@@ -163,7 +163,7 @@
         "ok": true,
         "exit_code": 0,
         "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331/tools/headless/hcli_self_optimize_2.py --stage decide --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr",
-        "output": "ok   decide: promote — Both gates passed and paired throughput improved beyond spread (original median tps=22.57524202591853 mutated median tps=25.3131986445145 spread=0.012938974250577218).\n"
+        "output": "ok   decide: promote \u2014 Both gates passed and paired throughput improved beyond spread (original median tps=22.57524202591853 mutated median tps=25.3131986445145 spread=0.012938974250577218).\n"
       },
       "dependencies": [
         "gate.perf"
@@ -199,7 +199,7 @@
         "ok": true,
         "exit_code": 0,
         "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331/tools/headless/hcli_self_optimize_2.py --stage next --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/i3selfopt2-20260823-050331 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr",
-        "output": "ok   next: Iteration 3: admission-2 slot completions delivered median 25.3131986445145 tok/s against serial 22.57524202591853 (spread 0.012938974250577218), past the measured spread. Next: spend that width on prefix-cache locality / KV split cost rather than a third runtime — the four-decoder aggregate ceiling is still 1.2161x. (citing gate.perf.mutated.median=25.3131986445145)\n"
+        "output": "ok   next: Iteration 3: admission-2 slot completions delivered median 25.3131986445145 tok/s against serial 22.57524202591853 (spread 0.012938974250577218), past the measured spread. Next: spend that width on prefix-cache locality / KV split cost rather than a third runtime \u2014 the four-decoder aggregate ceiling is still 1.2161x. (citing gate.perf.mutated.median=25.3131986445145)\n"
       },
       "dependencies": [
         "priors"
@@ -500,7 +500,7 @@
         {
           "id": "H3_process_second_server",
           "verdict": "REJECTED",
-          "reason": "REJECTED on measured tok/s, not theory. A native run with two 27B model servers resident delivered 3.986 tok/s against 33.47 with one — an 8.4x collapse. This contract forbids spawning a second llama-server. PROCESS topology is how you buy that collapse. SLOT topology on the live --parallel 2 server is the only honest way to spend overlap=2.",
+          "reason": "REJECTED on measured tok/s, not theory. A native run with two 27B model servers resident delivered 3.986 tok/s against 33.47 with one \u2014 an 8.4x collapse. This contract forbids spawning a second llama-server. PROCESS topology is how you buy that collapse. SLOT topology on the live --parallel 2 server is the only honest way to spend overlap=2.",
           "two_server_tps": 3.986,
           "one_server_tps": 33.47
         }
@@ -794,7 +794,7 @@
       "stage_ok": true
     },
     "next": {
-      "target": "Iteration 3: admission-2 slot completions delivered median 25.3131986445145 tok/s against serial 22.57524202591853 (spread 0.012938974250577218), past the measured spread. Next: spend that width on prefix-cache locality / KV split cost rather than a third runtime — the four-decoder aggregate ceiling is still 1.2161x.",
+      "target": "Iteration 3: admission-2 slot completions delivered median 25.3131986445145 tok/s against serial 22.57524202591853 (spread 0.012938974250577218), past the measured spread. Next: spend that width on prefix-cache locality / KV split cost rather than a third runtime \u2014 the four-decoder aggregate ceiling is still 1.2161x.",
       "citation": {
         "field": "gate.perf.mutated.median",
         "value": 25.3131986445145
@@ -876,7 +876,7 @@
     },
     {
       "title": "H3_process_second_server rejected",
-      "detail": "REJECTED on measured tok/s, not theory. A native run with two 27B model servers resident delivered 3.986 tok/s against 33.47 with one — an 8.4x collapse. This contract forbids spawning a second llama-server. PROCESS topology is how you buy that collapse. SLOT topology on the live --parallel 2 server is the only honest way to spend overlap=2."
+      "detail": "REJECTED on measured tok/s, not theory. A native run with two 27B model servers resident delivered 3.986 tok/s against 33.47 with one \u2014 an 8.4x collapse. This contract forbids spawning a second llama-server. PROCESS topology is how you buy that collapse. SLOT topology on the live --parallel 2 server is the only honest way to spend overlap=2."
     }
   ],
   "mission_result": {
@@ -888,5 +888,14 @@
     "no_progress_warning": null
   },
   "mission_wall_s": 175.32598887500353,
-  "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr"
+  "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-355t4gqr",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+  }
 }

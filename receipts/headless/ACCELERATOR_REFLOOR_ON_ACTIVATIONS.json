@@ -1,0 +1,290 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-26T13:49:42Z",
+ "experiment_class": "ACCEL-REPRESENTATION",
+ "knowledge_level": "REPRESENTATION",
+ "git_head": "48c05bcd86e802b0da860f3ab414c45689f2e540",
+ "identities": {
+  "experiment": "re-floor attention_q on real activations; does the weight-space floor equalise or widen the error it should preserve?",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB",
+  "device": "CPU device throughout -- the operator's mlx_boot.py holds the GPU and a materialization timed out mid-run, so per S032 s24 the whole sweep moved to the CPU rather than contending. Relative error and bit counts are device-independent, so no number changes.",
+  "model": "Qwen3-30B-A3B, Qwen3-VL-30B-A3B, Kimi-VL-A3B, Falcon-H1-7B -- layer-0 q_proj, real bf16 lake weights",
+  "representation": "grouped absmax, bits x group over 12 settings, complete bpw including the f16 scale amortised over the group",
+  "kernel": {
+   "status": "ABSENT",
+   "reason": "no kernel; a representation sweep in numpy"
+  },
+  "runtime": "mlx_lm weights + numpy float32, CPython 3.12",
+  "transport": {
+   "status": "ABSENT",
+   "reason": "no transport under test"
+  }
+ },
+ "result": {
+  "DOING_THE_THING_THE_PREVIOUS_RECEIPT_SAID_WAS_NOT_DONE": "ACCELERATOR_ACTIVATION_VS_WEIGHT_SPACE closed with 'NO CORRECTED BUDGET IS CLAIMED: no re-floored setting was measured and nothing here says what attention_q SHOULD cost'. This measures it, and the strongest result is one I did not set out to get.",
+  "THE_CONFOUND_FREE_HEADLINE": "Every number here is a WITHIN-SPECIMEN delta -- same weights, same activations, only the representation setting moves -- so the cross-architecture incommensurability the previous receipt named DOES NOT APPLY TO IT. Moving each specimen from a single flat setting (q4_g64) to ITS OWN weight-space floor changes its real-activation error MONOTONICALLY BY RANK: the best specimen IMPROVES 14.21%, the second is EXACTLY UNCHANGED (its floor already is g64), the third WORSENS 10.43% and the fourth WORSENS 9.63%. THE PROCEDURE IMPROVES THE ALREADY-GOOD AND DEGRADES THE ALREADY-BAD.",
+  "within_specimen_delta_flat_to_own_floor": {
+   "Qwen3-30B-A3B": {
+    "flat_q4_g64": 0.032677,
+    "at_own_floor": 0.028034,
+    "floor": "4b_g32",
+    "pct_change": -14.21
+   },
+   "Qwen3-VL-30B-A3B": {
+    "flat_q4_g64": 0.033354,
+    "at_own_floor": 0.033354,
+    "floor": "4b_g64",
+    "pct_change": 0.0
+   },
+   "Falcon-H1-7B": {
+    "flat_q4_g64": 0.056519,
+    "at_own_floor": 0.062415,
+    "floor": "4b_g128",
+    "pct_change": 10.43
+   },
+   "Kimi-VL-A3B": {
+    "flat_q4_g64": 0.06567,
+    "at_own_floor": 0.071992,
+    "floor": "4b_g128",
+    "pct_change": 9.63
+   }
+  },
+  "P1_CONFIRMED_THE_PROCEDURE_WIDENS_WHAT_IT_SHOULD_EQUALISE": "Spread of real-activation error across the four specimens at their OWN floors is 0.043958 against 0.032994 at one flat setting for everybody -- 1.33x WIDER. The floor procedure's stated logic is that each specimen reaches a comparable COSINE at its own floor; comparable cosine delivers a WIDER activation spread than doing nothing at all. That is a statement about the procedure's internal consistency, not a ranking of architectures.",
+  "AT_THEIR_ASSIGNED_FLOORS_THE_RANGE_IS_2_6x": "0.028034 / 0.033354 / 0.062415 / 0.071992 -- a 2.57x range in the very quantity the representation exists to preserve, produced by a procedure whose purpose is to put every specimen at an equivalent fidelity.",
+  "THE_REALLOCATION_IS_FULLY_INVERTED_AND_ITS_DIRECTION_IS_BAR_INDEPENDENT": "At every one of five bars (0.02-0.06) the two Qwen specimens need the FEWEST bits and Kimi-VL and Falcon-H1 need the MOST. The weight-space floor says the exact opposite: Qwen3-30B 4.500, Qwen3-VL 4.250, Kimi-VL 4.125, Falcon-H1 4.125. At a 0.04 bar the activation floor is 4.125 / 4.125 / 5.125 / 5.125 -- the specimen the procedure under-provisions at its cheapest 4-bit option needs A FULL BIT MORE.",
+  "refloor_bpw_by_bar": {
+   "0.02": {
+    "Qwen3-30B-A3B": 5.125,
+    "Kimi-VL-A3B": 6.25,
+    "Falcon-H1-7B": 6.25,
+    "Qwen3-VL-30B-A3B": 5.125
+   },
+   "0.03": {
+    "Qwen3-30B-A3B": 4.5,
+    "Kimi-VL-A3B": 5.5,
+    "Falcon-H1-7B": 5.125,
+    "Qwen3-VL-30B-A3B": 4.5
+   },
+   "0.04": {
+    "Qwen3-30B-A3B": 4.125,
+    "Kimi-VL-A3B": 5.125,
+    "Falcon-H1-7B": 5.125,
+    "Qwen3-VL-30B-A3B": 4.125
+   },
+   "0.05": {
+    "Qwen3-30B-A3B": 4.125,
+    "Kimi-VL-A3B": 5.125,
+    "Falcon-H1-7B": 5.125,
+    "Qwen3-VL-30B-A3B": 4.125
+   },
+   "0.06": {
+    "Qwen3-30B-A3B": 4.125,
+    "Kimi-VL-A3B": 4.5,
+    "Falcon-H1-7B": 4.25,
+    "Qwen3-VL-30B-A3B": 4.125
+   }
+  },
+  "refloor_setting_by_bar": {
+   "0.02": {
+    "Qwen3-30B-A3B": "5b_g128",
+    "Kimi-VL-A3B": "6b_g64",
+    "Falcon-H1-7B": "6b_g64",
+    "Qwen3-VL-30B-A3B": "5b_g128"
+   },
+   "0.03": {
+    "Qwen3-30B-A3B": "4b_g32",
+    "Kimi-VL-A3B": "5b_g32",
+    "Falcon-H1-7B": "5b_g128",
+    "Qwen3-VL-30B-A3B": "4b_g32"
+   },
+   "0.04": {
+    "Qwen3-30B-A3B": "4b_g128",
+    "Kimi-VL-A3B": "5b_g128",
+    "Falcon-H1-7B": "5b_g128",
+    "Qwen3-VL-30B-A3B": "4b_g128"
+   },
+   "0.05": {
+    "Qwen3-30B-A3B": "4b_g128",
+    "Kimi-VL-A3B": "5b_g128",
+    "Falcon-H1-7B": "5b_g128",
+    "Qwen3-VL-30B-A3B": "4b_g128"
+   },
+   "0.06": {
+    "Qwen3-30B-A3B": "4b_g128",
+    "Kimi-VL-A3B": "4b_g32",
+    "Falcon-H1-7B": "4b_g64",
+    "Qwen3-VL-30B-A3B": "4b_g128"
+   }
+  },
+  "P2_REFUTED_IN_PART_AND_I_DO_NOT_GET_TO_QUOTE_A_BUDGET": "I pre-registered that the re-floored ORDERING would be STABLE across bars, and said that if it flipped the method does not define a budget and I must say so. IT FLIPS. The COARSE grouping is stable at all five bars -- both Qwen below both of {Kimi, Falcon} every time -- but the KIMI-vs-FALCON internal order swaps at 2 of 5 bars. So the DIRECTION of the reallocation is robust and NO PRECISE PER-SPECIMEN BUDGET IS CLAIMED for that pair. My own falsifier fired and the consequence is that the corrected budget this receipt set out to produce is NOT PUBLISHED.",
+  "orderings_across_bars": [
+   [
+    "Qwen3-30B-A3B",
+    "Qwen3-VL-30B-A3B",
+    "Kimi-VL-A3B",
+    "Falcon-H1-7B"
+   ],
+   [
+    "Qwen3-30B-A3B",
+    "Qwen3-VL-30B-A3B",
+    "Falcon-H1-7B",
+    "Kimi-VL-A3B"
+   ],
+   [
+    "Qwen3-30B-A3B",
+    "Qwen3-VL-30B-A3B",
+    "Kimi-VL-A3B",
+    "Falcon-H1-7B"
+   ],
+   [
+    "Qwen3-30B-A3B",
+    "Qwen3-VL-30B-A3B",
+    "Kimi-VL-A3B",
+    "Falcon-H1-7B"
+   ],
+   [
+    "Qwen3-30B-A3B",
+    "Qwen3-VL-30B-A3B",
+    "Falcon-H1-7B",
+    "Kimi-VL-A3B"
+   ]
+  ],
+  "P3_CONFIRMED_THE_SWEEP_CAN_DETECT_A_DEAD_REPRESENTATION": "bits=1 is the deletion control -- bound = 2^(bits-1)-1 is ZERO so every weight quantises to zero -- and it reads relative error EXACTLY 1.0000 on all four specimens. A sweep where a deleted tensor scored well would be measuring nothing.",
+  "settings_swept": 12,
+  "tests": "no new tests; no shipped code path changed by this measurement"
+ },
+ "claim_boundary": "ONE ORGAN (attention q_proj), ONE LAYER, ONE PROJECTION per specimen, activations from RMSNorm(embed[ids]) at position 0 -- the exact input that projection sees, and not a deeper activation, which a one-layer cut could not produce honestly anyway. THE WITHIN-SPECIMEN DELTAS ARE CONFOUND-FREE; the SPREAD comparison and the bar-based reflooring still compare four different functions, which is exactly why P2 was written and exactly why its partial refutation is reported rather than a per-specimen budget. NO CORRECTED BUDGET IS PUBLISHED and no floor is changed in any tool -- this measures what the existing procedure does, not what should replace it, and choosing a replacement needs a bar somebody can defend on grounds this measurement does not supply. The 2.57x range and the 1.33x spread widening are properties of THESE four specimens at THIS organ; the organ-floor receipt already measured that organ ranking does not transfer across architectures, so neither should this. Nothing timed, no kernel changed, no capability scored, no model generated from. BENCH_STATE CONTENDED.",
+ "pass": true,
+ "bench": {
+  "state": "CONTENDED",
+  "recorded_at": "2026-08-26T13:48:08Z",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB",
+  "quiescence": {
+   "quiet": false,
+   "method": "enumerate",
+   "no_name_filter": true,
+   "thresholds": {
+    "cpu_pct": 20.0,
+    "rss_gib": 2.0
+   },
+   "contenders": [
+    {
+     "pid": 11004,
+     "cpu_pct": 103.6,
+     "rss_gib": 34.7,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 180,
+     "cpu_pct": 20.2,
+     "rss_gib": 0.03,
+     "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+    },
+    {
+     "pid": 739,
+     "cpu_pct": 31.0,
+     "rss_gib": 0.02,
+     "comm": "/usr/libexec/avconferenced"
+    },
+    {
+     "pid": 52616,
+     "cpu_pct": 21.4,
+     "rss_gib": 0.02,
+     "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+    }
+   ],
+   "n_contenders": 4,
+   "total_cpu_pct": 176.2,
+   "max_rss_gib": 34.7,
+   "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+  },
+  "samples": {
+   "before": {
+    "quiet": false,
+    "method": "enumerate",
+    "no_name_filter": true,
+    "thresholds": {
+     "cpu_pct": 20.0,
+     "rss_gib": 2.0
+    },
+    "contenders": [
+     {
+      "pid": 11004,
+      "cpu_pct": 103.6,
+      "rss_gib": 34.7,
+      "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+     },
+     {
+      "pid": 180,
+      "cpu_pct": 20.2,
+      "rss_gib": 0.03,
+      "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+     },
+     {
+      "pid": 739,
+      "cpu_pct": 31.0,
+      "rss_gib": 0.02,
+      "comm": "/usr/libexec/avconferenced"
+     },
+     {
+      "pid": 52616,
+      "cpu_pct": 21.4,
+      "rss_gib": 0.02,
+      "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+     }
+    ],
+    "n_contenders": 4,
+    "total_cpu_pct": 176.2,
+    "max_rss_gib": 34.7,
+    "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+   },
+   "after": {
+    "quiet": false,
+    "method": "enumerate",
+    "no_name_filter": true,
+    "thresholds": {
+     "cpu_pct": 20.0,
+     "rss_gib": 2.0
+    },
+    "contenders": [
+     {
+      "pid": 11004,
+      "cpu_pct": 76.6,
+      "rss_gib": 31.46,
+      "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+     },
+     {
+      "pid": 30555,
+      "cpu_pct": 40.7,
+      "rss_gib": 1.85,
+      "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+     },
+     {
+      "pid": 292,
+      "cpu_pct": 91.6,
+      "rss_gib": 0.12,
+      "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores"
+     },
+     {
+      "pid": 739,
+      "cpu_pct": 33.5,
+      "rss_gib": 0.02,
+      "comm": "/usr/libexec/avconferenced"
+     },
+     {
+      "pid": 52616,
+      "cpu_pct": 21.4,
+      "rss_gib": 0.02,
+      "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+     }
+    ],
+    "n_contenders": 5,
+    "total_cpu_pct": 263.8,
+    "max_rss_gib": 31.46,
+    "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+   }
+  },
+  "note": "numpy under an operator job; nothing timed is claimed",
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet"
+ }
+}

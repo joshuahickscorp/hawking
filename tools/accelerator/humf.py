@@ -367,6 +367,12 @@ class Plan:
     # bytes out of a QUARANTINED domain -- the planner's refusal was decorative and
     # the log described a transfer that did not happen.
     source: str | None = None
+    # HOW OLD THE ANSWER'S TRUST IS, in fabric events, or None where the question
+    # does not apply. ALREADY_RESIDENT used to carry nothing, so a caller acting on
+    # a plan had no signal at all about a copy last checked ten thousand events ago
+    # -- and the fabric COULD answer, via stale_verifications(), only if somebody
+    # thought to ask. A number nobody is handed is a number nobody reads.
+    verification_age: int | None = None
 
     @property
     def rests_on_simulated_numbers(self) -> bool:
@@ -377,6 +383,7 @@ class Humf:
     def __init__(self, domains: dict[str, Domain],
                  providers: dict[str, Any] | None = None,
                  identity_recheck_age: int | None = 0,
+                 resident_recheck_age: int | None = None,
                  verify_transfers: bool = True,
                  transfer_timeout_s: float | None = None):
         self.domains = domains
@@ -397,6 +404,21 @@ class Humf:
         # checked". Not a clock: wall time is not what invalidates a copy, activity
         # is, and a counter cannot drift or be adjusted underneath the fabric.
         self.epoch: int = 0
+        # WHEN AN ALREADY-RESIDENT ANSWER MUST BE RE-EARNED. The transfer path checks
+        # its source against the sealed identity, so a copy that rots and is then
+        # MOVED is caught. ALREADY_RESIDENT moves nothing, so a copy that rots IN
+        # PLACE was handed back CLEAN, in valid_copies() AND in trusted_copies(), on
+        # a check of any age. DEMONSTRATED against the pre-fix code: 50 events after
+        # its last verification, one flipped byte, plan_acquire returned
+        # ALREADY_RESIDENT and trusted_copies() still named it.
+        #
+        # None keeps exactly that behaviour, so nothing changes silently for an
+        # existing caller; 0 re-checks every time; k re-checks only past k events.
+        # The cost is one blake2b over the payload, measured at 1.387 GB/s in
+        # ACCELERATOR_HUMF_IDENTITY.json -- affordable on a copy nobody has looked
+        # at in a long time and NOT affordable on every acquire, which is the whole
+        # reason this is an age and not a boolean.
+        self.resident_recheck_age = resident_recheck_age
         # HOW OLD a source's verification may be before a transfer re-establishes it.
         # 0 = every transfer (the safe default), None = never (registration only), k =
         # only when the source has not been verified in the last k events. This is the
@@ -694,6 +716,76 @@ class Humf:
                 for o in self.objects.values() for d, m in o.materializations.items()
                 if m.state is State.CLEAN and self.epoch - m.verified_at > max_age]
 
+    # A COPY NOBODY EVER ACQUIRES IS NEVER RE-CHECKED. The resident-recheck policy
+    # closes the ACQUIRE path, which is where a stale copy is actually relied upon;
+    # it can do nothing about a copy that simply sits. stale_verifications() could
+    # already NAME those, and a number nobody is handed is a number nobody reads --
+    # the same sentence that block used about Plan.verification_age, still true one
+    # level up, because naming a stale copy and re-checking it are different acts.
+    SCRUB_DIGEST_GB_S = 1.387      # blake2b-128, MEASURED in ACCELERATOR_HUMF_IDENTITY
+
+    def scrub(self, max_age: int, budget_bytes: int | None = None) -> dict[str, Any]:
+        """Re-check the copies nobody has looked at, oldest first, within a budget.
+
+        CALLER-DRIVEN AND NOT A TIMER, deliberately. audit()'s own docstring says a
+        fabric that re-hashed on a timer would be paying for a check nobody asked
+        for, and that argument survives: what was missing is not a scheduler but the
+        ACT -- a caller who wants the check should not have to write the loop, the
+        ordering and the budget accounting themselves, because each of those is a
+        place to get it quietly wrong.
+
+        THE BUDGET IS IN BYTES because the cost is a re-hash at SCRUB_DIGEST_GB_S,
+        which ACCELERATOR_HUMF_IDENTITY measured as costing MORE THAN THE MOVE on a
+        fast link. A scrub that ignores its own cost is one an operator turns off.
+
+        WHAT IT REFUSES TO LET YOU READ WRONG: `complete` is False whenever anything
+        stale went unchecked, and `not_checked` names it with a reason. A budgeted
+        sweep that reports no divergence WITHOUT saying what it skipped is the
+        0-of-0-reads-like-0-of-many shape this program has sealed repeatedly -- so
+        `stale_found` is reported beside `checked`, and finding nothing stale is a
+        DIFFERENT result from checking nothing.
+        """
+        stale = self.stale_verifications(max_age)
+        # Oldest first: the copy nobody has looked at longest is the one whose trust
+        # is worth least. Ties broken by identity so the order is deterministic.
+        stale.sort(key=lambda r: (-r["age"], r["object"], r["domain"]))
+        by_object: dict[str, int] = {}
+        for r in stale:
+            m = self.objects[r["object"]].materializations[r["domain"]]
+            n = len(m.payload) if m.payload is not None else 0
+            by_object[r["object"]] = max(by_object.get(r["object"], 0), n)
+
+        checked, diverged, not_checked, spent = [], [], [], 0
+        for ident in dict.fromkeys(r["object"] for r in stale):
+            nbytes = by_object[ident]
+            if budget_bytes is not None and spent + nbytes > budget_bytes:
+                not_checked.append({"object": ident, "bytes": nbytes,
+                                    "reason": "BUDGET_EXHAUSTED"})
+                continue
+            res = self.audit(ident)
+            if not res["audited"]:
+                not_checked.append({"object": ident, "bytes": nbytes,
+                                    "reason": res["reason"]})
+                continue
+            spent += nbytes
+            checked.append(ident)
+            diverged.extend({"object": ident, "domain": d} for d in res["diverged"])
+        return {
+            "max_age": max_age,
+            "stale_found": len(stale),
+            "objects_checked": checked,
+            "diverged": diverged,
+            "not_checked": not_checked,
+            "complete": not not_checked,
+            "budget_bytes": budget_bytes,
+            "bytes_digested": spent,
+            "estimated_seconds": spent / (self.SCRUB_DIGEST_GB_S * 1e9),
+            "reading": ("no divergence among the copies CHECKED; `not_checked` is what "
+                        "this sweep says nothing about" if not diverged else
+                        "divergence found -- those copies are now UNKNOWN and out of "
+                        "trusted_copies()"),
+        }
+
     def _transfer_cost(self, src: str, dst: str, nbytes: int) -> tuple[float, str]:
         a, b = self.domains[src], self.domains[dst]
         bw = min(a.bandwidth_gb_s, b.bandwidth_gb_s) * 1e9
@@ -733,8 +825,25 @@ class Humf:
                             f"resolve_unknown() re-probes, accept_unknown() records "
                             f"an operator's assertion instead",
                             "MEASURED", [])
+            age = self.epoch - here.verified_at
+            if (self.resident_recheck_age is not None
+                    and age > self.resident_recheck_age
+                    and obj.content_digest is not None
+                    and here.payload is not None):
+                if _identity_digest(here.payload) != obj.content_digest:
+                    here.trust = "UNKNOWN"
+                    return Plan("IMPOSSIBLE", float("inf"),
+                                f"{identity} was CLEAN in {want_domain} and its bytes no "
+                                f"longer match the identity sealed at registration. It "
+                                f"rotted IN PLACE, so no transfer check could ever have "
+                                f"seen it; trust is now UNKNOWN. resolve_unknown() "
+                                f"re-probes, accept_unknown() records an assertion",
+                                "MEASURED", [], verification_age=age)
+                self.epoch += 1
+                here.verified_at = self.epoch
+                age = 0
             return Plan("ALREADY_RESIDENT", 0.0, f"{identity} is CLEAN in {want_domain}",
-                        "MEASURED", [])
+                        "MEASURED", [], verification_age=age)
 
         for src, m in obj.materializations.items():
             if src == want_domain or m.state is not State.CLEAN:
@@ -1197,3 +1306,50 @@ class ReadbackDigestProvider(MockExternalMemoryProvider):
         self._maybe_hang()
         self._require_present()
         return _identity_digest(super().copy_out(key))
+
+
+class ConsistentCorruptionProvider(MockExternalMemoryProvider):
+    """The mode FIVE consecutive receipts listed as STILL NOT MODELLED: a provider
+    that corrupts CONSISTENTLY IN BOTH DIRECTIONS, so every digest agrees with itself.
+
+    The corruption is an INVOLUTION -- XOR with a fixed mask -- applied on the way in
+    and undone on the way out. That is not a contrived shape: it is what a bridge with
+    a stuck address line, a byte-swapped DMA descriptor or an endianness mismatch in
+    the driver actually does, and the un-doing on read-back is what makes it invisible.
+
+      copy_in(x)          stores x ^ m
+      copy_out()          returns (x ^ m) ^ m == x        <- the round trip AGREES
+      read_for_compute()  returns x ^ m                   <- what a KERNEL sees
+
+    So the per-transfer round-trip check compares x against x and passes, and the
+    source identity seal is untouched because the source was never written. The only
+    check that can see it is one that reads the COMPUTE path -- which is exactly the
+    resident digest, and exactly why ReadbackDigestProvider is its control.
+    """
+    MASK = 0x5A
+
+    def _flip(self, b: bytes) -> bytes:
+        return bytes(v ^ self.MASK for v in b)
+
+    def copy_in(self, key: str, payload: bytes) -> None:
+        super().copy_in(key, self._flip(payload))
+
+    def copy_out(self, key: str) -> bytes:
+        return self._flip(super().copy_out(key))
+
+
+class ReadbackConsistentCorruptionProvider(ConsistentCorruptionProvider):
+    """The same corruption, on a device whose digest reads the READ-BACK path.
+
+    Its digest un-does the corruption exactly as copy_out does, so it reports the
+    source's own digest for memory a kernel would misread. This is the cell that
+    stays open, and it stays open for a reason the fabric CANNOT test: the digest
+    path is a property of the device, and this provider is indistinguishable from an
+    honest one through the API.
+    """
+    resident_digest_path = "readback"
+
+    def digest_resident(self, key: str) -> str:
+        self._maybe_hang()
+        self._require_present()
+        return _identity_digest(self.copy_out(key))

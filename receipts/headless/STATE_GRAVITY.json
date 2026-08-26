@@ -171,5 +171,14 @@
   "2_prefix_reuse": "4233 ms per mission turn on the measured marginal cost, and it stacks with every turn.",
   "3_kv_precision": "smallest here, and structurally so: only 16 of 64 layers hold KV at all, and below ~1,152 tokens the flat 72 MiB recurrent state dominates the KV cache entirely."
  },
- "pass": true
+ "pass": true,
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

@@ -1,0 +1,357 @@
+{
+ "receipt": "ACCELERATOR_THE_FLOOR_IS_THE_ELEMENT_NOT_THE_BYTE",
+ "date": "2026-08-26",
+ "obligation": "G046 (FRONT D) with G047; S031 s2 optimisation order, s6 representation-native, s11 MLP ascension",
+ "question": "ACCELERATOR_UNPACK_IS_THE_WALL closed by naming the lever: 'an unpack costing fewer instructions per weight -- a LOOKUP rather than a shift-mask-subtract-multiply chain'. That sentence assumes the instructions that cost are ARITHMETIC. Counting them says otherwise: the kernel loads ONE BYTE per two weights, so at 160.9 GB/s it issues ~152 G one-byte device loads per second while the ALU sits near a fifth of peak. THE LOAD COUNT IS A CANDIDATE THE RECEIPT'S OWN SENTENCE DID NOT NAME, so both were built and measured.",
+ "arms": {
+  "shape": "17408 x 5120, tpr64, 12 rounds x 20 reps ROUND-ROBIN",
+  "byte": {
+   "round_median_ms": 0.30845899891573936,
+   "round_min_ms": 0.29808300314471126,
+   "round_max_ms": 0.5943750002188608,
+   "round_spread_pct": 96.05555296348692,
+   "pooled_iqr_pct": 13.377638311561073,
+   "gb_s": 153.50422638483101,
+   "rel_err": 2.0210188127198772e-07,
+   "speedup_vs_byte": 1.0
+  },
+  "word": {
+   "round_median_ms": 0.30737499764654785,
+   "round_min_ms": 0.29874999745516106,
+   "round_max_ms": 0.3692499958560802,
+   "round_spread_pct": 22.936152563061576,
+   "pooled_iqr_pct": 6.494635829361826,
+   "gb_s": 154.0455806833311,
+   "rel_err": 2.2133095365131934e-07,
+   "speedup_vs_byte": 1.0035266410003783
+  },
+  "lut": {
+   "round_median_ms": 0.36754099710378796,
+   "round_min_ms": 0.3551250047166832,
+   "round_max_ms": 0.3967500015278347,
+   "round_spread_pct": 11.325266334682452,
+   "pooled_iqr_pct": 6.625248619698799,
+   "gb_s": 128.82851266420533,
+   "rel_err": 2.0210188127198772e-07,
+   "speedup_vs_byte": 0.8392505906725699
+  },
+  "rounds_beating_byte_of_12": {
+   "word": 7,
+   "lut": 1
+  }
+ },
+ "BOTH_PREDICTIONS_LAND_ON_THE_WRONG_SIDE": {
+  "P1_word_beats_byte_by_1.5x": {
+   "falsifier": "below 1.15x",
+   "measured": 1.0035266410003783,
+   "verdict": "REFUTED",
+   "rounds_won": "7 of 12, a coin flip, which is what INDISTINGUISHABLE looks like round by round",
+   "meaning": "FOUR TIMES FEWER LOAD INSTRUCTIONS BUYS NOTHING. The load count is not the wall either."
+  },
+  "P2_lut_does_not_beat_byte": {
+   "predicted": "under 1.15x and possibly a loss",
+   "measured": 0.8392505906725699,
+   "verdict": "CONFIRMED, AND IT LOSES",
+   "rounds_won": "1 of 12",
+   "meaning": "the receipt's OWN NAMED LEVER is 16.1% SLOWER. Replacing four cheap ALU ops with one threadgroup read trades a cheap instruction for an expensive one."
+  }
+ },
+ "AND_THE_DELETION_CONTROL_SAYS_WHAT_THE_WALL_IS": {
+  "method": "the SAME geometry, reduction, barrier and ELEMENT COUNT with the packed array NEVER READ -- the group scale is still fetched so the loop cannot fold, and it is a TIMING control computing a different answer by design, checked non-degenerate at 17408 of 17408 rows nonzero.",
+  "no_weights_min_round_ms": 0.28966699755983427,
+  "native_byte_min_round_ms": 0.28250000468688086,
+  "reading": "THE KERNEL THAT READS 44.6 MB OF PACKED WEIGHTS IS NOT SLOWER THAN THE ONE THAT READS NONE -- 0.2825 ms against 0.2897, the real kernel FASTER by 2.5%, which is a statistical tie and cannot be a real advantage. Its weight traffic costs NOTHING MEASURABLE at this shape.",
+  "per_element_floor_G_per_s": 307.6945622070368,
+  "what_the_floor_IS": "one x read and one fused multiply-add per weight, plus the reduction -- work that NO representation change touches.",
+  "and_it_explains_both_refutations": "word changes the LOAD count and lut changes the DECODE arithmetic; NEITHER changes the element count, so neither could move a time set by the element count. Two refutations, one mechanism."
+ },
+ "THE_CROSSOVER": {
+  "floor_ms": 0.28966699755983427,
+  "measured_roof_gb_s": 589.73,
+  "weight_bytes_that_hide_under_the_floor_MB": 170.82531847096107,
+  "this_matvecs_weight_bytes_MB": 44.56448,
+  "reading": "at this element count a matvec's weight traffic is free below roughly 171 MB, because moving it at the roof takes less time than the elements already cost. The resident's MLP tensors are 27.85 MB EACH, an order under that -- so per dispatch the bytes are free, and that is why cutting bpw did not convert."
+ },
+ "AN_INSTRUMENT_CORRECTION_THAT_MATTERS_MORE_THAN_THE_ARMS": {
+  "claim": "EFFECTIVE GB/s IS THE WRONG METRIC FOR A REPRESENTATION-NATIVE KERNEL. It is weight_bytes/time, and when time is set by the ELEMENT count the ratio measures the REPRESENTATION'S DENSITY, not the machine.",
+  "demonstration": "the same kernel reports 160.9 GB/s at 4.25 bpw and would report roughly half that at 2.125 bpw WITHOUT RUNNING ANY SLOWER, because only the numerator moved.",
+  "consequence": "the 27.3% OF ROOF in the previous receipt is not a statement about how well the kernel uses the machine; the kernel is AT ITS FLOOR and the roof is not the constraint it is being measured against."
+ },
+ "WHAT_THIS_CORRECTS_IN_MY_OWN_PREVIOUS_BLOCK": {
+  "what_stands": "fewer bytes are NECESSARY AND NOT SUFFICIENT, and the three-body production evidence -- 3.1393 / 2.9802 / 2.5970 EBPW recording 34.14 / 34.12 / 33.12 raw TPS -- is unchanged and is now EXPLAINED rather than merely observed.",
+  "what_is_corrected": "AKB-THE-UNPACK-IS-THE-WALL-NOT-THE-BYTES named the unpack as the wall. THE UNPACK IS NOT THE WALL EITHER. Removing the decode arithmetic (lut) makes it slower; removing three quarters of the load instructions (word) changes nothing; removing the weight reads ENTIRELY changes nothing. The wall is the PER-ELEMENT matvec rate, which is neither the bytes nor the unpack.",
+  "why_the_earlier_reading_was_reachable": "the previous block compared native against DENSE and found native converting only 40% of its byte ratio, which is consistent with an unpack cost AND with an element floor. It took a deletion control to separate them, and the previous block did not run one."
+ },
+ "an_unreachable_guard_i_wrote_this_block_and_am_naming": {
+  "what": "source_unpack refuses a row stride that is not 4-byte aligned, because a 4-byte read off a 2-byte boundary is undefined.",
+  "why_it_cannot_fire": "GROUP is 64, so a legal cols is a multiple of 64, so cols/2 is a multiple of 32 and therefore of 4 -- ALWAYS. The guard is unreachable for every shape the kernel accepts.",
+  "kept_and_labelled": "kept because GROUP is a constant somebody may lower and an unreachable guard costs nothing, but the test asserts BOTH that no legal shape is refused AND that the illegal stride fires it, so the day GROUP changes the live assertion is the one that still means something. Found by WRITING THE TEST, not by reading the code."
+ },
+ "claim_boundary": [
+  "THE FIRST RUN WAS THROWN AWAY AND WHY IS THE POINT: sequential arms on a contended machine put the byte arm first and it read 116.4% IQR at 1.0027 ms, 3.4x slower than the SAME kernel in the previous block. A transient lands on whoever holds the clock. Round-robin cannot remove contention; it stops it landing on one arm, and the byte arm then reproduced the previous block at 0.3085 against 0.2943 ms, 4.8% apart.",
+  "THE ESTIMATOR IS THE MINIMUM OF ROUND MEDIANS for the floor probe, stated rather than silently chosen: contention only ADDS time, so on a machine this program is not allowed to quiet the minimum is least contaminated. The medians are reported beside every minimum.",
+  "THE DENSE DECOMPOSITION IS REJECTED BY MY OWN RULE. Subtracting the tpr64 floor from the tpr1 dense arm implies 617.3 GB/s over its 356.5 MB, which EXCEEDS this machine's measured 589.73 roof by 4.7% and therefore cannot be right -- the two arms have different launch geometries and so different per-element costs, and bench.compare already encodes that an impossible result is evidence the measurement is broken. No dense number is claimed here.",
+  "the no_weights control carries 63.1% round-spread against native's 11.7%, so 'the weight bytes are free' is admitted DIRECTIONALLY by the minimum estimator and by the tie being in the wrong direction for a cost, not by a clean gate.",
+  "BENCH_STATE recorded, not asserted; the operator's job was NOT killed per S032 s24. Absolute times are upper bounds and the arm-to-arm comparisons in one process are what the block rests on.",
+  "ONE shape, ONE element count, ONE machine, INSTANCE. The ~171 MB crossover is THIS element count's number and scales with it; nothing here measures where it sits for another shape.",
+  "correctness precedes every timing at 2.0e-07 to 2.2e-07 against a shared float64 oracle, including the WORD arm whose nibble order inside a 4-byte little-endian word is exactly the convention error a speed number would hide.",
+  "NO SHIPPED KERNEL CHANGED. byte remains what executes; word and lut are built, verified and measured, and neither earns a place."
+ ],
+ "next": "if the wall is one x read and one FMA per weight, the only lever left is FEWER ELEMENTS -- structured sparsity, low rank, or a smaller hidden dimension. That is not a kernel question and not a bpw question; it is an ARCHITECTURE question, and this is the first block in the program to say so.",
+ "akb_registration": {
+  "evidence_domain": "accelerator",
+  "civilization": "I-D_ACCELERATOR",
+  "program": "HAWKING ACCELERATOR (S015/S031/S032)",
+  "machine_scope": "Apple M3 Ultra, INSTANCE",
+  "representation_scope": "ws_rtn_q4_g64 across all arms; the control reads no weights at all",
+  "kernel_scope": "native matvec tpr64 under three unpacks plus a no-weights timing control",
+  "why_declared": "membership must not depend on what this file was named (S032 s13)."
+ },
+ "identities": {
+  "experiment": {
+   "class": "ACCEL-KERNEL",
+   "knowledge_level": "INSTANCE",
+   "question": "is a representation-native matvec bound by its unpack, its loads, or its element count?"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "ram_gib": 96,
+   "measured_dram_gbps": 589.73,
+   "receipt": "receipts/headless/MACHINE_GENOME.json"
+  },
+  "device": {
+   "backend": "Metal",
+   "api": "mx.fast.metal_kernel JIT, MLX"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "NO MODEL EXECUTED. The shape 17408x5120 is BORROWED from the sealed resident's MLP and the weights are synthetic, so nothing here is evidence about that model; the consequence stated for it re-measures none of it."
+  },
+  "representation": {
+   "native": "ws_rtn_q4_g64, 4.25 bpw",
+   "note": "UNCHANGED across the three unpacks"
+  },
+  "runtime": {
+   "analysis": "tools/accelerator/gravity_native.py::source_unpack",
+   "rounds": 16,
+   "reps_per_round": 20
+  },
+  "kernel": {
+   "arms": [
+    "byte",
+    "word",
+    "lut",
+    "no_weights control",
+    "dense (rejected)"
+   ]
+  },
+  "storage": {
+   "tier": "NONE -- synthetic weights, nothing read from disk",
+   "status": "IRRELEVANT TO THE CLAIM"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device unified-memory Metal run; no bridge and no host<->device transport is crossed"
+  }
+ },
+ "bench": {
+  "state": "CONTENDED",
+  "recorded_at": "2026-08-26T14:25:23.031343+00:00",
+  "recorded_by": "tools/accelerator/bench.py::machine_quiescence",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": {
+   "unpack_sweep": {
+    "before": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 45352,
+       "cpu_pct": 80.2,
+       "rss_gib": 33.99,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 53278,
+       "cpu_pct": 96.9,
+       "rss_gib": 1.94,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 50765,
+       "cpu_pct": 38.6,
+       "rss_gib": 0.05,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 35.6,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 25.3,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 5,
+     "total_cpu_pct": 276.6,
+     "max_rss_gib": 33.99,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    },
+    "after": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 45352,
+       "cpu_pct": 87.9,
+       "rss_gib": 33.99,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 53278,
+       "cpu_pct": 51.1,
+       "rss_gib": 1.94,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 50765,
+       "cpu_pct": 27.0,
+       "rss_gib": 0.05,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 34.5,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 1,
+       "cpu_pct": 26.7,
+       "rss_gib": 0.02,
+       "comm": "/sbin/launchd"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 23.8,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 6,
+     "total_cpu_pct": 251.0,
+     "max_rss_gib": 33.99,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    }
+   },
+   "floor_probe": {
+    "before": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 45352,
+       "cpu_pct": 103.5,
+       "rss_gib": 34.36,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 54308,
+       "cpu_pct": 100.0,
+       "rss_gib": 2.27,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 33.6,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 25.4,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 4,
+     "total_cpu_pct": 262.5,
+     "max_rss_gib": 34.36,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    },
+    "after": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 45352,
+       "cpu_pct": 102.6,
+       "rss_gib": 34.34,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 54308,
+       "cpu_pct": 23.5,
+       "rss_gib": 2.27,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 180,
+       "cpu_pct": 21.2,
+       "rss_gib": 0.03,
+       "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 30.3,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 22.8,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 5,
+     "total_cpu_pct": 200.4,
+     "max_rss_gib": 34.34,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    }
+   },
+   "at_publication": {
+    "quiet": false,
+    "total_cpu_pct": 284.6,
+    "max_rss_gib": 35.22
+   }
+  },
+  "rule": "S032 s3 -- derived, never asserted",
+  "consequence": "round-robin makes contention common mode; the min-of-rounds estimator is stated in the claim boundary"
+ }
+}

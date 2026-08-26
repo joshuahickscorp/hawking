@@ -169,7 +169,7 @@
         "ok": true,
         "exit_code": 0,
         "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/x1perf-20260823-145049/tools/headless/hcli_self_optimize_2.py --stage decide --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-ui9jwavm/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/x1perf-20260823-145049 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-ui9jwavm",
-        "output": "ok   decide: reject (REFUSED) — REJECT: throughput through RuntimePool.complete did not improve beyond spread (original median tps=24.06309242669782 mutated median tps=24.010038446976445 spread=0.0515100367246184) [failing-gate trial REFUSED=True NO_EVIDENCE REFUSED=True]\n"
+        "output": "ok   decide: reject (REFUSED) \u2014 REJECT: throughput through RuntimePool.complete did not improve beyond spread (original median tps=24.06309242669782 mutated median tps=24.010038446976445 spread=0.0515100367246184) [failing-gate trial REFUSED=True NO_EVIDENCE REFUSED=True]\n"
       },
       "dependencies": [
         "gate.perf"
@@ -205,7 +205,7 @@
         "ok": true,
         "exit_code": 0,
         "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/x1perf-20260823-145049/tools/headless/hcli_self_optimize_2.py --stage next --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-ui9jwavm/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/x1perf-20260823-145049 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt2-mission-ui9jwavm",
-        "output": "ok   next: Iteration 3: two-slot aggregate median tps=24.010038446976445 did not beat serial median tps=24.06309242669782 beyond spread=0.0515100367246184. Do not chase a second runtime (19.79 GiB) or a second 27B server (3.986 vs 33.47 tok/s). Next: the remaining prize is per-stream prompt-eval / prefix-cache, not decode width — citing this run's mutated median tps. (citing gate.perf.mutated.median=24.010038446976445)\n"
+        "output": "ok   next: Iteration 3: two-slot aggregate median tps=24.010038446976445 did not beat serial median tps=24.06309242669782 beyond spread=0.0515100367246184. Do not chase a second runtime (19.79 GiB) or a second 27B server (3.986 vs 33.47 tok/s). Next: the remaining prize is per-stream prompt-eval / prefix-cache, not decode width \u2014 citing this run's mutated median tps. (citing gate.perf.mutated.median=24.010038446976445)\n"
       },
       "dependencies": [
         "priors"
@@ -506,7 +506,7 @@
         {
           "id": "H3_process_second_server",
           "verdict": "REJECTED",
-          "reason": "REJECTED on measured tok/s, not theory. A native run with two 27B model servers resident delivered 3.986 tok/s against 33.47 with one — an 8.4x collapse. This contract forbids spawning a second llama-server. PROCESS topology is how you buy that collapse. SLOT topology on the live --parallel 2 server is the only honest way to spend overlap=2.",
+          "reason": "REJECTED on measured tok/s, not theory. A native run with two 27B model servers resident delivered 3.986 tok/s against 33.47 with one \u2014 an 8.4x collapse. This contract forbids spawning a second llama-server. PROCESS topology is how you buy that collapse. SLOT topology on the live --parallel 2 server is the only honest way to spend overlap=2.",
           "two_server_tps": 3.986,
           "one_server_tps": 33.47
         }
@@ -1028,7 +1028,7 @@
       "stage_ok": true
     },
     "next": {
-      "target": "Iteration 3: admit-2 RuntimePool.complete median tps=24.010038446976445 did not beat admit-1 median tps=24.06309242669782 beyond spread=0.0515100367246184. Do not chase a second runtime (19.79 GiB) or a second 27B server (3.986 vs 33.47 tok/s). Next: the remaining prize is per-stream prompt-eval / prefix-cache, not decode width — citing this run's mutated median tps.",
+      "target": "Iteration 3: admit-2 RuntimePool.complete median tps=24.010038446976445 did not beat admit-1 median tps=24.06309242669782 beyond spread=0.0515100367246184. Do not chase a second runtime (19.79 GiB) or a second 27B server (3.986 vs 33.47 tok/s). Next: the remaining prize is per-stream prompt-eval / prefix-cache, not decode width \u2014 citing this run's mutated median tps.",
       "citation": {
         "field": "gate.perf.mutated.median",
         "value": 24.010038446976445
@@ -1222,7 +1222,7 @@
     },
     {
       "title": "H3_process_second_server rejected",
-      "detail": "REJECTED on measured tok/s, not theory. A native run with two 27B model servers resident delivered 3.986 tok/s against 33.47 with one — an 8.4x collapse. This contract forbids spawning a second llama-server. PROCESS topology is how you buy that collapse. SLOT topology on the live --parallel 2 server is the only honest way to spend overlap=2."
+      "detail": "REJECTED on measured tok/s, not theory. A native run with two 27B model servers resident delivered 3.986 tok/s against 33.47 with one \u2014 an 8.4x collapse. This contract forbids spawning a second llama-server. PROCESS topology is how you buy that collapse. SLOT topology on the live --parallel 2 server is the only honest way to spend overlap=2."
     },
     {
       "title": "decide rejected the change",
@@ -1253,5 +1253,14 @@
     "skipped": 3,
     "collected": 465,
     "against_contract_baseline": "contract 464 passed, 1 skipped (465 collected). this run 462 passed, 3 skipped (465 collected, exit 0). two extra skips, same collection."
+  },
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
   }
 }

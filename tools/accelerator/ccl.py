@@ -268,21 +268,33 @@ NEW_ENTRIES: list[dict[str, Any]] = [
             "whole kernel (1/2/4/8 processes), not in-kernel "
             "register/occupancy tradeoff within one dispatch",
         semantic_gap="UNKNOWN",
-        performance_gap=unmeasured("no AIR kernel has had its register usage "
-            "or occupancy queried or varied; the closest existing data, the "
-            "concurrency sweep, measures a different axis and its own "
-            "reconciliation note says explicitly not to conflate the two "
-            "regimes"),
+        performance_gap=unmeasured("NOTHING IS TIMED, so this stays unmeasured "
+            "as a PERFORMANCE gap -- but the reason is no longer 'never "
+            "queried'. ACCELERATOR_OCCUPANCY_PROBE.json varied SIMULTANEOUSLY "
+            "LIVE REGISTERS from 0 to 200 and probed the widest threadgroup "
+            "each kernel ACCEPTS, which is a lower bound on "
+            "maxTotalThreadsPerThreadgroup obtainable without a pipeline "
+            "object: EVERY ARM ACCEPTS 1024. Folding is EXCLUDED by a "
+            "correctness check (the 200-accumulator kernel matches its real "
+            "recurrence to 2.18e-06 and differs from a folded chain by "
+            "1.99e+34). SPILLING IS NOT EXCLUDED and that is the open half"),
         priority="P1",
         test_corpus="none for occupancy specifically; "
             "ACCELERATOR_CONCURRENCY_SWEEP.json for the adjacent "
             "process-concurrency question",
         current_winner="UNKNOWN",
-        remaining_limitation="xcrun metal is ABSENT on this machine (already "
-            "named in COMPILER.specialization_constants), which blocks "
-            "inspecting generated register counts directly; occupancy could "
-            "only be measured indirectly by varying threadgroup size and "
-            "timing, which has not been done",
+        remaining_limitation="TWO readings survive the behavioural probe and "
+            "only generated code can separate them: either this GPU does not "
+            "cap threadgroup width on registers at these levels, or the "
+            "compiler SPILLS rather than narrowing the pipeline. xcrun metal "
+            "is ABSENT (already named in COMPILER.specialization_constants and "
+            "blocking that entry's mechanism question too), and MLX exposes NO "
+            "pipeline object -- mx.fast.metal_kernel returns a bare nanobind "
+            "function with zero attributes and mx.metal carries device_info "
+            "and memory calls only -- so maxTotalThreadsPerThreadgroup cannot "
+            "be READ, only probed. A SECOND named gate, distinct from the "
+            "first: one blocks reading the code, the other blocks reading the "
+            "pipeline",
     ),
 
     entry(

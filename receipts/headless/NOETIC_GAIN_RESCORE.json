@@ -398,7 +398,7 @@
       "id": "G1_ALLOC_UNIFIED",
       "name": "G1 unified allocator candidate auction",
       "ranking_metric": "score (= worst_unit); observed/probed/worst_unit stored, no gain",
-      "notes": "26 tensors × 26 codecs (qN, planes, rank_k, shared_k, sparse). Duplicate receipts.",
+      "notes": "26 tensors \u00d7 26 codecs (qN, planes, rank_k, shared_k, sparse). Duplicate receipts.",
       "receipts": [
         {
           "path": "workspace/superwave/g1/claude-evidence/g1_alloc_unified_out.json",
@@ -494,7 +494,7 @@
       "id": "G1_CAPABILITY_GATE_Q4_COSINE",
       "name": "G1 capability-gate full q4 weight cosine (306 tensors)",
       "ranking_metric": "weight-space cosine (not doctor axes). lowest5 also store rel_l2; measure rows store src_norm/recon_norm",
-      "notes": "Different cosine (weights, not X@W). Still scale-invariant. 10 dequant rows have norms → archive gain proxy.",
+      "notes": "Different cosine (weights, not X@W). Still scale-invariant. 10 dequant rows have norms \u2192 archive gain proxy.",
       "weight_space": true,
       "receipts": [
         {
@@ -900,7 +900,7 @@
       "spanfit_X_and_P0",
       "visible_subspace_X"
     ],
-    "note": "probe_only=True: original activation-capture-v1 is not on this machine. Isotropic probes still prove scale: cosine(W, 0.01*W)=1 and `_gain`≈0.01 regardless of X. qN numbers here are NOT a capture-conditioned campaign claim."
+    "note": "probe_only=True: original activation-capture-v1 is not on this machine. Isotropic probes still prove scale: cosine(W, 0.01*W)=1 and `_gain`\u22480.01 regardless of X. qN numbers here are NOT a capture-conditioned campaign claim."
   },
   "archive_rescore": {
     "stats": {
@@ -2370,7 +2370,7 @@
     "score_delta_abs_ge": 0.05,
     "or_healthy_verdict_flip": true
   },
-  "what_i_watched_fail": "## WHAT I WATCHED FAIL\n\nThe cosine-only doctor gate is not a slightly noisy quality metric. It is\nscale-invariant by construction (`_rowcos` divides out the per-row norms).\nThe construction that exhibited this — Wh = 0.01*W on real L0 gate_proj —\nscored observed = probed = worst_unit = 1.000000 at relative weight error\n0.9898. A candidate that kept every direction and destroyed every magnitude\nwas HEALTHY on every axis the campaign used to rank.\n\n`_gain` was added to `axes()` because that construction was exhibited. It\nis min(r, 1/r) on the per-row mean AND the per-unit worst of the OUTPUT\nactivation norms, so both shrink and blow-up fail symmetrically. Cosine\ncannot see this; `_gain` is the axis that can.\n\nTwo further method failures sit on top of the missing axis:\n\n1. Campaign packers (`pack_axes`, `score_pack`) persist only the three\n   cosine keys. Even after `_gain` existed in `axes()`/`gate()`, the\n   archive kept being written cosine-only. Re-running those scripts today\n   would still not store gain. The receipts are blind by packing, not only\n   by age.\n\n2. spanfit_X_and_P0 Goodharted the three-axis gate: fitted onto span(X, P0)\n   it scored observed=1, probed=1, worst_unit≈1 while keeping 29.4% of\n   weight energy, and was stored HEALTHY. Activation `_gain` on those SAME\n   fitted directions is also ~1 (the map is exact on that span). Weight\n   energy catches it; activation gain on the fitted span does not. Fresh\n   probes catch it with BOTH probed cosine AND gain. `_gain` is the fix\n   for scale, not a substitute for unfittable probes.\n\nWhat this re-score is not: a claim that every low-cosine codec was\nmis-ranked. Most candidates in these campaigns were honest codecs whose\nmagnitude tracks their direction (q4 energy_ratio ≈ 1.008, cosine ≈ 0.996).\nThose rankings survive, and saying so is the result. The inversions are\nthe scale cheats — 0.01*W / 100*W, and the archive spanfit that cosine\ncertified.\n\nSynthetic activations are used ONLY for the algebraic instrument check\n(cosine(W, 0.01*W) is a mathematical identity, not a compression claim).\nLive `_gain` on real L0 gate_proj, when the tensor loads, is the\ncampaign-shaped proof. Capture-conditioned `observed` from the original\nX is not recomputed: the v1 capture path in the pin is not on this\nmachine. Probe-space scores are labelled probe_only.\n\nTensor-train / Tucker / shared-basis / plane-rung candidates cannot be\nre-materialised without the original Wh. Their receipts store cosine axes\nand no per-row activation norms, so `_gain` is not recoverable from the\narchive. Those rows are enumerated, not invented.\n",
+  "what_i_watched_fail": "## WHAT I WATCHED FAIL\n\nThe cosine-only doctor gate is not a slightly noisy quality metric. It is\nscale-invariant by construction (`_rowcos` divides out the per-row norms).\nThe construction that exhibited this \u2014 Wh = 0.01*W on real L0 gate_proj \u2014\nscored observed = probed = worst_unit = 1.000000 at relative weight error\n0.9898. A candidate that kept every direction and destroyed every magnitude\nwas HEALTHY on every axis the campaign used to rank.\n\n`_gain` was added to `axes()` because that construction was exhibited. It\nis min(r, 1/r) on the per-row mean AND the per-unit worst of the OUTPUT\nactivation norms, so both shrink and blow-up fail symmetrically. Cosine\ncannot see this; `_gain` is the axis that can.\n\nTwo further method failures sit on top of the missing axis:\n\n1. Campaign packers (`pack_axes`, `score_pack`) persist only the three\n   cosine keys. Even after `_gain` existed in `axes()`/`gate()`, the\n   archive kept being written cosine-only. Re-running those scripts today\n   would still not store gain. The receipts are blind by packing, not only\n   by age.\n\n2. spanfit_X_and_P0 Goodharted the three-axis gate: fitted onto span(X, P0)\n   it scored observed=1, probed=1, worst_unit\u22481 while keeping 29.4% of\n   weight energy, and was stored HEALTHY. Activation `_gain` on those SAME\n   fitted directions is also ~1 (the map is exact on that span). Weight\n   energy catches it; activation gain on the fitted span does not. Fresh\n   probes catch it with BOTH probed cosine AND gain. `_gain` is the fix\n   for scale, not a substitute for unfittable probes.\n\nWhat this re-score is not: a claim that every low-cosine codec was\nmis-ranked. Most candidates in these campaigns were honest codecs whose\nmagnitude tracks their direction (q4 energy_ratio \u2248 1.008, cosine \u2248 0.996).\nThose rankings survive, and saying so is the result. The inversions are\nthe scale cheats \u2014 0.01*W / 100*W, and the archive spanfit that cosine\ncertified.\n\nSynthetic activations are used ONLY for the algebraic instrument check\n(cosine(W, 0.01*W) is a mathematical identity, not a compression claim).\nLive `_gain` on real L0 gate_proj, when the tensor loads, is the\ncampaign-shaped proof. Capture-conditioned `observed` from the original\nX is not recomputed: the v1 capture path in the pin is not on this\nmachine. Probe-space scores are labelled probe_only.\n\nTensor-train / Tucker / shared-basis / plane-rung candidates cannot be\nre-materialised without the original Wh. Their receipts store cosine axes\nand no per-row activation norms, so `_gain` is not recoverable from the\narchive. Those rows are enumerated, not invented.\n",
   "write_scope": {
     "WRITE": [
       "tools/headless/noetic_gain_rescore.py",
@@ -2388,5 +2388,14 @@
       "tools/haider"
     ]
   },
-  "elapsed_s": 4.1720311641693115
+  "elapsed_s": 4.1720311641693115,
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+  }
 }

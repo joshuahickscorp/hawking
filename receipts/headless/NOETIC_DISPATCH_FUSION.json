@@ -7,7 +7,7 @@
   "did_not_load_second_27b": true,
   "did_not_write_under_models": true,
   "enable": {
-    "default": "off — production graph stays 964",
+    "default": "off \u2014 production graph stays 964",
     "HAWKING_QWEN38_FUSE_MLP": "pair | swiglu",
     "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
     "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
@@ -976,5 +976,14 @@
     "session_open_s": 5.103082041,
     "skip_decode": false,
     "tokenizer": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json"
+  },
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
   }
 }

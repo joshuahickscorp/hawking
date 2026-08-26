@@ -431,6 +431,10 @@ def build():
             cwd=HAWKING).stdout.strip(),
         "last_verified_test_count": int(tm.group(1)) if tm else None,
         "test_count_is_from_a_run_not_arithmetic": True,
+        # A count without its SCOPE is as misleading as one without its
+        # interpreter. This is one directory, not the repo: tools/headless alone
+        # carries 41 pre-existing failures that this number never sees.
+        "test_count_scope": "tools/accelerator only, `-q`, one directory",
         "test_environment": test_env,
         "named_gates": NAMED_GATES,
         # DERIVED, not typed. This field carried "4 hf download workers" as a literal

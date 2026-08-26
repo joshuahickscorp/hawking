@@ -210,5 +210,14 @@
   "not_shown": "no kernel changed, so no Metal performance claim moves. The gate is now float32 and must not be used on a pack whose verdict sits within ~3e-04 of a threshold; the host float64 gate remains the reference and both are kept. Nothing here says ws_rtn_q4_g64 is adequate for a MODEL -- local adequacy does not compose.",
   "what_is_left": "with the remainder gone the phases are verify 27.1%, read 29.5%, pack 15.8%, gpu 22.1%, decode 5.2%. READ IS NOW THE LARGEST SINGLE PHASE AGAIN at 0.0316 s, and it is a page-cached read of 192 MB, so the next honest lever is either a bigger working set that does not fit the cache or accepting that this pipeline is now storage-bound at Tier 1 speeds."
  },
- "pass": true
+ "pass": true,
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

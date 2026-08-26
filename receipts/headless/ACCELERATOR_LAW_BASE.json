@@ -26,9 +26,427 @@
   "SUPERSEDED",
   "CONDITIONAL"
  ],
- "corpus_size": 78,
- "receipts_yielding_laws": 22,
+ "corpus_size": 104,
+ "outside_scope_count": 347,
+ "known_accelerator_outside_scope": [
+  "TOKEN_EXECUTION_ATLAS.json"
+ ],
+ "scope_is_a_filename_prefix": "membership is decided by the ACCELERATOR_* glob, so a receipt named otherwise is neither extracted nor refused -- it is invisible. The excluded names are listed rather than silently dropped.",
+ "receipts_yielding_laws": 33,
+ "membership_routes": {
+  "declared": [
+   "ACCELERATOR_628_BOUNDARY_CENSUS.json",
+   "ACCELERATOR_BENCH_STATE_IS_A_SCHEMA_REQUIREMENT.json",
+   "ACCELERATOR_FP64_IS_A_HARDWARE_REFUSAL.json",
+   "ACCELERATOR_HCLI_VERIFIER_PATH_SEMANTICS.json",
+   "ACCELERATOR_HUMF_CONSISTENT_CORRUPTION.json",
+   "ACCELERATOR_MLP_OPERAND_REUSE_REFUTED.json",
+   "ACCELERATOR_OCCUPANCY_PROBE.json",
+   "ACCELERATOR_SEALED_RESIDENT_ENDPOINT.json",
+   "ACCELERATOR_SIMDGROUP_SCOPE_EXECUTES.json",
+   "CAPABILITY_FUSED_GRAPH_CLEARED.json",
+   "FUSION_GAIN_IS_LENGTH_INDEPENDENT.json",
+   "HCLI_RESIDENT_END_TO_END.json",
+   "HCLI_RESIDENT_SEAL.json",
+   "TOKEN_EXECUTION_ATLAS_COUNTS.json",
+   "TOKEN_GRAPH_REDUCTION_TIMED.json"
+  ],
+  "legacy_glob_only": [
+   "ACCELERATOR_ACTIVATION_VS_WEIGHT_SPACE.json",
+   "ACCELERATOR_AIR_COMPLETENESS.json",
+   "ACCELERATOR_AIR_MATMUL.json",
+   "ACCELERATOR_ATOMICS.json",
+   "ACCELERATOR_ATTENTION.json",
+   "ACCELERATOR_ATTENTION_OCCUPANCY.json",
+   "ACCELERATOR_ATTENTION_SIMDGROUP_REFUTED.json",
+   "ACCELERATOR_BANDIT_SEARCH.json",
+   "ACCELERATOR_BARRIER_CONTROL_MECHANISM.json",
+   "ACCELERATOR_BARRIER_SCOPES.json",
+   "ACCELERATOR_BARRIER_WINDOW.json",
+   "ACCELERATOR_C2M_CORPUS_ABSENT.json",
+   "ACCELERATOR_C2M_CORPUS_CENSUS.json",
+   "ACCELERATOR_C2M_CORPUS_DENOMINATOR.json",
+   "ACCELERATOR_C2M_PTX.json",
+   "ACCELERATOR_C2M_SGEMM_IDIOM.json",
+   "ACCELERATOR_C2M_T1_RUNTIME.json",
+   "ACCELERATOR_C2M_T2_IDIOM.json",
+   "ACCELERATOR_CAUSALITY.json",
+   "ACCELERATOR_CLIFF_TRANSFER.json",
+   "ACCELERATOR_CONCURRENCY_SWEEP.json",
+   "ACCELERATOR_CONTROL_SPECTRUM.json",
+   "ACCELERATOR_CONVOLUTION.json",
+   "ACCELERATOR_DEVICE_RESIDENT.json",
+   "ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
+   "ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE.json",
+   "ACCELERATOR_EXPERT_BATCH.json",
+   "ACCELERATOR_FORGE_REVERDICT.json",
+   "ACCELERATOR_FRONT_A_P3.json",
+   "ACCELERATOR_FRONT_C_P4.json",
+   "ACCELERATOR_FRONT_D_P5.json",
+   "ACCELERATOR_FRONT_D_P7.json",
+   "ACCELERATOR_FRONT_E_FORGE.json",
+   "ACCELERATOR_FRONT_F_ODYSSEY_PASS.json",
+   "ACCELERATOR_FRONT_G_P6.json",
+   "ACCELERATOR_FRONT_H_P8.json",
+   "ACCELERATOR_GATE_DISAGREEMENT.json",
+   "ACCELERATOR_GATE_HEADROOM.json",
+   "ACCELERATOR_GEMM.json",
+   "ACCELERATOR_GPU_PACK.json",
+   "ACCELERATOR_GRAPH_COMPOSITION.json",
+   "ACCELERATOR_GRAPH_SUBMISSION.json",
+   "ACCELERATOR_HMF_CANONICALIZATION.json",
+   "ACCELERATOR_HONEST_GATE.json",
+   "ACCELERATOR_HUMF_FAILURE_INJECTION.json",
+   "ACCELERATOR_HUMF_IDENTITY.json",
+   "ACCELERATOR_HUMF_PARTIAL_LOSS.json",
+   "ACCELERATOR_HUMF_QUARANTINE_TRUST.json",
+   "ACCELERATOR_HUMF_RESIDENT_DIGEST.json",
+   "ACCELERATOR_HUMF_SCRUB.json",
+   "ACCELERATOR_HUMF_SILENT_CORRUPTION.json",
+   "ACCELERATOR_HUMF_TORN_TIMEOUT_LOST.json",
+   "ACCELERATOR_HUMF_TRUST_RESOLUTION.json",
+   "ACCELERATOR_IQR_STABILITY_AUDIT.json",
+   "ACCELERATOR_JIT_COMPILE.json",
+   "ACCELERATOR_KNOWLEDGE_BASE.json",
+   "ACCELERATOR_LM_HEAD_EXACT_BOUNDS_REFUTED.json",
+   "ACCELERATOR_MACHINE_GENOME.json",
+   "ACCELERATOR_NORMALIZATION.json",
+   "ACCELERATOR_ORGAN_DISCRIMINATION.json",
+   "ACCELERATOR_ORGAN_REPRESENTATION_FLOOR.json",
+   "ACCELERATOR_PERF_MODEL.json",
+   "ACCELERATOR_QUIESCENCE_INSTRUMENT.json",
+   "ACCELERATOR_QUIET_CONTROL.json",
+   "ACCELERATOR_REAL_LAKE_WEIGHTS.json",
+   "ACCELERATOR_REDUCTION.json",
+   "ACCELERATOR_REFLOOR_ON_ACTIVATIONS.json",
+   "ACCELERATOR_REGISTER_BLOCKING.json",
+   "ACCELERATOR_RESIDENT_TEMPLATE_ARM.json",
+   "ACCELERATOR_RUNTIME_EXECUTES.json",
+   "ACCELERATOR_RUNTIME_GATE.json",
+   "ACCELERATOR_SCAN.json",
+   "ACCELERATOR_SHAPE_FUZZ.json",
+   "ACCELERATOR_SIMDGROUP_GEMM.json",
+   "ACCELERATOR_SOFTMAX.json",
+   "ACCELERATOR_SPARSE.json",
+   "ACCELERATOR_SPEC_CONSTANTS.json",
+   "ACCELERATOR_SUSTAINED_ADP.json",
+   "ACCELERATOR_SYNC_CORRECTION.json",
+   "ACCELERATOR_SYNC_DIAGNOSTIC.json",
+   "ACCELERATOR_SYNC_NOT_SUBMISSION.json",
+   "ACCELERATOR_TIER1_CACHE_VS_DISK.json",
+   "ACCELERATOR_TIER1_MEASURED.json",
+   "ACCELERATOR_TOKEN_BYTE_ATLAS_628.json",
+   "ACCELERATOR_TOPK_SAMPLING.json",
+   "ACCELERATOR_TRANSFER_VERIFIED.json",
+   "ACCELERATOR_VL_GAP_CLOSED.json",
+   "ACCELERATOR_WIDTH_SWEEP.json",
+   "ACCELERATOR_WORKUNIT_THROUGHPUT.json"
+  ],
+  "declared_count": 15,
+  "legacy_glob_only_count": 89,
+  "note": "membership by DECLARATION does not depend on the filename; membership by the legacy glob does. The legacy count is the size of the remaining filename dependence and should fall, never rise."
+ },
+ "none_claims_not_grounded_count": 0,
+ "none_claims_not_grounded_note": "a NONE on an identity-backed axis that could not be checked because its source receipt predates the identity schema. Reported, not refused: these are unverified breadth claims, and an unreported one reads identically to a verified one.",
  "entries": [
+  {
+   "law_id": "AKB-GRAPH-BOUNDARY-LEVER-IS-NEARLY-EXHAUSTED",
+   "statement": "The 628-dispatch decode graph holds 401 dispatches at boundaries whose intermediate is consumed once and never escapes -- 63.9% of the graph, and deleting all of them would leave 227. Together they are worth about 1.10 ms of a 28.0208 ms token (3.9%) in dispatch cost at the 2.75 us marginal measured for non-operand-sharing levers, plus 31.68 MB of intermediate traffic = 0.32% of the token's weight bytes. Against the 1.65x of headroom the byte wall leaves, EVERY REMAINING GRAPH BOUNDARY TOGETHER IS ABOUT 4% OF A 65% GAP. Two of twelve boundaries are undeletable and marked so: GQA's qkv and rope/cache outputs ESCAPE into the KV cache. The clearest abstraction tax by ratio is ba_to_decay_beta -> gated_delta_decode, which spends a whole dispatch moving 384 BYTES, 48 times per token.",
+   "applicability": {
+    "MODEL": "Qwen3.8-27B sealed-3.14 (NOETIC_PARENT_A)",
+    "ARCHITECTURE": "Qwen3.8 hybrid; fused, the two layer kinds DIVERGE -- 48 DeltaNet at 10 dispatches, 16 GQA at 9, where unfused both were 15",
+    "ORGAN": "whole decode graph, resolved to producer/consumer pairs",
+    "REPRESENTATION": "HQ30UQ4 g64 mixer + affine_q2 g64 MLP",
+    "SHAPE": "batch 1 decode; intermediate sizes assume f32 activations",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "hawking-core release-fast Rust/Metal decoder, binary d34044cffae8f320",
+    "KERNEL": "the 628-dispatch fused graph, histogram from a real 6-token trace",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "single-request decode"
+   },
+   "evidence_class": "Derived",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_628_BOUNDARY_CENSUS.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_628_BOUNDARY_CENSUS.json#THE_BOUNDARY_CENSUS",
+    "receipts/headless/ACCELERATOR_628_BOUNDARY_CENSUS.json#AND_THAT_IS_THE_CEILING_ON_EVERY_REMAINING_BOUNDARY_TOGETHER",
+    "receipts/headless/ACCELERATOR_628_BOUNDARY_CENSUS.json#claim_boundary"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": true,
+   "confidence_basis": "Derived, and the class says so. The dispatch COUNTS are exact -- the histogram reconciles to 628 and the layer arithmetic closes. The 3.9% is 401 multiplied by a rate measured on three OTHER levers, and the one lever that broke that rate broke it by 6.6x, so a boundary of an unanticipated shape would make this LOW rather than high. The boundary list is STRUCTURAL: producer/consumer pairs read off the histogram and the layer shape, with no buffer traced to prove single consumption -- the two escapes are marked because their escape is known, not because a tool found them. Nothing here was built or timed."
+  },
+  {
+   "law_id": "AKB-DELTANET-STATE-IS-3-PERCENT-OF-THE-TOKEN",
+   "statement": "The DeltaNet recurrent state is 48 value heads x 128 value dim x 128 key dim of f32 = 3.146 MB PER LAYER, read and written every token across 48 layers = 301.99 MB per decode token, 3.06% of the 9.868 GB of weights -- and it appears in no weight ranking because it is not a weight. With the conv cache (22.02 MB) and the GQA KV read at context 60 (7.86 MB), non-weight traffic is 331.87 MB per token, 3.36%. So the token reads about 10.20 GB rather than 9.87 and the byte-wall fraction moves from 60.7% to about 62.7%. THE KV TERM IS THE ONLY ONE THAT GROWS WITH CONTEXT: at 8192 tokens it would be 1.07 GB per token, 10.9% of the weight bytes, which is the first term in this accounting that makes the ceiling context-dependent.",
+   "applicability": {
+    "MODEL": "Qwen3.8-27B sealed-3.14 (NOETIC_PARENT_A)",
+    "ARCHITECTURE": "Qwen3.8 hybrid: 48 DeltaNet layers with 48 value heads at 128x128 state, 16 GQA layers with 4 kv heads at head_dim 256",
+    "ORGAN": "DeltaNet recurrent state, DeltaNet conv cache, GQA KV cache",
+    "REPRESENTATION": "f32 state; the state is NOT quantized and this is why it is invisible to an EBPW accounting",
+    "SHAPE": "batch 1 decode; the KV figure is at context 60 and is linear in context",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "hawking-core release-fast Rust/Metal decoder, binary d34044cffae8f320",
+    "KERNEL": "the 628-dispatch fused graph",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "single-request decode"
+   },
+   "evidence_class": "Derived",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_628_BOUNDARY_CENSUS.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_628_BOUNDARY_CENSUS.json#WHAT_THE_WEIGHT_ATLAS_EXCLUDED_IS_NOW_A_NUMBER",
+    "receipts/headless/ACCELERATOR_628_BOUNDARY_CENSUS.json#claim_boundary"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": false,
+   "confidence_basis": "Derived from the artifact's own config -- linear_num_value_heads, linear_value_head_dim and linear_key_head_dim -- times f32 and the layer count. It upgrades a NAMED EXCLUSION in ACCELERATOR_TOKEN_BYTE_ATLAS_628 to a number, which is what that receipt asked for. It assumes the state is read AND written once per layer per token, which is what a recurrence does and was not traced. The activation floor is excluded as too crude to state."
+  },
+  {
+   "law_id": "AKB-INPUT-OPERAND-REUSE-IS-NOT-THE-MLP-FUSION-WIN",
+   "statement": "Loading the input vector ONCE for two accumulators instead of twice did NOT make a dual-accumulator affine_q2 matvec faster at the sealed resident's real MLP shape. Two arms, one dispatch each, identical weights read and identical output to 1.913e-07 against a float64 oracle, differing only in whether the input slice is loaded once or twice through two unaliased parameters: the REUSE arm measured 0.3715 ms against RELOAD's 0.3646, 1.9% SLOWER, with reload faster in 3 of 3 admitted sweeps. An 8-20% advantage for reuse -- the size at which it was proposed as the mechanism behind 84% of the gate_up fusion win -- is excluded. MECHANISM: the kernel issues 8 shift-and-mask unpacks plus 2 fused multiply-adds per byte pair, and against that instruction stream one extra L1 load is free. The regime cross-checks -- 149.9 GB/s here against the 161.9 GB/s ACCELERATOR_EXPERT_BATCH measured for a native q4 arm it independently called arithmetic-bound on the unpack.",
+   "applicability": {
+    "MODEL": "NONE",
+    "ARCHITECTURE": "NONE",
+    "ORGAN": "MLP gate/up projection pair",
+    "REPRESENTATION": "affine_q2 group64 at 2.5 bpw, the artifact's own MLP codec",
+    "SHAPE": "17408 x 5120, the artifact's real MLP shape; one shape only",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "MLX 0.32.1 metal_kernel JIT under CPython 3.12",
+    "KERNEL": "synthetic dual-accumulator matvec, threadgroup 128, 2 rows per threadgroup -- NOT the production kernel",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "single-token decode shape (one input vector)"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_MLP_OPERAND_REUSE_REFUTED.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_MLP_OPERAND_REUSE_REFUTED.json#measured",
+    "receipts/headless/ACCELERATOR_MLP_OPERAND_REUSE_REFUTED.json#WHAT_THIS_ELIMINATES_FROM_S032_5_S_THIRTEEN_CANDIDATES",
+    "receipts/headless/ACCELERATOR_MLP_OPERAND_REUSE_REFUTED.json#claim_boundary"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": true,
+   "confidence_basis": "3 sweeps admitted and 0 refused under a pre-registered quiescence gate (max_rss 0.13-0.15 GiB). The arms carry ~15% IQR, ABOVE the program's 10% gate, so this refutes the hypothesis AT THE SIZE IT WAS PROPOSED and resolves no small effect in either direction -- it rests on sign consistency 3/3 plus a median in the wrong direction, not on a clean gate. The control's defence against common-subexpression elimination is ARCHITECTURAL (two unaliased buffer parameters) and unverified against generated assembly, because xcrun metal is ABSENT on this machine. Says NOTHING about the production 17.35 us/dispatch measurement -- it refutes one proposed mechanism for it. The arm that would settle what IS left -- prologue, reduction and epilogue together -- is BUILT, CORRECT and UNTIMED, blocked on a quiesced window."
+  },
+  {
+   "law_id": "AKB-964-DISPATCHES-PER-DECODE-TOKEN",
+   "statement": "The sealed-3.14 resident's production decode graph runs 964 dispatches per token, MEASURED by delta so prefill cancels: (15424 - 11568) / (6 - 2) = 964.000 exactly. The arithmetic 1 + 64*15 + 3 is structurally confirmed and BOTH LAYER KINDS COST EXACTLY 15 BY DIFFERENT ROUTES -- a DeltaNet layer spends 2 rmsnorm + 2 add_residual + 6 matvec + 1 swiglu + 4 DeltaNet-specific, a GQA layer 2 + 2 + 7 matvec + 1 + 3 GQA-specific -- which the schedule file could not have shown. The matvecs split CLEANLY BY ORGAN with nothing mixed inside one: 209 uniform-q4 take every mixer projection plus the lm_head, 192 affine-q2 take every MLP projection.",
+   "applicability": {
+    "MODEL": "Qwen3.8-27B sealed-3.14 (NOETIC_PARENT_A), 3.1393 complete EBPW",
+    "ARCHITECTURE": "Qwen3.8 hybrid, 48 DeltaNet + 16 GQA layers",
+    "ORGAN": "whole decode graph, resolved per kernel family",
+    "REPRESENTATION": "mixed HQ30UQ4 g64 mixer + affine_q2 g64 MLP",
+    "SHAPE": "batch 1 decode, 11-token prompt; dispatch count is structural and was not varied over prompts",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "hawking-core release-fast Rust/Metal decoder, binary d34044cffae8f320",
+    "KERNEL": "the 964-dispatch production graph, all four fusion levers off",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "single-request decode"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/TOKEN_EXECUTION_ATLAS_COUNTS.json"
+   ],
+   "citations": [
+    "receipts/headless/TOKEN_EXECUTION_ATLAS_COUNTS.json#headline",
+    "receipts/headless/TOKEN_EXECUTION_ATLAS_COUNTS.json#the_arithmetic_is_now_STRUCTURALLY_confirmed",
+    "receipts/headless/TOKEN_EXECUTION_ATLAS_COUNTS.json#claim_boundary"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": false,
+   "confidence_basis": "The delta method removes prefill exactly and lands on a whole number, 964.000. It became measurable only after a real defect was fixed: the runtime pushed one label per dispatch into a Vec and the session harvest collapsed it into a HashSet, destroying the multiplicity the question is about. COUNTS ONLY -- nothing here is timed, and AKB-DISPATCH-COUNT-DOES-NOT-PREDICT-COST establishes that this count does not predict the graph's cost. This receipt's OWN earlier histogram was withdrawn for describing a uniform-q4 body; what is recorded here is the re-measured version."
+  },
+  {
+   "law_id": "AKB-FUSION-GAIN-IS-LENGTH-INDEPENDENT",
+   "statement": "The four pre-existing fusion levers were worth 2.1-2.3% of wall at EVERY generation length measured -- 64, 256 and 1024 new tokens -- for 21.6% fewer dispatches, with output identical: clean floors 30.2791 ms/token unfused against 29.6304 fused, unfused reproducing 30.2282-30.3325 across 5 clean runs in two sessions (0.35% spread) and fused 29.5537-29.6653 (0.38%), with complete separation. THIS TIGHTENS THE CEILING RATHER THAN LOOSENING IT: a length-independent gain means the dispatch ladder does not improve at longer generations either, which the +29.09% it replaced would have implied.",
+   "applicability": {
+    "MODEL": "Qwen3.8-27B sealed-3.14 (NOETIC_PARENT_A)",
+    "ARCHITECTURE": "Qwen3.8 hybrid, 48 DeltaNet + 16 GQA layers",
+    "ORGAN": "whole decode graph",
+    "REPRESENTATION": "sealed-3.14, unchanged across arms",
+    "SHAPE": "64, 256 and 1024 new tokens at max_seq_len 2048, one prompt",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "hawking-core release-fast Rust/Metal decoder, binary d34044cffae8f320",
+    "KERNEL": "964-dispatch control against the 756-dispatch three-lever graph",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "single-request decode"
+   },
+   "evidence_class": "Reproduced",
+   "source_receipts": [
+    "receipts/headless/FUSION_GAIN_IS_LENGTH_INDEPENDENT.json"
+   ],
+   "citations": [
+    "receipts/headless/FUSION_GAIN_IS_LENGTH_INDEPENDENT.json#THE_29_PERCENT_IS_REFUTED",
+    "receipts/headless/FUSION_GAIN_IS_LENGTH_INDEPENDENT.json#what_this_costs_and_what_survives",
+    "receipts/headless/FUSION_GAIN_IS_LENGTH_INDEPENDENT.json#claim_boundary"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": true,
+   "confidence_basis": "Reproduced: both floors recur across two sessions and two processes at 0.35-0.38% spread. Admitted by COMPLETE SEPARATION of two tight clusters after excluding 12 of 24 runs as outliers -- an enormous exclusion rate, stated as such, and the reason the receipt refuses a rep count as its basis. This law REFUTES the +29.09% its own predecessor published, which came from unpaired runs on a contended machine. SHAPE is not UNSCOPED: length-independence is established over 64 to 1024 and says nothing beyond 1024."
+  },
+  {
+   "law_id": "AKB-DECODE-BYTES-ARE-THE-MLP-NOT-THE-HEAD",
+   "statement": "One decode token of the sealed-3.14 resident reads 9,868,249,760 weight bytes, and the ranking by TOKEN bytes is MLP 54.19% over 128 dispatches, DeltaNet projections 29.93% over 96, GQA projections 9.03% over 48, lm_head 6.84% in ONE. The derivation from element counts and codec bpw reconciles against the artifact's own payload_bytes to 0.101%, and the residual has a name -- MIX_REPORT records f32_bytes 10,584,840 against an unaccounted 10,651,416. THE PER-DISPATCH RANKING DISAGREES WITH THE PER-TOKEN ONE: the head moves 675,430,400 bytes in one dispatch against 55,705,600 for the largest MLP dispatch, 12.13x, and is still 6.84% of the token because the MLP runs its dispatch 128 times. Deleting the head entirely -- which no exact algorithm can do -- caps at 6.84%, and the full logit tensor that argmax fusion would remove is 0.0201% of the token's bytes.",
+   "applicability": {
+    "MODEL": "Qwen3.8-27B sealed-3.14 (NOETIC_PARENT_A), 3.1393 complete EBPW",
+    "ARCHITECTURE": "Qwen3.8 hybrid: 48 DeltaNet + 16 GQA (full_attention_interval 4), H 5120, I 17408, V 248320, untied head",
+    "ORGAN": "whole body, resolved by organ",
+    "REPRESENTATION": "HQ30UQ4 g64 mixer/head at 4.25 bpw + affine_q2 g64 MLP at 2.5 bpw",
+    "SHAPE": "batch 1 decode, one token; KV and activation traffic EXCLUDED",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "hawking-core release-fast Rust/Metal decoder, binary d34044cffae8f320",
+    "KERNEL": "the 628-dispatch fused decode graph",
+    "STORAGE_TIER": "weights resident in unified memory; not a storage-read accounting",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "single-request decode (prefill amortises the head differently)"
+   },
+   "evidence_class": "Derived",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_TOKEN_BYTE_ATLAS_628.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_TOKEN_BYTE_ATLAS_628.json#THE_DERIVATION_RECONCILES_AND_THAT_IS_WHAT_MAKES_IT_A_MEASUREMENT",
+    "receipts/headless/ACCELERATOR_TOKEN_BYTE_ATLAS_628.json#ORGAN_ROLLUP",
+    "receipts/headless/ACCELERATOR_TOKEN_BYTE_ATLAS_628.json#WHAT_THIS_ATLAS_IS_NOT"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": false,
+   "confidence_basis": "Derived, not Measured, and the class says so: exact element counts times codec bpw. Its strength is the reconciliation -- 0.101% unaccounted landing on an independently recorded f32_bytes. Its weakness is that the ms figures divide bytes by ONE effective bandwidth and families demonstrably do not share one (ACCELERATOR_EXPERT_BATCH measured 161.9 vs 426.4 GB/s on this machine), so only the BYTE ranking is claimed. Non-projection dispatches read activations and no weights and are absent from a weight-byte ranking by construction, not free."
+  },
+  {
+   "law_id": "AKB-NORM-BOUNDS-CANNOT-PRUNE-THIS-HEAD",
+   "statement": "No exact norm-based rejection bound prunes the sealed-3.14 lm_head. Row norms are near-equinorm -- coefficient of variation 0.1288 on the likely head and 0.1646 on the companion table -- so the Cauchy-Schwarz test |x.w| <= ||x|| ||w|| rejects 0.000% and 0.073% of the 248320 rows at an alignment cos of 0.10 and 0.236% and 0.976% at 0.30; pruning half would need cos about 0.63. The two-stage prefix bound dies the same way because energy is uniform across dimensions: median tail-norm ratio tracks sqrt(1-k/D) at 0.995-1.023 for k from 0.25D to 0.90D on both tables, and the top 10% of 64-dimension groups holds 13.3-13.7% of the squared norm against a uniform 10%, so a prefix bound at k=D/2 is 1.41x tighter than one that already prunes under 1%. MECHANISM: the head has no preferred magnitude and no preferred dimension subspace, and its discrimination is entirely full-dimensional DIRECTION, which is what every norm bound discards.",
+   "applicability": {
+    "MODEL": "Qwen3.8-27B sealed-3.14 (NOETIC_PARENT_A), untied [248320, 5120] head",
+    "ARCHITECTURE": "Qwen3.8 hybrid, tie_word_embeddings false",
+    "ORGAN": "lm_head (and the companion embedding table, which refutes less strongly)",
+    "REPRESENTATION": "HQ30UQ4 g64 at 4.25 bpw; norms taken on the QUANTIZED weights",
+    "SHAPE": "248320 rows x 5120 dims; tail profile on 4096 seeded rows at 64-dim groups",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "hawking-core release-fast Rust/Metal decoder, binary d34044cffae8f320",
+    "KERNEL": "NONE",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "greedy single-token selection at decode"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_LM_HEAD_EXACT_BOUNDS_REFUTED.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_LM_HEAD_EXACT_BOUNDS_REFUTED.json#MEASURED_WITHOUT_DEQUANTIZING_ANYTHING",
+    "receipts/headless/ACCELERATOR_LM_HEAD_EXACT_BOUNDS_REFUTED.json#THE_SECOND_FAMILY_DIES_THE_SAME_WAY_AND_I_PREDICTED_THAT_TOO",
+    "receipts/headless/ACCELERATOR_LM_HEAD_EXACT_BOUNDS_REFUTED.json#claim_boundary"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": true,
+   "confidence_basis": "Both halves were PREDICTED IN WRITING BEFORE THE RUN with a named falsifier and both confirmed -- CV under 0.30 as predicted, and tail decay tracking the uniform sqrt(1-k/D) within 2.3% as predicted. Norms are exact over all 248320 rows of both tables, computed from the packed codes with no dequantization. The weakness is that NO FORWARD PASS RAN: cos(theta) is a free parameter and the curve is reported across it, so what is established is that no plausible alignment prunes materially, not that a measured alignment obtains. MODEL is deliberately not UNSCOPED -- a heavy-tailed head elsewhere would reopen the family. Says NOTHING about low-rank factorization: a matrix can be per-row isotropic and still low rank."
+  },
+  {
+   "law_id": "AKB-CHAT-TEMPLATE-ARM-MOVES-CAPABILITY",
+   "statement": "The chat-template arm changed the sealed-3.14 resident's measured capability by five of forty-three cases with no byte of the artifact altered: 30/43 on open_think against 35/43 on pre_closed_think, same artifact_inventory_sha 1aff5df85bda1108, same binary, same chat_template file. The whole movement is on structured_output, 5/15 -> 10/15, and eight empty replies become zero -- under open_think eight calls generated 1135-1536 tokens and returned nothing after the think block was stripped. The think arm held THREE TIMES the token budget (capability_suite.py:277) and still lost, so the budget asymmetry favours the losing arm. Per-token decode is arm-dependent and small in the same direction: at one fixed prompt, pre_closed_think reads 28.0208 ms/token against open_think's 28.3018, a 1.003% advantage, because the open render is 65 prompt tokens against 25 and carries a longer KV cache. Capability outweighs decode 16.6x, taking arm-matched accepted TPS 24.65 -> 29.05.",
+   "applicability": {
+    "MODEL": "Qwen3.8-27B sealed-3.14 (NOETIC_PARENT_A), 3.1393 complete EBPW",
+    "ARCHITECTURE": "Qwen3.8 hybrid, 48 DeltaNet + 16 GQA layers",
+    "ORGAN": "NONE",
+    "REPRESENTATION": "UNCHANGED across arms: HQ30UQ4 g64 mixer + affine_q2 g64 MLP. The arm is a SERVING MODE, not a representation.",
+    "SHAPE": "batch 1 decode; 43-case capability suite; timing at one 21-token prompt",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "hawking-core release-fast Rust/Metal decoder, binary d34044cffae8f320",
+    "KERNEL": "the 628-dispatch fused decode graph, identical in both arms",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "single-request decode with a rendered chat prompt"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_RESIDENT_TEMPLATE_ARM.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_RESIDENT_TEMPLATE_ARM.json#THE_FINDING",
+    "receipts/headless/ACCELERATOR_RESIDENT_TEMPLATE_ARM.json#RAW_TPS_IS_ARM_DEPENDENT_AND_I_MEASURED_IT_RATHER_THAN_ASSUMING_IT",
+    "receipts/headless/ACCELERATOR_RESIDENT_TEMPLATE_ARM.json#claim_boundary"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": false,
+   "confidence_basis": "ONE capability run per arm, unpaired -- admissible because the claim is a PASS COUNT, which does not drift with machine load, and the same runs' wall times are explicitly refused (the no_think run's own machine_state records worst_repetition_spread_pct 63.8). The timing half is 3 admitted sweeps under the pre-registered quiescence gate with per-arm spreads of 0.18-0.34%, 0 refused. MODEL is deliberately not UNSCOPED: the same effect was measured on the 2.60-EBPW body at 0/43 vs 14/43, which is two bodies of one family and not breadth. Nothing here says the arm is better in general -- a task that needs chain-of-thought is exactly what it removes, and the suite's one such item fails under both arms."
+  },
+  {
+   "law_id": "AKB-BANDWIDTH-CEILING-BOUNDS-ACCEPTED-TPS",
+   "statement": "Single-request decode of the sealed-3.14 body reads 9,878,898,416 weight bytes per token -- the whole payload except the embedding table, which is read as one row while the untied lm_head is read in full. Against this box's measured 589.73 GB/s that sets a floor of 16.752 ms per token, so the raw-TPS ceiling is 187.40 divided by complete EBPW and the accepted-TPS ceiling is that times capability over 43. The measured graph sits at 27.5896 ms, which is 358.1 GB/s or 60.7% of the wall, leaving 1.65x of total headroom for ALL execution-graph work combined. 50 accepted TPS therefore requires capability/EBPW >= 11.473; the resident is at 30/3.1393 = 9.556, 20.1% short, so at 30/43 the target is unreachable by 1.20x even at infinite graph efficiency. The 2.5970-EBPW specimen's accepted CEILING at 14/43 is 23.49, below the resident's present accepted measurement of 25.29.",
+   "applicability": {
+    "MODEL": "Qwen3.8-27B sealed-3.14 (NOETIC_PARENT_A), 26,895,998,464 parent params",
+    "ARCHITECTURE": "Qwen3.8 hybrid, 64 layers, untied 248320x5120 embed and lm_head",
+    "ORGAN": "whole body; the bound is over total resident weight bytes",
+    "REPRESENTATION": "complete EBPW 3.1393 (HQ30UQ4 g64 mixer + affine_q2 g64 MLP)",
+    "SHAPE": "batch 1, one token, KV traffic EXCLUDED so the bound is optimistic",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "hawking-core release-fast Rust/Metal decoder, binary d34044cffae8f320",
+    "KERNEL": "the 628-dispatch fused graph: qwen80_add_residual_rmsnorm_tg, qwen_uniform_q4_group64_matvec_{qkv,pair_concat,geo_tpr64}, qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+    "STORAGE_TIER": "resident in unified memory; not a storage-read bound",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "single-request decode (prefill amortises the lm_head differently)"
+   },
+   "evidence_class": "Derived",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json#FINDING_7_THE_BANDWIDTH_WALL_TURNS_S031_19_INTO_A_CONSTRAINT_CURVE",
+    "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json#FINDING_7_THE_BANDWIDTH_WALL_TURNS_S031_19_INTO_A_CONSTRAINT_CURVE.claim_boundary"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": true,
+   "confidence_basis": "Derived, NOT Measured, and the class says so: it is arithmetic over two independent measurements -- the artifact's payload_bytes and MACHINE_GENOME's 589.73 GB/s triad median at 1.89% IQR. Its weakest input is that KV-cache traffic is excluded, which makes every ceiling here an UPPER BOUND; that is the safe direction for the unreachability claim and the unsafe direction for the 59.7 raw figure, which must not be quoted as attainable. KERNEL is NONE because the bound is over bytes and no kernel can move fewer than the weights it reads; TOPOLOGY is NONE and is grounded in the source receipt recording transport ABSENT."
+  },
+  {
+   "law_id": "AKB-DISPATCH-COUNT-DOES-NOT-PREDICT-COST",
+   "statement": "Two decode graphs at the SAME dispatch count differed in wall time. On the sealed-3.14 mixed-codec Qwen3.8 body, add_rmsnorm+gqa_qkv+dn_inproj fusion and mlp_swiglu+gqa_qkv+dn_inproj fusion BOTH measure 756 dispatches per decode token -- byte-identical trace totals of 9072 at n=2 and 12096 at n=6 -- and read 28.8697 ms and 27.7872 ms per token, 3.75% apart with complete separation and per-arm spreads of 0.25% and 0.21%. The metric fails in the other direction too: a 692-dispatch graph measured 27.7757 ms, indistinguishable from the 756-dispatch one at 0.04%. The marginal cost of a removed dispatch was 2.64, 2.86 and 17.35 us on the GPU for three levers measured in one session, a 6.6x range, so no single us-per-dispatch constant can be multiplied by a count. DISPATCHES_PER_TOKEN is a structural fact about the graph and was NOT a predictor of its cost here.",
+   "applicability": {
+    "MODEL": "Qwen3.8-27B sealed-3.14 (NOETIC_PARENT_A), 3.1393 complete EBPW",
+    "ARCHITECTURE": "Qwen3.8 hybrid, 48 DeltaNet + 16 GQA layers",
+    "ORGAN": "whole decode graph; the outlier lever is the MLP gate/up pair",
+    "REPRESENTATION": "mixed: HQ30UQ4 g64 mixer + HGRAVF01 affine_q2 g64 MLP",
+    "SHAPE": "batch 1 decode, 11-token prompt, 49 generated tokens, max_seq_len 2048",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "hawking-core release-fast Rust/Metal decoder, binary d34044cffae8f320",
+    "KERNEL": "qwen80_add_residual_rmsnorm_tg, qwen_uniform_q4_*_matvec_{qkv,pair_concat}, qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "single-request decode (NOT prefill; S031 \u00a77 keeps them separate)"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json#FINDING_2_TWO_GRAPHS_AT_THE_SAME_DISPATCH_COUNT_DIFFER_BY_3_75_PERCENT",
+    "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json#FINDING_3_A_DISPATCH_IS_NOT_A_UNIT_OF_COST.marginal_us_per_removed_dispatch",
+    "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json#claim_boundary"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": true,
+   "confidence_basis": "3 admitted sweeps per arm under a PRE-REGISTERED admission gate -- bench.machine_quiescence sampled before and after each run, admitted only with no process over 2 GiB RSS at either sample, 0 runs refused. Admitted by complete separation of clusters spreading 0.12-0.37%, not by a rep count. SHAPE and WORKLOAD_PHASE are deliberately not UNSCOPED: one prompt, one length, decode only. The 17.35 us outlier's MECHANISM is not established -- the receipt rules out host (flat at 1.5-1.8% of wall) and DRAM bandwidth (a 34.8x overshoot of this machine's measured 589.73 GB/s) and names no third cause."
+  },
   {
    "law_id": "AKB-SCAN-VS-CUMSUM",
    "statement": "A three-phase AIR scan (simd_prefix) WAS 8.09x faster than mx.cumsum FOR a 1-D f32 inclusive prefix sum AT n=2**24 ON this M3 Ultra UNDER MLX 0.32.1: 0.8662 ms against 7.0038 ms. The mechanism named in the receipt is that mx.cumsum reaches 19.16 GB/s on a machine measured at 589.73 GB/s, so this is a statement about MLX's cumsum at this shape, NOT a general claim that these kernels beat MLX -- the same receipt records MLX as the qualified winner at GEMM, softmax, attention and reduction.",
@@ -418,6 +836,73 @@
    "confidence_basis": "Weight space only -- no activations, no model executed, no adequacy claim. The source pins itself at MODEL_FAMILY at most and points at the organ-floor receipt showing organ ranking does not transfer across architectures, so ARCHITECTURE is named, never UNSCOPED."
   },
   {
+   "law_id": "AKB-A-REMOVED-DISPATCH-IS-PRICED-BY-ITS-BYTES",
+   "statement": "COST PER REMOVED DISPATCH IS NOT A WELL-DEFINED QUANTITY unless the bytes held constant are stated. Fusing two half-width GEMV kernels into one full-width kernel removes a dispatch while moving ZERO extra bytes and returns 1.042 us; adding a dispatch that reads more weights costs 70.708 us. Same machine, same shape, same session -- a factor of 68. Doubling dispatches AND weights costs +23.76%, not +100%, so dispatches overlap and the machine is bandwidth-bound. OPERAND REUSE IS REFUTED as the mechanism at +0.418% against a pre-registered 8-20%, with complete_separation False.",
+   "applicability": {
+    "MODEL": "NONE",
+    "ARCHITECTURE": "NONE",
+    "ORGAN": "MLP GEMV; the production comparison point is the gate_up pair",
+    "REPRESENTATION": "grouped absmax group=64 operands",
+    "SHAPE": "rows=17408 cols=5120, 8704 threadgroups per dispatch",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "MLX 0.32.1 mx.fast.metal_kernel JIT, 200 reps, 3 sweeps",
+    "KERNEL": "hand-written MSL: single_only / reuse / reload / two_no_add / two_plus_add",
+    "STORAGE_TIER": "NONE",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "single-token decode-shaped GEMV, CONTENDED machine"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE.json#result.THE_SEPARATION",
+    "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE.json#result.OPERAND_REUSE_IS_REFUTED",
+    "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE.json#claim_boundary"
+   ],
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": true,
+   "confidence_basis": "ONE shape, THREE sweeps, and BENCH_STATE CONTENDED -- so the absolute values are upper bounds and the 0.418% reuse figure sits INSIDE the 5.86-8.84% IQR and must not be read as a small positive. What carries the law is the SEPARATION: 1.042 vs 70.708 us is a factor of 68, far outside that noise, and the +23.76% overlap figure is likewise well above it. The refutation is sound rather than merely unresolved because the pre-registered 8% floor WOULD have cleared this noise. MODEL and ARCHITECTURE are NONE because the arms are synthetic; the receipt withdraws the earlier 8.6 us figure AND the framing that produced it, and does NOT refute production's 17.35 us, which is a bytes-plus-dispatch number."
+  },
+  {
+   "law_id": "AKB-WEIGHT-METRICS-INVERT-ON-ATTENTION-Q",
+   "statement": "For attention q_proj under ws_rtn_q4_g64, WEIGHT-SPACE FIDELITY RANKS FOUR SPECIMENS IN EXACTLY THE WRONG ORDER against real-activation error. Cosine runs 0.988150 / 0.989516 / 0.994001 / 0.994252 while real-activation relative error runs 0.032677 / 0.033354 / 0.056519 / 0.065670 -- monotone and fully reversed, Spearman -1.000 on two token sets and -0.800 on two more. It is NOT the scale-invariance defect: weight_rel_err, which is not scale-invariant, inverts identically. The GAUSSIAN activation proxy fails on the SAME boundary, overstating error by up to 1.6x on q_proj while landing within 7% on the expert gate. CONSEQUENCE: the weight-space floor procedure assigns 4.500 bpw to the specimen whose real activations tolerate the representation BEST and 4.125 to the one that tolerates it WORST, Spearman(floor_bpw, real_err) = -1.000. SHARPENED BY A SECOND RECEIPT, and the sharpening is CONFOUND-FREE where the original was not: moving each specimen from ONE FLAT SETTING to ITS OWN weight-space floor -- same weights, same activations, only the setting moves, so no cross-architecture comparison is involved -- changes real-activation error MONOTONICALLY BY RANK. The best improves 14.21%, the second is exactly unchanged, the third worsens 10.43%, the fourth worsens 9.63%. THE PROCEDURE IMPROVES THE ALREADY-GOOD AND DEGRADES THE ALREADY-BAD, and the spread it is meant to equalise comes out 1.33x WIDER than using one flat setting for everybody (0.043958 against 0.032994). NO CORRECTED BUDGET FOLLOWS: the re-floored ordering is bar-independent only at the COARSE grouping, and the Kimi/Falcon pair swaps at 2 of 5 bars.",
+   "applicability": {
+    "MODEL": "UNSCOPED",
+    "ARCHITECTURE": "UNSCOPED",
+    "ORGAN": "attention q_proj; the expert gate does NOT invert and is the contrast",
+    "REPRESENTATION": "grouped absmax bits=4 group=64, exactly ws_rtn_q4_g64",
+    "SHAPE": "layer-0 q_proj, [4096,2048] / [3072,2048] / [1536,3072]",
+    "MACHINE": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified (this box)",
+    "RUNTIME": "CPython 3.12, mlx_lm weights + numpy float32 reference",
+    "KERNEL": "NONE",
+    "STORAGE_TIER": "TIER 2 /Volumes/corpdrive model lake",
+    "TOPOLOGY": "NONE",
+    "WORKLOAD_PHASE": "representation fidelity against REAL activations, decode position 0"
+   },
+   "evidence_class": "Measured",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_ACTIVATION_VS_WEIGHT_SPACE.json",
+    "receipts/headless/ACCELERATOR_REFLOOR_ON_ACTIVATIONS.json"
+   ],
+   "citations": [
+    "receipts/headless/ACCELERATOR_ACTIVATION_VS_WEIGHT_SPACE.json#result.THE_ANSWER_IS_ORGAN_DEPENDENT",
+    "receipts/headless/ACCELERATOR_ACTIVATION_VS_WEIGHT_SPACE.json#result.THE_BIT_BUDGET_IS_INVERTED_ACROSS_SPECIMENS",
+    "receipts/headless/ACCELERATOR_ACTIVATION_VS_WEIGHT_SPACE.json#claim_boundary",
+    "receipts/headless/ACCELERATOR_REFLOOR_ON_ACTIVATIONS.json#result.THE_CONFOUND_FREE_HEADLINE",
+    "receipts/headless/ACCELERATOR_REFLOOR_ON_ACTIVATIONS.json#result.P2_REFUTED_IN_PART_AND_I_DO_NOT_GET_TO_QUOTE_A_BUDGET"
+   ],
+   "unscoped_basis": {
+    "MODEL": "receipts/headless/ACCELERATOR_ACTIVATION_VS_WEIGHT_SPACE.json#result.q_proj_rows",
+    "ARCHITECTURE": "receipts/headless/ACCELERATOR_ACTIVATION_VS_WEIGHT_SPACE.json#result.architectures_measured"
+   },
+   "status": "ACTIVE",
+   "superseded_by": null,
+   "negative_result": true,
+   "confidence_basis": "Four specimens are THREE independent architecture groups -- the Qwen pair differs at the 4th decimal -- so architecture, shape and cosine are NOT separated, and the receipt names that confound rather than burying it. What raises this above one ordering flipping on noise is that the inversion is monotone on all four points, holds within the twin pair, and reproduces across four independent token sets. The contrast case is what makes it a boundary rather than a blanket claim: the expert gate does not invert. Its mechanism is already in this base as AKB-ORGAN-FLOOR-DOES-NOT-TRANSFER -- within-group outliers concentrated in q_proj at Pearson -0.9841 -- so this is that weight-space law's activation-space consequence, not an unexplained correlation. THE SECOND RECEIPT REMOVES THE CONFOUND FROM THE CORE CLAIM: its within-specimen deltas hold one specimen's weights and activations fixed and move only the setting, so the monotone-by-rank result needs no cross-architecture comparison at all. The SPREAD figure and the bar-based reflooring still do, which is why the budget is NOT quoted."
+  },
+  {
    "law_id": "AKB-ORGAN-FLOOR-DOES-NOT-TRANSFER",
    "statement": "The prior law that ATTENTION SETS THE REPRESENTATION FLOOR IS ARCHITECTURE-SPECIFIC, not general. Attention set the floor on BOTH Qwen models -- q_proj needed group 32 where every MLP and expert tensor cleared at group 128 -- and DID NOT transfer: on Kimi-VL and Falcon-H1 no organ was more demanding than any other. The mechanism is within-group outliers, at Pearson -0.9841 across 33 organs and 4 architectures.",
    "applicability": {
@@ -688,11 +1173,11 @@
   }
  ],
  "entries_by_status": {
-  "ACTIVE": 17,
+  "ACTIVE": 29,
   "CONDITIONAL": 4,
   "REFUTED": 1
  },
- "negative_results": 10,
+ "negative_results": 18,
  "supersession_in_corpus": {
   "ACCELERATOR_BARRIER_CONTROL_MECHANISM.json": [
    "ACCELERATOR_BARRIER_CONTROL_MECHANISM.json#AMENDED_IN_PLACE_2026_08_25",
@@ -716,6 +1201,9 @@
   ],
   "ACCELERATOR_GPU_PACK.json": [
    "ACCELERATOR_GPU_PACK.json#amendment_mlx_compile_attribution"
+  ],
+  "ACCELERATOR_MLP_OPERAND_REUSE_REFUTED.json": [
+   "ACCELERATOR_MLP_OPERAND_REUSE_REFUTED.json#AMENDMENT_2026_08_26_THE_TWO_DISPATCH_ARM_WAS_THREE"
   ],
   "ACCELERATOR_ORGAN_DISCRIMINATION.json": [
    "ACCELERATOR_ORGAN_DISCRIMINATION.json#amendments",
@@ -741,6 +1229,11 @@
   ],
   "ACCELERATOR_WORKUNIT_THROUGHPUT.json": [
    "ACCELERATOR_WORKUNIT_THROUGHPUT.json#amendment_mlx_compile_attribution"
+  ]
+ },
+ "amendment_exemptions": {
+  "ACCELERATOR_MLP_OPERAND_REUSE_REFUTED.json": [
+   "AKB-INPUT-OPERAND-REUSE-IS-NOT-THE-MLP-FUSION-WIN"
   ]
  },
  "unextracted": [
@@ -788,6 +1281,16 @@
    "receipt": "receipts/headless/ACCELERATOR_BARRIER_WINDOW.json",
    "reason_code": "NO_VERDICT_FIELD",
    "reason": "has no `pass` field and no `result` block, so there is no machine-checkable verdict to anchor an entry on. Absent is recorded as absent, not read as passing."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_BENCH_STATE_IS_A_SCHEMA_REQUIREMENT.json",
+   "reason_code": "METHOD_NOT_LAW",
+   "reason": "not yet triaged by this lane"
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_C2M_CORPUS_ABSENT.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
   },
   {
    "receipt": "receipts/headless/ACCELERATOR_C2M_CORPUS_CENSUS.json",
@@ -850,6 +1353,11 @@
    "reason": "its finding is already carried by an entry above, extracted from the receipt that measured it most directly. Recording it twice would double-count one measurement."
   },
   {
+   "receipt": "receipts/headless/ACCELERATOR_FP64_IS_A_HARDWARE_REFUSAL.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
    "receipt": "receipts/headless/ACCELERATOR_FRONT_A_P3.json",
    "reason_code": "CAPABILITY_NOT_LAW",
    "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
@@ -905,6 +1413,11 @@
    "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
   },
   {
+   "receipt": "receipts/headless/ACCELERATOR_HCLI_VERIFIER_PATH_SEMANTICS.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
    "receipt": "receipts/headless/ACCELERATOR_HMF_CANONICALIZATION.json",
    "reason_code": "CAPABILITY_NOT_LAW",
    "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
@@ -913,6 +1426,11 @@
    "receipt": "receipts/headless/ACCELERATOR_HONEST_GATE.json",
    "reason_code": "SUBSUMED",
    "reason": "its finding is already carried by an entry above, extracted from the receipt that measured it most directly. Recording it twice would double-count one measurement."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_HUMF_CONSISTENT_CORRUPTION.json",
+   "reason_code": "MOCK_NOT_PHYSICAL",
+   "reason": "not yet triaged by this lane"
   },
   {
    "receipt": "receipts/headless/ACCELERATOR_HUMF_FAILURE_INJECTION.json",
@@ -935,6 +1453,11 @@
    "reason": "every transport number in it is a knob for hardware that does not exist on this machine, and the receipt forbids citing one as physical evidence."
   },
   {
+   "receipt": "receipts/headless/ACCELERATOR_HUMF_SCRUB.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
    "receipt": "receipts/headless/ACCELERATOR_HUMF_TORN_TIMEOUT_LOST.json",
    "reason_code": "MOCK_ONLY",
    "reason": "every transport number in it is a knob for hardware that does not exist on this machine, and the receipt forbids citing one as physical evidence."
@@ -955,6 +1478,11 @@
    "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
   },
   {
+   "receipt": "receipts/headless/ACCELERATOR_OCCUPANCY_PROBE.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
    "receipt": "receipts/headless/ACCELERATOR_ORGAN_DISCRIMINATION.json",
    "reason_code": "SUPERSEDED_IN_FLIGHT",
    "reason": "carries an AMEND* key or is named by a later receipt's boundary_this_closes, and the amendment changes what the number means. Typing the pre-amendment claim would record a law the corpus has already moved past."
@@ -963,6 +1491,16 @@
    "receipt": "receipts/headless/ACCELERATOR_PERF_MODEL.json",
    "reason_code": "PROSE_ONLY",
    "reason": "the finding is real but stated only as prose about a process or an instrument; there is no applicability domain to name without inventing one."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_QUIESCENCE_INSTRUMENT.json",
+   "reason_code": "PROSE_ONLY",
+   "reason": "the finding is real but stated only as prose about a process or an instrument; there is no applicability domain to name without inventing one."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_REAL_LAKE_WEIGHTS.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
   },
   {
    "receipt": "receipts/headless/ACCELERATOR_REDUCTION.json",
@@ -980,12 +1518,22 @@
    "reason": "carries an AMEND* key or is named by a later receipt's boundary_this_closes, and the amendment changes what the number means. Typing the pre-amendment claim would record a law the corpus has already moved past."
   },
   {
+   "receipt": "receipts/headless/ACCELERATOR_SEALED_RESIDENT_ENDPOINT.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
    "receipt": "receipts/headless/ACCELERATOR_SHAPE_FUZZ.json",
    "reason_code": "CAPABILITY_NOT_LAW",
    "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
   },
   {
    "receipt": "receipts/headless/ACCELERATOR_SIMDGROUP_GEMM.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
+   "receipt": "receipts/headless/ACCELERATOR_SIMDGROUP_SCOPE_EXECUTES.json",
    "reason_code": "CAPABILITY_NOT_LAW",
    "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
   },
@@ -1023,7 +1571,27 @@
    "receipt": "receipts/headless/ACCELERATOR_WORKUNIT_THROUGHPUT.json",
    "reason_code": "SUPERSEDED_IN_FLIGHT",
    "reason": "carries an AMEND* key or is named by a later receipt's boundary_this_closes, and the amendment changes what the number means. Typing the pre-amendment claim would record a law the corpus has already moved past."
+  },
+  {
+   "receipt": "receipts/headless/CAPABILITY_FUSED_GRAPH_CLEARED.json",
+   "reason_code": "SUPERSEDED_IN_FLIGHT",
+   "reason": "carries an AMEND* key or is named by a later receipt's boundary_this_closes, and the amendment changes what the number means. Typing the pre-amendment claim would record a law the corpus has already moved past."
+  },
+  {
+   "receipt": "receipts/headless/HCLI_RESIDENT_END_TO_END.json",
+   "reason_code": "CAPABILITY_NOT_LAW",
+   "reason": "records that a construct now EXISTS and executes -- a capability claim. There is no measured relation to type, and the receipt itself claims no performance."
+  },
+  {
+   "receipt": "receipts/headless/HCLI_RESIDENT_SEAL.json",
+   "reason_code": "SUBSUMED",
+   "reason": "its finding is already carried by an entry above, extracted from the receipt that measured it most directly. Recording it twice would double-count one measurement."
+  },
+  {
+   "receipt": "receipts/headless/TOKEN_GRAPH_REDUCTION_TIMED.json",
+   "reason_code": "SUPERSEDED_IN_FLIGHT",
+   "reason": "carries an AMEND* key or is named by a later receipt's boundary_this_closes, and the amendment changes what the number means. Typing the pre-amendment claim would record a law the corpus has already moved past."
   }
  ],
- "unextracted_count": 56
+ "unextracted_count": 71
 }

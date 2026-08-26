@@ -89,5 +89,14 @@
   }
  },
  "claim_boundary": "AIR now PRODUCES a correct tiled matmul and the forge can tune its tile at the IR level rather than by editing MSL. It reaches 39.6% of MLX and MLX is still retained. Nothing here adds simdgroup matrix ops, double buffering, register blocking or vectorised loads, which is where the remaining 2.5x lives. AIR still has no attention and no reduction, and SIMDGROUP and DEVICE barrier scopes remain unlowerable and therefore refused.",
- "pass": true
+ "pass": true,
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

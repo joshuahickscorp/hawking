@@ -932,6 +932,21 @@ def _next_action(
 _DELEGATE_MAX_TOKENS = int(os.environ.get("HCLI_DELEGATE_MAX_TOKENS", "4096"))
 
 
+def _delegate_timeout() -> float:
+    """Seconds to wait on one model call.
+
+    180 was hardcoded in three places, which is fine against a warm server and
+    wrong against a local resident: the sealed 27B is invoked as a subprocess that
+    RELOADS THE MODEL PER CALL, and a real mission timed out at 722 s having
+    exceeded 180 on a single generate. Read at call time, not at import, so a
+    harness can raise it for a slow resident without editing this file.
+    """
+    try:
+        return max(1.0, float(os.environ.get("HCLI_DELEGATE_TIMEOUT_S", "") or 180.0))
+    except ValueError:
+        return 180.0
+
+
 class ModelRunaway(RuntimeError):
     """The model produced no content because it spent its budget reasoning."""
 
@@ -977,7 +992,7 @@ def default_caller(endpoint: str, model: Optional[str] = None) -> Callable[..., 
             }
 
         def _complete(body, timeout=None):
-            raw = _post_json(endpoint, body, float(timeout or 180.0), "delegate")
+            raw = _post_json(endpoint, body, float(timeout or _delegate_timeout()), "delegate")
             return completion_from_openai(raw, [])
 
         # STRUCTURED OUTPUT GOES THROUGH THE EXISTING CONTRACT, not a bare post.
@@ -994,7 +1009,7 @@ def default_caller(endpoint: str, model: Optional[str] = None) -> Callable[..., 
         if schema:
             contract = make_structured_output_contract(None, schema)
             if contract is not None:
-                completion = contract.enforce(_complete, payload, 180.0)
+                completion = contract.enforce(_complete, payload, _delegate_timeout())
                 parsed = (completion.raw or {}).get("_structured") \
                     if isinstance(completion.raw, dict) else None
                 if parsed is not None:
@@ -1004,7 +1019,7 @@ def default_caller(endpoint: str, model: Optional[str] = None) -> Callable[..., 
                 except json.JSONDecodeError:
                     return completion.text or ""
 
-        data = _post_json(endpoint, payload, 180.0, "delegate")
+        data = _post_json(endpoint, payload, _delegate_timeout(), "delegate")
         completion = completion_from_openai(data, [])
         text = completion.text or ""
 
@@ -1097,18 +1112,35 @@ def _segments(command: str) -> List[str]:
     whole line, which is the difference between refusing
     `cat receipts/x.json | python3 -c ...` and allowing it.
     """
-    parts, buf, i = [], [], 0
+    parts, buf, i, quote = [], [], 0, ""
     while i < len(command):
-        for sep in ("&&", "||"):
-            if command.startswith(sep, i):
-                parts.append("".join(buf)); buf = []; i += 2; break
-        else:
-            ch = command[i]
-            if ch in ("|", ";", "&"):
-                parts.append("".join(buf)); buf = []
-            else:
-                buf.append(ch)
+        ch = command[i]
+        # QUOTE AWARE. The first version was not, and it split inside a quoted
+        # argument: a real mission proposed
+        # `python3 -c "import os; p = ...; path = os.path.join(...)"` and the guard
+        # reported "verb 'path' is not in the read-only set" -- a verb scraped out
+        # of Python source. The verdict was still correct (python3 is not provably
+        # read-only, so it failed closed), but a reason nobody can act on is a bug
+        # in its own right.
+        if quote:
+            buf.append(ch)
+            if ch == quote:
+                quote = ""
             i += 1
+            continue
+        if ch in ("'", '"'):
+            quote = ch
+            buf.append(ch)
+            i += 1
+            continue
+        if command.startswith("&&", i) or command.startswith("||", i):
+            parts.append("".join(buf)); buf = []; i += 2
+            continue
+        if ch in ("|", ";", "&"):
+            parts.append("".join(buf)); buf = []
+        else:
+            buf.append(ch)
+        i += 1
     parts.append("".join(buf))
     return [p.strip() for p in parts if p.strip()]
 

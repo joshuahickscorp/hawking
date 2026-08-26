@@ -543,7 +543,7 @@
       "kind": "campaign",
       "summary": "Local agent IDE (hide-* crates, app/). Deferred: 'no hide yet'. Not deleted.",
       "belongs_to": null,
-      "reasoning": "VESTIGIAL. Retired as an active campaign ('no hide yet' — deferred, not deleted). Eight hide-* crates plus app/ remain in the tree as evidence and a compilable product, not as the live vocabulary. HOMONYM: tools/hide_plan.py / hawking.nos.hide_plan_swap.v1 is the Noetic NVM kernel-plan mechanism and is classified under NVM, not here.",
+      "reasoning": "VESTIGIAL. Retired as an active campaign ('no hide yet' \u2014 deferred, not deleted). Eight hide-* crates plus app/ remain in the tree as evidence and a compilable product, not as the live vocabulary. HOMONYM: tools/hide_plan.py / hawking.nos.hide_plan_swap.v1 is the Noetic NVM kernel-plan mechanism and is classified under NVM, not here.",
       "deferred_not_deleted": true,
       "path_owned_files": 583,
       "path_owned_bytes": 9037466,
@@ -812,7 +812,7 @@
           "95 git-tracked files under this name's owned paths",
           "1.3 MiB git-blob payload on those paths",
           "0 sealed schema string(s) whose historical receipts would dangle",
-          "tools/haider/hcli — LIVE HCLI source of truth (nested under the vestigial brand)",
+          "tools/haider/hcli \u2014 LIVE HCLI source of truth (nested under the vestigial brand)",
           "P1_HAIDER_PRODUCTIZATION_MAX.md acceptance contract",
           "headless receipts that name tools/haider/hcli/... as the defending path"
         ]
@@ -822,7 +822,7 @@
       "id": "Frankenstein",
       "class": "VESTIGIAL",
       "kind": "campaign",
-      "summary": "Kimi→GLM→DeepSeek paired-trace / transfer campaign. Preflight only; not live research.",
+      "summary": "Kimi\u2192GLM\u2192DeepSeek paired-trace / transfer campaign. Preflight only; not live research.",
       "belongs_to": null,
       "reasoning": "VESTIGIAL campaign. lab/operators/frankenstein_* and hawking.frankenstein.* receipts (paired functional traces, GLM layer capture) are sealed evidence. The operator itself refuses to acquire a teacher until Ramanujan/Hawking gates pass.",
       "deferred_not_deleted": false,
@@ -1357,7 +1357,7 @@
       "kind": "campaign",
       "summary": "Qwen3.8 continuity / resident-organism campaign. Future Odyssey-II tournament reuses the word.",
       "belongs_to": null,
-      "reasoning": "VESTIGIAL as a named campaign (Qwen3.8 Genesis continuity directives, genesis-* tools). Odyssey-I G7 still hands to a 'genesis tournament' over NX objects — that is future Odyssey work under surviving names, not a reason to keep Genesis as a live brand. Evidence stays.",
+      "reasoning": "VESTIGIAL as a named campaign (Qwen3.8 Genesis continuity directives, genesis-* tools). Odyssey-I G7 still hands to a 'genesis tournament' over NX objects \u2014 that is future Odyssey work under surviving names, not a reason to keep Genesis as a live brand. Evidence stays.",
       "deferred_not_deleted": false,
       "path_owned_files": 63,
       "path_owned_bytes": 736551,
@@ -1766,7 +1766,7 @@
       "kind": "campaign",
       "summary": "succ_* campaign shell. Retired; successor_select remains a Noetic gate.",
       "belongs_to": null,
-      "reasoning": "VESTIGIAL campaign (lab status=retired). tools/successor_select.py is a Noetic pipeline stage (PROMOTE) and stays as a COMPONENT of NOS — do not conflate the retired succ_* shell with that gate.",
+      "reasoning": "VESTIGIAL campaign (lab status=retired). tools/successor_select.py is a Noetic pipeline stage (PROMOTE) and stays as a COMPONENT of NOS \u2014 do not conflate the retired succ_* shell with that gate.",
       "deferred_not_deleted": false,
       "path_owned_files": 0,
       "path_owned_bytes": 0,
@@ -2369,7 +2369,7 @@
       "id": "Loc300k",
       "class": "AMBIGUOUS",
       "kind": "receipt-kind",
-      "summary": "300k LoC floor campaign / hawking.300k.* — a measurement, not a surviving brand.",
+      "summary": "300k LoC floor campaign / hawking.300k.* \u2014 a measurement, not a surviving brand.",
       "belongs_to": null,
       "reasoning": "AMBIGUOUS. A loc-reclaim measurement whose own seal says relocating HIDE earns zero credit.",
       "deferred_not_deleted": false,
@@ -5179,7 +5179,7 @@
       },
       {
         "target": "Future code and receipts using surviving vocabulary for new work",
-        "reason": "Forward-only. Do not rewrite history to match. Alias tables (Haider→HCLI, Ascension→Gravity, HIDE IDE→deferred) belong in this census, not in git mv.",
+        "reason": "Forward-only. Do not rewrite history to match. Alias tables (Haider\u2192HCLI, Ascension\u2192Gravity, HIDE IDE\u2192deferred) belong in this census, not in git mv.",
         "name": null
       }
     ],
@@ -5392,7 +5392,7 @@
         "name": null
       }
     ],
-    "rule": "Do not propose renaming anything a seal or digest already covers. Historical names in historical receipts are evidence, not debt. Vestigial ≠ reclaimable."
+    "rule": "Do not propose renaming anything a seal or digest already covers. Historical names in historical receipts are evidence, not debt. Vestigial \u2260 reclaimable."
   },
   "mutations": {
     "renamed": [],
@@ -5428,7 +5428,7 @@
     },
     {
       "trap": "HIDE IDE vs NVM/HIDE plan-as-data",
-      "what_failed": "HIDE IDE path-owned files=583. NVM (tools/hide_plan.py, spec/plans, nvm_minimal) path-owned files=6. G121 schema is hawking.nos.hide_plan_swap.v1 — a Noetic schema, not hawking.hide.*.",
+      "what_failed": "HIDE IDE path-owned files=583. NVM (tools/hide_plan.py, spec/plans, nvm_minimal) path-owned files=6. G121 schema is hawking.nos.hide_plan_swap.v1 \u2014 a Noetic schema, not hawking.hide.*.",
       "correction": "Classified the IDE as VESTIGIAL and the plan-swap as NVM COMPONENT of Noetic."
     },
     {
@@ -5467,5 +5467,14 @@
       "correction": "Line-oriented git grep on text pathspecs; extract identifiers in Python. Content greps use the same pathspecs; path ownership covers .gravity binaries."
     }
   ],
-  "elapsed_s": 89.854
+  "elapsed_s": 89.854,
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+  }
 }

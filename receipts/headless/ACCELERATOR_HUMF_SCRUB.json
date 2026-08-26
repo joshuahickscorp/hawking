@@ -1,0 +1,44 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-26T13:01:01Z",
+ "experiment_class": "ACCEL-HUMF",
+ "knowledge_level": "INSTANCE",
+ "git_head": "a01484def65460eb179f0e560eef1a6d725d2268",
+ "identities": {
+  "experiment": "the copy nobody acquires: a budgeted scrub over stale verifications",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified",
+  "device": {
+   "status": "ABSENT",
+   "reason": "no device under test; this is fabric bookkeeping over a mock provider"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model; synthetic payloads"
+  },
+  "representation": "dense_f32 payloads with a blake2b-128 sealed identity",
+  "kernel": {
+   "status": "ABSENT",
+   "reason": "no kernel; nothing was dispatched"
+  },
+  "runtime": "tools/accelerator/humf.py, CPython 3.12",
+  "transport": "MockExternalMemoryProvider -- every transport number is a knob (S015 \u00a721)"
+ },
+ "result": {
+  "THE_GAP_FIVE_WORDS_LONG_THAT_STOOD_FOR_MANY_BLOCKS": "ACCELERATOR_HUMF_CONSISTENT_CORRUPTION closed rot-in-place on the ACQUIRE path and named what it did not close, in its own words: 'NOTHING CALLS audit() ON ITS OWN -- this closes the ACQUIRE path, which is where a stale copy is actually relied upon, and a copy nobody ever acquires is still never re-checked.'",
+  "WHY_A_TIMER_IS_STILL_THE_WRONG_ANSWER": "audit()'s own docstring argues a fabric that re-hashed on a timer would be paying for a check nobody asked for, and that argument SURVIVES. What was missing is not a scheduler but the ACT: stale_verifications() could already NAME the unlooked-at copies, and a caller who wants them re-checked should not have to write the loop, the ordering and the budget accounting themselves -- each of those is a place to get it quietly wrong. scrub() is caller-driven and takes a budget; nothing schedules it.",
+  "THE_BUDGET_IS_IN_BYTES_BECAUSE_THE_COST_WAS_ALREADY_MEASURED": "the re-check is a blake2b-128 re-hash at 1.387 GB/s, which ACCELERATOR_HUMF_IDENTITY measured as costing MORE THAN THE MOVE on a fast link -- 25.6x slower than crc32 and ~425x an Apple UM move. A scrub that ignores its own cost is one an operator turns off, so the budget is denominated in the quantity that actually drives it and the result carries bytes_digested and estimated_seconds.",
+  "THE_DISTINCTION_THE_RESULT_REFUSES_TO_LET_YOU_MISREAD": "a budgeted sweep reporting NO DIVERGENCE without saying what it SKIPPED is the 0-of-0-reads-like-0-of-many shape this program has sealed repeatedly. So `complete` is False whenever anything stale went unchecked, `not_checked` names it with a reason, and `stale_found` sits beside `objects_checked` -- FINDING NOTHING STALE AND CHECKING NOTHING ARE DIFFERENT RESULTS, and a test asserts the two produce identical `diverged` and `objects_checked` while differing on `complete`, which is the only field that separates them.",
+  "IT_CATCHES_WHAT_THE_ACQUIRE_PATH_CANNOT": "one flipped byte in a copy that is never acquired, never transferred and never written -- no transfer check can reach it because ALREADY_RESIDENT moves nothing and the resident-recheck policy only fires on acquire. scrub finds it, the copy leaves trusted_copies(), and `complete` is True because nothing was skipped.",
+  "ORDERING_IS_OLDEST_FIRST_AND_DETERMINISTIC": "the copy nobody has looked at longest is the one whose trust is worth least, so a partial budget spends itself where trust is thinnest; ties break on identity so two runs over the same state skip the same objects.",
+  "AN_UNSEALED_OBJECT_IS_REFUSED_BY_NAME": "a value with no sealed identity has nothing to check against, and counting it as CHECKED would manufacture confidence out of an absent baseline. It lands in not_checked carrying audit()'s own reason, which names the write that unsealed it.",
+  "mutations_watched_failing": [
+   "`complete` hardcoded True -> 3 of 4 scrub tests fail, including the one asserting a starved sweep over a ROTTED copy must not read as an all-clear",
+   "a diverged copy keeps its trust -> the rot-in-place test fails on trusted_copies()",
+   "an unsealed object counted as checked -> the unsealed test fails"
+  ],
+  "tests": "75 in test_humf.py (was 71); 4 new, anti-vacuity first"
+ },
+ "claim_boundary": "MOCK PROVIDER ONLY -- no external GPU exists, every transport number is a knob, and S015 \u00a721 forbids citing one as physical evidence; what is proven is the FABRIC'S BOOKKEEPING and the SCOPE OF THE SWEEP. NOTHING SCHEDULES scrub() and that is deliberate, so the failure mode of an operator who never calls it is UNCHANGED and is named rather than papered over -- what closes is that the act now exists, is budgeted, and cannot report an all-clear over copies it skipped. The rot is INJECTED, not observed. estimated_seconds uses the 1.387 GB/s figure measured elsewhere in this program and is an ESTIMATE, not a timing: NOTHING WAS TIMED HERE. The digest inherits every limit the identity block already recorded -- it defends against ACCIDENT and is the wrong tool for an adversary who can observe the sealed digest, and a scrub reads the fabric's own payload, so the ROUND-TRIP-VS-RESIDENT-COPY blind spot is untouched: a device whose compute path diverges from its read-back path is still invisible here. No kernel changed and no performance claim moves.",
+ "pass": true,
+ "bench": null
+}

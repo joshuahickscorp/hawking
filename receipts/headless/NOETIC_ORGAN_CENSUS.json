@@ -862,5 +862,14 @@
     "torch MPS is unavailable in this process; census ran on CPU. A second 27B was not loaded. llama-server :52484 stayed resident.",
     "protected HCLI suite on hawking-copy with HCLI_SWAP_CEILING_GIB=64: 463 passed, 2 skipped (contract named 464 passed, 1 skipped). This worktree is a sparse checkout; tools/haider is not materialized here and git sparse-checkout add is forbidden, so the suite cannot be reproduced inside this lane. Headless hcli_* tests ImportError without hcli."
   ],
-  "wall_s": 189.14542650000658
+  "wall_s": 189.14542650000658,
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+  }
 }

@@ -83,6 +83,217 @@ for (uint c = 0; c < %(COLS)du; ++c) acc += w[base + c] * x[c];
 out[row] = acc;
 """
 
+# The resident's OWN geometry. tools/.../qwen38_dispatch_trace names the shipped
+# MLP kernel qwen_affine_q2_group32_matvec_geo_tpr64_tg128 -- SIXTY-FOUR THREADS
+# PER ROW -- while NATIVE_MATVEC above puts one thread on one row and serialises
+# the whole unpack. ACCELERATOR_EXPERT_BATCH measured that one-thread-per-row
+# kernel ARITHMETIC-BOUND ON THE UNPACK at 161.9 GB/s, and a technique is a
+# property of a technique, a shape and a machine together, so that number says
+# nothing about the resident until the geometry matches.
+#
+# The reduction is deliberately a flat serial sum by one lane over its row's TPR
+# slots rather than a tree: it costs TPR adds against the ~GROUP*GROUPS/TPR
+# unpack operations each lane already did, and it has NOTHING TO FORGET. This
+# program has now twice shipped a tree reduce whose second write raced its own
+# reads (ACCELERATOR_NORMALIZATION), and the cheap structural choice is the one
+# that cannot carry that hazard.
+NATIVE_MATVEC_TPR = """
+uint gid = thread_position_in_grid.x;
+uint row = gid / %(TPR)du;
+uint lane = gid %% %(TPR)du;
+float acc = 0.0f;
+uint pbase = row * %(PACKED_COLS)du;
+uint sbase = row * %(GROUPS)du;
+for (uint g = lane; g < %(GROUPS)du; g += %(TPR)du) {
+    float s = (float)scales[sbase + g];
+    uint c0 = g * %(GROUP)du;
+    for (uint k = 0; k < %(GROUP)du; k += 2) {
+        uchar byte = packed[pbase + (c0 + k) / 2u];
+        float w0 = (float)((int)(byte & 0x0F) - %(BOUND)d) * s;
+        float w1 = (float)((int)(byte >> 4)   - %(BOUND)d) * s;
+        acc += w0 * x[c0 + k] + w1 * x[c0 + k + 1u];
+    }
+}
+threadgroup float part[%(TG)du];
+uint lid = thread_position_in_threadgroup.x;
+part[lid] = acc;
+threadgroup_barrier(mem_flags::mem_threadgroup);
+if (lane == 0u) {
+    float t = 0.0f;
+    for (uint i = 0; i < %(TPR)du; ++i) t += part[lid + i];
+    out[row] = t;
+}
+"""
+
+
+# TWO MORE UNPACKS AT THE SAME GEOMETRY, so the only variable is HOW THE NIBBLES
+# ARE FETCHED AND DECODED. ACCELERATOR_UNPACK_IS_THE_WALL named the lever as
+# "an unpack costing fewer instructions per weight -- a LOOKUP rather than a
+# shift-mask-subtract-multiply chain", which assumes the instructions that cost
+# are ARITHMETIC. Counting them says otherwise: NATIVE_MATVEC_TPR loads ONE BYTE
+# per two weights, so the LOAD COUNT is a candidate that sentence never named.
+#
+# WORD reads four bytes and decodes eight weights with the SAME arithmetic --
+# load width alone. LUT keeps the byte load and replaces mask/shift/convert/
+# subtract with one threadgroup read of a 256-entry float2 table -- the receipt's
+# own suggestion, built as suggested so it can be measured rather than assumed.
+UNPACK_BODIES = {
+    "byte": """
+        uchar byte = packed[pbase + (c0 + k) / 2u];
+        float w0 = (float)((int)(byte & 0x0F) - %(BOUND)d) * s;
+        float w1 = (float)((int)(byte >> 4)   - %(BOUND)d) * s;
+        acc += w0 * x[c0 + k] + w1 * x[c0 + k + 1u];
+""",
+    # FOUR INDEPENDENT ACCUMULATORS. The byte body chains every FMA through ONE
+    # `acc`, so the inner loop is a SERIAL DEPENDENCY and each add waits on the
+    # previous one's latency no matter how much issue width is free. At 307.7 G
+    # elem/s against a lane-issue rate two orders higher, latency rather than
+    # throughput is the standing candidate, and four accumulators break the
+    # chain four ways while changing NOTHING ELSE -- same loads, same unpack,
+    # same element count. Summed at the end, so the arithmetic differs from the
+    # serial form only in ASSOCIATION ORDER and the f64 oracle tolerance covers
+    # it (measured 2.0e-07, identical to the serial arm).
+    "ilp4": """
+        uchar b0 = packed[pbase + (c0 + k) / 2u];
+        uchar b1 = packed[pbase + (c0 + k + 2u) / 2u];
+        uchar b2 = packed[pbase + (c0 + k + 4u) / 2u];
+        uchar b3 = packed[pbase + (c0 + k + 6u) / 2u];
+        a0 += ((float)((int)(b0 & 0x0F) - %(BOUND)d) * s) * x[c0 + k]
+            + ((float)((int)(b0 >> 4)   - %(BOUND)d) * s) * x[c0 + k + 1u];
+        a1 += ((float)((int)(b1 & 0x0F) - %(BOUND)d) * s) * x[c0 + k + 2u]
+            + ((float)((int)(b1 >> 4)   - %(BOUND)d) * s) * x[c0 + k + 3u];
+        a2 += ((float)((int)(b2 & 0x0F) - %(BOUND)d) * s) * x[c0 + k + 4u]
+            + ((float)((int)(b2 >> 4)   - %(BOUND)d) * s) * x[c0 + k + 5u];
+        a3 += ((float)((int)(b3 & 0x0F) - %(BOUND)d) * s) * x[c0 + k + 6u]
+            + ((float)((int)(b3 >> 4)   - %(BOUND)d) * s) * x[c0 + k + 7u];
+""",
+    "lut": """
+        uchar byte = packed[pbase + (c0 + k) / 2u];
+        float2 d = lut[byte];
+        acc += d.x * s * x[c0 + k] + d.y * s * x[c0 + k + 1u];
+""",
+}
+
+# The word body consumes EIGHT weights per iteration, so it carries its own step.
+UNPACK_WORD_BODY = """
+        uint v = *((const device uint*)(packed + pbase + (c0 + k) / 2u));
+        for (uint t = 0; t < 8; ++t) {
+            float w = (float)((int)((v >> (4u * t)) & 0xFu) - %(BOUND)d) * s;
+            acc += w * x[c0 + k + t];
+        }
+"""
+
+# 256 entries x float2, filled once per threadgroup then published by a barrier.
+# Every thread fills a strided slice so the fill is O(256/TG) each rather than
+# serialised through one lane.
+LUT_PROLOGUE = """
+threadgroup float2 lut[256];
+for (uint i = thread_position_in_threadgroup.x; i < 256u; i += %(TG)du) {
+    lut[i] = float2((float)((int)(i & 0x0F) - %(BOUND)d),
+                    (float)((int)(i >> 4)   - %(BOUND)d));
+}
+threadgroup_barrier(mem_flags::mem_threadgroup);
+"""
+
+
+# WHERE x IS READ FROM. The per-element floor is one x read and one FMA per
+# weight, and the FMA is 2.9% of this chip's lane-issue rate, so the x READ is
+# the candidate. Today every lane reads x from DEVICE memory and x is re-read
+# once per row -- 17408 x 5120 = 89.1M reads, 356 MB of x traffic for a 47 MB
+# weight matvec. x is 20,480 bytes and Metal allows 32,768 of threadgroup
+# storage, so it FITS: stage it once per threadgroup and every later read is
+# threadgroup-local. That is OPERAND REUSE, the mechanism register blocking
+# already measured worth 2.48x for GEMM, and the amortisation factor is exactly
+# ROWS PER THREADGROUP = tg / tpr.
+X_STAGE_PROLOGUE = """
+threadgroup float xs[%(COLS)d];
+for (uint i = thread_position_in_threadgroup.x; i < %(COLS)du; i += %(TG)du) {
+    xs[i] = x[i];
+}
+threadgroup_barrier(mem_flags::mem_threadgroup);
+"""
+
+
+def source_stage_x(rows: int, cols: int, unpack: str = "byte",
+                   tpr: int = 64, tg: int = 128) -> str:
+    """The same kernel with x staged in threadgroup memory.
+
+    REFUSES when x plus the reduction scratch would exceed Metal's 32,768-byte
+    threadgroup allocation, because the alternative is a compile failure twenty
+    lines inside MLX's generated header with no mention of the cause -- the
+    footgun ACCELERATOR_TOPK_SAMPLING already met from a different direction.
+    """
+    need = cols * 4 + tg * 4
+    if need > 32768:
+        raise ValueError(
+            f"threadgroup allocation {need} bytes exceeds Metal's 32768: "
+            f"x needs {cols * 4} and the reduction scratch {tg * 4}")
+    src = source_unpack(rows, cols, unpack, tpr, tg)
+    body = X_STAGE_PROLOGUE % {"COLS": cols, "TG": tg}
+    # Read from the staged copy everywhere the kernel touched device x. The
+    # replacement is on the INDEXED FORM so the staging prologue's own `x[i]`
+    # is written first and is not rewritten into a read of itself.
+    src = src.replace("x[c0 + k", "xs[c0 + k")
+    return body + src
+
+
+def source_unpack(rows: int, cols: int, unpack: str = "byte",
+                  tpr: int = 64, tg: int = 128) -> str:
+    """The tpr kernel with a chosen unpack. Same geometry, same reduction, same
+    barrier -- ONLY the fetch-and-decode of the nibbles moves.
+
+    The `word` variant casts to a 4-byte pointer, which Metal requires be
+    4-BYTE ALIGNED. Every address it forms is pbase + g*(GROUP/2) + k/2 with
+    GROUP=64, so the alignment holds exactly when the row stride cols/2 is a
+    multiple of 4; source_unpack REFUSES otherwise rather than emitting a kernel
+    that reads correctly on most shapes and faults on the rest.
+    """
+    if unpack not in ("byte", "lut", "word", "ilp4"):
+        raise ValueError(f"unknown unpack {unpack!r}")
+    d = {"PACKED_COLS": cols // 2, "GROUPS": cols // GROUP, "GROUP": GROUP,
+         "BOUND": BOUND, "TPR": tpr, "TG": tg}
+    if unpack == "ilp4":
+        src = source_tpr(rows, cols, tpr, tg)
+        src = src.replace(UNPACK_BODIES["byte"] % d, UNPACK_BODIES["ilp4"] % d)
+        src = src.replace("k += 2", "k += 8")
+        # Declare the four accumulators beside `acc` and fold them in before the
+        # reduction, so the cross-lane half of the kernel is untouched.
+        src = src.replace("float acc = 0.0f;",
+                          "float acc = 0.0f;\nfloat a0 = 0.0f, a1 = 0.0f, a2 = 0.0f, a3 = 0.0f;")
+        src = src.replace("threadgroup float part[",
+                          "acc += (a0 + a1) + (a2 + a3);\nthreadgroup float part[")
+        return src
+    if unpack == "word":
+        if (cols // 2) % 4:
+            raise ValueError(
+                f"word unpack needs a 4-byte-aligned row stride; cols={cols} "
+                f"gives {cols // 2} bytes per row, which is not a multiple of 4")
+        body, step = UNPACK_WORD_BODY % d, 8
+    else:
+        body, step = UNPACK_BODIES[unpack] % d, 2
+    src = source_tpr(rows, cols, tpr, tg)
+    src = src.replace(UNPACK_BODIES["byte"] % d, body)
+    src = src.replace("k += 2", f"k += {step}")
+    if unpack == "lut":
+        src = (LUT_PROLOGUE % d) + src
+    return src
+
+
+def source_tpr(rows: int, cols: int, tpr: int = 64, tg: int = 128) -> str:
+    """The native matvec at a chosen threads-per-row. Refuses a geometry that
+    would need a bounds guard before the barrier: a thread that returns early
+    never reaches it, and a threadgroup barrier some threads skip is undefined."""
+    if tg % tpr:
+        raise ValueError(f"threadgroup {tg} must be a whole number of rows at tpr={tpr}")
+    if (rows * tpr) % tg:
+        raise ValueError(
+            f"rows*tpr={rows * tpr} is not a multiple of threadgroup {tg}; the grid "
+            "would be padded and the padding threads would skip the barrier")
+    return NATIVE_MATVEC_TPR % {
+        "PACKED_COLS": cols // 2, "GROUPS": cols // GROUP, "GROUP": GROUP,
+        "BOUND": BOUND, "TPR": tpr, "TG": tg}
+
+
 DEQUANT = """
 uint idx = thread_position_in_grid.x;
 if (idx >= %(ROWS)du * %(COLS)du) return;

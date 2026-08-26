@@ -1,7 +1,7 @@
 {
   "schema": "hawking.headless.doctor_v2_prescription.v1",
-  "generated_at": "2026-08-26T03:40:21Z",
-  "git_head": "e665c7319eb06bc1611d1ede67e091160dea83c0",
+  "generated_at": "2026-08-26T10:13:52Z",
+  "git_head": "665110c71c8cc16db6a05af70d621a0266853ab1",
   "python": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
   "what_this_is": "Doctor v2 prescription: what physical computation each ORGAN should perform, ranked by expected verified gain per experiment cost. Not bits per tensor.",
   "question": "what physical computation should this ORGAN perform",
@@ -1888,6 +1888,15 @@
       "why": "live_27b_policy; occupancy is not free"
     }
   ],
-  "wall_s": 71.58308070900057,
-  "written_to": "/Users/scammermike/Downloads/hawking/receipts/headless/DOCTOR_V2_PRESCRIPTION.json"
+  "wall_s": 73.8996884579974,
+  "written_to": "/Users/scammermike/Downloads/hawking/receipts/headless/DOCTOR_V2_PRESCRIPTION.json",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
 }

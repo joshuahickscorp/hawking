@@ -1444,3 +1444,66 @@ def test_a_verdict_can_be_precision_safe_and_still_undecided():
                                       kernel_tol=1.0, min_cosine=0.99,
                                       magnitude_band=(0.9, 1.1)
                                       )["min_distance_to_a_threshold"] <= 0.01 + 1e-12
+
+
+# --------------------------------------------------------------------------
+# ACCELERATOR_BARRIER_SCOPES.json named this against itself: "NO AIR PROGRAM
+# CURRENTLY DECLARES A SIMDGROUP BARRIER AND EXECUTES -- what closed is the
+# INSTRUCTION and the REFUSAL'S HONESTY, not a new executable program shape."
+# --------------------------------------------------------------------------
+
+def test_a_program_DECLARES_a_simdgroup_barrier_and_the_msl_carries_it():
+    rr = air.AirSimdRowReduce("t", rows=4, cols=100)
+    assert rr.barrier_scopes_emitted() == ["SIMDGROUP"]
+    src = air.lower_simd_row_reduce_to_msl(rr)
+    assert air.barrier_msl("SIMDGROUP") in src, \
+        "the declared scope must reach the source through barrier_msl, the ONE place a " \
+        "lowering asks for a barrier, or the rule and the instruction can drift apart"
+
+
+def test_a_WIDER_threadgroup_declaring_SIMDGROUP_scope_is_REFUSED():
+    """A simdgroup barrier orders 32 lanes and nothing wider. The barrier-scopes
+    receipt measured a cross-simdgroup exchange WRONG BY 9.854 with simdgroup_barrier,
+    the same error as with no fence -- so emitting it over a wider group would be an
+    instruction that cannot order what the program needs ordered."""
+    for tg in (64, 256, 1024):
+        with pytest.raises(ValueError) as e:
+            air.AirSimdRowReduce("bad", rows=2, cols=64, threadgroup=tg).validate()
+        assert "9.854" in str(e.value), "the refusal must cite the measurement"
+
+
+def test_the_refusal_is_about_SCOPE_and_not_about_wide_threadgroups_in_general():
+    """AirSoftmax runs happily at 256 with THREADGROUP scope. If this ever fails the
+    rule above has been over-generalised into 'wide threadgroups are bad'."""
+    sm = air.AirSoftmax("wide", rows=2, cols=64, threadgroup=256)
+    sm.validate()
+    assert sm.barrier_scopes_emitted() == ["THREADGROUP", "THREADGROUP"]
+
+
+def test_the_simdgroup_program_EXECUTES_and_is_correct_off_a_multiple_of_32():
+    pytest.importorskip("mlx.core")
+    import numpy as np
+    rr = air.AirSimdRowReduce("exec", rows=3, cols=33)
+    x = np.random.RandomState(1).randn(3, 33).astype(np.float32)
+    got = np.array(air.execute_simd_row_reduce(rr, x), dtype=np.float64)
+    want = x.astype(np.float64).sum(axis=1)
+    rel = np.max(np.abs(got - want) / np.maximum(np.abs(want), 1e-30))
+    assert rel < 1e-5, rel
+
+
+def test_the_correctness_check_CAN_FAIL():
+    """Without this the test above is a check that cannot fail, which this program has
+    sealed five times. A wrong stride must be caught by the same oracle."""
+    pytest.importorskip("mlx.core")
+    import numpy as np, mlx.core as mx
+    rr = air.AirSimdRowReduce("ctl", rows=4, cols=777)
+    src = air.lower_simd_row_reduce_to_msl(rr).replace("c += 32u", "c += 31u")
+    x = np.random.RandomState(2).randn(4, 777).astype(np.float32)
+    k = mx.fast.metal_kernel(name="air_simd_ctl", input_names=["x"],
+                             output_names=["out"], source=src, ensure_row_contiguous=True)
+    (o,) = k(inputs=[mx.array(x)], grid=(4 * 32, 1, 1), threadgroup=(32, 1, 1),
+             output_shapes=[(4,)], output_dtypes=[mx.float32])
+    mx.eval(o)
+    want = x.astype(np.float64).sum(axis=1)
+    rel = np.max(np.abs(np.array(o, dtype=np.float64) - want) / np.maximum(np.abs(want), 1e-30))
+    assert rel > 1e-4, "the broken stride was not caught, so the oracle proves nothing"

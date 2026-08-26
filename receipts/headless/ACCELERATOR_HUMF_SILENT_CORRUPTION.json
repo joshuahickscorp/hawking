@@ -111,5 +111,14 @@
   "measurement_stability": "Two independent probes of the same checksums gave crc32 38.44 then 36.849 and sha256 2.70 then 2.932 -- about 4-8% run to run, which is why the conclusion is stated as a threshold with a margin rather than as an exact rate. The 14x-vs-12.6x difference between the two probes does not move any verdict in the table."
  },
  "claim_boundary": "MOCK domain only. The checksum rates ARE measured on this machine; every TRANSPORT rate in the policy table is a NAMED ASSUMPTION, not a measurement -- no external GPU exists here and \u00a721 forbids reading a simulated transport number as physical evidence. So the AFFORDABILITY CONCLUSION is conditional on a transport speed nobody here has measured, and it says so. What IS established without assumption: crc32 runs 14.2x faster than sha256 on this machine, and silent corruption is undetectable without a check of some kind.",
- "pass": true
+ "pass": true,
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

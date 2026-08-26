@@ -1,0 +1,168 @@
+{
+  "receipt": "ACCELERATOR_OCCUPANCY_PROBE",
+  "date": "2026-08-26",
+  "obligation": "G046 / G044 -- EXECUTION.register_pressure_and_occupancy carried 'no AIR kernel has had its register usage or occupancy queried or varied'",
+  "akb_registration": {
+    "evidence_domain": "accelerator",
+    "civilization": "I-D_ACCELERATOR",
+    "program": "CUDA Capability Ledger coverage (S015 \u00a712)",
+    "machine_scope": "Apple M3 Ultra, applegpu_g15d, INSTANCE",
+    "representation_scope": "NONE -- f32, no representation is measured",
+    "kernel_scope": "synthetic live-register chains, 0 to 200 accumulators",
+    "why_declared": "membership must not depend on what this file was named (S032 \u00a713)"
+  },
+  "the_instrument_gap_first": "MLX EXPOSES NO PIPELINE OBJECT. mx.fast.metal_kernel returns a bare nanobind function with ZERO attributes, and mx.metal carries device_info plus memory calls and nothing about a compiled pipeline -- so maxTotalThreadsPerThreadgroup CANNOT BE READ. It CAN be probed behaviourally, because Metal refuses a dispatch wider than the pipeline allows, which makes the widest threadgroup a kernel ACCEPTS a lower bound on it.",
+  "THREADGROUP_MEMORY_HELD_AT_ZERO_ON_PURPOSE": "the attention receipt already measured that limiter -- 32800 bytes against Metal's 32768 capped the simdgroup variant at seq 1016 -- so letting it vary here would re-measure an answered question and attribute its effect to registers.",
+  "THREE_PREDICTIONS_WRITTEN_BEFORE_THE_RUN": {
+    "P1_trivial_accepts_1024": {
+      "predicted": true,
+      "measured": true,
+      "verdict": "CONFIRMED"
+    },
+    "P2_heavy_accepts_less": {
+      "predicted": true,
+      "measured": false,
+      "verdict": "REFUTED"
+    },
+    "P3_monotone_non_increasing": {
+      "predicted": true,
+      "measured": true,
+      "verdict": "VACUOUSLY TRUE -- every arm is 1024, so a flat line satisfies it and it establishes nothing; reporting it as a confirmation would be a check that cannot fail"
+    }
+  },
+  "table": [
+    {
+      "live_registers": 0,
+      "kernel": "trivial",
+      "widest_accepted": 1024,
+      "refusal": ""
+    },
+    {
+      "live_registers": 16,
+      "kernel": "heavy_16",
+      "widest_accepted": 1024,
+      "refusal": ""
+    },
+    {
+      "live_registers": 32,
+      "kernel": "heavy_32",
+      "widest_accepted": 1024,
+      "refusal": ""
+    },
+    {
+      "live_registers": 64,
+      "kernel": "heavy_64",
+      "widest_accepted": 1024,
+      "refusal": ""
+    },
+    {
+      "live_registers": 128,
+      "kernel": "heavy_128",
+      "widest_accepted": 1024,
+      "refusal": ""
+    },
+    {
+      "live_registers": 200,
+      "kernel": "heavy_200",
+      "widest_accepted": 1024,
+      "refusal": ""
+    }
+  ],
+  "THE_FORK_WAS_NAMED_IN_ADVANCE_AND_ONE_BRANCH_IS_NOW_CLOSED": {
+    "the_two_readings": [
+      "this GPU does not cap threadgroup width on registers at these levels",
+      "the heavy kernel does not actually raise register pressure, because the compiler folded or spilled it"
+    ],
+    "FOLDING_IS_EXCLUDED_BY_A_CORRECTNESS_CHECK": {
+      "accumulators": 200,
+      "max_rel_err_against_the_real_recurrence": 2.1789432895477773e-06,
+      "max_rel_err_against_a_folded_away_chain": 1.9900001953124999e+34,
+      "reading": "the 200 accumulators compute what they say they compute to 2.18e-06 and differ from a folded chain by 1.99e+34, so they are real live values and not an optimiser artefact. The design is what makes this checkable: each accumulator depends on the input AND on its own previous value, so there is nothing to fold."
+    },
+    "SPILLING_IS_NOT_EXCLUDED": "a compiler may spill to memory rather than narrow the pipeline, which would leave the accepted width at 1024 while register pressure is real. Separating that from 'no cap at these levels' needs GENERATED CODE.",
+    "and_that_is_a_SECOND_NAMED_GATE_not_the_first_one_again": "xcrun metal is ABSENT, already named as blocking AOT and the specialization-constants mechanism question -- that gate blocks READING THE CODE. This block adds a distinct one: MLX blocks READING THE PIPELINE. Two different instruments, two different missing inputs, recorded separately per \u00a7129 rather than collapsed into one excuse."
+  },
+  "ledger_move": {
+    "entry": "EXECUTION.register_pressure_and_occupancy",
+    "performance_gap": "STILL unmeasured, correctly -- NOTHING WAS TIMED, and marking a behavioural probe as a measured PERFORMANCE gap would be a category error the ledger's own schema exists to prevent",
+    "what_changed": "the REASON. It said 'never queried or varied'; that is no longer true, and a stale reason invites the next reader to redo work that has been done"
+  },
+  "tests": {
+    "file": "tools/accelerator/test_ccl.py",
+    "total": 16,
+    "note": "the CCL validator already refuses a measured gap without a receipt path, which is what keeps this honest without a new test: the entry stays unmeasured"
+  },
+  "claim_boundary": [
+    "NOTHING IS TIMED. This is a CAPABILITY probe and no performance claim exists; the occupancy QUESTION -- do fewer concurrent threadgroups cost throughput here -- is untouched and would need a quiet machine.",
+    "THE WIDEST ACCEPTED THREADGROUP IS A LOWER BOUND on maxTotalThreadsPerThreadgroup and 1024 is Metal's own ceiling, so every arm is pinned AT THE CEILING and the probe cannot resolve anything above it. A kernel heavy enough to fall below 1024 was not found.",
+    "200 accumulators is where the probe stopped, not a limit that was found; the source is generated so a larger k is one number away, and it was not swept further because the answer was flat across an order of magnitude.",
+    "SYNTHETIC kernels. No AIR primitive was probed, so this says nothing about whether any shipped kernel is register-limited.",
+    "f32, one machine, applegpu_g15d, INSTANCE.",
+    "the machine was CONTENDED (the operator's mlx_boot.py held ~53 GiB), which cannot bias an accept/refuse count and is recorded rather than assumed."
+  ],
+  "next": "the spill-versus-no-cap fork needs generated assembly and is blocked by the xcrun metal gate; the throughput half needs a quiet machine and the timing arms this block deliberately did not run",
+  "identities": {
+    "experiment": {
+      "class": "ACCEL-DEVICE",
+      "knowledge_level": "INSTANCE",
+      "question": "does raising simultaneously-live registers narrow the widest threadgroup this GPU will accept?"
+    },
+    "machine": {
+      "soc": "Apple M3 Ultra",
+      "gpu_cores": 60,
+      "ram_gib": 96,
+      "architecture": "applegpu_g15d",
+      "receipt": "receipts/headless/MACHINE_GENOME.json"
+    },
+    "device": {
+      "backend": "Metal via MLX mx.fast.metal_kernel JIT",
+      "max_recommended_working_set_size": 83494174720
+    },
+    "model": {
+      "status": "ABSENT",
+      "reason": "no model is executed"
+    },
+    "representation": {
+      "status": "ABSENT",
+      "reason": "dense f32; no representation is measured"
+    },
+    "kernel": {
+      "family": "synthetic live-register chain",
+      "live_registers_swept": [
+        0,
+        16,
+        32,
+        64,
+        128,
+        200
+      ]
+    },
+    "runtime": {
+      "tool": "tools/accelerator/ccl.py",
+      "git_head": "07817e6b2bbee29914ceecddeefa974628da0bcc"
+    },
+    "transport": {
+      "status": "ABSENT",
+      "reason": "single-device unified-memory Metal run"
+    }
+  },
+  "bench": {
+    "state": "CONTENDED",
+    "recorded_at": "2026-08-26T08:20:00Z",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB",
+    "quiescence": {
+      "quiet": false,
+      "method": "enumerate",
+      "n_contenders": 4,
+      "max_rss_gib": 52.82,
+      "contenders": [
+        {
+          "comm": "mlx_boot.py",
+          "rss_gib": 52.82
+        }
+      ]
+    },
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "observed during the run; NOTHING IS TIMED so contention cannot bias an accept/refuse count"
+  }
+}

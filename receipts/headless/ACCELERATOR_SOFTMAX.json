@@ -110,5 +110,14 @@
   "what_it_unblocks": "softmax was the missing prerequisite between the reduction and attention. Attention itself is still ABSENT -- this is one of its pieces, not attention."
  },
  "claim_boundary": "A correct, numerically stable, fused row softmax exists in AIR and beats the naive three-pass shape by about 1.4x. Against MLX it is INDISTINGUISHABLE and no claim is made either way. f32 only, last-axis only, no masking, no causal variant, no batching beyond rows, and NO ATTENTION -- softmax is a piece of attention, not attention, and nothing here was run inside a model.",
- "pass": true
+ "pass": true,
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

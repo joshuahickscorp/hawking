@@ -2303,5 +2303,14 @@
     "no_rm_git_mv_clean_checkout_restore_reset": true,
     "temp_extract": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-startup-census-fye7iun3",
     "temp_variants": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-startup-variants-jg8o3mz8"
+  },
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
   }
 }

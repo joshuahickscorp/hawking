@@ -135,5 +135,14 @@
   "what_a_real_flash_attention_would_need": "tiled Q/K/V blocks with an ONLINE softmax so the score row never has to fit, plus simdgroup matrix ops for the score and output matmuls. This kernel has neither, and its threadgroup-memory cap is the direct consequence -- it REFUSES a sequence it cannot hold rather than truncating."
  },
  "claim_boundary": "Correct single-head attention with causal masking now exists in AIR, verified to 3e-07 including a non-power-of-two shape. It is SLOWER than the naive materialised path at every size where the comparison is clean, and 3.5x slower at 2048x128. MLX is retained. Single head only, f32 only, no batching, no multi-head, no KV cache, no dropout, and no sequence longer than threadgroup memory allows. Nothing was run inside a model.",
- "pass": true
+ "pass": true,
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

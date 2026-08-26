@@ -903,3 +903,44 @@ def test_TRAVERSAL_that_WRITES_a_protected_path_is_caught_and_reading_is_not(tmp
     code, out = _runner(tmp_path)("P=recei; Q=pts; echo x > $P$Q/r.json")
     assert code != 126, ("a path reassembled from variables is NOT caught, and "
                          "the docstring says so", code, out)
+
+
+# --------------------------------------------------------------------------
+# The segment splitter was not quote aware, and a real mission caught it: a
+# proposed `python3 -c "import os; p = ...; path = os.path.join(...)"` was refused
+# with "verb 'path' is not in the read-only set" -- a verb scraped out of Python
+# source. The VERDICT was right (python3 is not provably read-only, so it fails
+# closed); the REASON named something that does not exist.
+# --------------------------------------------------------------------------
+
+def test_segments_does_not_split_inside_quotes():
+    from hcli.delegate import _segments
+    cmd = ("""python3 -c "import os; p = os.environ.get('R'); """
+           """path = os.path.join(p, 'receipts')" """).strip()
+    assert _segments(cmd) == [cmd], _segments(cmd)
+
+
+def test_the_refusal_now_names_the_REAL_verb():
+    from hcli.delegate import _guard_verdict
+    cmd = ("""python3 -c "import os; path = os.path.join('receipts', 'x')" """).strip()
+    why = _guard_verdict(cmd, ["receipts"])
+    assert why and "'python3'" in why, why
+    assert "'path'" not in why
+
+
+def test_quote_awareness_did_not_stop_real_separators_from_splitting():
+    from hcli.delegate import _segments
+    assert _segments("a && b || c ; d | e") == ["a", "b", "c", "d", "e"]
+    assert _segments('cat receipts/x.json | python3 -c "print(1)"') == [
+        "cat receipts/x.json", 'python3 -c "print(1)"']
+
+
+def test_a_write_hidden_inside_quotes_is_STILL_refused():
+    """Fails closed: one segment whose verb is python3 is not provably read-only,
+    so quote awareness must not have turned an over-refusal into an allow."""
+    from hcli.delegate import _guard_verdict
+    assert _guard_verdict(
+        """python3 -c "open('receipts/x.json','w').write('x')" """.strip(),
+        ["receipts"])
+    assert _guard_verdict(
+        """bash -c "rm -rf receipts" """.strip(), ["receipts"])

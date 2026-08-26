@@ -193,5 +193,14 @@
   "a_third_harness_defect_found_and_fixed": "The first run of this comparison returned NO_CLAIM at both sizes. The cause was the same class of mistake as the mx.eval-per-level defect: the timed function rebuilt the host numpy arrays on every call, putting a 16 MiB memcpy inside BOTH arms. Common-mode, so it did not bias the direction -- it DILUTED the margin and added noise until the gate refused a real result. Hoisting it is legitimate because the SAFE program never mutates h_a or h_b, and with it the same comparison gives 1.69x and 1.73x. THREE TIMES NOW the instrument has been the thing under measurement; the pattern is that any per-call setup inside an arm is suspect, whether it biases or merely blunts."
  },
  "claim_boundary": "C2M-T1 as this module defines it: cudaMalloc, cudaMemcpy H2D and D2H, a <<<grid,block>>> launch, cudaDeviceSynchronize and cudaFree, over elementwise T0 kernels. NOT CUDA runtime support -- streams, events, async copies, managed memory, memset, 2-D copies, device-to-device copies and multi-device selection are all REFUSED BY NAME. The launch geometry is PARSED AND IGNORED: AIR chooses its own grid, so a kernel whose result depends on blockDim would be mistranslated and this subset cannot express one. Oracle is numpy, not CUDA, so P2 stays open and this is not a differential.",
- "pass": true
+ "pass": true,
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

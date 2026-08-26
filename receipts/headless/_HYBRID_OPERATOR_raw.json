@@ -452,7 +452,7 @@
       "dense_w_materialized": 0,
       "id": "lowrank_r8_fused_c5120",
       "kernel": "binary_lowrank_r8_fused_xproj_c5120_tpr64_tg128",
-      "max_abs_diff": 9.5367431640625e-7,
+      "max_abs_diff": 9.5367431640625e-07,
       "must_match": true,
       "n_rows_compared": 16,
       "ok": true,
@@ -480,5 +480,14 @@
   "reps": 7,
   "schema": "hawking.headless.hybrid_operator.raw.v1",
   "skip_unique": false,
-  "warmup": 2
+  "warmup": 2,
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+  }
 }

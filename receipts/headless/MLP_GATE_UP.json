@@ -869,5 +869,14 @@
   "after_complete_token_ns": 28521263,
   "reduced_complete_token_ns": false,
   "dense_w_materialized": 0,
-  "answer": "N024 ruled out the MLP tile; this lane did not retune qmvfast/wide64/tgx. The attempted cut is S022 \u00a79 norm+projection: RMSNorm writes group-64 x-sums and fused gate_up_swiglu defers bias*sum(x) out of the inner loop. Ranking metric is COMPLETE_TOKEN_NS, not GB/s. Isolated fused gate_up_swiglu median 251833.0 ns; acc_only 258291.0 ns; decode_probe 47125.0 ns; addr_probe 51750.0 ns; launch64 9365541.0 ns; xsum64 5375.0 ns. Isolated biasprep is SEPARATED and faster than tpr64 (146500 vs 251833.0 ns median on the fused GEMV). Production tpr64 complete_token_ns median 28521263 (gpu_ns 27290958, tok/s 35.06155984793923). NOT SEPARATED: complete_token_ns ranges overlap; do not quote a mean delta. A measured reason none exists on COMPLETE_TOKEN_NS: the isolated GEMV cut did not transfer into the 580-dispatch token. Production GPU ns 27290958 vs biasprep 27452416 overlap. Residual blocker is still the dual packed-decode + scale + accumulate of the 64 fused gate_up_swiglu launches (35.6% of the 356.7\u2192778.8 gap per N025), not the SwiGLU epilogue and not the RMSNorm launch. dropbias bad control changed token ids (REJECTED)."
+  "answer": "N024 ruled out the MLP tile; this lane did not retune qmvfast/wide64/tgx. The attempted cut is S022 \u00a79 norm+projection: RMSNorm writes group-64 x-sums and fused gate_up_swiglu defers bias*sum(x) out of the inner loop. Ranking metric is COMPLETE_TOKEN_NS, not GB/s. Isolated fused gate_up_swiglu median 251833.0 ns; acc_only 258291.0 ns; decode_probe 47125.0 ns; addr_probe 51750.0 ns; launch64 9365541.0 ns; xsum64 5375.0 ns. Isolated biasprep is SEPARATED and faster than tpr64 (146500 vs 251833.0 ns median on the fused GEMV). Production tpr64 complete_token_ns median 28521263 (gpu_ns 27290958, tok/s 35.06155984793923). NOT SEPARATED: complete_token_ns ranges overlap; do not quote a mean delta. A measured reason none exists on COMPLETE_TOKEN_NS: the isolated GEMV cut did not transfer into the 580-dispatch token. Production GPU ns 27290958 vs biasprep 27452416 overlap. Residual blocker is still the dual packed-decode + scale + accumulate of the 64 fused gate_up_swiglu launches (35.6% of the 356.7\u2192778.8 gap per N025), not the SwiGLU epilogue and not the RMSNorm launch. dropbias bad control changed token ids (REJECTED).",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+  }
 }

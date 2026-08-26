@@ -80,11 +80,75 @@ def test_supersession_is_modelled_from_both_mechanisms():
 
 
 def test_no_superseded_receipt_is_served_as_an_active_law():
+    """An amendment may exempt a law it does not reach, but only BY NAME -- so the
+    exemption is a declaration in the receipt, never an inference from scope."""
     built = akb.build()
     sup = built["supersession_in_corpus"]
+    ex = built["amendment_exemptions"]
+    rec = built["amendment_reconciliations"]
     for entry in akb.active(built):
         for rel in entry["source_receipts"]:
-            assert Path(rel).name not in sup, f"{entry['law_id']} serves a superseded receipt as ACTIVE"
+            name = Path(rel).name
+            if name not in sup:
+                continue
+            assert (entry["law_id"] in ex.get(name, [])
+                    or entry["law_id"] in rec.get(name, [])), (
+                f"{entry['law_id']} serves the superseded {name} as ACTIVE and the "
+                f"amendment names it in neither laws_unaffected nor laws_reconciled")
+            assert not (entry["law_id"] in ex.get(name, [])
+                        and entry["law_id"] in rec.get(name, [])), (
+                f"{entry['law_id']} is declared BOTH unaffected and reconciled by "
+                f"{name}; those are contradictory claims about the same amendment")
+
+
+def test_a_RECONCILIATION_THAT_THE_LAW_DOES_NOT_CARRY_IS_REFUSED(monkeypatch):
+    """The anti-vacuity arm for laws_reconciled. Declaring a law reconciled must
+    not be enough -- if it were, any law could opt out of the supersession check
+    it exists to fail. The law's own statement has to cite the amending receipt."""
+    built = akb.build()
+    rec = built["amendment_reconciliations"]
+    assert rec, "nothing is declared reconciled, so this control tests nothing"
+    name, lids = next(iter(rec.items()))
+    lid = lids[0]
+    victim = next(e for e in akb.LAWS if e["law_id"] == lid)
+    stripped = dict(victim)
+    stripped["statement"] = "a statement citing no amending receipt at all."
+    monkeypatch.setattr(
+        akb, "LAWS", [stripped if e["law_id"] == lid else e for e in akb.LAWS])
+    with pytest.raises(akb.Refused, match="promise, not a correction"):
+        akb.build()
+
+
+def test_an_amendment_exemption_must_name_a_law_THAT_EXISTS():
+    """A typo in laws_unaffected would silently exempt nothing while reading as a
+    declaration -- and the entry it was meant to protect would already have been
+    refused, so the failure is invisible from the artifact."""
+    built = akb.build()
+    known = {e["law_id"] for e in built["entries"]}
+    for receipt, lids in built["amendment_exemptions"].items():
+        for lid in lids:
+            assert lid in known, f"{receipt} exempts unknown law {lid!r}"
+
+
+def test_an_exemption_cannot_be_INFERRED_only_declared():
+    """Strip the declaration and the law must be refused again. Without this the
+    exemption route could quietly widen to 'any amendment, any law'."""
+    d = json.loads((akb.REPO / "receipts" / "headless" /
+                    "ACCELERATOR_MLP_OPERAND_REUSE_REFUTED.json").read_text())
+    key = [k for k in d if "AMEND" in k.upper()][0]
+    assert d[key].get("laws_unaffected"), "the fixture this test needs is gone"
+    saved = dict(akb._EXEMPT)
+    try:
+        akb._EXEMPT.clear()
+        entry = next(e for e in akb.LAWS
+                     if e["law_id"] == "AKB-INPUT-OPERAND-REUSE-IS-NOT-THE-MLP-FUSION-WIN")
+        with pytest.raises(akb.Refused) as err:
+            akb.validate(copy.deepcopy(entry),
+                         superseded={"ACCELERATOR_MLP_OPERAND_REUSE_REFUTED.json":
+                                     ["ACCELERATOR_MLP_OPERAND_REUSE_REFUTED.json#" + key]})
+        assert "laws_unaffected" in str(err.value)
+    finally:
+        akb._EXEMPT.clear(); akb._EXEMPT.update(saved)
 
 
 def test_refuted_and_negative_results_are_first_class():

@@ -133,5 +133,14 @@
   }
  },
  "claim_boundary": "WHY THIS IS MACHINE-SPECIFIC: on a discrete GPU the host-to-device and device-to-host copies are NOT optional -- there is separate device memory and the data must cross it. On this machine there is none, so both copies can simply not happen. That is why it qualifies for P6 where the flat autotune landscape did not.\nFAIRNESS CAVEAT, STATED PLAINLY: the CUDA-era arm copies on EVERY call, which is the NAIVE pattern. A competent CUDA programmer hoists the upload out of the loop and keeps data resident, and would not pay this 7x. So the honest claim is NOT 'Apple beats CUDA by 7x'. It is that per-call host<->device copying costs 7.17-7.44x on this operation, and that on unified memory the elimination is structural rather than something the programmer must remember to do.\nThe ADP is PROVISIONAL, not sealed: sustained_qualification has NOT run, and \u00a729 forbids sealing a production profile on microbenchmark evidence. 9 of 11 stages completed. Knowledge level EXACT_MACHINE, not promoted.",
- "pass": true
+ "pass": true,
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

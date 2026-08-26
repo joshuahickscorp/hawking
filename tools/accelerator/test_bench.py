@@ -72,3 +72,39 @@ def test_the_caller_is_not_exempt_from_its_own_check():
     import os
     q = bench.machine_quiescence(cpu_pct=0.0, rss_gib=0.0)
     assert os.getpid() in [c["pid"] for c in q["contenders"]]
+
+
+# --------------------------------------------------------------------------
+# S032 §16: latency is first class. A median alone hides the tail a caller waits
+# on -- and a tail quoted without its sample count is worse than no tail at all.
+# --------------------------------------------------------------------------
+
+def test_time_arm_reports_a_tail_not_only_a_median():
+    r = bench.time_arm(lambda: sum(range(200)), reps=40, warmup=2)
+    assert r["p50_s"] == r["median_s"]
+    assert r["p95_s"] >= r["p50_s"] and r["p99_s"] >= r["p95_s"]
+
+
+def test_the_tail_is_ORDERED_and_inside_the_sample():
+    r = bench.time_arm(lambda: sum(range(200)), reps=40, warmup=2)
+    assert r["q1_s"] <= r["p50_s"] <= r["q3_s"] <= r["p99_s"]
+
+
+def test_A_TWO_SAMPLE_TAIL_SAYS_SO():
+    """At 40 reps only three samples sit at or above p95. Quoting that as a
+    percentile without saying how many samples stand behind it is the shape of a
+    fabricated tail."""
+    r = bench.time_arm(lambda: sum(range(50)), reps=40, warmup=2)
+    assert r["samples_at_or_above_p95"] < bench.TAIL_SAMPLES_FOR_A_STABLE_P95
+    assert r["tail_resolution"] and "ORDER STATISTIC" in r["tail_resolution"]
+
+
+def test_A_LARGE_SAMPLE_DROPS_THE_CAVEAT():
+    r = bench.time_arm(lambda: sum(range(50)), reps=200, warmup=2)
+    assert r["samples_at_or_above_p95"] >= bench.TAIL_SAMPLES_FOR_A_STABLE_P95
+    assert r["tail_resolution"] is None
+
+
+def test_the_tail_ratio_is_reported_so_spread_is_visible_without_arithmetic():
+    r = bench.time_arm(lambda: sum(range(200)), reps=40, warmup=2)
+    assert r["p95_over_p50"] is None or r["p95_over_p50"] >= 1.0

@@ -4,10 +4,25 @@
  "question": "Five receipts sighted a ~0.157-0.25 ms floor and every one AMORTISED it by batching. Batching requires the work to be known up front; autoregressive decode does not have that. So: is the floor a property of SUBMISSION or of WAITING? The two have opposite consequences.",
  "prediction_written_first": "scratchpad/sync_floor_prediction.json -- P1 a graph-expressible serial chain costs ~11us/step not ~157; P2 a host-dependent loop pays the full floor per step, gap 5-8x; P3 therefore the floor argues against HOST-VISIBLE CONTROL FLOW, not against small kernels.",
  "result": {
-  "K_steps": 16, "n": 16384, "reps": 200, "warmup": 40,
-  "serial_chain_one_eval": {"median_ms": 0.6572, "per_step_us": 41.1, "iqr_pct": 37.17},
-  "serial_chain_eval_each": {"median_ms": 4.0664, "per_step_us": 254.1, "iqr_pct": 38.71},
-  "host_dependent_branch": {"median_ms": 4.2778, "per_step_us": 267.4, "iqr_pct": 34.06},
+  "K_steps": 16,
+  "n": 16384,
+  "reps": 200,
+  "warmup": 40,
+  "serial_chain_one_eval": {
+   "median_ms": 0.6572,
+   "per_step_us": 41.1,
+   "iqr_pct": 37.17
+  },
+  "serial_chain_eval_each": {
+   "median_ms": 4.0664,
+   "per_step_us": 254.1,
+   "iqr_pct": 38.71
+  },
+  "host_dependent_branch": {
+   "median_ms": 4.2778,
+   "per_step_us": 267.4,
+   "iqr_pct": 34.06
+  },
   "ratio_eval_each_over_one_eval": 6.19,
   "ratio_host_dependent_over_one_eval": 6.51
  },
@@ -24,5 +39,14 @@
   "scope": "one elementwise chain, f32, 16 steps, one machine, INSTANCE. No model executed. This is the SHAPE of a decode dependency, not a decode.",
   "what_it_does_not_show": "it does NOT show the round trip can be removed for a genuinely host-dependent workload -- it shows what that round trip COSTS. Keeping the decision on device (on-GPU sampling, on-GPU routing) is the implied lever and is NOT built or measured here."
  },
- "tests": "no kernel changed, no test count moves, no performance claim about any kernel moves"
+ "tests": "no kernel changed, no test count moves, no performance claim about any kernel moves",
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

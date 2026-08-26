@@ -60,5 +60,14 @@
  ],
  "gain_pct_vs_baseline": 13.0,
  "verdict": "slot topology at k=6 reaches 31.541 tok/s against a 27.9 tok/s baseline (+13.0%), which exceeds the 0.8% measurement spread.",
- "what_changes_in_hcli": "RuntimePool's unit of concurrency must become a SLOT, not a process. Spawning N separate llama-servers on N ports is the worst available topology on a bandwidth-bound box: each process streams the full weight set per token. The pool should run few processes with many slots, and runtime identity becomes (process, slot) rather than just (process)."
+ "what_changes_in_hcli": "RuntimePool's unit of concurrency must become a SLOT, not a process. Spawning N separate llama-servers on N ports is the worst available topology on a bandwidth-bound box: each process streams the full weight set per token. The pool should run few processes with many slots, and runtime identity becomes (process, slot) rather than just (process).",
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

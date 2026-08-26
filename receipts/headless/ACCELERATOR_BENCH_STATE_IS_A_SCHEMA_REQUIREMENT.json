@@ -1,0 +1,98 @@
+{
+  "receipt": "ACCELERATOR_BENCH_STATE_IS_A_SCHEMA_REQUIREMENT",
+  "date": "2026-08-26",
+  "obligation": "S032 \u00a73 quiescence is a benchmark input; G078",
+  "akb_registration": {
+    "evidence_domain": "accelerator",
+    "civilization": "I-D_ACCELERATOR",
+    "program": "benchmark hygiene (S032 \u00a73)",
+    "machine_scope": "Apple M3 Ultra, INSTANCE",
+    "representation_scope": "NONE -- this is about receipts, not representations",
+    "kernel_scope": "NONE -- no kernel is measured here",
+    "why_declared": "membership must not depend on what this file was named (S032 \u00a713)"
+  },
+  "question": "S032 \u00a73 says every performance receipt carries the machine state it was measured under, with BENCH_STATE = QUIESCED / CONTENDED / UNKNOWN and the rule stated verbatim: 'If quiescence is unknown: BENCH_STATE = UNKNOWN, not quiet.' Only the resident seal enforced it. How much of the corpus was actually covered?",
+  "THE_CENSUS": {
+    "receipts_quoting_a_duration_rate_or_speed_ratio": 297,
+    "of_those_carrying_ANY_machine_state": 1,
+    "of_those_carrying_NONE": 296,
+    "why_this_is_worse_than_it_looks": "an ABSENT state is not neutral. Every downstream reader -- including the AKB, including a later me -- reads a timing number with no machine state as a clean measurement. The receipts never claimed that. The silence made the claim for them.",
+    "how_the_scan_works": "tools/accelerator/receipt.py::_timing_keys walks the WHOLE tree, not the top level. A rule that only checked top-level keys is defeated by one level of nesting, which is the shape of every real receipt here -- the mutation that disabled recursion still passed 15 of 17 tests."
+  },
+  "THE_RULE_NOW_BINDS_AT_CONSTRUCTION": {
+    "where": "tools/accelerator/receipt.py::build refuses a receipt whose result tree quotes timing and which passes no bench block",
+    "and_QUIESCED_HAS_TO_BE_EARNED": "the state is DERIVED from quiescence samples by bench.bench_block, which takes NO state argument -- a caller cannot stamp QUIESCED on a contended measurement without editing the derivation. QUIESCED with no sample, or with contenders recorded, is refused.",
+    "a_FAILED_ENUMERATION_IS_UNKNOWN": "a `ps` that exited non-zero found nothing because it could not look. That is the 0-of-0-cases shape this program has sealed four times, and it derives UNKNOWN rather than quiet.",
+    "mutations_watched_failing": [
+      "recursion removed from the timing scan -> nested and in-list timing keys go unnoticed",
+      "the QUIESCED guard disabled -> a contended sample is served as quiet",
+      "failed-enumeration branch removed -> a ps that could not look reads as quiet"
+    ]
+  },
+  "THE_BACKFILL_IS_UNKNOWN_NOT_QUIESCED": {
+    "stamped": {
+      "UNKNOWN": 278,
+      "CONTENDED": 1,
+      "QUIESCED": 0
+    },
+    "not_a_receipt_skipped": 27,
+    "why_UNKNOWN_is_the_honest_value": "it is what those runs were measured under. Backfilling QUIESCED would have been a fabrication across 278 files, and backfilling CONTENDED would claim a busy machine nobody observed. UNKNOWN costs nothing that was true and makes the silence visible.",
+    "one_receipt_DERIVED_a_real_state": {
+      "receipt": "CAPABILITY_sealed-3.14-binB-fused4-NOTHINK.json",
+      "state": "CONTENDED",
+      "how": "it carried its own quiescence samples; the state was derived from them rather than flattened to UNKNOWN"
+    },
+    "the_backfill_LABELS_ITSELF": "recorded_by names the backfill and provenance says the receipt predates the requirement, so a reader can tell a state recorded AT measurement time from one reconstructed afterwards. They are not the same evidence.",
+    "diff_hygiene": "the first attempt reformatted every receipt from indent 2 to indent 1 and produced an 863,000-line diff in which the single added field was invisible. Reverted and redone preserving each file's own indentation: 9 added, 0 removed on a typical receipt."
+  },
+  "tests": {
+    "unit": "tools/accelerator/test_bench_state.py -- 17 tests, anti-vacuity first",
+    "corpus": "tools/accelerator/test_receipt_bench_corpus.py -- 5 tests over the real receipts, including one that fails if the backfill leaves no trace of itself",
+    "suite": "543 passed under tools/accelerator/, 930 across accelerator+odyssey+hcli+hcli_resident (16 pre-existing odyssey failures, confirmed identical with these changes stashed)"
+  },
+  "claim_boundary": [
+    "THIS IS COVERAGE, NOT ACCURACY. 278 receipts now say UNKNOWN, which is honest and is not the same as having measured them under a known-quiet machine. No historical number became more trustworthy today; the ones that were unqualified are now VISIBLY unqualified.",
+    "the rule binds receipt.build. A receipt hand-written as a dict and dumped to JSON bypasses it -- which is how most of this corpus was written, including this file. The corpus test is what covers that gap, and it runs over receipts/headless only.",
+    "the timing-key detector is a NAME HEURISTIC over suffixes and a small vocabulary. A duration stored under a name it does not recognise is invisible to it, and a non-timing field ending in _s would be a false positive.",
+    "quiescence here means RSS and CPU contenders enumerated from ps. It says nothing about GPU occupancy, thermal state, or memory bandwidth already in use by a neighbour."
+  ],
+  "next": "carry bench_block into the live benchmark harnesses so new receipts derive a REAL state rather than inheriting UNKNOWN, and re-run the corrected MLP arms once the machine is quiet",
+  "identities": {
+    "experiment": {
+      "class": "ACCEL-STATE",
+      "knowledge_level": "INSTANCE",
+      "question": "how many performance receipts state the machine they were measured under?"
+    },
+    "machine": {
+      "soc": "Apple M3 Ultra",
+      "gpu_cores": 60,
+      "ram_gib": 96,
+      "receipt": "receipts/headless/MACHINE_GENOME.json"
+    },
+    "device": {
+      "status": "ABSENT",
+      "reason": "no device work; this is a receipt-schema census"
+    },
+    "model": {
+      "status": "ABSENT",
+      "reason": "no model is executed by this receipt"
+    },
+    "representation": {
+      "status": "ABSENT",
+      "reason": "no representation is measured"
+    },
+    "kernel": {
+      "status": "ABSENT",
+      "reason": "no kernel is measured"
+    },
+    "runtime": {
+      "tool": "tools/accelerator/receipt.py, tools/accelerator/bench.py",
+      "git_head": "ff43b61612059bdbf8727ce12a4c063141064791"
+    },
+    "transport": {
+      "status": "ABSENT",
+      "reason": "no device transport is crossed"
+    }
+  },
+  "bench": null
+}

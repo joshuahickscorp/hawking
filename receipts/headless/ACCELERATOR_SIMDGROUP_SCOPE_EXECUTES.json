@@ -1,0 +1,159 @@
+{
+  "receipt": "ACCELERATOR_SIMDGROUP_SCOPE_EXECUTES",
+  "date": "2026-08-26",
+  "obligation": "G043 FRONT A -- the executable program shape ACCELERATOR_BARRIER_SCOPES named against itself",
+  "akb_registration": {
+    "evidence_domain": "accelerator",
+    "civilization": "I-D_ACCELERATOR",
+    "program": "AIR synchronization (S015 \u00a73, \u00a779)",
+    "machine_scope": "Apple M3 Ultra, INSTANCE",
+    "representation_scope": "NONE -- f32 dense, no representation is measured",
+    "kernel_scope": "AirSimdRowReduce, one simdgroup, SIMDGROUP-scope barrier",
+    "why_declared": "membership must not depend on what this file was named (S032 \u00a713)"
+  },
+  "question": "ACCELERATOR_BARRIER_SCOPES.json closed the SIMDGROUP instruction and said so precisely in its own claim boundary: 'NO AIR PROGRAM CURRENTLY DECLARES A SIMDGROUP BARRIER AND EXECUTES -- what closed is the INSTRUCTION and the REFUSAL'S HONESTY, not a new executable program shape.' Built the shape.",
+  "WHAT_SHIPPED": {
+    "AirSimdRowReduce": "a row reduction whose threadgroup IS one simdgroup, declaring AirBarrier SIMDGROUP, lowering it through barrier_msl -- the ONE place a lowering asks for a barrier, so the scope rule and the instruction cannot drift apart -- and EXECUTING on the Apple GPU",
+    "and_the_rule_the_IR_did_not_have": "the instruction existed with NO RULE ABOUT WHEN IT IS LEGAL. A simdgroup barrier orders 32 lanes and nothing wider; the barrier-scopes receipt measured a cross-simdgroup exchange WRONG BY 9.854 WITH simdgroup_barrier, the SAME error as with no fence at all. validate() now REFUSES threadgroup 64, 256 and 1024 and the refusal CITES THAT MEASUREMENT, because emitting an instruction that cannot order what the program needs ordered is worse than refusing.",
+    "the_rule_is_about_SCOPE_not_about_wide_threadgroups": "a test pins that AirSoftmax still validates at threadgroup 256 with THREADGROUP scope, so the rule cannot over-generalise into 'wide threadgroups are bad'."
+  },
+  "THREE_PREDICTIONS_WRITTEN_BEFORE_THE_RUN_ALL_CONFIRMED": {
+    "1_correct_at_every_shape": {
+      "predicted": "CORRECT",
+      "measured": [
+        {
+          "rows": 7,
+          "cols": 1000,
+          "max_rel_err": 1.4290513707880864e-06,
+          "cols_multiple_of_32": false
+        },
+        {
+          "rows": 3,
+          "cols": 33,
+          "max_rel_err": 7.725935178925576e-08,
+          "cols_multiple_of_32": false
+        },
+        {
+          "rows": 5,
+          "cols": 1,
+          "max_rel_err": 0.0,
+          "cols_multiple_of_32": false
+        },
+        {
+          "rows": 2,
+          "cols": 4099,
+          "max_rel_err": 1.2171705701026629e-06,
+          "cols_multiple_of_32": false
+        },
+        {
+          "rows": 1,
+          "cols": 32,
+          "max_rel_err": 2.4105597531531715e-08,
+          "cols_multiple_of_32": true
+        }
+      ],
+      "worst_max_rel_err": 1.4290513707880864e-06,
+      "note": "four of five shapes have cols NOT a multiple of 32, which is the case a stride-32 loop gets wrong if the tail is mishandled"
+    },
+    "2_the_fence_is_SILENT_here_and_that_is_MEASURED": {
+      "predicted": "BIT-IDENTICAL",
+      "runs": 10,
+      "rows_differing_per_run": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "bit_identical_every_run": true,
+      "why_this_is_not_a_disappointment": "within a simdgroup the exchange is exact WITHOUT a fence because lockstep makes it unnecessary -- the SIXTH independent sighting in this program, arrived at from a new direction. The barrier is emitted for the two reasons barrier_msl already states and NEITHER is correctness-on-this-chip: it constrains the COMPILER's reordering, and lockstep is a HARDWARE PROPERTY a future device need not preserve.",
+      "and_the_control_is_declared_silent_IN_ADVANCE": "a barrier-strip control here is SILENT BY CONSTRUCTION, so running one and reporting 'no difference' as evidence would be the check-that-cannot-fail this program has sealed five times. It is run and reported as a MEASUREMENT OF THE SILENCE, not as a correctness control."
+    },
+    "3_the_oracle_CAN_FAIL": {
+      "predicted": "CAUGHT",
+      "broken_stride_max_rel_err": 10.505401314588978,
+      "caught": true,
+      "why_it_is_load_bearing": "with the fence measured silent, the barrier control proves nothing about this kernel -- so the ONLY thing standing between the correctness claim and a check that cannot fail is a defect the oracle demonstrably catches. A wrong stride reads 10.51 relative against 1.4e-06 for the intact kernel."
+    }
+  },
+  "tests": {
+    "file": "tools/accelerator/test_air.py",
+    "total": 124,
+    "new": 5,
+    "mutations_watched_failing": [
+      "the wider-threadgroup refusal disabled -> a program declaring SIMDGROUP over 8 simdgroups is admitted",
+      "the barrier never reaches the source -> a declared scope that emits nothing"
+    ]
+  },
+  "claim_boundary": [
+    "WHAT CLOSED IS AN EXECUTABLE PROGRAM SHAPE AND A LEGALITY RULE. The instruction closed in ACCELERATOR_BARRIER_SCOPES.json and this does not re-close it; DEVICE scope remains unlowerable at the instruction level always, and its routing to an AirGraph dependency edge is still a REDIRECTION and not a closure.",
+    "THE BARRIER IS NOT LOAD-BEARING ON THIS CHIP and this receipt does not pretend otherwise -- 10 of 10 runs bit-identical without it. Anyone reading 'a SIMDGROUP barrier now executes' as 'a SIMDGROUP barrier is now doing something' would be wrong.",
+    "lockstep at simd width 32 stays an M3 ULTRA OBSERVATION and is NOT promoted to a property of Apple GPUs -- which is the entire reason the instruction is emitted anyway.",
+    "NOTHING TIMED. No performance claim exists here and the kernel is not compared against MLX or against AirReduce, so no winner is claimed either way and no champion moves.",
+    "f32 only, synthetic rows, no model executed; ONE machine, INSTANCE.",
+    "the machine was CONTENDED throughout (the operator's mlx_boot.py held 17-53 GiB), which cannot bias a correctness count and is recorded rather than assumed."
+  ],
+  "next": "an AIR program whose SIMDGROUP barrier is LOAD-BEARING would need a device that does not run a simdgroup in lockstep, or a compiler reordering that the fence demonstrably prevents -- the second is checkable in principle and needs generated assembly, which the ABSENT xcrun metal gate blocks",
+  "identities": {
+    "experiment": {
+      "class": "ACCEL-KERNEL",
+      "knowledge_level": "INSTANCE",
+      "question": "can an AIR program declare a SIMDGROUP barrier, execute, and refuse the widths where that scope cannot order what the program needs ordered?"
+    },
+    "machine": {
+      "soc": "Apple M3 Ultra",
+      "gpu_cores": 60,
+      "ram_gib": 96,
+      "receipt": "receipts/headless/MACHINE_GENOME.json"
+    },
+    "device": {
+      "backend": "Metal via MLX mx.fast.metal_kernel JIT",
+      "note": "xcrun metal ABSENT, so no AOT and no generated-assembly inspection"
+    },
+    "model": {
+      "status": "ABSENT",
+      "reason": "no model is executed; synthetic f32 rows"
+    },
+    "representation": {
+      "status": "ABSENT",
+      "reason": "dense f32; no representation is measured"
+    },
+    "kernel": {
+      "op": "AirSimdRowReduce",
+      "threadgroup": 32,
+      "barrier_scope": "SIMDGROUP"
+    },
+    "runtime": {
+      "tool": "tools/accelerator/air.py",
+      "git_head": "ff3908a2b3a8e4d510be2a3356d802b643a52981"
+    },
+    "transport": {
+      "status": "ABSENT",
+      "reason": "single-device unified-memory Metal run"
+    }
+  },
+  "bench": {
+    "state": "CONTENDED",
+    "recorded_at": "2026-08-26T08:00:00Z",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB",
+    "quiescence": {
+      "quiet": false,
+      "method": "enumerate",
+      "n_contenders": 5,
+      "max_rss_gib": 45.91,
+      "contenders": [
+        {
+          "comm": "mlx_boot.py",
+          "rss_gib": 45.91
+        }
+      ]
+    },
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "observed during the run; NOTHING IS TIMED here so contention cannot bias a correctness count, and the state is recorded rather than assumed"
+  }
+}

@@ -107637,5 +107637,14 @@
       "why": "starving below a measured organ floor is a ranking, not a reopen of a closed composition failure"
     }
   ],
-  "headline": "PROXY map at equal bits to N041 2.5969 complete EBPW. Organs below uniform: ['embedding', 'gqa', 'deltanet']; above: ['mlp', 'output']. embedding rec=3.113 (uni 3.125), mlp rec=2.304 (uni 2.25), gqa rec=2.928 (uni 3.126550820024315), deltanet rec=2.914 (uni 3.2614879737507687), output rec=4.250 (uni 3.125). Least-sensitive GEMV regions (cheapest to compress further, n_params>=1000000): L1.down_proj, L3.down_proj, L4.down_proj, L0.out_proj, L5.down_proj. This is not a new floor."
+  "headline": "PROXY map at equal bits to N041 2.5969 complete EBPW. Organs below uniform: ['embedding', 'gqa', 'deltanet']; above: ['mlp', 'output']. embedding rec=3.113 (uni 3.125), mlp rec=2.304 (uni 2.25), gqa rec=2.928 (uni 3.126550820024315), deltanet rec=2.914 (uni 3.2614879737507687), output rec=4.250 (uni 3.125). Least-sensitive GEMV regions (cheapest to compress further, n_params>=1000000): L1.down_proj, L3.down_proj, L4.down_proj, L0.out_proj, L5.down_proj. This is not a new floor.",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+  }
 }

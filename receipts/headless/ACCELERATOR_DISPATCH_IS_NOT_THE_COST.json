@@ -549,5 +549,14 @@
       "a_real_effect_this_does_NOT_establish": "the fused arm is still +22.2% above its own quiet 64-token figure, and the capability workload runs to 1536 tokens where KV-cache traffic is far larger. That is a CANDIDATE for a genuine length cost and is exactly the term FINDING_7 excludes from its byte count. It is named, not measured: nothing here separates KV growth from residual contention.",
       "and_the_quiescence_field_is_STILL_NOT_WIRED_INTO_THE_CAPABILITY_HARNESS": "WAS NOT, AND NOW IS. tools/headless/capability_suite.py grows a machine_state block: bench.machine_quiescence sampled ONCE before the items run and ONCE after -- not per item, because a subprocess per call would perturb what it measures, the same reason bench.time_arm does not call it either -- plus worst_repetition_spread_pct and a per-item spread table derived from responses already collected, at no cost. Exercised on THESE TWO RUNS' own responses without re-running a 20-minute suite: it reports 44.6% for the unfused arm and 0.8% for the fused one, reproducing by field exactly what had to be inferred by hand. A missing BEFORE sample returns recorded=false with a reason and NEVER a null field beside recorded=true, and a single repetition returns None rather than a fake 0.0% that would read as a perfectly quiet machine. Four tests, two mutations watched firing: recorded-without-a-sample and zero-spread-from-one-repetition, each caught by exactly the intended test."
     }
+  },
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
   }
 }

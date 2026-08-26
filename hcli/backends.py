@@ -506,8 +506,19 @@ def inject_schema_instruction(payload: Dict[str, Any], instruction: str) -> None
     append_user_text(payload, instruction, skip_if="MUST satisfy this JSON Schema")
 
 
-def extract_json_object(content: Any) -> Dict[str, Any]:
-    """Pull a JSON object out of a model reply. Raises SchemaViolation."""
+def extract_json_object(content: Any, diag: Optional[List[str]] = None) -> Dict[str, Any]:
+    """Pull a JSON object out of a model reply. Raises SchemaViolation.
+
+    ``diag`` collects notes about HOW the object was obtained. It matters when the
+    whole reply does not parse and an inner object is salvaged instead: that object
+    is a FRAGMENT, and validating it produces a schema error that blames the shape
+    when the real fault is a syntax error further up.
+
+    Measured on the sealed 27B resident: it emitted an unescaped quote inside a
+    string (``"find \"$ROOT/receipts/head" -type f"``), the outer object failed to
+    decode, the scan returned the first OBLIGATION object, and the rejection read
+    "missing required property 'obligations'". Six retries chased a phantom.
+    """
     if isinstance(content, dict):
         return content
     text = str(content or "").strip()
@@ -530,16 +541,29 @@ def extract_json_object(content: Any) -> Dict[str, Any]:
     except Exception:
         pass
     decoder = json.JSONDecoder()
+    first_brace = text.find("{")
+    outer_error: Optional[str] = None
     for index, char in enumerate(text):
         if char != "{":
             continue
         try:
             parsed, _ = decoder.raw_decode(text[index:])
-        except Exception:
+        except Exception as exc:
+            if index == first_brace:
+                outer_error = str(exc)
             continue
         if isinstance(parsed, dict):
+            if diag is not None and index != first_brace:
+                diag.append(
+                    "the reply is NOT valid JSON -- the outermost object failed to "
+                    f"decode ({outer_error or 'unknown error'}) and an INNER object "
+                    f"at offset {index} was validated instead. Fix the syntax; the "
+                    f"schema complaint below is about a fragment.")
             return parsed
-    raise SchemaViolation("response is not a JSON object", text=text)
+    raise SchemaViolation(
+        "response is not a JSON object"
+        + (f" (outermost object failed to decode: {outer_error})" if outer_error else ""),
+        text=text)
 
 
 def _json_type_name(value: Any) -> str:
@@ -572,6 +596,93 @@ def _type_matches(value: Any, expected: Any) -> bool:
     return actual == name
 
 
+def _edit_distance(a: str, b: str) -> int:
+    """Levenshtein, small strings only -- these are JSON key names."""
+    if a == b:
+        return 0
+    prev = list(range(len(b) + 1))
+    for i, ca in enumerate(a, 1):
+        cur = [i]
+        for j, cb in enumerate(b, 1):
+            cur.append(min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (ca != cb)))
+        prev = cur
+    return prev[-1]
+
+
+def _near_miss_key(required: str, instance: Dict[str, Any],
+                   schema: Dict[str, Any]) -> Optional[str]:
+    """A key the instance HAS that looks like the required one it is missing.
+
+    Only keys the schema does not otherwise know about qualify: a legitimate
+    sibling property is not a misspelling of anything. Threshold scales with the
+    name's length so short keys cannot collide with each other.
+    """
+    known = set(schema.get("properties") or {}) | set(schema.get("required") or [])
+    # At most a third of the name may differ, capped at 3 edits. A flat
+    # distance-1 threshold makes `ix` a misspelling of `id`, which is half the
+    # string -- a guess that would be wrong more often than useful on short keys.
+    limit = min(3, len(required) // 3)
+    if limit < 1:
+        return None
+    best, best_d = None, limit + 1
+    for key in instance:
+        if key in known or not isinstance(key, str):
+            continue
+        d = _edit_distance(required.lower(), key.lower())
+        if d < best_d:
+            best, best_d = key, d
+    return best if best_d <= limit else None
+
+
+def repair_near_miss_keys(instance: Any, schema: Dict[str, Any],
+                         log: List[str], path: str = "$") -> Any:
+    """Rename an UNAMBIGUOUS near-miss key onto the required name it misses.
+
+    A grammar-less backend usually produces the right SHAPE and drifts one key.
+    Measured on the sealed 27B resident: a correct four-obligation plan was thrown
+    away six times over `consequent` for `consequential`, and the retry that named
+    the drift produced a different one (` angles`, with a leading space).
+
+    Refusing a recoverable plan over one token is not rigour, but repairing one
+    silently would be worse than the drift. Every rename is APPENDED TO log and
+    travels into the receipt, and a rename only happens when:
+
+      * the required key is genuinely absent, and
+      * exactly one unknown key is within the near-miss threshold.
+
+    A rename whose value does not fit the property is caught by the caller's
+    re-validation, which discards the whole repair. An earlier version also
+    checked the value type HERE; a mutation deleting that check passed every test,
+    because the outer re-validation already refuses the same objects. It was
+    redundant, so it is gone -- and the re-validation now has its own test.
+    """
+    if isinstance(instance, dict) and isinstance(schema, dict):
+        # Surrounding whitespace in a key is never intentional and is the same
+        # class of drift; strip it first, and only when nothing collides.
+        for key in [k for k in instance if isinstance(k, str) and k != k.strip()]:
+            if key.strip() and key.strip() not in instance:
+                instance[key.strip()] = instance.pop(key)
+                log.append(f"{path}: key {key!r} -> {key.strip()!r} (whitespace)")
+        props = schema.get("properties") or {}
+        for key in schema.get("required") or []:
+            if key in instance:
+                continue
+            near = _near_miss_key(key, instance, schema)
+            if near is None:
+                continue
+            instance[key] = instance.pop(near)
+            log.append(f"{path}: key {near!r} -> {key!r}")
+        for key, value in list(instance.items()):
+            if key in props and isinstance(props[key], dict):
+                repair_near_miss_keys(value, props[key], log, f"{path}.{key}")
+    elif isinstance(instance, list) and isinstance(schema, dict):
+        items = schema.get("items")
+        if isinstance(items, dict):
+            for i, value in enumerate(instance):
+                repair_near_miss_keys(value, items, log, f"{path}[{i}]")
+    return instance
+
+
 def validate_against_schema(
     instance: Any, schema: Dict[str, Any], path: str = "$"
 ) -> Optional[str]:
@@ -594,6 +705,16 @@ def validate_against_schema(
             return f"{path}: expected object, got {_json_type_name(instance)}"
         for key in schema.get("required") or []:
             if key not in instance:
+                # NAME THE NEAR MISS. A weak-structured-output backend usually gets
+                # the shape right and drifts one key -- measured against the sealed
+                # 27B resident, which wrote "consequential" on obligations[0] and
+                # "consequent" on [1], [2] and [3]. "missing required property
+                # 'consequential'" told it what was absent and nothing about what
+                # it had actually written, and six retries never converged.
+                near = _near_miss_key(key, instance, schema)
+                if near:
+                    return (f"{path}: missing required property {key!r} -- you wrote "
+                            f"{near!r}, which is not the schema's name for it")
                 return f"{path}: missing required property {key!r}"
         props = schema.get("properties") or {}
         additional = schema.get("additionalProperties", True)
@@ -730,6 +851,9 @@ class StructuredOutputContract:
     instruction: str
     max_attempts: int = DEFAULT_STRUCTURED_OUTPUT_ATTEMPTS
     degraded_features: List[str] = field(default_factory=lambda: ["response_format"])
+    # Every key rename this contract performed. Carried into the receipt so a
+    # repair is auditable rather than invisible.
+    repairs: List[str] = field(default_factory=list)
 
     def apply(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         prepared = deepcopy(payload)
@@ -739,9 +863,18 @@ class StructuredOutputContract:
         return prepared
 
     def validate(self, text: Any) -> Dict[str, Any]:
-        parsed = extract_json_object(text)
+        diag: List[str] = []
+        parsed = extract_json_object(text, diag)
         err = validate_against_schema(parsed, self.schema)
+        if err and diag:
+            # The syntax error is the cause; the schema error is its shadow.
+            err = diag[0] + " || " + err
         if err:
+            log: List[str] = []
+            repaired = repair_near_miss_keys(deepcopy(parsed), self.schema, log)
+            if log and not validate_against_schema(repaired, self.schema):
+                self.repairs.extend(log)
+                return repaired
             raise SchemaViolation(err, text=str(text) if text is not None else None)
         return parsed
 
@@ -791,6 +924,10 @@ class StructuredOutputContract:
             if isinstance(result.raw, dict):
                 result.raw = dict(result.raw)
                 result.raw["_structured"] = parsed
+                if self.repairs:
+                    result.raw["_structured_repairs"] = list(self.repairs)
+                    if "structured_output_key_repair" not in result.degraded:
+                        result.degraded.append("structured_output_key_repair")
             result.schema_attempts = attempt
             return result
         reason = (

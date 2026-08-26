@@ -170,5 +170,14 @@
   "reconciles_with_prior_campaign_law": "This campaign previously measured that DECODE CONCURRENCY TOPS OUT AROUND 1.21x and that the Metal working set is the admission gate. This sweep reaches 3.38x, which looks like a contradiction and is NOT one. That law was measured on WHOLE MODEL BODIES, whose working sets are tens of GiB and which are BANDWIDTH- and ADMISSION-bound; this kernel touches 4 MiB and is LAUNCH-bound, so extra processes fill launch gaps rather than competing for bandwidth. The two results belong to different regimes, and the honest reading is that concurrency helps when launch-bound and does not when bandwidth-bound. The P7 size sweep already showed this kernel is launch-bound below ~64 MiB, so the regimes were separable in advance."
  },
  "claim_boundary": "A 4 MiB kernel at INSTANCE level. It does NOT overturn the whole-body concurrency law and must not be cited as if it did -- different working set, different bound. MAX_THROUGHPUT is now sealed at 8 processes because aggregate throughput is what that profile optimises, but per-process efficiency there is only 0.42, so a profile optimising WORK PER RESOURCE would choose differently. And this is raw kernel rate, not verified WorkUnits per hour.",
- "pass": true
+ "pass": true,
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

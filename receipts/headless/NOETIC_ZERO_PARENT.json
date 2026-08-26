@@ -1,8 +1,8 @@
 {
   "schema": "hawking.headless.noetic_zero_parent.v1",
-  "generated_at": "2026-08-26T03:40:53Z",
-  "git_head": "e665c7319eb06bc1611d1ede67e091160dea83c0",
-  "elapsed_s": 8.212,
+  "generated_at": "2026-08-26T10:14:21Z",
+  "git_head": "665110c71c8cc16db6a05af70d621a0266853ab1",
+  "elapsed_s": 6.22,
   "claim": "Production Noetic inference does not load parent weights.",
   "observation_method": "DYLD interpose of open/openat/open$NOCANCEL/fopen (tools/headless/noetic_openlog.c) on the live process. Successful opens are resolved via F_GETPATH so openat relative names still name the file. Every recorded path is an observed open(), not a walk of the loader source.",
   "parent_bf16": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
@@ -11,9 +11,9 @@
   "decode_binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
   "decode_binary_identity": {
     "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
-    "size": 6532848,
-    "mtime_unix": 1787710176,
-    "sha256_head_1m": "066a2d9bdb6937425ade1e6a06bd016f6808ef733c25efc59aab7deccc358d62",
+    "size": 6565152,
+    "mtime_unix": 1787722800,
+    "sha256_head_1m": "0b7184c29a36d7c5e630a12088a03cbe17de780594dc9c0f17136294fdcdb0b2",
     "from_this_repo": true,
     "not_vestigial_hawking_copy": true
   },
@@ -70,7 +70,7 @@
       "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
       "exit_code": 0,
       "timed_out": false,
-      "elapsed_s": 6.734,
+      "elapsed_s": 4.769,
       "dylib_loaded": true,
       "saw_tokenizer_encode": true,
       "saw_catalog_count": true,
@@ -90,7 +90,7 @@
       "complete": true,
       "truncation": null,
       "stderr_head": "INTERPOSE_CTOR\nqwen38 prompt tokens=9 text=\"<|im_start|>user\\nHi<|im_end|>\\n<|im_start|>assistant\\n\"\nqwen38-decode opening Metal + 755 catalog tensors\nqwen38-decode upload 0/755\nqwen38-decode upload 50/755\nqwen38-decode upload 100/755\nqwen38-decode upload 150/755\nqwen38-decode upload 200/755\nqwen38-decode upload 250/755\nqwen38-decode upload 300/755\nqwen38-decode upload 350/755\nqwen38-decode upload 400/755\nqwen38-decode upload 450/755\nqwen38-decode upload 500/755\nqwen38-decode upload 550/755\nqwen38-decode upload 600/755\nqwen38-decode upload 650/755\nqwen38-decode upload 700/755\nqwen38-decode upload 750/755\n[hawking] HAWKING_TCB_TRACE=\"(unset)\" \u2192 mode=Off\n",
-      "stdout_head": "GENERATED_TEXT_VERBATIM: <think>\nFALLBACKS: 0\nDENSE_W_MATERIALIZED: 0\nPROMPT_LEN: 9\nNEW_TOKENS: [248068]\ngenerated_token_ids=[248068]\nGPU_NS_PER_STEP: [877007499, 90072958, 60841208, 38766541, 41303124, 53055500, 56917875, 61854375, 38912250]\nWAIT_NS_PER_STEP: [1267692792, 90422208, 61162875, 39058125, 41602292, 53432834, 57397959, 62199875, 39288625]\nMEDIAN_GPU_NS_PER_TOKEN: Some(56917875)\nWALL_NS: 1731394584\nPREFILL_WALL_NS: 1731392500\nDECODE_WALL_NS: 1209\nFIRST_STEP_WALL_NS: 1279300417\nSTEADY_DECODE_WALL_NS_PER_TOKEN: None\n",
+      "stdout_head": "GENERATED_TEXT_VERBATIM: <think>\nFALLBACKS: 0\nDENSE_W_MATERIALIZED: 0\nPROMPT_LEN: 9\nNEW_TOKENS: [248068]\ngenerated_token_ids=[248068]\nGPU_NS_PER_STEP: [71232583, 28431624, 28409666, 28402208, 28507916, 28507374, 28522750, 28525250, 28280916]\nWAIT_NS_PER_STEP: [149844250, 28848833, 28852458, 28792209, 28873917, 28943042, 28941167, 28837500, 28565834]\nMEDIAN_GPU_NS_PER_TOKEN: Some(28507374)\nWALL_NS: 391425584\nPREFILL_WALL_NS: 391423167\nDECODE_WALL_NS: 1042\nFIRST_STEP_WALL_NS: 154360917\nSTEADY_DECODE_WALL_NS_PER_TOKEN: None\n",
       "observation": {
         "n_events": 808,
         "n_unique": 786,
@@ -145,7 +145,7 @@
       "via": "noetic_composition.SourceBF16.load"
     },
     "exit_code": 0,
-    "elapsed_s": 0.929,
+    "elapsed_s": 0.917,
     "dylib_loaded": true,
     "parent_weight_opens": [
       "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model-00001-of-00018.safetensors"
@@ -174,7 +174,7 @@
       "artifact_other": [],
       "artifact_tensor_head": [],
       "artifact_tensor_tail": [],
-      "unique_paths_fingerprint": "cae4f05e3a1cdd736611deed2cdd597114422b903a92a4ce42e37b8b6bb7a3d6"
+      "unique_paths_fingerprint": "49fe44db2f6af6c5c6b45bb68208fb4d73b79d545ccf14838043e8c5a7999236"
     }
   },
   "detector": {
@@ -222,5 +222,14 @@
     "control_result": "caught"
   },
   "verdict": "PASS",
-  "pass_rule": "PASS iff (1) the native decode built from THIS repo ran to completion (exit 0, at least one emitted token, 755 observed catalog tensor opens), (2) that complete run opened no parent weight file, (3) the composition teacher-scoring control DID open a parent weight file and the detector flagged it, (4) the interpose loaded on both runs. A truncated run (Metal refused, timeout, zero tokens, or missing catalog reads) is INCONCLUSIVE, never PASS."
+  "pass_rule": "PASS iff (1) the native decode built from THIS repo ran to completion (exit 0, at least one emitted token, 755 observed catalog tensor opens), (2) that complete run opened no parent weight file, (3) the composition teacher-scoring control DID open a parent weight file and the detector flagged it, (4) the interpose loaded on both runs. A truncated run (Metal refused, timeout, zero tokens, or missing catalog reads) is INCONCLUSIVE, never PASS.",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
 }

@@ -40,5 +40,14 @@
     "GrokBridge REFUSES to invent a task id when grok-run is absent. An earlier run of the campaign produced an empty Grok arm for exactly that reason, and that refusal is why it was diagnosable rather than silently green."
   ],
   "what_did_NOT_cross_over": "Claude still launches the campaign's own hardening lanes by hand. That is deliberate: those lanes WRITE to the repository under a reviewed contract, and HCLI-owned Grok dispatch is currently read-only consult. Handing write-scoped delegation to the scheduler is a larger step than this obligation asks for, and it is recorded here as not done rather than implied by the crossover.",
-  "result": "PASS"
+  "result": "PASS",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+  }
 }

@@ -621,5 +621,14 @@
     "research_pressure": 1.0,
     "floor_even_if_mlp_were_free_ebpw": 1.5082,
     "reading": "Per-organ quantization cannot reach ~1 EBPW. The leader is already within 6% of the implied floor, and the non-MLP organs alone would still cost more than 1.5 EBPW with the MLP at zero bits. Reaching ~1 requires STRUCTURE that breaks these floors, not narrower codes."
+  },
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
   }
 }

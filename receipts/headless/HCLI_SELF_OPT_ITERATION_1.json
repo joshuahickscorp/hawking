@@ -5,7 +5,7 @@
   "baseline_pytest": {
     "expected": "417 passed, 1 skipped",
     "observed": "416 passed, 2 skipped",
-    "deviation": "one extra skip: tests/test_mlx_backend.py::test_supports_against_installed_binary — installed mlx_lm.server --help does not list chat-template kwargs (Metal-less session or older binary). The other skip is the always-skipped live grok-run audit. Suite otherwise green.",
+    "deviation": "one extra skip: tests/test_mlx_backend.py::test_supports_against_installed_binary \u2014 installed mlx_lm.server --help does not list chat-template kwargs (Metal-less session or older binary). The other skip is the always-skipped live grok-run audit. Suite otherwise green.",
     "suite_green": true
   },
   "grok_run": null,
@@ -159,7 +159,7 @@
         "ok": true,
         "exit_code": 0,
         "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338/tools/headless/hcli_self_optimize.py --stage decide --state /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas/loop_state.json --repo /Users/scammermike/.claude-grok/worktrees/i3selfopt-20260823-043338 --workspace /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas",
-        "output": "ok   decide: promote — Both gates passed and paired overlap improved (original median peak=1 mutated median peak=2).\n"
+        "output": "ok   decide: promote \u2014 Both gates passed and paired overlap improved (original median peak=1 mutated median peak=2).\n"
       },
       "dependencies": [
         "gate.perf"
@@ -556,7 +556,7 @@
         {
           "id": "H3_thread_local_patches",
           "verdict": "REJECTED",
-          "reason": "Still patches. threading.local hides the shared-state bug instead of deleting it, and goal_compiler.compile is a bound method on a shared GoalCompiler — TLS on the engine instance does not make the compiler itself re-entrant. Band-aid; screened out in favour of H2."
+          "reason": "Still patches. threading.local hides the shared-state bug instead of deleting it, and goal_compiler.compile is a bound method on a shared GoalCompiler \u2014 TLS on the engine instance does not make the compiler itself re-entrant. Band-aid; screened out in favour of H2."
         },
         {
           "id": "H4_clone_engine",
@@ -895,7 +895,7 @@
   "watched_fail": [
     {
       "title": "Baseline pytest was 416 passed, 2 skipped, not 417/1",
-      "detail": "one extra skip: tests/test_mlx_backend.py::test_supports_against_installed_binary — installed mlx_lm.server --help does not list chat-template kwargs (Metal-less session or older binary). The other skip is the always-skipped live grok-run audit. Suite otherwise green."
+      "detail": "one extra skip: tests/test_mlx_backend.py::test_supports_against_installed_binary \u2014 installed mlx_lm.server --help does not list chat-template kwargs (Metal-less session or older binary). The other skip is the always-skipped live grok-run audit. Suite otherwise green."
     },
     {
       "title": "grok-run is not on PATH",
@@ -923,5 +923,14 @@
     "no_progress_warning": null
   },
   "mission_wall_s": 134.01605208299588,
-  "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas"
+  "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-selfopt-mission-tvtgddas",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+  }
 }

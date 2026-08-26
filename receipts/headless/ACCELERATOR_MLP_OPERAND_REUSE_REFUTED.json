@@ -84,7 +84,8 @@
     "the arms carry ~15% IQR, above the program's own gate; the refutation rests on SIGN CONSISTENCY 3/3 plus a median in the wrong direction, not on a clean gate, and no small effect is resolved.",
     "ONE shape, ONE machine, INSTANCE. Random codes and scales rather than the artifact's real weights -- correct for a timing question, since the instruction stream does not depend on the values, and NOT correct for anything about adequacy.",
     "the reload arm's defence against common-subexpression elimination is ARCHITECTURAL (two unaliased parameters) and was not verified by reading generated assembly, which xcrun metal being ABSENT on this machine makes impossible -- the same named gate that blocks AOT metallib.",
-    "NOTHING about the production 17.35 us/dispatch figure moves: this refutes one proposed MECHANISM for it, not the measurement."
+    "NOTHING about the production 17.35 us/dispatch figure moves: this refutes one proposed MECHANISM for it, not the measurement.",
+    "THE 17.2 us FIGURE FROM THE FIRST FOLLOW-UP RUN IS WITHDRAWN. It was 2 removed dispatches reported as 1. Corrected it is 8.6 us, which does NOT reproduce production's 17.35."
   ],
   "next": "the two_dispatch arm the moment a quiet window exists -- it tests prologue, reduction and epilogue together, which is what is left after operand reuse",
   "identities": {
@@ -133,5 +134,47 @@
       "status": "ABSENT",
       "reason": "single-device unified-memory Metal run; no bridge and no host<->device transport is crossed"
     }
+  },
+  "AMENDMENT_2026_08_26_THE_TWO_DISPATCH_ARM_WAS_THREE": {
+    "what_happened": "the follow-up arm this receipt's own `next` asked for -- 'the two_dispatch arm the moment a quiet window exists' -- was built, ran with 3 ADMITTED sweeps, and read reuse 0.3626 ms / reload 0.3586 / two_dispatch 0.3798, which the script printed as '+4.541% = 17.2 us per removed dispatch'. That 17.2 lands on top of production's 17.35 us/dispatch for the gate_up pair, and I was one commit from publishing the match.",
+    "the_defect": "two_dispatch() returned `a + b`. MLX evaluates the elementwise add as its own kernel, so the arm ran THREE dispatches and not two. It was measuring 3 -> 1 while being reported as 2 -> 1.",
+    "the_correction": {
+      "removed_dispatches": 2,
+      "delta_ms": 0.0172,
+      "us_per_removed_dispatch_as_printed": 17.2,
+      "us_per_removed_dispatch_corrected": 8.6,
+      "production_gate_up_pair_us_per_dispatch": 17.35,
+      "verdict": "THE MATCH WAS AN ARTIFACT OF COUNTING. Corrected, the synthetic arm sits at HALF the production figure, so it does NOT reproduce it and the remaining ~2x is still unexplained."
+    },
+    "how_it_was_caught": "by asking how many dispatches the arm ACTUALLY RUNS rather than how many kernels it names. A `+` between two MLX arrays is a kernel; the arm's name counted the two it called by hand and silently omitted the one the language wrote.",
+    "why_this_is_the_dangerous_shape": "the wrong number AGREED with an independently measured production figure to within 0.9%. An agreement is the weakest moment to check arithmetic and the moment it matters most -- the same shape as this session's 756-dispatch total, which agreed with a receipt describing a DIFFERENT graph and so hid a silently-inert env flag.",
+    "corrected_arms_status": {
+      "arms": [
+        "single_only (1 dispatch, half the weights)",
+        "reuse (1, fused)",
+        "reload (1, aliased)",
+        "two_no_add (exactly 2)",
+        "two_plus_add (3, prices the add by difference)"
+      ],
+      "bench_state": "CONTENDED",
+      "sweeps_admitted": 0,
+      "runs_refused": 0,
+      "why": "the admission gate refuses any sweep with a >2 GiB neighbour at either sample. The operator's tools/mlx_boot.py held 39 GiB at 102% CPU for the whole 1500 s budget, so NO SWEEP WAS EVER STARTED -- runs_refused is 0 because the gate never got as far as refusing one. No timing claim is made from this run (S032 \u00a73).",
+      "what_DID_come_back": "correctness, which contention cannot contaminate: reuse and reload both agree with the float64 oracle over the same packed bytes to 1.913e-07.",
+      "next": "re-run the five corrected arms when the machine goes quiet; the question left standing is why the synthetic arm prices a removed dispatch at 8.6 us and production prices the gate_up pair at 17.35"
+    },
+    "laws_unaffected": [
+      "AKB-INPUT-OPERAND-REUSE-IS-NOT-THE-MLP-FUSION-WIN"
+    ],
+    "why_that_law_stands": "the withdrawn figure is the FOLLOW-UP arm's us-per-removed-dispatch. The law rests on the operand-reuse arms -- reuse vs reload, -1.9% then -1.1% with 3/3 sign consistency both times -- which this amendment does not touch and did not re-run. Declared by law_id rather than left to be inferred, because a reader cannot tell from a filename which claim an amendment reaches (S032 \u00a713)."
+  },
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
   }
 }

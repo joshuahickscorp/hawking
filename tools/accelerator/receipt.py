@@ -28,6 +28,83 @@ EXPERIMENT_CLASSES = {
     "ACCEL-DEVICE", "ACCEL-C2M", "ACCEL-EGB", "ACCEL-HUMF", "ACCEL-SUSTAINED",
 }
 
+BENCH_STATES = ("QUIESCED", "CONTENDED", "UNKNOWN")
+
+# S032 §3: quiescence is a BENCHMARK INPUT, not a footnote. Any receipt that
+# quotes a duration, a rate or a ratio-of-durations is a performance receipt and
+# must carry the machine state it was measured under.
+#
+# The rule that forces the issue is the steer's own: "If quiescence is unknown:
+# BENCH_STATE = UNKNOWN, not quiet." A receipt with no bench block at all reads
+# as quiet to every downstream reader, which is exactly the claim it never made.
+_TIMING_SUFFIXES = ("_ns", "_us", "_ms", "_s", "_sec", "_seconds", "_tps",
+                    "_gbps", "_gib_s", "_hz", "_pct_faster", "_speedup")
+_TIMING_NAMES = {"tps", "speedup", "latency", "wall", "throughput", "gbps",
+                 "ns_per_token", "us_per_dispatch", "median_s", "p50", "p95"}
+
+
+def _timing_keys(node, path="result") -> list[str]:
+    """Every key in the result tree that quotes time, rate, or a speed ratio."""
+    found = []
+    if isinstance(node, dict):
+        for k, v in node.items():
+            lk = str(k).lower()
+            if lk in _TIMING_NAMES or lk.endswith(_TIMING_SUFFIXES):
+                found.append(f"{path}.{k}")
+            found += _timing_keys(v, f"{path}.{k}")
+    elif isinstance(node, list):
+        for i, v in enumerate(node):
+            found += _timing_keys(v, f"{path}[{i}]")
+    return found
+
+
+def _check_bench(bench, result) -> None:
+    timing = _timing_keys(result)
+    if bench is None:
+        if timing:
+            raise ValueError(
+                f"this receipt quotes timing at {timing[:5]} but carries no bench "
+                f"block. S032 §3: a performance receipt records the machine state "
+                f"it was measured under, and an absent state reads as QUIESCED to "
+                f"every downstream reader. Pass bench=bench.bench_block(...) or, if "
+                f"the state genuinely is not known, bench_state UNKNOWN.")
+        return
+    state = bench.get("state")
+    if state not in BENCH_STATES:
+        raise ValueError(f"bench state {state!r} is not one of {BENCH_STATES}")
+    for k in ("recorded_at", "machine"):
+        if not bench.get(k):
+            raise ValueError(f"bench block is missing {k!r}; a state without a "
+                             f"timestamp and a machine identity is not a measurement")
+    # QUIESCED is the only state that is a CLAIM. It has to be earned.
+    if state == "QUIESCED":
+        q = bench.get("quiescence")
+        if not isinstance(q, dict) or q.get("quiet") is not True:
+            raise ValueError(
+                "bench state QUIESCED without an enumerating quiescence sample "
+                "reporting quiet=True. Unknown is UNKNOWN, never quiet.")
+        if q.get("n_contenders"):
+            raise ValueError(
+                f"bench state QUIESCED while {q['n_contenders']} contenders are "
+                f"recorded: {[c.get('comm') for c in q.get('contenders') or []][:4]}")
+        # ...AND THE SUMMARY MUST AGREE WITH THE SAMPLES IT SUMMARISES. bench_block
+        # derives `quiescence` as the WORST sample, so the two agree by construction
+        # -- but a hand-built bench dict can carry a quiet summary over noisy
+        # samples, and this program has already shipped one harness that wrote
+        # "bench_state": "QUIESCED" as a LITERAL while every one of its six
+        # quiescence probes read quiet=False. That harness never reached this
+        # function; the hole it revealed is that the summary was trusted alone.
+        for side, sample in (bench.get("samples") or {}).items():
+            if isinstance(sample, dict) and sample.get("quiet") is not True:
+                raise ValueError(
+                    f"bench state QUIESCED but the {side!r} sample reports "
+                    f"quiet={sample.get('quiet')!r} with "
+                    f"{sample.get('n_contenders')} contenders "
+                    f"{[c.get('comm') for c in sample.get('contenders') or []][:3]}. "
+                    f"A summary that disagrees with its own samples is an ASSERTED "
+                    f"state, and S032 §3 requires a derived one.")
+
+
 # Steer §80. Never promote too early.
 KNOWLEDGE_LEVELS = ("INSTANCE", "MODEL_FAMILY", "ARCHITECTURE", "REPRESENTATION",
                     "SOC_FAMILY", "DEVICE_CLASS", "APPLE_GENERAL", "EGB_TOPOLOGY",
@@ -47,7 +124,8 @@ def git_head() -> str | None:
 
 
 def build(*, experiment_class: str, knowledge_level: str, identities: dict[str, Any],
-          result: dict[str, Any], claim_boundary: str, passed: bool) -> dict[str, Any]:
+          result: dict[str, Any], claim_boundary: str, passed: bool,
+          bench: dict[str, Any] | None = None) -> dict[str, Any]:
     if experiment_class not in EXPERIMENT_CLASSES:
         raise ValueError(f"{experiment_class!r} is not a canonical class; "
                          f"known: {sorted(EXPERIMENT_CLASSES)}")
@@ -61,6 +139,7 @@ def build(*, experiment_class: str, knowledge_level: str, identities: dict[str, 
         v = identities[k]
         if isinstance(v, dict) and v.get("status") == "ABSENT" and not v.get("reason"):
             raise ValueError(f"identity {k!r} is ABSENT without a reason")
+    _check_bench(bench, result)
     return {
         "schema": SCHEMA,
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
@@ -71,6 +150,9 @@ def build(*, experiment_class: str, knowledge_level: str, identities: dict[str, 
         "result": result,
         "claim_boundary": claim_boundary,
         "pass": bool(passed),
+        # Present as an explicit null when the receipt makes no timing claim, so a
+        # reader can tell "not a performance receipt" from "state not recorded".
+        "bench": bench,
     }
 
 

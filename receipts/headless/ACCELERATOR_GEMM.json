@@ -104,5 +104,14 @@
   "why_we_lose": "a 16x16 scalar tile with no simdgroup matrix ops, no double buffering, no register blocking and no vectorised loads. MLX uses Apple's matrix hardware; this does not."
  },
  "claim_boundary": "This closes NOTHING about performance and was never going to. What it establishes is CAPABILITY: threadgroup memory and barriers now execute on this backend, verified by negative controls that made the check fail on purpose. The GEMM itself is 4.7x slower than the incumbent and must not be used. AIR still cannot express this kernel -- it has no tiling, no threadgroup allocation and no barrier LOWERING, only barrier REPRESENTATION -- so this is a hand-written MSL kernel sitting beside AIR rather than produced by it.",
- "pass": true
+ "pass": true,
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

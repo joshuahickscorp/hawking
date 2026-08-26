@@ -236,6 +236,14 @@ def execution_coverage() -> dict[str, Any]:
         "of": len(MEASURED_2026_08_25),
         "one_layer_only": True,      # num_hidden_layers cut to 1; the OTHER layers
                                      # are identical by the index and were not built
+        # STILL TRUE OF THIS TABLE, and no longer forced by storage. The gate that
+        # forced it ("a quiesced window or a Tier 1 staged copy") opened when the
+        # operator's fill finished; all four specimens have since been loaded with
+        # REAL lake weights at 99.7-100% parameter coverage, and the next-token
+        # distribution moves off ln(V) for every one of them
+        # (receipts/headless/ACCELERATOR_REAL_LAKE_WEIGHTS.json). Still ONE LAYER,
+        # so no adequacy claim moves either way.
+        "real_weights_demonstrated": "ACCELERATOR_REAL_LAKE_WEIGHTS.json",
         "random_weights": True,      # a CAPABILITY claim about the runtime; it says
                                      # NOTHING about adequacy, and the 2026-07-27
                                      # gaussian-proxy law is about grading
@@ -335,3 +343,43 @@ def thin_to_one_layer(cfg: dict[str, Any]) -> dict[str, Any]:
             if "depth" in d:
                 d["depth"] = 1
     return c
+
+
+# The checkpoint's key layout is the SECOND one-field-class gap found in the same
+# specimen the first repair exists for. G061 fixed a missing config field for
+# Qwen3-VL; this fixes a weight-key ORDER for the same model.
+#
+# mlx_lm.models.qwen3_vl_moe.sanitize reads weights["language_model"]["model"],
+# so it expects a checkpoint rooted at `language_model.model.layers.N...`. The
+# published Qwen3-VL-30B-A3B-Instruct checkpoint is rooted at
+# `model.language_model.layers.N...` -- the same two components, swapped. On the
+# real checkpoint sanitize raises KeyError: 'language_model' and, if that
+# exception is swallowed, EVERY tensor then fails the name match and the model
+# runs on its random initialisation while reporting a successful load.
+#
+# Hawking-side, exactly like prepare_config: no library file is patched.
+_WEIGHT_KEY_REPAIR = {
+    "qwen3_vl_moe": (("model.language_model.", "language_model.model."),
+                     ("model.visual.", "visual."),
+                     ("lm_head.", "language_model.lm_head.")),
+}
+
+
+def prepare_weight_keys(weights: dict[str, Any], model_type: str) -> dict[str, Any]:
+    """Rewrite checkpoint key prefixes into the layout mlx_lm's sanitize expects.
+
+    Longest prefix wins, and each key is rewritten AT MOST ONCE, so a rule cannot
+    chain into another rule's output. Model types with no rule are returned
+    unchanged rather than guessed at."""
+    rules = _WEIGHT_KEY_REPAIR.get(model_type)
+    if not rules:
+        return weights
+    ordered = sorted(rules, key=lambda r: -len(r[0]))
+    out: dict[str, Any] = {}
+    for k, v in weights.items():
+        for src, dst in ordered:
+            if k.startswith(src):
+                k = dst + k[len(src):]
+                break
+        out[k] = v
+    return out

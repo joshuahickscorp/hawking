@@ -1,0 +1,240 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-26T12:54:10Z",
+ "experiment_class": "ACCEL-DISPATCH",
+ "knowledge_level": "SOC_FAMILY",
+ "git_head": "e9918f6ef552110a42b906b06d393dbfe5189462",
+ "identities": {
+  "experiment": "what does a removed dispatch actually cost? five arms on one MLP shape",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified",
+  "device": "Metal via MLX mx.fast.metal_kernel JIT",
+  "model": {
+   "status": "ABSENT",
+   "reason": "synthetic MLP shape, no model executed; the production comparison point is quoted from its own receipt"
+  },
+  "representation": "grouped absmax group=64 operands, rows=17408 cols=5120",
+  "kernel": "hand-written MSL GEMV variants: single_only, reuse, reload, two_no_add, two_plus_add",
+  "runtime": "MLX 0.32.1, 200 reps, 40 warmup, 3 admitted sweeps, 0 refused",
+  "transport": {
+   "status": "ABSENT",
+   "reason": "no transport under test"
+  }
+ },
+ "result": {
+  "THE_LABEL_WAS_ASSERTED_AND_IS_CORRECTED_HERE": "The harness gated only on max_rss_gib > 2 GiB and then wrote \"bench_state\": \"QUIESCED\" as a LITERAL on its success path. All six of its own quiescence probes read quiet=False, with CPU contenders at 55.4%, 33.4% and 22.8%. The state is CONTENDED, re-derived by bench.bench_block from those same samples. receipt.build would have refused the literal -- the harness never called it -- and the guard has since been extended to cross-check a QUIESCED summary against its own samples, with both arms of that check under test.",
+  "THE_QUESTION_THIS_ANSWERS": "G079 carried an open question: why does a synthetic arm price a removed dispatch at 8.6 us while production prices the gate_up pair at 17.35 us. The answer is that NEITHER NUMBER IS A DISPATCH PRICE. 'us per removed dispatch' silently bundles the dispatch overhead with whatever WORK moved when the dispatch was removed, and on this machine the work dominates by two orders of magnitude.",
+  "us_per_removed_dispatch_when_NO_work_moves": 1.042,
+  "us_for_the_elementwise_combine_alone": 5.833,
+  "us_marginal_cost_of_a_SECOND_dispatch_that_moves_more_weights": 70.708,
+  "THE_SEPARATION": "Fusing two half-width kernels into one full-width kernel removes a dispatch and moves ZERO extra bytes: 1.042 us. Adding a dispatch that reads more weights costs 70.708 us. Same machine, same shape, same session -- a factor of 68. The dispatch is nearly free; the bytes are not.",
+  "two_no_add_over_single_only": 1.2376,
+  "DISPATCHES_DO_NOT_SIMPLY_ADD": "Doubling both the dispatch count and the weights read costs 23.76% more, not 100%. A ratio of 2.0 would mean serial, non-overlapping dispatches; 1.2376 means they overlap and the machine is bandwidth-bound, which is what the 2026-08-24 organ reprofile independently concluded.",
+  "OPERAND_REUSE_IS_REFUTED": "Pre-registered: 8-20% if operand reuse is the mechanism, INDISTINGUISHABLE refutes it. Measured +0.418%, complete_separation False, against within-sweep IQR of 5.86-8.84%. The predicted floor of 8% WOULD have been resolvable against that noise, so this is a real negative and not merely an unresolved one -- but the 0.418% itself is inside the noise and must not be read as a small positive.",
+  "fused_vs_two_dispatch_pct": 0.28292690771386203,
+  "WHAT_THIS_MEANS_FOR_THE_964_TARGET": "S032 \u00a74 sets descending dispatch targets 964 -> 750 -> 500 -> 300 -> 200. This measurement does not argue against them, but it prices them: a dispatch removed WITHOUT moving bytes returns about 1 us, so removing 464 such dispatches would return roughly 0.5 ms per token against a ~29 ms token. The returns have to come from the bytes that move with the dispatch, which is exactly the order \u00a72 already states -- ELIMINATE BYTES precedes ELIMINATE DISPATCHES.",
+  "median_ms": {
+   "reuse": 0.3672500024549663,
+   "reload": 0.3687919961521402,
+   "two_no_add": 0.36829199962085113,
+   "two_plus_add": 0.3741250038729049,
+   "single_only": 0.29758400341961533
+  },
+  "within_sweep_iqr_pct": {
+   "reuse": [
+    6.32,
+    8.12,
+    8.84
+   ],
+   "reload": [
+    5.86,
+    7.6,
+    7.22
+   ],
+   "two_no_add": [
+    6.83,
+    6.68,
+    7.74
+   ],
+   "two_plus_add": [
+    6.76,
+    6.12,
+    7.68
+   ],
+   "single_only": [
+    6.74,
+    8.66,
+    7.89
+   ]
+  },
+  "per_sweep_ms": {
+   "reuse": [
+    0.3672500024549663,
+    0.3690000012284145,
+    0.3635829998529516
+   ],
+   "reload": [
+    0.37287500163074583,
+    0.3687919961521402,
+    0.36708300467580557
+   ],
+   "two_no_add": [
+    0.36745800025528297,
+    0.3693749968078919,
+    0.36829199962085113
+   ],
+   "two_plus_add": [
+    0.3741250038729049,
+    0.37445799534907565,
+    0.37283300480339676
+   ],
+   "single_only": [
+    0.2913330026785843,
+    0.29758400341961533,
+    0.30183300259523094
+   ]
+  },
+  "correctness_max_rel_err": 1.913e-07,
+  "sweeps_admitted": 3,
+  "runs_refused": 0
+ },
+ "claim_boundary": "ONE shape (17408x5120, group 64), ONE machine, THREE admitted sweeps, and BENCH_STATE CONTENDED -- so every absolute number here is an upper bound on a quiet machine and the 0.418% reuse figure is inside the 5.86-8.84% IQR. The 1.042 us and 70.708 us figures are separated by a factor of 68, far outside that noise, and that SEPARATION is the finding; the individual values are not precision measurements. THE 8.6 us FIGURE FROM THE EARLIER SYNTHETIC ARM IS WITHDRAWN, and so is the framing that produced it: cost-per-removed-dispatch is not a well-defined quantity unless the bytes held constant are stated. Production's 17.35 us for the gate_up pair is NOT refuted -- it was measured on a real kernel that moves real weights, so it is a bytes-plus-dispatch number, which is precisely the point. No production change is claimed and no token latency was measured here.",
+ "pass": true,
+ "bench": {
+  "state": "CONTENDED",
+  "recorded_at": "2026-08-26T12:54:10Z",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified",
+  "quiescence": {
+   "quiet": false,
+   "method": "enumerate",
+   "no_name_filter": true,
+   "thresholds": {
+    "cpu_pct": 20.0,
+    "rss_gib": 2.0
+   },
+   "contenders": [
+    {
+     "pid": 292,
+     "cpu_pct": 55.4,
+     "rss_gib": 0.12,
+     "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores"
+    },
+    {
+     "pid": 180,
+     "cpu_pct": 22.4,
+     "rss_gib": 0.03,
+     "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+    },
+    {
+     "pid": 739,
+     "cpu_pct": 31.4,
+     "rss_gib": 0.02,
+     "comm": "/usr/libexec/avconferenced"
+    },
+    {
+     "pid": 52616,
+     "cpu_pct": 20.4,
+     "rss_gib": 0.02,
+     "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+    },
+    {
+     "pid": 608,
+     "cpu_pct": 98.6,
+     "rss_gib": 0.01,
+     "comm": "/System/Library/PrivateFrameworks/FileProvider.framework/Support/fileproviderd"
+    }
+   ],
+   "n_contenders": 5,
+   "total_cpu_pct": 228.2,
+   "max_rss_gib": 0.12,
+   "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+  },
+  "samples": {
+   "before": {
+    "quiet": false,
+    "method": "enumerate",
+    "no_name_filter": true,
+    "thresholds": {
+     "cpu_pct": 20.0,
+     "rss_gib": 2.0
+    },
+    "contenders": [
+     {
+      "pid": 292,
+      "cpu_pct": 55.4,
+      "rss_gib": 0.12,
+      "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores"
+     },
+     {
+      "pid": 180,
+      "cpu_pct": 22.4,
+      "rss_gib": 0.03,
+      "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+     },
+     {
+      "pid": 739,
+      "cpu_pct": 31.4,
+      "rss_gib": 0.02,
+      "comm": "/usr/libexec/avconferenced"
+     },
+     {
+      "pid": 52616,
+      "cpu_pct": 20.4,
+      "rss_gib": 0.02,
+      "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+     },
+     {
+      "pid": 608,
+      "cpu_pct": 98.6,
+      "rss_gib": 0.01,
+      "comm": "/System/Library/PrivateFrameworks/FileProvider.framework/Support/fileproviderd"
+     }
+    ],
+    "n_contenders": 5,
+    "total_cpu_pct": 228.2,
+    "max_rss_gib": 0.12,
+    "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+   },
+   "after": {
+    "quiet": false,
+    "method": "enumerate",
+    "no_name_filter": true,
+    "thresholds": {
+     "cpu_pct": 20.0,
+     "rss_gib": 2.0
+    },
+    "contenders": [
+     {
+      "pid": 50506,
+      "cpu_pct": 22.3,
+      "rss_gib": 0.04,
+      "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+     },
+     {
+      "pid": 739,
+      "cpu_pct": 33.4,
+      "rss_gib": 0.02,
+      "comm": "/usr/libexec/avconferenced"
+     },
+     {
+      "pid": 52616,
+      "cpu_pct": 23.7,
+      "rss_gib": 0.02,
+      "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+     },
+     {
+      "pid": 608,
+      "cpu_pct": 99.7,
+      "rss_gib": 0.01,
+      "comm": "/System/Library/PrivateFrameworks/FileProvider.framework/Support/fileproviderd"
+     }
+    ],
+    "n_contenders": 4,
+    "total_cpu_pct": 179.1,
+    "max_rss_gib": 0.04,
+    "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+   }
+  },
+  "note": "the harness that produced these medians wrote bench_state QUIESCED as a LITERAL; this block re-derives it from the same recorded samples",
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet"
+ }
+}

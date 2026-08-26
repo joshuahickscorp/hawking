@@ -132,6 +132,36 @@ _COMMAND_FIRST = frozenset(
 _VACUOUS_FIRST = frozenset({"true", "false", ":", "exit"})
 
 
+def _admissibility_note() -> str:
+    """Tell the model the rule the harness is about to enforce.
+
+    A rule that is ENFORCED BUT NEVER STATED is not a rule the model can follow.
+    Measured against the sealed 27B resident on 2026-08-26: two consecutive
+    missions proposed `test -d ...` and `grep -l ... | wc -l`, both refused as
+    COMMAND_NOT_ADMITTED, both obligations FALSE -- and nothing in the prompt had
+    ever said which first words are admitted or why. Built from _COMMAND_FIRST
+    itself so the sentence cannot drift from the enforcement.
+    """
+    return (
+        "\n\nTHE HARNESS ONLY ADMITS A COMMAND WHOSE FIRST WORD IS ONE OF: "
+        + ", ".join(sorted(_COMMAND_FIRST))
+        + ". A command starting with anything else is REFUSED UNRUN and the "
+        "obligation fails. This is not a style preference: the proof is the EXIT "
+        "CODE, and `grep ... | wc -l` exits 0 whether the count is 9 or 900, so it "
+        "prints a number and checks nothing. Wrap the check so it FAILS when the "
+        "claim is false, for example:\n"
+        '  python3 -c "import subprocess; '
+        "n = int(subprocess.run('grep -l X dir/*.json | wc -l', shell=True, "
+        'capture_output=True, text=True).stdout); assert n == 9, n"\n'
+        "NOTE that a `bash -c` wrapper is admitted only when ITS BODY is itself one "
+        "of the words above -- the wrapper must not launder an inadmissible check -- "
+        "so `bash -c '[ ... ]'` is REFUSED and python3 is the reliable route."
+    )
+
+
+_ADMISSIBILITY_NOTE = _admissibility_note()
+
+
 
 _ROLE_LATITUDE = {
     "locate": (
@@ -375,6 +405,7 @@ def verify(
         "rather than guessing.\n\n"
         'Return JSON {"command": "<exact shell command or empty string>"}. '
         "Do not invent the command's output; you will not run it."
+        + _ADMISSIBILITY_NOTE
     )
     proposed = _call(caller, propose_prompt, PROPOSE_SCHEMA)
     command = _extract_command(proposed)

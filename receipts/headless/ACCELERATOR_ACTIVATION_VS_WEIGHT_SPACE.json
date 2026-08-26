@@ -1,0 +1,317 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-26T12:45:46Z",
+ "experiment_class": "ACCEL-REPRESENTATION",
+ "knowledge_level": "REPRESENTATION",
+ "git_head": "c07287e5a3b6fd100856add03d5cc642753f6d23",
+ "identities": {
+  "experiment": "does weight-space cosine predict REAL-ACTIVATION error? q4_g64 on four specimens",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified",
+  "device": "CPU (numpy) for the linear algebra; MLX/Metal only to materialise real weights",
+  "model": "Qwen3-30B-A3B, Qwen3-VL-30B-A3B, Kimi-VL-A3B, Falcon-H1-7B -- layer 0, real bf16",
+  "representation": "ws_rtn_q4_g64 via gravity_native.quantize_grouped(bits=4, group=64), 4.25 complete bpw, the study form pinned to the shipped packer",
+  "kernel": {
+   "status": "ABSENT",
+   "reason": "no kernel under test; this grades a representation, not an implementation"
+  },
+  "runtime": "mlx_lm layer-0 weights + numpy float32 reference matmul",
+  "transport": {
+   "status": "ABSENT",
+   "reason": "no transport under test; weights are resident before the grade"
+  }
+ },
+ "result": {
+  "WHY_THIS_COULD_NOT_BE_RUN_BEFORE": "Every fidelity number in the G048 set is WEIGHT-SPACE, and each receipt says so, because real activations were behind the storage gate. The gate opened (ACCELERATOR_REAL_LAKE_WEIGHTS.json), so the question is now answerable.",
+  "method": "X = RMSNorm(embed_tokens[ids]) with the specimen's REAL gamma -- the exact input layer 0's first projection sees at each position, computable from real weights with no activation hook. A hooked deeper activation from a ONE-LAYER cut would not be the real one anyway. Y = X W^T against Y' = X Wq^T, relative Frobenius error. Four token sets: english, code, digits, and a repeated token.",
+  "THE_ANSWER_IS_ORGAN_DEPENDENT": "On q_proj weight cosine ANTI-PREDICTS real-activation error: Spearman -1.000 on the english and code token sets and -0.800 on digits and repeat. On the expert gate it predicts: +1.000 on three token sets. Same representation, same specimens, same grader, opposite sign. A cosine measured on one organ does not license a claim about another.",
+  "q_proj_rows": {
+   "Qwen3-30B-A3B": {
+    "shape": [
+     4096,
+     2048
+    ],
+    "weight_cosine": 0.98815,
+    "weight_rel_err": 0.155195,
+    "real_activation_rel_err": 0.032677,
+    "model_type": "qwen3_moe"
+   },
+   "Kimi-VL-A3B": {
+    "shape": [
+     3072,
+     2048
+    ],
+    "weight_cosine": 0.994252,
+    "weight_rel_err": 0.107723,
+    "real_activation_rel_err": 0.06567,
+    "model_type": "kimi_vl"
+   },
+   "Falcon-H1-7B": {
+    "shape": [
+     1536,
+     3072
+    ],
+    "weight_cosine": 0.994001,
+    "weight_rel_err": 0.110014,
+    "real_activation_rel_err": 0.056519,
+    "model_type": "falcon_h1"
+   },
+   "Qwen3-VL-30B-A3B": {
+    "shape": [
+     4096,
+     2048
+    ],
+    "weight_cosine": 0.989516,
+    "weight_rel_err": 0.145921,
+    "real_activation_rel_err": 0.033354,
+    "model_type": "qwen3_vl_moe"
+   }
+  },
+  "expert_gate_rows": {
+   "Qwen3-30B-A3B": {
+    "shape": [
+     98304,
+     2048
+    ],
+    "weight_cosine": 0.993555,
+    "real_activation_rel_err": 0.113914
+   },
+   "Kimi-VL-A3B": {
+    "shape": [
+     11264,
+     2048
+    ],
+    "weight_cosine": 0.994188,
+    "real_activation_rel_err": 0.087954
+   },
+   "Falcon-H1-7B": {
+    "ABSENT": "no such tensor in this specimen"
+   },
+   "Qwen3-VL-30B-A3B": {
+    "shape": [
+     98304,
+     2048
+    ],
+    "weight_cosine": 0.993672,
+    "real_activation_rel_err": 0.11379
+   }
+  },
+  "THE_q_proj_ORDERING_IS_MONOTONE_AND_FULLY_REVERSED": "cosine 0.988150 -> 0.989516 -> 0.994001 -> 0.994252 pairs with real error 0.032677 -> 0.033354 -> 0.056519 -> 0.065670. The BEST weight cosine (Kimi, 0.994252) has the WORST real error (0.065670); the WORST cosine (Qwen3-30B, 0.988150) has the BEST real error (0.032677). Monotone on all four points, including WITHIN the Qwen twin pair, and stable across four token sets.",
+  "IT_IS_NOT_THE_SCALE_INVARIANCE_DEFECT": "The 2026-08-17 gravity singularity was cosine being blind to magnitude. That is NOT this: weight_rel_err, which is not scale-invariant, anti-predicts identically at Spearman -1.000. Both weight-space metrics fail the same way, so the explanation is not scale-invariance and one measurement rules it out.",
+  "THE_GAUSSIAN_PROXY_FAILS_ON_THE_SAME_BOUNDARY": "real/gaussian error ratio is 0.623-1.008 on q_proj (the proxy overstates error by up to 1.6x) and 0.932-1.031 on the expert gate (within 7%). Both proxies -- weight space and gaussian activations -- are trustworthy on the expert gate and untrustworthy on q_proj. The likely mechanism is that the expert gate's input is closer to isotropic while RMSNorm'd embeddings are strongly anisotropic, but THAT IS A HYPOTHESIS AND WAS NOT MEASURED HERE.",
+  "MY_OWN_PREDICTION_WAS_REFUTED_IN_DIRECTION": "The pre-registered P2 said real-activation error would be MATERIALLY WORSE than the gaussian proxy. It is BETTER on every specimen and every token set -- the proxy is PESSIMISTIC, not optimistic. Recorded as written rather than reworded after the fact. The 2026-07-27 gaussian-proxy law is directionally reproduced (proxies made things look worse than they are); my statement of it was backwards.",
+  "HOW_WEAK_THE_EXPERT_GATE_SIDE_IS": "The +1.000 on the expert gate rests on THREE points of which TWO ARE NEAR-DUPLICATES: Qwen3-30B and Qwen3-VL differ by 0.000117 in cosine and 0.000124 in real error, which is noise. Falcon-H1 carries no expert tensor at all. So that side is effectively n=2 distinct architectures and the rank correlation there is NOT informative; it is reported because leaving it out would make the q_proj result look universal.",
+  "CONFOUND_NAMED": "Four specimens are three independent architecture groups (the Qwen pair is one). Architecture, matrix shape and cosine are not separated by this design, so the q_proj result is an OBSERVATION over three groups, stable across four token sets -- not a causal law about cosine. Separating them needs specimens that vary one at a time, which this lake does not contain.",
+  "spearman": {
+   "q_proj": {
+    "spearman_cosine_vs_real_err": {
+     "A_english": -1.0,
+     "B_code": -1.0,
+     "C_digits": -0.7999999999999999,
+     "D_repeat": -0.7999999999999999
+    },
+    "spearman_weight_rel_err_vs_real_err": -1.0,
+    "real_over_gauss_min": 0.6227494048805012,
+    "real_over_gauss_max": 1.0082000097590704
+   },
+   "expert_gate": {
+    "spearman_cosine_vs_real_err": {
+     "A_english": 1.0,
+     "B_code": 1.0,
+     "C_digits": 1.0,
+     "D_repeat": 0.5
+    },
+    "spearman_weight_rel_err_vs_real_err": 1.0,
+    "real_over_gauss_min": 0.9322235188930947,
+    "real_over_gauss_max": 1.0314629954560743
+   }
+  },
+  "THE_MECHANISM_IS_ALREADY_A_LAW_IN_THIS_BASE": "AKB-ORGAN-FLOOR-DOES-NOT-TRANSFER records that q_proj needs group 32 on both Qwen models where every MLP and expert tensor clears at group 128, with WITHIN-GROUP OUTLIERS as the mechanism at Pearson -0.9841 across 33 organs. That is a weight-space law. This receipt is its activation-space consequence: the organ whose weights carry within-group outliers is exactly the organ where a bulk-averaging weight metric stops predicting, and it is the same organ where the gaussian activation proxy also stops predicting.",
+  "THE_BIT_BUDGET_IS_INVERTED_ACROSS_SPECIMENS": "The floor procedure assigns attention_q 4.500 bpw on Qwen3-30B-A3B (4b/g32), 4.250 on Qwen3-VL (4b/g64), and 4.125 on both Kimi-VL and Falcon-H1 (4b/g128). At the COMMON setting q4_g64 the real-activation errors run 0.032677, 0.033354, 0.065670, 0.056519 respectively. Spearman(floor_bpw, real_activation_error) = -1.000 on the english and code token sets and -0.800 on digits and repeat. THE PROCEDURE SPENDS THE MOST BITS ON THE SPECIMEN WHOSE REAL ACTIVATIONS TOLERATE THE REPRESENTATION BEST AND THE FEWEST ON THE ONE THAT TOLERATES IT WORST. The procedure is self-consistent IN WEIGHT SPACE -- each specimen reaches a comparable cosine at its own floor -- so the finding is not that it is buggy; it is that weight-space fidelity is the wrong target for this organ.",
+  "floor_vs_activation": {
+   "rows": [
+    {
+     "specimen": "Qwen3-30B-A3B",
+     "floor_setting": "4b/g32",
+     "floor_bpw": 4.5,
+     "cos_4b_g128": 0.98471,
+     "real_err_at_g64": {
+      "A_english": 0.032676611095666885,
+      "B_code": 0.028342189267277718,
+      "C_digits": 0.02676696516573429,
+      "D_repeat": 0.03727024048566818
+     }
+    },
+    {
+     "specimen": "Kimi-VL-A3B",
+     "floor_setting": "4b/g128",
+     "floor_bpw": 4.125,
+     "cos_4b_g128": 0.993214,
+     "real_err_at_g64": {
+      "A_english": 0.06567031145095825,
+      "B_code": 0.06521797925233841,
+      "C_digits": 0.060457877814769745,
+      "D_repeat": 0.07084491103887558
+     }
+    },
+    {
+     "specimen": "Falcon-H1-7B",
+     "floor_setting": "4b/g128",
+     "floor_bpw": 4.125,
+     "cos_4b_g128": 0.993021,
+     "real_err_at_g64": {
+      "A_english": 0.05651872232556343,
+      "B_code": 0.0526471883058548,
+      "C_digits": 0.05113440752029419,
+      "D_repeat": 0.059112321585416794
+     }
+    },
+    {
+     "specimen": "Qwen3-VL-30B-A3B",
+     "floor_setting": "4b/g64",
+     "floor_bpw": 4.25,
+     "cos_4b_g128": 0.987049,
+     "real_err_at_g64": {
+      "A_english": 0.03335396572947502,
+      "B_code": 0.02913498319685459,
+      "C_digits": 0.02670901268720627,
+      "D_repeat": 0.03627888485789299
+     }
+    }
+   ],
+   "spearman_floor_bpw_vs_real_err": {
+    "A_english": -1.0,
+    "B_code": -1.0,
+    "C_digits": -0.7999999999999999,
+    "D_repeat": -0.7999999999999999
+   }
+  },
+  "architectures_measured": [
+   "falcon_h1",
+   "kimi_vl",
+   "qwen3_moe",
+   "qwen3_vl_moe"
+  ]
+ },
+ "claim_boundary": "ONE representation (q4_g64), ONE layer, ONE projection per organ, THREE independent architecture groups. This does NOT show weight cosine is useless -- it predicts on the expert gate, weakly evidenced. It DOES show that a cosine measured on the expert gate cannot be carried to attention: on q_proj the ordering it produces is exactly reversed on every specimen and every token set tested. Concretely: the cosine figures in ACCELERATOR_TRANSFER_VERIFIED are expert-gate numbers and remain expert-gate numbers; no attention-side adequacy claim follows from them. NO CAPABILITY WAS MEASURED, no model was generated from, and no bpw claim changes. BENCH_STATE CONTENDED throughout. ON THE INVERTED BUDGET: comparing absolute activation error across four different architectures compares four different functions, which is a real weakness -- but the floor procedure assigns per-specimen bit budgets on exactly that basis, so the objection applies to the procedure at the same strength it applies to this measurement. What is NOT claimed is a corrected budget: no re-floored setting was measured, and nothing here says what attention_q SHOULD cost on any specimen.",
+ "pass": true,
+ "bench": {
+  "state": "CONTENDED",
+  "recorded_at": "2026-08-26T12:44:28Z",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB",
+  "quiescence": {
+   "quiet": false,
+   "method": "enumerate",
+   "no_name_filter": true,
+   "thresholds": {
+    "cpu_pct": 20.0,
+    "rss_gib": 2.0
+   },
+   "contenders": [
+    {
+     "pid": 80860,
+     "cpu_pct": 89.7,
+     "rss_gib": 43.92,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 739,
+     "cpu_pct": 29.8,
+     "rss_gib": 0.02,
+     "comm": "/usr/libexec/avconferenced"
+    },
+    {
+     "pid": 608,
+     "cpu_pct": 100.0,
+     "rss_gib": 0.01,
+     "comm": "/System/Library/PrivateFrameworks/FileProvider.framework/Support/fileproviderd"
+    }
+   ],
+   "n_contenders": 3,
+   "total_cpu_pct": 219.5,
+   "max_rss_gib": 43.92,
+   "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+  },
+  "samples": {
+   "before": {
+    "quiet": false,
+    "method": "enumerate",
+    "no_name_filter": true,
+    "thresholds": {
+     "cpu_pct": 20.0,
+     "rss_gib": 2.0
+    },
+    "contenders": [
+     {
+      "pid": 80860,
+      "cpu_pct": 89.7,
+      "rss_gib": 43.92,
+      "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+     },
+     {
+      "pid": 739,
+      "cpu_pct": 29.8,
+      "rss_gib": 0.02,
+      "comm": "/usr/libexec/avconferenced"
+     },
+     {
+      "pid": 608,
+      "cpu_pct": 100.0,
+      "rss_gib": 0.01,
+      "comm": "/System/Library/PrivateFrameworks/FileProvider.framework/Support/fileproviderd"
+     }
+    ],
+    "n_contenders": 3,
+    "total_cpu_pct": 219.5,
+    "max_rss_gib": 43.92,
+    "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+   },
+   "after": {
+    "quiet": false,
+    "method": "enumerate",
+    "no_name_filter": true,
+    "thresholds": {
+     "cpu_pct": 20.0,
+     "rss_gib": 2.0
+    },
+    "contenders": [
+     {
+      "pid": 80860,
+      "cpu_pct": 99.0,
+      "rss_gib": 39.21,
+      "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+     },
+     {
+      "pid": 88026,
+      "cpu_pct": 165.6,
+      "rss_gib": 7.02,
+      "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+     },
+     {
+      "pid": 728,
+      "cpu_pct": 24.1,
+      "rss_gib": 1.22,
+      "comm": "/Applications/OrbStack.app/Contents/Frameworks/OrbStack Helper.app/Contents/MacOS/OrbStack Helper"
+     },
+     {
+      "pid": 739,
+      "cpu_pct": 28.4,
+      "rss_gib": 0.02,
+      "comm": "/usr/libexec/avconferenced"
+     },
+     {
+      "pid": 608,
+      "cpu_pct": 94.4,
+      "rss_gib": 0.01,
+      "comm": "/System/Library/PrivateFrameworks/FileProvider.framework/Support/fileproviderd"
+     }
+    ],
+    "n_contenders": 5,
+    "total_cpu_pct": 411.5,
+    "max_rss_gib": 39.21,
+    "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+   }
+  },
+  "note": "numpy under an operator job at ~110% CPU",
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet"
+ }
+}

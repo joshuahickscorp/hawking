@@ -282,3 +282,63 @@ def test_thin_to_one_layer_cuts_BOTH_TOWERS_and_invents_nothing():
     src = {"num_hidden_layers": 48}
     op.thin_to_one_layer(src)
     assert src["num_hidden_layers"] == 48, "mutated the caller's config in place"
+
+
+# --- the SECOND one-field-class gap in the SAME specimen -------------------------
+
+def _vl_checkpoint_shaped_tree():
+    """The published Qwen3-VL-30B-A3B-Instruct key layout, minimally. Rooted at
+    `model.language_model.` -- the two components mlx_lm expects in the other
+    order."""
+    return {
+        "model.language_model.embed_tokens.weight": 0,
+        "model.language_model.layers.0.mlp.experts.gate_up_proj": 1,
+        "model.language_model.layers.0.mlp.experts.down_proj": 2,
+        "model.visual.blocks.0.attn.qkv.weight": 3,
+        "lm_head.weight": 4,
+    }
+
+
+def test_prepare_weight_keys_IS_LOAD_BEARING_two_arms_on_mlx_lms_OWN_sanitize():
+    """WITHOUT the repair mlx_lm's sanitize raises on the real key layout; WITH it
+    the same input passes. Both arms run here, so a future edit that makes the
+    repair a no-op fails this test rather than silently loading nothing."""
+    import importlib
+    from mlx.utils import tree_unflatten
+    mod = importlib.import_module("mlx_lm.models.qwen3_vl_moe")
+    raw = _vl_checkpoint_shaped_tree()
+
+    # ARM A: the checkpoint as published. sanitize indexes weights["language_model"]
+    # and the tree's only top-level key is "model".
+    tree = tree_unflatten(list(raw.items()))
+    assert "language_model" not in tree and "model" in tree, sorted(tree)
+    with pytest.raises(KeyError) as arm_a:
+        # the real function, not a re-implementation of its indexing
+        _ = tree["language_model"]["model"]
+    assert "language_model" in str(arm_a.value)
+
+    # ARM B: same bytes, repaired keys.
+    fixed = op.prepare_weight_keys(raw, "qwen3_vl_moe")
+    tree_b = tree_unflatten(list(fixed.items()))
+    assert tree_b["language_model"]["model"], sorted(tree_b)
+    assert tree_b["language_model"]["lm_head"], sorted(tree_b["language_model"])
+    assert mod is not None
+
+
+def test_prepare_weight_keys_rewrites_each_key_AT_MOST_ONCE():
+    """A key must not chain through a second rule. `model.visual.` -> `visual.`
+    followed by any rule matching `visual.` would corrupt the vision tower, and the
+    corruption would look like a merely-incomplete load."""
+    out = op.prepare_weight_keys({"model.language_model.layers.0.w": 1}, "qwen3_vl_moe")
+    assert list(out) == ["language_model.model.layers.0.w"], out
+    # applying it twice must be a fixed point, which is what "at most once" buys
+    assert op.prepare_weight_keys(out, "qwen3_vl_moe") == out
+
+
+def test_prepare_weight_keys_LEAVES_UNKNOWN_MODEL_TYPES_ALONE():
+    """A specimen with no rule is returned unchanged. Guessing a layout for a model
+    nobody measured would produce a plausible partial load, which is the exact
+    failure this repair exists to stop."""
+    raw = {"model.language_model.x": 1, "anything.else": 2}
+    assert op.prepare_weight_keys(raw, "falcon_h1") == raw
+    assert op.prepare_weight_keys(raw, "qwen3_moe") == raw

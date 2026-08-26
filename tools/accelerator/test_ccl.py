@@ -185,3 +185,36 @@ def test_census_new_entries_gap_counts_match_the_receipt_plan():
                     and e["performance_gap"].get("measured"))
     assert measured == 5
     assert len(ccl.NEW_ENTRIES) - measured == 43
+
+
+# --------------------------------------------------------------------------
+# FP64 was listed in the C2M refusal histogram as blocking 2 of 27 computing
+# kernels and had never been examined. It is a HARDWARE refusal.
+# --------------------------------------------------------------------------
+
+def test_metal_refuses_double_and_the_claim_cannot_go_stale():
+    """If Metal ever accepts `double` this test fails and the fp64 receipt's
+    central claim has to be rewritten, which is the point of pinning it."""
+    pytest.importorskip("mlx.core")
+    import mlx.core as mx
+    import numpy as np
+    src = ("    uint i = thread_position_in_grid.x;\n"
+           "    double a = (double)x[i];\n"
+           "    out[i] = (float)(a * 2.0);\n")
+    with pytest.raises(Exception) as e:
+        k = mx.fast.metal_kernel(name="ccl_fp64_pin", input_names=["x"],
+                                 output_names=["out"], source=src,
+                                 ensure_row_contiguous=True)
+        (o,) = k(inputs=[mx.array(np.ones(8, dtype=np.float32))], grid=(8, 1, 1),
+                 threadgroup=(8, 1, 1), output_shapes=[(8,)],
+                 output_dtypes=[mx.float32])
+        mx.eval(o)
+    assert "double" in str(e.value).lower(), \
+        "the refusal must name the type, or this test would pass on any error"
+
+
+def test_the_c2m_fp64_reason_names_the_hardware_not_the_frontend():
+    import c2m
+    reason = c2m.UNSUPPORTED["double"]
+    assert "Metal has no double" in reason, \
+        "a blocker named only 'fp64' invites the next reader to widen a parser"

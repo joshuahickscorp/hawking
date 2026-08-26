@@ -507,3 +507,35 @@ def test_elementwise_shaped_is_an_upper_bound_not_a_classification():
     r = c2m.census({"a.cu": hidden})
     assert r["elementwise_shaped_upper_bound"] == 1   # counted, and it is not one
     assert r["translated"] == 0                       # translate is not fooled
+
+
+# --- the corpus that is not there ------------------------------------------------
+
+def test_census_REFUSES_AN_EMPTY_CORPUS_rather_than_reporting_zero_coverage():
+    """census({}) returned kernels 0, translated 0 and an empty refusal histogram --
+    which reads EXACTLY like a frontend that translates nothing. It is not; it is a
+    corpus that is not there, and the two must not read alike.
+
+    LIVE, NOT HYPOTHETICAL: the pinned cuda-metal clone every C2M coverage number was
+    measured over lived in a session scratchpad and has been reaped."""
+    with pytest.raises(c2m.EmptyCorpus) as e:
+        c2m.census({})
+    assert "not there" in str(e.value) and "19a70230" in str(e.value), str(e.value)
+
+
+def test_census_REFUSES_FILES_THAT_HOLD_NO_KERNELS_and_says_which_case():
+    """Files present and no __global__ in them is a SECOND way to reach 0 of 0, and
+    it needs its own message -- the first says the corpus is missing, this says the
+    path is probably wrong."""
+    with pytest.raises(c2m.EmptyCorpus) as e:
+        c2m.census({"notes.txt": "int main() { return 0; }"})
+    assert "ZERO __global__" in str(e.value) and "0 of 0" in str(e.value)
+
+
+def test_census_STILL_MEASURES_A_REAL_CORPUS():
+    """A refusal that fires on everything proves nothing. One real kernel must still
+    produce a census with a nonzero denominator."""
+    out = c2m.census({"k.cu": "__global__ void vadd(const float* a, const float* b, "
+                              "float* c) { int i = blockIdx.x * blockDim.x + "
+                              "threadIdx.x; c[i] = a[i] + b[i]; }"})
+    assert out["kernels"] == 1 and out["computing_kernels"] == 1

@@ -4622,5 +4622,14 @@
  "q4_tile_shape_reused": false,
  "wall_s_sweep": 5.650716417,
  "best_any_read_gb_s": 1652779.5983104096,
- "best_any_read_note": "May be cache-resident. Not used for the 775 verdict or ANCHOR_ROOF."
+ "best_any_read_note": "May be cache-resident. Not used for the 775 verdict or ANCHOR_ROOF.",
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

@@ -10,7 +10,7 @@
     "HEAD_subject": "Migrate HCLI control plane and headless campaign into the main tree"
   },
   "what_it_was": {
-    "one_sentence": "Ramanujan is a fail-closed, non-authorizing local scaffold for a future mathematical research system: freeze a giant Hawking/Gravity Director, train a small formal system against it, verify everything, and search — blocked on Hawking completion by design.",
+    "one_sentence": "Ramanujan is a fail-closed, non-authorizing local scaffold for a future mathematical research system: freeze a giant Hawking/Gravity Director, train a small formal system against it, verify everything, and search \u2014 blocked on Hawking completion by design.",
     "goal": "Define the Hawking/Ramanujan split before it is executed, so the split is a mechanical step rather than a design decision taken while tired at the end of a long campaign.",
     "doctrine": "Freeze the giant, train the small, verify everything, search aggressively, escalate model size only after data, retrieval and search saturate. No paid APIs, no cloud training. Acquisition is a one-time mirroring step; after it, the system runs disconnected.",
     "period": {
@@ -70,8 +70,8 @@
         "Q6 governed research execution = DEFINED_CONTROLLER_SCAFFOLD_READY"
       ],
       "data": "D1-D4, D6, D7 generated locally from pinned Mathlib; D5/D8/D9 pending owner license",
-      "small_system": "retriever, formalizer, prover, repair, value — CPU, fixture-scale, two of five converged",
-      "odyssey_control_plane": "ramanujan/scaffold/research/odyssey.py — fixture-only T0-T12/F0-F12/Q0-Q12",
+      "small_system": "retriever, formalizer, prover, repair, value \u2014 CPU, fixture-scale, two of five converged",
+      "odyssey_control_plane": "ramanujan/scaffold/research/odyssey.py \u2014 fixture-only T0-T12/F0-F12/Q0-Q12",
       "restream": "fail-closed launcher + green-light state machine that cannot self-promote",
       "entrypoints": [
         "ramanujan/scaffold/guards/status.py",
@@ -92,8 +92,8 @@
       "Hawking": "Owns substrate, runtime, Gravity codec, kernels, HIDE, Fabric. Ramanujan consumes Hawking contracts and is blocked until HAWKING_EVOLUTION_COMPLETE. The giant never moves.",
       "Gravity": "The .gravity codec stays in Hawking (crates/hawking-core gravity_*). Ramanujan binds artifacts by content hash and refuses to copy them. ramanujan.odyssey --proto-gravity-plan emits a future render *contract* with eight required gates (source admission, DeepSeek-V4 Gravity adapter + dtype parity, condense receipt, teacher arbitration, route-aware rollout retention, Lean/exact math retention, checkpoint tournament, owner render window). It will not write a .gravity file. All .gravity artifacts were deleted 2026-07-29 with no receipt.",
       "Doctor": "Zero Doctor code lives under ramanujan/. Doctor is Hawking's adversarial screen for Gravity representations (tools/gravity_doctor_gate.py: observed vs probed cosine; later doctor6 / odyssey-i O00*_DOCTOR_SEAL.json). Ramanujan cannot consume a pack that fails Doctor; Doctor is a dependency, not a child.",
-      "Odyssey": "Three layers. (1) tools/odyssey contamination/economics/lattice — the machinery Ramanujan actually imports for freeze and D5 no-leak. (2) ramanujan.odyssey — a compact fixture control plane that refuses research authority. (3) branch odyssey-i — the current Hawking resident campaign, not a Ramanujan launch. f1c55a302 corrected 'Odyssey is missing' to 'Odyssey exists and refuses'.",
-      "Noetic": "No path in HEAD contains the string 'noetic'. If Noetic names the cognition/doctrine half of the Hawking split, that half is ramanujan/ as a scaffold — cognition register, YOU-research controller, verification lattice, Tribunal. It is not a separate campaign tree in this repository."
+      "Odyssey": "Three layers. (1) tools/odyssey contamination/economics/lattice \u2014 the machinery Ramanujan actually imports for freeze and D5 no-leak. (2) ramanujan.odyssey \u2014 a compact fixture control plane that refuses research authority. (3) branch odyssey-i \u2014 the current Hawking resident campaign, not a Ramanujan launch. f1c55a302 corrected 'Odyssey is missing' to 'Odyssey exists and refuses'.",
+      "Noetic": "No path in HEAD contains the string 'noetic'. If Noetic names the cognition/doctrine half of the Hawking split, that half is ramanujan/ as a scaffold \u2014 cognition register, YOU-research controller, verification lattice, Tribunal. It is not a separate campaign tree in this repository."
     },
     "proto_future_not_run": {
       "student": "deepseek-ai/DeepSeek-V4-Flash @ 60d8d70770c6776ff598c94bb586a859a38244f1 (284B total / 13B active)",
@@ -1327,7 +1327,7 @@
       "receipt": "ramanujan/scaffold/data/corpora/FREEZE_RECEIPT.json"
     },
     {
-      "claim": "Small-system training (CPU, 103.52s) — bound to membership c0c13806, not the later freeze",
+      "claim": "Small-system training (CPU, 103.52s) \u2014 bound to membership c0c13806, not the later freeze",
       "value": {
         "at": "2026-07-27T19:35:09Z",
         "device": "cpu",
@@ -1387,7 +1387,7 @@
       "receipt": "ramanujan/scaffold/train/HELD_OUT_METRICS.json"
     },
     {
-      "claim": "Formalizer held-out test (D1 first-tactic closed-vocab) — did not beat majority",
+      "claim": "Formalizer held-out test (D1 first-tactic closed-vocab) \u2014 did not beat majority",
       "value": {
         "status": "TRAINED_BUT_NO_BETTER_THAN_MAJORITY",
         "improved_vs_baseline": false,
@@ -1405,7 +1405,7 @@
       "receipt": "ramanujan/scaffold/train/HELD_OUT_METRICS.json"
     },
     {
-      "claim": "Prover held-out test (D2 next-tactic closed-vocab) — did not beat majority",
+      "claim": "Prover held-out test (D2 next-tactic closed-vocab) \u2014 did not beat majority",
       "value": {
         "status": "TRAINED_BUT_NO_BETTER_THAN_MAJORITY",
         "improved_vs_baseline": false,
@@ -1413,7 +1413,7 @@
           "coverage_gold_in_train_vocab": 0.4,
           "exact_match": 0.04036697247706422,
           "majority_baseline_exact_match": 0.04954128440366973,
-          "majority_label": "rw [ ←",
+          "majority_label": "rw [ \u2190",
           "n": 545,
           "n_classes_train": 381,
           "n_correct": 22,
@@ -1591,7 +1591,7 @@
         "ranges": 59585,
         "logical_source_payload_bytes": 1506659919872,
         "peak_incremental_bytes": 58885799936,
-        "activation_aware_cosine_at_0.167_bpw": "the activation-aware result of 2026-07-27 — 0.755 cosine at 0.167 BPW fitted to real captured activations, replicated 12 of 12 experts, against 0 of 12 for raw-weight low-rank at four times the rate. That is evidence for A1 and against the fitted-to-weights framing of A2/A3, and it arrived after the arms were frozen. It does not change the arms; it changes which one to run first."
+        "activation_aware_cosine_at_0.167_bpw": "the activation-aware result of 2026-07-27 \u2014 0.755 cosine at 0.167 BPW fitted to real captured activations, replicated 12 of 12 experts, against 0 of 12 for raw-weight low-rank at four times the rate. That is evidence for A1 and against the fitted-to-weights framing of A2/A3, and it arrived after the arms were frozen. It does not change the arms; it changes which one to run first."
       },
       "receipt": "ramanujan/governance/contracts/RAMANUJAN_RESTREAM_PLAN.json",
       "supporting": [
@@ -1724,7 +1724,7 @@
       "receipts": [
         "ramanujan/scaffold/train/HELD_OUT_METRICS.json"
       ],
-      "reopen_condition": "Interactive Lean state value from real goals plus best-first search with the retriever/value pair that DID converge — not another closed-vocab classifier."
+      "reopen_condition": "Interactive Lean state value from real goals plus best-first search with the retriever/value pair that DID converge \u2014 not another closed-vocab classifier."
     },
     {
       "id": "R5_repair_wrapper_ceiling",
@@ -1750,7 +1750,7 @@
         "git:5ae13da07",
         "git:8230904e2"
       ],
-      "reopen_condition": "Not applicable as a refutation — current Q0 is PROVEN and leaf hashes match. Any leaf-byte drift refuses Q0 until an independent offline rebuild/replay emits a new bundle."
+      "reopen_condition": "Not applicable as a refutation \u2014 current Q0 is PROVEN and leaf hashes match. Any leaf-byte drift refuses Q0 until an independent offline rebuild/replay emits a new bundle."
     },
     {
       "id": "R7_file_hash_freeze",
@@ -1778,9 +1778,9 @@
     {
       "id": "R9_gravity_artifacts_deleted",
       "claim": "An executable restream command exists",
-      "result": "NOT RUNNABLE — no .gravity to name",
+      "result": "NOT RUNNABLE \u2014 no .gravity to name",
       "classification": "ARTIFACT_OF_METHOD",
-      "why": "All .gravity artifacts were deleted on 2026-07-29 with no receipt. The capability gate refuses anything not listed; absence is UNVERIFIED, also refused. Flipping ODYSSEY_LAUNCH_AUTHORIZED still exits 5 — the fence and the capability gate are independent.",
+      "why": "All .gravity artifacts were deleted on 2026-07-29 with no receipt. The capability gate refuses anything not listed; absence is UNVERIFIED, also refused. Flipping ODYSSEY_LAUNCH_AUTHORIZED still exits 5 \u2014 the fence and the capability gate are independent.",
       "receipts": [
         "ramanujan/governance/contracts/RAMANUJAN_RESTREAM_PLAN.json"
       ],
@@ -1815,7 +1815,7 @@
     {
       "id": "R12_metrics_vs_current_freeze",
       "claim": "Held-out metrics describe the currently sealed membership",
-      "result": "FALSE — training 2026-07-27 membership c0c13806; freeze 2026-08-01 membership fec9f85e; 7-item train/test shift",
+      "result": "FALSE \u2014 training 2026-07-27 membership c0c13806; freeze 2026-08-01 membership fec9f85e; 7-item train/test shift",
       "classification": "ARTIFACT_OF_METHOD",
       "why": "Generation/freeze were re-run on 2026-08-01. Training numbers were not. Retraining was never done against the current freeze. The metrics remain true of the older membership and are not current-freeze evidence.",
       "receipts": [
@@ -1828,7 +1828,7 @@
     {
       "id": "R13_q2_q3_pending_not_zero",
       "claim": "Q2 rediscovery / Q3 frontier-variant have been measured at zero",
-      "result": "DEFINED_PENDING_OWNER_D8/D9 — an absent D8 set is PENDING, not zero credit",
+      "result": "DEFINED_PENDING_OWNER_D8/D9 \u2014 an absent D8 set is PENDING, not zero credit",
       "classification": "GATED_NOT_REFUTED",
       "why": "Owner never selected licensed D5/D8/D9 sources. Q0-Q6 contracts explicitly forbid treating absence as a score.",
       "receipts": [
@@ -1905,7 +1905,7 @@
         "ramanujan/scaffold/research/odyssey.py",
         "ramanujan/scaffold/tests/test_odyssey_harness.py"
       ],
-      "what": "Fail-closed Director environment; refuses research authorization; ProtoGravityRenderer emits a contract not a .gravity file; Condense spec is capability-first (4→3→2→1.5→1.25→1 BPW) and cannot invent a TPS number. Required Gravity gates are the reopen checklist."
+      "what": "Fail-closed Director environment; refuses research authorization; ProtoGravityRenderer emits a contract not a .gravity file; Condense spec is capability-first (4\u21923\u21922\u21921.5\u21921.25\u21921 BPW) and cannot invent a TPS number. Required Gravity gates are the reopen checklist."
     },
     {
       "item": "Determinism defects already found",
@@ -1972,7 +1972,7 @@
         "image_note": "the 4.64 GiB Docker image is already not in git; deleting ramanujan/ deletes the only recipe that can rebuild it"
       },
       {
-        "lost": "layout.py — the map from sealed logical paths to compact physical paths",
+        "lost": "layout.py \u2014 the map from sealed logical paths to compact physical paths",
         "consequence": "Q0-Q6 receipt_bindings and the Q0 evidence bundle become archaeology"
       },
       {
@@ -2166,7 +2166,16 @@
     }
   ],
   "motive_not_rederived": {
-    "text": "A recent negative-science census over this project's history found closed results whose reopen conditions already hold — measured wins the project had stopped short of claiming. A retired campaign whose receipts nobody can find is how that happens. Ramanujan is indexed so it can be reopened deliberately rather than rediscovered by accident.",
+    "text": "A recent negative-science census over this project's history found closed results whose reopen conditions already hold \u2014 measured wins the project had stopped short of claiming. A retired campaign whose receipts nobody can find is how that happens. Ramanujan is indexed so it can be reopened deliberately rather than rediscovered by accident.",
     "closest_named_register": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json"
+  },
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
   }
 }

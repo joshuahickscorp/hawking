@@ -1,9 +1,9 @@
 {
   "schema": "hawking.headless.noetic_ascension_handoff.v1",
-  "generated_at": "2026-08-26T03:40:26Z",
+  "generated_at": "2026-08-26T10:13:57Z",
   "builder": "tools/headless/noetic_ascension_handoff.py",
   "loop": "tools/headless/noetic_ascension_loop.py",
-  "git_head": "e665c7319eb06bc1611d1ede67e091160dea83c0",
+  "git_head": "665110c71c8cc16db6a05af70d621a0266853ab1",
   "branch": "odyssey-i",
   "sparse": {
     "on": false,
@@ -98,7 +98,7 @@
     "value": {
       "claim": "The artifact is a compiled program whose whole closure is hashed, not a model file sitting next to loose helpers.",
       "n_hashed_members": 757,
-      "closure_sha256": "e6e2631ee7e001b14adeabc0dabf5353665bd967c90ed4ac66a8aa7509a44067",
+      "closure_sha256": "b4a814d96fe880a4a250b145cb337b2be91068071745029b9412266caa4eb683",
       "io_executor_read_but_not_hashed": 0,
       "live_decode_read_but_not_hashed": 0
     },
@@ -106,9 +106,9 @@
     "reproducing_command": [
       "python3",
       "-c",
-      "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NOETIC_CLOSURE.json').read_text())\ncur = d\nfor part in [\"closure_sha256\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"e6e2631ee7e001b14adeabc0dabf5353665bd967c90ed4ac66a8aa7509a44067\\\"\")\nassert cur == exp, (cur, exp)"
+      "import json\nfrom pathlib import Path\nd = json.loads(Path('receipts/headless/NOETIC_CLOSURE.json').read_text())\ncur = d\nfor part in [\"closure_sha256\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"b4a814d96fe880a4a250b145cb337b2be91068071745029b9412266caa4eb683\\\"\")\nassert cur == exp, (cur, exp)"
     ],
-    "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NOETIC_CLOSURE.json'\"'\"').read_text())\ncur = d\nfor part in [\"closure_sha256\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"e6e2631ee7e001b14adeabc0dabf5353665bd967c90ed4ac66a8aa7509a44067\\\"\")\nassert cur == exp, (cur, exp)'",
+    "reproducing_command_pretty": "python3 -c 'import json\nfrom pathlib import Path\nd = json.loads(Path('\"'\"'receipts/headless/NOETIC_CLOSURE.json'\"'\"').read_text())\ncur = d\nfor part in [\"closure_sha256\"]:\n    cur = cur[int(part)] if isinstance(cur, list) else cur[part]\nexp = json.loads(\"\\\"b4a814d96fe880a4a250b145cb337b2be91068071745029b9412266caa4eb683\\\"\")\nassert cur == exp, (cur, exp)'",
     "source_field": "closure_sha256 + compare.*.n_read_but_not_hashed"
   },
   "families_tested": {
@@ -1621,5 +1621,14 @@
       "tools/headless/noetic_ascension_handoff.py",
       "--refuse-only"
     ]
+  },
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
   }
 }

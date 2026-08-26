@@ -1767,5 +1767,14 @@
   ]
  },
  "claim_boundary": "MACHINE Apple M3 Ultra, contended by a running ModelLake fill; RUNTIME MLX 0.32.1 lazy graph + Metal for the GPU arms and NumPy for the negative arm; PRIMITIVE matmul only; SHAPES 128x128 and 2048x2048 f32 on GPU, 256x256 f32 on CPU; REPRESENTATION dense f32 only; DOES NOT GENERALIZE to other primitives (no elementwise, reduction, attention or MoE arm here), to other representations (no quantized arm), to other machines or GPUs, to other runtimes (nothing here says what a raw Metal or CUDA submission costs), or to any real model -- no model was executed; the per-step microsecond figures are INSTANCE numbers on a contended machine and may not be quoted as constants; what transfers is the INSTRUMENT and the direction of its readings, and run_to_run names which verdicts did not even reproduce across batteries here; no energy or thermal number is claimed: powermetrics needs sudo, which this process does not have, so the quantity is unmeasurable here and is refused rather than estimated; the detection floor assumes the reps are independent, which a thermally drifting contended machine does not guarantee; it is an estimate of this run's resolving power, not a proof of it; the confound arm separates WAIT COUNT from SUBMISSION COUNT and nothing else. It does not decompose the wait itself into queue latency, completion-handler latency or driver round trip",
- "pass": true
+ "pass": true,
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

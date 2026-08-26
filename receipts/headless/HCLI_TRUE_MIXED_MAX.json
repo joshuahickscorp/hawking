@@ -129,5 +129,14 @@
     "cause_1": "Engine.workspace is a Workspace object and WorkUnitExecutor takes a path. validate_workunit raised, _route_validation caught the exception, and EVERY CPU unit failed for a reason unrelated to what it checks -- the exact defect class this campaign exists to catch, produced by me.",
     "cause_2": "GrokBridge resolves grok-run through PATH and REFUSED when absent: 'Refusing to invent a task id or pretend a Grok session ran.' That refusal is correct and is the only reason an empty Grok arm was diagnosable instead of silently green.",
     "cause_3": "One Qwen unit asked the model to count files in a directory, which it has no way to observe. An unfair unit measures the harness, not the backend; it was replaced with a value recoverable from file evidence."
+  },
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
   }
 }

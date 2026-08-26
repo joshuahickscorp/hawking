@@ -163,5 +163,14 @@
   "what_this_means_for_model_2": "One expert tensor is 6 MiB and sits BELOW the crossover, so representation-native execution does not pay for a single expert in isolation. The advantage appears only when enough of the expert table is in flight to become bandwidth-bound, which is an argument about BATCHING experts, not about the representation itself."
  },
  "claim_boundary": "P7's CORRECTNESS half is proven on a real Qwen3-30B-A3B expert tensor: a 4.25 bpw grouped-absmax representation executes directly on the GPU with the dense tensor never written. Its PERFORMANCE half is conditional and measured: no advantage below roughly 64 MiB, 2.08x at 256 MiB. One representation, one operation (matvec), one machine, INSTANCE level. Nothing here says the representation is ADEQUATE -- weight cosine is 0.9940 per tensor and this campaign's own law is that LOCAL ADEQUACY DOES NOT COMPOSE. No model was executed.",
- "pass": true
+ "pass": true,
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

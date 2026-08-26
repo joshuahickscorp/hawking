@@ -1,0 +1,292 @@
+{
+ "receipt": "ACCELERATOR_TOKEN_BYTES_ATLAS",
+ "date": "2026-08-26",
+ "obligation": "G046 (FRONT D) with G048; S031 s3 atlas, s2 optimisation order, s19 accepted TPS",
+ "question": "TOKEN_EXECUTION_ATLAS_COUNTS said in its own claim boundary 'COUNTS ONLY ... no dispatch here carries a duration, BYTES MOVED, or FLOPs'. ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE then measured that a removed dispatch is priced by its BYTES -- 1.042 us byte-free against 70.708 us weight-reading, a factor of 68. So the ladder 964 -> 750 -> 500 -> 300 -> 200 is stated in the column that is NOT the price. This builds the column that is.",
+ "artifact": {
+  "root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "tag": "sealed-3.14",
+  "complete_ebpw": 3.139300850311054,
+  "parent_params": 26895998464,
+  "tensors": 755,
+  "catalog_total_bytes": 10554328856
+ },
+ "method": "STATIC, from the artifact's own HQ38M20 catalog rather than from runtime instrumentation. One segment per tensor -- the bijection is ASSERTED not assumed, since the byte count is read off the SEGMENT and a shared segment would be silently double-counted. Needs no GPU and cannot be perturbed by contention. tools/accelerator/bytes_atlas.py.",
+ "three_reconciliations_that_make_it_falsifiable": {
+  "R1_attribution_equals_catalog": true,
+  "R2_catalog_equals_bytes_on_disk": true,
+  "R2_delta_bytes": 0,
+  "R3_ebpw_from_bytes": 3.139300850311054,
+  "R3_sealed_complete_ebpw": 3.139300850311054,
+  "why": "a per-dispatch attribution that sums to the catalog total, over a catalog whose total equals the bytes on disk to ZERO delta, over an artifact whose 8*bytes/params reproduces its own sealed EBPW to twelve places, cannot have dropped or double-counted a tensor."
+ },
+ "AND_THE_MAP_REPRODUCES_A_NUMBER_IT_WAS_NOT_GIVEN": {
+  "measured_by_runtime_counter": 964,
+  "derived_from_the_artifacts_tensor_inventory": 964,
+  "why_this_is_a_check_and_not_a_restatement": "964 came from differencing two runtime dispatch counters on a 6-token and a 2-token run. This map came from the catalog's 755 tensors and the kernel that reads each. Two independent routes, same number.",
+  "IT_FAILED_FIRST": "the map summed to 948 until qwen38_attention_apply_sigmoid_gate -- a WEIGHT-FREE kernel, exactly the class this block argues is cheap -- was found missing. A cross-check that could not have failed would prove nothing; this one did."
+ },
+ "headline": {
+  "active_weight_bytes_per_token": 9878901136,
+  "active_ebpw_per_token": 2.9384002677492123,
+  "complete_ebpw": 3.139300850311054,
+  "note": "active is BELOW complete because decode reads ONE ROW of the 675,430,440-byte embedding table, not the table. Charging the table would inflate per-token traffic by 6.8% and is the obvious way to get this wrong; a test pins it."
+ },
+ "THE_COUNT_COLUMN_AND_THE_BYTES_COLUMN_DISAGREE": {
+  "matvec_dispatches": 402,
+  "matvec_share_of_count": 0.41597510373443985,
+  "matvec_share_of_bytes": 0.998928265415936,
+  "the_other_562_share_of_bytes": 0.0010717345840639547,
+  "weight_free_dispatches": 273,
+  "reading": "402 of 964 dispatches -- 41.6% of the COUNT -- carry 99.893% of the weight bytes. The remaining 562 carry 0.107%. A ladder that counts dispatches treats these as interchangeable and they differ by three orders of magnitude."
+ },
+ "pareto_by_bytes": [
+  {
+   "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+   "dispatches": 192,
+   "weight_bytes": 5347795776,
+   "bytes_per_dispatch": 27853103,
+   "roles": [
+    "language_model.model.layers.N.mlp.gate_proj.weight",
+    "language_model.model.layers.N.mlp.up_proj.weight",
+    "language_model.model.layers.N.mlp.down_proj.weight"
+   ]
+  },
+  {
+   "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+   "dispatches": 209,
+   "weight_bytes": 4520517800,
+   "bytes_per_dispatch": 21629271,
+   "roles": [
+    "language_model.model.layers.N.linear_attn.in_proj_qkvz.weight",
+    "language_model.model.layers.N.linear_attn.in_proj_ba.weight",
+    "language_model.model.layers.N.linear_attn.out_proj.weight",
+    "language_model.model.layers.N.self_attn.q_proj.weight",
+    "language_model.model.layers.N.self_attn.k_proj.weight",
+    "language_model.model.layers.N.self_attn.v_proj.weight",
+    "language_model.model.layers.N.self_attn.o_proj.weight",
+    "language_model.lm_head.weight"
+   ]
+  },
+  {
+   "kernel": "qwen38_qkvz_rearrange_conv_l2_f32",
+   "dispatches": 48,
+   "weight_bytes": 7864704,
+   "bytes_per_dispatch": 163848,
+   "roles": [
+    "language_model.model.layers.N.linear_attn.conv1d.weight"
+   ]
+  },
+  {
+   "kernel": "qwen80_residual_rmsnorm_tg",
+   "dispatches": 129,
+   "weight_bytes": 2642952,
+   "bytes_per_dispatch": 20488,
+   "roles": [
+    "language_model.model.layers.N.input_layernorm.weight",
+    "language_model.model.layers.N.post_attention_layernorm.weight",
+    "language_model.model.norm.weight"
+   ]
+  },
+  {
+   "kernel": "qwen38_gqa_qk_norm_rope_cache_tg",
+   "dispatches": 16,
+   "weight_bytes": 33024,
+   "bytes_per_dispatch": 2064,
+   "roles": [
+    "language_model.model.layers.N.self_attn.q_norm.weight",
+    "language_model.model.layers.N.self_attn.k_norm.weight"
+   ]
+  },
+  {
+   "kernel": "qwen80_deltanet_gated_rmsnorm_tg",
+   "dispatches": 48,
+   "weight_bytes": 24960,
+   "bytes_per_dispatch": 520,
+   "roles": [
+    "language_model.model.layers.N.linear_attn.norm.weight"
+   ]
+  },
+  {
+   "kernel": "qwen80_ba_to_decay_beta_f32",
+   "dispatches": 48,
+   "weight_bytes": 19200,
+   "bytes_per_dispatch": 400,
+   "roles": [
+    "language_model.model.layers.N.linear_attn.A_log",
+    "language_model.model.layers.N.linear_attn.dt_bias"
+   ]
+  },
+  {
+   "kernel": "qwen_uniform_q4_embedding_lookup",
+   "dispatches": 1,
+   "weight_bytes": 2720,
+   "bytes_per_dispatch": 2720,
+   "roles": [
+    "language_model.model.embed_tokens.weight"
+   ]
+  },
+  {
+   "kernel": "qwen38_attention_apply_sigmoid_gate",
+   "dispatches": 16,
+   "weight_bytes": 0,
+   "bytes_per_dispatch": 0,
+   "roles": []
+  },
+  {
+   "kernel": "qwen_next_add_residual",
+   "dispatches": 128,
+   "weight_bytes": 0,
+   "bytes_per_dispatch": 0,
+   "roles": []
+  },
+  {
+   "kernel": "gk_swiglu_f32",
+   "dispatches": 64,
+   "weight_bytes": 0,
+   "bytes_per_dispatch": 0,
+   "roles": []
+  },
+  {
+   "kernel": "qwen38_gated_delta_decode_vi_simd",
+   "dispatches": 48,
+   "weight_bytes": 0,
+   "bytes_per_dispatch": 0,
+   "roles": []
+  },
+  {
+   "kernel": "mha_decode_f32",
+   "dispatches": 16,
+   "weight_bytes": 0,
+   "bytes_per_dispatch": 0,
+   "roles": []
+  },
+  {
+   "kernel": "sample_argmax_f32",
+   "dispatches": 1,
+   "weight_bytes": 0,
+   "bytes_per_dispatch": 0,
+   "roles": []
+  }
+ ],
+ "THE_CEILING": {
+  "sealed_raw_tps_recorded": 34.14,
+  "effective_weight_bandwidth_gb_s": 337.26568478304,
+  "measured_roof_gb_s": 589.73,
+  "fraction_of_measured_roof": 0.5718984701185966,
+  "raw_tps_ceiling_at_100pct_of_roof": 59.69591069708626,
+  "raw_tps_needed_for_50_accepted_at_the_30_of_43_floor": 71.66666666666667,
+  "ceiling_reaches_the_target": false,
+  "consequence": "S031 s19 sets 50 ACCEPTED TPS. At the s18 capability floor of 30/43 that needs 71.67 RAW TPS. This artifact cannot reach it at ANY dispatch count, because at 9.879 GB of weight traffic per token a perfect 589.73 GB/s machine tops out at 59.70 raw TPS. The dispatch ladder cannot deliver the accepted-TPS target; ONLY FEWER BYTES CAN. That is S031 s2's own order -- ELIMINATE BYTES precedes ELIMINATE DISPATCHES -- and it now has a number."
+ },
+ "and_it_prices_the_ladder": {
+  "byte_free_dispatch_us": 1.042,
+  "weight_reading_dispatch_us": 70.708,
+  "source": "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE.json",
+  "the_562_weight_free_dispatches_are_worth_at_most_ms": 0.585604,
+  "against_a_token_of_ms": 29.291154071470416,
+  "reading": "deleting EVERY weight-free dispatch -- all 562, far past the ladder's 200 target -- returns at most 0.586 ms against a 29.29 ms token, about 2%. That is the same order as the 2.19% the fusion block measured end to end, from a completely different direction."
+ },
+ "uncounted_and_why_the_direction_is_SAFE": {
+  "deltanet_state_bytes_per_token": 301989888,
+  "as_fraction_of_weight_bytes": 0.030569178073815272,
+  "ceiling_with_state_included": 57.92518538994235,
+  "kv_cache": "KV cache grows with context and is negligible at the 11-token prompt the count atlas used; it is not negligible at long context.",
+  "why": "the catalog describes WEIGHTS. Activations, the KV cache and the DeltaNet recurrent state are not in it and are not counted. EVERY uncounted byte makes the ceiling LOWER, so the conclusion sits on the safe side of its own omission -- including the largest omission takes 59.70 to 57.93 and does not approach 71.67."
+ },
+ "claim_boundary": [
+  "NOTHING WAS TIMED. Every byte figure is read off the artifact and every TPS figure is arithmetic over a RECORDED 34.14 raw TPS and a RECORDED 589.73 GB/s roof, neither re-measured here. This is a DERIVATION, not an experiment.",
+  "PREDICTIONS ARE WEAK EVIDENCE HERE AND ARE REPORTED AS SUCH. Four were written before the run and four confirmed, but P2 (active bytes 9.8-10.0 GB) and P3 (330-350 GB/s) were computable from a tensor table already printed, so their confirmation carries almost nothing. The content is in the reconciliation and in P4's consequence, not in the score.",
+  "WEIGHT TRAFFIC ONLY. No activation, KV or state byte is counted; the largest such term is bounded above rather than ignored.",
+  "ONE artifact. The 964 histogram is one prompt of 11 tokens on one machine; dispatch COUNT is structural but was not varied, and the bytes are a property of this artifact's representation mix, not of qwen3_5.",
+  "THE CEILING ASSUMES PERFECT BANDWIDTH UTILISATION and no arithmetic bound. The real ceiling is lower still; nothing here says 59.70 is reachable, only that it cannot be exceeded.",
+  "NO KERNEL CHANGED, no capability was run, no representation was graded, and no adequacy claim moves. The 30/43 floor is cited as the S031 s18 floor, not re-measured."
+ ],
+ "next": "the bytes are 99.893% in two matvec families -- 5.348 GB in the q2_g32 MLP and 4.521 GB in the q4_g64 mixer path. Reducing EITHER is a GRAVITY question, not a kernel one, and that is where the accepted-TPS target has to come from.",
+ "akb_registration": {
+  "evidence_domain": "accelerator",
+  "civilization": "I-D_ACCELERATOR",
+  "program": "HAWKING ACCELERATOR (S015/S031/S032)",
+  "machine_scope": "Apple M3 Ultra, INSTANCE",
+  "representation_scope": "sealed-3.14 mixed hq30uq4 / hgrafv01 / f32v2, unchanged",
+  "kernel_scope": "all 14 decode kernel families of the 964-dispatch graph",
+  "why_declared": "membership must not depend on what this file was named (S032 s13)."
+ },
+ "identities": {
+  "experiment": {
+   "class": "ACCEL-DISPATCH",
+   "knowledge_level": "INSTANCE",
+   "question": "how many BYTES does each of the 964 dispatches of one decode token move?"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "ram_gib": 96,
+   "measured_dram_gbps": 589.73,
+   "receipt": "receipts/headless/MACHINE_GENOME.json"
+  },
+  "device": {
+   "backend": "Metal",
+   "api": "NONE -- nothing executed; this is a static read of the artifact catalog"
+  },
+  "model": {
+   "root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+   "tag": "sealed-3.14",
+   "complete_ebpw": 3.139300850311054,
+   "parent_params": 26895998464,
+   "tensors": 755
+  },
+  "representation": {
+   "mixer": "HQ30UQ4 g64",
+   "mlp": "HGRAVF01 affine_q2 group32 LS",
+   "norms": "f32v2",
+   "note": "UNCHANGED -- no pack was produced or graded here"
+  },
+  "runtime": {
+   "analysis": "tools/accelerator/bytes_atlas.py, python3.12 framework build",
+   "dispatch_counts_taken_from": "receipts/headless/TOKEN_EXECUTION_ATLAS_COUNTS.json#per_token_histogram",
+   "note": "NO runtime binary was executed by this receipt"
+  },
+  "kernel": {
+   "graph": "964-dispatch production decode graph, all four fusion levers off",
+   "note": "no kernel was compiled, run or changed"
+  },
+  "storage": {
+   "tier": "TIER 1 internal SSD (~/noetic), read once to parse a 224 KB catalog",
+   "status": "IRRELEVANT TO THE CLAIM -- no read was timed and no throughput figure is offered"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "nothing executed and nothing was moved; no device, no bridge and no host<->device transport is crossed"
+  }
+ },
+ "bench": {
+  "state": "CONTENDED",
+  "recorded_at": "2026-08-26T14:02:10.522485+00:00",
+  "recorded_by": "tools/accelerator/bench.py::machine_quiescence",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": {
+   "quiet": false,
+   "total_cpu_pct": 257.8,
+   "max_rss_gib": 37.6,
+   "contenders": [
+    "?",
+    "?",
+    "?",
+    "?"
+   ]
+  },
+  "rule": "S032 s3 -- derived, never asserted",
+  "why_it_cannot_bias": "nothing was timed. Contention cannot change a byte count read from a file."
+ },
+ "AMENDED_2026-08-26_NECESSARY_IS_NOT_SUFFICIENT": {
+  "by": "receipts/headless/ACCELERATOR_UNPACK_IS_THE_WALL.json",
+  "what_stands": "the CEILING. 9.879 GB of weight traffic per token against a measured 589.73 GB/s roof still caps raw TPS at 59.70 against the 71.67 that 50 accepted TPS needs at the 30/43 floor. Fewer bytes are NECESSARY and that is unchanged.",
+  "what_is_corrected": "THE_CEILING.consequence reads 'ONLY FEWER BYTES CAN', which invites reading fewer bytes as SUFFICIENT. They are not. The best representation-native matvec geometry measured -- including the resident's OWN 64-threads-per-row shape -- sustains 160.9 GB/s, 27.3% of roof, reading 7.53x fewer bytes than dense for only a 2.99x speedup. And the byte lever has ALREADY BEEN PULLED in production: S031 s0's own three bodies span 3.1393 / 2.9802 / 2.5970 EBPW, and 17.3% fewer bytes returned -3.0% raw TPS where bandwidth-bound demands +20.9%.",
+  "direction_of_the_correction": "the atlas's conclusion is NARROWED, not reversed -- bytes remain the only route past the ceiling, and cutting them without cutting the unpack cost per weight does not convert.",
+  "laws_reconciled": [
+   "AKB-THE-DISPATCH-LADDER-CANNOT-REACH-THE-ACCEPTED-TPS-TARGET"
+  ],
+  "laws_reconciled_note": "the correction is written INTO that law's statement, which cites ACCELERATOR_UNPACK_IS_THE_WALL by name. It is NOT declared unaffected -- it is affected and already carries the amendment, and the validator refuses the claim unless the statement shows it."
+ }
+}

@@ -989,5 +989,14 @@
     }
   ],
   "generation_finding": "LS-fitted affine2 g64 generated 16 tokens that match neither the incumbent nor the g32 stutter. Verbatim: '<think>\\nThe user wants a detailed, ordinary-prose explanation of how a compiler'. Coherence judge: {'coherent': True, 'reason': 'emits varied tokens', 'repeated_single_token': False, 'whitespace_only': False, 'two_token_cycle': False, 'n_unique_ids': 15, 'n_new_tokens': 16}.",
-  "elapsed_s": 846.5582769159955
+  "elapsed_s": 846.5582769159955,
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+  }
 }

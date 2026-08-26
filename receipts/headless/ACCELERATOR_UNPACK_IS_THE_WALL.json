@@ -1,0 +1,312 @@
+{
+ "receipt": "ACCELERATOR_UNPACK_IS_THE_WALL",
+ "date": "2026-08-26",
+ "obligation": "G046 (FRONT D) with G048; S031 s2 optimisation order, s6 representation-native, s11 MLP ascension",
+ "question": "ACCELERATOR_TOKEN_BYTES_ATLAS put the sealed body at 337.27 GB/s = 57.2% of the measured 589.73 GB/s roof and named its own boundary: 'the ceiling assumes PERFECT bandwidth utilisation and no arithmetic bound'. The missing 42.8% is either SCHEDULABLE OVERHEAD a better graph could take, or an ARITHMETIC WALL IN THE UNPACK, in which case there is no headroom there at all.",
+ "why_an_existing_number_did_not_answer_it": "ACCELERATOR_EXPERT_BATCH measured a representation-native q4 matvec ARITHMETIC-BOUND at 161.9 GB/s against a dense arm's 426.4 -- but that kernel puts ONE THREAD ON ONE ROW, while the resident's shipped MLP kernel is named qwen_affine_q2_group32_matvec_geo_tpr64_tg128, SIXTY-FOUR THREADS PER ROW. This program already sealed that a technique is a property of a technique, a shape and a machine TOGETHER (the simdgroup transplant that won at GEMM and lost at attention), so the expert-batch figure says nothing about the resident until the geometry matches.",
+ "arms": {
+  "shape": "17408 x 5120, the resident's real MLP shape",
+  "reps": 200,
+  "warmup": 40,
+  "dense_f32": {
+   "median_ms": 0.878791994182393,
+   "iqr_pct": 6.301376983383012,
+   "bytes": 356515840,
+   "gb_s": 405.68853876700797,
+   "rel_err": 1.1827432142970824e-06
+  },
+  "native_tpr1": {
+   "median_ms": 0.34145800600526854,
+   "iqr_pct": 7.675615433669189,
+   "bytes": 47349760,
+   "gb_s": 138.66935074666083,
+   "rel_err": 8.963643217201161e-07
+  },
+  "native_tpr64": {
+   "median_ms": 0.29433299641823396,
+   "iqr_pct": 9.682912333007003,
+   "bytes": 47349760,
+   "gb_s": 160.87139592299778,
+   "rel_err": 2.0210188127198772e-07
+  }
+ },
+ "correctness_first": {
+  "oracle": "float64 over the representation's OWN dequantized weights, shared by all three arms so the dense arm reads the SAME numbers",
+  "rel_err": {
+   "dense": 1.1827432142970824e-06,
+   "native_tpr1": 8.963643217201161e-07,
+   "native_tpr64": 2.0210188127198772e-07
+  },
+  "barrier_control_worst_rel_over_10": 0.04202672466010811,
+  "note": "tpr64's cross-lane reduction is the only new code in the block and a wrong reduction is exactly what a bandwidth number hides."
+ },
+ "PREDICTIONS": {
+  "P1_dense_250_450_GB_s": {
+   "predicted": "250-450",
+   "measured": 405.68853876700797,
+   "verdict": "CONFIRMED"
+  },
+  "P2_tpr1_120_220_GB_s": {
+   "predicted": "120-220",
+   "measured": 138.66935074666083,
+   "verdict": "CONFIRMED",
+   "note": "reproduces the expert-batch 161.9 GB/s regime at a DIFFERENT shape and a different tensor, from a different process."
+  },
+  "P3_tpr64_beats_tpr1_by_at_least_1.5x": {
+   "predicted": ">=1.5x, falsified below 1.2x",
+   "measured_ratio": 1.1601078036119066,
+   "verdict": "REFUTED",
+   "what_it_means": "the resident's OWN geometry buys 1.16x over the naive one-thread-per-row kernel and NOT the 1.5x+ I predicted. Splitting the unpack across 64 lanes does not dissolve it -- the work is the same total instruction count and the machine was already issuing it. THE GEOMETRY IS NOT THE LEVER."
+  },
+  "P4_tpr64_still_below_dense": {
+   "predicted": "below dense",
+   "measured": "160.9 vs 405.7",
+   "verdict": "CONFIRMED",
+   "ratio": 2.5218189749605555
+  }
+ },
+ "THE_WALL": {
+  "dense_gb_s": 405.68853876700797,
+  "native_best_gb_s": 160.87139592299778,
+  "byte_ratio_dense_over_native": 7.529411764705882,
+  "time_ratio_dense_over_native": 2.985706682147417,
+  "reading": "the native arm reads 7.53x FEWER BYTES and is only 2.99x faster. A bandwidth-bound kernel would have converted the byte ratio; this one converts 40% of it and burns the rest on the unpack. At 160.9 GB/s the best native geometry sits at 27.3% of the machine's measured roof."
+ },
+ "AND_IT_SITS_BELOW_THE_TOKEN_ITSELF": {
+  "best_single_kernel_gb_s": 160.87139592299778,
+  "sealed_token_effective_gb_s": 337.27,
+  "ratio": 2.0965193847229164,
+  "the_fork_is_named_not_picked": "a single representation-native matvec sustains 160.9 GB/s while the whole token sustains 337.27. Two candidates and this block CANNOT separate them: (a) dispatches OVERLAP, which ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE measured directly at +23.76% for doubled dispatches AND doubled weights rather than +100%; or (b) the resident's SHIPPED Metal kernel is ~2.1x better per-kernel than anything here. Both are live. Picking one would be the untested diagnosis this program has now written down and refuted twice."
+ },
+ "THE_PRODUCTION_EVIDENCE_THAT_SETTLES_THE_DIRECTION": {
+  "bodies": {
+   "SEALED_3.1393": {
+    "complete_ebpw": 3.139300850311054,
+    "raw_tps": 34.14,
+    "complete_bytes": 10554328856.0,
+    "active_bytes": 9878901136.0,
+    "complete_gb_s": 360.32478714384,
+    "active_gb_s": 337.26568478304
+   },
+   "VARIANT_A_2.9802": {
+    "complete_ebpw": 2.9802,
+    "raw_tps": 34.12,
+    "complete_bytes": 10019431827.8016,
+    "active_bytes": 9344004107.8016,
+    "complete_gb_s": 341.86301396459055,
+    "active_gb_s": 318.81742015819054
+   },
+   "CLEAN_2.5970": {
+    "complete_ebpw": 2.597,
+    "raw_tps": 33.12,
+    "complete_bytes": 8731113501.376,
+    "active_bytes": 8055685781.375999,
+    "complete_gb_s": 289.1744791655731,
+    "active_gb_s": 266.8043130791731
+   }
+  },
+  "what_bandwidth_bound_predicts": "S031 s0's own frontier holds THREE bodies of the same parent at 3.1393 / 2.9802 / 2.5970 complete EBPW -- a 20.9% density range. If decode were bandwidth-bound, 17.3% fewer bytes from SEALED to CLEAN would buy +20.9% raw TPS.",
+  "what_was_recorded": "34.14 / 34.12 / 33.12 raw TPS. The 17.3% byte cut bought -3.0%, and TPS is MONOTONE THE WRONG WAY: the DENSEST body is the FASTEST, Spearman(EBPW, TPS) = +1.000 where bandwidth-bound demands -1.000.",
+  "effective_bandwidth_falls_as_bytes_fall": "active 337.3 -> 318.8 -> 266.8 GB/s (complete 360.3 -> 341.9 -> 289.2). The denser body moves fewer bytes AT A LOWER RATE, so the time barely moves. That is the arithmetic-bound signature at BODY level, and it corroborates the kernel measurement above from production data S031 already recorded.",
+  "robust_to_the_one_assumption": "the active figures subtract the sealed body's embedding table from all three, which assumes a comparable embed rate. The COMPLETE figures assume nothing and show the identical direction, so the finding does not rest on it."
+ },
+ "WHAT_THIS_CORRECTS_IN_MY_OWN_PREVIOUS_BLOCK": {
+  "what_stands": "the CEILING. 9.879 GB/token against a 589.73 GB/s roof still caps raw TPS at 59.70 against the 71.67 that 50 accepted TPS needs at the 30/43 floor. Fewer bytes remain NECESSARY.",
+  "what_is_corrected": "ACCELERATOR_TOKEN_BYTES_ATLAS concluded 'ONLY FEWER BYTES CAN' reach the target, which reads as SUFFICIENT. It is not. The byte lever has ALREADY BEEN PULLED IN PRODUCTION, by 17.3%, and returned -3.0% TPS. Fewer bytes are necessary and demonstrably NOT sufficient, because a denser representation costs MORE unpack arithmetic per byte and the kernels are unpack-bound at 27% of roof.",
+  "the_amendment_is_in_place": "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json carries this correction so nobody reaches the stronger reading without it."
+ },
+ "claim_boundary": [
+  "MY KERNEL IS NOT THE RESIDENT'S KERNEL. Both native arms are ws_rtn_q4_g64 at 4.25 bpw; the resident's MLP is affine_q2 group 32 at a measured 2.50 bpw, a DIFFERENT format that reads fewer bytes and does MORE unpack per byte. The direction transfers and the absolute GB/s does not.",
+  "THE 34.14 / 34.12 / 33.12 TPS FIGURES ARE RECORDED, NOT RE-MEASURED HERE, and the 3.0% gap between the fastest and slowest is small enough that it could be noise -- what is NOT noise-sized is the ABSENCE of the +20.9% a bandwidth-bound model demands.",
+  "BENCH_STATE CONTENDED throughout -- the operator's job holds 40.63 GiB at 102.1% CPU and was NOT killed (S032 s24). Every absolute GB/s is a LOWER BOUND; the RATIOS between arms measured back to back in one process carry common-mode contention and are what the block rests on.",
+  "the tpr64 arm carries 9.68% IQR, inside the 10% gate but the widest of the three; dense 6.30% and tpr1 7.68%.",
+  "ONE shape, ONE machine, ONE dtype, INSTANCE. No model was executed, no capability run, no representation graded and no adequacy claim moves.",
+  "THE GEOMETRY SWEEP IS TWO POINTS, tpr 1 and 64. Nothing between them was measured and no optimum is claimed."
+ ],
+ "next": "the wall is the unpack, so the lever is an unpack that costs fewer instructions per weight -- a lookup rather than a shift-mask-subtract-multiply chain, or a format whose codes decode with less arithmetic. That is a JOINT Gravity/Accelerator question and neither front can answer it alone.",
+ "akb_registration": {
+  "evidence_domain": "accelerator",
+  "civilization": "I-D_ACCELERATOR",
+  "program": "HAWKING ACCELERATOR (S015/S031/S032)",
+  "machine_scope": "Apple M3 Ultra, INSTANCE",
+  "representation_scope": "ws_rtn_q4_g64 native against dense f32, same numbers both arms",
+  "kernel_scope": "native matvec at threads-per-row 1 and 64, plus a dense f32 control",
+  "why_declared": "membership must not depend on what this file was named (S032 s13)."
+ },
+ "identities": {
+  "experiment": {
+   "class": "ACCEL-KERNEL",
+   "knowledge_level": "INSTANCE",
+   "question": "is a representation-native matvec bandwidth-bound or unpack-bound at the resident's own geometry?"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "ram_gib": 96,
+   "measured_dram_gbps": 589.73,
+   "receipt": "receipts/headless/MACHINE_GENOME.json"
+  },
+  "device": {
+   "backend": "Metal",
+   "api": "mx.fast.metal_kernel JIT, MLX"
+  },
+  "model": {
+   "kernel_arms": "NO MODEL EXECUTED -- synthetic weights at a BORROWED shape, the sealed resident's MLP 17408x5120",
+   "body_corollary_subjects": "the three NOETIC_PARENT_A bodies recorded in S031 s0: sealed 3.1393, variant A 2.9802, clean 2.5970 complete EBPW",
+   "note": "the corollary CITES recorded raw-TPS figures for those bodies and re-measures none of them"
+  },
+  "representation": {
+   "native": "ws_rtn_q4_g64, 4.25 bpw",
+   "dense": "f32",
+   "note": "UNCHANGED across arms"
+  },
+  "runtime": {
+   "analysis": "tools/accelerator/gravity_native.py::source_tpr",
+   "reps": 200,
+   "warmup": 40
+  },
+  "kernel": {
+   "arms": [
+    "dense",
+    "native_tpr1",
+    "native_tpr64"
+   ],
+   "control": "barrier stripped from the tpr64 reduction"
+  },
+  "storage": {
+   "tier": "NONE -- synthetic weights, nothing read from disk",
+   "status": "IRRELEVANT TO THE CLAIM"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device unified-memory Metal run; no bridge and no host<->device transport is crossed"
+  }
+ },
+ "bench": {
+  "state": "CONTENDED",
+  "recorded_at": "2026-08-26T14:12:07.738025+00:00",
+  "recorded_by": "tools/accelerator/bench.py::machine_quiescence",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": {
+   "before": {
+    "quiet": false,
+    "method": "enumerate",
+    "no_name_filter": true,
+    "thresholds": {
+     "cpu_pct": 20.0,
+     "rss_gib": 2.0
+    },
+    "contenders": [
+     {
+      "pid": 45108,
+      "cpu_pct": 45.1,
+      "rss_gib": 2.27,
+      "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+     },
+     {
+      "pid": 292,
+      "cpu_pct": 21.3,
+      "rss_gib": 0.14,
+      "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores"
+     },
+     {
+      "pid": 44065,
+      "cpu_pct": 63.0,
+      "rss_gib": 0.05,
+      "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+     },
+     {
+      "pid": 45130,
+      "cpu_pct": 47.9,
+      "rss_gib": 0.05,
+      "comm": "/System/Library/Frameworks/Metal.framework/Versions/A/XPCServices/MTLCompilerService.xpc/Contents/MacOS/MTLCompilerService"
+     },
+     {
+      "pid": 739,
+      "cpu_pct": 30.5,
+      "rss_gib": 0.02,
+      "comm": "/usr/libexec/avconferenced"
+     },
+     {
+      "pid": 52616,
+      "cpu_pct": 21.7,
+      "rss_gib": 0.02,
+      "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+     },
+     {
+      "pid": 393,
+      "cpu_pct": 28.1,
+      "rss_gib": 0.0,
+      "comm": "/usr/libexec/sysmond"
+     }
+    ],
+    "n_contenders": 7,
+    "total_cpu_pct": 257.6,
+    "max_rss_gib": 2.27,
+    "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+   },
+   "after": {
+    "quiet": false,
+    "method": "enumerate",
+    "no_name_filter": true,
+    "thresholds": {
+     "cpu_pct": 20.0,
+     "rss_gib": 2.0
+    },
+    "contenders": [
+     {
+      "pid": 45108,
+      "cpu_pct": 27.5,
+      "rss_gib": 2.27,
+      "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+     },
+     {
+      "pid": 44065,
+      "cpu_pct": 29.1,
+      "rss_gib": 0.05,
+      "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+     },
+     {
+      "pid": 180,
+      "cpu_pct": 23.9,
+      "rss_gib": 0.03,
+      "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+     },
+     {
+      "pid": 739,
+      "cpu_pct": 36.5,
+      "rss_gib": 0.02,
+      "comm": "/usr/libexec/avconferenced"
+     },
+     {
+      "pid": 52616,
+      "cpu_pct": 23.3,
+      "rss_gib": 0.02,
+      "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+     }
+    ],
+    "n_contenders": 5,
+    "total_cpu_pct": 140.3,
+    "max_rss_gib": 2.27,
+    "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+   },
+   "at_publication": {
+    "quiet": false,
+    "total_cpu_pct": 112.4,
+    "max_rss_gib": 22.25
+   }
+  },
+  "rule": "S032 s3 -- derived, never asserted",
+  "consequence": "absolute GB/s are lower bounds; the arm-to-arm ratios are the finding"
+ },
+ "AMENDED_2026-08-26_THE_UNPACK_IS_NOT_THE_WALL_EITHER": {
+  "by": "receipts/headless/ACCELERATOR_THE_FLOOR_IS_THE_ELEMENT_NOT_THE_BYTE.json",
+  "what_stands": "fewer bytes are NECESSARY AND NOT SUFFICIENT, and the three-body production evidence (3.1393 / 2.9802 / 2.5970 EBPW at 34.14 / 34.12 / 33.12 raw TPS) is unchanged -- and is now EXPLAINED rather than only observed.",
+  "what_is_corrected": "this receipt named the UNPACK as the wall. It is not. A deletion control running the same geometry and element count with the packed array NEVER READ measures 0.2897 ms against the real kernel's 0.2825 -- reading 44.6 MB of weights costs NOTHING MEASURABLE. Removing the decode arithmetic (a 256-entry LUT, this receipt's own named lever) is 16.1% SLOWER; removing three quarters of the load instructions (4-byte words) changes nothing at 1.004x over 12 round-robin rounds. The wall is the PER-ELEMENT matvec rate -- one x read and one FMA per weight at 307.7 G elem/s -- which is neither the bytes nor the unpack.",
+  "why_the_earlier_reading_was_reachable": "the comparison here was native against DENSE, and native converting only 40% of its byte ratio is consistent with an unpack cost AND with an element floor. Separating them needed a deletion control and this block did not run one.",
+  "laws_reconciled": [
+   "AKB-THE-UNPACK-IS-THE-WALL-NOT-THE-BYTES"
+  ],
+  "laws_reconciled_note": "the correction is written INTO that law's statement, which cites ACCELERATOR_THE_FLOOR_IS_THE_ELEMENT_NOT_THE_BYTE by name; the validator refuses the claim otherwise."
+ }
+}

@@ -82,5 +82,14 @@
  },
  "claim_boundary": "One specimen, one tensor class, 64 units per run, 6 alternating pairs on ONE machine from TIER 1 storage. Spreads are ~11%, above the 10% IQR gate, so this is admitted by COMPLETE SEPARATION and a 5.1x margin-over-noise rather than by a clean gate. f32 input only -- the bf16 decode still happens on CPU before the pack, and moving THAT is a separate unmeasured step. The packed bytes still round-trip through host memory. Nothing here ran inside a model, and bit-exactness of a PACK says nothing about whether the REPRESENTATION is adequate for one.",
  "pass": true,
- "amendment_mlx_compile_attribution": "AMENDED 2026-08-25 by ACCELERATOR_JIT_COMPILE.json: this receipt attributed a first-run cost to 'MLX kernel compile'. THAT ATTRIBUTION IS NOW MEASURED AND IT IS WRONG IN SCOPE TWICE. Compiling a distinct custom kernel costs 36.8 ms, so the WorkUnit's two kernels are 73.6 ms = 23.2% of its 0.3176 s first-run excess. The dominant term is MLX's first-use costs at 175 ms, and 151 ms of THAT is a single thing -- the FIRST mx.array from a numpy buffer, which is device and allocator initialisation, NOT compilation. The direction of every affected statement is unchanged (the first run really is slower and really should not be quoted as a baseline); only the named MECHANISM changes."
+ "amendment_mlx_compile_attribution": "AMENDED 2026-08-25 by ACCELERATOR_JIT_COMPILE.json: this receipt attributed a first-run cost to 'MLX kernel compile'. THAT ATTRIBUTION IS NOW MEASURED AND IT IS WRONG IN SCOPE TWICE. Compiling a distinct custom kernel costs 36.8 ms, so the WorkUnit's two kernels are 73.6 ms = 23.2% of its 0.3176 s first-run excess. The dominant term is MLX's first-use costs at 175 ms, and 151 ms of THAT is a single thing -- the FIRST mx.array from a numpy buffer, which is device and allocator initialisation, NOT compilation. The direction of every affected statement is unchanged (the first run really is slower and really should not be quoted as a baseline); only the named MECHANISM changes.",
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

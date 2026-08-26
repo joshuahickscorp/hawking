@@ -236,3 +236,27 @@ def test_the_no_think_leak_check_is_MOSTLY_VACUOUS_and_that_is_recorded():
     # and it CAN still fail on a real leak after the split
     bad_ok, _ = C.must_not_contain("<think>", "</think>")("ok <think> oops", {})
     assert not bad_ok, "a think block AFTER </think> must still be caught"
+
+
+def test_machine_state_carries_the_canonical_bench_block():
+    """S032 §3: a capability receipt and an accelerator receipt must state the
+    machine the same way, or a reader has to learn two vocabularies for one fact."""
+    import sys, pathlib
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "accelerator"))
+    import bench
+    import capability_suite as CS
+
+    loud = {"quiet": False, "method": "enumerate", "contenders": [{"comm": "x"}],
+            "n_contenders": 1, "max_rss_gib": 39.0}
+    CS.machine_state._before = loud
+    st = CS.machine_state([{"id": "a", "wall_s": 1.0}, {"id": "a", "wall_s": 1.4}])
+    assert st["recorded"] is True
+    assert st["bench"]["state"] == "CONTENDED", st["bench"]
+    assert st["bench"]["machine"] and st["bench"]["recorded_at"]
+
+
+def test_machine_state_cannot_report_QUIESCED_without_a_before_sample():
+    import capability_suite as CS
+    CS.machine_state._before = None
+    st = CS.machine_state([])
+    assert st["recorded"] is False and "before" in st["why"]

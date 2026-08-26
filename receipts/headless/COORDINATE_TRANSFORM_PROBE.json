@@ -8342,5 +8342,14 @@
     "pca_orth_b1024/binary_g64: \u0394rel_fro=-0.0142 (0.8054->0.7912) \u0394argmax=+0.0859 (0.4766->0.5625)",
     "hadamard_b1024/ternary_g64: \u0394rel_fro=-0.0093 (0.5701->0.5608) \u0394argmax=+0.0137 (0.6299->0.6436)",
     "pca_orth_b1024/ternary_g64: \u0394rel_fro=-0.0005 (0.5701->0.5696) \u0394argmax=+0.0010 (0.6299->0.6309)"
-  ]
+  ],
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+  }
 }

@@ -4,7 +4,7 @@
   "git_head": "cba2bb657f2c9153abcfc2e747feafe35aaffb0e",
   "repo": "/Users/scammermike/.claude-grok/worktrees/d2gqa-20260823-151644",
   "question": "Is there an operator formulation of grouped attention that moves less or does less, at the fidelity attention actually demands?",
-  "answer": "Not one worth building. GQA K/V sharing is a cache layout (`kv_h = h / GROUP` in mha_decode_f32) in front of four independent uniform-Q4 GEMVs. The organ is the quality floor (cannot cheaply go below Q4), not the storage mass on uniform-q4-v1 (6.2% of bytes, 1.89% of wall for MHA). A grouped-Q/O operator is the only candidate that would treat grouping as an operator; its quality is unmeasured and even a perfect pack moves complete BPW 4.253 → ~4.05.",
+  "answer": "Not one worth building. GQA K/V sharing is a cache layout (`kv_h = h / GROUP` in mha_decode_f32) in front of four independent uniform-Q4 GEMVs. The organ is the quality floor (cannot cheaply go below Q4), not the storage mass on uniform-q4-v1 (6.2% of bytes, 1.89% of wall for MHA). A grouped-Q/O operator is the only candidate that would treat grouping as an operator; its quality is unmeasured and even a perfect pack moves complete BPW 4.253 \u2192 ~4.05.",
   "anchors_not_rederived": {
     "tps": 32.73,
     "ms_per_token": 30.606,
@@ -53,7 +53,7 @@
       false
     ],
     "n223_unhealthy": "223 components local_bpw<0.5, healthy=0 (n1arch / kernel census)",
-    "q80_storage_vs_active": "0.6462 vs 2.518 — report both or neither",
+    "q80_storage_vs_active": "0.6462 vs 2.518 \u2014 report both or neither",
     "glm_0_167": "trap",
     "hgravs01_0_13": "down_proj ONLY",
     "tpr64_free_on_32_of_33": true,
@@ -356,7 +356,7 @@
         "density_probe_codec_at_4_125": {
           "value": "HGRAVH01_hadamard_q4_g128",
           "status": "MEASURED",
-          "source": "receipts/ascent-2026-08-16/QWEN_ATTENTION_DENSITY_PROBE.json candidates codec field on rows with bpw≈4.125",
+          "source": "receipts/ascent-2026-08-16/QWEN_ATTENTION_DENSITY_PROBE.json candidates codec field on rows with bpw\u22484.125",
           "note": "The 4.125 figure in QWEN_ATTENTION_DENSITY_VERDICT ('q4 ~matches uniform Q4 at 4.125 vs 4.250 BPW. 2.9% save, not the mass.') is Hadamard-Q4 group-128, reconstruction class MEDIUM_INREGISTER_TRANSFORM, not a uniform Q4 g=128 MSE campaign and not the shipping codec."
         },
         "quality_bar": {
@@ -366,7 +366,7 @@
           "note": "mean row output cosine >= 0.990 vs BF16 W on real captured X. Not MSE. Not the expert bar 0.8604."
         },
         "not_used_bar": {
-          "value": "expert organ bar 0.8604 — attention is HIGH sensitivity",
+          "value": "expert organ bar 0.8604 \u2014 attention is HIGH sensitivity",
           "status": "MEASURED",
           "source": "receipts/ascent-2026-08-16/QWEN_ATTENTION_DENSITY_VERDICT.json quality_bound.not_used"
         }
@@ -733,13 +733,13 @@
         "HGRAVR02": {
           "applies_to_attention": "encode_yes_recipe_no",
           "why": "2% rice residual was fit for up_proj, not Q/K/V/O or DeltaNet",
-          "reconstruction": "EXPENSIVE_SCATTER — a LOSS even if quality passed (mixed 5.9x slower per byte)",
+          "reconstruction": "EXPENSIVE_SCATTER \u2014 a LOSS even if quality passed (mixed 5.9x slower per byte)",
           "quality": "max cosine 0.958 (q80 L3 q). Typical 0.82-0.91. FAILS 0.99 everywhere."
         },
         "HGRAVS01": {
           "applies_to_attention": "encode_yes_recipe_no",
           "why": "r160 / post-SwiGLU / in-dim 512 is a down_proj recipe. Attention in-dim is 2048 or 5120 and is not low-rank under the same fit.",
-          "reconstruction": "CONDITIONAL_TWOSTAGE — cheap iff fused y=L@(R@x). Existing kernel is expert down [2048,512] r160 ONLY. Materialize-W is a LOSS.",
+          "reconstruction": "CONDITIONAL_TWOSTAGE \u2014 cheap iff fused y=L@(R@x). Existing kernel is expert down [2048,512] r160 ONLY. Materialize-W is a LOSS.",
           "quality": "0 clears of 0.99 at ranks whose BPW beats Q4. Typical 0.83-0.89 at r=512. Attention is not a low-rank organ."
         },
         "HGRAVH01": {
@@ -780,12 +780,12 @@
         "q_proj_rows": {
           "value": 12288,
           "status": "MEASURED",
-          "source": "crates/hawking-core/src/model/qwen38_geometry.rs:52 — 24*(256 q + 256 gate)"
+          "source": "crates/hawking-core/src/model/qwen38_geometry.rs:52 \u2014 24*(256 q + 256 gate)"
         },
         "kv_proj_rows": {
           "value": 1024,
           "status": "MEASURED",
-          "source": "crates/hawking-core/src/model/qwen38_geometry.rs:53 — 4*256"
+          "source": "crates/hawking-core/src/model/qwen38_geometry.rs:53 \u2014 4*256"
         },
         "o_proj": {
           "value": "5120 x 6144",
@@ -830,7 +830,7 @@
         "kernel": {
           "value": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
           "status": "MEASURED",
-          "source": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:548 — same workhorse as MLP and DeltaNet. GQA is a layout of launches, not a kernel family."
+          "source": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:548 \u2014 same workhorse as MLP and DeltaNet. GQA is a layout of launches, not a kernel family."
         },
         "group128_kernel_exists_not_default": {
           "value": "qwen_uniform_q4_group128_matvec_geo_tpr64_tg128",
@@ -907,7 +907,7 @@
       "name": "KV-group shared Q/O projection, native (never reconstruct parent dense W)",
       "why_this_one": "GQA already shares K/V 6:1 as a cache layout. The remaining GQA weight mass is Q+gate and O. An operator formulation would store one Q (and optionally O) per KV group and broadcast across the 6 query heads with a cheap per-head scale, executed as y = W_g x in-register. That is the only candidate that treats grouping as an operator rather than as `h / group_size`.",
       "not_this": [
-        "reconstruct grouped W to dense 24-head Q then ordinary GEMM — oracle only",
+        "reconstruct grouped W to dense 24-head Q then ordinary GEMM \u2014 oracle only",
         "cross-layer shared basis (G035 shared_beats_independent=false)",
         "HGRAVS01 on attention (density: 0 clears of 0.99 at ranks that beat Q4)",
         "latent KV as the first lever (G060: fix the 253x per-element kernel first)",
@@ -1028,7 +1028,7 @@
       "production_eligibility_today": {
         "allowed_families": [
           "grouped_absmax_q4",
-          "binary±CSR",
+          "binary\u00b1CSR",
           "HGRAVS01 factors",
           "PQ codebook lookup",
           "MoE worklists",
@@ -1064,7 +1064,7 @@
     },
     "5_reconciliation": {
       "historical_2p4": {
-        "text": "| MLA Phase 4 simdgroup attn | dead | −1.7..−2.5% regression; attn only 2.4% wall | New intrinsic + long-ctx share |",
+        "text": "| MLA Phase 4 simdgroup attn | dead | \u22121.7..\u22122.5% regression; attn only 2.4% wall | New intrinsic + long-ctx share |",
         "source": "workspace/docs/guides/dead_levers.md",
         "status": "MEASURED",
         "scope": "MLA Phase 4 simdgroup attn on the llama.cpp-era kill ledger, not the Qwen3.8 GQA organ."
@@ -1097,7 +1097,7 @@
           "unit": "fraction"
         }
       },
-      "why_both_can_be_true": "Attention is expensive to COMPRESS because the density probe's 0.99 bar rejects Q3 / binary / HGRAVS01 / rice on the attention mass, so mixed packs that crush MLP still carry attention at 4.25 BPW and that remainder is 74% of mixed-2p0-v1. Attention arithmetic is cheap to RUN because MHA at seq≈19 is 0.667 ms (1.89% of the 35.228 ms wall) and even the whole GQA component is 2.443 ms (6.94%), of which 62% is a 24-thread rope kernel already retiled behind HAWKING_ROPE_TG=256. Those are different axes.",
+      "why_both_can_be_true": "Attention is expensive to COMPRESS because the density probe's 0.99 bar rejects Q3 / binary / HGRAVS01 / rice on the attention mass, so mixed packs that crush MLP still carry attention at 4.25 BPW and that remainder is 74% of mixed-2p0-v1. Attention arithmetic is cheap to RUN because MHA at seq\u224819 is 0.667 ms (1.89% of the 35.228 ms wall) and even the whole GQA component is 2.443 ms (6.94%), of which 62% is a 24-thread rope kernel already retiled behind HAWKING_ROPE_TG=256. Those are different axes.",
       "axis_a_win_would_move": {
         "storage_ebpw_resident": {
           "moves": true,
@@ -1124,9 +1124,9 @@
           "sample": []
         },
         "measurement": {
-          "value": "The executable holds and streams fewer bytes (Q4 4.25 BPW vs f32/bf16). It does not do fewer MACs — it does the same 51.24 GFLOP of GEMV plus extra dequant ALU — and it does not reconstruct a dense W before computing.",
+          "value": "The executable holds and streams fewer bytes (Q4 4.25 BPW vs f32/bf16). It does not do fewer MACs \u2014 it does the same 51.24 GFLOP of GEMV plus extra dequant ALU \u2014 and it does not reconstruct a dense W before computing.",
           "status": "MEASURED",
-          "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json answer — executable holds fewer bytes, does the same 51.24 GFLOP GEMV plus dequant ALU"
+          "source": "receipts/headless/NOETIC_OPERATION_CENSUS.json answer \u2014 executable holds fewer bytes, does the same 51.24 GFLOP GEMV plus dequant ALU"
         }
       }
     },
@@ -1138,11 +1138,11 @@
         "On uniform-q4-v1 GQA is 6.2% of stored bytes and ~6.5% of GEMV MACs. The remaining storage mass on this vehicle is MLP (63.6%), then DeltaNet (20.7%).",
         "The 74% 'attention is the mass' figure is mixed-2p0 after MLP was already 0.848 BPW, and that 74% is attention+embed+norm, not GQA-only (~12.7% of that artifact).",
         "MLP function distillation is NO-GO (deciding_number +0.4206 at I'=2560, ~72% of q3 active bytes, Doctor UNHEALTHY). That closes a function-space cut of the large organ; it does not make GQA large.",
-        "A quality-perfect grouped Q/O operator moves complete BPW 4.253 → ~4.05 on this vehicle. Sub-1.5 stays closed. Tok/s vs MLX 35.51 does not move.",
+        "A quality-perfect grouped Q/O operator moves complete BPW 4.253 \u2192 ~4.05 on this vehicle. Sub-1.5 stays closed. Tok/s vs MLX 35.51 does not move.",
         "Attention below Q4 is a family Gravity does not have (density verdict). Sharing as an idea lost on G035. Latent KV is the second lever after a 253x kernel hole (G060).",
-        "A candidate that only lowers executable bytes is incomplete (operation census / S011 §4 as named). This candidate's only legal win is fewer MACs on Q/O, which is quality-blocked."
+        "A candidate that only lowers executable bytes is incomplete (operation census / S011 \u00a74 as named). This candidate's only legal win is fewer MACs on Q/O, which is quality-blocked."
       ],
-      "reopen_condition": "A native grouped-Q (and/or grouped-O) operator, scored on real activations with scale-aware + Doctor, clears the 0.99 attention bar at materially fewer active bytes than uniform Q4, without reconstructing dense W, AND the byte delta is large enough to move a named gate (sub-1.5 complete BPW or the 32.73→35.51 tok/s gap). Within-layer head cosine/energy on Q of a KV group is the cheap oracle; do not skip it and do not use synthetic X.",
+      "reopen_condition": "A native grouped-Q (and/or grouped-O) operator, scored on real activations with scale-aware + Doctor, clears the 0.99 attention bar at materially fewer active bytes than uniform Q4, without reconstructing dense W, AND the byte delta is large enough to move a named gate (sub-1.5 complete BPW or the 32.73\u219235.51 tok/s gap). Within-layer head cosine/energy on Q of a KV group is the cheap oracle; do not skip it and do not use synthetic X.",
       "already_shipped_gqa_speed_work": "HAWKING_ROPE_TG=256 retile of qwen38_gqa_qk_norm_rope_cache_tg. Measured 4.16% faster token, token-identical on 24 greedy tokens (decode.rs comment on encode_rope_cache). Do not rediscover 24-thread rope as this design.",
       "mlp_function_distillation": {
         "status": "MEASURED",
@@ -1337,7 +1337,7 @@
     "verdict_is_not_worth_building": true
   },
   "what_i_watched_fail": [
-    "git grep S011 over HEAD is empty. The contract names S011 §4 ('storage alone is incomplete'). The measurement of that law in this tree is NOETIC_OPERATION_CENSUS: same 51.24 GFLOP GEMV, 964 dispatches, dense W materialized = 0. The section label is not in git.",
+    "git grep S011 over HEAD is empty. The contract names S011 \u00a74 ('storage alone is incomplete'). The measurement of that law in this tree is NOETIC_OPERATION_CENSUS: same 51.24 GFLOP GEMV, 964 dispatches, dense W materialized = 0. The section label is not in git.",
     "NOETIC_ORGAN_CENSUS attributed kv_state 537665 ns (rec+conv+GQA) wholly to attention_gqa, producing organ share 0.1384. Unique GQA KV stream is 51291 ns. With that correction the organ is 0.1246 of the wall, not 0.1384.",
     "Calling 4.125 a 'Q4 g=128 MSE floor' overstates the receipt. The probe's 4.125 rows are HGRAVH01_hadamard_q4_g128 (2.9% vs g64). Uniform Q4 g64 at 4.250 is what ships. MSE is not the gate; output cosine 0.99 on real X is.",
     "cosine(q_proj, 0.01*q_proj) on real L3 activations is 1.000000; scale_aware 0.0100. A cosine-only GQA design would have accepted a magnitude wipe.",
@@ -1346,7 +1346,7 @@
     "G060 latent KV looks like a GQA operator. The receipt says the 253x per-element inefficiency dominates; after the kernel is fixed latent KV is 1.003x. Do not reopen it as this lane.",
     "tpr64 reconstruction is free on 32/33 variants (NNS-011). That reopens codecs killed for a 5.9x penalty; it does not reopen attention quality below Q4.",
     "Q80 storage BPW 0.6462 vs ACTIVE 2.518 is a category error. A GQA byte cut that reconstructs dense W would repeat it.",
-    "Rope-as-encoder-tax was false (g1-gqa-and-attention-geometry): sigmoid 2.7 µs/launch vs rope 97.7 µs with 24 threads. Occupancy, not ceremony. Already retiled.",
+    "Rope-as-encoder-tax was false (g1-gqa-and-attention-geometry): sigmoid 2.7 \u00b5s/launch vs rope 97.7 \u00b5s with 24 threads. Occupancy, not ceremony. Already retiled.",
     "Production workhorse for GQA weights is the MLP workhorse. Writing a new shader that still dequants independent 24-head Q is a layout tweak, not an operator.",
     "223 components measured below 0.5 local BPW with healthy=true count 0 (kernel census constraints_from_recovered_science / n1arch). A grouped-Q local BPW without a health verdict would be that trap again.",
     "G035 G-SHARE shared_beats_independent=false on this model. Within-layer head grouping is not the same experiment, but 'sharing' is not a free move.",
@@ -1367,5 +1367,14 @@
       "ramanujan"
     ]
   },
-  "wall_s": 0.743192750000162
+  "wall_s": 0.743192750000162,
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+  }
 }

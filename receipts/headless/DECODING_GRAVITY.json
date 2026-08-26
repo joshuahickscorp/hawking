@@ -1,7 +1,7 @@
 {
  "schema": "hawking.headless.decoding_gravity.v1",
- "generated_at": "2026-08-26T03:39:09Z",
- "git_head": "e665c7319eb06bc1611d1ede67e091160dea83c0",
+ "generated_at": "2026-08-26T10:12:38Z",
+ "git_head": "665110c71c8cc16db6a05af70d621a0266853ab1",
  "generated_by": "tools/headless/decoding_gravity.py",
  "obligation": "N049 \u2014 DECODING GRAVITY (S026 \u00a759-64, \u00a794, \u00a795, \u00a7121; DOC-DECODE). Census native MTP / multi-token-prediction heads on OUR Qwen3.8; self-speculative feasibility of reduced-depth / early-exit / the 1.25-bpw binary child as a DRAFT against q2f; reclassify negatives by PURPOSE. Speculative decoding that rejects most proposals LOSES.",
  "hand_authored": false,
@@ -1197,5 +1197,14 @@
   "crates/hawking-core/src/model/qwen38_geometry.rs",
   "crates/hawking-speculate/src/lib.rs",
   "https://github.com/ggml-org/llama.cpp/issues/23752"
- ]
+ ],
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+ }
 }

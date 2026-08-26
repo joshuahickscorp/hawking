@@ -605,5 +605,14 @@
   "science_update_path": "/Users/scammermike/.claude-grok/worktrees/g015handoff-20260823-183520/receipts/headless/NOETIC_ASCENSION_SCIENCE_UPDATE.json",
   "elapsed_s": 1.291,
   "gate": "REJECTED",
-  "scratch_reaped": true
+  "scratch_reaped": true,
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+  }
 }

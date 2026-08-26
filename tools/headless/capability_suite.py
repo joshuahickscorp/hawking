@@ -580,6 +580,15 @@ def machine_state(responses) -> dict:
                for k, v in by_id.items() if len(v) > 1}
     return {
         "recorded": True,
+        # The canonical S032 §3 block, so a capability receipt and an accelerator
+        # receipt state the machine the SAME way. Derived from the two samples;
+        # bench_block takes no state argument, so this cannot claim QUIESCED on a
+        # contended run without editing the derivation.
+        "bench": bench.bench_block(
+            machine="Apple M3 Ultra, 60 GPU cores, 96 GiB",
+            before=before, after=after,
+            note="sampled at the start and end of the 43-case run only; a sample "
+                 "per item would perturb what it measures"),
         "quiescence_before": before,
         "quiescence_after": after,
         "quiet_at_both_samples": bool(

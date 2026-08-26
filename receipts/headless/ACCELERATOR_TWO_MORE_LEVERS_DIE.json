@@ -1,0 +1,364 @@
+{
+ "receipt": "ACCELERATOR_TWO_MORE_LEVERS_DIE",
+ "date": "2026-08-26",
+ "obligation": "G046 (FRONT D) with G047; S031 s2 optimisation order, s6 representation-native, s11 MLP ascension",
+ "question": "ACCELERATOR_THE_FLOOR_IS_THE_ELEMENT_NOT_THE_BYTE closed with 'the only lever left is FEWER ELEMENTS -- sparsity, low rank, or a smaller hidden dimension -- which is an ARCHITECTURE question, and this is the first block in the program to say so'. THAT CLOSING IS A CLAIM AND THIS BLOCK TRIES TO REFUTE IT, because the block that wrote it had just watched two other named levers die and had no business declaring the list exhausted.",
+ "why_two_candidates_and_not_a_guess": {
+  "operand_reuse": "the floor is 'one x read and one FMA per weight'. Every lane reads x from DEVICE memory and x is re-read once per row -- 17408 x 5120 = 89.1M reads, 356 MB of x traffic for a 47 MB weight matvec. x is 20,480 bytes and Metal allows 32,768 of threadgroup storage, so it FITS. This is the mechanism ACCELERATOR_REGISTER_BLOCKING already measured worth 2.48x for GEMM, and it is a KERNEL lever.",
+  "instruction_latency": "307.7 G FMA/s is 2.9% of this chip's lane-issue rate, so the FMA is not throughput-bound -- but the inner loop chains every add through ONE accumulator, so it is a SERIAL DEPENDENCY where each add waits on the previous one's latency however much issue width is free."
+ },
+ "arms": {
+  "shape": "17408 x 5120, byte unpack, tpr64, 14 rounds x 20 reps ROUND-ROBIN",
+  "A_device_tg128": {
+   "min_round_ms": 0.2985829996760003,
+   "median_round_ms": 0.3357500027050264,
+   "max_round_ms": 1.2139169994043186,
+   "round_spread_pct": 272.62367605473594,
+   "rows_per_threadgroup": 2,
+   "rel_err": 2.0210188127198772e-07,
+   "speedup_vs_A": 1.0,
+   "gb_s": 141.02683430683155,
+   "G_elem_per_s": 265.46227634227114
+  },
+  "B_staged_tg128": {
+   "min_round_ms": 0.6270419980864972,
+   "median_round_ms": 0.6732090041623451,
+   "max_round_ms": 1.3104169993312098,
+   "round_spread_pct": 101.51008037912636,
+   "rows_per_threadgroup": 2,
+   "rel_err": 2.0210188127198772e-07,
+   "speedup_vs_A": 0.498730707149098,
+   "gb_s": 70.33441280084476,
+   "G_elem_per_s": 132.39418880159016
+  },
+  "C_staged_tg1024": {
+   "min_round_ms": 0.3620000061346218,
+   "median_round_ms": 0.3861250006593764,
+   "max_round_ms": 0.5065410005045123,
+   "round_spread_pct": 37.4337310775167,
+   "rows_per_threadgroup": 16,
+   "rel_err": 2.0210188127198772e-07,
+   "speedup_vs_A": 0.8695370725326622,
+   "gb_s": 122.62806065171111,
+   "G_elem_per_s": 230.82929063851503
+  },
+  "D_ilp4_tg128": {
+   "min_round_ms": 0.31479099561693147,
+   "median_round_ms": 0.3400000059627928,
+   "max_round_ms": 0.43179199565202,
+   "round_spread_pct": 34.41205823034376,
+   "rows_per_threadgroup": 2,
+   "rel_err": 1.775714156031976e-07,
+   "speedup_vs_A": 0.9874999906375547,
+   "gb_s": 139.2639975576401,
+   "G_elem_per_s": 262.1439954026167
+  },
+  "rounds_beating_A_of_14": {
+   "B_staged_tg128": 1,
+   "C_staged_tg1024": 4,
+   "D_ilp4_tg128": 8
+  }
+ },
+ "P1_OPERAND_REUSE_IS_REFUTED_AND_NOT_NARROWLY": {
+  "predicted": ">=1.3x, falsified below 1.1x",
+  "measured_16x_amortisation": 0.8695370725326622,
+  "measured_2x_amortisation": 0.498730707149098,
+  "verdict": "REFUTED -- STAGING x IS SLOWER, not merely no better",
+  "reproduced": "two independent runs give 0.815 and 0.870 for the 16x arm and 0.472 and 0.499 for the 2x arm, so the DIRECTION and roughly the magnitude reproduce",
+  "P2_direction_confirmed": "C beats B (0.870 against 0.499), so the gain DOES track the amortisation factor -- 16 rows per stage recovers most of what 2 rows per stage throws away. The staging is simply never worth its own cost.",
+  "what_it_means": "THE x READS ARE ALREADY FREE. They are served from cache, so staging removes no cost and ADDS one -- a full extra pass over x, a barrier, and 20 KB of threadgroup pressure. An operand you can already reach for nothing cannot be reused into a win."
+ },
+ "P3_INSTRUCTION_LATENCY_IS_INDISTINGUISHABLE": {
+  "predicted": ">=1.3x if the serial accumulator chain is the floor",
+  "measured_median": 0.9874999906375547,
+  "measured_on_minima": null,
+  "min_round_ratio": 0.948511881957848,
+  "rounds_won": "8 of 14, a coin flip",
+  "verdict": "REFUTED -- four independent accumulators buy nothing",
+  "why_the_arm_is_clean": "the ilp4 body reads the SAME four bytes, decodes the SAME eight weights and reads the SAME eight x elements as four iterations of the serial body; only the ASSOCIATION ORDER of the sum differs, which the oracle confirms at 1.776e-07 against the serial arm's 2.021e-07.",
+  "and_the_two_estimators_disagree_slightly": "median says 0.987x and minima say 1.054x in the other direction, which is what INDISTINGUISHABLE looks like when read two ways rather than one."
+ },
+ "THE_PREVIOUS_BLOCKS_CLOSING_SURVIVES_ITS_OWN_TEST": {
+  "what_was_claimed": "the only lever left is fewer elements, an ARCHITECTURE question",
+  "what_this_block_did": "tried to refute it with the two strongest kernel-side candidates and FAILED to",
+  "why_that_is_worth_more_than_the_original_assertion": "the sentence was written after two levers died and asserted the list was exhausted, which is exactly the untested diagnosis this program has written down five times and found wrong twice. It is now a claim that SURVIVED an attempt, which is a different epistemic status from a claim nobody tried.",
+  "levers_now_eliminated_by_measurement": [
+   "fewer weight BYTES -- 17.3% cut returned -3.0% raw TPS in production",
+   "fewer LOAD instructions -- 4-byte loads, 1.004x",
+   "cheaper DECODE arithmetic -- a 256-entry LUT, 0.839x, slower",
+   "the weight reads at all -- a no-weights control ties the real kernel",
+   "OPERAND REUSE -- x staged in threadgroup memory, 0.870x, slower",
+   "INSTRUCTION-LEVEL PARALLELISM -- four accumulators, 0.987x, a coin flip"
+  ]
+ },
+ "THE_MECHANISM_IS_UNRESOLVED_AND_I_AM_NOT_REACHING_FOR_A_SIXTH_STORY": {
+  "position": "six levers are eliminated and the floor's CAUSE is still not named. This program's own scorecard is five diagnoses written down and two wrong, so a sixth guess offered now would be the thing that keeps getting refuted.",
+  "the_one_structural_feature_no_arm_varied": "the cross-lane reduction tail -- 64 lanes write threadgroup slots and ONE lane serially sums 64 of them while 63 idle. It is INSIDE the previous block's no-weights control too, so that control cannot separate it, and it is recorded as a NAMED UNTESTED CANDIDATE rather than an explanation.",
+  "what_would_settle_it": "a variant whose reduction is a simd_sum or a tree, holding the element count fixed -- one arm, and it is not run here."
+ },
+ "claim_boundary": [
+  "THE FOUR-ARM RUN IS CONTAMINATED AND SAYS SO: arm A carries 272.6% round-spread, so its MEDIAN is unreliable and the minima are reported beside every median. What survives contamination is the ROUNDS-WON count, which is ordinal, and the fact that B and C reproduce their direction and magnitude across two independent runs.",
+  "D's verdict rests on ONE run at 34.4% round-spread; the two estimators disagree in direction, which is why it is called indistinguishable rather than a small loss.",
+  "correctness precedes every timing against a shared float64 oracle at 1.8-2.0e-07, and the staging barrier control fired 8 OF 8 -- lanes read slots other lanes wrote, so it is load-bearing by construction and demonstrably so.",
+  "ONE shape, ONE element count, ONE machine, INSTANCE; BENCH_STATE recorded not asserted and the operator's job NOT killed per S032 s24.",
+  "NO SHIPPED KERNEL CHANGED. byte remains what executes; staged and ilp4 are built, verified and measured and neither earns a place.",
+  "the 32,768-byte threadgroup refusal in source_stage_x IS reachable, unlike the alignment guard the previous block had to name as unreachable -- a test fires it at cols=8192."
+ ],
+ "next": "the reduction tail is the one untested structural feature, and it is ONE arm. Beyond it the architecture question stands, now on evidence rather than on assertion.",
+ "akb_registration": {
+  "evidence_domain": "accelerator",
+  "civilization": "I-D_ACCELERATOR",
+  "program": "HAWKING ACCELERATOR (S015/S031/S032)",
+  "machine_scope": "Apple M3 Ultra, INSTANCE",
+  "representation_scope": "ws_rtn_q4_g64 in every arm, UNCHANGED",
+  "kernel_scope": "native matvec tpr64: x from device, x staged at two amortisation factors, and a four-accumulator variant",
+  "why_declared": "membership must not depend on what this file was named (S032 s13)."
+ },
+ "identities": {
+  "experiment": {
+   "class": "ACCEL-KERNEL",
+   "knowledge_level": "INSTANCE",
+   "question": "is the per-element floor the operand reads or the accumulator dependency chain?"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "ram_gib": 96,
+   "measured_dram_gbps": 589.73,
+   "receipt": "receipts/headless/MACHINE_GENOME.json"
+  },
+  "device": {
+   "backend": "Metal",
+   "api": "mx.fast.metal_kernel JIT, MLX"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "NO MODEL EXECUTED. The shape is BORROWED from the sealed resident's MLP and the weights are synthetic."
+  },
+  "representation": {
+   "native": "ws_rtn_q4_g64, 4.25 bpw",
+   "note": "identical in all four arms"
+  },
+  "runtime": {
+   "analysis": "tools/accelerator/gravity_native.py::source_stage_x and source_unpack('ilp4')",
+   "rounds": 14,
+   "reps_per_round": 20
+  },
+  "kernel": {
+   "arms": [
+    "A device x",
+    "B staged x 2 rows/tg",
+    "C staged x 16 rows/tg",
+    "D four accumulators"
+   ],
+   "control": "staging barrier stripped, fired 8 of 8"
+  },
+  "storage": {
+   "tier": "NONE -- synthetic weights",
+   "status": "IRRELEVANT TO THE CLAIM"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device unified-memory Metal run; no bridge is crossed"
+  }
+ },
+ "bench": {
+  "state": "CONTENDED",
+  "recorded_at": "2026-08-26T14:33:46.383849+00:00",
+  "recorded_by": "tools/accelerator/bench.py::machine_quiescence",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB",
+  "quiescence": {
+   "run1": {
+    "before": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 45352,
+       "cpu_pct": 100.2,
+       "rss_gib": 40.15,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 59738,
+       "cpu_pct": 37.9,
+       "rss_gib": 1.94,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 59770,
+       "cpu_pct": 47.0,
+       "rss_gib": 0.05,
+       "comm": "/System/Library/Frameworks/Metal.framework/Versions/A/XPCServices/MTLCompilerService.xpc/Contents/MacOS/MTLCompilerService"
+      },
+      {
+       "pid": 180,
+       "cpu_pct": 20.4,
+       "rss_gib": 0.03,
+       "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 32.2,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 22.1,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 6,
+     "total_cpu_pct": 259.8,
+     "max_rss_gib": 40.15,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    },
+    "after": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 45352,
+       "cpu_pct": 100.3,
+       "rss_gib": 40.4,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 59738,
+       "cpu_pct": 25.4,
+       "rss_gib": 1.94,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 180,
+       "cpu_pct": 20.5,
+       "rss_gib": 0.03,
+       "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 35.7,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 23.1,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 5,
+     "total_cpu_pct": 205.0,
+     "max_rss_gib": 40.4,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    }
+   },
+   "run2": {
+    "before": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 45352,
+       "cpu_pct": 62.6,
+       "rss_gib": 40.5,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 60304,
+       "cpu_pct": 57.2,
+       "rss_gib": 1.94,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 57404,
+       "cpu_pct": 29.7,
+       "rss_gib": 0.05,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 35.9,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 23.3,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 5,
+     "total_cpu_pct": 208.7,
+     "max_rss_gib": 40.5,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    },
+    "after": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 45352,
+       "cpu_pct": 44.3,
+       "rss_gib": 40.5,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 728,
+       "cpu_pct": 24.5,
+       "rss_gib": 1.38,
+       "comm": "/Applications/OrbStack.app/Contents/Frameworks/OrbStack Helper.app/Contents/MacOS/OrbStack Helper"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 31.4,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 23.5,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 4,
+     "total_cpu_pct": 123.7,
+     "max_rss_gib": 40.5,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    }
+   },
+   "at_publication": {
+    "quiet": false,
+    "total_cpu_pct": 146.5,
+    "max_rss_gib": 40.53
+   }
+  },
+  "rule": "S032 s3 -- derived, never asserted",
+  "consequence": "arm A's 272.6% round-spread in run 2 is why minima and rounds-won are reported beside every median"
+ }
+}

@@ -871,3 +871,261 @@ def test_the_round_trip_check_is_not_replaced_by_the_resident_one():
     with pytest.raises(humf.HumfError, match="integrity check FAILED"):
         h.execute("W42", h.plan_acquire("W42", "MOCK_EXTERNAL_VRAM"),
                   "MOCK_EXTERNAL_VRAM")
+
+
+# --------------------------------------------------------------------------
+# THE MODE FIVE RECEIPTS LISTED AS STILL NOT MODELLED: a provider that corrupts
+# CONSISTENTLY IN BOTH DIRECTIONS, so every digest agrees with itself.
+#
+# PREDICTION WRITTEN BEFORE THE RUN: round-trip PASSES (it compares x against x),
+# the source seal PASSES (the source was never written), the resident digest on the
+# COMPUTE path CATCHES it, and the resident digest on the READBACK path does not.
+# --------------------------------------------------------------------------
+
+def _fabric_with(provider_cls):
+    from humf import Materialization as M
+    mp = provider_cls(capacity_bytes=1 << 30, bandwidth_gb_s=5.0, latency_s=1e-4)
+    doms = {"APPLE_UM": Domain("APPLE_UM", 96 << 30, 589.73, physical=True),
+            mp.domain.name: mp.domain}
+    h = Humf(doms, providers={mp.domain.name: mp})
+    o = HumfObject("W42", "tensor", N, "f32", recompute_cost_s=0.05)
+    o.place(M("APPLE_UM", "dense_f32", "row_major", NB, State.CLEAN, payload=PAYLOAD))
+    h.register(o)
+    return h, o, mp
+
+
+def test_ANTI_VACUITY_the_corruption_provider_really_corrupts_what_a_kernel_reads():
+    """If the stored bytes were fine this whole block would be testing nothing."""
+    from humf import ConsistentCorruptionProvider
+    mp = ConsistentCorruptionProvider(capacity_bytes=1 << 20, bandwidth_gb_s=5.0,
+                                      latency_s=0.0)
+    mp.allocate(64)
+    mp.copy_in("k", b"abcd")
+    assert mp.copy_out("k") == b"abcd", "the ROUND TRIP must agree or nothing is hidden"
+    assert mp.read_for_compute("k") != b"abcd", "a kernel must see different bytes"
+
+
+def test_the_ROUND_TRIP_check_CANNOT_SEE_consistent_corruption():
+    """It compares the source with what came back, and both are x."""
+    from humf import ConsistentCorruptionProvider
+    h, o, mp = _fabric_with(ConsistentCorruptionProvider)
+    src = o.materializations["APPLE_UM"]
+    expect = humf._digest(src.payload)
+    mp.copy_in(o.identity, src.payload)
+    assert humf._digest(mp.copy_out(o.identity)) == expect, \
+        "the per-transfer check would have refused this, and the point is that it does not"
+
+
+def test_the_SOURCE_SEAL_cannot_see_it_either():
+    """The seal protects the SOURCE, and the source was never written."""
+    from humf import ConsistentCorruptionProvider
+    h, o, mp = _fabric_with(ConsistentCorruptionProvider)
+    assert humf._identity_digest(o.materializations["APPLE_UM"].payload) == o.content_digest
+
+
+def test_the_RESIDENT_DIGEST_ON_THE_COMPUTE_PATH_CATCHES_IT():
+    """This is the cell that closes the gap: the device digests what a kernel reads."""
+    from humf import ConsistentCorruptionProvider
+    h, o, mp = _fabric_with(ConsistentCorruptionProvider)
+    plan = h.plan_acquire(o.identity, mp.domain.name)
+    with pytest.raises(HumfError) as e:
+        h.execute(o.identity, plan, mp.domain.name)
+    assert "RESIDENT integrity check FAILED" in str(e.value)
+    assert mp.domain.name not in o.valid_copies()
+
+
+def test_the_READBACK_DIGEST_PATH_LEAVES_THE_GAP_OPEN_AND_SAYS_SO():
+    """The same corruption on a device that digests its read-back path is accepted,
+    marked resident_verified, and still misread by a kernel. The fabric CANNOT test
+    the digest path -- it records the claim, and that record is the whole defence."""
+    from humf import ReadbackConsistentCorruptionProvider as P
+    h, o, mp = _fabric_with(P)
+    plan = h.plan_acquire(o.identity, mp.domain.name)
+    h.execute(o.identity, plan, mp.domain.name)
+    dst = o.materializations[mp.domain.name]
+    assert dst.state is State.CLEAN
+    assert dst.resident_verified is True
+    assert dst.resident_digest_path == "readback", \
+        "the claim must travel with the verdict or nobody can tell these two apart"
+    assert mp.read_for_compute(o.identity) != o.materializations["APPLE_UM"].payload
+
+
+def test_an_HONEST_provider_still_transfers_under_the_same_path():
+    """A check that only ever refuses is as useless as one that only ever accepts."""
+    h, o, mp = _fabric_with(MockExternalMemoryProvider)
+    plan = h.plan_acquire(o.identity, mp.domain.name)
+    h.execute(o.identity, plan, mp.domain.name)
+    assert o.materializations[mp.domain.name].state is State.CLEAN
+    assert o.materializations[mp.domain.name].resident_digest_path == "compute"
+
+
+# --------------------------------------------------------------------------
+# A copy that rots IN PLACE is never moved, so no transfer check can ever see it.
+# DEMONSTRATED against the pre-fix code: 50 events after its last verification, one
+# flipped byte, plan_acquire returned ALREADY_RESIDENT and trusted_copies() still
+# named it.
+# --------------------------------------------------------------------------
+
+def _rotted(**kw):
+    from humf import Materialization as M
+    doms = {"APPLE_UM": Domain("APPLE_UM", 96 << 30, 589.73, physical=True)}
+    h = Humf(doms, **kw)
+    o = HumfObject("W", "tensor", N, "f32", recompute_cost_s=0.05)
+    o.place(M("APPLE_UM", "dense_f32", "row_major", NB, State.CLEAN, payload=PAYLOAD))
+    h.register(o)
+    m = o.materializations["APPLE_UM"]
+    for _ in range(50):
+        h.epoch += 1
+    b = bytearray(m.payload); b[0] ^= 0xFF; m.payload = bytes(b)
+    return h, o, m
+
+
+def test_the_DEFAULT_still_hands_back_a_rotted_resident_copy():
+    """The control, and it is the pre-fix behaviour kept EXECUTABLE. Without it the
+    fix below could be read as closing a hole that was never open."""
+    h, o, m = _rotted()
+    p = h.plan_acquire(o.identity, "APPLE_UM")
+    assert p.action == "ALREADY_RESIDENT"
+    assert "APPLE_UM" in o.trusted_copies()
+
+
+def test_the_PLAN_NOW_CARRIES_THE_AGE_even_when_it_does_not_recheck():
+    """A number nobody is handed is a number nobody reads. stale_verifications()
+    could always answer this -- only if somebody thought to ask."""
+    h, o, m = _rotted()
+    p = h.plan_acquire(o.identity, "APPLE_UM")
+    assert p.verification_age == 50
+
+
+def test_UNDER_A_POLICY_the_rot_is_CAUGHT_and_trust_goes_UNKNOWN():
+    h, o, m = _rotted(resident_recheck_age=10)
+    p = h.plan_acquire(o.identity, "APPLE_UM")
+    assert p.action == "IMPOSSIBLE"
+    assert "rotted IN PLACE" in p.detail
+    assert m.trust == "UNKNOWN"
+    assert "APPLE_UM" not in o.trusted_copies()
+
+
+def test_A_HEALTHY_COPY_PASSES_THE_RECHECK_AND_ITS_AGE_RESETS():
+    """A check that only ever refuses is as useless as one that only ever accepts."""
+    from humf import Materialization as M
+    doms = {"APPLE_UM": Domain("APPLE_UM", 96 << 30, 589.73, physical=True)}
+    h = Humf(doms, resident_recheck_age=10)
+    o = HumfObject("W", "tensor", N, "f32")
+    o.place(M("APPLE_UM", "dense_f32", "row_major", NB, State.CLEAN, payload=PAYLOAD))
+    h.register(o)
+    for _ in range(50):
+        h.epoch += 1
+    p = h.plan_acquire(o.identity, "APPLE_UM")
+    assert p.action == "ALREADY_RESIDENT" and p.verification_age == 0
+    assert "APPLE_UM" in o.trusted_copies()
+
+
+def test_A_YOUNG_VERIFICATION_IS_NOT_RECHECKED():
+    """The age is the whole point: re-hashing on every acquire costs one blake2b over
+    the payload and would be unaffordable, which is why this is not a boolean."""
+    from humf import Materialization as M
+    doms = {"APPLE_UM": Domain("APPLE_UM", 96 << 30, 589.73, physical=True)}
+    h = Humf(doms, resident_recheck_age=100)
+    o = HumfObject("W", "tensor", N, "f32")
+    o.place(M("APPLE_UM", "dense_f32", "row_major", NB, State.CLEAN, payload=PAYLOAD))
+    h.register(o)
+    m = o.materializations["APPLE_UM"]
+    for _ in range(5):
+        h.epoch += 1
+    b = bytearray(m.payload); b[0] ^= 0xFF; m.payload = bytes(b)
+    p = h.plan_acquire(o.identity, "APPLE_UM")
+    assert p.action == "ALREADY_RESIDENT", "5 events is inside a 100-event policy"
+    assert p.verification_age == 5
+
+
+def test_AN_UNSEALED_VALUE_CANNOT_BE_RECHECKED_AND_SAYS_SO_BY_NOT_LYING():
+    """No sealed identity means nothing to compare against; the policy must not
+    invent a verdict, and must not refuse a copy it cannot judge."""
+    from humf import Materialization as M
+    doms = {"APPLE_UM": Domain("APPLE_UM", 96 << 30, 589.73, physical=True)}
+    h = Humf(doms, resident_recheck_age=0)
+    o = HumfObject("W", "tensor", N, "f32")
+    o.place(M("APPLE_UM", "dense_f32", "row_major", NB, State.CLEAN, payload=PAYLOAD))
+    h.register(o)
+    o.content_digest = None
+    p = h.plan_acquire(o.identity, "APPLE_UM")
+    assert p.action == "ALREADY_RESIDENT"
+
+
+# --- the copy nobody acquires -------------------------------------------------
+
+def _aged(h, obj, domain, age):
+    """Push one copy's last verification `age` fabric events into the past."""
+    h.epoch += age
+    obj.materializations[domain].verified_at = h.epoch - age
+
+
+def test_scrub_FINDS_NOTHING_STALE_and_CHECKS_NOTHING_are_DIFFERENT_RESULTS():
+    """A budgeted sweep reporting no divergence without saying what it skipped is the
+    0-of-0-reads-like-0-of-many shape. Both arms run here, and they must not look
+    alike: one found nothing to do, the other did nothing it found."""
+    h, o, _ = _fabric_with(MockExternalMemoryProvider)
+    h.seal_value("W42")
+
+    fresh = h.scrub(max_age=1000)
+    assert fresh["stale_found"] == 0 and fresh["objects_checked"] == []
+    assert fresh["complete"] is True
+
+    _aged(h, o, "APPLE_UM", 5000)
+    starved = h.scrub(max_age=1000, budget_bytes=0)
+    assert starved["stale_found"] == 1, "the copy must be stale or this proves nothing"
+    assert starved["objects_checked"] == []
+    assert starved["complete"] is False
+    assert starved["not_checked"][0]["reason"] == "BUDGET_EXHAUSTED"
+    # the whole point: identical `diverged` and `objects_checked`, opposite meaning
+    assert fresh["diverged"] == starved["diverged"] == []
+    assert fresh["complete"] != starved["complete"]
+
+
+def test_scrub_CATCHES_ROT_IN_A_COPY_NO_ONE_EVER_ACQUIRES():
+    """The resident-recheck policy closes the ACQUIRE path. This copy is never
+    acquired, never transferred and never written -- the case no transfer check can
+    reach."""
+    h, o, _ = _fabric_with(MockExternalMemoryProvider)
+    h.seal_value("W42")
+    _aged(h, o, "APPLE_UM", 5000)
+    assert "APPLE_UM" in o.trusted_copies()
+
+    m = o.materializations["APPLE_UM"]
+    m.payload = bytes([m.payload[0] ^ 0x01]) + m.payload[1:]   # one flipped byte
+
+    res = h.scrub(max_age=1000)
+    assert res["diverged"] == [{"object": "W42", "domain": "APPLE_UM"}]
+    assert res["complete"] is True
+    assert "APPLE_UM" not in o.trusted_copies(), "a diverged copy must lose trust"
+
+
+def test_scrub_DOES_NOT_REPORT_CLEAN_FOR_A_COPY_IT_SKIPPED():
+    """The mutation that matters: if `complete` ignored not_checked, a starved scrub
+    over a ROTTED copy would report no divergence and read as an all-clear."""
+    h, o, _ = _fabric_with(MockExternalMemoryProvider)
+    h.seal_value("W42")
+    _aged(h, o, "APPLE_UM", 5000)
+    m = o.materializations["APPLE_UM"]
+    m.payload = bytes([m.payload[0] ^ 0xFF]) + m.payload[1:]
+
+    res = h.scrub(max_age=1000, budget_bytes=1)      # smaller than the payload
+    assert res["diverged"] == [], "the rot is real but this sweep did not look"
+    assert res["complete"] is False and res["not_checked"], (
+        "a sweep that skipped a rotted copy must not read as an all-clear")
+    # and with budget it IS caught, so the skip is the budget and not a blind check
+    assert h.scrub(max_age=1000)["diverged"] == [{"object": "W42", "domain": "APPLE_UM"}]
+
+
+def test_scrub_REFUSES_AN_UNSEALED_OBJECT_BY_NAME_rather_than_calling_it_clean():
+    """An unsealed value has nothing to check against. Counting it as checked would
+    manufacture confidence out of an absent baseline."""
+    h, o, _ = _fabric_with(MockExternalMemoryProvider)
+    o.mark_written("APPLE_UM")                 # a write UNSEALS the identity
+    _aged(h, o, "APPLE_UM", 5000)
+    o.materializations["APPLE_UM"].state = State.CLEAN   # stale_verifications reads CLEAN
+    assert o.content_digest is None, "fixture must be unsealed for this to test anything"
+    res = h.scrub(max_age=1000)
+    assert res["objects_checked"] == [] and res["complete"] is False
+    assert "UNSEALED" in res["not_checked"][0]["reason"]

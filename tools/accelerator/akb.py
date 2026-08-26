@@ -208,6 +208,12 @@ def resolve(citation: str, root: Path = REPO) -> Any:
     return cur
 
 
+# receipt name -> law ids an amendment in it explicitly declares unaffected.
+# Populated by superseding_corpus, which is the only thing that reads amendments.
+_RECONCILED: dict[str, dict[str, set[str]]] = {}
+_EXEMPT: dict[str, set[str]] = {}
+
+
 def superseding_corpus(paths: list[Path] | None = None) -> dict[str, list[str]]:
     """Receipts this corpus supersedes itself on, and by what.
 
@@ -221,6 +227,33 @@ def superseding_corpus(paths: list[Path] | None = None) -> dict[str, list[str]]:
         amended = [k for k in d if "AMEND" in k.upper()]
         if amended:
             out.setdefault(f.name, []).extend(f"{f.name}#{k}" for k in amended)
+            # An amendment may DECLARE which laws it leaves standing. Explicit
+            # registration, not a semantic guess about scope (S032 §13) -- an
+            # amendment that withdraws one figure from a receipt does not
+            # automatically invalidate a law resting on a different measurement in
+            # the same file, but nothing may INFER that; the amendment has to say
+            # so, by law_id, in the receipt.
+            for k in amended:
+                blk = d.get(k) if isinstance(d.get(k), dict) else {}
+                for lid in (blk or {}).get("laws_unaffected", []):
+                    _EXEMPT.setdefault(f.name, set()).add(str(lid))
+                # A THIRD STATE, because two were not enough. `laws_unaffected`
+                # says the amendment does not bear on that law. But an amendment
+                # that DOES bear on a law and whose correction has ALREADY BEEN
+                # WRITTEN INTO that law's statement is neither unaffected nor
+                # unreconciled, and calling it unaffected would be false.
+                # `laws_reconciled` names those -- and it is NOT a promise: the
+                # law's own statement must CITE the amending receipt, checked in
+                # NC4, so a reconciliation nobody performed still refuses.
+                # The acceptable citations are the receipts the AMENDMENT ITSELF
+                # names -- usually the one that did the correcting -- plus this
+                # file. Deriving them from the block rather than from the file
+                # name is what lets an in-file amendment point at the receipt
+                # that actually carries the new measurement.
+                stems = {Path(m).stem for m in RECEIPT_NAME.findall(json.dumps(blk))}
+                stems.add(Path(f.name).stem)
+                for lid in (blk or {}).get("laws_reconciled", []):
+                    _RECONCILED.setdefault(f.name, {})[str(lid)] = stems
         closes = d.get("boundary_this_closes")
         if closes:
             for target in RECEIPT_NAME.findall(json.dumps(closes)):
@@ -339,11 +372,26 @@ def validate(entry: dict[str, Any], *, superseded: dict[str, list[str]] | None =
     if entry["status"] == "ACTIVE":
         for rel in entry["source_receipts"]:
             name = Path(rel.partition("#")[0]).name
-            if name in superseded:
+            if name in superseded and lid not in _EXEMPT.get(name, ()):
+                if lid in _RECONCILED.get(name, {}):
+                    # Claimed reconciled -- so the law must SHOW it, by citing the
+                    # receipt that amended it. A declaration alone would let a law
+                    # opt out of the check it exists to fail.
+                    amenders = _RECONCILED[name][lid]
+                    if not any(a in entry["statement"] for a in amenders):
+                        raise Refused(
+                            f"{lid}: the amendment to {name} claims this law is RECONCILED, "
+                            f"but the law's own statement cites none of {sorted(amenders)}. "
+                            "A reconciliation nobody wrote into the law is a promise, not a "
+                            "correction.")
+                    continue
                 raise Refused(
                     f"{lid}: status ACTIVE but source {name} is superseded by "
                     f"{superseded[name]}. A law resting on an amended or closed receipt is "
-                    f"CONDITIONAL at best.")
+                    f"CONDITIONAL at best. If the amendment does not bear on THIS law, "
+                    f"the amendment must say so by naming {lid} in laws_unaffected; if it "
+                    f"DOES bear on it and the law already carries the correction, name it "
+                    f"in laws_reconciled and cite the amending receipt in the statement.")
 
     # NC5 -- Measured may not rest on a receipt that did not pass.
     if entry["evidence_class"] == "Measured":
@@ -1148,6 +1196,313 @@ LAWS: list[dict[str, Any]] = [
                           "across architectures, so ARCHITECTURE is named, never UNSCOPED."),
     ),
     dict(
+        law_id="AKB-A-REMOVED-DISPATCH-IS-PRICED-BY-ITS-BYTES",
+        statement=(
+            "COST PER REMOVED DISPATCH IS NOT A WELL-DEFINED QUANTITY unless the bytes held "
+            "constant are stated. Fusing two half-width GEMV kernels into one full-width "
+            "kernel removes a dispatch while moving ZERO extra bytes and returns 1.042 us; "
+            "adding a dispatch that reads more weights costs 70.708 us. Same machine, same "
+            "shape, same session -- a factor of 68. Doubling dispatches AND weights costs "
+            "+23.76%, not +100%, so dispatches overlap and the machine is bandwidth-bound. "
+            "OPERAND REUSE IS REFUTED as the mechanism at +0.418% against a pre-registered "
+            "8-20%, with complete_separation False."),
+        applicability={
+            "MODEL": NONE, "ARCHITECTURE": NONE,
+            "ORGAN": "MLP GEMV; the production comparison point is the gate_up pair",
+            "REPRESENTATION": "grouped absmax group=64 operands",
+            "SHAPE": "rows=17408 cols=5120, 8704 threadgroups per dispatch",
+            "MACHINE": M3, "RUNTIME": "MLX 0.32.1 mx.fast.metal_kernel JIT, 200 reps, 3 sweeps",
+            "KERNEL": "hand-written MSL: single_only / reuse / reload / two_no_add / two_plus_add",
+            "STORAGE_TIER": NONE, "TOPOLOGY": NONE,
+            "WORKLOAD_PHASE": "single-token decode-shaped GEMV, CONTENDED machine"},
+        evidence_class="Measured",
+        source_receipts=["receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE.json"],
+        citations=["receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE.json#result.THE_SEPARATION",
+                   "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE.json#result.OPERAND_REUSE_IS_REFUTED",
+                   "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE.json#claim_boundary"],
+        status="ACTIVE", superseded_by=None, negative_result=True,
+        confidence_basis=(
+            "ONE shape, THREE sweeps, and BENCH_STATE CONTENDED -- so the absolute values are "
+            "upper bounds and the 0.418% reuse figure sits INSIDE the 5.86-8.84% IQR and must "
+            "not be read as a small positive. What carries the law is the SEPARATION: 1.042 vs "
+            "70.708 us is a factor of 68, far outside that noise, and the +23.76% overlap "
+            "figure is likewise well above it. The refutation is sound rather than merely "
+            "unresolved because the pre-registered 8% floor WOULD have cleared this noise. "
+            "MODEL and ARCHITECTURE are NONE because the arms are synthetic; the receipt "
+            "withdraws the earlier 8.6 us figure AND the framing that produced it, and does "
+            "NOT refute production's 17.35 us, which is a bytes-plus-dispatch number."),
+    ),
+    dict(
+        law_id="AKB-SIX-LEVERS-ELIMINATED-AND-THE-FLOOR-MECHANISM-IS-UNRESOLVED",
+        statement=(
+            "THE PER-ELEMENT MATVEC FLOOR SURVIVES OPERAND REUSE AND INSTRUCTION-LEVEL "
+            "PARALLELISM, THE TWO STRONGEST KERNEL-SIDE CANDIDATES, AND ITS MECHANISM IS "
+            "STILL NOT NAMED. Staging x in threadgroup memory -- 20,480 bytes inside "
+            "Metal's 32,768 allowance, the mechanism register blocking measured worth 2.48x "
+            "for GEMM -- LOSES to reading x from device, 0.870x at 16 rows per stage "
+            "and 0.499x at 2, "
+            "reproduced in direction and magnitude across two runs, so the x reads were "
+            "already cache-served and staging adds a pass, a barrier and threadgroup "
+            "pressure while removing nothing. Four independent accumulators, breaking the "
+            "serial dependency chain with the SAME loads, decode and element count, are "
+            "INDISTINGUISHABLE at 0.987x on medians and 1.054x on minima, 8 of 14 rounds -- "
+            "a coin flip. SIX LEVERS ARE NOW ELIMINATED BY MEASUREMENT: weight bytes, load "
+            "instructions, decode arithmetic, the weight reads entirely, operand reuse and "
+            "ILP. NO SEVENTH MECHANISM IS OFFERED -- this program's scorecard is five "
+            "diagnoses written down and two wrong, and the one structural feature no arm "
+            "varied, the serial cross-lane reduction tail, is recorded as a NAMED UNTESTED "
+            "CANDIDATE rather than an explanation."),
+        applicability={
+            "MODEL": NONE, "ARCHITECTURE": NONE,
+            "ORGAN": "MLP-shaped GEMV at 89.1M weights, a shape borrowed from the resident",
+            "REPRESENTATION": "ws_rtn_q4_g64, identical in every arm",
+            "SHAPE": "rows=17408 cols=5120, group 64, tpr64 at tg 128 and 1024",
+            "MACHINE": M3, "RUNTIME": "MLX mx.fast.metal_kernel JIT, 14 round-robin rounds x 20 reps",
+            "KERNEL": "native matvec: device x, staged x at two amortisations, four accumulators",
+            "STORAGE_TIER": NONE, "TOPOLOGY": NONE,
+            "WORKLOAD_PHASE": "single-token decode-shaped GEMV, CONTENDED machine"},
+        evidence_class="Measured",
+        source_receipts=["receipts/headless/ACCELERATOR_TWO_MORE_LEVERS_DIE.json"],
+        citations=["receipts/headless/ACCELERATOR_TWO_MORE_LEVERS_DIE.json#P1_OPERAND_REUSE_IS_REFUTED_AND_NOT_NARROWLY",
+                   "receipts/headless/ACCELERATOR_TWO_MORE_LEVERS_DIE.json#P3_INSTRUCTION_LATENCY_IS_INDISTINGUISHABLE",
+                   "receipts/headless/ACCELERATOR_TWO_MORE_LEVERS_DIE.json#THE_MECHANISM_IS_UNRESOLVED_AND_I_AM_NOT_REACHING_FOR_A_SIXTH_STORY",
+                   "receipts/headless/ACCELERATOR_TWO_MORE_LEVERS_DIE.json#claim_boundary"],
+        status="ACTIVE", superseded_by=None, negative_result=True,
+        confidence_basis=(
+            "BOTH pre-registered predictions land on the wrong side, which is what carries "
+            "it. The four-arm run is CONTAMINATED -- arm A shows 272.6% round-spread -- so "
+            "medians are unreliable and minima and an ordinal rounds-won count are reported "
+            "beside every one; what survives contamination is that the staging arms "
+            "reproduce their direction and magnitude across two independent runs, and that "
+            "no staged or ILP arm wins a majority of rounds. The ILP verdict rests on ONE "
+            "run and its two estimators disagree in direction, which is why it is called "
+            "indistinguishable rather than a small loss. Correctness precedes every timing "
+            "at 1.8-2.0e-07 against a shared float64 oracle and the staging barrier control "
+            "fired 8 of 8. ONE shape, ONE machine, INSTANCE; MODEL and ARCHITECTURE are "
+            "NONE because the weights are synthetic at a borrowed shape. No shipped kernel "
+            "changed and neither variant earns a place."),
+    ),
+    dict(
+        law_id="AKB-THE-MATVEC-FLOOR-IS-THE-ELEMENT-NOT-THE-BYTE",
+        statement=(
+            "A REPRESENTATION-NATIVE MATVEC AT THE RESIDENT'S MLP SHAPE IS BOUND BY ITS "
+            "ELEMENT COUNT, NOT BY ITS BYTES AND NOT BY ITS UNPACK. A deletion control "
+            "with the SAME geometry, reduction and element count that NEVER READS THE "
+            "PACKED ARRAY measures 0.2897 ms against the real kernel's 0.2825 -- the real "
+            "kernel FASTER, a statistical tie -- so 44.6 MB of weight traffic costs "
+            "NOTHING MEASURABLE. Two candidate levers are eliminated by measurement: "
+            "4-byte loads cut load instructions FOURFOLD and change nothing (1.004x, 7 of "
+            "12 round-robin rounds, a coin flip), and a 256-entry LUT removing the "
+            "mask/shift/convert/subtract chain is 16.1% SLOWER (1 of 12 rounds). The "
+            "floor is one x read and one fused multiply-add per weight at 307.7 G elem/s, "
+            "and weight traffic below ~171 MB at this element count hides beneath it. "
+            "CONSEQUENCE FOR THE INSTRUMENT: effective GB/s is weight_bytes/time, so when "
+            "time is set by elements it measures THE REPRESENTATION'S DENSITY AND NOT THE "
+            "MACHINE -- the same kernel would report half the GB/s at half the bpw without "
+            "running any faster."),
+        applicability={
+            "MODEL": NONE, "ARCHITECTURE": NONE,
+            "ORGAN": "MLP-shaped GEMV at 89.1M weights, a shape borrowed from the resident",
+            "REPRESENTATION": "ws_rtn_q4_g64 in every arm; the control reads no weights",
+            "SHAPE": "rows=17408 cols=5120, group 64, tpr64 tg128",
+            "MACHINE": M3, "RUNTIME": "MLX mx.fast.metal_kernel JIT, 12-16 round-robin rounds x 20 reps",
+            "KERNEL": "native matvec under byte / word / lut unpacks plus a no-weights control",
+            "STORAGE_TIER": NONE, "TOPOLOGY": NONE,
+            "WORKLOAD_PHASE": "single-token decode-shaped GEMV, CONTENDED machine"},
+        evidence_class="Measured",
+        source_receipts=["receipts/headless/ACCELERATOR_THE_FLOOR_IS_THE_ELEMENT_NOT_THE_BYTE.json"],
+        citations=["receipts/headless/ACCELERATOR_THE_FLOOR_IS_THE_ELEMENT_NOT_THE_BYTE.json#BOTH_PREDICTIONS_LAND_ON_THE_WRONG_SIDE",
+                   "receipts/headless/ACCELERATOR_THE_FLOOR_IS_THE_ELEMENT_NOT_THE_BYTE.json#AND_THE_DELETION_CONTROL_SAYS_WHAT_THE_WALL_IS",
+                   "receipts/headless/ACCELERATOR_THE_FLOOR_IS_THE_ELEMENT_NOT_THE_BYTE.json#AN_INSTRUMENT_CORRECTION_THAT_MATTERS_MORE_THAN_THE_ARMS",
+                   "receipts/headless/ACCELERATOR_THE_FLOOR_IS_THE_ELEMENT_NOT_THE_BYTE.json#claim_boundary"],
+        status="ACTIVE", superseded_by=None, negative_result=True,
+        confidence_basis=(
+            "BOTH pre-registered predictions land on the WRONG side, which is what carries "
+            "it: the load-width lever was predicted to win 1.5x and is refuted at 1.004x, "
+            "the LUT was predicted not to win and LOSES. The first sweep was DISCARDED and "
+            "why is part of the evidence -- sequential arms put byte first and it read "
+            "116.4% IQR at 3.4x its own previous measurement, so a transient lands on "
+            "whoever holds the clock; round-robin then reproduced the previous block's "
+            "byte figure to 4.8%. The floor probe's estimator is the MINIMUM of round "
+            "medians, stated because contention only adds time, and its control carries "
+            "63.1% round-spread so 'the bytes are free' is DIRECTIONAL -- admitted because "
+            "the tie runs in the wrong direction for a cost, not by a clean gate. THE "
+            "DENSE DECOMPOSITION IS REJECTED BY THIS PROGRAM'S OWN IMPLAUSIBILITY RULE at "
+            "an implied 617.3 GB/s over the measured 589.73 roof, since the arms have "
+            "different launch geometries; no dense number is claimed. ONE shape, ONE "
+            "machine, INSTANCE; the ~171 MB crossover scales with the element count and is "
+            "this shape's number. Correctness precedes every timing at 2.0-2.2e-07 against "
+            "a shared float64 oracle. No shipped kernel changed."),
+    ),
+    dict(
+        law_id="AKB-THE-UNPACK-IS-THE-WALL-NOT-THE-BYTES",
+        statement=(
+            "A REPRESENTATION-NATIVE MATVEC ON THIS MACHINE IS ARITHMETIC-BOUND ON ITS "
+            "UNPACK, AND THE THREAD GEOMETRY IS NOT THE LEVER. At the resident's real MLP "
+            "shape 17408x5120, dense f32 sustains 405.7 GB/s while ws_rtn_q4_g64 native "
+            "reaches 138.7 GB/s at one thread per row and 160.9 GB/s at the resident's own "
+            "SIXTY-FOUR threads per row -- 1.16x for a 64x change in lanes, against a "
+            "pre-registered 1.5x that is REFUTED. AMENDED 2026-08-26 by "
+            "ACCELERATOR_THE_FLOOR_IS_THE_ELEMENT_NOT_THE_BYTE: THE UNPACK IS NOT THE "
+            "WALL EITHER -- a deletion control reading NO packed bytes measures 0.2897 ms "
+            "against the real kernel's 0.2825, a LUT decode is 16.1% SLOWER and 4-byte "
+            "loads change nothing at 1.004x, so the wall is the PER-ELEMENT rate at "
+            "307.7 G elem/s and weight traffic under ~171 MB hides beneath it. The "
+            "native arm reads 7.53x FEWER BYTES "
+            "for only 2.99x less time, converting 40% of its own byte ratio and burning "
+            "the rest on the unpack, and its best geometry sits at 27.3% of the measured "
+            "589.73 GB/s roof. THE BODY-LEVEL COROLLARY IS ALREADY IN PRODUCTION DATA: "
+            "three bodies of one parent at 3.1393 / 2.9802 / 2.5970 complete EBPW record "
+            "34.14 / 34.12 / 33.12 raw TPS, so Spearman(EBPW, TPS) is +1.000 where "
+            "bandwidth-bound demands -1.000, effective bandwidth FALLS 337.3 -> 318.8 -> "
+            "266.8 GB/s as bytes fall, and a 17.3% byte cut returned -3.0% instead of "
+            "+20.9%. FEWER BYTES ARE NECESSARY AND NOT SUFFICIENT."),
+        applicability={
+            "MODEL": ("kernel arms NONE -- synthetic weights at a borrowed shape; the body "
+                      "corollary is the three NOETIC_PARENT_A bodies at 3.1393 / 2.9802 / "
+                      "2.5970 complete EBPW"),
+            "ARCHITECTURE": "kernel arms NONE; the body corollary is qwen3_5, 48 DeltaNet + 16 GQA",
+            "ORGAN": "MLP-shaped GEMV; the body-level corollary is whole-decoder",
+            "REPRESENTATION": "ws_rtn_q4_g64 measured; the body corollary spans the "
+                              "sealed mixed hq30uq4 / hgrafv01 ladder",
+            "SHAPE": "rows=17408 cols=5120, group 64",
+            "MACHINE": M3, "RUNTIME": "MLX mx.fast.metal_kernel JIT, 200 reps, 40 warmup",
+            "KERNEL": "hand-written MSL: dense f32, native tpr1, native tpr64",
+            "STORAGE_TIER": NONE, "TOPOLOGY": NONE,
+            "WORKLOAD_PHASE": "single-token decode-shaped GEMV, CONTENDED machine"},
+        evidence_class="Measured",
+        source_receipts=["receipts/headless/ACCELERATOR_UNPACK_IS_THE_WALL.json"],
+        citations=["receipts/headless/ACCELERATOR_UNPACK_IS_THE_WALL.json#THE_WALL",
+                   "receipts/headless/ACCELERATOR_UNPACK_IS_THE_WALL.json#PREDICTIONS",
+                   "receipts/headless/ACCELERATOR_UNPACK_IS_THE_WALL.json#THE_PRODUCTION_EVIDENCE_THAT_SETTLES_THE_DIRECTION",
+                   "receipts/headless/ACCELERATOR_UNPACK_IS_THE_WALL.json#claim_boundary"],
+        status="ACTIVE", superseded_by=None, negative_result=True,
+        confidence_basis=(
+            "BENCH_STATE CONTENDED with the operator's 40.63 GiB job at 102.1% CPU left "
+            "running, so every absolute GB/s is a LOWER BOUND and the arm-to-arm ratios "
+            "measured back to back in one process are what carries it; arms clear the 10% "
+            "gate at 6.30 / 7.68 / 9.68% IQR. The timed kernels are ws_rtn_q4_g64 while the "
+            "resident's MLP is affine_q2 group 32 at 2.50 bpw, a DIFFERENT format reading "
+            "fewer bytes and doing MORE unpack per byte -- the DIRECTION transfers and the "
+            "absolute rate does not, which is why MODEL and ARCHITECTURE are NONE. The "
+            "three-body TPS figures are RECORDED in S031 s0 and not re-measured, and their "
+            "3.0% spread could be noise; what is not noise-sized is the ABSENCE of the "
+            "+20.9% a bandwidth-bound model demands. Correctness precedes every timing at "
+            "2.0e-07 to 1.2e-06 against a shared float64 oracle, with the tpr64 barrier "
+            "control watched firing. TWO geometry points only; no optimum is claimed."),
+    ),
+    dict(
+        law_id="AKB-THE-DISPATCH-LADDER-CANNOT-REACH-THE-ACCEPTED-TPS-TARGET",
+        statement=(
+            "THE DECODE GRAPH'S COUNT COLUMN AND ITS BYTES COLUMN DISAGREE BY THREE ORDERS "
+            "OF MAGNITUDE. On the sealed 3.1393 resident, 402 of 964 dispatches -- 41.6% of "
+            "the count -- carry 99.893% of the weight bytes; the other 562 carry 0.107%. "
+            "Priced at the measured 1.042 us for a byte-free removal, deleting EVERY "
+            "weight-free dispatch, far past the S031 s4 target of 200, returns at most "
+            "0.586 ms against a 29.29 ms token, about 2% -- the same order as the 2.19% the "
+            "fusion block measured end to end from a different direction. AND THE CEILING IS "
+            "HARD: at 9.879 GB of weight traffic per token the sealed body runs at "
+            "337.27 GB/s = 57.2% of this machine's measured 589.73 GB/s roof, so a PERFECT "
+            "machine tops out at 59.70 raw TPS while 50 ACCEPTED TPS at the 30/43 capability "
+            "floor needs 71.67. NO DISPATCH COUNT REACHES THE TARGET; only fewer bytes do, "
+            "which is S031 s2's own order with a number attached. AMENDED 2026-08-26 by "
+            "ACCELERATOR_UNPACK_IS_THE_WALL: fewer bytes are NECESSARY and NOT "
+            "SUFFICIENT -- the 17.3% byte cut from 3.1393 to 2.5970 EBPW returned "
+            "-3.0% raw TPS, not the +20.9% bandwidth-bound demands."),
+        applicability={
+            "MODEL": "sealed-3.14 (NOETIC_PARENT_A), 26.896G parent params",
+            "ARCHITECTURE": "qwen3_5 64-layer hybrid, 48 DeltaNet + 16 GQA",
+            "ORGAN": "whole decode graph, all 14 kernel families",
+            "REPRESENTATION": "mixed hq30uq4 / hgrafv01 / f32v2 at 3.1393 complete EBPW",
+            "SHAPE": "single-token decode, 11-token prompt",
+            "MACHINE": M3, "RUNTIME": "Hawking Rust Metal decode, dispatch counter",
+            "KERNEL": "all 964 dispatches of the resident graph",
+            "STORAGE_TIER": NONE, "TOPOLOGY": NONE,
+            "WORKLOAD_PHASE": "single-request decode; says nothing about prefill"},
+        evidence_class="Derived",
+        source_receipts=["receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json"],
+        citations=["receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json#THE_COUNT_COLUMN_AND_THE_BYTES_COLUMN_DISAGREE",
+                   "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json#THE_CEILING",
+                   "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json#three_reconciliations_that_make_it_falsifiable",
+                   "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json#claim_boundary"],
+        status="ACTIVE", superseded_by=None, negative_result=True,
+        confidence_basis=(
+            "NOTHING WAS TIMED. The bytes are read off the artifact's own catalog and the TPS "
+            "figures are arithmetic over a RECORDED 34.14 raw TPS and a RECORDED 589.73 GB/s "
+            "roof -- a DERIVATION, not an experiment, and classed Derived for that reason. "
+            "What carries it is the reconciliation: the attribution sums to the catalog total, "
+            "the catalog total equals bytes on disk at ZERO delta, and 8*bytes/params "
+            "reproduces the sealed 3.139300850311054 to twelve places; and the map derived "
+            "from the tensor inventory reproduces the runtime's independently measured 964, "
+            "having FAILED at 948 until a missing weight-free kernel was found. Weight traffic "
+            "ONLY -- activations, KV and the DeltaNet state are uncounted, and every uncounted "
+            "byte LOWERS the ceiling, so the conclusion sits on the safe side of its own "
+            "omission: including the largest omission moves 59.70 to 57.93, nowhere near "
+            "71.67. ONE artifact, INSTANCE, no kernel changed and no adequacy claim moves."),
+    ),
+    dict(
+        law_id="AKB-WEIGHT-METRICS-INVERT-ON-ATTENTION-Q",
+        statement=(
+            "For attention q_proj under ws_rtn_q4_g64, WEIGHT-SPACE FIDELITY RANKS FOUR "
+            "SPECIMENS IN EXACTLY THE WRONG ORDER against real-activation error. Cosine runs "
+            "0.988150 / 0.989516 / 0.994001 / 0.994252 while real-activation relative error "
+            "runs 0.032677 / 0.033354 / 0.056519 / 0.065670 -- monotone and fully reversed, "
+            "Spearman -1.000 on two token sets and -0.800 on two more. It is NOT the "
+            "scale-invariance defect: weight_rel_err, which is not scale-invariant, inverts "
+            "identically. The GAUSSIAN activation proxy fails on the SAME boundary, "
+            "overstating error by up to 1.6x on q_proj while landing within 7% on the expert "
+            "gate. CONSEQUENCE: the weight-space floor procedure assigns 4.500 bpw to the "
+            "specimen whose real activations tolerate the representation BEST and 4.125 to "
+            "the one that tolerates it WORST, Spearman(floor_bpw, real_err) = -1.000. "
+            "SHARPENED BY A SECOND RECEIPT, and the sharpening is CONFOUND-FREE where the "
+            "original was not: moving each specimen from ONE FLAT SETTING to ITS OWN "
+            "weight-space floor -- same weights, same activations, only the setting moves, "
+            "so no cross-architecture comparison is involved -- changes real-activation "
+            "error MONOTONICALLY BY RANK. The best improves 14.21%, the second is exactly "
+            "unchanged, the third worsens 10.43%, the fourth worsens 9.63%. THE PROCEDURE "
+            "IMPROVES THE ALREADY-GOOD AND DEGRADES THE ALREADY-BAD, and the spread it is "
+            "meant to equalise comes out 1.33x WIDER than using one flat setting for "
+            "everybody (0.043958 against 0.032994). NO CORRECTED BUDGET FOLLOWS: the "
+            "re-floored ordering is bar-independent only at the COARSE grouping, and the "
+            "Kimi/Falcon pair swaps at 2 of 5 bars."),
+        applicability={
+            "MODEL": UNSCOPED, "ARCHITECTURE": UNSCOPED,
+            "ORGAN": "attention q_proj; the expert gate does NOT invert and is the contrast",
+            "REPRESENTATION": "grouped absmax bits=4 group=64, exactly ws_rtn_q4_g64",
+            "SHAPE": "layer-0 q_proj, [4096,2048] / [3072,2048] / [1536,3072]",
+            "MACHINE": M3, "RUNTIME": "CPython 3.12, mlx_lm weights + numpy float32 reference",
+            "KERNEL": NONE, "STORAGE_TIER": "TIER 2 /Volumes/corpdrive model lake",
+            "TOPOLOGY": NONE,
+            "WORKLOAD_PHASE": "representation fidelity against REAL activations, decode position 0"},
+        evidence_class="Measured",
+        source_receipts=["receipts/headless/ACCELERATOR_ACTIVATION_VS_WEIGHT_SPACE.json",
+                         "receipts/headless/ACCELERATOR_REFLOOR_ON_ACTIVATIONS.json"],
+        citations=["receipts/headless/ACCELERATOR_ACTIVATION_VS_WEIGHT_SPACE.json#result.THE_ANSWER_IS_ORGAN_DEPENDENT",
+                   "receipts/headless/ACCELERATOR_ACTIVATION_VS_WEIGHT_SPACE.json#result.THE_BIT_BUDGET_IS_INVERTED_ACROSS_SPECIMENS",
+                   "receipts/headless/ACCELERATOR_ACTIVATION_VS_WEIGHT_SPACE.json#claim_boundary",
+                   "receipts/headless/ACCELERATOR_REFLOOR_ON_ACTIVATIONS.json#result.THE_CONFOUND_FREE_HEADLINE",
+                   "receipts/headless/ACCELERATOR_REFLOOR_ON_ACTIVATIONS.json#result.P2_REFUTED_IN_PART_AND_I_DO_NOT_GET_TO_QUOTE_A_BUDGET"],
+        unscoped_basis={
+            "MODEL": "receipts/headless/ACCELERATOR_ACTIVATION_VS_WEIGHT_SPACE.json#result.q_proj_rows",
+            "ARCHITECTURE": "receipts/headless/ACCELERATOR_ACTIVATION_VS_WEIGHT_SPACE.json#result.architectures_measured"},
+        status="ACTIVE", superseded_by=None, negative_result=True,
+        confidence_basis=(
+            "Four specimens are THREE independent architecture groups -- the Qwen pair differs "
+            "at the 4th decimal -- so architecture, shape and cosine are NOT separated, and the "
+            "receipt names that confound rather than burying it. What raises this above one "
+            "ordering flipping on noise is that the inversion is monotone on all four points, "
+            "holds within the twin pair, and reproduces across four independent token sets. The "
+            "contrast case is what makes it a boundary rather than a blanket claim: the expert "
+            "gate does not invert. Its mechanism is already in this base as "
+            "AKB-ORGAN-FLOOR-DOES-NOT-TRANSFER -- within-group outliers concentrated in q_proj "
+            "at Pearson -0.9841 -- so this is that weight-space law's activation-space "
+            "consequence, not an unexplained correlation. THE SECOND RECEIPT REMOVES THE "
+            "CONFOUND FROM THE CORE CLAIM: its within-specimen deltas hold one specimen's "
+            "weights and activations fixed and move only the setting, so the monotone-by-rank "
+            "result needs no cross-architecture comparison at all. The SPREAD figure and the "
+            "bar-based reflooring still do, which is why the budget is NOT quoted."),
+    ),
+    dict(
         law_id="AKB-ORGAN-FLOOR-DOES-NOT-TRANSFER",
         statement=(
             "The prior law that ATTENTION SETS THE REPRESENTATION FLOOR IS "
@@ -1426,6 +1781,36 @@ UNEXTRACTED_REASONS = {
 }
 
 UNEXTRACTED: dict[str, str] = {
+    # A hardware refusal and a precision measurement of its workaround; the
+    # AKB's axes are about kernel performance and this is about a TYPE.
+    "ACCELERATOR_FP64_IS_A_HARDWARE_REFUSAL.json": "CAPABILITY_NOT_LAW",
+    # A NEGATIVE capability probe with a named instrument gate; nothing timed.
+    "ACCELERATOR_OCCUPANCY_PROBE.json": "CAPABILITY_NOT_LAW",
+    # Records that the pinned CUDA corpus is absent from this machine and that the
+    # census could not say so. A fact about EVIDENCE AVAILABILITY and an instrument
+    # refusal; there is no measured relation to type and nothing is timed.
+    "ACCELERATOR_C2M_CORPUS_ABSENT.json": "CAPABILITY_NOT_LAW",
+    # Adds a BUDGETED SWEEP to the fabric and the reporting discipline that stops a
+    # skipped copy reading as a clean one. Bookkeeping over a mock provider with
+    # nothing timed; the only number in it is an ESTIMATE from a rate measured in
+    # ACCELERATOR_HUMF_IDENTITY, which this base already carries.
+    "ACCELERATOR_HUMF_SCRUB.json": "CAPABILITY_NOT_LAW",
+    # Records that all four Odyssey specimens now EXECUTE ON REAL LAKE WEIGHTS
+    # once the storage gate opened. Its two measured numbers are a storage bus
+    # rate and an mmap page-in rate, neither of which is a kernel law on this
+    # base's axes (primitive x shape x representation x machine). The finding
+    # that a 51.5% load still looks peaked is an INSTRUMENT caveat, and this
+    # base already refuses to type those as laws (PROSE_ONLY exists for it).
+    "ACCELERATOR_REAL_LAKE_WEIGHTS.json": "CAPABILITY_NOT_LAW",
+    # An IR capability and a legality rule; the physical law it rests on
+    # (lockstep at simd width 32) is already carried by the barrier-scopes work.
+    "ACCELERATOR_SIMDGROUP_SCOPE_EXECUTES.json": "CAPABILITY_NOT_LAW",
+    # A trust-model result over a MOCK fabric; no physical relation is measured.
+    "ACCELERATOR_HUMF_CONSISTENT_CORRUPTION.json": "MOCK_NOT_PHYSICAL",
+    # An integration result and six defect fixes; no measured physical relation.
+    "HCLI_RESIDENT_END_TO_END.json": "CAPABILITY_NOT_LAW",
+    # A coverage census over receipt SCHEMA, not a physical relation.
+    "ACCELERATOR_BENCH_STATE_IS_A_SCHEMA_REQUIREMENT.json": "METHOD_NOT_LAW",
     # An endpoint that now EXISTS and refuses correctly; no measured relation.
     "ACCELERATOR_SEALED_RESIDENT_ENDPOINT.json": "CAPABILITY_NOT_LAW",
     # A path-and-permission repair, not a measured relation about execution.
@@ -1556,6 +1941,15 @@ def build(*, root: Path = REPO) -> dict[str, Any]:
         "entries_by_status": by_status,
         "negative_results": sum(1 for e in entries if e["negative_result"]),
         "supersession_in_corpus": {k: v for k, v in sorted(superseded.items())},
+        # Which laws an amendment explicitly declared it does NOT reach, by law_id.
+        # Published so the exemption is auditable from the artifact rather than
+        # living only in a module global.
+        "amendment_exemptions": {k: sorted(v) for k, v in sorted(_EXEMPT.items())},
+        # Kept SEPARATE from the exemptions on purpose: "this amendment does not
+        # reach that law" and "it reaches it and the law already carries the
+        # correction" are different statuses, and one list would let a reader
+        # take a reconciled law for an untouched one.
+        "amendment_reconciliations": {k: sorted(v) for k, v in sorted(_RECONCILED.items())},
         "unextracted": unextracted,
         "unextracted_count": len(unextracted),
     }

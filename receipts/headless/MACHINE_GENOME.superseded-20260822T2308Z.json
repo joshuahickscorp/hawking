@@ -835,5 +835,14 @@
    "ACTIVE_DECODE_LIMIT=1 was derived from a 29.3% noise floor. That floor is large only because failing streams inflated the spread. 'k=2 gained 20.2%, within the noise' is an OOM artifact \u2014 the clean-room topology probe measured k=2 at 1.2083x with a 0.1% spread."
   ],
   "corrected_by": "receipts/headless/GPU_MEMORY_GATE.json and a re-run of machine_probe.py with the Metal working set as the first admission gate"
+ },
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
  }
 }

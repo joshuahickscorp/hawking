@@ -1,8 +1,8 @@
 {
   "schema": "hawking.headless.gravity_compiler_search.v1",
-  "generated_at": "2026-08-26T03:40:22Z",
-  "git_head": "e665c7319eb06bc1611d1ede67e091160dea83c0",
-  "elapsed_s": 0.244,
+  "generated_at": "2026-08-26T10:13:53Z",
+  "git_head": "665110c71c8cc16db6a05af70d621a0266853ab1",
+  "elapsed_s": 0.274,
   "question": "Is a Gravity candidate which codec, or a (representation, kernel, layout, runtime graph) executable program?",
   "answer": "A candidate is the pair. Two programs with the same Q4 codes and different kernels (geo_tpr64 vs 1-thread-per-row serial) are different candidates and score differently (occupancy 1\u00d7 vs 23.7\u00d7). Scoring a candidate that names no kernel is refused \u2014 there is no default. gemv_simdgroup_f32 is 1.50\u00d7 faster per dispatch on the compute floor than geo_tpr64, but attached to the Q4 reconstruct-then-GEMM lowering it streams 218.8 GB/token; the bandwidth floor swamps the kernel gain and the search REFUSES the kernel win.",
   "convention": {
@@ -1429,5 +1429,14 @@
     "every_scored_candidate_names_a_kernel": true,
     "uv_reports_0485_and_16": true
   },
-  "written_to": "/Users/scammermike/Downloads/hawking/receipts/headless/GRAVITY_COMPILER_SEARCH.json"
+  "written_to": "/Users/scammermike/Downloads/hawking/receipts/headless/GRAVITY_COMPILER_SEARCH.json",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
 }

@@ -1,9 +1,9 @@
 {
  "schema": "hawking.accelerator.receipt.v1",
- "generated_at": "2026-08-26T00:57:07Z",
+ "generated_at": "2026-08-26T13:50:03Z",
  "experiment_class": "ACCEL-STATE",
  "knowledge_level": "INSTANCE",
- "git_head": "5d7a169fb06ca538ae41073b4b33b4cb6dadc21e",
+ "git_head": "48c05bcd86e802b0da860f3ab414c45689f2e540",
  "identities": {
   "experiment": {
    "id": "G060-AKB-DEVICE-GENOME",
@@ -39,25 +39,27 @@
   }
  },
  "result": {
-  "corpus_size": 78,
-  "receipts_yielding_laws": 22,
-  "laws": 22,
+  "corpus_size": 104,
+  "receipts_yielding_laws": 33,
+  "laws": 34,
   "entries_by_status": {
-   "ACTIVE": 17,
+   "ACTIVE": 29,
    "CONDITIONAL": 4,
    "REFUTED": 1
   },
-  "negative_results": 10,
-  "unextracted_count": 56,
+  "negative_results": 18,
+  "unextracted_count": 71,
   "unextracted_by_reason": {
-   "CAPABILITY_NOT_LAW": 22,
+   "CAPABILITY_NOT_LAW": 31,
+   "METHOD_NOT_LAW": 1,
+   "MOCK_NOT_PHYSICAL": 1,
    "MOCK_ONLY": 7,
    "NO_VERDICT_FIELD": 5,
-   "PROSE_ONLY": 4,
-   "SUBSUMED": 6,
-   "SUPERSEDED_IN_FLIGHT": 12
+   "PROSE_ONLY": 5,
+   "SUBSUMED": 7,
+   "SUPERSEDED_IN_FLIGHT": 14
   },
-  "supersession_modelled": 14,
+  "supersession_modelled": 15,
   "negative_control": [
    {
     "control": "UNSCOPED on SHAPE whose source receipt measured one shape",
@@ -77,12 +79,12 @@
    {
     "control": "ACTIVE on a source receipt carrying AMENDED_IN_PLACE_*",
     "what_it_claims": "that an amended receipt's law is current and servable",
-    "observed_refusal": "AKB-ORGAN-FLOOR-DOES-NOT-TRANSFER: status ACTIVE but source ACCELERATOR_ORGAN_REPRESENTATION_FLOOR.json is superseded by ['ACCELERATOR_ORGAN_REPRESENTATION_FLOOR.json#AMENDED_IN_PLACE_2026_08_25']. A law resting on an amended or closed receipt is CONDITIONAL at best."
+    "observed_refusal": "AKB-ORGAN-FLOOR-DOES-NOT-TRANSFER: status ACTIVE but source ACCELERATOR_ORGAN_REPRESENTATION_FLOOR.json is superseded by ['ACCELERATOR_ORGAN_REPRESENTATION_FLOOR.json#AMENDED_IN_PLACE_2026_08_25']. A law resting on an amended or closed receipt is CONDITIONAL at best. If the amendment does not bear on THIS law, the amendment must say so by naming AKB-ORGAN-FLOOR-DOES-NOT-TRANSFER in laws_unaffected."
    },
    {
     "control": "ACTIVE on a receipt named by a later receipt's boundary_this_closes",
     "what_it_claims": "that a law closed by a later block is still current",
-    "observed_refusal": "AKB-SCAN-VS-CUMSUM: status ACTIVE but source ACCELERATOR_RUNTIME_GATE.json is superseded by ['ACCELERATOR_RUNTIME_EXECUTES.json#boundary_this_closes', 'ACCELERATOR_RUNTIME_GATE.json#AMENDED_IN_PLACE_2026_08_25']. A law resting on an amended or closed receipt is CONDITIONAL at best."
+    "observed_refusal": "AKB-SCAN-VS-CUMSUM: status ACTIVE but source ACCELERATOR_RUNTIME_GATE.json is superseded by ['ACCELERATOR_RUNTIME_EXECUTES.json#boundary_this_closes', 'ACCELERATOR_RUNTIME_GATE.json#AMENDED_IN_PLACE_2026_08_25']. A law resting on an amended or closed receipt is CONDITIONAL at best. If the amendment does not bear on THIS law, the amendment must say so by naming AKB-SCAN-VS-CUMSUM in laws_unaffected."
    },
    {
     "control": "evidence_class Measured on a source receipt with pass: false",
@@ -94,5 +96,6 @@
   "what_the_path_collision_forced": "the contract names receipts/headless/ACCELERATOR_KNOWLEDGE_BASE.json as a NEW file for this AKB. It is not new: it is a live git-tracked artifact written by tools/accelerator/odyssey_pass.py, which this lane is forbidden to touch, holding organ SHAPES under schema hawking.accelerator.knowledge_base.v1. odyssey_pass rewrites it whole from its own _fresh(), so anything written there would be destroyed on the next pass AND would break the byte-identical rule. The law base is therefore ACCELERATOR_LAW_BASE.json and that receipt stays an ordinary corpus input."
  },
  "claim_boundary": "WHAT THIS DOES NOT COVER. (1) COVERAGE: 21 of 77 receipts yielded a typed law; 56 are in `unextracted` with a reason code, and 22 of those are CAPABILITY_NOT_LAW -- real results that record a construct now executes, which is not a relation with an applicability domain. A later lane could type several of them. (2) THE LAWS ARE HAND-EXTRACTED. Every number is quoted from a cited field of a receipt that was read, and the validator refuses a citation that does not resolve -- but nothing here proves the STATEMENT is a faithful reading of the field it cites. That gap is real and no test closes it. (3) THE VALIDATOR CHECKS FORM, NOT TRUTH. It refuses breadth without evidence, bare comparatives, unresolvable citations, ACTIVE-on-superseded and Measured-on-failed. It cannot tell whether an axis value is the RIGHT value; an entry naming the wrong machine passes. (4) SUPERSESSION IS SYNTACTIC: an AMEND* key or a receipt name inside boundary_this_closes. A receipt superseded in prose without either marker is invisible to it, and a receipt whose amendment STRENGTHENS its claim is treated the same as one whose amendment guts it. (5) NOTHING WAS MEASURED. This lane ran no GPU work; every number is transcribed from a prior receipt and inherits that receipt's own boundary, including the several that are DIRECTIONAL rather than admissible speedups.",
- "pass": true
+ "pass": true,
+ "bench": null
 }

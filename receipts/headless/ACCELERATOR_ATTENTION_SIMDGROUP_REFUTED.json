@@ -123,5 +123,14 @@
   }
  },
  "claim_boundary": "This is a NEGATIVE result and nothing else. Simdgroup matrix ops in attention are SLOWER here at both sizes measured, and the mechanism is occupancy rather than instruction throughput. It does NOT show that matrix ops are useless in attention -- a design with more simdgroups per threadgroup, or larger head_dim, or a flash-style online softmax that removes the memory cap, could well reverse it. It shows that THIS blocking loses, and that the reason the earlier receipt gave was wrong.",
- "pass": true
+ "pass": true,
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

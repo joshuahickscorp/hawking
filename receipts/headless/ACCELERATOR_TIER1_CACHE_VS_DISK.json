@@ -115,5 +115,14 @@
   "one_file_one_pattern": "192 MB read as 64 sequential 3 MB chunks. Nothing here says anything about random small reads, about writes, or about Tier 2.",
   "the_lake_fill_was_running": "not quiesced for this probe, so the cold sample carries whatever contention the concurrent downloads imposed -- which makes 6266 MB/s a LOWER bound on the quiet-machine cold rate, in the safe direction for the claim"
  },
- "pass": true
+ "pass": true,
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

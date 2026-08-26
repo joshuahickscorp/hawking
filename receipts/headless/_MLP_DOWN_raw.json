@@ -1156,7 +1156,7 @@
       "fusion": "add",
       "kernel": "qwen_affine_q2_group64_matvec_add_tpr64_tg128",
       "layer": 0,
-      "max_abs_diff": 5.960464477539063e-8,
+      "max_abs_diff": 5.960464477539063e-08,
       "unfused_dispatches": 2,
       "unfused_gpu_ns": 164291
     },
@@ -1189,7 +1189,7 @@
       "fusion": "ssq",
       "kernel": "qwen_affine_q2_group64_matvec_add_ssq_tpr64_tg128",
       "layer": 0,
-      "max_abs_diff": 5.960464477539063e-8,
+      "max_abs_diff": 5.960464477539063e-08,
       "unfused_dispatches": 2,
       "unfused_gpu_ns": 155166
     }
@@ -1499,5 +1499,14 @@
   "schema": "hawking.headless.mlp_down.raw.v1",
   "session_open_s": 4.037724209,
   "skip_decode": false,
-  "tokenizer": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json"
+  "tokenizer": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/tokenizer.json",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+  }
 }

@@ -1775,3 +1775,99 @@ def causal_conv1d_oracle(x, w, b, width: int):
         term = pad[:, k:k + x.shape[1]] * w[:, k:k + 1]
         out = term if k == 0 else out + term
     return out + np.asarray(b, dtype=np.float64)[:, None]
+
+
+@dataclass
+class AirSimdRowReduce:
+    """A row reduction inside ONE simdgroup, declaring a SIMDGROUP barrier and running.
+
+    THIS IS THE GAP ACCELERATOR_BARRIER_SCOPES.json NAMED AGAINST ITSELF: "NO AIR
+    PROGRAM CURRENTLY DECLARES A SIMDGROUP BARRIER AND EXECUTES -- what closed is the
+    INSTRUCTION and the REFUSAL'S HONESTY, not a new executable program shape."
+
+    THE SCOPE RULE IS THE POINT, NOT THE KERNEL. A simdgroup barrier orders the 32
+    lanes of ONE simdgroup and NOTHING WIDER -- that receipt measured a cross-simdgroup
+    exchange WRONG BY 9.854 with simdgroup_barrier and EXACT with threadgroup_barrier,
+    the same 9.854 as with no fence at all. So declaring SIMDGROUP scope is only
+    meaningful when the threadgroup IS one simdgroup, and validate() REFUSES anything
+    wider rather than emitting an instruction that cannot order what the program needs
+    ordered. The IR had the instruction and no rule about when it is legal.
+
+    AND THE BARRIER IS NOT CLAIMED TO BE LOAD-BEARING HERE. The same receipt measured
+    that within a simdgroup the exchange is exact with NO fence, because lockstep makes
+    it unnecessary on this chip -- five independent sightings now. It is emitted for the
+    two reasons barrier_msl() already states: it constrains the COMPILER's reordering,
+    and lockstep is a HARDWARE PROPERTY a future device need not preserve. A correctness
+    control here would be silent by construction, and saying so beats running one and
+    reporting 'no difference' as if it were evidence.
+    """
+    name: str
+    rows: int
+    cols: int
+    threadgroup: int = 32            # exactly one simdgroup, and that is the rule
+    dtype: str = "f32"
+    device: str = "APPLE_GPU_0"
+
+    def validate(self) -> None:
+        if self.dtype != "f32":
+            raise ValueError("simd row reduce is f32 only here")
+        if self.rows <= 0 or self.cols <= 0:
+            raise ValueError("rows and cols must be positive")
+        if self.threadgroup != 32:
+            raise ValueError(
+                f"threadgroup {self.threadgroup} declares SIMDGROUP barrier scope over "
+                f"more than one simdgroup. A simdgroup barrier orders 32 lanes and "
+                f"nothing wider -- ACCELERATOR_BARRIER_SCOPES.json measured a "
+                f"cross-simdgroup exchange wrong by 9.854 WITH simdgroup_barrier, the "
+                f"same error as with no fence. Use THREADGROUP scope for a wider group.")
+
+    def barrier_scopes_emitted(self) -> list[str]:
+        return ["SIMDGROUP"]
+
+    def executable_on_metal_backend(self) -> tuple[bool, str]:
+        return True, "one simdgroup, one SIMDGROUP-scope barrier, lowered by barrier_msl"
+
+    def launch(self) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
+        return (self.rows * self.threadgroup, 1, 1), (self.threadgroup, 1, 1)
+
+    def out_shape(self) -> tuple[int, ...]:
+        return (self.rows,)
+
+
+def lower_simd_row_reduce_to_msl(rr: AirSimdRowReduce) -> str:
+    """Emits the SIMDGROUP instruction through barrier_msl, the ONE place a lowering
+    asks for a barrier, so the scope rule and the instruction cannot drift apart."""
+    rr.validate()
+    fence = barrier_msl("SIMDGROUP")
+    return f"""
+    uint row = threadgroup_position_in_grid.x;
+    uint lid = thread_position_in_threadgroup.x;
+    threadgroup float scratch[32];
+    uint base = row * {rr.cols}u;
+
+    float acc = 0.0f;
+    for (uint c = lid; c < {rr.cols}u; c += 32u) acc += x[base + c];
+    scratch[lid] = acc;
+    // SIMDGROUP scope: these 32 lanes and no others. Emitted for compiler ordering and
+    // for a future device that does not run a simdgroup in lockstep -- NOT claimed to
+    // be load-bearing on this chip, where the exchange is exact without it.
+    {fence}
+    if (lid == 0u) {{
+        float s = 0.0f;
+        for (uint i = 0; i < 32u; ++i) s += scratch[i];
+        out[row] = s;
+    }}
+"""
+
+
+def execute_simd_row_reduce(rr: AirSimdRowReduce, x):
+    import mlx.core as mx
+    src = lower_simd_row_reduce_to_msl(rr)
+    kern = mx.fast.metal_kernel(name=f"air_simd_rowreduce_{rr.name}", input_names=["x"],
+                                output_names=["out"], source=src,
+                                ensure_row_contiguous=True)
+    g, tg = rr.launch()
+    (o,) = kern(inputs=[mx.array(x, dtype=mx.float32)], grid=g, threadgroup=tg,
+                output_shapes=[rr.out_shape()], output_dtypes=[mx.float32])
+    mx.eval(o)
+    return o

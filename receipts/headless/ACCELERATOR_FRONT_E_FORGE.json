@@ -234,5 +234,14 @@
   "correction_1": "the three candidates this receipt reports as failing the reliability gate (tg128_ept2, tg512_ept1, tg1024_ept4) were measured at ~25 reps. At 200 reps ALL FIFTEEN are reliable, IQR 3.52-7.27%. The barring was an artifact.",
   "correction_2": "the '20.19% landscape spread' is driven almost entirely by one configuration, tg64_ept1. The other fourteen span about 2.4%.",
   "still_stands": "the flat top cluster, which is confirmed and stronger at 200 reps"
+ },
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
  }
 }

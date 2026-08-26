@@ -636,7 +636,7 @@
   "max_threads": 1048576,
   "mode": "headline",
   "published_peak_gb_s": 819.0,
-  "q4_tile_shape": "64 threads/row, 128-thread TG — not used",
+  "q4_tile_shape": "64 threads/row, 128-thread TG \u2014 not used",
   "recommended_max_working_set_size": 83494174720,
   "registry_id": 4294969050,
   "schema": "hawking.headless.bandwidth_roof.raw.v1",
@@ -647,5 +647,14 @@
   "unified_memory": true,
   "wall_s": 0.932464791,
   "warm_reps": 5,
-  "warmup": 2
+  "warmup": 2,
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+  }
 }

@@ -264,5 +264,14 @@
   "141_answer": "Apple's simd_prefix_inclusive_sum is worth 1.13x over the textbook threadgroup-memory Hillis-Steele shape at 2^24 (clean arms) and nothing distinguishable at 2^20. Real but modest, and it COSTS max support: Metal has prefix sum and product but no prefix max, so hillis_steele is kept as the only strategy that scans a general associative op."
  },
  "claim_boundary": "f32, 1-D, sum and max, one machine, microbenchmark. The 8.09x over mx.cumsum at 2^24 is a statement about MLX's cumsum on THIS shape -- it measures 19 GB/s on a 589 GB/s machine, 3% of bandwidth -- not a general claim that our kernels beat MLX. MLX remains the qualified winner at GEMM, softmax, attention and reduction. Nothing here ran inside a model.",
- "pass": true
+ "pass": true,
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

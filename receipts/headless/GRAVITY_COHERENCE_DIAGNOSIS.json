@@ -4,7 +4,7 @@
   "lane": "S007 native gravity Qwen3.8 argmax collapse",
   "outcome": "FIXED",
   "bar_after_fix": "PASS",
-  "root_cause": "The packer applied mlx_residual_norm_to_delta (weight-1) to a HuggingFace Gemma-RMSNorm dump that already stores delta-from-one. Q80 residual/q_norm/k_norm kernels apply (1+w), so the residual stream was multiplied by ~w_hf instead of ~(1+w_hf). Layer-0 input RMSNorm L2 collapsed from 69.73 to 3.57 (ratio 0.051). Decode then argmax-collapsed to token 150910 (byte-level BPE '´ī') which the tokenizer rendered as U+FFFD.",
+  "root_cause": "The packer applied mlx_residual_norm_to_delta (weight-1) to a HuggingFace Gemma-RMSNorm dump that already stores delta-from-one. Q80 residual/q_norm/k_norm kernels apply (1+w), so the residual stream was multiplied by ~w_hf instead of ~(1+w_hf). Layer-0 input RMSNorm L2 collapsed from 69.73 to 3.57 (ratio 0.051). Decode then argmax-collapsed to token 150910 (byte-level BPE '\u00b4\u012b') which the tokenizer rendered as U+FFFD.",
   "not_the_cause": [
     "tied embeddings: config.tie_word_embeddings=false and text_config.tie_word_embeddings=false; index contains independent lm_head.weight",
     "mixer-kind: qwen38_mixer_kind (layer+1)%4==0 matches config.layer_types and the tensors on disk (48 linear_attn + 16 self_attn, zero mismatches)",
@@ -14,13 +14,25 @@
     "config_json": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/config.json",
     "index_json": "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16/model.safetensors.index.json",
     "quoted": {
-      "architectures": ["Qwen3_5ForConditionalGeneration"],
+      "architectures": [
+        "Qwen3_5ForConditionalGeneration"
+      ],
       "tie_word_embeddings": false,
       "text_config.tie_word_embeddings": false,
-      "index_keys_containing_lm_head": ["lm_head.weight"],
-      "index_keys_containing_embed_tokens": ["model.language_model.embed_tokens.weight"],
-      "lm_head_shape": [248320, 5120],
-      "embed_shape": [248320, 5120],
+      "index_keys_containing_lm_head": [
+        "lm_head.weight"
+      ],
+      "index_keys_containing_embed_tokens": [
+        "model.language_model.embed_tokens.weight"
+      ],
+      "lm_head_shape": [
+        248320,
+        5120
+      ],
+      "embed_shape": [
+        248320,
+        5120
+      ],
       "lm_head_vs_embed_row0_cosine": 0.03370842710137367
     },
     "packer_remap": "canonicalize_qwen38_source_name maps lm_head.weight -> language_model.lm_head.weight and model.language_model.* -> language_model.model.*; missing lm_head would error at pack_q4_from_source('language_model.lm_head.weight'), not silently zero",
@@ -29,8 +41,28 @@
   "step2_mixer_kind": {
     "hardcoded_rule": "qwen38_mixer_kind: GQA iff (layer+1)%4==0 (layers 3,7,...,63)",
     "config_full_attention_interval": 4,
-    "config_layer_types_counts": {"linear_attention": 48, "full_attention": 16},
-    "config_full_attention_layers": [3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43, 47, 51, 55, 59, 63],
+    "config_layer_types_counts": {
+      "linear_attention": 48,
+      "full_attention": 16
+    },
+    "config_full_attention_layers": [
+      3,
+      7,
+      11,
+      15,
+      19,
+      23,
+      27,
+      31,
+      35,
+      39,
+      43,
+      47,
+      51,
+      55,
+      59,
+      63
+    ],
     "layer0_index_keys": [
       "model.language_model.layers.0.linear_attn.A_log",
       "model.language_model.layers.0.linear_attn.conv1d.weight",
@@ -48,9 +80,27 @@
     "probe_token": 100,
     "before_fix": {
       "hf_layer0_input_layernorm_mean": -0.03336528688669205,
-      "hf_layer0_input_layernorm_first8": [0.05029296875, -0.0625, -0.07275390625, -0.057861328125, -0.09716796875, -0.08251953125, 0.0546875, -0.11083984375],
+      "hf_layer0_input_layernorm_first8": [
+        0.05029296875,
+        -0.0625,
+        -0.07275390625,
+        -0.057861328125,
+        -0.09716796875,
+        -0.08251953125,
+        0.0546875,
+        -0.11083984375
+      ],
       "packed_layer0_input_layernorm_mean": -1.033365249633789,
-      "packed_layer0_input_layernorm_first8": [-0.94970703125, -1.0625, -1.07275390625, -1.057861328125, -1.09716796875, -1.08251953125, -0.9453125, -1.11083984375],
+      "packed_layer0_input_layernorm_first8": [
+        -0.94970703125,
+        -1.0625,
+        -1.07275390625,
+        -1.057861328125,
+        -1.09716796875,
+        -1.08251953125,
+        -0.9453125,
+        -1.11083984375
+      ],
       "packed_equals_hf_minus_one": true,
       "packed_minus_hf_mean": -1.0,
       "linear_attn_norm_packed_equals_hf": true,
@@ -79,7 +129,7 @@
   },
   "before_after_text": {
     "before_token_ids": "128/128 positions = 150910 on all 3 runs",
-    "before_excerpt": "\ufffd repeated (byte-level BPE token 150910 = '´ī')",
+    "before_excerpt": "\ufffd repeated (byte-level BPE token 150910 = '\u00b4\u012b')",
     "after_excerpt": "<think>\nThe user wants a detailed, prose explanation of how a compiler transforms a for-loop into basic blocks and then into machine code. They want \"ordinary prose\" (not pseudocode or formal notation) and \"at length\" (thorough, detailed). Let me think through this carefully.\n\nI need to cover:\n1. What a for-loop looks like in source code\n2. How the compiler parses it into an AST\n3. How the AST is lowered to an IR (intermediate representation)\n4. How the IR is broken into basic blocks\n5. What a basic block actually is (straight-line code"
   },
   "three_part_bar_after": {
@@ -88,7 +138,17 @@
     "dense_w_materialized_exposed": false,
     "dense_w_materialized_note": "complete-wall JSON does not expose a live counter; generate path hardcodes 0",
     "coherent_compiler_prose": true,
-    "compiler_hint_hits": ["compiler", "basic block", "machine code", "intermediate", "ir ", "loop", "for-loop", "ast", "parse"],
+    "compiler_hint_hits": [
+      "compiler",
+      "basic block",
+      "machine code",
+      "intermediate",
+      "ir ",
+      "loop",
+      "for-loop",
+      "ast",
+      "parse"
+    ],
     "median_complete_wall_tps": 32.907049924108115,
     "measurement_spread_pct": 0.2,
     "receipt": "receipts/headless/QWEN38_GRAVITY_NATIVE.json"
@@ -97,6 +157,15 @@
     "Bench records git commit 7cd1a4b; HEAD moved to 2f670c2 during the session (hcli lane). Working tree already had qwen38_hybrid_decode.rs dirty; this lane did not edit it.",
     "Reuse pack reports min_q4_cosine=1.0 because reused Q4 rows do not recompute cosine. The collapsing full-pack measured 0.98948; Q4 bytes were not rewritten.",
     "Historical GROUND_TRUTH_TPS prompt_len=25; this chat-templated prompt is 34 tokens. --max-seq-len 256 is required (binary default 128 cannot hold 34+128).",
-    "Token 150910 is not a U+FFFD vocab entry; it is byte-level BPE '´ī'. Replacement characters were the decoder's reaction to a run of that token."
-  ]
+    "Token 150910 is not a U+FFFD vocab entry; it is byte-level BPE '\u00b4\u012b'. Replacement characters were the decoder's reaction to a run of that token."
+  ],
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+  }
 }

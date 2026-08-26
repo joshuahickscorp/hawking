@@ -1,0 +1,49 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-26T13:10:14Z",
+ "experiment_class": "ACCEL-C2M",
+ "knowledge_level": "INSTANCE",
+ "git_head": "fd403294bcfabc1f3914f0d5f296274eeea67a1b",
+ "identities": {
+  "experiment": "the C2M corpus is gone, and the census could not tell",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB",
+  "device": {
+   "status": "ABSENT",
+   "reason": "nothing dispatched; this is corpus bookkeeping"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model"
+  },
+  "representation": {
+   "status": "ABSENT",
+   "reason": "no representation under test"
+  },
+  "kernel": "Lulzx/cuda-metal @ 19a702303dd29a1b25d668c6a6eca51302a2323c -- the pinned corpus, NOT PRESENT ON THIS MACHINE",
+  "runtime": "tools/accelerator/c2m.py census, CPython 3.12",
+  "transport": {
+   "status": "ABSENT",
+   "reason": "no transport"
+  }
+ },
+ "result": {
+  "THE_CORPUS_IS_NOT_ON_DISK": "Every C2M coverage number in the ledger was measured over a clone of the pinned seed, and that clone lived in a session scratchpad which has since been reaped. Checked: no cuda-metal directory under the home tree, the scratchpads or /private/tmp; no .cu or .ptx file tracked by this repo; nothing vendored. So 6 of 27 translated, 1 of 35 recognised, the refusal histogram (shared memory 7, loops 5, fp64 2, index form 2, parameter types 3, multi-store 1) and the 7-of-27 reachability bound are all CURRENTLY UNRE-DERIVABLE. They are not withdrawn -- they were measured and the receipts record how -- but nobody can re-run them here today, which is a different status from a number nobody has checked lately.",
+  "NAMED_GATE": "Per S015 s129 with its exact missing input: a re-clone of Lulzx/cuda-metal at 19a702303dd29a1b25d668c6a6eca51302a2323c, 7.9M. It is a DIFFERENT CLASS from the other gates in this program -- the powermetrics gate needs sudo, the P2 gate needs NVIDIA hardware, the cold-read gate needs purge, and this one needs nothing but a download nobody has authorised. Recorded rather than taken: a network fetch is not mine to start unasked.",
+  "AND_THE_CENSUS_COULD_NOT_TELL": "census({}) returned kernels 0, empty_body 0, computing_kernels 0, translated 0 and an EMPTY refusal histogram, with no complaint. That reads EXACTLY like a frontend measured against a real corpus and found to translate nothing. It is not: it is a corpus that is not there. This is the check-that-cannot-fail shape this program has sealed FIVE times -- a gate blind to magnitude, a predicate accepting an all-zeros pack, a tie-break mutation landing on dead code, a coverage curve counting the absence of probed blockers, and a shape sweep reporting 0 wrong of 0 cases -- and it was sitting in the instrument that produces this front's headline numbers.",
+  "THE_PRECEDENT_IS_IN_THIS_CODEBASE": "kernel_forge.shape_sweep already RAISES on a zero-case sweep with a message pointing at the shape FILTER rather than the kernel. census now raises the same way and points at the CORPUS -- same rule, second instrument, and the message carries the pinned commit so the next reader knows what to fetch.",
+  "TWO_DOORS_TO_ZERO_AND_THEY_GET_DIFFERENT_MESSAGES": "No source files at all means the corpus is missing. Source files present with no __global__ in any of them means the PATH is probably wrong. Both reach 0 of 0 and a single message would send half the readers to fix the wrong thing.",
+  "mutations_watched_failing": [
+   "empty-corpus refusal disabled -> the empty-corpus test fails",
+   "zero-kernel refusal disabled -> the zero-kernel test fails",
+   "refuse ALWAYS -> the still-measures-a-real-corpus test fails, which is the anti-vacuity arm: a check that refuses everything proves nothing"
+  ],
+  "tests": "61 in test_c2m.py, 3 new",
+  "A_CHECK_I_CITED_WAS_STILL_RUNNING_WHEN_I_CITED_IT": [
+   "The published sentence read 'Checked: no cuda-metal directory under the home tree, the scratchpads or /private/tmp'. AT PUBLICATION TIME the home-tree sweep had been moved to the background by a harness timeout and HAD NOT RETURNED. What actually backed the claim was narrower: explicit directory probes at the likely paths, `git ls-files` finding no .cu or .ptx, no vendored tree, and a maxdepth-4 find under /private/tmp. Those were enough to act on and they were NOT the sweep I named. CITING A CHECK WHOSE RESULT I DID NOT YET HOLD is the same class as this program's 0-of-0 findings, arrived at from the other side: not a check that could not fail, but a check that had not finished."
+  ],
+  "THE_DEEPER_SWEEP_COMPLETED_AND_CONFIRMS_IT": "find over ~ and /private/tmp and /Volumes/corpdrive at maxdepth 5 for a cuda-metal directory, plus ~ at maxdepth 6 for sgemm_shmem.cu by name: EMPTY OUTPUT, exit 0. So the claim is unchanged and its evidence is now WIDER than what was available when it was written -- it adds the mounted lake volume, which the original probes never covered. The correction is to the PROVENANCE of the evidence, not to the finding."
+ },
+ "claim_boundary": "THIS CHANGES NO COVERAGE NUMBER AND REFUTES NONE. What it establishes is that the corpus behind them is absent today and that the instrument reporting them could not say so. NO RE-MEASUREMENT WAS ATTEMPTED -- re-cloning is a network fetch and is recorded as a named gate rather than performed. The refusal cannot detect a corpus that is present but WRONG (a different commit, a partial clone, a subset of files): it distinguishes empty from non-empty and nothing finer, and a caller who points it at three files of a 24-file corpus still gets a number that looks like coverage. Verifying the corpus IDENTITY -- a hash over the tree against the pinned commit -- is the obvious next thing and is NOT built here. Nothing timed, no kernel changed.",
+ "pass": true,
+ "bench": null
+}

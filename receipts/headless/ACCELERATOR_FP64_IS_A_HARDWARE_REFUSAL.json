@@ -1,0 +1,121 @@
+{
+  "receipt": "ACCELERATOR_FP64_IS_A_HARDWARE_REFUSAL",
+  "date": "2026-08-26",
+  "obligation": "G045 / G044 -- FP64 appears in the C2M refusal histogram blocking 2 of 27 computing kernels and had never been examined",
+  "akb_registration": {
+    "evidence_domain": "accelerator",
+    "civilization": "I-D_ACCELERATOR",
+    "program": "C2M conformance and the CUDA Capability Ledger (S015 \u00a712)",
+    "machine_scope": "Apple M3 Ultra, applegpu_g15d, INSTANCE",
+    "representation_scope": "NONE -- this is about a numeric TYPE, not a representation",
+    "kernel_scope": "synthetic f32 and double-double chains",
+    "why_declared": "membership must not depend on what this file was named (S032 \u00a713)"
+  },
+  "question": "the corpus-denominator receipt measured the histogram -- shared memory 7, loops 5, FP64 2, index form 2, parameter types 3, multi-store 1 -- and FP64 sat there unexamined. A blocker named only 'fp64' invites the next reader to go widen a parser.",
+  "P1_METAL_REFUSES_double_AND_SAYS_SO_ITSELF": {
+    "predicted": "REFUSED",
+    "verdict": "CONFIRMED",
+    "accepted": false,
+    "compiler_says": "'double' is not supported in Metal",
+    "so_the_class_is": "a HARDWARE refusal, the same ledger status as the FFT refusal -- NOT a grammar gap, NOT a frontend gap, and NOT a feature this subset declined to build. No amount of C parsing reaches it."
+  },
+  "P2_WAS_A_CHECK_THAT_COULD_NOT_FAIL_AND_I_CAUGHT_IT": {
+    "what_I_measured_first": "two_product(a,b) -> (hi, lo) against a float64 oracle, which returned EXACTLY 0.0 error and would have been published as 'infinite mantissa bits'",
+    "why_it_cannot_fail": "Dekker's theorem -- the product of two f32 values needs at most 48 bits and hi+lo reconstructs every one of them in a float64 oracle. THAT IS A PROPERTY OF THE CONSTRUCTION, NOT OF THIS GPU, and it is the sixth time this program has found a check whose answer was fixed before the run.",
+    "what_it_should_have_measured": "a CHAIN, where each renormalisation drops a tail",
+    "single_two_product_exact": 0.0
+  },
+  "P2_REDONE_ON_A_4096_TERM_CHAIN": {
+    "predicted_band": "40-50 effective mantissa bits",
+    "verdict": "CONFIRMED, inside the band",
+    "chain_length": 4096,
+    "rows": 256,
+    "plain_f32": {
+      "worst_rel_err": 2.491904952597841e-06,
+      "effective_mantissa_bits": 18.614319527860673
+    },
+    "double_double": {
+      "worst_rel_err": 1.460498963732241e-13,
+      "effective_mantissa_bits": 42.6386038990036
+    },
+    "f32_alone_is_NOT_24_on_a_chain": "18.6 bits, not 24 -- the control matters because quoting f32 as 24 would understate what compensation buys by 5.4 bits"
+  },
+  "AN_INDEPENDENT_CORROBORATION_OF_A_CLAIM_THIS_PROGRAM_RECORDED_AS_UNVERIFIED": {
+    "the_claim": "CUMETAL_PIN.json records the seed as offering FP64 with a ~44-BIT MANTISSA, NOT IEEE binary64 -- and records it in a field marked NOT INDEPENDENTLY VERIFIED because it arrived through a summarizing fetch rather than a byte-exact read",
+    "measured_here_by_a_different_route": 42.6,
+    "gap_bits": 1.4,
+    "how_strong_this_is": "SUGGESTIVE, NOT IDENTICAL. Their number is for their emulation over their operation mix; mine is a double-double dot product at chain length 4096 on this GPU. Two different algorithms landing 1.4 bits apart is corroboration that the REGIME is right, and it is not a reproduction of their figure. Saying which beats letting agreement read as replication."
+  },
+  "what_this_changes_in_the_ledger": {
+    "c2m_UNSUPPORTED['double']": "the reason now names the hardware and points at this receipt, because 'fp64' alone reads as something a frontend could fix",
+    "two_tests": [
+      "Metal's refusal is PINNED so the claim cannot go stale silently -- if Metal ever accepts double the test fails and this receipt must be rewritten, and the assertion requires the error to NAME the type so it cannot pass on any error at all",
+      "the c2m reason is pinned to name the hardware"
+    ],
+    "the_corpus_denominator_moves_honestly": "2 of the 27 computing kernels are blocked by a type this GPU does not have. They are not 'not yet supported'; they are REFUSED, which is a different ledger status and changes what the remaining distance to T3 means"
+  },
+  "claim_boundary": [
+    "NOTHING IS TIMED. The double-double chain costs real instructions and no speed figure is offered -- what is measured is PRECISION, and the cost in throughput is unmeasured.",
+    "ONE chain length (4096) and ONE operation mix. Effective bits depend on both, and a shorter chain would lose fewer; 42.6 is this chain's number and not a constant.",
+    "double-double is ONE emulation. Triple-double or an integer-based approach would land elsewhere and neither was built.",
+    "the oracle is float64 numpy at 53 bits, so nothing here can resolve above ~50 and a result near 53 would have meant the oracle was not independent, which is why the band was stated in advance.",
+    "the CuMetal comparison rests on THEIR published claim, still not read byte-exact from their source; this measures OUR side and finds the same regime.",
+    "one machine, applegpu_g15d, INSTANCE. The machine was CONTENDED, which cannot bias a precision measurement."
+  ],
+  "next": "the two fp64-blocked corpus kernels could be translated at f32 with the precision loss STATED, or refused; either is defensible and the choice needs the kernels' own numerics looked at rather than a blanket rule",
+  "identities": {
+    "experiment": {
+      "class": "ACCEL-DEVICE",
+      "knowledge_level": "INSTANCE",
+      "question": "is FP64 a grammar gap, a frontend gap, or a hardware refusal -- and what does the workaround actually cost in precision?"
+    },
+    "machine": {
+      "soc": "Apple M3 Ultra",
+      "gpu_cores": 60,
+      "ram_gib": 96,
+      "receipt": "receipts/headless/MACHINE_GENOME.json"
+    },
+    "device": {
+      "backend": "Metal via MLX mx.fast.metal_kernel JIT",
+      "double_support": "REFUSED AT COMPILE TIME"
+    },
+    "model": {
+      "status": "ABSENT",
+      "reason": "no model is executed"
+    },
+    "representation": {
+      "status": "ABSENT",
+      "reason": "a numeric type, not a weight representation"
+    },
+    "kernel": {
+      "family": "synthetic dot-product chains, f32 and double-double"
+    },
+    "runtime": {
+      "tool": "tools/accelerator/c2m.py, tools/accelerator/ccl.py",
+      "git_head": "cf97dced65e893c487cc27805394b3122d550546"
+    },
+    "transport": {
+      "status": "ABSENT",
+      "reason": "single-device unified-memory Metal run"
+    }
+  },
+  "bench": {
+    "state": "CONTENDED",
+    "recorded_at": "2026-08-26T08:40:00Z",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB",
+    "quiescence": {
+      "quiet": false,
+      "method": "enumerate",
+      "n_contenders": 4,
+      "max_rss_gib": 52.8,
+      "contenders": [
+        {
+          "comm": "mlx_boot.py",
+          "rss_gib": 52.8
+        }
+      ]
+    },
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "observed during the run; NOTHING IS TIMED and contention cannot bias a precision measurement"
+  }
+}

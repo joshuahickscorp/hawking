@@ -856,5 +856,14 @@
   "hcli": "8271 bash /Users/scammermike/.claude-grok/bin/grok-run delegate --task hcli-foundation --contract contract-hcli-foundation.md --repo /Users/scammermike/Downloads/hawking-copy --no-worktree --profile power --background\n10871 bash /Users/scammermike/.claude-grok/bin/grok-run wait --id hcli-foundation-20260822-183133 --timeout 5400",
   "odyssey": ""
  },
- "disk": "/dev/disk3s5   926Gi   725Gi   175Gi    81%    3.7M  1.8G    0%   /System/Volumes/Data"
+ "disk": "/dev/disk3s5   926Gi   725Gi   175Gi    81%    3.7M  1.8G    0%   /System/Volumes/Data",
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

@@ -244,7 +244,7 @@
         "dense_w_materialized": 0,
         "id": "tpr64",
         "kernel": "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
-        "max_abs_diff": 4.76837158203125e-7,
+        "max_abs_diff": 4.76837158203125e-07,
         "ok": true,
         "tolerance": 0.019999999552965164
       },
@@ -252,7 +252,7 @@
         "dense_w_materialized": 0,
         "id": "biasprep",
         "kernel": "affine2_group64_matvec_gate_up_swiglu_biasprep_tpr64_tg128",
-        "max_abs_diff": 4.76837158203125e-7,
+        "max_abs_diff": 4.76837158203125e-07,
         "ok": true,
         "tolerance": 0.019999999552965164
       },
@@ -275,5 +275,14 @@
     }
   },
   "production": null,
-  "schema": "hawking.headless.mlp_gate_up.raw.v1"
+  "schema": "hawking.headless.mlp_gate_up.raw.v1",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+  }
 }

@@ -1,9 +1,9 @@
 {
  "schema": "hawking.headless.negative_science.v2",
- "generated_at": "2026-08-26T03:40:25Z",
+ "generated_at": "2026-08-26T10:13:57Z",
  "generated_by": "tools/headless/negative_science.py",
  "obligation": "G021 \u2014 NEGATIVE_SCIENCE THREE-LEVEL (directive \u00a780, \u00a781)",
- "git_head": "e665c7319eb06bc1611d1ede67e091160dea83c0",
+ "git_head": "665110c71c8cc16db6a05af70d621a0266853ab1",
  "hand_authored": false,
  "required_fields": [
   "model",

@@ -124,5 +124,14 @@
  },
  "claim_boundary": "One specimen, one tensor class, 64 units, ONE run per tier, no repetition and no IQR -- below this program's 200-rep stability gate, so 138.7x is DIRECTIONAL. It is however a ratio of two directly measured wall times, not an extrapolation, which is exactly what the previous receipt lacked. TIER 1 read of 5035.5 MB/s is partly PAGE CACHE: the file was written moments earlier and 192 MB fits easily in 96 GiB of RAM, so this is an upper bound on cold SSD, not a disk measurement. That does NOT weaken the throughput claim -- a real hot bench would also be cache-resident -- but it must not be quoted as SSD bandwidth.",
  "pass": true,
- "amendment_mlx_compile_attribution": "AMENDED 2026-08-25 by ACCELERATOR_JIT_COMPILE.json: this receipt attributed a first-run cost to 'MLX kernel compile'. THAT ATTRIBUTION IS NOW MEASURED AND IT IS WRONG IN SCOPE TWICE. Compiling a distinct custom kernel costs 36.8 ms, so the WorkUnit's two kernels are 73.6 ms = 23.2% of its 0.3176 s first-run excess. The dominant term is MLX's first-use costs at 175 ms, and 151 ms of THAT is a single thing -- the FIRST mx.array from a numpy buffer, which is device and allocator initialisation, NOT compilation. The direction of every affected statement is unchanged (the first run really is slower and really should not be quoted as a baseline); only the named MECHANISM changes."
+ "amendment_mlx_compile_attribution": "AMENDED 2026-08-25 by ACCELERATOR_JIT_COMPILE.json: this receipt attributed a first-run cost to 'MLX kernel compile'. THAT ATTRIBUTION IS NOW MEASURED AND IT IS WRONG IN SCOPE TWICE. Compiling a distinct custom kernel costs 36.8 ms, so the WorkUnit's two kernels are 73.6 ms = 23.2% of its 0.3176 s first-run excess. The dominant term is MLX's first-use costs at 175 ms, and 151 ms of THAT is a single thing -- the FIRST mx.array from a numpy buffer, which is device and allocator initialisation, NOT compilation. The direction of every affected statement is unchanged (the first run really is slower and really should not be quoted as a baseline); only the named MECHANISM changes.",
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

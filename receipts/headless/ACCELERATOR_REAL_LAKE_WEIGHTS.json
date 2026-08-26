@@ -1,0 +1,262 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-26T12:39:28Z",
+ "experiment_class": "ACCEL-MEMORY",
+ "knowledge_level": "MODEL_FAMILY",
+ "git_head": "b238e99f9f7ed4e8c2c4bf56ad28965434c2a619",
+ "identities": {
+  "experiment": "G048 storage gate OPEN; real lake weights into all four Odyssey specimens",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB unified",
+  "device": "Metal for three specimens; CPU device for Qwen3-VL after a GPU timeout against the operator's mlx_boot.py",
+  "model": "Qwen3-30B-A3B, Qwen3-VL-30B-A3B-Instruct, Kimi-VL-A3B-Instruct, Falcon-H1-7B-Instruct -- ONE LAYER of each, real bf16 weights from /Volumes/corpdrive",
+  "representation": "bf16 on disk, read through mx.load; numpy cannot view bfloat16 and safe_open(framework='np') raises on every lake specimen",
+  "kernel": {
+   "status": "ABSENT",
+   "reason": "no kernel under test; this measures a data path and a load"
+  },
+  "runtime": "mlx_lm model classes via tools/accelerator/odyssey_pass.prepare_config and prepare_weight_keys",
+  "transport": "USB volume /Volumes/corpdrive, 4.5 Ti, 3.4 Ti free"
+ },
+ "result": {
+  "THE_GATE_NAMED_ITS_INPUT_AND_THE_INPUT_ARRIVED": "ACCELERATOR_RUNTIME_GATE recorded a NAMED GATE per S015 s129 whose exact missing input was 'a quiesced window or a Tier 1 staged copy'. The operator's 7-repo fill has finished -- ps finds zero modellake, hf_transfer or huggingface processes -- and the window opened without anyone asking for it. Under the fill a sequential read DID NOT COMPLETE 256 MiB IN 120 SECONDS, under ~0.5 MB/s. It now completes in 2.05 s.",
+  "cold_sequential_read_mb_per_s": 131.07779225566173,
+  "sequential_read_seconds_for_256MiB": 2.0479095000046073,
+  "contention_penalty_removed": "over 190x was the floor the killed probe could prove; 0.5 -> 131.1 MB/s is 262x",
+  "band_check": "131.1 MB/s lands at the TOP EDGE of the 96-131 MB/s band this volume sustained uncontended, 0.08% above it. The pre-registered inclusive test `96 <= rate <= 131` therefore returned False by 0.1 MB/s. Recorded as an edge, not as a refutation, and not silently widened after the fact.",
+  "mmap_pagein_mb_per_s": {
+   "Qwen--Qwen3-30B-A3B@ad44e777bcd1": 40.3,
+   "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba": 48.3,
+   "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c": 42.1,
+   "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb": 50.6
+  },
+  "WHY_TWO_DIFFERENT_RATES": "131.1 MB/s is an 8 MiB-chunk sequential read: the bus. 40.3-50.6 MB/s is an mmap page-in that also converts bf16 to fp32 and reduces, under an operator job at ~110% CPU. The second is CPU-confounded and is NOT a bus figure. Both are reported because reporting only the faster one would flatter the gate.",
+  "A_FIRST_TIMER_MEASURED_NOTHING": "The first probe timed safetensors get_tensor and reported 0.00 s for a 1.2 GB tensor. get_tensor MMAPS; no bytes had moved. That is a check that cannot fail, and it was withdrawn before publication rather than shipped as a 1.2 GB/0.00 s read.",
+  "THE_DISCRIMINATOR": "Every specimen row in this program has carried random_weights=True. The question a random-weight row cannot answer is whether the weights carry information, and the test is the next-token distribution: random weights give entropy at ln(V); real weights give a peaked one. Pre-registered before the run.",
+  "specimens": [
+   {
+    "specimen": "Qwen3-30B-A3B",
+    "model_type": "qwen3_moe",
+    "param_coverage": 1.0,
+    "tensors": "15/15",
+    "ln_vocab": 11.9312,
+    "entropy_random_nats": 11.7642,
+    "entropy_real_nats": 8.7925,
+    "max_softmax_real": 0.05052550236503204,
+    "relative_logit_change": 5.97,
+    "deterministic": true,
+    "finite": true,
+    "device": "gpu",
+    "missing": []
+   },
+   {
+    "specimen": "Kimi-VL-A3B",
+    "model_type": "kimi_vl",
+    "param_coverage": 0.9972,
+    "tensors": "12/14",
+    "ln_vocab": 12.0066,
+    "entropy_random_nats": 11.8393,
+    "entropy_real_nats": 8.7445,
+    "max_softmax_real": 0.030369581963961886,
+    "relative_logit_change": 5.556,
+    "deterministic": true,
+    "finite": true,
+    "device": "gpu",
+    "missing": [
+     "language_model.model.layers.0.self_attn.embed_q.weight",
+     "language_model.model.layers.0.self_attn.unembed_out.weight"
+    ]
+   },
+   {
+    "specimen": "Falcon-H1-7B",
+    "model_type": "falcon_h1",
+    "param_coverage": 1.0,
+    "tensors": "20/20",
+    "ln_vocab": 11.7757,
+    "entropy_random_nats": 11.6095,
+    "entropy_real_nats": 0.0874,
+    "max_softmax_real": 0.9845296687486145,
+    "relative_logit_change": 8.167,
+    "deterministic": true,
+    "finite": true,
+    "device": "gpu",
+    "missing": []
+   },
+   {
+    "specimen": "Qwen3-VL-30B-A3B",
+    "model_type": "qwen3_vl_moe",
+    "param_coverage": 1.0,
+    "tensors": "15/15",
+    "ln_vocab": 11.9312,
+    "entropy_random_nats": 11.7642,
+    "entropy_real_nats": 9.7015,
+    "max_softmax_real": 0.00480776256390373,
+    "relative_logit_change": 4.33,
+    "deterministic": true,
+    "finite": true,
+    "device": "gpu",
+    "missing": []
+   }
+  ],
+  "FALCON_IS_THE_SHARPEST_ROW": "Falcon-H1-7B goes 11.6095 -> 0.0874 nats with max softmax 0.9845 from a SINGLE layer. Its random arm sat at 11.6095 against ln(V)=11.7756 and the earlier transformers-built random arm sat at 11.7756 -- uniform to four decimals, max softmax 8.171e-06 against the 7.690e-06 of a perfectly flat distribution over 130049 tokens.",
+  "THE_INSTRUMENT_RETURNED_A_NEGATIVE_BEFORE_IT_RETURNED_A_POSITIVE": "On its first run Qwen3-VL loaded 0.0% of its parameters, and the discriminator reported real entropy 11.7642 -- EXACTLY equal to its random arm, to four decimals. It did not report a small change or a noisy one. A discriminator that cannot say NOTHING LOADED is a confirmation device, and this one said it.",
+  "A_PEAKED_DISTRIBUTION_DOES_NOT_CERTIFY_THE_EXPERTS": "REFUTED, and this is the finding that would have shipped a false row. An earlier transformers-path attempt on Qwen3-30B-A3B loaded 12/14 tensors = 51.5% of parameters, silently leaving experts.gate_up_proj and experts.down_proj RANDOM -- 97.5% of a MoE's mass -- because the checkpoint stores per-expert experts.N.gate_proj.weight and that transformers version wants a fused stack. It still produced entropy 3.78 and max softmax 0.573, which reads exactly like success. The peak came from embeddings, attention and the LM head. mlx_lm's own sanitize() carries the fused-expert layout and reaches 100.0%.",
+  "SECOND_ONE_FIELD_GAP_IN_THE_SAME_SPECIMEN": "mlx_lm.models.qwen3_vl_moe.sanitize reads weights['language_model']['model'], so it expects a checkpoint rooted at language_model.model.layers.N. The published Qwen3-VL-30B-A3B-Instruct checkpoint is rooted at model.language_model.layers.N -- the same two components in the other order -- and sanitize raises KeyError: 'language_model' on it. G061 repaired a missing CONFIG FIELD for this same specimen; this repairs a WEIGHT KEY ORDER for it. Both are Hawking-side (odyssey_pass.prepare_weight_keys); no library file is patched.",
+  "WHY_THAT_ERROR_HAD_TO_BE_RECORDED_NOT_SWALLOWED": "If sanitize's exception is caught and the raw keys used instead, every tensor then fails the name match, the model runs on its random initialisation, and the load reports success. The probe records sanitize_error in the row rather than falling back silently, which is how the 0.0% row above became visible.",
+  "KIMI_IS_99_7_NOT_100": "Kimi-VL-A3B is missing exactly two tensors, self_attn.embed_q.weight and self_attn.unembed_out.weight -- MLA absorption tensors mlx_lm derives rather than storing. 0.3% of parameters, named rather than rounded away.",
+  "load_seconds_are_WARM_not_cold": "The per-specimen load times in this run are 0.1-0.2 s because the earlier probes had already pulled those pages into the OS cache. They are NOT read measurements and must not be cited as ones. The cold numbers are the two rates above.",
+  "gpu_timeout_is_a_real_observation": "Qwen3-VL's forward pass failed with [METAL] Command buffer execution failed: Caused GPU Timeout Error against the operator's mlx_boot.py, which holds ~51 GiB at ~110% CPU. Per S032 s24 that row was re-measured on the CPU device rather than contending for the GPU or killing the operator's job. Its entropy and coverage are device-independent; its timings are not comparable to the other three.",
+  "tests": "21 passed in tools/accelerator/test_odyssey_pass.py, including a two-arm load-bearing proof that runs BOTH arms of the key repair"
+ },
+ "claim_boundary": "ONE LAYER of each specimen, num_hidden_layers cut to 1. A 1-layer cut of a 44-layer model is NOT the model, so a peaked next-token distribution here is evidence that the WEIGHTS ARE REAL AND WIRED THROUGH THE GRAPH -- nothing more. NO ADEQUACY CLAIM MOVES: no compression is graded, no capability is scored, no bpw is measured, and every weight-space caveat in the G048 receipts stands exactly as written. What changes is narrower and was the blocked input: the specimen table's random_weights=True is no longer forced by storage. BENCH_STATE is CONTENDED -- the operator's mlx_boot.py held ~51 GiB at ~110% CPU throughout -- so every timing here is a LOWER BOUND and the 131.1 MB/s bus figure in particular could be higher on a quiet machine.",
+ "pass": true,
+ "bench": {
+  "state": "CONTENDED",
+  "recorded_at": "2026-08-26T12:37:15Z",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB",
+  "quiescence": {
+   "quiet": false,
+   "method": "enumerate",
+   "no_name_filter": true,
+   "thresholds": {
+    "cpu_pct": 20.0,
+    "rss_gib": 2.0
+   },
+   "contenders": [
+    {
+     "pid": 80860,
+     "cpu_pct": 99.0,
+     "rss_gib": 26.08,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 82631,
+     "cpu_pct": 4.8,
+     "rss_gib": 7.08,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 180,
+     "cpu_pct": 21.0,
+     "rss_gib": 0.03,
+     "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+    },
+    {
+     "pid": 52616,
+     "cpu_pct": 20.3,
+     "rss_gib": 0.03,
+     "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+    },
+    {
+     "pid": 739,
+     "cpu_pct": 30.5,
+     "rss_gib": 0.02,
+     "comm": "/usr/libexec/avconferenced"
+    },
+    {
+     "pid": 608,
+     "cpu_pct": 99.3,
+     "rss_gib": 0.01,
+     "comm": "/System/Library/PrivateFrameworks/FileProvider.framework/Support/fileproviderd"
+    }
+   ],
+   "n_contenders": 6,
+   "total_cpu_pct": 274.9,
+   "max_rss_gib": 26.08,
+   "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+  },
+  "samples": {
+   "before": {
+    "quiet": false,
+    "method": "enumerate",
+    "no_name_filter": true,
+    "thresholds": {
+     "cpu_pct": 20.0,
+     "rss_gib": 2.0
+    },
+    "contenders": [
+     {
+      "pid": 80860,
+      "cpu_pct": 107.1,
+      "rss_gib": 23.88,
+      "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+     },
+     {
+      "pid": 52616,
+      "cpu_pct": 20.3,
+      "rss_gib": 0.03,
+      "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+     },
+     {
+      "pid": 739,
+      "cpu_pct": 35.0,
+      "rss_gib": 0.02,
+      "comm": "/usr/libexec/avconferenced"
+     },
+     {
+      "pid": 608,
+      "cpu_pct": 99.3,
+      "rss_gib": 0.01,
+      "comm": "/System/Library/PrivateFrameworks/FileProvider.framework/Support/fileproviderd"
+     }
+    ],
+    "n_contenders": 4,
+    "total_cpu_pct": 261.7,
+    "max_rss_gib": 23.88,
+    "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+   },
+   "after": {
+    "quiet": false,
+    "method": "enumerate",
+    "no_name_filter": true,
+    "thresholds": {
+     "cpu_pct": 20.0,
+     "rss_gib": 2.0
+    },
+    "contenders": [
+     {
+      "pid": 80860,
+      "cpu_pct": 99.0,
+      "rss_gib": 26.08,
+      "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+     },
+     {
+      "pid": 82631,
+      "cpu_pct": 4.8,
+      "rss_gib": 7.08,
+      "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+     },
+     {
+      "pid": 180,
+      "cpu_pct": 21.0,
+      "rss_gib": 0.03,
+      "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+     },
+     {
+      "pid": 52616,
+      "cpu_pct": 20.3,
+      "rss_gib": 0.03,
+      "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+     },
+     {
+      "pid": 739,
+      "cpu_pct": 30.5,
+      "rss_gib": 0.02,
+      "comm": "/usr/libexec/avconferenced"
+     },
+     {
+      "pid": 608,
+      "cpu_pct": 99.3,
+      "rss_gib": 0.01,
+      "comm": "/System/Library/PrivateFrameworks/FileProvider.framework/Support/fileproviderd"
+     }
+    ],
+    "n_contenders": 6,
+    "total_cpu_pct": 274.9,
+    "max_rss_gib": 26.08,
+    "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+   }
+  },
+  "note": "load time is IO+CPU under an operator job at ~110% CPU",
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet"
+ }
+}

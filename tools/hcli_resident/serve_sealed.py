@@ -114,7 +114,27 @@ def render(messages, tokenizer_dir: Path) -> str:
                                    add_generation_prompt=True, enable_thinking=False)
 
 
-def generate(prompt: str, *, seal: dict, max_tokens: int, repo: Path = REPO) -> dict:
+def context_limit(art: Path) -> int:
+    """The model's own position ceiling, read from the artifact rather than guessed.
+
+    Qwen3.5 nests it under text_config, so a bare config["max_position_embeddings"]
+    reads None -- which is how a ceiling becomes a silent zero.
+    """
+    cfg = json.loads((art / "config.json").read_text())
+    for scope in (cfg, cfg.get("text_config") or {}):
+        v = scope.get("max_position_embeddings")
+        if isinstance(v, int) and v > 0:
+            return v
+    raise RuntimeError("no max_position_embeddings in config.json or text_config")
+
+
+def prompt_token_count(prompt: str, art: Path) -> int:
+    from transformers import AutoTokenizer
+    return len(AutoTokenizer.from_pretrained(str(art)).encode(prompt))
+
+
+def generate(prompt: str, *, seal: dict, max_tokens: int, repo: Path = REPO,
+             prompt_tokens: int | None = None) -> dict:
     f = seal["fields"]
     art = Path(f["artifact_root"]["value"])
     binp = repo / f["runtime_binary"]["value"]
@@ -128,7 +148,14 @@ def generate(prompt: str, *, seal: dict, max_tokens: int, repo: Path = REPO) -> 
              "--tokenizer", str(art / "tokenizer.json"),
              "--prompt", prompt, "--raw-prompt",
              "--max-new-tokens", str(max_tokens),
-             "--max-seq-len", str(max_tokens + 512), "--out", str(out)],
+             # SIZED FROM THE REAL PROMPT, not guessed. This was
+             # `max_tokens + 512`, which silently assumed every prompt fits in 512
+             # tokens. HCLI's planner prompt does not, and the resident died with
+             # `GQA position 1024 exceeds max_seq_len 1024` -- a Rust panic
+             # surfaced to the caller as an HTTP 500 stderr dump. Found by running
+             # a real mission through the endpoint, not by reading the code.
+             "--max-seq-len", str((prompt_tokens or 0) + max_tokens + 8),
+             "--out", str(out)],
             env=env, capture_output=True, text=True, timeout=1800)
         if pr.returncode != 0:
             raise RuntimeError(f"resident exited {pr.returncode}: {pr.stderr[-400:]}")
@@ -149,7 +176,14 @@ def generate(prompt: str, *, seal: dict, max_tokens: int, repo: Path = REPO) -> 
         text, leaked = raw, False
     return {"text": text.strip(), "raw": raw, "think_seen": leaked,
             "completion_tokens": len(d.get("new_token_ids") or []),
-            "prompt_tokens": d.get("prompt_len"),
+            # This binary branch emits prompt_ids, NOT prompt_len. Reading only
+            # prompt_len gave usage.prompt_tokens=null while total_tokens was still
+            # summed as if it were zero -- a total that was not a total. Live
+            # request measured: prompt_tokens null, completion 2, total 2.
+            "prompt_tokens": (d.get("prompt_len")
+                              if d.get("prompt_len") is not None
+                              else (len(d["prompt_ids"]) if isinstance(
+                                  d.get("prompt_ids"), list) else None)),
             "fallbacks": d.get("fallbacks"),
             "dense_w_materialized": d.get("dense_w_materialized"),
             "wall_s": round(time.time() - t0, 3)}
@@ -185,8 +219,54 @@ def _acceptable(key: str, value) -> bool:
     return value is None
 
 
+def _arm_verdict(body: dict, seal: dict):
+    """The chat template arm is SEALED. A request that asks for the other one is
+    refused, not quietly served under the sealed arm.
+
+    Found by wiring the real caller: hcli/delegate.py posts
+    ``chat_template_kwargs={"enable_thinking": False}``, which happens to AGREE
+    with the sealed pre_closed_think arm. That agreement is luck, not a check --
+    ``enable_thinking: true`` would have been ignored and the caller handed the
+    other arm with a 200. That is the same species of defect as the ``True == 1``
+    hole: silently serving something other than what was asked for. This session
+    measured the two arms 30/43 vs 35/43 on the same bytes, so the arm is not a
+    cosmetic field.
+    """
+    kw = body.get("chat_template_kwargs")
+    if kw is None:
+        return None
+    if not isinstance(kw, dict):
+        return f"chat_template_kwargs must be an object, got {type(kw).__name__}"
+    want = kw.get("enable_thinking")
+    arm = seal["fields"]["chat_template_arm"]["value"]
+    # pre_closed_think IS enable_thinking=False. Anything else asks for an arm
+    # this server does not render.
+    if want is not None and bool(want) is not False:
+        return (f"this server renders the SEALED arm {arm!r} only, which is "
+                f"enable_thinking=false; enable_thinking={want!r} asks for a "
+                f"different arm and the two do not score the same")
+    unknown = sorted(set(kw) - {"enable_thinking"})
+    if unknown:
+        return f"unknown chat_template_kwargs {unknown}: this server renders one arm"
+    return None
+
+
 def handle_chat(body: dict, *, seal: dict, sealed: bool) -> tuple:
     """Returns (status, payload)."""
+    # No grammar, no constrained decoding, and saying so is the point. HCLI's own
+    # structured-output contract STRIPS this field before posting precisely because
+    # mlx_lm.server ignores it; a server that also ignores it teaches the next
+    # caller that it works.
+    if body.get("response_format") not in (None, {"type": "text"}):
+        return 400, {"error": {
+            "message": "no grammar and no constrained decoding here -- response_format "
+                       "would be IGNORED, and a caller cannot tell an ignored schema "
+                       "from an honoured one by reading the reply. Use a "
+                       "validate-and-retry contract instead.",
+            "type": "unsupported_parameter"}}
+    arm_bad = _arm_verdict(body, seal)
+    if arm_bad:
+        return 400, {"error": {"message": arm_bad, "type": "unsupported_parameter"}}
     bad = [k for k in UNSUPPORTED if k in body and not _acceptable(k, body[k])]
     if bad:
         return 400, {"error": {
@@ -200,16 +280,35 @@ def handle_chat(body: dict, *, seal: dict, sealed: bool) -> tuple:
         return 400, {"error": {"message": "no messages", "type": "invalid_request"}}
     art = Path(seal["fields"]["artifact_root"]["value"])
     prompt = render(msgs, art)
-    g = generate(prompt, seal=seal, max_tokens=int(body.get("max_tokens") or 512))
+    cap = int(body.get("max_tokens") or 512)
+    n_prompt = prompt_token_count(prompt, art)
+    # A context overflow is a REQUEST error the caller can act on, not a runtime
+    # crash. Refused here with the three real numbers rather than let the resident
+    # abort and hand back a stderr dump under a 500.
+    limit = context_limit(art)
+    if n_prompt + cap > limit:
+        return 400, {"error": {
+            "message": f"prompt is {n_prompt} tokens and max_tokens is {cap}, which is "
+                       f"{n_prompt + cap} against this model's {limit}-token position "
+                       f"ceiling. Shorten the prompt or lower max_tokens.",
+            "type": "context_length_exceeded"}}
+    g = generate(prompt, seal=seal, max_tokens=cap, prompt_tokens=n_prompt)
+    # NOT a constant. A reply that consumed the whole budget stopped for a
+    # different reason than one that emitted an end token, and a caller that
+    # branches on finish_reason (HCLI does) must not be told "stop" either way.
+    finish = "length" if (g["completion_tokens"] or 0) >= cap else "stop"
     return 200, {
         "id": f"chatcmpl-sealed-{int(time.time()*1000)}",
         "object": "chat.completion", "created": int(time.time()),
         "model": seal["resident"],
-        "choices": [{"index": 0, "finish_reason": "stop",
+        "choices": [{"index": 0, "finish_reason": finish,
                      "message": {"role": "assistant", "content": g["text"]}}],
+        # total_tokens is OMITTED when prompt_tokens is unknown rather than summed
+        # from a None coerced to 0, which reports a wrong total with full confidence.
         "usage": {"prompt_tokens": g["prompt_tokens"],
                   "completion_tokens": g["completion_tokens"],
-                  "total_tokens": (g["prompt_tokens"] or 0) + g["completion_tokens"]},
+                  **({"total_tokens": g["prompt_tokens"] + g["completion_tokens"]}
+                     if g["prompt_tokens"] is not None else {})},
         # Identity travels with every response. A caller that logs only the text
         # cannot later say which body produced it.
         "hawking": {

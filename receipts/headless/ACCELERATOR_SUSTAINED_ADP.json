@@ -218,5 +218,14 @@
   "hole_in_my_own_seal_gate": "MAX_THROUGHPUT sealed on the same evidence as SUSTAINED because may_seal_adp only checks sustained_qualification. But its concurrency_sweep has NOT RUN, so a throughput profile is granted on evidence that says nothing about concurrency. The gate is too weak and this is recorded rather than hidden."
  },
  "claim_boundary": "SUSTAINED is genuinely qualified for THIS kernel on THIS machine: 12 windows over 6 minutes, 1.69% degradation against a 5% gate, 2.25% window spread against 15%. NOT established: thermal envelope remains ABSENT because powermetrics needs sudo and was not run, so 'no degradation observed' is NOT 'thermals characterised'. Six minutes is not hours. One primitive, one shape, one dtype. And this is RAW KERNEL RATE, not verified WorkUnits per hour, so it still does not reach the metric \u00a777 says actually counts.",
- "pass": true
+ "pass": true,
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }

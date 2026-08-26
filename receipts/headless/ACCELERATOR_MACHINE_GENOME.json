@@ -79,5 +79,14 @@
   }
  },
  "claim_boundary": "589.73 GB/s is a MEASURED median for ONE access pattern (f32 triad) on this exact machine with the lake fill SIGSTOPped. It is NOT the SoC theoretical roof, NOT a workload-reachable roof, and NOT a sustained figure -- no thermal campaign has been run, so thermal_envelope and sustained_behaviour are both ABSENT with reasons. Knowledge level is INSTANCE: nothing here is promoted to SOC_FAMILY, because one M3 Ultra is not evidence about M3 Ultras.",
- "pass": true
+ "pass": true,
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
 }
