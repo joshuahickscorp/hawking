@@ -23,6 +23,27 @@ from .workunit import is_ready
 from .workspace import Workspace
 
 
+def _default_native_profile() -> Optional[str]:
+    """Return the shipped native profile only when its physical paths exist.
+
+    An explicit ``--model``/config/env selection always wins.  This small
+    default makes the current resident the local cognition provider on this
+    machine while keeping a checkout or installation without the resident
+    fully usable for explicit MLX, GGUF, or remote selections.
+    """
+    candidate = Path(__file__).resolve().with_name("hawking-native.sealed-3.14.json")
+    if not candidate.is_file():
+        return None
+    try:
+        from .hawking_native import HawkingNativeConfig
+
+        profile = HawkingNativeConfig.from_file(str(candidate))
+        profile.validate()
+    except Exception:
+        return None
+    return str(candidate)
+
+
 def _http_json(url: str, timeout: float = 0.4) -> Any:
     """GET ``url`` and parse JSON. None on any failure. Never raises."""
     try:
@@ -103,7 +124,6 @@ class Controller:
         self.session_store = SessionStore(
             self.workspace_root
         )
-        self._persist_session()
         self.mission: Optional[Mission] = None
         self._exit_requested = False
         self._command_handler = None
@@ -118,22 +138,39 @@ class Controller:
             or os.environ.get(
                 "HAIDER_MODEL_PATH"
             )
+            or os.environ.get(
+                "HCLI_HAWKING_NATIVE_CONFIG"
+            )
         )
 
         self.config = Config(
             self.workspace_root
         )
 
+        project_model = self.config.layer_model(self.config.project_path)
+        global_model = self.config.layer_model(self.config.global_path)
+        default_native = None
+        if not model and not project_model and not global_model and not migration_env:
+            default_native = _default_native_profile()
+
         self.model_info = self.registry.resolve(
-            explicit=model,
-            project_config=self.config.layer_model(
-                self.config.project_path
-            ),
-            global_config=self.config.layer_model(
-                self.config.global_path
-            ),
+            explicit=model or default_native,
+            project_config=project_model,
+            global_config=global_model,
             env=migration_env,
         )
+
+        # Keep the resolved selection in session state for every provider.
+        # Remote selectors have already been reduced to a credential-free URL;
+        # local/native selections are normalized by ModelRegistry as well.
+        if self.model_info is not None:
+            self.model = self.model_info.path
+            self.session.model = self.model_info.path
+
+        # Persist only the resolved model selection.  In particular, a
+        # remote selector may have arrived with a credential-bearing query;
+        # ModelRegistry has already reduced it to a credential-free path.
+        self._persist_session()
 
         engine_model = (
             self.model_info.path
@@ -262,7 +299,13 @@ class Controller:
             if unit.status in ("pending", "failed")
             and not is_ready(unit, units_map)
         )
-        snapshot["qwen"] = self._qwen_pool_status()
+        runtime_status = self._runtime_status()
+        snapshot["runtime"] = runtime_status
+        snapshot["provider"] = runtime_status.get("provider")
+        # Keep the old key for clients written before provider-neutral status;
+        # the value is now the generic runtime observation rather than a claim
+        # that every local model is Qwen.
+        snapshot["qwen"] = runtime_status
         snapshot["grok"] = grok_pool_snapshot(
             self.workspace_root, mission=self.mission
         )
@@ -445,6 +488,43 @@ class Controller:
         return None
 
     def _qwen_pool_status(self) -> dict:
+        pool = self.runtime_pool
+        runtimes = list(getattr(pool, "runtimes", []) or []) if pool is not None else []
+        if runtimes:
+            backend = getattr(runtimes[0], "backend", None)
+            endpoint_fn = getattr(backend, "endpoint", None)
+            endpoint = None
+            if callable(endpoint_fn):
+                try:
+                    endpoint = str(endpoint_fn())
+                except Exception:
+                    endpoint = None
+            if endpoint and not endpoint.startswith(("http://", "https://")):
+                health_fn = getattr(backend, "health_snapshot", None)
+                details = {}
+                if callable(health_fn):
+                    try:
+                        details = health_fn()
+                    except Exception as exc:
+                        details = {"error": f"{type(exc).__name__}: {exc}"}
+                identity = {}
+                try:
+                    identity = backend.identity()
+                except Exception:
+                    identity = {}
+                ready = bool(details.get("ready")) if isinstance(details, dict) else False
+                return {
+                    "resident": len(runtimes),
+                    "health": "ok" if ready else "down",
+                    "active_decode": int(getattr(pool, "_in_flight", 0) or 0),
+                    "queued": self._gpu_decode_ready_not_admitted(),
+                    "n_ctx": identity.get("context"),
+                    "prompt_tokens": None,
+                    "tps": self._last_qwen_tps(),
+                    "backend": identity.get("backend"),
+                    "endpoint": endpoint,
+                    "details": details,
+                }
         base = self._qwen_endpoint().rstrip("/")
         health = _http_json(f"{base}/health", timeout=0.4)
         slots = _http_json(f"{base}/slots", timeout=0.4)
@@ -485,6 +565,65 @@ class Controller:
             "prompt_tokens": prompt,
             "tps": self._last_qwen_tps(),
         }
+
+    def _runtime_status(self) -> dict:
+        """Provider-neutral runtime status with a compatibility alias."""
+        pool = self.runtime_pool
+        runtimes = list(getattr(pool, "runtimes", []) or []) if pool is not None else []
+        if not runtimes:
+            status = self._qwen_pool_status()
+            selected_provider = getattr(self.model_info, "provider", None)
+            status["provider"] = selected_provider or status.get("provider") or "local"
+            if self.model_info is not None:
+                status["model"] = self.model_info.path
+                if status.get("endpoint") is None and status["provider"] == "remote":
+                    try:
+                        from .backends import OpenAICompatibleBackend
+
+                        status["endpoint"] = OpenAICompatibleBackend(
+                            self.model_info.path
+                        ).endpoint()
+                    except Exception:
+                        pass
+            return status
+        backend = getattr(runtimes[0], "backend", None)
+        identity = {}
+        try:
+            identity = backend.identity() if backend is not None else {}
+        except Exception:
+            identity = {}
+        provider = str(
+            identity.get("provider")
+            or identity.get("runtime")
+            or identity.get("backend")
+            or type(backend).__name__
+        )
+        endpoint = None
+        endpoint_fn = getattr(backend, "endpoint", None)
+        if callable(endpoint_fn):
+            try:
+                endpoint = str(endpoint_fn())
+            except Exception:
+                endpoint = None
+        if provider == "remote" or identity.get("backend") == "openai_compatible":
+            active = sum(1 for runtime in runtimes if getattr(runtime, "active", False))
+            return {
+                "provider": "remote",
+                "backend": identity.get("backend"),
+                "health": "ok" if active else "down",
+                "resident": active,
+                "active_decode": int(getattr(pool, "_in_flight", 0) or 0),
+                "queued": self._gpu_decode_ready_not_admitted(),
+                "n_ctx": identity.get("context"),
+                "prompt_tokens": None,
+                "tps": self._last_qwen_tps(),
+                "endpoint": endpoint,
+            }
+        status = self._qwen_pool_status()
+        status["provider"] = provider
+        status["backend"] = identity.get("backend") or status.get("backend")
+        status["endpoint"] = endpoint or status.get("endpoint")
+        return status
 
     def _mutation_lock(self):
         mission = self.mission
@@ -552,6 +691,8 @@ class Controller:
 
         self.model_info = selected
         self.model = selected.path
+        self.session.model = selected.path
+        self._persist_session()
         self.engine.model_name = (
             selected.path
         )
@@ -593,6 +734,9 @@ class Controller:
             )
             or os.environ.get(
                 "HAIDER_MODEL_PATH"
+            )
+            or os.environ.get(
+                "HCLI_HAWKING_NATIVE_CONFIG"
             )
         )
 
@@ -653,6 +797,14 @@ class Controller:
                 },
             )
 
+        # A Mission can finish while leaving the Controller-owned pool in its
+        # field for status/provenance.  Reconcile that pool before every
+        # caller receives it: an empty or dead pool is restartable state, not
+        # a reason to let the next model request fall through to a verifier.
+        try:
+            self.runtime_pool.start()
+        except Exception:
+            raise
         return self.runtime_pool
 
     def execute(
@@ -676,6 +828,13 @@ class Controller:
         return self.engine.execute(
             prompt
         )
+
+    def complete_text(
+        self,
+        prompt: str,
+    ) -> str:
+        """Expose provider text for the plain-cognition qualification lane."""
+        return self.engine.complete_text(prompt)
 
     def set_goal(
         self,

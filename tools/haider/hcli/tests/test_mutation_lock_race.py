@@ -32,6 +32,10 @@ if mode == "advisory":
         def acquire(self, unit_id):
             if not self.try_break_stale():
                 return False
+            # Make the intentionally unsafe check-then-write window
+            # deterministic under full-suite scheduling. This is a test
+            # fixture for the pre-O_EXCL algorithm, not a production delay.
+            time.sleep(0.02)
             self.write(
                 {
                     "pid": os.getpid(),

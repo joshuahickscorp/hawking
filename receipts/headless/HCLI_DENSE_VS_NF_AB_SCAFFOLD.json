@@ -1,0 +1,619 @@
+{
+  "claim_boundary": "No A/B performance, capability, or Flash-Next whole-model result is claimed until physical rows are filled by matched native executables.",
+  "evaluation": {
+    "checks": {
+      "capability_preserved": false,
+      "fallbacks_disclosed_and_zero": false,
+      "same_bench_state": false,
+      "same_device": false,
+      "same_dimensions": false,
+      "same_input": false,
+      "same_source": false
+    },
+    "claim_boundary": "Only matched, capability-preserving complete-token measurements can produce a system verdict; a primitive win does not imply a whole-model win.",
+    "missing_or_refused": [
+      "bytes_touched",
+      "capability_preserved",
+      "complete_wall_ns",
+      "dispatches",
+      "fallbacks_disclosed_and_zero",
+      "gpu_ns",
+      "numerical_deviation",
+      "representation_bytes",
+      "same_bench_state",
+      "same_device",
+      "same_dimensions",
+      "same_input",
+      "same_source"
+    ],
+    "schema": "hcli.agentos.dense_vs_nf_ab.v1",
+    "status": "INCOMPLETE",
+    "verdict": "INCONCLUSIVE"
+  },
+  "fingerprint": "54aa3a93cfcd676f3e8cd12e7d0e668a602310944e39eb393469e6ceba7a6ad4",
+  "generated_at": 1787800373.4856892,
+  "models": {
+    "model_a": {
+      "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+      "identity": "qwen3.8-27b-sealed-3.14",
+      "profile": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+      "runtime": "hawking-native"
+    },
+    "model_b": {
+      "architecture_fingerprint": "8dbc9c34f223d240def13a1f7c70d3cbddbc768bc9ccc9c002683e2958b6be5b",
+      "identity": "Qwen/Qwen3.8-Flash-Next",
+      "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "weights_status": "NOT_PRESENT_OR_NOT_NATIVE"
+    }
+  },
+  "protocol": {
+    "A": "source/dense representation plus competent dense kernel",
+    "B": "NF representation plus competent native NF kernel",
+    "complete_token_authority": "complete wall time, not raw kernel-only TPS",
+    "required_capability": "protected capability contract and whole-model reference comparison",
+    "required_controls": [
+      "same source",
+      "same input",
+      "same dimensions",
+      "same device",
+      "same benchmark state"
+    ],
+    "required_measurements": [
+      "representation_bytes",
+      "bytes_touched",
+      "gpu_ns",
+      "complete_wall_ns",
+      "dispatches",
+      "numerical_deviation"
+    ]
+  },
+  "repo_root": "/Users/scammermike/Downloads/hawking",
+  "rows": [
+    {
+      "capability_preserved": null,
+      "controls": {
+        "same_bench_state": false,
+        "same_device": false,
+        "same_dimensions": false,
+        "same_input": false,
+        "same_source": false
+      },
+      "dense": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "source/dense"
+      },
+      "fallback_count": null,
+      "measurements": {
+        "bytes_touched": null,
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "numerical_deviation": null,
+        "representation_bytes": null
+      },
+      "model": "model_a",
+      "nf": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "Noetic/Gravity NF candidate"
+      },
+      "organ": "packed_low_bit_gemv",
+      "verdict": "NOT_RUN"
+    },
+    {
+      "capability_preserved": null,
+      "controls": {
+        "same_bench_state": false,
+        "same_device": false,
+        "same_dimensions": false,
+        "same_input": false,
+        "same_source": false
+      },
+      "dense": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "source/dense"
+      },
+      "fallback_count": null,
+      "measurements": {
+        "bytes_touched": null,
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "numerical_deviation": null,
+        "representation_bytes": null
+      },
+      "model": "model_a",
+      "nf": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "Noetic/Gravity NF candidate"
+      },
+      "organ": "expert_gemv",
+      "verdict": "NOT_RUN"
+    },
+    {
+      "capability_preserved": null,
+      "controls": {
+        "same_bench_state": false,
+        "same_device": false,
+        "same_dimensions": false,
+        "same_input": false,
+        "same_source": false
+      },
+      "dense": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "source/dense"
+      },
+      "fallback_count": null,
+      "measurements": {
+        "bytes_touched": null,
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "numerical_deviation": null,
+        "representation_bytes": null
+      },
+      "model": "model_a",
+      "nf": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "Noetic/Gravity NF candidate"
+      },
+      "organ": "router_topk_gather",
+      "verdict": "NOT_RUN"
+    },
+    {
+      "capability_preserved": null,
+      "controls": {
+        "same_bench_state": false,
+        "same_device": false,
+        "same_dimensions": false,
+        "same_input": false,
+        "same_source": false
+      },
+      "dense": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "source/dense"
+      },
+      "fallback_count": null,
+      "measurements": {
+        "bytes_touched": null,
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "numerical_deviation": null,
+        "representation_bytes": null
+      },
+      "model": "model_a",
+      "nf": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "Noetic/Gravity NF candidate"
+      },
+      "organ": "deltanet_state_update",
+      "verdict": "NOT_RUN"
+    },
+    {
+      "capability_preserved": null,
+      "controls": {
+        "same_bench_state": false,
+        "same_device": false,
+        "same_dimensions": false,
+        "same_input": false,
+        "same_source": false
+      },
+      "dense": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "source/dense"
+      },
+      "fallback_count": null,
+      "measurements": {
+        "bytes_touched": null,
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "numerical_deviation": null,
+        "representation_bytes": null
+      },
+      "model": "model_a",
+      "nf": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "Noetic/Gravity NF candidate"
+      },
+      "organ": "ngram_lookup",
+      "verdict": "NOT_RUN"
+    },
+    {
+      "capability_preserved": null,
+      "controls": {
+        "same_bench_state": false,
+        "same_device": false,
+        "same_dimensions": false,
+        "same_input": false,
+        "same_source": false
+      },
+      "dense": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "source/dense"
+      },
+      "fallback_count": null,
+      "measurements": {
+        "bytes_touched": null,
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "numerical_deviation": null,
+        "representation_bytes": null
+      },
+      "model": "model_a",
+      "nf": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "Noetic/Gravity NF candidate"
+      },
+      "organ": "sparse_attention",
+      "verdict": "NOT_RUN"
+    },
+    {
+      "capability_preserved": null,
+      "controls": {
+        "same_bench_state": false,
+        "same_device": false,
+        "same_dimensions": false,
+        "same_input": false,
+        "same_source": false
+      },
+      "dense": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "source/dense"
+      },
+      "fallback_count": null,
+      "measurements": {
+        "bytes_touched": null,
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "numerical_deviation": null,
+        "representation_bytes": null
+      },
+      "model": "model_a",
+      "nf": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "Noetic/Gravity NF candidate"
+      },
+      "organ": "lm_head_selection",
+      "verdict": "NOT_RUN"
+    },
+    {
+      "capability_preserved": null,
+      "controls": {
+        "same_bench_state": false,
+        "same_device": false,
+        "same_dimensions": false,
+        "same_input": false,
+        "same_source": false
+      },
+      "dense": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "source/dense"
+      },
+      "fallback_count": null,
+      "measurements": {
+        "bytes_touched": null,
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "numerical_deviation": null,
+        "representation_bytes": null
+      },
+      "model": "model_a",
+      "nf": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "Noetic/Gravity NF candidate"
+      },
+      "organ": "mtp_draft_verify_rollback",
+      "verdict": "NOT_RUN"
+    },
+    {
+      "capability_preserved": null,
+      "controls": {
+        "same_bench_state": false,
+        "same_device": false,
+        "same_dimensions": false,
+        "same_input": false,
+        "same_source": false
+      },
+      "dense": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "source/dense"
+      },
+      "fallback_count": null,
+      "measurements": {
+        "bytes_touched": null,
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "numerical_deviation": null,
+        "representation_bytes": null
+      },
+      "model": "model_b",
+      "nf": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "Noetic/Gravity NF candidate"
+      },
+      "organ": "packed_low_bit_gemv",
+      "verdict": "NOT_RUN"
+    },
+    {
+      "capability_preserved": null,
+      "controls": {
+        "same_bench_state": false,
+        "same_device": false,
+        "same_dimensions": false,
+        "same_input": false,
+        "same_source": false
+      },
+      "dense": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "source/dense"
+      },
+      "fallback_count": null,
+      "measurements": {
+        "bytes_touched": null,
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "numerical_deviation": null,
+        "representation_bytes": null
+      },
+      "model": "model_b",
+      "nf": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "Noetic/Gravity NF candidate"
+      },
+      "organ": "expert_gemv",
+      "verdict": "NOT_RUN"
+    },
+    {
+      "capability_preserved": null,
+      "controls": {
+        "same_bench_state": false,
+        "same_device": false,
+        "same_dimensions": false,
+        "same_input": false,
+        "same_source": false
+      },
+      "dense": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "source/dense"
+      },
+      "fallback_count": null,
+      "measurements": {
+        "bytes_touched": null,
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "numerical_deviation": null,
+        "representation_bytes": null
+      },
+      "model": "model_b",
+      "nf": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "Noetic/Gravity NF candidate"
+      },
+      "organ": "router_topk_gather",
+      "verdict": "NOT_RUN"
+    },
+    {
+      "capability_preserved": null,
+      "controls": {
+        "same_bench_state": false,
+        "same_device": false,
+        "same_dimensions": false,
+        "same_input": false,
+        "same_source": false
+      },
+      "dense": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "source/dense"
+      },
+      "fallback_count": null,
+      "measurements": {
+        "bytes_touched": null,
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "numerical_deviation": null,
+        "representation_bytes": null
+      },
+      "model": "model_b",
+      "nf": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "Noetic/Gravity NF candidate"
+      },
+      "organ": "deltanet_state_update",
+      "verdict": "NOT_RUN"
+    },
+    {
+      "capability_preserved": null,
+      "controls": {
+        "same_bench_state": false,
+        "same_device": false,
+        "same_dimensions": false,
+        "same_input": false,
+        "same_source": false
+      },
+      "dense": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "source/dense"
+      },
+      "fallback_count": null,
+      "measurements": {
+        "bytes_touched": null,
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "numerical_deviation": null,
+        "representation_bytes": null
+      },
+      "model": "model_b",
+      "nf": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "Noetic/Gravity NF candidate"
+      },
+      "organ": "ngram_lookup",
+      "verdict": "NOT_RUN"
+    },
+    {
+      "capability_preserved": null,
+      "controls": {
+        "same_bench_state": false,
+        "same_device": false,
+        "same_dimensions": false,
+        "same_input": false,
+        "same_source": false
+      },
+      "dense": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "source/dense"
+      },
+      "fallback_count": null,
+      "measurements": {
+        "bytes_touched": null,
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "numerical_deviation": null,
+        "representation_bytes": null
+      },
+      "model": "model_b",
+      "nf": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "Noetic/Gravity NF candidate"
+      },
+      "organ": "sparse_attention",
+      "verdict": "NOT_RUN"
+    },
+    {
+      "capability_preserved": null,
+      "controls": {
+        "same_bench_state": false,
+        "same_device": false,
+        "same_dimensions": false,
+        "same_input": false,
+        "same_source": false
+      },
+      "dense": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "source/dense"
+      },
+      "fallback_count": null,
+      "measurements": {
+        "bytes_touched": null,
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "numerical_deviation": null,
+        "representation_bytes": null
+      },
+      "model": "model_b",
+      "nf": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "Noetic/Gravity NF candidate"
+      },
+      "organ": "lm_head_selection",
+      "verdict": "NOT_RUN"
+    },
+    {
+      "capability_preserved": null,
+      "controls": {
+        "same_bench_state": false,
+        "same_device": false,
+        "same_dimensions": false,
+        "same_input": false,
+        "same_source": false
+      },
+      "dense": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "source/dense"
+      },
+      "fallback_count": null,
+      "measurements": {
+        "bytes_touched": null,
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "numerical_deviation": null,
+        "representation_bytes": null
+      },
+      "model": "model_b",
+      "nf": {
+        "complete_wall_ns": null,
+        "dispatches": null,
+        "gpu_ns": null,
+        "representation": "Noetic/Gravity NF candidate"
+      },
+      "organ": "mtp_draft_verify_rollback",
+      "verdict": "NOT_RUN"
+    }
+  ],
+  "schema": "hcli.agentos.dense_vs_nf_ab.v1",
+  "status": "READY_SCAFFOLD"
+}

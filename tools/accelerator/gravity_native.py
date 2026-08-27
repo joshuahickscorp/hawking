@@ -18,6 +18,11 @@ from __future__ import annotations
 import numpy as np
 
 GROUP = 64
+
+# One simdgroup on this chip. MEASURED, not assumed: ACCELERATOR_BARRIER_SCOPES
+# found 32 lanes exchanging through threadgroup memory exact with NO fence, and
+# five later blocks reproduced it. It stays an M3 Ultra observation.
+SIMD_WIDTH = 32
 BITS = 4
 BOUND = (1 << (BITS - 1)) - 1          # 7; offset-binary around it
 
@@ -97,7 +102,7 @@ out[row] = acc;
 # program has now twice shipped a tree reduce whose second write raced its own
 # reads (ACCELERATOR_NORMALIZATION), and the cheap structural choice is the one
 # that cannot carry that hazard.
-NATIVE_MATVEC_TPR = """
+NATIVE_MATVEC_TPR_BODY = """
 uint gid = thread_position_in_grid.x;
 uint row = gid / %(TPR)du;
 uint lane = gid %% %(TPR)du;
@@ -114,7 +119,19 @@ for (uint g = lane; g < %(GROUPS)du; g += %(TPR)du) {
         acc += w0 * x[c0 + k] + w1 * x[c0 + k + 1u];
     }
 }
-threadgroup float part[%(TG)du];
+"""
+
+
+# THE CROSS-LANE REDUCTION TAIL, AS FOUR ARMS THAT DIFFER IN NOTHING ELSE.
+# ACCELERATOR_TWO_MORE_LEVERS_DIE eliminated six levers and named exactly one
+# structural feature no arm had varied: the tail. TPR lanes each hold a partial
+# and the shipped kernel has ONE lane sum them serially while TPR-1 idle. Every
+# tail below leaves the ELEMENT COUNT UNTOUCHED -- same loop, same groups, same
+# fused multiply-adds -- so a difference between them is the tail and nothing
+# else, which is the only way to settle a named candidate rather than argue it.
+REDUCE_TAILS = {
+    # Shipped. One lane, TPR serial adds, TPR-1 lanes idle.
+    "serial": """threadgroup float part[%(TG)du];
 uint lid = thread_position_in_threadgroup.x;
 part[lid] = acc;
 threadgroup_barrier(mem_flags::mem_threadgroup);
@@ -123,7 +140,60 @@ if (lane == 0u) {
     for (uint i = 0; i < %(TPR)du; ++i) t += part[lid + i];
     out[row] = t;
 }
-"""
+""",
+
+    # simd_sum reduces 32 lanes in hardware with no threadgroup memory and no
+    # barrier, so only the TPR/32 per-simdgroup partials need publishing. On this
+    # chip a simdgroup is 32 lanes wide and tpr=64 spans exactly two of them.
+    "simd": """
+float v = simd_sum(acc);
+threadgroup float part[%(SIMDS)du];
+uint lid = thread_position_in_threadgroup.x;
+uint sg = lid / 32u;
+if (lid %% 32u == 0u) part[sg] = v;
+threadgroup_barrier(mem_flags::mem_threadgroup);
+if (lane == 0u) {
+    float t = 0.0f;
+    for (uint i = 0; i < %(SIMDS_PER_ROW)du; ++i) t += part[sg + i];
+    out[row] = t;
+}
+""",
+
+    # log2(TPR) halving steps. Writers at step s are lanes [0,s) and readers read
+    # slots [s,2s), which are DISJOINT, so the write-after-read hazard
+    # ACCELERATOR_NORMALIZATION found in three shipped kernels cannot arise here;
+    # it is disjoint by construction rather than by a third barrier.
+    "tree": """
+threadgroup float part[%(TG)du];
+uint lid = thread_position_in_threadgroup.x;
+part[lid] = acc;
+threadgroup_barrier(mem_flags::mem_threadgroup);
+for (uint s = %(TPR)du / 2u; s > 0u; s >>= 1) {
+    if (lane < s) part[lid] += part[lid + s];
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+}
+if (lane == 0u) out[row] = part[lid];
+""",
+
+    # DELETION CONTROL. WRONG BY CONSTRUCTION and never a candidate: no barrier,
+    # no threadgroup array, no reduction at all, so out[row] holds whichever
+    # lane's partial landed last. It bounds what ANY reduction variant can buy,
+    # which is a stronger statement than any comparison between the three real
+    # tails: if deleting the tail entirely buys nothing, no tail can.
+    #
+    # THE STORE IS UNCONDITIONAL ON PURPOSE. Predicating it on lane==0 lets the
+    # compiler SINK the whole loop into the branch -- the loop is pure and its
+    # value is used only there -- so TPR-1 lanes would do NO WORK and the arm
+    # would read as a large win that measures dead-code elimination. Storing from
+    # every lane cannot be sunk. It ADDS TPR-fold store traffic, which makes the
+    # bound CONSERVATIVE: a tie here means the tail is worth at most the tie
+    # minus those extra stores.
+    "none": """
+out[row] = acc;
+""",
+}
+
+NATIVE_MATVEC_TPR = NATIVE_MATVEC_TPR_BODY + REDUCE_TAILS["serial"]
 
 
 # TWO MORE UNPACKS AT THE SAME GEOMETRY, so the only variable is HOW THE NIBBLES
@@ -137,6 +207,94 @@ if (lane == 0u) {
 # load width alone. LUT keeps the byte load and replaces mask/shift/convert/
 # subtract with one threadgroup read of a 256-entry float2 table -- the receipt's
 # own suggestion, built as suggested so it can be measured rather than assumed.
+# THE OPERAND PROBES. WRONG BY CONSTRUCTION, NEVER CANDIDATES.
+#
+# ACCELERATOR_THE_FLOOR_IS_THE_ELEMENT_NOT_THE_BYTE named the floor as "one x read
+# and one fused multiply-add per weight", and seven levers have since died against
+# it -- but that phrase names TWO operations and no arm had ever removed the x
+# READ. The weight reads were deleted and measured FREE; x never was.
+#
+# It is not a formality: 89.1M x reads in 0.29 ms is 307 G reads/s = 1.2 TB/s,
+# TWICE this machine's measured 589.73 GB/s DRAM roof, so those reads are
+# necessarily CACHE-SERVED and whether ~1.2 TB/s is the cache read ceiling is a
+# machine property that would set a floor no kernel change can move.
+#
+# Each body keeps the loop, the groups, the weight decode, the reduction and the
+# ELEMENT COUNT and removes exactly one operation, so a difference is that
+# operation. Each returns a WRONG answer, which is the anti-vacuity condition: a
+# probe that matched the oracle did not remove what it claims to remove.
+# THE GRID PROBE. WRONG BY CONSTRUCTION, NEVER A CANDIDATE.
+#
+# ACCELERATOR_THE_FLOOR_IS_NOT_THE_ELEMENT_EITHER fitted a fixed cost of 0.2450 ms
+# = 86.1% of an isolated matvec and named its own boundary: submission and grid
+# launch are NOT separated, because every arm there held the grid at 1.11M threads.
+#
+# This separates them. It keeps the SAME OUTPUT -- one value per row -- while
+# doing NO group loop, NO scale loads over groups, NO reduction and NO barrier, so
+# it can be launched at ANY threads-per-row and the GRID sweeps 64x with the work
+# fixed at nothing. A flat sweep means the fixed cost is SUBMISSION; a rising one
+# prices GRID LAUNCH.
+#
+# It reads ONE scale so the output is non-degenerate: a kernel storing a constant
+# would also be wrong, and would time an empty kernel rather than a cheap one.
+TRIVIAL_STORE = """
+uint gid = thread_position_in_grid.x;
+uint row = gid / %(TPR)du;
+uint lane = gid %% %(TPR)du;
+if (lane == 0u) out[row] = (float)scales[row * %(GROUPS)du] + (float)packed[row] * 0.0f + x[0] * 0.0f;
+"""
+
+
+def source_trivial(rows: int, cols: int, tpr: int = 64, tg: int = 128) -> str:
+    """One store per row and nothing else, at a chosen grid. WRONG BY CONSTRUCTION.
+
+    Every buffer is referenced -- packed and x multiplied by zero -- because MLX
+    binds the signature from the named inputs and an unreferenced buffer would make
+    this a DIFFERENT dispatch from the arms it is compared against, which is the
+    one thing that would make the comparison meaningless.
+    """
+    if tg % tpr:
+        raise ValueError(f"threadgroup {tg} must be a whole number of rows at tpr={tpr}")
+    if (rows * tpr) % tg:
+        raise ValueError(
+            f"rows*tpr={rows * tpr} is not a multiple of threadgroup {tg}")
+    return TRIVIAL_STORE % {"TPR": tpr, "GROUPS": cols // GROUP}
+
+
+OPERAND_PROBES = {
+    # HALF THE x READS: one x value feeds both nibbles of the byte. Same FMA
+    # count, same weight loads, 44.6M fewer x reads -- exactly the number of
+    # weight-byte loads the no-weights control removed for free, so if load count
+    # were the mechanism that control would already have shown it.
+    "xreuse": """
+        uchar byte = packed[pbase + (c0 + k) / 2u];
+        float w0 = (float)((int)(byte & 0x0F) - %(BOUND)d) * s;
+        float w1 = (float)((int)(byte >> 4)   - %(BOUND)d) * s;
+        float xv = x[c0 + k];
+        acc += w0 * xv + w1 * xv;
+""",
+    # THE MULTIPLY REMOVED, both operands still consumed so nothing can fold.
+    # Same loads, same element count, an ADD where an FMA was.
+    "nomul": """
+        uchar byte = packed[pbase + (c0 + k) / 2u];
+        float w0 = (float)((int)(byte & 0x0F) - %(BOUND)d) * s;
+        float w1 = (float)((int)(byte >> 4)   - %(BOUND)d) * s;
+        acc += w0 + x[c0 + k];
+        acc += w1 + x[c0 + k + 1u];
+""",
+    # THE x-READ DELETION CONTROL, the exact analogue of the no-weights control
+    # that found reading 44.6 MB of packed weights costs nothing. x is NEVER read;
+    # the weights are still loaded, decoded and accumulated so the loop cannot
+    # fold. This is the arm that answers the question.
+    "noxread": """
+        uchar byte = packed[pbase + (c0 + k) / 2u];
+        float w0 = (float)((int)(byte & 0x0F) - %(BOUND)d) * s;
+        float w1 = (float)((int)(byte >> 4)   - %(BOUND)d) * s;
+        acc += w0 + w1;
+""",
+}
+
+
 UNPACK_BODIES = {
     "byte": """
         uchar byte = packed[pbase + (c0 + k) / 2u];
@@ -279,6 +437,35 @@ def source_unpack(rows: int, cols: int, unpack: str = "byte",
     return src
 
 
+def source_reduce(rows: int, cols: int, reduce: str = "serial",
+                  tpr: int = 64, tg: int = 128) -> str:
+    """The native matvec with a chosen CROSS-LANE REDUCTION TAIL.
+
+    Same body, same groups, same fused multiply-adds -- the ELEMENT COUNT IS
+    IDENTICAL across every tail, which is what makes a difference between them
+    attributable to the tail. "none" is a DELETION CONTROL and is WRONG BY
+    CONSTRUCTION; it is never a candidate, and a caller who mistakes it for one
+    gets an answer off by roughly a factor of tpr.
+    """
+    if reduce not in REDUCE_TAILS:
+        raise ValueError(f"unknown reduction {reduce!r}; have {sorted(REDUCE_TAILS)}")
+    if tg % tpr:
+        raise ValueError(f"threadgroup {tg} must be a whole number of rows at tpr={tpr}")
+    if (rows * tpr) % tg:
+        raise ValueError(
+            f"rows*tpr={rows * tpr} is not a multiple of threadgroup {tg}; the grid "
+            "would be padded and the padding threads would skip the barrier")
+    if reduce == "simd" and (tpr % SIMD_WIDTH or tg % SIMD_WIDTH):
+        raise ValueError(
+            f"simd_sum reduces exactly {SIMD_WIDTH} lanes, so tpr={tpr} and tg={tg} "
+            f"must both be whole multiples of {SIMD_WIDTH}; a row spanning a partial "
+            "simdgroup would drop the lanes outside it")
+    return (NATIVE_MATVEC_TPR_BODY + REDUCE_TAILS[reduce]) % {
+        "PACKED_COLS": cols // 2, "GROUPS": cols // GROUP, "GROUP": GROUP,
+        "BOUND": BOUND, "TPR": tpr, "TG": tg,
+        "SIMDS": max(tg // SIMD_WIDTH, 1), "SIMDS_PER_ROW": max(tpr // SIMD_WIDTH, 1)}
+
+
 def source_tpr(rows: int, cols: int, tpr: int = 64, tg: int = 128) -> str:
     """The native matvec at a chosen threads-per-row. Refuses a geometry that
     would need a bounds guard before the barrier: a thread that returns early
@@ -292,6 +479,195 @@ def source_tpr(rows: int, cols: int, tpr: int = 64, tg: int = 128) -> str:
     return NATIVE_MATVEC_TPR % {
         "PACKED_COLS": cols // 2, "GROUPS": cols // GROUP, "GROUP": GROUP,
         "BOUND": BOUND, "TPR": tpr, "TG": tg}
+
+
+def source_operand_probe(rows: int, cols: int, probe: str,
+                         tpr: int = 64, tg: int = 128) -> str:
+    """The native matvec with ONE per-element operation removed. WRONG BY
+    CONSTRUCTION -- these are probes, never candidates, and a caller who ships one
+    ships a wrong answer. See OPERAND_PROBES for what each removes and why."""
+    if (probe not in OPERAND_PROBES and not probe.startswith("thin")
+            and probe != "redonly" and "_local" not in probe
+            and "_lane" not in probe and "blocked" not in probe
+            and not probe.startswith("rot")):
+        raise ValueError(
+            f"unknown operand probe {probe!r}; have {sorted(OPERAND_PROBES) + ['thin']}")
+    d = {"PACKED_COLS": cols // 2, "GROUPS": cols // GROUP, "GROUP": GROUP,
+         "BOUND": BOUND, "TPR": tpr, "TG": tg}
+    src = source_tpr(rows, cols, tpr, tg)
+    body = UNPACK_BODIES["byte"] % d
+    if body not in src:
+        raise AssertionError(
+            "the byte body is not in the generated source, so the probe would "
+            "silently be the baseline; the templates have drifted apart")
+    if probe == "redonly":
+        # THE REDUCTION ALONE. Group loop, scale loads and element work all gone;
+        # the threadgroup array, the barrier and lane 0's serial 64-slot sum stay.
+        # trivial -> redonly is a SINGLE-VARIABLE isolation of the reduction, which
+        # is the only item in the trivial -> thin2 gap that is not per-thread tiny.
+        # acc depends on BOTH row and lane so the reduced answer differs per row --
+        # a per-lane constant would sum to the same value everywhere and time a
+        # degenerate kernel rather than a cheap one.
+        body = NATIVE_MATVEC_TPR_BODY % d
+        head = body[:body.index("uint pbase")]
+        return (head + f"acc = (float)(row + lane) + (float)scales[row * {d['GROUPS']}u] * 0.0f"
+                       " + (float)packed[row] * 0.0f + x[0] * 0.0f;\n"
+                + REDUCE_TAILS["serial"] % d)
+    if probe.startswith("rot"):
+        # PER-ITERATION ORDER, WITH EVERY LOOP-WIDE PROPERTY PINNED. Lane L visits
+        # the SAME groups {L, L+TPR, ...} rotated by its own lane index, so the
+        # per-lane set is identical LANE BY LANE and therefore the per-simdgroup
+        # loop-wide set, its SPAN, its FRAGMENT COUNT and every stride in it are
+        # identical too. The only thing that moves is WHICH ITERATION asks for
+        # WHICH: at GROUPS=80 TPR=64 simdgroup 0's first iteration goes from ONE
+        # contiguous 1024-byte run to SEVENTEEN runs over the same 2560 bytes.
+        #
+        # This is the first probe in the family where span, fragmentation, stride
+        # and the address set are ALL held: a blocked partition moved the set and a
+        # permutation moved the simdgroup's span, so neither could isolate order.
+        #
+        # rot0 is the CONTROL: same n, same runtime modulo, same index expression,
+        # rotation offset ZERO, so it pays identical arithmetic in the shipped
+        # order and rot-vs-rot0 is the ORDER alone.
+        off = probe[3:]
+        if off.startswith("blk"):
+            # THE GRANULARITY LADDER. Lanes inside a block of k share one rotation
+            # offset, so their groups stay CONSECUTIVE and iteration 0's request is
+            # 32/k contiguous runs -- a continuous sweep of the run count at an
+            # address set that is still invariant lane by lane. rotblk64 is the
+            # CONTROL: lane/64 is 0 for every lane, so it computes the SHIPPED
+            # ORDER while paying the identical division and modulo.
+            k = int(off[3:])
+            if k < 1 or k & (k - 1):
+                raise ValueError(f"rotblk needs a POWER OF TWO block so lanes divide "
+                                 f"evenly into blocks and the run count is 32/k; got {k}")
+            off = f"(lane / {k}u)"
+        elif off not in ("0", "lane"):
+            raise ValueError(f"rot probe must be rot0 (control), rotlane or rotblkK; got {probe!r}")
+        frag = "for (uint g = lane; g < %(GROUPS)du; g += %(TPR)du) {" % d
+        if frag not in src:
+            raise AssertionError(f"{frag!r} is not in the source to reorder")
+        shift = "0u" if off == "0" else off if off.startswith("(") else "lane"
+        return src.replace(frag,
+            f"uint _n = (%(GROUPS)du - lane + %(TPR)du - 1u) / %(TPR)du;\n"
+            f"for (uint _i = 0u; _i < _n; _i++) {{\n"
+            f"    uint g = lane + ((_i + {shift}) %% _n) * %(TPR)du;" % d, 1)
+
+    if "blocked" in probe:
+        # THE SPAN, VARIED WITHOUT A PERMUTATION. Lane L takes a CONTIGUOUS run of
+        # exactly the count the strided loop gives it -- ceil((GROUPS-L)/TPR) -- laid
+        # out in lane order, so the per-lane element count is IDENTICAL LANE BY LANE,
+        # every simdgroup's group TOTAL is identical, the threadgroup footprint is
+        # identical, and the only thing that moves is which addresses a simdgroup
+        # touches: at GROUPS=80 TPR=64 simd0 goes from {0..31, 64..79}, a 2560-byte
+        # span in two fragments, to {0..47}, a contiguous 1536.
+        #
+        # IT IS STILL A PARTITION, so the arm is CORRECT and the wrong-by-construction
+        # anti-vacuity control is unavailable -- the replacements are the exact-cover
+        # check, the lane-by-lane count equality and the not-the-identity assertion.
+        #
+        # blockedctl is the CONTROL: it computes off and cnt exactly as blocked does
+        # and CONSUMES them so nothing folds, then strides the SHIPPED way. Comparing
+        # blocked against the shipped kernel would confound the ADDRESSES with the
+        # dropped modulo and the added branch; blocked against blockedctl is the
+        # addresses alone.
+        groups, q = d["GROUPS"], d["GROUPS"] // tpr
+        rem = d["GROUPS"] % tpr
+        frag = "for (uint g = lane; g < %(GROUPS)du; g += %(TPR)du) {" % d
+        if frag not in src:
+            raise AssertionError(f"{frag!r} is not in the source to reassign")
+        setup = (f"uint _cnt = lane < {rem}u ? {q + 1}u : {q}u;\n"
+                 f"uint _off = lane < {rem}u ? {q + 1}u * lane"
+                 f" : {(q + 1) * rem}u + {q}u * (lane - {rem}u);\n")
+        if probe.endswith("ctl"):
+            # SAME arithmetic, SHIPPED addresses. The zero multiply keeps _off and
+            # _cnt live so the compiler cannot delete the work being controlled for.
+            return src.replace(frag, setup + "acc += 0.0f * (float)(_off + _cnt);\n" + frag, 1)
+        assert q * tpr + rem == groups
+        return src.replace(frag, setup + "for (uint g = _off; g < _off + _cnt; g++) {", 1)
+
+    if "_lane" in probe:
+        # WHICH LANE TOUCHES WHICH GROUP, at IDENTICAL footprint and identical
+        # work. The multiplier is coprime with TPR so lane -> (lane*M) % TPR is a
+        # BIJECTION: every group is still visited exactly once per row, the row's
+        # address footprint is unchanged, and the multiset of per-lane iteration
+        # counts is unchanged -- only the ASSIGNMENT moves. ACCELERATOR_THE_ENTRY
+        # _COST_IS_FOOTPRINT measured that footprint costs and could not say
+        # whether the limit is per LANE or per THREADGROUP; this is that variable.
+        stem, _, m = probe.partition("_lane")
+        mult = int(m)
+        if mult % 2 == 0 or not 1 <= mult < tpr:
+            raise ValueError(
+                f"lane needs an ODD multiplier in [1, {tpr}) so lane -> (lane*M) % {tpr} "
+                f"is a bijection and no group is visited twice or skipped; got {mult}")
+        base = source_operand_probe(rows, cols, stem, tpr, tg) if stem else source_tpr(rows, cols, tpr, tg)
+        frag = "for (uint g = lane;"
+        if frag not in base:
+            raise AssertionError(f"{frag!r} is not in the source to reorder")
+        return base.replace(frag, f"for (uint g = (lane * {mult}u) %% {tpr}u;" % ())
+    if "_local" in probe:
+        # FOOTPRINT AT FIXED WORK. The loop, the iteration count, the element
+        # count, the scale loads and the reduction are all UNCHANGED; only the
+        # ADDRESSES move, confined to N groups so every lane's first touch lands
+        # in the same few cache lines instead of striding across the row. This is
+        # the first-touch candidate ACCELERATOR_ENTERING_THE_LOOP named, expressed
+        # as a single variable. The index still varies with g so the loop body is
+        # not loop-invariant and cannot be hoisted whole.
+        stem, _, n = probe.partition("_local")
+        keep = int(n)
+        groups = d["GROUPS"]
+        if keep < 1 or keep > groups or groups % keep:
+            raise ValueError(f"local keeps a DIVISOR of {groups} groups; got {keep}")
+        base = source_operand_probe(rows, cols, stem, tpr, tg)
+        for frag in ("scales[sbase + g]", "uint c0 = g * %(GROUP)du;" % d):
+            if frag not in base:
+                raise AssertionError(f"{frag!r} is not in the source to confine")
+        return (base.replace("scales[sbase + g]", f"scales[sbase + (g % {keep}u)]")
+                    .replace("uint c0 = g * %(GROUP)du;" % d,
+                             f"uint c0 = (g %% {keep}u) * %(GROUP)du;" % d))
+    if probe.endswith("_nobarrier"):
+        # THE BARRIER AND THE SERIAL SUM ALONE, at IDENTICAL STORE TRAFFIC. Every
+        # lane still writes its threadgroup slot -- so the loop cannot be sunk --
+        # and lane 0 still makes the one store per row, but nothing is ordered and
+        # nothing is summed. The _noreduce arm removes the reduction AND replaces a
+        # predicated store with 64 unconditional ones, which is a SECOND VARIABLE;
+        # this arm exists because that confound makes _noreduce unusable for
+        # pricing the barrier.
+        base = source_operand_probe(rows, cols, probe[:-len("_nobarrier")], tpr, tg)
+        tail = REDUCE_TAILS["serial"] % d
+        if tail not in base:
+            raise AssertionError("the serial tail is not in this source to remove")
+        return base.replace(tail, """
+threadgroup float part[%(TG)du];
+uint lid = thread_position_in_threadgroup.x;
+part[lid] = acc;
+if (lane == 0u) out[row] = part[lid];
+""" % d)
+    if probe.endswith("_noreduce"):
+        # The SAME arm with the reduction deleted, measuring it from the other
+        # side. The store is UNCONDITIONAL for the reason REDUCE_TAILS["none"]
+        # records: a lane==0 predicate lets the compiler sink the pure loop.
+        base = source_operand_probe(rows, cols, probe[:-len("_noreduce")], tpr, tg)
+        tail = REDUCE_TAILS["serial"] % d
+        if tail not in base:
+            raise AssertionError("the serial tail is not in this source to remove")
+        return base.replace(tail, REDUCE_TAILS["none"] % d)
+    if probe.startswith("thin"):
+        # THE WORK-DELETION CONTROL, and the one that asks whether any per-element
+        # work is being measured at all. Every arm above removes ONE operation and
+        # ties; this removes 31 of every 32 inner iterations while holding the GRID,
+        # the lane assignment, the group loop, the reduction and the stores fixed.
+        # If it ties too, the time is not set by the elements and the "element
+        # floor" framing is measuring something else entirely.
+        keep = int(probe[4:] or "2")          # elements kept per group
+        if keep % 2 or not 2 <= keep <= GROUP:
+            raise ValueError(
+                f"thin keeps an EVEN element count in [2, {GROUP}]; got {keep}")
+        bound = f"k < {GROUP}u"
+        if src.count(bound) != 1:
+            raise AssertionError(f"expected exactly one {bound!r} to narrow")
+        return src.replace(bound, f"k < {keep}u")
+    return src.replace(body, OPERAND_PROBES[probe] % d)
 
 
 DEQUANT = """

@@ -1,0 +1,428 @@
+{
+ "receipt": "ACCELERATOR_ENTERING_THE_LOOP_COSTS_MORE_THAN_RUNNING_IT",
+ "date": "2026-08-26",
+ "obligation": "G046 (FRONT D) with G047; S031 s2 optimisation order",
+ "question": "ACCELERATOR_THE_FLOOR_SPLITS_THREE_WAYS left the GROUP LOOP as the only part of an isolated matvec that is neither submission, nor grid, nor elements -- 18-30% of it -- and named its suspect: '1.39M scale loads plus a reduction ALREADY MEASURED FREE BY DELETION, so THE SCALE LOADS ARE THE NAMED SUSPECT.'",
+ "THE_NAMED_SUSPECT_IS_REFUTED_BY_ARITHMETIC_BEFORE_ANY_ARM_RAN": "17408 rows x 80 groups = 1,392,640 scale loads across 1,114,112 threads = 1.25 LOADS PER THREAD, against a baseline where each thread does 80 elements. 1.25 f16 loads cannot be a fifth of a kernel. 1.39M is a large-sounding TOTAL over an even larger THREAD COUNT, and quoting the total is what invited the wrong suspect. NO ARM WAS SPENT ON IT, and the refutation is recorded as a pre-run correction rather than dressed up as a measurement.",
+ "the_arms": {
+  "shape": "17408 x 5120, tpr64, tg128, 14 round-robin rounds x 20 reps, THREE runs",
+  "trivial": "one store per row: no group loop, no scales, no elements, no reduction",
+  "redonly": "reduction + barrier + store, NO group loop -- isolates the reduction with ONE variable",
+  "thin2_noreduce": "group loop + scales + 2 elem/group, reduction deleted, UNCONDITIONAL store",
+  "thin2_nobarrier": "the same WITHOUT the barrier and the serial sum but WITH the predicated store",
+  "thin2": "group loop + scales + 2 elem/group + reduction",
+  "baseline": "everything"
+ },
+ "WHY_THE_nobarrier_ARM_EXISTS_AND_IT_IS_A_DEFECT_I_FOUND_IN_MY_OWN_DESIGN": "thin2_noreduce was the obvious way to price the reduction from above, and it carries a SECOND VARIABLE: deleting the reduction also replaces ONE PREDICATED STORE PER ROW with an UNCONDITIONAL STORE FROM EVERY LANE -- 17408 stores become 1.11M, 64-fold. The unconditional store is itself deliberate (a lane==0 predicate lets the compiler sink the pure loop into the branch) but it makes that arm useless for pricing a barrier. thin2_nobarrier keeps the predicated store AND still writes the threadgroup slot from every lane, so the loop cannot be sunk and the store traffic is IDENTICAL to thin2. Only that arm prices the barrier.",
+ "minima_ms_run_3_the_cleanest": {
+  "trivial": 0.1867,
+  "redonly": 0.1858,
+  "thin2_noreduce": 0.2513,
+  "thin2_nobarrier": 0.2536,
+  "thin2": 0.256,
+  "baseline": 0.2749
+ },
+ "all_three_runs": {
+  "minima": {
+   "run_1": {
+    "trivial": 0.1941,
+    "redonly": 0.1926,
+    "thin2_noreduce": 0.2534,
+    "thin2": 0.273,
+    "baseline": 0.3041
+   },
+   "run_2": {
+    "trivial": 0.1958,
+    "redonly": 0.1987,
+    "thin2_noreduce": 0.2861,
+    "thin2": 0.2944,
+    "baseline": 0.3007
+   },
+   "run_3": {
+    "trivial": 0.1867,
+    "redonly": 0.1858,
+    "thin2_noreduce": 0.2513,
+    "thin2_nobarrier": 0.2536,
+    "thin2": 0.256,
+    "baseline": 0.2749
+   }
+  },
+  "decomposition": {
+   "run_1": {
+    "trivial_to_thin2_gap_ms": 0.079,
+    "reduction_from_below_ms": -0.0015,
+    "reduction_from_above_ms": 0.0196,
+    "loop_scales_elements_ms": 0.0804,
+    "reduction_share_of_gap_from_below": -0.0185,
+    "reduction_share_of_gap_from_above": 0.2485
+   },
+   "run_2": {
+    "trivial_to_thin2_gap_ms": 0.0986,
+    "reduction_from_below_ms": 0.003,
+    "reduction_from_above_ms": 0.0083,
+    "loop_scales_elements_ms": 0.0956,
+    "reduction_share_of_gap_from_below": 0.03,
+    "reduction_share_of_gap_from_above": 0.0841
+   },
+   "run_3": {
+    "trivial_to_thin2_gap_ms": 0.0693,
+    "reduction_from_below_ms": -0.0009,
+    "reduction_from_above_ms": 0.0047,
+    "barrier_and_sum_at_equal_stores_ms": 0.0023,
+    "loop_scales_elements_clean_ms": 0.067,
+    "loop_scales_elements_ms": 0.0702,
+    "reduction_share_of_gap_from_below": -0.0132,
+    "reduction_share_of_gap_from_above": 0.0673,
+    "barrier_share_of_gap_clean": 0.0337
+   }
+  },
+  "round_spread_pct": {
+   "run_1": {
+    "trivial": 42.5,
+    "redonly": 20.1,
+    "thin2_noreduce": 36.1,
+    "thin2": 35.0,
+    "baseline": 300.1
+   },
+   "run_2": {
+    "trivial": 371.9,
+    "redonly": 367.5,
+    "thin2_noreduce": 213.6,
+    "thin2": 275.5,
+    "baseline": 215.5
+   },
+   "run_3": {
+    "trivial": 141.4,
+    "redonly": 375.1,
+    "thin2_noreduce": 11.8,
+    "thin2_nobarrier": 17.8,
+    "thin2": 272.5,
+    "baseline": 186.2
+   }
+  }
+ },
+ "P1_THE_REDUCTION_IS_REFUTED_AS_THE_TERM": {
+  "predicted": ">= 0.60 of the gap, with a falsifier at <= 0.25",
+  "measured_from_below": "-0.0015, +0.0030, -0.0009 ms across three runs -- a TIE every time",
+  "measured_at_equal_store_traffic": "+0.0023 ms = 3.4% of the gap",
+  "verdict": "REFUTED, and the falsifier is cleared three times over. The barrier and the serial 64-slot sum are FREE. ACCELERATOR_THE_REDUCTION_TAIL_IS_FREE measured that against the FULL kernel and I suspected it lacked resolution at 4%; it did not -- the same conclusion holds at an element count 32x smaller where the same absolute cost would be a far larger share."
+ },
+ "P2_THE_TWO_ROUTES_DISAGREED_AND_THAT_WAS_THE_PRE_REGISTERED_MEANING": {
+  "predicted": "the two routes land within 2x, or NEITHER is a measurement of the reduction",
+  "measured": "run 1 gave -0.0015 from below and +0.0196 from above -- OPPOSITE SIGNS. That is not within 2x, so by the pre-registered rule the from-above route was not measuring the reduction, and the nobarrier arm is what found out why: it was measuring 64-fold store traffic.",
+  "after_the_confound_was_removed": "from below -0.0009 and at equal stores +0.0023 -- both ties, now agreeing. The disagreement was MY ARM, not the machine."
+ },
+ "THE_RESULT_THIS_BLOCK_DID_NOT_SET_OUT_TO_GET": {
+  "the_two_numbers": {
+   "trivial_to_thin2_ms_by_run": [
+    0.079,
+    0.0986,
+    0.0693
+   ],
+   "thin2_to_baseline_ms_by_run": [
+    0.0311,
+    0.0063,
+    0.0189
+   ],
+   "elements_added": "the first arm adds 2 elements per group, the second adds the remaining 62"
+  },
+  "headline": "ENTERING THE LOOP COSTS MORE THAN RUNNING IT. Going from NO elements to TWO per group costs 0.069-0.099 ms; going from two to SIXTY-FOUR costs 0.006-0.031 ms. The first two elements cost 2.2x to 15x what the next sixty-two cost, in all three runs.",
+  "per_element": "~80x to ~500x dearer for the first elements than for the later ones. The RANGE is wide because both terms are small differences between contended arms; the DIRECTION is what transfers and it holds in every run.",
+  "what_it_explains": "ACCELERATOR_THE_FLOOR_IS_NOT_THE_ELEMENT_EITHER measured a FLAT low region -- thin2, thin8 and thin16 within 0.2% across an 8x work range -- and called the linear model wrong in shape without naming the shape. THIS IS THE SHAPE: the cost is in the FIRST iteration, so widening from 2 to 16 elements adds almost nothing, and the knee appears only near full width where the per-element term finally accumulates.",
+  "the_mechanism_is_NAMED_AS_A_CANDIDATE_AND_NOT_CLAIMED": "the first iteration is where each thread FIRST TOUCHES packed, scales and x, so cold cache lines are the obvious candidate and later iterations hit lines already resident. THIS IS NOT MEASURED HERE. This program's scorecard is five diagnoses written down and two wrong, and separating a first-touch cost from loop-entry setup needs an arm that varies WHICH lines the first iteration touches, NOT RUN."
+ },
+ "controls": {
+  "anti_vacuity": "every probe is WRONG -- rel_err 1.000 / 4.5e+05 / 0.9996 / 0.9838 against the baseline's 2.021e-07",
+  "non_degeneracy": "redonly's accumulator depends on the ROW as well as the lane, because a per-lane constant would reduce to the SAME value in every row and time a degenerate kernel; measured 17408 distinct outputs",
+  "template_drift": "the _nobarrier and _noreduce builders RAISE if the serial tail is not in the source, so a no-op replacement cannot make a probe BE its base",
+  "mutations_watched_failing": [
+   "redonly's accumulator made lane-only -- caught by non-degeneracy",
+   "the nobarrier store made unconditional -- caught by the store-traffic test",
+   "a barrier put back into the nobarrier arm -- caught by the same test"
+  ],
+  "a_mutation_hit_the_wrong_occurrence_and_is_recorded": "the first nobarrier mutation replaced 'if (lane == 0u) out[row] = part[lid];' and REPORTED SURVIVING -- because REDUCE_TAILS['tree'] carries that identical line and a first-occurrence replace hit the tree tail instead. THIRD TIME this session a mutation failed to land where intended, and a mutation applied to the wrong text reads exactly like a suite that cannot detect it. Re-anchored on two lines rather than one, both then fail as intended."
+ },
+ "claim_boundary": [
+  "ONE shape, ONE tpr, ONE machine, INSTANCE. The loop-entry term is per THREAD, so a kernel with far more elements per thread would show a smaller share -- which is the finding, not a caveat.",
+  "BENCH_STATE CONTENDED and badly so: round-spreads reach 375% on some arms. MINIMA are the estimator throughout, medians sit beside them, and every number here is a DIFFERENCE BETWEEN TWO SMALL CONTENDED QUANTITIES -- which is why the entry-vs-element ratio is quoted as 2.2x-15x rather than as a value.",
+  "the barrier price is measured at ONE element count (2 per group) in ONE run with the clean arm. The from-below route ran three times and tied three times, which is what carries the verdict.",
+  "NO SHIPPED KERNEL CHANGED -- every probe is WRONG BY CONSTRUCTION and none is a candidate; no model executed, no capability run, no adequacy claim moves.",
+  "PRODUCTION DOES NOT PAY THE SUBMISSION TERM and that is unchanged; this block decomposes what an ISOLATED microbenchmark pays, which is why seven levers measured that way all tied."
+ ],
+ "next": "The first-touch candidate is the only unexamined thing left in this decomposition, and it is testable without generated code: hold the element count fixed and change WHICH lines the first iteration touches -- start every lane at group 0 rather than at its lane index, so lanes in a threadgroup share cache lines instead of striding across them. NOT RUN HERE.",
+ "akb_registration": {
+  "evidence_domain": "accelerator",
+  "civilization": "I-D_ACCELERATOR",
+  "program": "HAWKING ACCELERATOR (S015/S031/S032)",
+  "machine_scope": "Apple M3 Ultra, INSTANCE",
+  "representation_scope": "ws_rtn_q4_g64 where read; redonly reads no weights",
+  "kernel_scope": "native matvec decomposed into trivial / reduction-only / loop-without-barrier / loop-with-barrier / full",
+  "why_declared": "membership must not depend on what this file was named (S032 s13)."
+ },
+ "identities": {
+  "experiment": {
+   "class": "ACCEL-KERNEL",
+   "knowledge_level": "INSTANCE",
+   "question": "what inside the group-loop term costs, the reduction or the loop"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "ram_gib": 96,
+   "measured_dram_gb_s": 589.73,
+   "bench_state": "CONTENDED",
+   "quiescence": {
+    "run_1": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 79958,
+       "cpu_pct": 104.0,
+       "rss_gib": 37.92,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 94762,
+       "cpu_pct": 39.0,
+       "rss_gib": 1.94,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 94790,
+       "cpu_pct": 47.8,
+       "rss_gib": 0.05,
+       "comm": "/System/Library/Frameworks/Metal.framework/Versions/A/XPCServices/MTLCompilerService.xpc/Contents/MacOS/MTLCompilerService"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 36.4,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 22.1,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 5,
+     "total_cpu_pct": 249.3,
+     "max_rss_gib": 37.92,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    },
+    "run_2": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 79958,
+       "cpu_pct": 68.7,
+       "rss_gib": 38.46,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 95008,
+       "cpu_pct": 90.3,
+       "rss_gib": 1.94,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 728,
+       "cpu_pct": 40.4,
+       "rss_gib": 1.29,
+       "comm": "/Applications/OrbStack.app/Contents/Frameworks/OrbStack Helper.app/Contents/MacOS/OrbStack Helper"
+      },
+      {
+       "pid": 33492,
+       "cpu_pct": 97.8,
+       "rss_gib": 0.04,
+       "comm": "/usr/libexec/rtcreportingd"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 37.8,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 25.4,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 6,
+     "total_cpu_pct": 360.4,
+     "max_rss_gib": 38.46,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    },
+    "run_3": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 79958,
+       "cpu_pct": 107.8,
+       "rss_gib": 38.58,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 95383,
+       "cpu_pct": 61.9,
+       "rss_gib": 1.95,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 728,
+       "cpu_pct": 30.8,
+       "rss_gib": 1.32,
+       "comm": "/Applications/OrbStack.app/Contents/Frameworks/OrbStack Helper.app/Contents/MacOS/OrbStack Helper"
+      },
+      {
+       "pid": 180,
+       "cpu_pct": 21.5,
+       "rss_gib": 0.04,
+       "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+      },
+      {
+       "pid": 94011,
+       "cpu_pct": 37.2,
+       "rss_gib": 0.03,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 35.1,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 22.2,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 7,
+     "total_cpu_pct": 316.5,
+     "max_rss_gib": 38.58,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    }
+   }
+  },
+  "device": {
+   "backend": "Metal",
+   "api": "mx.fast.metal_kernel JIT, MLX"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "NO MODEL EXECUTED. 17408x5120 is BORROWED from the resident's MLP; synthetic weights, no forward pass."
+  },
+  "representation": {
+   "native": "ws_rtn_q4_g64, 4.25 bpw",
+   "note": "identical where read"
+  },
+  "runtime": {
+   "analysis": "tools/accelerator/gravity_native.py::source_operand_probe (redonly, _nobarrier, _noreduce)",
+   "tests": "tools/accelerator/test_group_decomposition.py"
+  },
+  "kernel": {
+   "arms": [
+    "trivial",
+    "redonly",
+    "thin2_noreduce",
+    "thin2_nobarrier",
+    "thin2",
+    "baseline"
+   ],
+   "tpr": 64,
+   "tg": 128
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device, no transfer crossed, HUMF not involved"
+  }
+ },
+ "bench": {
+  "state": "CONTENDED",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": {
+   "quiet": false,
+   "method": "enumerate",
+   "no_name_filter": true,
+   "thresholds": {
+    "cpu_pct": 20.0,
+    "rss_gib": 2.0
+   },
+   "contenders": [
+    {
+     "pid": 79958,
+     "cpu_pct": 107.8,
+     "rss_gib": 38.58,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 95383,
+     "cpu_pct": 61.9,
+     "rss_gib": 1.95,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 728,
+     "cpu_pct": 30.8,
+     "rss_gib": 1.32,
+     "comm": "/Applications/OrbStack.app/Contents/Frameworks/OrbStack Helper.app/Contents/MacOS/OrbStack Helper"
+    },
+    {
+     "pid": 180,
+     "cpu_pct": 21.5,
+     "rss_gib": 0.04,
+     "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+    },
+    {
+     "pid": 94011,
+     "cpu_pct": 37.2,
+     "rss_gib": 0.03,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 739,
+     "cpu_pct": 35.1,
+     "rss_gib": 0.02,
+     "comm": "/usr/libexec/avconferenced"
+    },
+    {
+     "pid": 52616,
+     "cpu_pct": 22.2,
+     "rss_gib": 0.02,
+     "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+    }
+   ],
+   "n_contenders": 7,
+   "total_cpu_pct": 316.5,
+   "max_rss_gib": 38.58,
+   "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+  },
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "DERIVED from a quiescence sample this receipt already carried"
+ }
+}

@@ -1,0 +1,2532 @@
+{
+  "NOT_FOR_PROMOTION": true,
+  "claim_boundary": "This watcher governs benchmark readiness only. The diagnostic result remains NOT_FOR_PROMOTION; no process outside explicitly identified HCLI benchmark jobs is signaled.",
+  "deadline": 1787829209.8521001,
+  "duration_s": 21600.0,
+  "elapsed_s": 3009.306,
+  "finished_at": 1787810619.158504,
+  "interval_s": 60.0,
+  "last_poll": {
+    "at": 1787810612.6018581,
+    "decision": "DIAGNOSTIC_COMPLETED",
+    "eligible_without_pause": true,
+    "job_classes": {
+      "blockers": [],
+      "pausable_hcli_jobs": []
+    },
+    "locked_job_classes": {
+      "blockers": [],
+      "pausable_hcli_jobs": []
+    },
+    "locked_machine": {
+      "contenders": [],
+      "max_rss_gib": 0.0,
+      "method": "enumerate",
+      "n_contenders": 0,
+      "no_name_filter": true,
+      "quiet": true,
+      "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+      "thresholds": {
+        "cpu_pct": 20.0,
+        "rss_gib": 2.0
+      },
+      "total_cpu_pct": 0
+    },
+    "machine": {
+      "contenders": [],
+      "max_rss_gib": 0.0,
+      "method": "enumerate",
+      "n_contenders": 0,
+      "no_name_filter": true,
+      "quiet": true,
+      "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+      "thresholds": {
+        "cpu_pct": 20.0,
+        "rss_gib": 2.0
+      },
+      "total_cpu_pct": 0
+    },
+    "paused_jobs": [],
+    "quiet": true,
+    "running_jobs": []
+  },
+  "once": false,
+  "pause_known_jobs": false,
+  "polls": [
+    {
+      "at": 1787807609.8521369,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 44.4,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 77.9,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+            "cpu_pct": 98.7,
+            "pid": 59666,
+            "rss_gib": 0.04
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+            "cpu_pct": 98.7,
+            "pid": 59677,
+            "rss_gib": 0.03
+          },
+          {
+            "comm": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+            "cpu_pct": 24.7,
+            "pid": 89684,
+            "rss_gib": 0.03
+          }
+        ],
+        "max_rss_gib": 0.21,
+        "method": "enumerate",
+        "n_contenders": 5,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 344.4
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787807669.8989928,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 42.0,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/151.0.7922.170/Helpers/Codex (Service).app/Contents/MacOS/Codex (Service)",
+            "cpu_pct": 22.8,
+            "pid": 17096,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 74.2,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+            "cpu_pct": 26.8,
+            "pid": 88075,
+            "rss_gib": 0.05
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+            "cpu_pct": 96.3,
+            "pid": 59666,
+            "rss_gib": 0.04
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+            "cpu_pct": 96.6,
+            "pid": 59677,
+            "rss_gib": 0.03
+          }
+        ],
+        "max_rss_gib": 0.21,
+        "method": "enumerate",
+        "n_contenders": 6,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 358.7
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787807729.958068,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 42.6,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/System/Library/ExtensionKit/Extensions/Storage.appex/Contents/MacOS/Storage",
+            "cpu_pct": 60.4,
+            "pid": 59654,
+            "rss_gib": 0.13
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 70.5,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+            "cpu_pct": 99.0,
+            "pid": 59666,
+            "rss_gib": 0.04
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+            "cpu_pct": 99.6,
+            "pid": 59677,
+            "rss_gib": 0.03
+          }
+        ],
+        "max_rss_gib": 0.21,
+        "method": "enumerate",
+        "n_contenders": 5,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 372.1
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787807790.009801,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/corespotlightd",
+            "cpu_pct": 244.1,
+            "pid": 605,
+            "rss_gib": 0.41
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 41.8,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/151.0.7922.170/Helpers/Codex (Service).app/Contents/MacOS/Codex (Service)",
+            "cpu_pct": 21.0,
+            "pid": 17096,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 76.5,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+            "cpu_pct": 80.5,
+            "pid": 59666,
+            "rss_gib": 0.04
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+            "cpu_pct": 69.5,
+            "pid": 59677,
+            "rss_gib": 0.03
+          }
+        ],
+        "max_rss_gib": 0.41,
+        "method": "enumerate",
+        "n_contenders": 6,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 533.4
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787807850.061235,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 40.7,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 75.8,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+            "cpu_pct": 98.8,
+            "pid": 59666,
+            "rss_gib": 0.04
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+            "cpu_pct": 98.4,
+            "pid": 59677,
+            "rss_gib": 0.03
+          }
+        ],
+        "max_rss_gib": 0.21,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 313.7
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787807910.115965,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 44.8,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 80.1,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+            "cpu_pct": 30.5,
+            "pid": 93344,
+            "rss_gib": 0.07
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+            "cpu_pct": 98.6,
+            "pid": 59666,
+            "rss_gib": 0.04
+          },
+          {
+            "comm": "/Users/scammermike/.local/share/uv/tools/mlx-lm/bin/python",
+            "cpu_pct": 25.9,
+            "pid": 94670,
+            "rss_gib": 0.04
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+            "cpu_pct": 190.3,
+            "pid": 59677,
+            "rss_gib": 0.03
+          }
+        ],
+        "max_rss_gib": 0.21,
+        "method": "enumerate",
+        "n_contenders": 6,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 470.2
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787807970.161812,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 42.8,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 77.2,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+            "cpu_pct": 97.7,
+            "pid": 59666,
+            "rss_gib": 0.04
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+            "cpu_pct": 98.4,
+            "pid": 59677,
+            "rss_gib": 0.03
+          }
+        ],
+        "max_rss_gib": 0.21,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 316.1
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787808030.211118,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/151.0.7922.170/Helpers/Codex (Renderer).app/Contents/MacOS/Codex (Renderer)",
+            "cpu_pct": 94.4,
+            "pid": 17152,
+            "rss_gib": 0.82
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 43.2,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 79.4,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+            "cpu_pct": 98.9,
+            "pid": 59666,
+            "rss_gib": 0.04
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+            "cpu_pct": 99.1,
+            "pid": 59677,
+            "rss_gib": 0.03
+          }
+        ],
+        "max_rss_gib": 0.82,
+        "method": "enumerate",
+        "n_contenders": 5,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 415.0
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787808090.2593012,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 42.3,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/151.0.7922.170/Helpers/Codex (Service).app/Contents/MacOS/Codex (Service)",
+            "cpu_pct": 20.7,
+            "pid": 17096,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 76.8,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+            "cpu_pct": 98.8,
+            "pid": 59666,
+            "rss_gib": 0.04
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+            "cpu_pct": 98.2,
+            "pid": 59677,
+            "rss_gib": 0.03
+          }
+        ],
+        "max_rss_gib": 0.21,
+        "method": "enumerate",
+        "n_contenders": 5,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 336.8
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787808150.321263,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 43.0,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 74.6,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+            "cpu_pct": 97.2,
+            "pid": 59666,
+            "rss_gib": 0.04
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+            "cpu_pct": 97.0,
+            "pid": 59677,
+            "rss_gib": 0.03
+          }
+        ],
+        "max_rss_gib": 0.21,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 311.8
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787808210.381547,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 43.9,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/151.0.7922.170/Helpers/Codex (Service).app/Contents/MacOS/Codex (Service)",
+            "cpu_pct": 22.1,
+            "pid": 17096,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/System/Library/ExtensionKit/Extensions/Storage.appex/Contents/MacOS/Storage",
+            "cpu_pct": 31.2,
+            "pid": 59654,
+            "rss_gib": 0.13
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 81.2,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+            "cpu_pct": 98.2,
+            "pid": 59666,
+            "rss_gib": 0.04
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+            "cpu_pct": 97.9,
+            "pid": 59677,
+            "rss_gib": 0.03
+          }
+        ],
+        "max_rss_gib": 0.21,
+        "method": "enumerate",
+        "n_contenders": 6,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 374.5
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787808270.438211,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 23.0,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 44.0,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+            "cpu_pct": 98.7,
+            "pid": 59666,
+            "rss_gib": 0.04
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+            "cpu_pct": 196.8,
+            "pid": 59677,
+            "rss_gib": 0.03
+          }
+        ],
+        "max_rss_gib": 0.21,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 362.5
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787808330.500294,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 26.9,
+            "pid": 1271,
+            "rss_gib": 1.01
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 40.2,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 48.3,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+            "cpu_pct": 98.9,
+            "pid": 59666,
+            "rss_gib": 0.04
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+            "cpu_pct": 185.7,
+            "pid": 59677,
+            "rss_gib": 0.03
+          }
+        ],
+        "max_rss_gib": 1.01,
+        "method": "enumerate",
+        "n_contenders": 5,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 400.0
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787808390.555849,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 37.3,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 47.2,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+            "cpu_pct": 98.2,
+            "pid": 59666,
+            "rss_gib": 0.04
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+            "cpu_pct": 98.6,
+            "pid": 59677,
+            "rss_gib": 0.03
+          }
+        ],
+        "max_rss_gib": 0.21,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 281.3
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787808450.620854,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 37.1,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 45.3,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+            "cpu_pct": 98.6,
+            "pid": 59666,
+            "rss_gib": 0.04
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+            "cpu_pct": 96.7,
+            "pid": 59677,
+            "rss_gib": 0.03
+          }
+        ],
+        "max_rss_gib": 0.21,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 277.7
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787808510.6666229,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 46.6,
+            "pid": 1271,
+            "rss_gib": 0.94
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 34.2,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 46.6,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+            "cpu_pct": 99.3,
+            "pid": 59666,
+            "rss_gib": 0.04
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+            "cpu_pct": 103.2,
+            "pid": 59677,
+            "rss_gib": 0.03
+          }
+        ],
+        "max_rss_gib": 0.94,
+        "method": "enumerate",
+        "n_contenders": 5,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 329.9
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787808570.7327528,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/151.0.7922.170/Helpers/Codex (Renderer).app/Contents/MacOS/Codex (Renderer)",
+            "cpu_pct": 108.9,
+            "pid": 17152,
+            "rss_gib": 0.77
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 38.7,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 42.3,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+            "cpu_pct": 99.2,
+            "pid": 59666,
+            "rss_gib": 0.04
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+            "cpu_pct": 100.0,
+            "pid": 59677,
+            "rss_gib": 0.03
+          }
+        ],
+        "max_rss_gib": 0.77,
+        "method": "enumerate",
+        "n_contenders": 5,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 389.1
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787808630.773103,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 39.4,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/System/Library/ExtensionKit/Extensions/Storage.appex/Contents/MacOS/Storage",
+            "cpu_pct": 27.0,
+            "pid": 59654,
+            "rss_gib": 0.13
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 47.5,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+            "cpu_pct": 99.2,
+            "pid": 59666,
+            "rss_gib": 0.04
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+            "cpu_pct": 98.2,
+            "pid": 59677,
+            "rss_gib": 0.03
+          }
+        ],
+        "max_rss_gib": 0.21,
+        "method": "enumerate",
+        "n_contenders": 5,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 311.3
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787808690.830504,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 40.3,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 50.7,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 0.21,
+        "method": "enumerate",
+        "n_contenders": 2,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 91.0
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787808750.883441,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 40.3,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/151.0.7922.170/Helpers/Codex (Service).app/Contents/MacOS/Codex (Service)",
+            "cpu_pct": 23.6,
+            "pid": 17096,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 64.0,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 0.21,
+        "method": "enumerate",
+        "n_contenders": 3,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 127.9
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787808810.922625,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/151.0.7922.170/Helpers/Codex (Renderer).app/Contents/MacOS/Codex (Renderer)",
+            "cpu_pct": 22.4,
+            "pid": 17152,
+            "rss_gib": 0.77
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 41.2,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/151.0.7922.170/Helpers/Codex (Service).app/Contents/MacOS/Codex (Service)",
+            "cpu_pct": 23.3,
+            "pid": 17096,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 70.2,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 0.77,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 157.1
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787808870.976453,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/151.0.7922.170/Helpers/Codex (Renderer).app/Contents/MacOS/Codex (Renderer)",
+            "cpu_pct": 58.5,
+            "pid": 17152,
+            "rss_gib": 0.77
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 41.4,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 75.3,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+            "cpu_pct": 22.6,
+            "pid": 9881,
+            "rss_gib": 0.05
+          }
+        ],
+        "max_rss_gib": 0.77,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 197.8
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787808931.02895,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 41.7,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 45.6,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 0.21,
+        "method": "enumerate",
+        "n_contenders": 2,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 87.3
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787808991.089183,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 42.2,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 57.2,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 0.21,
+        "method": "enumerate",
+        "n_contenders": 2,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 99.4
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787809051.135693,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 24.9,
+            "pid": 1271,
+            "rss_gib": 1.0
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 40.9,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 46.3,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 1.0,
+        "method": "enumerate",
+        "n_contenders": 3,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 112.1
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787809111.17632,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 25.2,
+            "pid": 1271,
+            "rss_gib": 1.01
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 38.6,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 45.2,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 1.01,
+        "method": "enumerate",
+        "n_contenders": 3,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 109.0
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787809171.2364428,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 27.2,
+            "pid": 1271,
+            "rss_gib": 0.95
+          },
+          {
+            "comm": "/Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/151.0.7922.170/Helpers/Codex (Renderer).app/Contents/MacOS/Codex (Renderer)",
+            "cpu_pct": 23.3,
+            "pid": 17152,
+            "rss_gib": 0.86
+          },
+          {
+            "comm": "/Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/151.0.7922.170/Helpers/Codex (Service).app/Contents/MacOS/Codex (Service)",
+            "cpu_pct": 20.1,
+            "pid": 17096,
+            "rss_gib": 0.22
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 42.1,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 62.1,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 0.95,
+        "method": "enumerate",
+        "n_contenders": 5,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 174.8
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787809231.2840772,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 23.1,
+            "pid": 1271,
+            "rss_gib": 0.95
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 42.8,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 77.7,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 0.95,
+        "method": "enumerate",
+        "n_contenders": 3,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 143.6
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787809291.3290398,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 24.1,
+            "pid": 1271,
+            "rss_gib": 0.95
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 41.9,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 67.4,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 0.95,
+        "method": "enumerate",
+        "n_contenders": 3,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 133.4
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787809351.3729222,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 26.6,
+            "pid": 1271,
+            "rss_gib": 0.95
+          },
+          {
+            "comm": "/Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/151.0.7922.170/Helpers/Codex (Service).app/Contents/MacOS/Codex (Service)",
+            "cpu_pct": 21.1,
+            "pid": 17096,
+            "rss_gib": 0.22
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 40.8,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 68.6,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+            "cpu_pct": 46.8,
+            "pid": 19163,
+            "rss_gib": 0.05
+          }
+        ],
+        "max_rss_gib": 0.95,
+        "method": "enumerate",
+        "n_contenders": 5,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 203.9
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787809411.4262989,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 29.7,
+            "pid": 1271,
+            "rss_gib": 0.98
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 43.6,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 45.2,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 0.98,
+        "method": "enumerate",
+        "n_contenders": 3,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 118.5
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787809471.482115,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 40.7,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 72.6,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+            "cpu_pct": 34.5,
+            "pid": 19163,
+            "rss_gib": 0.05
+          }
+        ],
+        "max_rss_gib": 0.21,
+        "method": "enumerate",
+        "n_contenders": 3,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 147.8
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787809531.533621,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 40.7,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 67.6,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 0.21,
+        "method": "enumerate",
+        "n_contenders": 2,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 108.3
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787809591.5799098,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 27.3,
+            "pid": 1271,
+            "rss_gib": 0.98
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 44.5,
+            "pid": 180,
+            "rss_gib": 0.21
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 47.7,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+            "cpu_pct": 47.1,
+            "pid": 19163,
+            "rss_gib": 0.05
+          }
+        ],
+        "max_rss_gib": 0.98,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 166.6
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787809651.6339478,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 21.9,
+            "pid": 1271,
+            "rss_gib": 1.01
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 39.8,
+            "pid": 180,
+            "rss_gib": 0.26
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 25.3,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 1.01,
+        "method": "enumerate",
+        "n_contenders": 3,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 87.0
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787809711.6960828,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 22.8,
+            "pid": 1271,
+            "rss_gib": 0.98
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 41.9,
+            "pid": 180,
+            "rss_gib": 0.26
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 27.8,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+            "cpu_pct": 25.7,
+            "pid": 24830,
+            "rss_gib": 0.05
+          }
+        ],
+        "max_rss_gib": 0.98,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 118.2
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787809771.7654889,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 21.9,
+            "pid": 1271,
+            "rss_gib": 0.98
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 42.5,
+            "pid": 180,
+            "rss_gib": 0.26
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 27.0,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 0.98,
+        "method": "enumerate",
+        "n_contenders": 3,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 91.4
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787809831.82959,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 23.8,
+            "pid": 1271,
+            "rss_gib": 0.98
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 41.6,
+            "pid": 180,
+            "rss_gib": 0.26
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 29.4,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 0.98,
+        "method": "enumerate",
+        "n_contenders": 3,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 94.8
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787809891.895305,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 24.8,
+            "pid": 1271,
+            "rss_gib": 0.98
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 40.9,
+            "pid": 180,
+            "rss_gib": 0.26
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 27.7,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 0.98,
+        "method": "enumerate",
+        "n_contenders": 3,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 93.4
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787809951.959872,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 52.9,
+            "pid": 1271,
+            "rss_gib": 0.98
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 39.3,
+            "pid": 180,
+            "rss_gib": 0.26
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 27.8,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 0.98,
+        "method": "enumerate",
+        "n_contenders": 3,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 120.0
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787810012.0291772,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 31.6,
+            "pid": 1271,
+            "rss_gib": 0.99
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 43.7,
+            "pid": 180,
+            "rss_gib": 0.27
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 33.3,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService",
+            "cpu_pct": 22.9,
+            "pid": 52616,
+            "rss_gib": 0.05
+          }
+        ],
+        "max_rss_gib": 0.99,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 131.5
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787810072.092416,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 29.7,
+            "pid": 1271,
+            "rss_gib": 0.99
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 40.8,
+            "pid": 180,
+            "rss_gib": 0.27
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 27.7,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 0.99,
+        "method": "enumerate",
+        "n_contenders": 3,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 98.2
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787810132.15576,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 28.3,
+            "pid": 1271,
+            "rss_gib": 1.0
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 41.5,
+            "pid": 180,
+            "rss_gib": 0.27
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 30.3,
+            "pid": 739,
+            "rss_gib": 0.12
+          },
+          {
+            "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService",
+            "cpu_pct": 20.1,
+            "pid": 52616,
+            "rss_gib": 0.05
+          }
+        ],
+        "max_rss_gib": 1.0,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 120.2
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787810192.2153118,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 27.2,
+            "pid": 1271,
+            "rss_gib": 1.04
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 38.4,
+            "pid": 180,
+            "rss_gib": 0.27
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 27.8,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 1.04,
+        "method": "enumerate",
+        "n_contenders": 3,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 93.4
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787810252.275247,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 24.0,
+            "pid": 1271,
+            "rss_gib": 0.99
+          },
+          {
+            "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+            "cpu_pct": 55.3,
+            "pid": 30987,
+            "rss_gib": 0.69
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 30.9,
+            "pid": 180,
+            "rss_gib": 0.27
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 24.3,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 0.99,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 134.5
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787810312.314042,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 25.3,
+            "pid": 1271,
+            "rss_gib": 1.17
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 42.1,
+            "pid": 180,
+            "rss_gib": 0.27
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 23.3,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 1.17,
+        "method": "enumerate",
+        "n_contenders": 3,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 90.7
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787810372.377983,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 24.5,
+            "pid": 1271,
+            "rss_gib": 0.77
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 41.0,
+            "pid": 180,
+            "rss_gib": 0.27
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 21.8,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 0.77,
+        "method": "enumerate",
+        "n_contenders": 3,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 87.3
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787810432.441942,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 32.7,
+            "pid": 1271,
+            "rss_gib": 0.8
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 45.3,
+            "pid": 180,
+            "rss_gib": 0.27
+          },
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper.app/Contents/MacOS/Google Chrome Helper",
+            "cpu_pct": 20.3,
+            "pid": 961,
+            "rss_gib": 0.13
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 24.3,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 0.8,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 122.6
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787810492.502851,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 26.7,
+            "pid": 1271,
+            "rss_gib": 0.81
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 41.0,
+            "pid": 180,
+            "rss_gib": 0.27
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 24.1,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 0.81,
+        "method": "enumerate",
+        "n_contenders": 3,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 91.8
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787810552.538265,
+      "eligible_without_pause": false,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "machine": {
+        "contenders": [
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer)",
+            "cpu_pct": 33.3,
+            "pid": 1271,
+            "rss_gib": 0.83
+          },
+          {
+            "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+            "cpu_pct": 46.4,
+            "pid": 180,
+            "rss_gib": 0.27
+          },
+          {
+            "comm": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/151.0.7922.174/Helpers/Google Chrome Helper.app/Contents/MacOS/Google Chrome Helper",
+            "cpu_pct": 21.7,
+            "pid": 961,
+            "rss_gib": 0.13
+          },
+          {
+            "comm": "/usr/libexec/avconferenced",
+            "cpu_pct": 27.8,
+            "pid": 739,
+            "rss_gib": 0.12
+          }
+        ],
+        "max_rss_gib": 0.83,
+        "method": "enumerate",
+        "n_contenders": 4,
+        "no_name_filter": true,
+        "quiet": false,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 129.2
+      },
+      "quiet": false,
+      "running_jobs": []
+    },
+    {
+      "at": 1787810612.6018581,
+      "decision": "DIAGNOSTIC_COMPLETED",
+      "eligible_without_pause": true,
+      "job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "locked_job_classes": {
+        "blockers": [],
+        "pausable_hcli_jobs": []
+      },
+      "locked_machine": {
+        "contenders": [],
+        "max_rss_gib": 0.0,
+        "method": "enumerate",
+        "n_contenders": 0,
+        "no_name_filter": true,
+        "quiet": true,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 0
+      },
+      "machine": {
+        "contenders": [],
+        "max_rss_gib": 0.0,
+        "method": "enumerate",
+        "n_contenders": 0,
+        "no_name_filter": true,
+        "quiet": true,
+        "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+        "thresholds": {
+          "cpu_pct": 20.0,
+          "rss_gib": 2.0
+        },
+        "total_cpu_pct": 0
+      },
+      "paused_jobs": [],
+      "quiet": true,
+      "running_jobs": []
+    }
+  ],
+  "profile_path": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+  "protected_result_classes": [
+    "DIAGNOSTIC_CONTAMINATED"
+  ],
+  "protected_result_is_not_promotion": true,
+  "qualification": false,
+  "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN_PROTECTED_BENCH_READY.json",
+  "repo_root": "/Users/scammermike/Downloads/hawking",
+  "resident_binary": "/Users/scammermike/Downloads/hawking/.hcli/instrumented/ascension_qwen38_resident",
+  "result_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN27_MLP_PROTECTED_AB.json",
+  "runs": [
+    {
+      "NOT_FOR_PROMOTION": true,
+      "benchmark_class": "DIAGNOSTIC_CONTAMINATED",
+      "experiment_verdict": "ACCEPT",
+      "qualification": false,
+      "result_receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN27_MLP_PROTECTED_AB.json",
+      "status": "PASSED"
+    }
+  ],
+  "schema": "hcli.agentos.qwen_protected_benchmark_watcher.v1",
+  "started_at": 1787807609.8521001,
+  "status": "COMPLETED"
+}

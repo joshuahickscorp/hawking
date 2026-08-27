@@ -1,0 +1,217 @@
+{
+  "auth": {
+    "credential_values_recorded": false,
+    "github_auth_available": true,
+    "github_authenticated": false,
+    "huggingface_authenticated": true
+  },
+  "calls": [
+    {
+      "count": 5,
+      "error": null,
+      "failure_class": null,
+      "mutation": "research",
+      "ok": true,
+      "provider": "bing-html",
+      "retrieved_at": 1787788139.120266,
+      "source_url": "https://www.bing.com/search?q=Cloudflare+Agents+SDK+official+documentation",
+      "sources": [
+        {
+          "title": "cloudflare.comhttps://www.cloudflare.comCloudflare: Build for the agent era",
+          "url": "https://www.bing.com/ck/a?!&&p=bd44d17b63a82b82de735b6020940098bbd6b7682d9a0478871a78b236496fd0JmltdHM9MTc4NzcwMjQwMA&ptn=3&ver=2&hsh=4&fclid=3f15c1d3-1b91-6567-1602-d6121a8a64f2&u=a1aHR0cHM6Ly93d3cuY2xvdWRmbGFyZS5jb20v&ntb=1"
+        },
+        {
+          "title": "cloudflare.comhttps://dash.cloudflare.com \u203a loginCloudflare Dashboard | Manage Your Account",
+          "url": "https://www.bing.com/ck/a?!&&p=7fafad6c8dcd600a324d94e5bbb8128e8c3124df7043c95ca770406ab8a03c88JmltdHM9MTc4NzcwMjQwMA&ptn=3&ver=2&hsh=4&fclid=3f15c1d3-1b91-6567-1602-d6121a8a64f2&u=a1aHR0cHM6Ly9kYXNoLmNsb3VkZmxhcmUuY29tL2xvZ2lu&ntb=1"
+        },
+        {
+          "title": "cloudflare.comhttps://www.cloudflare.com \u203a en-caConnect, protect, and build everywhere | Cloudflare",
+          "url": "https://www.bing.com/ck/a?!&&p=63d76c01ae121a4d2a6620a3281034c947365136378bd6dd92649716fddd5eafJmltdHM9MTc4NzcwMjQwMA&ptn=3&ver=2&hsh=4&fclid=3f15c1d3-1b91-6567-1602-d6121a8a64f2&u=a1aHR0cHM6Ly93d3cuY2xvdWRmbGFyZS5jb20vZW4tY2Ev&ntb=1"
+        },
+        {
+          "title": "wikipedia.orghttps://en.wikipedia.org \u203a wiki \u203a CloudflareCloudflare - Wikipedia",
+          "url": "https://www.bing.com/ck/a?!&&p=4dc07fb48e9d1e6b00d33b0c98dec05ef9175a5898b2b7244d36fd3382c99386JmltdHM9MTc4NzcwMjQwMA&ptn=3&ver=2&hsh=4&fclid=3f15c1d3-1b91-6567-1602-d6121a8a64f2&u=a1aHR0cHM6Ly9lbi53aWtpcGVkaWEub3JnL3dpa2kvQ2xvdWRmbGFyZQ&ntb=1"
+        },
+        {
+          "title": "cloudflare.comhttps://developers.cloudflare.com \u203a cloudflare-one \u203a team-and-resources \u203a ...Download Cloudflare One Client stable releases",
+          "url": "https://www.bing.com/ck/a?!&&p=fc54934c0d64aa46622c81d1ec96f002a53cb93e14b86fda804e87113699a294JmltdHM9MTc4NzcwMjQwMA&ptn=3&ver=2&hsh=4&fclid=3f15c1d3-1b91-6567-1602-d6121a8a64f2&u=a1aHR0cHM6Ly9kZXZlbG9wZXJzLmNsb3VkZmxhcmUuY29tL2Nsb3VkZmxhcmUtb25lL3RlYW0tYW5kLXJlc291cmNlcy9kZXZpY2VzL2Nsb3VkZmxhcmUtb25lLWNsaWVudC9kb3dubG9hZC8&ntb=1"
+        }
+      ],
+      "tool": "web.search"
+    },
+    {
+      "bytes_read": 8192,
+      "error": null,
+      "exact_uri": "https://www.rfc-editor.org/rfc/rfc9110.txt",
+      "failure_class": null,
+      "mutation": "research",
+      "ok": true,
+      "retrieved_at": 1787788139.3618891,
+      "sha256": "79ce6172cdc57e404cc4b14b65b03b9be3553e182da717ea9349d7e867d97a90",
+      "source_url": "https://www.rfc-editor.org/rfc/rfc9110.txt",
+      "status": 200,
+      "tool": "web.fetch",
+      "truncated": true
+    },
+    {
+      "auth_available": true,
+      "authenticated": false,
+      "count": 2,
+      "credential_values_recorded": false,
+      "error": null,
+      "failure_class": null,
+      "kind": "repositories",
+      "mutation": "research",
+      "ok": true,
+      "retrieved_at": 1787788139.525737,
+      "source_url": "https://api.github.com/search/repositories?q=org%3Acloudflare+agents+sdk&per_page=5",
+      "tool": "github.search",
+      "total_count": 2
+    },
+    {
+      "bytes_read": 6314,
+      "error": null,
+      "exact_uri": "https://api.github.com/repos/cloudflare/agents",
+      "failure_class": null,
+      "mutation": "research",
+      "ok": true,
+      "repository": {},
+      "retrieved_at": 1787788139.8416052,
+      "sha256": "06752c1abca8c9fccbce73f9e1c127bd2d77420e633faa3eaf5815ab3ee406b4",
+      "source_url": "https://api.github.com/repos/cloudflare/agents",
+      "status": 200,
+      "tool": "github.fetch",
+      "truncated": false
+    },
+    {
+      "authenticated": true,
+      "credential_values_recorded": false,
+      "error": null,
+      "failure_class": null,
+      "mutation": "research",
+      "ok": true,
+      "repo": "Qwen/Qwen3.8-Flash-Next",
+      "requested_revision": "main",
+      "resolved_revision": "f5d08274bafd880402bd16f5e3e6c514136ec06c",
+      "retrieved_at": 1787788140.058917,
+      "source_url": "https://huggingface.co/api/models/Qwen/Qwen3.8-Flash-Next/revision/main?blobs=true",
+      "tool": "huggingface.resolve"
+    },
+    {
+      "authenticated": true,
+      "bytes_read": 4745,
+      "credential_values_recorded": false,
+      "error": null,
+      "failure_class": null,
+      "metadata_keys": [],
+      "mutation": "research",
+      "ok": true,
+      "path": "config.json",
+      "repo": "Qwen/Qwen3.8-Flash-Next",
+      "requested_revision": "f5d08274bafd880402bd16f5e3e6c514136ec06c",
+      "retrieved_at": 1787788140.14847,
+      "sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b",
+      "source_url": "https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.8-Flash-Next/f5d08274bafd880402bd16f5e3e6c514136ec06c/config.json?%2FQwen%2FQwen3.8-Flash-Next%2Fresolve%2Ff5d08274bafd880402bd16f5e3e6c514136ec06c%2Fconfig.json=&etag=%22491017e9980e44ef01afa2c4782f5c7e169b9b26%22",
+      "tool": "huggingface.fetch_file",
+      "truncated": false
+    },
+    {
+      "atomic_publish": true,
+      "authenticated": false,
+      "bytes": 4745,
+      "credential_values_recorded": false,
+      "destination": "/Users/scammermike/Downloads/hawking/hcli-hf-metadata-sht4vm_5/config.json",
+      "download_performed": true,
+      "error": null,
+      "failure_class": null,
+      "mutation": "costly",
+      "ok": true,
+      "repo": "Qwen/Qwen3.8-Flash-Next",
+      "requested_revision": "f5d08274bafd880402bd16f5e3e6c514136ec06c",
+      "retrieved_at": 1787788140.224535,
+      "sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b",
+      "source_url": "https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.8-Flash-Next/f5d08274bafd880402bd16f5e3e6c514136ec06c/config.json?%2FQwen%2FQwen3.8-Flash-Next%2Fresolve%2Ff5d08274bafd880402bd16f5e3e6c514136ec06c%2Fconfig.json=&etag=%22491017e9980e44ef01afa2c4782f5c7e169b9b26%22",
+      "tool": "huggingface.download"
+    }
+  ],
+  "checks": {
+    "github_repository": true,
+    "github_search": true,
+    "huggingface_download": true,
+    "huggingface_file": true,
+    "huggingface_resolve": true,
+    "official_fetch": true,
+    "web_search": true
+  },
+  "claim_boundary": "This gate proves bounded public research and metadata acquisition through typed tools; it does not authorize external writes or model-weight acquisition.",
+  "credentials_secret_free": true,
+  "download_destination": "/Users/scammermike/Downloads/hawking/hcli-hf-metadata-sht4vm_5/config.json",
+  "finished_at": 1787788140.308616,
+  "next_action": "feed source-backed hypotheses to Doctor/VMCP and validate them with protected local measurements",
+  "qualification": "RESEARCH_OPERATIONAL",
+  "receipt_path": "/Users/scammermike/Downloads/hawking/.hcli/receipts/research-gate.json",
+  "repo_root": "/Users/scammermike/Downloads/hawking",
+  "resolved_revision": "f5d08274bafd880402bd16f5e3e6c514136ec06c",
+  "schema": "hcli.agentos.research_gate.v1",
+  "sources": [
+    {
+      "confidence": "high",
+      "exact_uri": "https://www.bing.com/search?q=Cloudflare+Agents+SDK+official+documentation",
+      "retrieved_at": 1787788139.120266,
+      "sha256": null,
+      "source": "https://www.bing.com/search?q=Cloudflare+Agents+SDK+official+documentation",
+      "tool": "web.search"
+    },
+    {
+      "confidence": "high",
+      "exact_uri": "https://www.rfc-editor.org/rfc/rfc9110.txt",
+      "retrieved_at": 1787788139.3618891,
+      "sha256": "79ce6172cdc57e404cc4b14b65b03b9be3553e182da717ea9349d7e867d97a90",
+      "source": "https://www.rfc-editor.org/rfc/rfc9110.txt",
+      "tool": "web.fetch"
+    },
+    {
+      "confidence": "high",
+      "exact_uri": "https://api.github.com/search/repositories?q=org%3Acloudflare+agents+sdk&per_page=5",
+      "retrieved_at": 1787788139.525737,
+      "sha256": null,
+      "source": "https://api.github.com/search/repositories?q=org%3Acloudflare+agents+sdk&per_page=5",
+      "tool": "github.search"
+    },
+    {
+      "confidence": "high",
+      "exact_uri": "https://api.github.com/repos/cloudflare/agents",
+      "retrieved_at": 1787788139.8416052,
+      "sha256": "06752c1abca8c9fccbce73f9e1c127bd2d77420e633faa3eaf5815ab3ee406b4",
+      "source": "https://api.github.com/repos/cloudflare/agents",
+      "tool": "github.fetch"
+    },
+    {
+      "confidence": "high",
+      "exact_uri": "https://huggingface.co/api/models/Qwen/Qwen3.8-Flash-Next/revision/main?blobs=true",
+      "retrieved_at": 1787788140.058917,
+      "sha256": null,
+      "source": "https://huggingface.co/api/models/Qwen/Qwen3.8-Flash-Next/revision/main?blobs=true",
+      "tool": "huggingface.resolve"
+    },
+    {
+      "confidence": "high",
+      "exact_uri": "https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.8-Flash-Next/f5d08274bafd880402bd16f5e3e6c514136ec06c/config.json?%2FQwen%2FQwen3.8-Flash-Next%2Fresolve%2Ff5d08274bafd880402bd16f5e3e6c514136ec06c%2Fconfig.json=&etag=%22491017e9980e44ef01afa2c4782f5c7e169b9b26%22",
+      "retrieved_at": 1787788140.14847,
+      "sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b",
+      "source": "https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.8-Flash-Next/f5d08274bafd880402bd16f5e3e6c514136ec06c/config.json?%2FQwen%2FQwen3.8-Flash-Next%2Fresolve%2Ff5d08274bafd880402bd16f5e3e6c514136ec06c%2Fconfig.json=&etag=%22491017e9980e44ef01afa2c4782f5c7e169b9b26%22",
+      "tool": "huggingface.fetch_file"
+    },
+    {
+      "confidence": "high",
+      "exact_uri": "https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.8-Flash-Next/f5d08274bafd880402bd16f5e3e6c514136ec06c/config.json?%2FQwen%2FQwen3.8-Flash-Next%2Fresolve%2Ff5d08274bafd880402bd16f5e3e6c514136ec06c%2Fconfig.json=&etag=%22491017e9980e44ef01afa2c4782f5c7e169b9b26%22",
+      "retrieved_at": 1787788140.224535,
+      "sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b",
+      "source": "https://huggingface.co/api/resolve-cache/models/Qwen/Qwen3.8-Flash-Next/f5d08274bafd880402bd16f5e3e6c514136ec06c/config.json?%2FQwen%2FQwen3.8-Flash-Next%2Fresolve%2Ff5d08274bafd880402bd16f5e3e6c514136ec06c%2Fconfig.json=&etag=%22491017e9980e44ef01afa2c4782f5c7e169b9b26%22",
+      "tool": "huggingface.download"
+    }
+  ],
+  "started_at": 1787788138.860297,
+  "status": "PASSED",
+  "workspace": "/Users/scammermike/Downloads/hawking"
+}

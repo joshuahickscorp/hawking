@@ -92,7 +92,11 @@ HCLI_RESULT_SCHEMA: Dict[str, Any] = {
     "additionalProperties": False,
 }
 
-_SYSTEM_PROMPT = """You are the native HCLI local engineering worker.
+_SYSTEM_PROMPT = """You are the HCLI engineering worker.
+
+You may be backed by a local resident, a local server, or a remote provider;
+the provider identity is recorded outside this prompt.  Treat deterministic
+evidence and verifier results as authority regardless of which model answers.
 
 MODELS THINK.
 TOOLS KNOW.
@@ -428,6 +432,39 @@ class Engine:
     # -----------------------------------------------------------------
     # Primary execution
     # -----------------------------------------------------------------
+
+    def complete_text(
+        self,
+        prompt: str,
+        evidence: Optional[List[Dict[str, Any]]] = None,
+        compiled: Any = None,
+    ) -> str:
+        """Run provider-neutral plain-text cognition.
+
+        This is a diagnostic and interoperability surface, not a replacement
+        for the structured mutation/receipt path.  It deliberately disables
+        the HCLI result schema so a provider's raw text can be qualified
+        independently before structured mission execution relies on it.
+        Empty output is an explicit provider failure, never ``text=""``.
+        """
+        prompt = (prompt or "").strip()
+        if not prompt:
+            return ""
+        self._model_calls = []
+        self._last_call_plan = {}
+        self._reset_evidence_efficiency()
+        evidence = list(evidence or ())
+        value = self._call_model(
+            prompt,
+            evidence=list(evidence),
+            compiled=compiled,
+            enable_thinking=False,
+            response_schema=False,
+            plain_text=True,
+        )
+        if not isinstance(value, str):
+            raise EngineError("plain-text cognition returned a non-text result")
+        return value
 
     def execute(
         self,
@@ -1331,7 +1368,16 @@ class Engine:
                 "RuntimePool has no admitted runtimes"
             )
 
-        runtime = runtimes[0]
+        runtime = next(
+            (
+                candidate
+                for candidate in runtimes
+                if getattr(candidate, "active", True)
+            ),
+            runtimes[0],
+        )
+
+        backend = getattr(runtime, "backend", None)
 
         port = getattr(
             runtime,
@@ -1339,10 +1385,20 @@ class Engine:
             None,
         )
 
-        if port is None:
-            raise EngineError(
-                "Runtime has no port"
-            )
+        # HTTP servers expose a port, but a native resident (or another
+        # in-process/IPC backend) does not.  The Engine only needs a stable
+        # provenance label here; actual inference is always delegated to the
+        # RuntimePool below.  Keep the endpoint generic so adding a backend
+        # does not require teaching AgentOS its transport.
+        backend_endpoint = None
+        endpoint_fn = getattr(backend, "endpoint", None)
+        if callable(endpoint_fn):
+            try:
+                backend_endpoint = endpoint_fn()
+            except Exception:
+                backend_endpoint = None
+        if port is None and not backend_endpoint:
+            backend_endpoint = "RuntimePool.complete"
 
         provenance = {
             "index": getattr(
@@ -1356,12 +1412,21 @@ class Engine:
                 None,
             ),
             "port": port,
+            "backend": getattr(backend, "__class__", type(None)).__name__
+            if backend is not None
+            else None,
+            "endpoint": backend_endpoint,
         }
 
-        return (
-            f"http://127.0.0.1:{port}/v1/chat/completions",
-            provenance,
+        endpoint = (
+            str(backend_endpoint)
+            if backend_endpoint and not str(backend_endpoint).startswith(("http://", "https://"))
+            else f"http://127.0.0.1:{port}/v1/chat/completions"
+            if port is not None
+            else str(backend_endpoint)
         )
+        provenance["endpoint"] = endpoint
+        return endpoint, provenance
 
     def _resolve_pool(self) -> Any:
         if self.runtime_provider is None:
@@ -1400,12 +1465,33 @@ class Engine:
         for runtime in getattr(pool, "runtimes", []) or []:
             if not getattr(runtime, "active", True):
                 continue
+            backend = getattr(runtime, "backend", None)
+            endpoint = None
+            endpoint_fn = getattr(backend, "endpoint", None)
+            if callable(endpoint_fn):
+                try:
+                    endpoint = endpoint_fn()
+                except Exception:
+                    endpoint = None
+            port = getattr(runtime, "port", None)
+            if endpoint is None and port is not None:
+                endpoint = f"http://127.0.0.1:{port}/v1/chat/completions"
+            if endpoint is None:
+                endpoint = "RuntimePool.complete"
             return {
                 "index": getattr(runtime, "index", 0),
                 "pid": getattr(runtime, "pid", None),
-                "port": getattr(runtime, "port", None),
+                "port": port,
+                "backend": type(backend).__name__ if backend is not None else None,
+                "endpoint": endpoint,
             }
-        return {"index": None, "pid": None, "port": None}
+        return {
+            "index": None,
+            "pid": None,
+            "port": None,
+            "backend": None,
+            "endpoint": "RuntimePool.complete",
+        }
 
     def _provenance_for_index(
         self,
@@ -1419,15 +1505,33 @@ class Engine:
         provenance["index"] = runtime_index
         for runtime in getattr(pool, "runtimes", []) or []:
             if getattr(runtime, "index", None) == runtime_index:
+                backend = getattr(runtime, "backend", None)
                 provenance["pid"] = getattr(runtime, "pid", None)
-                provenance["port"] = getattr(runtime, "port", None)
+                port = getattr(runtime, "port", None)
+                provenance["port"] = port
+                provenance["backend"] = (
+                    type(backend).__name__ if backend is not None else None
+                )
+                endpoint_fn = getattr(backend, "endpoint", None)
+                endpoint = None
+                if callable(endpoint_fn):
+                    try:
+                        endpoint = endpoint_fn()
+                    except Exception:
+                        endpoint = None
+                if endpoint is None and port is not None:
+                    endpoint = f"http://127.0.0.1:{port}/v1/chat/completions"
+                provenance["endpoint"] = endpoint or "RuntimePool.complete"
                 break
         return provenance
 
     def _endpoint_from_provenance(self, provenance: Dict[str, Any]) -> str:
+        endpoint = provenance.get("endpoint")
+        if endpoint and not str(endpoint).startswith(("http://", "https://")):
+            return str(endpoint)
         port = provenance.get("port")
         if port is None:
-            return "RuntimePool.complete"
+            return str(provenance.get("endpoint") or "RuntimePool.complete")
         return f"http://127.0.0.1:{port}/v1/chat/completions"
 
     def _cached_tokens_from(self, data: Any) -> Optional[int]:
@@ -1559,6 +1663,43 @@ class Engine:
         choice = choices[0] if isinstance(choices[0], dict) else {}
         message = choice.get("message")
         return message if isinstance(message, dict) else {}
+
+    @staticmethod
+    def _plain_text_from_value(value: Any) -> Optional[str]:
+        """Extract the provider text without guessing at a structured result."""
+        if isinstance(value, str):
+            return value
+        text = getattr(value, "text", None)
+        if isinstance(text, str):
+            return text
+        raw = getattr(value, "raw", value)
+        if isinstance(raw, dict):
+            choices = raw.get("choices")
+            if isinstance(choices, list) and choices:
+                choice = choices[0] if isinstance(choices[0], dict) else {}
+                message = choice.get("message")
+                if isinstance(message, dict) and isinstance(message.get("content"), str):
+                    return message["content"]
+                if isinstance(choice.get("text"), str):
+                    return choice["text"]
+            if isinstance(raw.get("content"), str):
+                return raw["content"]
+        return None
+
+    def _require_plain_text(self, value: Any, *, endpoint: str) -> str:
+        """Return non-empty provider text or preserve an explicit failure."""
+        text = self._plain_text_from_value(value)
+        if isinstance(text, str) and text.strip():
+            return text
+        finish_reason = getattr(value, "finish_reason", None)
+        completion_tokens = getattr(value, "completion_tokens", None)
+        prompt_tokens = getattr(value, "prompt_tokens", None)
+        raise EngineError(
+            "provider returned empty text "
+            f"(finish_reason={finish_reason!r}, "
+            f"completion_tokens={completion_tokens!r}, "
+            f"prompt_tokens={prompt_tokens!r}, endpoint={endpoint!r})"
+        )
 
     def _invoke_completion(
         self,
@@ -2046,7 +2187,8 @@ class Engine:
         *,
         enable_thinking: Optional[bool] = None,
         response_schema: Optional[bool] = None,
-    ) -> Dict[str, Any]:
+        plain_text: bool = False,
+    ) -> Any:
         if self.model_client is not None:
             call = getattr(
                 self.model_client,
@@ -2056,14 +2198,72 @@ class Engine:
 
             if callable(call):
                 self._assert_evidence_fresh(evidence)
-                return call(
+                value = call(
                     prompt=prompt,
                     evidence=evidence or [],
                     compiled=compiled,
                 )
+                if plain_text:
+                    return self._require_plain_text(value, endpoint="model-client")
+                return value
+
+            # A provider is not required to expose the legacy ``complete``
+            # convenience method.  The model-neutral contract is
+            # ``generate(GenerationRequest)``; adapt its normalized response
+            # into HCLI's existing structured result boundary here.
+            generate = getattr(self.model_client, "generate", None)
+            if callable(generate):
+                from .providers import GenerationRequest
+
+                self._assert_evidence_fresh(evidence)
+                payload = self._build_model_payload(
+                    prompt,
+                    evidence,
+                    compiled,
+                    enable_thinking=enable_thinking,
+                    response_schema=response_schema,
+                )
+                started = time.perf_counter()
+                response = generate(
+                    GenerationRequest.from_mapping(payload),
+                    timeout=float(os.environ.get("HCLI_MODEL_TIMEOUT", "1800")),
+                )
+                wall = time.perf_counter() - started
+                text = getattr(response, "text", None)
+                raw = getattr(response, "raw", response)
+                if isinstance(raw, dict):
+                    structured = raw.get("_structured")
+                    if isinstance(structured, dict):
+                        return structured
+                    choices = raw.get("choices")
+                    if isinstance(choices, list) and choices:
+                        choice = choices[0] if isinstance(choices[0], dict) else {}
+                        message = choice.get("message")
+                        if isinstance(message, dict):
+                            text = message.get("content", text)
+                        elif choice.get("text") is not None:
+                            text = choice.get("text")
+                    if text is None and isinstance(raw.get("content"), str):
+                        text = raw["content"]
+                usage = getattr(response, "usage", None)
+                self._record_model_call(
+                    endpoint=f"provider:{type(self.model_client).__name__}",
+                    finish_reason=getattr(response, "finish_reason", None),
+                    prompt_tokens=(usage or {}).get("prompt_tokens") if isinstance(usage, dict) else None,
+                    completion_tokens=(usage or {}).get("completion_tokens") if isinstance(usage, dict) else None,
+                    wall_s=wall,
+                    max_tokens=payload.get("max_tokens"),
+                    max_tokens_source="provider-contract",
+                )
+                if plain_text:
+                    return self._require_plain_text(
+                        response,
+                        endpoint=f"provider:{type(self.model_client).__name__}",
+                    )
+                return self._extract_json_object(text)
 
         backend = self._active_backend()
-        use_schema = self._resolve_response_schema(response_schema)
+        use_schema = False if plain_text else self._resolve_response_schema(response_schema)
         supports_rf = backend_supports_response_format(backend)
         degrade = bool(use_schema and not supports_rf)
 
@@ -2185,6 +2385,17 @@ class Engine:
                 "role": "primary",
             },
         )
+
+        if plain_text:
+            if not thinking_on and self._thinking_leaked(
+                result.text,
+                self._message_from_completion(result),
+            ):
+                raise EngineError(
+                    "provider ignored chat_template_kwargs.enable_thinking=false "
+                    "for plain-text cognition"
+                )
+            return self._require_plain_text(result, endpoint=endpoint)
 
         return self._parse_structured_reply(result, plan, thinking_on)
 
@@ -3435,6 +3646,25 @@ class Engine:
             "runtimes",
             [],
         ):
+            backend = getattr(runtime, "backend", None)
+            identity = {}
+            if backend is not None:
+                identity_fn = getattr(backend, "identity", None)
+                if callable(identity_fn):
+                    try:
+                        value = identity_fn()
+                        if isinstance(value, dict):
+                            identity = value
+                    except Exception as exc:  # noqa: BLE001 - receipt remains useful
+                        identity = {"identity_error": f"{type(exc).__name__}: {exc}"}
+            profile = None
+            if backend is not None:
+                try:
+                    from .providers import profile_from_backend
+
+                    profile = profile_from_backend(backend).to_dict()
+                except Exception:
+                    profile = None
             result.append(
                 {
                     "index": getattr(
@@ -3457,6 +3687,10 @@ class Engine:
                         "active",
                         None,
                     ),
+                    "provider": identity.get("provider") or identity.get("runtime"),
+                    "model_identity": identity.get("model_identity"),
+                    "identity": identity,
+                    "profile": profile,
                 }
             )
 
@@ -3495,6 +3729,18 @@ class Engine:
             f"{goal_id}.json"
         )
 
+        from .result_envelope import build_result_envelope
+
+        result_envelope = build_result_envelope(
+            goal=goal,
+            result=result,
+            evidence=evidence,
+            validation=validation,
+            runtime_provenance=self._runtime_provenance(),
+            model_calls=self._model_calls,
+            receipt_path=path,
+        )
+
         receipt = {
             "goal_id": goal_id,
             "goal": goal,
@@ -3520,6 +3766,7 @@ class Engine:
                 [],
             ),
             "validation": validation,
+            "result_envelope": result_envelope,
             "rolled_back": bool(
                 rolled_back
             ),

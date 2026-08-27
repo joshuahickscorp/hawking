@@ -1,0 +1,64 @@
+{
+  "resident_identity": "sealed-3.14",
+  "family": "qwen3.8",
+  "runtime": "hawking-native",
+  "protocol": "hawking.qwen38.resident.v1",
+  "require_fusion_env": true,
+  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+  "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+  "resident_binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+  "mode": "auto",
+  "max_seq_len": 8192,
+  "generation": {
+    "max_new_tokens": 2048,
+    "temperature": 0.0,
+    "top_k": 1,
+    "top_p": 1.0,
+    "do_sample": false,
+    "enable_thinking": false
+  },
+  "fusion_env": {
+    "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+    "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+    "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+    "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+  },
+  "executable_profile": "release-fast",
+  "physical_ebpw": 3.1393,
+  "qualification": "capability 30/43 historical sealed contract",
+  "current_runtime": {
+    "complete_tps_current_measured": 24.4086,
+    "complete_tps_historical_qualified": 34.0,
+    "fallbacks": 0
+  },
+  "profile_schema": "hcli.provider.profile.v1",
+  "provider": "native",
+  "model_id": "qwen3.8-27b-sealed-3.14",
+  "compiler": {
+    "language": "rust",
+    "profile": "release-fast",
+    "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+  },
+  "representation": {
+    "kind": "native-packed",
+    "physical_ebpw": 3.1393,
+    "weights_loaded_once": true
+  },
+  "prompt_contract": {
+    "renderer": "qwen-chat-template-or-closed-think-fallback",
+    "fallback_template": "qwen_closed_think",
+    "token_count_authority": "native-resident"
+  },
+  "limits": {
+    "context": 8192,
+    "max_new_tokens": 2048
+  },
+  "fallbacks": [
+    "transformers tokenizer fallback when unavailable"
+  ],
+  "receipts": [
+    "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+    "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+  ]
+}

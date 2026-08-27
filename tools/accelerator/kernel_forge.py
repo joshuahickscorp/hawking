@@ -310,8 +310,16 @@ WIDTH_PRIOR = (32, 64, 128, 256, 512, 1024)
 # p = 0.05 in one process and 0.65 in another; the factorial's 0.084 marginal was a
 # sample from that distribution, and quoting it as an expectation was wrong.
 # See ACCELERATOR_BARRIER_WINDOW.json.
-CONTROL_LOUDNESS_PRIOR = {"no_upstream_barrier": 1.000, "upstream_barrier": None}
+# BOTH ENTRIES ARE None, AND THE LOUD ONE ONLY BECAME None AFTER IT WAS REFUTED.
+# ACCELERATOR_BARRIER_WINDOW retracted the QUIET number and kept the loud one as
+# "a reliable prediction, since with no upstream barrier EVERY CELL EVER MEASURED
+# fires 1.00". ACCELERATOR_THE_REDUCTION_TAIL_IS_FREE measured a REAL SHIPPED
+# kernel with no upstream barrier at p = 0.067 over 60 runs (intact wrong 0 of 60)
+# and at 8 of 8 in another process on the same code. The asymmetry does not hold:
+# the loud case is as unstable as the quiet one, and a number here gets cited.
+CONTROL_LOUDNESS_PRIOR = {"no_upstream_barrier": None, "upstream_barrier": None}
 QUIET_OBSERVED_RANGE = (0.01, 0.90)
+LOUD_OBSERVED_RANGE = (0.067, 1.000)
 _BARRIER_TOKENS = ("threadgroup_barrier", "simdgroup_barrier")
 
 
@@ -348,10 +356,11 @@ def barrier_control_prior(source: str, strip_index: int = 0) -> dict[str, Any]:
     return {
         "barriers_in_source": len(hits), "stripped_at": strip_index,
         "has_upstream_barrier": upstream, "statements_since_upstream": work,
-        # None for the quiet case ON PURPOSE: there is no expectation to give, and a
-        # number here would be cited as one. The loud case is a real prediction.
-        "expected_p_fired": None if upstream else 1.000,
-        "expected_p_fired_range": QUIET_OBSERVED_RANGE if upstream else (1.0, 1.0),
+        # None IN BOTH CASES ON PURPOSE: there is no expectation to give, and a
+        # number here would be cited as one. The loud case carried 1.000 until a
+        # real shipped kernel measured 0.067.
+        "expected_p_fired": None,
+        "expected_p_fired_range": QUIET_OBSERVED_RANGE if upstream else LOUD_OBSERVED_RANGE,
         "verdict": "QUIET_CONTROL_WEAK_EVIDENCE" if upstream else "LOUD_CONTROL",
         # Measured: work between the two barriers widens the race window and drives
         # p back to 1.00 -- at width 1024 that takes ~16 fused multiply-adds, at 256
@@ -359,8 +368,19 @@ def barrier_control_prior(source: str, strip_index: int = 0) -> dict[str, Any]:
         # is reported rather than folded into a single verdict because the amount of
         # work that makes a quiet control loud DEPENDS ON THE WIDTH.
         "quiet_only_while_the_gap_is_small": upstream,
+        # THE MECHANISM THIS FUNCTION CANNOT SEE, and the one that refuted the loud
+        # prior: a window is also closed when THE READING THREAD IS THE SLOWEST ONE.
+        # In gravity_native's serial reduction tail the lanes divide GROUPS round
+        # robin, so lane 0 -- the lane that reads every slot -- is in the group doing
+        # the MOST work and arrives at its read after the lanes it reads from have
+        # long since written. That is a property of the WORK DISTRIBUTION ACROSS
+        # LANES, not of the barrier structure, and this function reads only the
+        # source's barriers. It is reported rather than guessed at.
+        "blind_to_lane_work_imbalance": True,
         "basis": "ACCELERATOR_BARRIER_WINDOW.json (work sweep + placement control); "
-                 "ACCELERATOR_BARRIER_CONTROL_MECHANISM.json (factorial, tg=64)",
+                 "ACCELERATOR_BARRIER_CONTROL_MECHANISM.json (factorial, tg=64); "
+                 "ACCELERATOR_THE_REDUCTION_TAIL_IS_FREE.json (loud prior refuted "
+                 "on a shipped kernel at p=0.067 of 60)",
     }
 
 

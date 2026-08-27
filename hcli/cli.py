@@ -75,7 +75,17 @@ def parse_haider_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
                         help="Immediate mission prompt (when N is supplied positionally)")
     parser.add_argument("--task", type=str, default=None, help="(legacy) mission text")
     parser.add_argument("--task-file", type=str, default=None, help="(legacy) path to mission file")
-    parser.add_argument("--model", type=str, default=None, help="Path to GGUF model")
+    parser.add_argument(
+        "--model",
+        type=str,
+        default=None,
+        help="Model artifact, native profile, or OpenAI-compatible endpoint URL",
+    )
+    parser.add_argument(
+        "--plain",
+        action="store_true",
+        help="Run provider text-only cognition without the HCLI result schema",
+    )
     parser.add_argument("--debug", action="store_true", help="Enable debug output")
     parser.add_argument("--max-turns", type=int, default=10, help="Max observation turns")
     parser.add_argument("--max-cycles", type=int, default=3, help="Max mission cycles")
@@ -211,6 +221,18 @@ def main(argv: Optional[List[str]] = None) -> int:
         from .delegate import exec_main
 
         return exec_main(raw[1:])
+    if raw and raw[0] == "connectivity":
+        from .connectivity import main as connectivity_main
+
+        return connectivity_main(raw[1:])
+    if raw and raw[0] == "flash-next":
+        from .flash_next import main as flash_next_main
+
+        return flash_next_main(raw[1:])
+    if raw and raw[0] == "agentos":
+        from .agentos_cli import main as agentos_main
+
+        return agentos_main(raw[1:])
 
     args = parse_haider_args(raw)
     if args.debug:
@@ -222,4 +244,4 @@ def main(argv: Optional[List[str]] = None) -> int:
         model=args.model,
         debug=args.debug,
     )
-    return app.run(prompt=args.prompt)
+    return app.run(prompt=args.prompt, plain=args.plain)

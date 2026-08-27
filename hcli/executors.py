@@ -11,8 +11,9 @@ import json
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Mapping, Optional, Union
 
 from .report_compiler import compile_backend_report
 
@@ -24,7 +25,11 @@ BACKEND_TOOL = "tool"
 
 
 def select_backend_name(wu: Any) -> str:
-    pref = str(getattr(wu, "preferred_backend", None) or "").strip().lower()
+    pref = str(
+        getattr(wu, "provider", None)
+        or getattr(wu, "preferred_backend", None)
+        or ""
+    ).strip().lower()
     if pref:
         return pref
     rc = str(getattr(wu, "resource_class", "") or "")
@@ -42,10 +47,12 @@ class WorkUnitExecutor:
         workspace: Union[str, Path],
         engine: Any = None,
         grok_bridge: Any = None,
+        providers: Optional[Mapping[str, Any]] = None,
     ) -> None:
         self.workspace = Path(workspace)
         self.engine = engine
         self._grok = grok_bridge
+        self.providers = dict(providers or {})
 
     def grok_bridge(self):
         if self._grok is not None:
@@ -63,9 +70,120 @@ class WorkUnitExecutor:
             return self._run_grok(wu, context)
         if name in (BACKEND_CPU, BACKEND_TOOL):
             return self._run_cpu(wu, context)
-        return self._run_qwen(wu, context)
+        provider = context.get("provider_instance") or self.providers.get(name)
+        # A provider may intentionally be the same object as the engine (the
+        # AgentOS ``resident`` alias is the normal example).  Only the
+        # historical implicit ``qwen`` route is special; every explicitly
+        # selected provider name must use the provider-neutral adapter so its
+        # identity, capabilities, and receipt stay visible.
+        if provider is not None and (provider is not self.engine or name != BACKEND_QWEN):
+            return self._run_provider(provider, name, wu, context)
+        return self._run_engine(wu, context, backend_name=name)
 
-    def _run_qwen(self, wu: Any, context: Dict[str, Any]) -> Dict[str, Any]:
+    def _run_provider(
+        self,
+        provider: Any,
+        name: str,
+        wu: Any,
+        context: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """Invoke a non-legacy provider without teaching AgentOS its transport."""
+        started = time.time()
+        workunit_call = getattr(provider, "execute_workunit", None)
+        request_payload: Dict[str, Any]
+        response_value: Any = None
+        if callable(workunit_call):
+            request_payload = {
+                "unit_id": wu.id,
+                "role": getattr(wu, "role", None),
+                "description": getattr(wu, "description", None),
+                "context": context,
+            }
+            raw = workunit_call(wu, context)
+        else:
+            prompt = str(context.get("prompt") or getattr(wu, "description", ""))
+            request_payload = {
+                "model": context.get("model") or name,
+                "messages": [{"role": "user", "content": prompt}],
+                # Keep explicit provider calls on the same bounded generation
+                # budget as the engine path.  A provider-neutral WorkUnit
+                # must not silently jump from HCLI_MODEL_TOKENS=64 to a
+                # 1024-token request merely because it implements ``generate``
+                # instead of the legacy Engine seam.
+                "max_tokens": int(
+                    context.get("max_tokens")
+                    or os.environ.get("HCLI_MODEL_TOKENS", "1024")
+                ),
+            }
+            payload = request_payload
+            generate = getattr(provider, "generate", None)
+            complete = getattr(provider, "complete", None)
+            if callable(generate):
+                from .providers import GenerationRequest
+
+                response = generate(GenerationRequest.from_mapping(payload), timeout=context.get("timeout"))
+                response_value = response
+                raw = response.to_dict() if hasattr(response, "to_dict") else response
+                if isinstance(raw, dict) and raw.get("text") is not None:
+                    raw = {"content": raw.get("text"), "provider_response": raw}
+            elif callable(complete):
+                response = complete(payload, timeout=context.get("timeout"))
+                response_value = response
+                raw = getattr(response, "raw", response)
+            elif callable(provider):
+                raw = provider(payload)
+            else:
+                raise RuntimeError(f"provider {name!r} has no generate/complete/execute_workunit method")
+        if not isinstance(raw, dict):
+            raw = {"content": str(raw)}
+        raw.setdefault("backend", name)
+        raw.setdefault("provider", name)
+        try:
+            from .providers import ProviderReceipt, ResidentProfile
+
+            profile = None
+            profile_fn = getattr(provider, "profile", None)
+            if callable(profile_fn):
+                try:
+                    profile = profile_fn()
+                except Exception:
+                    profile = None
+            if isinstance(profile, ResidentProfile):
+                model_id = profile.model_id
+                profile_id = profile.profile_id
+            else:
+                identity_fn = getattr(provider, "identity", None)
+                identity = identity_fn() if callable(identity_fn) else {}
+                identity = identity if isinstance(identity, dict) else {}
+                model_id = str(identity.get("model_id") or identity.get("model") or name)
+                profile_id = None
+            if response_value is not None and hasattr(response_value, "to_dict"):
+                response_dict = response_value.to_dict()
+            else:
+                response_dict = raw
+            raw.setdefault(
+                "provider_receipt",
+                ProviderReceipt(
+                    provider=str(raw.get("provider") or name),
+                    model_id=str(model_id),
+                    profile_id=profile_id,
+                    request=request_payload,
+                    response=response_dict if isinstance(response_dict, dict) else {"value": response_dict},
+                    started_at=started,
+                    finished_at=time.time(),
+                ).to_dict(),
+            )
+        except Exception as exc:  # noqa: BLE001 - provenance cannot block cognition
+            raw.setdefault("provider_receipt_error", f"{type(exc).__name__}: {exc}")
+        return raw
+
+    def _run_engine(
+        self,
+        wu: Any,
+        context: Dict[str, Any],
+        *,
+        backend_name: str = BACKEND_QWEN,
+    ) -> Dict[str, Any]:
         engine = self.engine
         raw: Any = {}
         if engine is not None and hasattr(engine, "execute_workunit"):
@@ -74,8 +192,14 @@ class WorkUnitExecutor:
             raw = engine.execute(context.get("prompt") or wu.description)
         if not isinstance(raw, dict):
             raw = {"content": str(raw)}
-        raw.setdefault("backend", BACKEND_QWEN)
+        raw.setdefault("backend", backend_name)
+        raw.setdefault("provider", backend_name)
         return raw
+
+    # Kept as a narrow compatibility shim for callers that imported this
+    # private helper while the default backend was named Qwen.
+    def _run_qwen(self, wu: Any, context: Dict[str, Any]) -> Dict[str, Any]:
+        return self._run_engine(wu, context, backend_name=BACKEND_QWEN)
 
     def _run_cpu(self, wu: Any, context: Dict[str, Any]) -> Dict[str, Any]:
         cmd = (getattr(wu, "verifier", None) or "").strip()

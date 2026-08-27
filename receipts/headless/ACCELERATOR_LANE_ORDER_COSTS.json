@@ -1,0 +1,317 @@
+{
+ "receipt": "ACCELERATOR_LANE_ORDER_COSTS",
+ "date": "2026-08-26",
+ "obligation": "G046 (FRONT D) with G047",
+ "question": "ACCELERATOR_THE_ENTRY_COST_IS_FOOTPRINT measured that a row's address spread costs 8-10% at production shape and named its own remainder -- 'THE MECHANISM IS STILL NOT NAMED: cold lines, TLB reach, cache capacity and coalescing are NOT SEPARATED' -- with the probe that could start separating it: hold the footprint AND the work fixed and change only WHICH LANE touches which group.",
+ "the_variable": "lane -> (lane * M) % TPR with M ODD, hence coprime with 64, hence a BIJECTION. Every group is still visited exactly once per row; the row's footprint, the threadgroup's footprint, the iteration count, the element count and the MULTISET of per-lane iteration counts are all UNCHANGED. Only the ASSIGNMENT moves. At iteration k lane L reads packed byte L*32 + k/2, so the simdgroup's 32 lanes already read addresses STRIDED BY 32 BYTES across a 1024-byte span -- a permutation leaves THE SET OF ADDRESSES THE SIMDGROUP TOUCHES AT EACH INSTANT EXACTLY IDENTICAL and changes only which lane asks for which.",
+ "THE_CONTROL_IS_lane1_NOT_THE_SHIPPED_KERNEL": "_lane1 computes (lane * 1) % 64 -- semantically the identity, carrying the SAME extra multiply and modulo as _lane37. Timing _lane37 against the SHIPPED kernel would confound the ORDER with two extra instructions. The shipped kernel is timed anyway as a third arm to price that arithmetic separately, and a test pins that the two are not interchangeable.",
+ "P1_LANE_ORDER_COSTS_AT_FULL_ELEMENT_COUNT": {
+  "predicted": "INDISTINGUISHABLE within 10%, falsifier at >= 1.10x in either direction",
+  "measured": "1.0802 and 1.0793 -- TWO RUNS AGREEING TO 0.08% -- with _lane1 beating _lane37 in 14 OF 14 and 13 OF 14 round-robin rounds",
+  "verdict": "MY PRE-REGISTERED VERDICT IS CONFIRMED AND MY PRE-REGISTERED INSTRUMENT WAS TOO COARSE, and both halves are reported because reporting only one would be a choice made after seeing the data. 1.08x sits INSIDE the 10% band I wrote, so by my own rule this is indistinguishable -- yet the two runs agree to 0.08% and the arm wins 27 OF 28 ROUNDS, which no coin flip produces. THE ORDINAL COUNT RESOLVES WHAT THE RATIO BAND CANNOT. I set +-10% because the previous block's effects were 1.45x; an 8% effect is real and my band was simply wider than it. The finding is admitted on the rounds and the cross-run agreement, NOT on the ratio clearing a gate it does not clear."
+ },
+ "WHAT_THIS_NAMES_THAT_WAS_UNNAMED": "LANE-TO-ADDRESS ORDER IS A REAL COST -- the first named component of the footprint mechanism. The address set per instant is identical, so this is not reach, not capacity and not cold lines: it is the memory system caring WHICH LANE ASKS FOR WHICH ADDRESS. AND THE MAGNITUDES COINCIDE: the full-work footprint effect was 1.082x and 1.098x, and lane order alone is 1.0802x and 1.0793x. THAT IS SUGGESTIVE AND IS NOT AN IDENTITY CLAIM -- confining the footprint changes the address set AND the lane ordering together, so the two effects are not separated by these arms and a reader must not conclude that order is all of it.",
+ "P2_AND_IT_DOES_NOT_HAPPEN_AT_THIN_WORK": {
+  "predicted": "INDISTINGUISHABLE; and if P1 and P2 disagree the effect is element-count dependent and neither number transfers",
+  "measured": "0.9911 and 1.0202 -- OPPOSITE DIRECTIONS -- 5 of 14 and 7 of 14 rounds, a coin flip read twice",
+  "verdict": "CONFIRMED, and the disagreement with P1 is the finding rather than a wrinkle: lane order costs 8% where each lane issues 32 byte loads per group and NOTHING where it issues one. The effect scales with CONCURRENT REQUESTS PER LANE, which is a CANDIDATE MECHANISM AND NOT A CLAIM -- this program's scorecard is five diagnoses written down and two wrong."
+ },
+ "P3_the_extra_arithmetic_is_free": {
+  "predicted": "INDISTINGUISHABLE; cheap ALU has measured free four times in this program",
+  "measured": "0.99 and 1.0398, 8 of 14 and 4 of 14 rounds -- mixed in direction",
+  "verdict": "CONFIRMED. One multiply and one modulo per thread costs nothing, so the P1 separation is the ORDER and not the arithmetic."
+ },
+ "minima_ms": {
+  "run_1": {
+   "lane1": 0.2926,
+   "lane37": 0.3161,
+   "thin2_lane1": 0.2538,
+   "thin2_lane37": 0.2516,
+   "baseline": 0.2956
+  },
+  "run_2": {
+   "lane1": 0.2843,
+   "lane37": 0.3069,
+   "thin2_lane1": 0.2542,
+   "thin2_lane37": 0.2594,
+   "baseline": 0.2735
+  }
+ },
+ "comparisons": {
+  "run_1": {
+   "P1_full_lane1_over_lane37": 1.0802,
+   "P1_rounds_lane1_beats_lane37": 14,
+   "P2_thin_lane1_over_lane37": 0.9911,
+   "P2_rounds_thin_lane1_beats_lane37": 5,
+   "P3_shipped_over_lane1_arithmetic": 0.99,
+   "P3_rounds_shipped_beats_lane1": 8,
+   "rounds_won_overall": {
+    "lane1": 3,
+    "lane37": 0,
+    "thin2_lane1": 3,
+    "thin2_lane37": 6,
+    "baseline": 2
+   }
+  },
+  "run_2": {
+   "P1_full_lane1_over_lane37": 1.0793,
+   "P1_rounds_lane1_beats_lane37": 13,
+   "P2_thin_lane1_over_lane37": 1.0202,
+   "P2_rounds_thin_lane1_beats_lane37": 7,
+   "P3_shipped_over_lane1_arithmetic": 1.0398,
+   "P3_rounds_shipped_beats_lane1": 4,
+   "rounds_won_overall": {
+    "lane1": 2,
+    "lane37": 0,
+    "thin2_lane1": 6,
+    "thin2_lane37": 6,
+    "baseline": 0
+   }
+  }
+ },
+ "round_spread_pct": {
+  "run_1": {
+   "lane1": 43.4,
+   "lane37": 36.1,
+   "thin2_lane1": 236.2,
+   "thin2_lane37": 261.0,
+   "baseline": 54.9
+  },
+  "run_2": {
+   "lane1": 16.3,
+   "lane37": 13.8,
+   "thin2_lane1": 280.4,
+   "thin2_lane37": 269.9,
+   "baseline": 20.8
+  }
+ },
+ "WHAT_THIS_PROBE_STRUCTURALLY_CANNOT_SEPARATE_SAID_IN_ADVANCE": "It holds per-lane reach AND per-threadgroup capacity FIXED, so it cannot distinguish those two from each other. Pre-registered: reading a tie as 'capacity, not reach' would have been wrong, and reading this NON-tie as 'reach, not capacity' is equally wrong. What it establishes is that a THIRD thing -- ordering -- is on the list at all, which it was not before.",
+ "THE_ANTI_VACUITY_CONTROL_IS_DIFFERENT_IN_KIND_HERE": "Every previous probe in this family was WRONG BY CONSTRUCTION and its anti-vacuity condition was that it must be wrong. A PERMUTATION IS A BIJECTION so these arms MUST BE CORRECT, which removes that control entirely and demands a replacement: the map is verified a real bijection over ALL 64 lanes rather than inferred from coprimality, and the two sources are asserted to DIFFER IN EXACTLY ONE LINE. A probe that silently reduced to the identity would tie and read as a finding -- which is exactly what the identity mutation does, and it is caught.",
+ "controls": {
+  "correctness": "lane1 and baseline read rel_err 2.021e-07 and lane37 reads 1.952e-07 -- DIFFERENT, which is itself evidence the permutation changed which lane accumulates which group",
+  "bijection": "asserted over all 64 lanes for both multipliers, and asserted NOT the identity for 37",
+  "single_line": "the two sources differ in exactly one line and it is the loop init",
+  "even_multiplier": "REFUSED, because an even multiplier is not a bijection and would skip and double-visit groups while still looking plausible",
+  "template_drift": "a loop that is not in the source RAISES rather than letting a no-op replacement make a probe BE its base",
+  "mutations_watched_failing": [
+   "the permutation collapsed to the identity -- caught by the differ-in-one-line test",
+   "the odd-multiplier check disabled -- caught by the refusal test",
+   "the fragment guard dropped -- caught by the drift test"
+  ]
+ },
+ "claim_boundary": [
+  "ONE shape, ONE tpr, ONE machine, INSTANCE, ONE permutation. M=37 is A permutation, not the worst or the best one; nothing here maps how the cost varies with the permutation's structure.",
+  "BENCH_STATE CONTENDED, round-spreads 36-261%. MINIMA are the estimator and the ORDINAL 27-of-28 rounds-won count is what carries P1, explicitly BECAUSE the ratio does not clear my own band.",
+  "THE THIN ARMS carry 236% and 261% round-spread, the noisiest in the block, so P2's tie is admitted as a tie and could not have resolved a small effect either way.",
+  "NO SHIPPED KERNEL CHANGED. Unlike every earlier probe here these arms are CORRECT, so a reordered kernel is a legitimate candidate in principle -- and it is SLOWER, so nothing is adopted.",
+  "no model executed, no capability run, no adequacy claim moves; PRODUCTION DOES NOT PAY THE SUBMISSION TERM, unchanged."
+ ],
+ "next": "The permutation's STRUCTURE is now the axis: M=3 moves a lane three slots and M=37 scatters it across the simdgroup, so sweeping M would say whether the cost tracks DISPLACEMENT or merely DISORDER, and whether it lives within a simdgroup or across the threadgroup. NOT RUN HERE.",
+ "akb_registration": {
+  "evidence_domain": "accelerator",
+  "civilization": "I-D_ACCELERATOR",
+  "program": "HAWKING ACCELERATOR (S015/S031/S032)",
+  "machine_scope": "Apple M3 Ultra, INSTANCE",
+  "representation_scope": "ws_rtn_q4_g64",
+  "kernel_scope": "native matvec with lanes permuted over groups at fixed footprint",
+  "why_declared": "membership must not depend on what this file was named (S032 s13)."
+ },
+ "identities": {
+  "experiment": {
+   "class": "ACCEL-KERNEL",
+   "knowledge_level": "INSTANCE",
+   "question": "does which lane touches which address cost anything at identical address sets"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "ram_gib": 96,
+   "measured_dram_gb_s": 589.73,
+   "bench_state": "CONTENDED",
+   "quiescence": {
+    "run_1": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 79958,
+       "cpu_pct": 99.9,
+       "rss_gib": 39.15,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 5745,
+       "cpu_pct": 84.2,
+       "rss_gib": 1.94,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 292,
+       "cpu_pct": 20.5,
+       "rss_gib": 0.11,
+       "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 32.3,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 21.2,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 5,
+     "total_cpu_pct": 258.1,
+     "max_rss_gib": 39.15,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    },
+    "run_2": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 79958,
+       "cpu_pct": 108.9,
+       "rss_gib": 39.2,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 5855,
+       "cpu_pct": 81.7,
+       "rss_gib": 1.95,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 180,
+       "cpu_pct": 20.9,
+       "rss_gib": 0.03,
+       "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 32.8,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 23.3,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 5,
+     "total_cpu_pct": 267.6,
+     "max_rss_gib": 39.2,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    }
+   }
+  },
+  "device": {
+   "backend": "Metal",
+   "api": "mx.fast.metal_kernel JIT, MLX"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "NO MODEL EXECUTED. 17408x5120 is BORROWED from the resident's MLP; synthetic weights."
+  },
+  "representation": {
+   "native": "ws_rtn_q4_g64, 4.25 bpw"
+  },
+  "runtime": {
+   "analysis": "tools/accelerator/gravity_native.py::source_operand_probe (_laneM)",
+   "tests": "tools/accelerator/test_lane_order.py"
+  },
+  "kernel": {
+   "arms": [
+    "lane1",
+    "lane37",
+    "thin2_lane1",
+    "thin2_lane37",
+    "baseline"
+   ],
+   "tpr": 64,
+   "tg": 128
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device, no transfer crossed"
+  }
+ },
+ "bench": {
+  "state": "CONTENDED",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": {
+   "quiet": false,
+   "method": "enumerate",
+   "no_name_filter": true,
+   "thresholds": {
+    "cpu_pct": 20.0,
+    "rss_gib": 2.0
+   },
+   "contenders": [
+    {
+     "pid": 79958,
+     "cpu_pct": 108.9,
+     "rss_gib": 39.2,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 5855,
+     "cpu_pct": 81.7,
+     "rss_gib": 1.95,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 180,
+     "cpu_pct": 20.9,
+     "rss_gib": 0.03,
+     "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+    },
+    {
+     "pid": 739,
+     "cpu_pct": 32.8,
+     "rss_gib": 0.02,
+     "comm": "/usr/libexec/avconferenced"
+    },
+    {
+     "pid": 52616,
+     "cpu_pct": 23.3,
+     "rss_gib": 0.02,
+     "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+    }
+   ],
+   "n_contenders": 5,
+   "total_cpu_pct": 267.6,
+   "max_rss_gib": 39.2,
+   "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+  },
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "DERIVED from a quiescence sample this receipt already carried"
+ },
+ "AMENDED_2026-08-26_THE_SIMDGROUP_ARITHMETIC_IN_THIS_RECEIPT_IS_WRONG": {
+  "amending_receipt": "receipts/headless/ACCELERATOR_THE_SIMDGROUP_SPAN_DOUBLES.json",
+  "what_is_withdrawn": "This receipt's mechanism sentence -- 'a permutation leaves THE SET OF ADDRESSES THE SIMDGROUP TOUCHES AT EACH INSTANT EXACTLY IDENTICAL', and the exclusion it licensed, 'it is NOT reach, NOT capacity and NOT cold lines'. THE SET IS IDENTICAL OVER 64 LANES AND NOT OVER A 32-LANE SIMDGROUP, which is the coalescing unit: the identity gives a simdgroup a contiguous 1024-byte span while EVERY permutation gives it 2048, exactly double. Reach and capacity were therefore NEVER EXCLUDED and that exclusion must not be cited.",
+  "what_stands": "THE MEASUREMENT. Lane order costs, the identity is faster, and it is not the extra multiply and modulo -- and it is not an artifact of arm order either, which the amending block tested by rotating the order and watching the effect survive at 10-12 of 14 rounds.",
+  "and_the_magnitude_is_softer_than_this_receipt_reads": "1.0802 and 1.0793 agreeing to 0.08% here; four further runs span 1.027 to 1.073 at round-spreads up to 618%. The DIRECTION and the ordinal separation reproduce; 1.08x is not re-confirmed as a value, which is what this receipt itself said carried the finding.",
+  "laws_reconciled": [
+   "AKB-LANE-ORDER-COSTS"
+  ]
+ }
+}

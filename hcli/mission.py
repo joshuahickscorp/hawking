@@ -177,6 +177,8 @@ class Mission:
         repo_root: Optional[Union[str, Path]] = None,
         install_signals: bool = False,
         before_dispatch: Optional[Callable[["Mission"], None]] = None,
+        providers: Optional[Dict[str, Any]] = None,
+        stop_runtime_pool: bool = True,
     ) -> None:
         self.workspace = _as_workspace(workspace)
         self.engine = engine
@@ -191,6 +193,14 @@ class Mission:
         self.session_id = session_id or self.id
         self.install_signals = bool(install_signals)
         self.before_dispatch = before_dispatch
+        self.providers = dict(providers or {})
+        # A Mission may be given a pool it owns, or a pool owned by the
+        # long-lived Controller/AgentOS facade.  The latter must survive a
+        # completed mission so the next durable mission can use the same
+        # resident; stopping it here otherwise leaves the controller holding
+        # a non-empty-but-dead pool and causes false no-model completions in
+        # callers that only inspect a fixed verifier.
+        self.stop_runtime_pool = bool(stop_runtime_pool)
 
         self.phase = "idle"
         self.strategy = "default"
@@ -361,6 +371,8 @@ class Mission:
             mission.last_checkpoint = float(data.get("last_checkpoint") or 0.0)
         except (TypeError, ValueError):
             mission.last_checkpoint = 0.0
+        checkpoint_id = data.get("checkpoint_id")
+        mission._last_checkpoint_id = str(checkpoint_id) if checkpoint_id else None
         try:
             mission.accepted_count = int(data.get("accepted_count") or 0)
         except (TypeError, ValueError):
@@ -422,6 +434,11 @@ class Mission:
     def status(self) -> Dict[str, Any]:
         units = list(self.scheduler.units.values())
         counts = _units_by_status(units)
+        ready_units = identify_ready(self.scheduler.units)
+        running_units = [wu for wu in units if wu.status == "running"]
+        failed_units = [wu for wu in units if wu.status == "failed"]
+        from .agentos.states import mission_state, workunit_state
+
         decodes = sum(
             1
             for wu in units
@@ -445,7 +462,17 @@ class Mission:
         return {
             "mission_id": self.id,
             "phase": self.phase,
+            "state": mission_state(
+                self.phase,
+                has_ready=bool(ready_units),
+                has_running=bool(running_units),
+                has_failed=bool(failed_units),
+            ).value,
             "units_by_status": counts,
+            "unit_states": {
+                wu.id: workunit_state(wu).value
+                for wu in units
+            },
             "active_runtimes": int(active_runtimes),
             "active_decodes": int(decodes),
             "accepted_units_per_hour": float(per_hour),
@@ -527,7 +554,7 @@ class Mission:
         # DAG first. A persist failure here aborts the checkpoint, leaving the
         # previous coherent generation in place on BOTH files.
         try:
-            self.scheduler._persist()
+            self.scheduler._persist({"checkpoint_id": checkpoint_id})
         except Exception as exc:
             self._log(
                 {
@@ -668,12 +695,17 @@ class Mission:
         reason = self._stop_reason or self.cancel_reason
         if self.phase == "no_progress":
             reason = "no_progress"
+        failed = [wu.id for wu in self.scheduler.units.values() if wu.status == "failed"]
+        state = "INCONCLUSIVE" if failed else ("VERIFIED" if self.phase == "completed" else None)
         return {
             "status": self.phase,
+            "state": state,
+            "verdict": "ACCEPT" if self.phase == "completed" and not failed else "INCONCLUSIVE" if self.phase == "completed" else "BLOCKED" if self.phase == "failed" else "INCONCLUSIVE",
             "reason": reason,
             "cancelled": self.phase == "cancelled",
             "mission_id": self.id,
             "accepted": self.accepted_count,
+            "failed_units": failed,
             "no_progress_warning": self.no_progress_warning,
         }
 
@@ -778,11 +810,19 @@ class Mission:
 
         backend = select_backend_name(wu)
         wu.assigned_backend = backend
-        if backend != "qwen":
+        # The implicit legacy default keeps the strict Engine worker seam.
+        # Explicit provider registrations—including the current engine under
+        # the generic ``resident`` role—go through WorkUnitExecutor so the
+        # provider-neutral adapter records identity and provenance.
+        if backend != "qwen" or backend in self.providers:
             executor = WorkUnitExecutor(
                 self.workspace,
                 engine=self.engine,
+                providers=self.providers,
             )
+            provider_instance = self.providers.get(backend)
+            if provider_instance is not None:
+                context["provider_instance"] = provider_instance
             raw = executor.execute(wu, context)
         else:
             # dispatch_workunit binds Engine.execute_workunit when absent and
@@ -796,7 +836,17 @@ class Mission:
                 "validation": {"ok": False, "reason": "cancelled"},
             }
         validation = self._route_validation(wu, raw)
-        return {"raw": raw, "validation": validation, "cancelled": False}
+        # Engine telemetry is scoped to one structured execution and is reset
+        # for the next WorkUnit.  Carry the completed worker's observation to
+        # the Mission log before the next dispatch so a multi-unit mission
+        # can report every model call rather than only its final one.
+        model_calls = list(getattr(self.engine, "_model_calls", []) or [])
+        return {
+            "raw": raw,
+            "validation": validation,
+            "model_calls": model_calls,
+            "cancelled": False,
+        }
 
     def _unit_context(self, wu: WorkUnit) -> Dict[str, Any]:
         self._maybe_compile()
@@ -838,6 +888,7 @@ class Mission:
             "neighborhood": list(packet.neighborhood),
             "compiled": compiled_ir_to_jsonable(compiled),
             "packet": packet,
+            "provider": getattr(wu, "provider", None) or getattr(wu, "preferred_backend", None),
         }
 
     def _route_validation(self, wu: WorkUnit, raw: Any) -> Dict[str, Any]:
@@ -857,9 +908,6 @@ class Mission:
             if isinstance(val, dict):
                 return val
             return {"ok": bool(val)}
-        if isinstance(raw.get("validation"), dict):
-            return raw["validation"]
-
         # The unit's OWN verifier, fixed when the WorkUnit was dispatched, is
         # the authority. Preferring it over `raw["tests"]` matters because
         # `raw` is model output: letting the model nominate the tests that
@@ -875,6 +923,9 @@ class Mission:
                 val.setdefault("acceptance_source", "workunit_verifier")
                 return val
             return {"ok": False, "reason": "NO_DETERMINISTIC_VALIDATION"}
+
+        if isinstance(raw.get("validation"), dict):
+            return raw["validation"]
 
         if hasattr(engine, "_validate"):
             tests = list(raw.get("tests") or [])
@@ -915,6 +966,15 @@ class Mission:
             self._fail_unit(wu, {"error": str(item["error"])})
             return
         result = item.get("result") or {}
+        observed_model_calls = result.get("model_calls")
+        if isinstance(observed_model_calls, list) and observed_model_calls:
+            self._log(
+                {
+                    "event": "model_calls_observed",
+                    "id": uid,
+                    "calls": observed_model_calls,
+                }
+            )
         if result.get("cancelled"):
             self._fail_unit(wu, {"reason": "cancelled"}, emit_repair=False)
             return
@@ -1172,7 +1232,7 @@ class Mission:
                     pids.add(int(pid))
                 except (TypeError, ValueError):
                     pass
-        pool = self.runtime_pool
+        pool = self.runtime_pool if self.stop_runtime_pool else None
         if pool is not None:
             for runtime in getattr(pool, "runtimes", []) or []:
                 pid = getattr(runtime, "pid", None)

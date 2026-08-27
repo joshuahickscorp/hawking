@@ -151,6 +151,19 @@ tools/sovereignty/__pycache__/
 # per run, not source.
 /.hide/
 
+# HCLI live runtime state. Canonical, intentionally retained campaign evidence
+# is emitted under receipts/headless/; workspace sessions and per-run receipts
+# are disposable and must not enter the recovery commit.
+/.hcli/model_overlap.json
+/.hcli/sessions/
+/.hcli/receipts/*.json
+/.hcli/background/
+/.hcli/instrumented/
+/.hcli/autonomy-window/
+/.hcli/autonomy-window-*/
+/.hcli/agentos/
+/.hcli/initial-charge/
+
 # python venv (never commit; self-symlink hazard)
 /tools/condense/.venv/
 /tools/condense/.venv

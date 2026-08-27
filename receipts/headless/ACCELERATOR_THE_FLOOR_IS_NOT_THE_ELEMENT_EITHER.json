@@ -1,0 +1,495 @@
+{
+ "receipt": "ACCELERATOR_THE_FLOOR_IS_NOT_THE_ELEMENT_EITHER",
+ "date": "2026-08-26",
+ "obligation": "G046 (FRONT D) with G047; S031 s2 optimisation order",
+ "question": "Three receipts have carried the floor as 'ONE x READ AND ONE FUSED MULTIPLY-ADD PER WEIGHT at 307.7 G elem/s', and seven levers have died against it. THAT PHRASE NAMES TWO OPERATIONS AND NO ARM HAD EVER REMOVED THE x READ -- the weight reads were deleted and measured free, x never was. Neither had any arm removed THE ELEMENT WORK ITSELF at a fixed grid, which is the question of whether an element rate is being measured at all.",
+ "why_it_was_live_and_not_a_formality": "89.1M x reads in 0.29 ms is 307 G reads/s = 1.2 TB/s, TWICE this machine's measured 589.73 GB/s DRAM roof, so those reads are necessarily CACHE-SERVED, and whether ~1.2 TB/s is the cache read ceiling is a machine property no kernel change could move. The prediction was pre-registered as genuinely open with that arithmetic as the reason.",
+ "arms_each_removing_ONE_operation": {
+  "shape": "17408 x 5120, tpr64, tg128, 14 rounds x 20 reps ROUND-ROBIN, run twice",
+  "design": "Same loop, same groups, same weight decode, same reduction, same ELEMENT COUNT. B halves the x reads by feeding both nibbles one value; C removes the MULTIPLY with both operands still consumed; D never reads x at all, the exact analogue of the no-weights control that found reading 44.6 MB of packed weights costs nothing.",
+  "run_1": {
+   "A_baseline": {
+    "min_round_ms": 0.3045,
+    "median_round_ms": 0.3276,
+    "round_spread_pct": 270.9143,
+    "speedup_vs_A_min": 1.0,
+    "speedup_vs_A_median": 1.0,
+    "rel_err": 0.0
+   },
+   "B_xreuse": {
+    "min_round_ms": 0.3215,
+    "median_round_ms": 0.3411,
+    "round_spread_pct": 203.7132,
+    "speedup_vs_A_min": 0.947,
+    "speedup_vs_A_median": 0.9605,
+    "rel_err": 0.984
+   },
+   "C_nomul": {
+    "min_round_ms": 0.3109,
+    "median_round_ms": 0.35,
+    "round_spread_pct": 232.5354,
+    "speedup_vs_A_min": 0.9792,
+    "speedup_vs_A_median": 0.9361,
+    "rel_err": 4.8763
+   },
+   "D_noxread": {
+    "min_round_ms": 0.3086,
+    "median_round_ms": 0.3375,
+    "round_spread_pct": 171.3458,
+    "speedup_vs_A_min": 0.9866,
+    "speedup_vs_A_median": 0.9707,
+    "rel_err": 1.4194
+   }
+  },
+  "run_2": {
+   "A_baseline": {
+    "min_round_ms": 0.2844,
+    "median_round_ms": 0.3358,
+    "round_spread_pct": 42.7349,
+    "speedup_vs_A_min": 1.0,
+    "speedup_vs_A_median": 1.0,
+    "rel_err": 0.0
+   },
+   "B_xreuse": {
+    "min_round_ms": 0.317,
+    "median_round_ms": 0.3414,
+    "round_spread_pct": 21.201,
+    "speedup_vs_A_min": 0.8972,
+    "speedup_vs_A_median": 0.9836,
+    "rel_err": 0.984
+   },
+   "C_nomul": {
+    "min_round_ms": 0.2847,
+    "median_round_ms": 0.3131,
+    "round_spread_pct": 23.5264,
+    "speedup_vs_A_min": 0.999,
+    "speedup_vs_A_median": 1.0724,
+    "rel_err": 4.8763
+   },
+   "D_noxread": {
+    "min_round_ms": 0.279,
+    "median_round_ms": 0.3051,
+    "round_spread_pct": 35.9007,
+    "speedup_vs_A_min": 1.0194,
+    "speedup_vs_A_median": 1.1005,
+    "rel_err": 1.4194
+   },
+   "E_thin": {
+    "min_round_ms": 0.2412,
+    "median_round_ms": 0.2799,
+    "round_spread_pct": 269.257,
+    "speedup_vs_A_min": 1.1793,
+    "speedup_vs_A_median": 1.1998,
+    "rel_err": 0.9838
+   }
+  },
+  "rounds_beating_A_of_14": {
+   "run_1": {
+    "B_xreuse": 2,
+    "C_nomul": 3,
+    "D_noxread": 7
+   },
+   "run_2": {
+    "B_xreuse": 7,
+    "C_nomul": 9,
+    "D_noxread": 12,
+    "E_thin": 11
+   }
+  }
+ },
+ "P1_THE_x_READ_DELETION_TIES": {
+  "predicted": "a tie under 1.10x if x reads are free, >= 1.50x if x-read bandwidth is the wall",
+  "measured": "0.987x min / 0.971x median in run 1, 1.019x min / 1.101x median in run 2; 7 and 12 of 14 rounds",
+  "verdict": "REMOVING EVERY x READ COSTS NOTHING. The pre-registered branches were 1.10x and 1.50x and nothing lands between them by accident at that separation."
+ },
+ "P2_HALF_THE_x_READS_AGREES_WITH_THE_DELETION": {
+  "measured": "0.947x and 0.897x min",
+  "verdict": "CONSISTENT -- B ties or loses slightly, which is what B must do if D ties"
+ },
+ "P3_THE_MULTIPLY_IS_INDISTINGUISHABLE": {
+  "predicted": "indistinguishable; the FMA is 2.9% of lane-issue rate",
+  "measured": "0.979x and 0.999x min",
+  "verdict": "CONFIRMED"
+ },
+ "THE_ARM_THAT_ANSWERS_IT": {
+  "what_E_removes": "31 of every 32 inner iterations, holding the GRID, the lane assignment, the group loop, the scale loads, the reduction and the stores FIXED -- 96.9% of the per-element work.",
+  "measured": "0.2412 ms against the baseline's 0.2844, x1.179 min",
+  "reading": "DELETING 96.9% OF THE ELEMENT WORK RETURNS 18%."
+ },
+ "THE_FIT_MAKES_IT_A_NUMBER": {
+  "sweep": {
+   "2": {
+    "elements": 2785280,
+    "min_ms": 0.2523,
+    "median_ms": 0.2692,
+    "spread_pct": 16.2
+   },
+   "8": {
+    "elements": 11141120,
+    "min_ms": 0.2475,
+    "median_ms": 0.2662,
+    "spread_pct": 37.1
+   },
+   "16": {
+    "elements": 22282240,
+    "min_ms": 0.2527,
+    "median_ms": 0.2636,
+    "spread_pct": 30.7
+   },
+   "32": {
+    "elements": 44564480,
+    "min_ms": 0.2566,
+    "median_ms": 0.2745,
+    "spread_pct": 27.1
+   },
+   "64": {
+    "elements": 89128960,
+    "min_ms": 0.2845,
+    "median_ms": 0.3067,
+    "spread_pct": 23.6
+   }
+  },
+  "fit_on_minima": {
+   "fixed_ms": 0.24502,
+   "per_element_ns": 0.0004,
+   "r2": 0.88783,
+   "fixed_share_of_full": 0.8611
+  },
+  "fit_on_medians": {
+   "fixed_ms": 0.26003,
+   "per_element_ns": 0.00047,
+   "r2": 0.85898,
+   "fixed_share_of_full": 0.84793
+  },
+  "headline": "86.1% OF THE MEASURED TIME IS FIXED -- independent of the element count -- on minima, 84.8% on medians.",
+  "the_linear_model_is_WRONG_IN_SHAPE_and_that_is_reported": "thin2, thin8 and thin16 are FLAT at 0.2523 / 0.2475 / 0.2527 ms: EIGHT TIMES THE ELEMENT WORK, 0.2% apart. Only the top of the sweep moves. So this is a FLOOR WITH A KNEE, not a line, which is why R2 is 0.888 and not 0.999 -- the same shape error ACCELERATOR_CLIFF_TRANSFER found when max() predicted a knee and the data was a smooth decay, here in the other direction. The intercept is quoted as an ESTIMATE OF THE FLOOR and not as a slope model.",
+  "two_independent_routes_to_the_same_floor": "the fit intercept is 0.2450 ms and the flat region's own minimum is 0.2475 ms -- 1% apart, one from a regression and one read directly off the data."
+ },
+ "THE_SIXTH_SIGHTING_AND_IT_EXPLAINS_THE_WHOLE_WALL": {
+  "the_constant": "~0.245 ms lands squarely in the per-submission floor this program has now sighted five times in unrelated work: the AirGraph sweep measured ~0.157 ms directly, the normalization block watched batching shed 0.10-0.20 ms per call, the convolution floor sat at ~0.174 ms, the graph composition was the fifth, and ACCELERATOR_EXPERT_BATCH fitted intercepts of 0.2582 and 0.2438 ms from two completely different kernels. THIS BLOCK'S 0.2450 AGREES WITH THAT 0.2438 TO 0.5%.",
+  "what_it_explains": "Every one of the seven dead levers was measured on an isolated submission whose time is ~86% invariant to what those levers changed. A 17.3% byte cut, four times fewer loads, a cheaper decode, deleting the weight reads, operand reuse, ILP and the whole reduction tail could not move a number that is five parts fixed to one part element work. THE LEVERS WERE NOT ALL MYSTERIOUSLY FREE; THE INSTRUMENT WAS MOSTLY MEASURING SOMETHING ELSE.",
+  "the_production_cross_check_uses_only_recorded_numbers": "ACCELERATOR_TOKEN_BYTES_ATLAS recorded 402 weight-carrying dispatches inside a 29.29 ms token = 0.0729 ms each on average -- 3.4x BELOW this block's isolated 0.2450 ms floor. Production ALREADY does not pay it, because 964 dispatches share a submission. That is arithmetic over two recorded figures, and it is what batching means."
+ },
+ "WHAT_THIS_CORRECTS_IN_THREE_OF_MY_OWN_BLOCKS": {
+  "the_floor_is_not_the_element": "AKB-THE-MATVEC-FLOOR-IS-THE-ELEMENT-NOT-THE-BYTE named the element as the floor and its own name is now wrong: the floor is NEITHER the byte NOR the element. Removing every x read costs nothing, removing the multiply costs nothing, and removing 96.9% of the elements returns 18%. The law is AMENDED IN PLACE.",
+  "307_G_elem_per_s_is_not_an_element_rate": "It is total elements divided by a time that is 86% fixed at this grid, so the SAME kernel at a smaller element count reports a LOWER elem/s without doing anything differently -- the identical instrument error this program already caught with effective GB/s, which measures the representation's density and not the machine.",
+  "the_171_MB_crossover_falls_with_it": "that number was derived from the element floor being an element rate, and it is WITHDRAWN rather than restated.",
+  "what_is_UNAFFECTED_and_it_is_most_of_it": [
+   "every one of the seven levers' MEASUREMENTS stands; only the explanation of why they tied changes",
+   "ACCELERATOR_TOKEN_BYTES_ATLAS's ceiling -- 9.879 GB/token against the 589.73 GB/s roof caps raw TPS at 59.70 against the 71.67 that 50 accepted TPS needs -- is a BANDWIDTH DERIVATION with nothing timed, and is untouched",
+   "the three-body production evidence (Spearman(EBPW, TPS) = +1.000, the densest body fastest, a 17.3% byte cut returning -3.0%) was measured in PRODUCTION, not on an isolated submission, and is untouched",
+   "no shipped kernel changed and no production claim moves"
+  ]
+ },
+ "controls": {
+  "anti_vacuity": "every probe MUST be wrong or it did not remove what it claims to: rel_err 0.984 / 4.876 / 1.419 / 0.984 against the baseline's 2.021e-07",
+  "non_degeneracy": "wrong is not enough -- a folded loop is also wrong -- so every arm is checked for 17408 of 17408 nonzero rows and a nonzero output spread",
+  "the_anchor": "thin64 keeps every element and is asserted BYTE-IDENTICAL to the shipped kernel, so the sweep cannot drift into a family that excludes what executes",
+  "template_drift": "source_operand_probe RAISES if the byte body is not in the generated source, because a silent no-op replacement would make the probe BE the baseline and the tie would read as a finding",
+  "mutations_watched_failing": [
+   "a probe returning the baseline -- 5 tests",
+   "the thin bound not narrowed -- the anchor test",
+   "the thin validation disabled",
+   "the drift check disabled"
+  ]
+ },
+ "AND_TWO_OF_MY_MUTATIONS_REPORTED_SURVIVING_WITHOUT_EVER_LANDING": "The first mutation run showed two of three surviving, which would have been a real finding about the tests. It was not: the mutations were applied through a shell heredoc where %% is not an escape, so neither replacement MATCHED and the file was never modified. A MUTATION THAT FAILS TO APPLY READS EXACTLY LIKE A SUITE THAT CANNOT DETECT IT -- the check-that-cannot-fail in the mutation harness itself, a new place for it. Fixed by asserting the old text is present before writing, and all four then fail as intended.",
+ "claim_boundary": [
+  "SUBMISSION AND GRID LAUNCH ARE NOT SEPARATED. Every arm holds the grid at 17408 x 64 = 1.11M threads, so the ~0.245 ms fixed cost could be command-buffer submission, dispatch of that grid, or both. The 0.5% agreement with a submission floor fitted from two unrelated kernels is SUGGESTIVE and is not a separation; a grid sweep at fixed element count would settle it and is NOT RUN.",
+  "ONE shape, ONE tpr, ONE machine, INSTANCE. The fixed share is 86% AT THIS SHAPE; a kernel with far more element work per submission would show a smaller share, which is exactly the point.",
+  "BENCH_STATE CONTENDED, recorded not asserted, operator's job NOT killed per S032 s24. Run 1 of the operand arms carries 171-271% round-spread and run 2 is cleaner at 21-43%; the thin sweep is 16-37% except thin2. Minima and an ordinal rounds-won count sit beside every median.",
+  "the fit is FIVE POINTS with a visibly flat low region, so the intercept is an estimate of a floor and the slope is not a per-element cost anyone should quote.",
+  "NO SHIPPED KERNEL CHANGED -- every probe is WRONG BY CONSTRUCTION and none is a candidate; no model executed, no capability run, no adequacy claim moves."
+ ],
+ "next": "The one question this block leaves open is SEPARABLE and cheap: hold the element count fixed and vary the GRID, which would split the ~0.245 ms between submission and dispatch. It needs no generated code and no xcrun metal -- and that matters, because the previous block closed by saying the mechanism could only be named by reading the generated code, and this block named 86% of it without.",
+ "akb_registration": {
+  "evidence_domain": "accelerator",
+  "civilization": "I-D_ACCELERATOR",
+  "program": "HAWKING ACCELERATOR (S015/S031/S032)",
+  "machine_scope": "Apple M3 Ultra, INSTANCE",
+  "representation_scope": "ws_rtn_q4_g64 in every arm, UNCHANGED",
+  "kernel_scope": "native matvec tpr64 with one per-element operation removed per arm, plus an element-count sweep at fixed grid",
+  "why_declared": "membership must not depend on what this file was named (S032 s13)."
+ },
+ "identities": {
+  "experiment": {
+   "class": "ACCEL-KERNEL",
+   "knowledge_level": "INSTANCE",
+   "question": "which per-element operation sets the matvec floor, and whether any does"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "ram_gib": 96,
+   "measured_dram_gb_s": 589.73,
+   "bench_state": "CONTENDED",
+   "quiescence": {
+    "operand_run_1": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 45352,
+       "cpu_pct": 54.5,
+       "rss_gib": 43.03,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 77295,
+       "cpu_pct": 35.4,
+       "rss_gib": 1.94,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 728,
+       "cpu_pct": 31.0,
+       "rss_gib": 1.25,
+       "comm": "/Applications/OrbStack.app/Contents/Frameworks/OrbStack Helper.app/Contents/MacOS/OrbStack Helper"
+      },
+      {
+       "pid": 77306,
+       "cpu_pct": 43.9,
+       "rss_gib": 0.05,
+       "comm": "/System/Library/Frameworks/Metal.framework/Versions/A/XPCServices/MTLCompilerService.xpc/Contents/MacOS/MTLCompilerService"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 34.3,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 24.8,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 6,
+     "total_cpu_pct": 223.9,
+     "max_rss_gib": 43.03,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    },
+    "operand_run_2": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 45352,
+       "cpu_pct": 94.8,
+       "rss_gib": 40.29,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 77780,
+       "cpu_pct": 63.1,
+       "rss_gib": 1.95,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 728,
+       "cpu_pct": 33.2,
+       "rss_gib": 1.3,
+       "comm": "/Applications/OrbStack.app/Contents/Frameworks/OrbStack Helper.app/Contents/MacOS/OrbStack Helper"
+      },
+      {
+       "pid": 77788,
+       "cpu_pct": 25.3,
+       "rss_gib": 0.04,
+       "comm": "/System/Library/Frameworks/Metal.framework/Versions/A/XPCServices/MTLCompilerService.xpc/Contents/MacOS/MTLCompilerService"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 30.8,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 22.0,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 6,
+     "total_cpu_pct": 269.2,
+     "max_rss_gib": 40.29,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    },
+    "thin_fit": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 45352,
+       "cpu_pct": 85.4,
+       "rss_gib": 41.11,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 78398,
+       "cpu_pct": 34.1,
+       "rss_gib": 1.95,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 78417,
+       "cpu_pct": 59.0,
+       "rss_gib": 0.05,
+       "comm": "/System/Library/Frameworks/Metal.framework/Versions/A/XPCServices/MTLCompilerService.xpc/Contents/MacOS/MTLCompilerService"
+      },
+      {
+       "pid": 180,
+       "cpu_pct": 20.3,
+       "rss_gib": 0.03,
+       "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 33.4,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 24.9,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 6,
+     "total_cpu_pct": 257.1,
+     "max_rss_gib": 41.11,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    }
+   }
+  },
+  "device": {
+   "backend": "Metal",
+   "api": "mx.fast.metal_kernel JIT, MLX"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "NO MODEL EXECUTED. 17408x5120 is BORROWED from the resident's MLP so the result bears on it; synthetic weights, no forward pass, no capability run."
+  },
+  "representation": {
+   "native": "ws_rtn_q4_g64, 4.25 bpw",
+   "note": "identical in every arm"
+  },
+  "runtime": {
+   "analysis": "tools/accelerator/gravity_native.py::source_operand_probe and OPERAND_PROBES",
+   "tests": "tools/accelerator/test_operand_probes.py"
+  },
+  "kernel": {
+   "arms": [
+    "baseline",
+    "half x reads",
+    "no multiply",
+    "no x reads at all",
+    "element count at 1/32, 1/8, 1/4, 1/2, full"
+   ],
+   "tpr": 64,
+   "tg": 128
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device, no transfer crossed, HUMF not involved"
+  }
+ },
+ "bench": {
+  "state": "CONTENDED",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": {
+   "quiet": false,
+   "method": "enumerate",
+   "no_name_filter": true,
+   "thresholds": {
+    "cpu_pct": 20.0,
+    "rss_gib": 2.0
+   },
+   "contenders": [
+    {
+     "pid": 45352,
+     "cpu_pct": 54.5,
+     "rss_gib": 43.03,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 77295,
+     "cpu_pct": 35.4,
+     "rss_gib": 1.94,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 728,
+     "cpu_pct": 31.0,
+     "rss_gib": 1.25,
+     "comm": "/Applications/OrbStack.app/Contents/Frameworks/OrbStack Helper.app/Contents/MacOS/OrbStack Helper"
+    },
+    {
+     "pid": 77306,
+     "cpu_pct": 43.9,
+     "rss_gib": 0.05,
+     "comm": "/System/Library/Frameworks/Metal.framework/Versions/A/XPCServices/MTLCompilerService.xpc/Contents/MacOS/MTLCompilerService"
+    },
+    {
+     "pid": 739,
+     "cpu_pct": 34.3,
+     "rss_gib": 0.02,
+     "comm": "/usr/libexec/avconferenced"
+    },
+    {
+     "pid": 52616,
+     "cpu_pct": 24.8,
+     "rss_gib": 0.02,
+     "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+    }
+   ],
+   "n_contenders": 6,
+   "total_cpu_pct": 223.9,
+   "max_rss_gib": 43.03,
+   "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+  },
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "DERIVED from a quiescence sample this receipt already carried"
+ },
+ "A_TEST_IN_THIS_SUITE_WAS_A_TOOL_AND_EDITED_REALITY_UNTIL_IT_PASSED": {
+  "how_it_surfaced": "The full suite reported 6 failed / 632 passed, and an immediate re-run with NOTHING CHANGED reported 638 passed. A suite that self-heals is not a green, so it was chased rather than shrugged at.",
+  "the_defect": "test_the_stamper_is_IDEMPOTENT called stamp_bench_state.main([]) -- THE WRITE PATH. Adding a new performance receipt therefore made the suite FAIL (the receipt carried no bench block), the failing run then WROTE the stamp into the tracked receipt, and the next run PASSED. A CHECK THAT EDITS REALITY UNTIL IT HOLDS is the check-that-cannot-fail wearing the other hat, and a green that requires a previous run is not reproducible from a clean checkout -- a first CI run on this tree would fail.",
+  "demonstrated_not_asserted": "The stamp was stripped and the suite run twice on an untouched tree: 6 failed then 7 passed, with the bench key present again afterwards. That is the whole mechanism in one pair of runs.",
+  "the_fix_is_that_a_check_names_its_missing_input_instead_of_supplying_it": "The stamper ALREADY had a --check mode that reports and exits 1 without writing, so the test now calls that, and its failure message tells the author to run the tool themselves. THE STAMPER IS A TOOL AND THE TEST IS A CHECK, and the two had been collapsed. Verified in both directions: with the stamp removed the suite FAILS and the receipt is STILL unstamped afterwards; after running the tool by hand the suite passes twice with the receipt BYTE-IDENTICAL across both runs.",
+  "scope_checked_rather_than_assumed": "workspace/campaign/odyssey/ODYSSEY_COMPLETIONS.json is also modified in this tree, which looked like a second instance. It is not: a controlled before/after comparison shows this suite run leaves it unchanged, so that modification predates this block and no claim is made about it.",
+  "what_this_does_NOT_establish": "Only one such test was found, by tripping over it. Nothing here surveys the suite for other tests that write, and the fact that this one hid for many blocks is the reason to say so rather than to imply a clean sweep."
+ },
+ "AMENDED_2026_08_26_THE_FIXED_COST_IS_NOT_ONE_THING": {
+  "what_this_receipt_claimed": "A FIXED cost of 0.2450 ms = 86.1% of the kernel, read as the SIXTH SIGHTING of the per-submission floor, with its own boundary naming that submission and grid launch were not separated because every arm held the grid at 1.11M threads.",
+  "what_separates_them": "receipts/headless/ACCELERATOR_THE_FLOOR_SPLITS_THREE_WAYS.json ran the arm this receipt named as next. A trivial one-store-per-row probe holding the OUTPUT fixed while the grid sweeps 64x costs 50-64% of the baseline, extrapolates to 0.152-0.163 ms at zero threadgroups, and RISES 12% and 35% across the sweep.",
+  "the_correction": "SUBMISSION IS THE LARGEST TERM AND NOT THE WHOLE OF IT. Roughly 0.157 ms is submission, a further 0.02-0.055 ms is GRID LAUNCH which this receipt's axis could not see, and 18-30% of the kernel is the GROUP LOOP, its 1.39M scale loads and the reduction -- per-row work that an INNER-loop sweep holds constant and therefore deposits in the intercept. A FIXED INTERCEPT IS ONLY AS SPECIFIC AS THE AXIS THAT WAS VARIED.",
+  "what_stands": "The 86%-not-elements measurement is unchanged and is now CORROBORATED BY A SECOND ROUTE: the element term measures under 15% of the baseline from the trivial/thin2/baseline decomposition, against 14% from this receipt's own five-point element sweep. Every one of the seven dead levers still died for the reason stated -- the isolated instrument was mostly measuring something else -- and the production cross-check is untouched.",
+  "laws_reconciled": [
+   "AKB-AN-ISOLATED-MATVEC-IS-MOSTLY-NOT-ITS-ELEMENTS"
+  ],
+  "amending_receipt": "receipts/headless/ACCELERATOR_THE_FLOOR_SPLITS_THREE_WAYS.json",
+  "laws_unaffected": [
+   "AKB-THE-MATVEC-FLOOR-IS-THE-ELEMENT-NOT-THE-BYTE"
+  ],
+  "why_that_law_is_unaffected_rather_than_reconciled": "That law's claim is that the floor is NEITHER the byte NOR the element, and this amendment says what the remainder is MADE OF. Nothing in the split touches either half of that claim or the arms that established it -- the byte deletion still ties and every x-read and multiply arm still ties -- so the amendment does not REACH it. Reconciled would be the wrong word: it means 'reaches it and is already fixed', and this reaches it not at all. The distinction is worth keeping because one list would conflate a law that survived a correction with a law the correction never touched."
+ }
+}

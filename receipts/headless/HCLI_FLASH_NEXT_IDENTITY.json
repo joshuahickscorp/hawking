@@ -1,0 +1,217 @@
+{
+  "download_performed": false,
+  "model_lake": {
+    "atomic_publish": true,
+    "command": [
+      "hf",
+      "download",
+      "Qwen/Qwen3.8-Flash-Next",
+      "--revision",
+      "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "--local-dir",
+      "<ModelLake partial destination>"
+    ],
+    "download_performed": false,
+    "expected_bytes": 360000000000,
+    "free_bytes_observed": 3746816499712,
+    "hash_policy": "verify every acquired shard before atomic publish",
+    "hash_status": "NOT_RUN",
+    "hash_verified": false,
+    "human_confirmation_required": true,
+    "mounted": true,
+    "reason": "weights are not downloaded by identity census",
+    "resumable": true,
+    "root": "/Volumes/corpdrive/hawking-modellake",
+    "status": "READY_FOR_EXPLICIT_ACQUIRE",
+    "tier": 2
+  },
+  "organ_census": [
+    {
+      "id": "ngram_embedding",
+      "status": "IDENTITY_ONLY",
+      "target": "51B ngram path / 20M ngram vocabulary"
+    },
+    {
+      "id": "moe_router",
+      "status": "IDENTITY_ONLY",
+      "target": "512 experts, 10 routed + shared"
+    },
+    {
+      "id": "moe_shared_expert",
+      "status": "IDENTITY_ONLY",
+      "target": "shared expert path"
+    },
+    {
+      "id": "deltanet",
+      "status": "IDENTITY_ONLY",
+      "target": "3 DeltaNet blocks per repeated group"
+    },
+    {
+      "id": "qsa_sparse_attention",
+      "status": "IDENTITY_ONLY",
+      "target": "512-block / 2048-token QSA budget"
+    },
+    {
+      "id": "mtp",
+      "status": "IDENTITY_ONLY",
+      "target": "4B multi-token prediction head"
+    },
+    {
+      "id": "lm_head",
+      "status": "IDENTITY_ONLY",
+      "target": "output projection / vocabulary head"
+    }
+  ],
+  "profile": {
+    "artifact": {
+      "expected_bytes": 360000000000,
+      "expected_safetensor_shards": 131,
+      "format": "transformers",
+      "local": {
+        "reason": "set HCLI_FLASH_NEXT_ROOT to inspect a local acquisition",
+        "status": "NOT_STAGED"
+      },
+      "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "requested_revision": "main",
+      "source_repo": "Qwen/Qwen3.8-Flash-Next"
+    },
+    "capabilities": {
+      "features": {
+        "streaming": {
+          "enforcement": "unknown",
+          "note": null,
+          "observed_at": null,
+          "source": "identity only",
+          "state": "unknown"
+        },
+        "tool_calling": {
+          "enforcement": "unknown",
+          "note": null,
+          "observed_at": null,
+          "source": "identity only",
+          "state": "unknown"
+        },
+        "vision": {
+          "enforcement": "unknown",
+          "note": null,
+          "observed_at": null,
+          "source": "identity only",
+          "state": "unknown"
+        }
+      },
+      "schema": "hcli.provider.capabilities.v1"
+    },
+    "compiler": {
+      "required_before_promotion": true,
+      "status": "NOT_RUN"
+    },
+    "environment": {},
+    "fallbacks": [
+      "no local weights",
+      "no native resident",
+      "no capability qualification"
+    ],
+    "generation": {
+      "source": "https://huggingface.co/Qwen/Qwen3.8-Flash-Next",
+      "status": "UPSTREAM_GENERATION_CONFIG_NOT_EXECUTED"
+    },
+    "hot_bytes": null,
+    "limits": {
+      "context_length": 262144,
+      "native_extensible_context_length": 1000000
+    },
+    "machine_genome": {},
+    "metadata": {
+      "architecture": {
+        "architectures": [
+          "Qwen4ExpForConditionalGeneration"
+        ],
+        "experts": 512,
+        "hidden_size": 2560,
+        "layers": 48,
+        "model_type": "qwen4_exp",
+        "ngram_vocab_size": 20000000,
+        "routed_experts_per_token": 10,
+        "vocab_size": 248320
+      },
+      "model_page": "https://huggingface.co/Qwen/Qwen3.8-Flash-Next",
+      "model_tree": "https://huggingface.co/Qwen/Qwen3.8-Flash-Next/tree/34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "observed_at": 1787792635.8022249
+    },
+    "model_id": "Qwen/Qwen3.8-Flash-Next",
+    "profile_id": "hf:Qwen/Qwen3.8-Flash-Next@34567a4712bc",
+    "prompt_contract": {
+      "source": "https://huggingface.co/Qwen/Qwen3.8-Flash-Next",
+      "status": "UPSTREAM_CHAT_TEMPLATE_NOT_EXECUTED"
+    },
+    "provider": "huggingface",
+    "qualification": {
+      "promotion_allowed": false,
+      "reason": "no local weights or runtime qualification",
+      "status": "IDENTITY_ONLY"
+    },
+    "receipts": [],
+    "representation": {
+      "organs": [
+        {
+          "id": "ngram_embedding",
+          "status": "IDENTITY_ONLY",
+          "target": "51B ngram path / 20M ngram vocabulary"
+        },
+        {
+          "id": "moe_router",
+          "status": "IDENTITY_ONLY",
+          "target": "512 experts, 10 routed + shared"
+        },
+        {
+          "id": "moe_shared_expert",
+          "status": "IDENTITY_ONLY",
+          "target": "shared expert path"
+        },
+        {
+          "id": "deltanet",
+          "status": "IDENTITY_ONLY",
+          "target": "3 DeltaNet blocks per repeated group"
+        },
+        {
+          "id": "qsa_sparse_attention",
+          "status": "IDENTITY_ONLY",
+          "target": "512-block / 2048-token QSA budget"
+        },
+        {
+          "id": "mtp",
+          "status": "IDENTITY_ONLY",
+          "target": "4B multi-token prediction head"
+        },
+        {
+          "id": "lm_head",
+          "status": "IDENTITY_ONLY",
+          "target": "output projection / vocabulary head"
+        }
+      ],
+      "status": "BF16_MODEL_LAKE_TARGET"
+    },
+    "runtime": {
+      "compatible_runtimes": [
+        "transformers",
+        "vllm",
+        "sglang"
+      ],
+      "native_hawking_resident": "NOT_IMPLEMENTED",
+      "status": "NOT_COMPILED"
+    },
+    "schema": "hcli.provider.profile.v1",
+    "tokenizer": {
+      "authoritative_after_acquire": true,
+      "source": "https://huggingface.co/Qwen/Qwen3.8-Flash-Next",
+      "status": "UPSTREAM_DECLARED"
+    }
+  },
+  "schema": "hcli.flash-next.identity.v1",
+  "transfer_ledger": {
+    "bytes_transferred": 0,
+    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "source": "https://huggingface.co/Qwen/Qwen3.8-Flash-Next",
+    "verified_bytes": 0
+  }
+}

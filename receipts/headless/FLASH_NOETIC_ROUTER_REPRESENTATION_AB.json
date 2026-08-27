@@ -1,0 +1,764 @@
+{
+  "body_mutated": false,
+  "candidate_bodies_persisted": false,
+  "candidates": [
+    {
+      "body_persisted": false,
+      "candidate_bytes": 696320,
+      "candidate_sha256": "54a03b2e7a32d592f9604fb9101649b680bebff374e6d9a971c3e93b9578b2b0",
+      "code_bytes": 655360,
+      "code_dtype": "uint4_packed",
+      "effective_bits_per_value": 4.25,
+      "family": "uniform_q4",
+      "group_size": 64,
+      "id": "independent_q4_g64",
+      "label": "[D]",
+      "logits_finite": true,
+      "native_kernel": "qwen_uniform_q4_group64_matvec",
+      "native_kernel_compatible": true,
+      "scale_bytes": 40960,
+      "selection": {
+        "expert_ids": [
+          29,
+          309,
+          455,
+          374,
+          151,
+          93,
+          0,
+          500,
+          149,
+          220
+        ],
+        "logits_sha256": "14189b79a355dc44adce38f3f782653e49d6ab42c20aac9713a40e443667cbd1",
+        "probabilities_finite": true,
+        "probability_vector_sha256": "9426e33b677aad48648274716040fd17b1c32f3904c8248fd9c555977f9570b8",
+        "router_probabilities": [
+          0.005038146860897541,
+          0.004888959228992462,
+          0.0045752753503620625,
+          0.004258244764059782,
+          0.004131840541958809,
+          0.004084357526153326,
+          0.003927456680685282,
+          0.003922594711184502,
+          0.003883223282173276,
+          0.0037942647468298674
+        ],
+        "selected_probability_sum": 0.042504362761974335,
+        "selected_weight_sum": 1.0,
+        "selected_weights": [
+          0.1185324639081955,
+          0.11502252519130707,
+          0.10764248669147491,
+          0.10018371045589447,
+          0.09720979630947113,
+          0.09609266370534897,
+          0.09240125864744186,
+          0.09228686988353729,
+          0.09136058390140533,
+          0.08926765620708466
+        ]
+      },
+      "source_selection_parity": {
+        "candidate_expert_ids": [
+          29,
+          309,
+          455,
+          374,
+          151,
+          93,
+          0,
+          500,
+          149,
+          220
+        ],
+        "candidate_selection_weight_sum": 1.0,
+        "common_selected_weights": {
+          "count": 8,
+          "expert_ids": [
+            0,
+            29,
+            151,
+            220,
+            309,
+            374,
+            455,
+            500
+          ],
+          "finite": true,
+          "max_abs_error": 0.008621998131275177,
+          "rmse": 0.004660995677113533
+        },
+        "expert_ids_exact_match": false,
+        "label": "[V]/[D]",
+        "logits": {
+          "cosine": 0.9802068471908569,
+          "count": 512,
+          "finite": true,
+          "max_abs_error": 0.2657049894332886,
+          "rmse": 0.0590323880314827
+        },
+        "qualification": "SOURCE_ROUTER_SELECTION_NOT_QUALIFIED",
+        "source_expert_ids": [
+          29,
+          309,
+          455,
+          151,
+          500,
+          374,
+          15,
+          220,
+          37,
+          0
+        ],
+        "source_selection_weight_sum": 1.0,
+        "status": "MISMATCH",
+        "top_k_overlap_count": 8,
+        "top_k_overlap_fraction": 0.8
+      },
+      "weight_reconstruction_finite": true
+    },
+    {
+      "body_persisted": false,
+      "candidate_bytes": 737280,
+      "candidate_sha256": "8c71ea642b57be99de1913920fe0639d307d34e220450045696cabc06446539a",
+      "code_bytes": 655360,
+      "code_dtype": "uint4_packed",
+      "effective_bits_per_value": 4.5,
+      "family": "uniform_q4",
+      "group_size": 32,
+      "id": "independent_q4_g32",
+      "label": "[D]",
+      "logits_finite": true,
+      "native_kernel": null,
+      "native_kernel_compatible": false,
+      "scale_bytes": 81920,
+      "selection": {
+        "expert_ids": [
+          29,
+          455,
+          309,
+          374,
+          500,
+          220,
+          151,
+          149,
+          0,
+          163
+        ],
+        "logits_sha256": "b632104b7a3cafb5241981888814bb05759b0b1ba542937196f802ac7b5abe97",
+        "probabilities_finite": true,
+        "probability_vector_sha256": "3b7aca1e3232d5de5c0dff7146e3820248af702b8981de0aa7785c588a5f58a6",
+        "router_probabilities": [
+          0.0051756747998297215,
+          0.004801900591701269,
+          0.004790158476680517,
+          0.004395630210638046,
+          0.004369635134935379,
+          0.004104730673134327,
+          0.004053523298352957,
+          0.004010021686553955,
+          0.0038110765162855387,
+          0.0037279606331139803
+        ],
+        "selected_probability_sum": 0.04324031248688698,
+        "selected_weight_sum": 1.0,
+        "selected_weights": [
+          0.11969558894634247,
+          0.11105147749185562,
+          0.11077992618083954,
+          0.10165584087371826,
+          0.10105466097593307,
+          0.0949283316731453,
+          0.09374407678842545,
+          0.09273803979158401,
+          0.08813712000846863,
+          0.08621492981910706
+        ]
+      },
+      "source_selection_parity": {
+        "candidate_expert_ids": [
+          29,
+          455,
+          309,
+          374,
+          500,
+          220,
+          151,
+          149,
+          0,
+          163
+        ],
+        "candidate_selection_weight_sum": 1.0,
+        "common_selected_weights": {
+          "count": 8,
+          "expert_ids": [
+            0,
+            29,
+            151,
+            220,
+            309,
+            374,
+            455,
+            500
+          ],
+          "finite": true,
+          "max_abs_error": 0.009739995002746582,
+          "rmse": 0.0046950154937803745
+        },
+        "expert_ids_exact_match": false,
+        "label": "[V]/[D]",
+        "logits": {
+          "cosine": 0.9876571893692017,
+          "count": 512,
+          "finite": true,
+          "max_abs_error": 0.210964173078537,
+          "rmse": 0.046065907925367355
+        },
+        "qualification": "SOURCE_ROUTER_SELECTION_NOT_QUALIFIED",
+        "source_expert_ids": [
+          29,
+          309,
+          455,
+          151,
+          500,
+          374,
+          15,
+          220,
+          37,
+          0
+        ],
+        "source_selection_weight_sum": 1.0,
+        "status": "MISMATCH",
+        "top_k_overlap_count": 8,
+        "top_k_overlap_fraction": 0.8
+      },
+      "weight_reconstruction_finite": true
+    },
+    {
+      "body_persisted": false,
+      "candidate_bytes": 819200,
+      "candidate_sha256": "1684d8ea58899de08454d8dbd86033ecc113c1d79a42852db97f46f533410e61",
+      "code_bytes": 655360,
+      "code_dtype": "uint4_packed",
+      "effective_bits_per_value": 5.0,
+      "family": "uniform_q4",
+      "group_size": 16,
+      "id": "independent_q4_g16",
+      "label": "[D]",
+      "logits_finite": true,
+      "native_kernel": null,
+      "native_kernel_compatible": false,
+      "scale_bytes": 163840,
+      "selection": {
+        "expert_ids": [
+          29,
+          309,
+          455,
+          374,
+          500,
+          151,
+          220,
+          15,
+          149,
+          0
+        ],
+        "logits_sha256": "e10125ece45198a2a2e1e0c14d99f91bdeff8235c86cf45847d8e61662ebf0b8",
+        "probabilities_finite": true,
+        "probability_vector_sha256": "6f60e444d9a362e90fd5c99bc7d39a9596a6607bf797e7bb9893eb08514f2558",
+        "router_probabilities": [
+          0.0051095979288220406,
+          0.004921702202409506,
+          0.004530867096036673,
+          0.004413696005940437,
+          0.004164510872215033,
+          0.0041427467949688435,
+          0.0040216161869466305,
+          0.003982501104474068,
+          0.0039223008789122105,
+          0.003675151150673628
+        ],
+        "selected_probability_sum": 0.042884692549705505,
+        "selected_weight_sum": 0.9999999403953552,
+        "selected_weights": [
+          0.11914736032485962,
+          0.1147659420967102,
+          0.10565231740474701,
+          0.10292007774114609,
+          0.09710949659347534,
+          0.09660199284553528,
+          0.09377742558717728,
+          0.09286533296108246,
+          0.09146156162023544,
+          0.0856984406709671
+        ]
+      },
+      "source_selection_parity": {
+        "candidate_expert_ids": [
+          29,
+          309,
+          455,
+          374,
+          500,
+          151,
+          220,
+          15,
+          149,
+          0
+        ],
+        "candidate_selection_weight_sum": 0.9999999403953552,
+        "common_selected_weights": {
+          "count": 9,
+          "expert_ids": [
+            0,
+            15,
+            29,
+            151,
+            220,
+            309,
+            374,
+            455,
+            500
+          ],
+          "finite": true,
+          "max_abs_error": 0.006882078945636749,
+          "rmse": 0.003619532333686948
+        },
+        "expert_ids_exact_match": false,
+        "label": "[V]/[D]",
+        "logits": {
+          "cosine": 0.9925892949104309,
+          "count": 512,
+          "finite": true,
+          "max_abs_error": 0.11057045310735703,
+          "rmse": 0.03566847741603851
+        },
+        "qualification": "SOURCE_ROUTER_SELECTION_NOT_QUALIFIED",
+        "source_expert_ids": [
+          29,
+          309,
+          455,
+          151,
+          500,
+          374,
+          15,
+          220,
+          37,
+          0
+        ],
+        "source_selection_weight_sum": 1.0,
+        "status": "MISMATCH",
+        "top_k_overlap_count": 9,
+        "top_k_overlap_fraction": 0.9
+      },
+      "weight_reconstruction_finite": true
+    },
+    {
+      "body_persisted": false,
+      "candidate_bytes": 696320,
+      "candidate_sha256": "0a0b6f2d8c298ddcae04f100ac7c70572e9b5e8331c7fe72bf7279805e1e52fa",
+      "code_bytes": 655360,
+      "code_dtype": "nf4_packed",
+      "effective_bits_per_value": 4.25,
+      "family": "nf4",
+      "group_size": 64,
+      "id": "independent_nf4_g64",
+      "label": "[D]",
+      "logits_finite": true,
+      "native_kernel": null,
+      "native_kernel_compatible": false,
+      "scale_bytes": 40960,
+      "selection": {
+        "expert_ids": [
+          29,
+          455,
+          151,
+          309,
+          220,
+          374,
+          500,
+          15,
+          37,
+          75
+        ],
+        "logits_sha256": "7bdd4106c0b9e9a1ae963b575beea664b43c87cc8b613bd217d0442adc6c6fd5",
+        "probabilities_finite": true,
+        "probability_vector_sha256": "46cab9c1bb335a7b2c11a8d571b9377981e7e66fa5dc0d8a380441e242210059",
+        "router_probabilities": [
+          0.0052217175252735615,
+          0.005004889331758022,
+          0.004584111273288727,
+          0.004424922168254852,
+          0.0043220981024205685,
+          0.004183244425803423,
+          0.004104285500943661,
+          0.004096921533346176,
+          0.004006625153124332,
+          0.0038220060523599386
+        ],
+        "selected_probability_sum": 0.043770819902420044,
+        "selected_weight_sum": 1.0,
+        "selected_weights": [
+          0.11929677426815033,
+          0.1143430545926094,
+          0.10472984611988068,
+          0.10109297186136246,
+          0.09874382615089417,
+          0.09557153284549713,
+          0.09376762062311172,
+          0.09359937906265259,
+          0.09153643995523453,
+          0.08731858432292938
+        ]
+      },
+      "source_selection_parity": {
+        "candidate_expert_ids": [
+          29,
+          455,
+          151,
+          309,
+          220,
+          374,
+          500,
+          15,
+          37,
+          75
+        ],
+        "candidate_selection_weight_sum": 1.0,
+        "common_selected_weights": {
+          "count": 9,
+          "expert_ids": [
+            15,
+            29,
+            37,
+            151,
+            220,
+            309,
+            374,
+            455,
+            500
+          ],
+          "finite": true,
+          "max_abs_error": 0.01079501211643219,
+          "rmse": 0.00618555024266243
+        },
+        "expert_ids_exact_match": false,
+        "label": "[V]/[D]",
+        "logits": {
+          "cosine": 0.9883633255958557,
+          "count": 512,
+          "finite": true,
+          "max_abs_error": 0.17932194471359253,
+          "rmse": 0.04492805898189545
+        },
+        "qualification": "SOURCE_ROUTER_SELECTION_NOT_QUALIFIED",
+        "source_expert_ids": [
+          29,
+          309,
+          455,
+          151,
+          500,
+          374,
+          15,
+          220,
+          37,
+          0
+        ],
+        "source_selection_weight_sum": 1.0,
+        "status": "MISMATCH",
+        "top_k_overlap_count": 9,
+        "top_k_overlap_fraction": 0.9
+      },
+      "weight_reconstruction_finite": true
+    }
+  ],
+  "claim_boundary": "Bounded in-memory Flash router representation study only. It compares source BF16 routing to derived low-bit candidates and identifies native-kernel compatibility; no candidate body is persisted, no source-model runtime is loaded, and no complete-token, EBPW, or Flash TPS qualification is made.",
+  "compiler_stage": "NoeticRepresentationStudy",
+  "complete_system_ebpw": null,
+  "complete_token_runtime": "NOT_TESTED",
+  "config": {
+    "label": "[V]",
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/config.json",
+    "router": {
+      "config_scope": "text_config",
+      "norm_topk_prob": true,
+      "norm_topk_prob_default_when_absent": true,
+      "norm_topk_prob_present_in_pinned_config": false,
+      "num_experts": 512,
+      "num_experts_per_tok": 10,
+      "router_logits": "F.linear(hidden_states, gate.weight)",
+      "router_probability": "softmax(router_logits, dtype=float32, dim=-1)",
+      "selection": "topk(router_probs, num_experts_per_tok)",
+      "shared_expert_sigmoid_is_not_router_selection": true
+    },
+    "sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b"
+  },
+  "elapsed_s": 0.068,
+  "finished_at": 1787822718.821402,
+  "flash_tps": null,
+  "generated_at": 1787822718.753132,
+  "input": {
+    "definition": "((index * 71) mod 509 - 254) / 509",
+    "deterministic_sha256": "62055d5ebab03995a1e46aa8d8586ad80052602b0b1ed744c56b912c8c14593a",
+    "label": "[V]",
+    "values": 2560
+  },
+  "model_loaded": false,
+  "next_action": "implement and parity-test the selected alternate native kernel only if its source-routing overlap justifies the representation cost; otherwise continue the current Q4/G64 path toward expert dispatch",
+  "noetic_ir": {
+    "candidate_bodies_persisted": false,
+    "complete_model": false,
+    "operations": [
+      "read_pinned_router_source_reference",
+      "derive_in_memory_router_representations",
+      "execute_source_and_candidate_router_selection",
+      "compare_ebpw_and_source_top_k_overlap",
+      "retain_native_compatibility_boundary"
+    ],
+    "schema": "hcli.noetic.ir.v1",
+    "semantic_type": "NoeticIR"
+  },
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "physical_graph": {
+    "compiler_stage": "PhysicalGraphCompiler",
+    "component_scope": "bounded full Flash router representation comparison; no persisted candidate body or native selection execution",
+    "computation": [
+      {
+        "execution_input": true,
+        "id": "router_bf16_source_reference",
+        "kind": "verified_source_reference",
+        "shape": [
+          512,
+          2560
+        ],
+        "stage": "SourceSpecimen",
+        "tensor_name": "model.language_model.layers.0.mlp.gate.weight"
+      },
+      {
+        "execution_input": true,
+        "id": "router_source_softmax_top_k",
+        "kind": "source_router_selection_reference",
+        "stage": "NoeticRepresentationStudy",
+        "top_k": 10
+      },
+      {
+        "body_persisted": false,
+        "candidate_count": 4,
+        "execution_input": true,
+        "id": "router_representation_candidates",
+        "kind": "in_memory_representation_candidates",
+        "stage": "NoeticRepresentationStudy"
+      },
+      {
+        "best_candidate": "independent_nf4_g64",
+        "execution_input": true,
+        "id": "router_ebpw_routing_tradeoff",
+        "kind": "bytes_vs_source_top_k_overlap",
+        "stage": "NoeticRepresentationStudy"
+      }
+    ],
+    "data": [
+      {
+        "active_bytes_per_token": null,
+        "bytes": null,
+        "id": "router",
+        "kind": "tensor_group",
+        "source": "architecture metadata; size unresolved"
+      }
+    ],
+    "dependencies": [
+      {
+        "from": "router_bf16_source_reference",
+        "kind": "source_selection_reference",
+        "to": "router_source_softmax_top_k"
+      },
+      {
+        "from": "router_bf16_source_reference",
+        "kind": "source_to_candidate_transform",
+        "to": "router_representation_candidates"
+      },
+      {
+        "from": "router_representation_candidates",
+        "kind": "candidate_comparison",
+        "to": "router_ebpw_routing_tradeoff"
+      }
+    ],
+    "device_placement": {
+      "candidates": [
+        "cpu"
+      ],
+      "selected": null
+    },
+    "evidence": [
+      {
+        "label": "[V]",
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/config.json",
+        "schema": "config.json",
+        "sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b",
+        "status": "PINNED"
+      }
+    ],
+    "fingerprint": "749be67b84aae2a981a00bb5474f677643cd1d40d68d721c7aa048afc364ab04",
+    "generated_at": 1787822718.821236,
+    "graph_execution_observed": true,
+    "memory": [
+      {
+        "role": "active working set",
+        "status": "candidate",
+        "tier": "hot"
+      },
+      {
+        "role": "canonical source",
+        "status": "candidate",
+        "tier": "cold"
+      }
+    ],
+    "model_id": "Qwen/Qwen3.8-Flash-Next",
+    "native_kernel_execution_observed": false,
+    "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+    "precision": {
+      "accumulator": "unresolved",
+      "activation": "unresolved",
+      "weight": "unresolved"
+    },
+    "provider_context": {
+      "kernel": "router_matvec_variants",
+      "provider": "derived-cpu-representation-study"
+    },
+    "qualification": "BOUNDED_ROUTER_REPRESENTATION_AB",
+    "representation": {
+      "candidate_bodies_persisted": false,
+      "dense_rematerialization": "in_memory_study_only",
+      "source_independent_execution": false
+    },
+    "residency": {
+      "candidate": "in-memory only",
+      "source": "bounded pinned router tensor read",
+      "whole_model": "not loaded"
+    },
+    "schema": "hcli.physical_graph.v1",
+    "semantic_type": "PhysicalGraphPlan",
+    "state": {
+      "kv_cache": "unresolved",
+      "recurrent_state": "unresolved"
+    },
+    "synchronization": [
+      {
+        "kind": "runtime_boundary",
+        "status": "unresolved"
+      }
+    ]
+  },
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTER_REPRESENTATION_AB.json",
+  "recommendation": {
+    "best_low_bit_overlap_candidate": "independent_nf4_g64",
+    "best_low_bit_overlap_count": 9,
+    "decision": "retain independent_q4_g64 for the current native kernel; evaluate independent_nf4_g64 only with a native NF4 kernel, or accept the extra scale bytes of a tighter Q4 group if exact routing quality justifies it",
+    "label": "[D]",
+    "native_compatible_baseline": "independent_q4_g64",
+    "native_compatible_baseline_overlap_count": 8,
+    "source_top_k": [
+      29,
+      309,
+      455,
+      151,
+      500,
+      374,
+      15,
+      220,
+      37,
+      0
+    ],
+    "source_top_k_exact_for_any_low_bit_candidate": false
+  },
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "schema": "hcli.agentos.flash_noetic_router_representation_ab.v1",
+  "semantic_type": "NoeticRepresentationStudy",
+  "source_block": {
+    "bytes": 2621440,
+    "dtype": "BF16",
+    "label": "[V]",
+    "payload_sha256": "966e4d1ca7c18994a9311e82f0074584fe09e65e81eb8ddefe0a4dceebfc6ac6",
+    "shape": [
+      512,
+      2560
+    ],
+    "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00003-of-00131.safetensors",
+    "source_guard_unchanged": true,
+    "source_mutation": false,
+    "tensor_name": "model.language_model.layers.0.mlp.gate.weight"
+  },
+  "source_identity": {
+    "model_lake_manifest": {
+      "bytes": 360053432320,
+      "label": "[V]",
+      "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+      "manifest_sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7",
+      "n_files": 144,
+      "n_sha256_verified": 132,
+      "n_size_only_verified": 12,
+      "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+      "repo": "Qwen/Qwen3.8-Flash-Next",
+      "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915"
+    },
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc"
+  },
+  "source_selection": {
+    "expert_ids": [
+      29,
+      309,
+      455,
+      151,
+      500,
+      374,
+      15,
+      220,
+      37,
+      0
+    ],
+    "logits_sha256": "93d667bf3397252bf2ca92599eaa2a9b23301b704ba2fd5c8249f8b47d61f40f",
+    "probabilities_finite": true,
+    "probability_vector_sha256": "f27f8342ada398627d38707dffcc81d44515d3d9a5beeadf3cba3451e65b3f50",
+    "router_probabilities": [
+      0.005116026382893324,
+      0.004751706495881081,
+      0.004427797626703978,
+      0.004394805524498224,
+      0.004285440780222416,
+      0.0041353353299200535,
+      0.004015421960502863,
+      0.0038680764846503735,
+      0.0037573452573269606,
+      0.0037164699751883745
+    ],
+    "selected_probability_sum": 0.04246842488646507,
+    "selected_weight_sum": 1.0,
+    "selected_weights": [
+      0.12046658992767334,
+      0.11188798397779465,
+      0.10426093637943268,
+      0.10348407179117203,
+      0.10090886801481247,
+      0.09737434983253479,
+      0.09455076605081558,
+      0.09108123183250427,
+      0.0884738564491272,
+      0.08751136809587479
+    ]
+  },
+  "status": "PASSED",
+  "validation": {
+    "all_candidates_finite": true,
+    "errors": [],
+    "model_loaded": false,
+    "source_guard_unchanged": true,
+    "source_mutation": false
+  },
+  "whole_model_capability": "NOT_TESTED"
+}

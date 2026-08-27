@@ -4,8 +4,8 @@ Scheduler policy stays in ``hcli.scheduler.Scheduler``. Session persistence
 stays in ``hcli.session.SessionStore``. Context arithmetic stays in
 ``hcli.context_budget``. This module names the six planes a runtime has —
 model semantics, backend, session id, context, health, performance profile —
-and selects a backend (MLX, llama.cpp, Noetic native, later ones) without
-copying those other authorities.
+and selects a backend (MLX, llama.cpp, native, later ones) without copying
+those other authorities.
 
 MLX is first-class. llama.cpp Q5_K numbers are archived science. The deleted
 GGUF is not required to classify, load a genome, or construct an interface.
@@ -20,13 +20,16 @@ from typing import Any, Dict, List, Optional, Tuple
 from .backends import (
     LlamaServerBackend,
     MlxServerBackend,
+    OpenAICompatibleBackend,
     RuntimeBackend,
     is_mlx_model_dir,
+    is_remote_endpoint,
     mlx_context_length,
     mlx_quantisation_label,
     model_bytes_at,
     quantisation_from_path,
 )
+from .hawking_native import config_for_model_path, is_hawking_native_path
 
 # Historical llama.cpp artifact. Cited as science. Never a required open().
 ARCHIVED_Q5K_GGUF_NAME = "Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf"
@@ -34,7 +37,15 @@ ARCHIVED_Q5K_GGUF_REL = (
     "models/qwen3.8-27b-abliterated/" + ARCHIVED_Q5K_GGUF_NAME
 )
 
-BACKEND_KINDS = ("mlx", "llamacpp", "noetic_native")
+BACKEND_KINDS = ("mlx", "llamacpp", "noetic_native", "remote")
+BACKEND_ALIASES = {
+    "native": "noetic_native",
+    "hawking-native": "noetic_native",
+    "hawking_native": "noetic_native",
+    "openai": "remote",
+    "openai-compatible": "remote",
+    "openai_compatible": "remote",
+}
 PLANES = (
     "model_semantics",
     "backend",
@@ -66,10 +77,14 @@ def q5k_gguf_required() -> bool:
 def artifact_present(path: Optional[str]) -> bool:
     if not path:
         return False
+    if is_remote_endpoint(str(path)):
+        # A remote selection is present when the endpoint is syntactically
+        # valid; readiness is a separate live-health observation.
+        return True
     expanded = os.path.realpath(os.path.expanduser(str(path)))
     if os.path.isfile(expanded):
         return True
-    return is_mlx_model_dir(expanded)
+    return is_mlx_model_dir(expanded) or is_hawking_native_path(expanded)
 
 
 def classify_backend(
@@ -87,13 +102,18 @@ def classify_backend(
     """
     environ = env if env is not None else os.environ
     forced = (environ.get("HCLI_RUNTIME_BACKEND") or "").strip().lower()
+    forced = BACKEND_ALIASES.get(forced, forced)
     if forced in BACKEND_KINDS:
         return forced
     if not model_path:
         return "mlx"
+    if is_remote_endpoint(str(model_path)):
+        return "remote"
     expanded = os.path.realpath(os.path.expanduser(str(model_path)))
     if is_mlx_model_dir(expanded):
         return "mlx"
+    if is_hawking_native_path(expanded):
+        return "noetic_native"
     lower = expanded.lower()
     if lower.endswith(".gguf"):
         return "llamacpp"
@@ -129,9 +149,11 @@ def make_backend_for_model(
             n_slots=n_slots,
         )
     if kind == "noetic_native":
-        from .backends import NoeticNativeBackend
+        from .backends import NativeRuntimeBackend
 
-        return NoeticNativeBackend(model_path=model_path, port=port, n_slots=n_slots)
+        return NativeRuntimeBackend(model_path=model_path, port=port, n_slots=n_slots)
+    if kind == "remote":
+        return OpenAICompatibleBackend(model_path=model_path, port=port, n_slots=n_slots)
     return LlamaServerBackend(
         model_path=model_path,
         port=port,
@@ -180,6 +202,23 @@ def model_semantics_for(path: Optional[str]) -> ModelSemantics:
             present=False,
         )
     expanded = os.path.realpath(os.path.expanduser(str(path)))
+    if is_remote_endpoint(str(path)):
+        # Keep URLs opaque.  In particular, do not run them through
+        # os.path.realpath or persist query strings that might contain a key.
+        remote = OpenAICompatibleBackend(str(path))
+        identity = remote.identity()
+        return ModelSemantics(
+            identity=str(identity.get("model_identity") or "remote"),
+            backend_kind="remote",
+            artifact_kind="remote_endpoint",
+            path=str(identity.get("model_path") or path),
+            bytes=None,
+            architecture="provider-managed",
+            quantisation="provider-managed",
+            context_length=None,
+            requires_on_disk=False,
+            present=True,
+        )
     kind = classify_backend(expanded)
     present = artifact_present(expanded)
     if kind == "mlx":
@@ -206,6 +245,34 @@ def model_semantics_for(path: Optional[str]) -> ModelSemantics:
             path=expanded,
             bytes=size,
             quantisation=quantisation_from_path(expanded),
+            requires_on_disk=False,
+            present=present,
+        )
+    if kind == "noetic_native":
+        try:
+            native = config_for_model_path(expanded)
+            identity = native.identity()
+            artifact_root = identity.get("artifact_root") or expanded
+            artifact_inventory = identity.get("artifact_inventory") or {}
+            size = artifact_inventory.get("artifact_bytes")
+            context = identity.get("max_seq_len")
+            architecture = identity.get("architecture")
+            quantisation = identity.get("quantisation")
+        except Exception:
+            artifact_root = expanded
+            size = model_bytes_at(expanded) if present else None
+            context = None
+            architecture = None
+            quantisation = None
+        return ModelSemantics(
+            identity=f"noetic_native:{artifact_root}",
+            backend_kind="noetic_native",
+            artifact_kind="native",
+            path=str(artifact_root),
+            bytes=int(size) if isinstance(size, (int, float)) else None,
+            architecture=str(architecture) if architecture else None,
+            quantisation=str(quantisation) if quantisation else None,
+            context_length=int(context) if isinstance(context, (int, float)) else None,
             requires_on_disk=False,
             present=present,
         )
@@ -312,6 +379,17 @@ class RuntimeInterface:
             ident = backend.identity()
         except Exception as exc:  # noqa: BLE001
             ident = {"identity_error": f"{type(exc).__name__}: {exc}"}
+        try:
+            from .providers import profile_from_backend
+
+            self.profile = profile_from_backend(backend).to_dict()
+        except Exception as exc:  # noqa: BLE001 - profile is diagnostic, not admission
+            self.profile = {
+                "schema": "hcli.provider.profile.v1",
+                "provider": self.backend_kind,
+                "model_id": self.model.identity,
+                "profile_error": f"{type(exc).__name__}: {exc}",
+            }
         self.health = RuntimeHealth(
             ready=True,
             reason="backend attached (spawn is the pool's job)",
@@ -434,7 +512,7 @@ def runtime_interface_census() -> Dict[str, Any]:
         "backend_kinds": list(BACKEND_KINDS),
         "mlx_first_class": True,
         "llamacpp_status": "archived science when the Q5_K GGUF is absent",
-        "noetic_native": "interface reservation; complete() refuses to pretend",
+        "noetic_native": "profile-driven native one-shot/resident connector",
         "scheduler_duplicated": "Scheduler" in duplicated,
         "session_store_duplicated": "SessionStore" in duplicated,
         "foreign_classes_defined_here": duplicated,

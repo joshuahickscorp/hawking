@@ -28,12 +28,12 @@ class App:
             registry=self.registry,
         )
 
-    def run(self, prompt: Optional[str] = None) -> int:
+    def run(self, prompt: Optional[str] = None, *, plain: bool = False) -> int:
         if prompt:
-            return self._run_headless(prompt)
+            return self._run_headless(prompt, plain=plain)
         return self._run_interactive()
 
-    def _run_headless(self, prompt: str) -> int:
+    def _run_headless(self, prompt: str, *, plain: bool = False) -> int:
         self.bus.emit("session_started", {"mode": "headless"})
         try:
             # A slash command is a command in every mode. Routing it through
@@ -66,6 +66,12 @@ class App:
                 if isinstance(result, bool):
                     return 0
                 print(result if isinstance(result, str) else str(result))
+                return 0
+
+            if plain:
+                text = self.controller.complete_text(prompt)
+                if text:
+                    print(text)
                 return 0
 
             result = self.controller.execute(prompt)

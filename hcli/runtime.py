@@ -18,8 +18,11 @@ from .backends import (
     CompletionResult,
     allocate_port,
     is_mlx_model_dir,
+    is_remote_endpoint,
+    OpenAICompatibleBackend,
     terminate_pid,
 )
+from .hawking_native import config_for_model_path, is_hawking_native_path
 from .context_budget import (
     ContextBudget,
     apply_observed_slot,
@@ -267,7 +270,7 @@ def observe_runtime_topology(
         or (pool.model_path if pool is not None else None)
         or getattr(backend, "model_path", None)
     )
-    if model_path:
+    if model_path and not is_remote_endpoint(str(model_path)):
         model_path = os.path.realpath(os.path.expanduser(str(model_path)))
     model_reason = None if model_path else "runtime has no model path"
 
@@ -514,7 +517,12 @@ class RuntimePool:
         repo_root: Optional[Union[str, Path]] = None,
         observed_overlap: Optional[int] = None,
     ) -> None:
-        self.model_path = os.path.realpath(os.path.expanduser(model_path))
+        raw_model_path = str(model_path or "").strip()
+        self.model_path = (
+            OpenAICompatibleBackend(raw_model_path).selection()
+            if is_remote_endpoint(raw_model_path)
+            else os.path.realpath(os.path.expanduser(raw_model_path))
+        )
         self.requested_n = int(requested_n)
         self.workspace = resolve_workspace(workspace)
         self.repo_root = (
@@ -528,7 +536,17 @@ class RuntimePool:
         )
 
         model_bytes = 0
-        if os.path.isfile(self.model_path):
+        if is_remote_endpoint(self.model_path):
+            model_bytes = 0
+        elif is_hawking_native_path(self.model_path):
+            try:
+                inventory = config_for_model_path(self.model_path).identity().get(
+                    "artifact_inventory", {}
+                )
+                model_bytes = int(inventory.get("artifact_bytes") or 0)
+            except (OSError, TypeError, ValueError):
+                model_bytes = 0
+        elif os.path.isfile(self.model_path):
             try:
                 model_bytes = os.path.getsize(self.model_path)
             except OSError:
@@ -993,20 +1011,24 @@ class RuntimePool:
         )
 
     def start(self) -> None:
-        if (
-            self.runtimes
-            and all(
-                runtime.active
-                and (
-                    (
-                        runtime.process is not None
-                        and runtime.process.poll() is None
-                    )
-                    or (runtime.pid is not None and pid_is_alive(runtime.pid))
-                )
-                for runtime in self.runtimes
-            )
-        ):
+        def runtime_is_live(runtime: Runtime) -> bool:
+            if not runtime.active:
+                return False
+            process = runtime.process
+            if process is not None:
+                return process.poll() is None
+            if runtime.pid is not None:
+                return pid_is_alive(runtime.pid)
+            backend = runtime.backend
+            ready = getattr(backend, "ready", None) if backend is not None else None
+            if callable(ready):
+                try:
+                    return bool(ready(0.0))
+                except Exception:
+                    return False
+            return False
+
+        if self.runtimes and all(runtime_is_live(runtime) for runtime in self.runtimes):
             return
 
         self.stop()
@@ -1021,7 +1043,10 @@ class RuntimePool:
         self.reap_orphans()
 
         if self.backend_factory is None and not (
-            os.path.isfile(self.model_path) or is_mlx_model_dir(self.model_path)
+            os.path.isfile(self.model_path)
+            or is_mlx_model_dir(self.model_path)
+            or is_hawking_native_path(self.model_path)
+            or is_remote_endpoint(self.model_path)
         ):
             raise FileNotFoundError(self.model_path)
 
@@ -1205,7 +1230,37 @@ class RuntimePool:
             backend = runtime.backend
             if backend is None or not hasattr(backend, "complete"):
                 raise RuntimeError("runtime has no backend.complete")
-            result = backend.complete(payload, timeout=timeout)
+            old_handle = (runtime.pid, id(runtime.process), runtime.start_time)
+            try:
+                result = backend.complete(payload, timeout=timeout)
+            finally:
+                # A resident backend may replace its child after a protocol
+                # failure. Refresh the pool's handle before Engine snapshots
+                # provenance or a later stop/reap would still point at the
+                # dead generation.
+                process = getattr(backend, "process", None)
+                if hasattr(backend, "process"):
+                    runtime.process = process
+                if hasattr(backend, "pid"):
+                    runtime.pid = getattr(backend, "pid", None) or (
+                        process.pid if process is not None else None
+                    )
+                if hasattr(backend, "port"):
+                    runtime.port = getattr(backend, "port", None)
+                if hasattr(backend, "start_time"):
+                    runtime.start_time = getattr(backend, "start_time", None) or (
+                        process_start_token(runtime.pid) if runtime.pid else None
+                    )
+                new_handle = (runtime.pid, id(runtime.process), runtime.start_time)
+                if new_handle != old_handle and (hasattr(backend, "pid") or hasattr(backend, "process")):
+                    runtime.topology = observe_runtime_topology(runtime, pool=self)
+                    try:
+                        self._write_ownership()
+                    except OSError:
+                        # Ownership persistence must not turn a completed
+                        # inference into a failed one; the next pool start
+                        # still performs its normal liveness checks.
+                        pass
             if not isinstance(result, CompletionResult):
                 result = CompletionResult(raw=result)
             result.runtime_index = runtime.index

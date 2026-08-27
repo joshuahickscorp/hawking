@@ -1,0 +1,426 @@
+{
+ "receipt": "ACCELERATOR_THE_FLOOR_SPLITS_THREE_WAYS",
+ "date": "2026-08-26",
+ "obligation": "G046 (FRONT D) with G047; S031 s2 optimisation order",
+ "question": "ACCELERATOR_THE_FLOOR_IS_NOT_THE_ELEMENT_EITHER fitted a FIXED cost of 0.2450 ms = 86.1% of an isolated 17408x5120 tpr64 matvec and named its own boundary in its own words: 'SUBMISSION AND GRID LAUNCH ARE NOT SEPARATED -- every arm holds the grid at 1.11M threads, so the 0.245 ms could be command-buffer submission, dispatch of that grid, or both.' It also said the split was separable and cheap and needed NO generated code. This is that split.",
+ "the_arm_that_separates_them": "A TRIVIAL kernel: one store per row, NO group loop, NO scale loads over groups, NO reduction, NO barrier. It keeps the SAME OUTPUT -- 17408 rows -- and can launch at ANY threads-per-row, so the GRID sweeps 136 to 8704 threadgroups, 64x, with the work fixed at nothing. WRONG BY CONSTRUCTION and never a candidate. It reads ONE scale so the output is NON-DEGENERATE, because a kernel storing a constant would also be wrong and would time an EMPTY dispatch rather than a cheap one; and every buffer is referenced, multiplied by zero where unused, because MLX binds the signature from the named inputs and an unreferenced buffer would make this a DIFFERENT dispatch from the arms it is compared against.",
+ "arms": {
+  "shape": "17408 x 5120, tg128, 14 round-robin rounds x 20 reps, run TWICE",
+  "run_1": {
+   "trivial_tpr1": {
+    "tpr": 1,
+    "threadgroups": 136,
+    "min_round_ms": 0.1635,
+    "median_round_ms": 0.1776,
+    "round_spread_pct": 45.8837,
+    "share_of_baseline_at_min": 0.574
+   },
+   "trivial_tpr2": {
+    "tpr": 2,
+    "threadgroups": 272,
+    "min_round_ms": 0.1558,
+    "median_round_ms": 0.173,
+    "round_spread_pct": 33.389,
+    "share_of_baseline_at_min": 0.5471
+   },
+   "trivial_tpr4": {
+    "tpr": 4,
+    "threadgroups": 544,
+    "min_round_ms": 0.1653,
+    "median_round_ms": 0.1781,
+    "round_spread_pct": 471.6025,
+    "share_of_baseline_at_min": 0.5805
+   },
+   "trivial_tpr8": {
+    "tpr": 8,
+    "threadgroups": 1088,
+    "min_round_ms": 0.1665,
+    "median_round_ms": 0.1826,
+    "round_spread_pct": 444.7414,
+    "share_of_baseline_at_min": 0.5847
+   },
+   "trivial_tpr16": {
+    "tpr": 16,
+    "threadgroups": 2176,
+    "min_round_ms": 0.1687,
+    "median_round_ms": 0.1899,
+    "round_spread_pct": 34.0944,
+    "share_of_baseline_at_min": 0.5923
+   },
+   "trivial_tpr32": {
+    "tpr": 32,
+    "threadgroups": 4352,
+    "min_round_ms": 0.1765,
+    "median_round_ms": 0.1965,
+    "round_spread_pct": 59.1603,
+    "share_of_baseline_at_min": 0.62
+   },
+   "trivial_tpr64": {
+    "tpr": 64,
+    "threadgroups": 8704,
+    "min_round_ms": 0.1831,
+    "median_round_ms": 0.2268,
+    "round_spread_pct": 59.453,
+    "share_of_baseline_at_min": 0.6431
+   },
+   "thin2_tpr64": {
+    "tpr": 64,
+    "threadgroups": 8704,
+    "min_round_ms": 0.268,
+    "median_round_ms": 0.2813,
+    "round_spread_pct": 33.1063,
+    "share_of_baseline_at_min": 0.941
+   },
+   "baseline_tpr64": {
+    "tpr": 64,
+    "threadgroups": 8704,
+    "min_round_ms": 0.2847,
+    "median_round_ms": 0.3139,
+    "round_spread_pct": 32.0148,
+    "share_of_baseline_at_min": 1.0
+   }
+  },
+  "run_2": {
+   "trivial_tpr1": {
+    "tpr": 1,
+    "threadgroups": 136,
+    "min_round_ms": 0.1532,
+    "median_round_ms": 0.1652,
+    "round_spread_pct": 25.9964,
+    "share_of_baseline_at_min": 0.5024
+   },
+   "trivial_tpr2": {
+    "tpr": 2,
+    "threadgroups": 272,
+    "min_round_ms": 0.1507,
+    "median_round_ms": 0.1658,
+    "round_spread_pct": 26.8724,
+    "share_of_baseline_at_min": 0.4943
+   },
+   "trivial_tpr4": {
+    "tpr": 4,
+    "threadgroups": 544,
+    "min_round_ms": 0.1525,
+    "median_round_ms": 0.1661,
+    "round_spread_pct": 14.347,
+    "share_of_baseline_at_min": 0.4999
+   },
+   "trivial_tpr8": {
+    "tpr": 8,
+    "threadgroups": 1088,
+    "min_round_ms": 0.1579,
+    "median_round_ms": 0.1751,
+    "round_spread_pct": 19.1292,
+    "share_of_baseline_at_min": 0.5177
+   },
+   "trivial_tpr16": {
+    "tpr": 16,
+    "threadgroups": 2176,
+    "min_round_ms": 0.1672,
+    "median_round_ms": 0.1855,
+    "round_spread_pct": 14.6933,
+    "share_of_baseline_at_min": 0.5482
+   },
+   "trivial_tpr32": {
+    "tpr": 32,
+    "threadgroups": 4352,
+    "min_round_ms": 0.1757,
+    "median_round_ms": 0.1919,
+    "round_spread_pct": 27.4207,
+    "share_of_baseline_at_min": 0.576
+   },
+   "trivial_tpr64": {
+    "tpr": 64,
+    "threadgroups": 8704,
+    "min_round_ms": 0.2074,
+    "median_round_ms": 0.2235,
+    "round_spread_pct": 39.5414,
+    "share_of_baseline_at_min": 0.68
+   },
+   "thin2_tpr64": {
+    "tpr": 64,
+    "threadgroups": 8704,
+    "min_round_ms": 0.2613,
+    "median_round_ms": 0.2773,
+    "round_spread_pct": 55.8594,
+    "share_of_baseline_at_min": 0.8567
+   },
+   "baseline_tpr64": {
+    "tpr": 64,
+    "threadgroups": 8704,
+    "min_round_ms": 0.305,
+    "median_round_ms": 0.3129,
+    "round_spread_pct": 41.9628,
+    "share_of_baseline_at_min": 1.0
+   }
+  }
+ },
+ "P1_WHAT_THE_TRIVIAL_KERNEL_COSTS": {
+  "predicted": "0.10-0.20 ms, with falsifiers at >=0.23 (all submission) and <=0.05 (no submission)",
+  "measured": "0.1831 ms run 1, 0.2074 ms run 2, = 64.3% and 68.0% of the baseline",
+  "verdict": "CONFIRMED on run 1 and MISSED HIGH BY 3.7% on run 2, which is reported rather than the band widened. BOTH falsifiers are cleared: the floor is NOT all submission and NOT free."
+ },
+ "P2_THE_GRID_AXIS_AND_MY_PREDICTION_IS_REFUTED": {
+  "predicted": "FLAT within 15% across 64x threadgroups",
+  "measured": "+12.0% run 1 (0.1635 -> 0.1831) and +35.4% run 2 (0.1532 -> 0.2074)",
+  "verdict": "REFUTED. GRID LAUNCH IS NOT FREE. Both runs rise MONOTONICALLY from tpr4 upward and the direction reproduces; the MAGNITUDE does not, 12% against 35%, so the direction is the finding and the size is a range.",
+  "the_new_quantity": "about 2-6 ns per threadgroup -- 2.29 ns/tg on run 1 and 6.33 on run 2 -- which is the first price this program has put on grid launch as distinct from submission.",
+  "why_it_does_not_contradict_an_earlier_result": "ACCELERATOR_UNPACK_IS_THE_WALL measured tpr1 SLOWER than tpr64 on the REAL kernel, the opposite direction. Not a contradiction: there the wide grid had 64x the parallelism to apply to real work, and that gain outweighs the launch cost. Here there is NO work to parallelise, so the launch cost is the only effect left and it becomes visible."
+ },
+ "THE_DECOMPOSITION": {
+  "run_1": {
+   "submission_ms_extrapolated_to_zero_threadgroups": 0.1631,
+   "ns_per_threadgroup": 2.295,
+   "grid_launch_ms_at_8704": 0.02,
+   "group_loop_scales_reduction_ms": 0.0848,
+   "element_work_ms": 0.0168,
+   "baseline_ms": 0.2847,
+   "shares": {
+    "submission": 0.573,
+    "grid_launch": 0.07,
+    "group_loop_scales_reduction": 0.298,
+    "element_work": 0.059
+   }
+  },
+  "run_2": {
+   "submission_ms_extrapolated_to_zero_threadgroups": 0.1523,
+   "ns_per_threadgroup": 6.322,
+   "grid_launch_ms_at_8704": 0.055,
+   "group_loop_scales_reduction_ms": 0.0539,
+   "element_work_ms": 0.0437,
+   "baseline_ms": 0.305,
+   "shares": {
+    "submission": 0.5,
+    "grid_launch": 0.18,
+    "group_loop_scales_reduction": 0.177,
+    "element_work": 0.143
+   }
+  },
+  "what_is_ROBUST_across_both_runs": [
+   "the trivial kernel is 50-64% of the baseline, so SUBMISSION PLUS GRID IS HALF TO TWO-THIRDS of an isolated matvec",
+   "extrapolated to zero threadgroups the submission term is 0.152 and 0.163 ms, and BOTH land on the ~0.157 ms cross-command-buffer submission ACCELERATOR_GRAPH_SUBMISSION measured DIRECTLY on unrelated work -- a SEVENTH sighting, and the first that separates it from grid launch",
+   "thin2 is 86-94% of the baseline, so THE ELEMENT WORK IS UNDER 15% of an isolated matvec"
+  ],
+  "what_is_NOT_established": "the finer split between GRID LAUNCH and the GROUP LOOP is not settled: run 1 attributes 7% and 30%, run 2 attributes 18% and 18%. Both orderings are consistent with the robust facts above and the two runs disagree, so no single share is claimed for either."
+ },
+ "WHAT_THIS_CORRECTS_IN_MY_OWN_PREVIOUS_BLOCK": {
+  "what_stands": "the 86%-fixed measurement stands unchanged -- deleting 96.9% of the element work returns 18%, and the element work is measured HERE at under 15% by a completely different route, so the two agree.",
+  "what_is_too_strong": "that block read the fixed cost as the per-submission floor and called it the SIXTH SIGHTING. Submission is the LARGEST term and it is NOT the whole of it: roughly 0.157 ms is submission, a further 0.02-0.055 ms is grid launch which that block could not see because every arm held the grid fixed, and 0.054-0.085 ms is the GROUP LOOP, its 1.39M scale loads and the reduction -- per-row work that an INNER-loop sweep holds constant and therefore deposits in the intercept. A FIXED INTERCEPT IS ONLY AS SPECIFIC AS THE AXIS THAT WAS VARIED.",
+  "the_law_is_amended_in_place": "AKB-AN-ISOLATED-MATVEC-IS-MOSTLY-NOT-ITS-ELEMENTS"
+ },
+ "controls": {
+  "anti_vacuity": "every trivial arm reads rel_err 1.000 against the float64 oracle; the baseline reads 2.021e-07",
+  "non_degeneracy": "17408 of 17408 nonzero with 1289 distinct values, so it is a cheap kernel and not an empty one",
+  "the_grid_does_not_change_the_answer": "all seven trivial arms return BITWISE IDENTICAL output, pinned by a test -- the arms differ ONLY in launch, so a timing difference cannot be a different computation",
+  "mutations_watched_failing": [
+   "the store made a CONSTANT -- caught by non-degeneracy, 5 tests",
+   "the unused buffers dropped -- caught by the signature test",
+   "the geometry refusals disabled -- caught by the illegal-geometry test"
+  ]
+ },
+ "claim_boundary": [
+  "ONE shape, ONE machine, INSTANCE. The submission term is a property of this runtime's command-buffer boundary and the grid term of this GPU; neither is promoted.",
+  "THE GRID IS VARIED BY CHANGING THREADS-PER-ROW, so lane count per row moves with it. The trivial kernel has no cross-lane structure at all -- no reduction, no barrier, no shared state -- which is exactly why it can be swept this way, but a kernel that did would not inherit this.",
+  "the submission term is an EXTRAPOLATION to zero threadgroups from a 7-point line, not a measurement at zero, and the two runs' slopes differ by 2.8x so the extrapolation inherits that.",
+  "BENCH_STATE CONTENDED, recorded not asserted, operator's job NOT killed per S032 s24. Run 1 carries 471% and 445% round-spread on two arms and run 2 is the cleaner at 14-56%; minima are the estimator and medians sit beside them.",
+  "NO SHIPPED KERNEL CHANGED -- the trivial probe is WRONG BY CONSTRUCTION and is not a candidate; no model executed, no capability run, no adequacy claim moves.",
+  "PRODUCTION DOES NOT PAY THE SUBMISSION TERM and that is unchanged from the previous block: 402 weight-carrying dispatches inside a 29.29 ms token average 0.0729 ms each because 964 dispatches share a submission. This block prices what an ISOLATED microbenchmark pays, which is why seven levers measured that way all tied."
+ ],
+ "next": "The group-loop term is now the only part of the isolated kernel that is neither submission, nor grid, nor elements, and it is 18-30% of it. It is 1.39M scale loads plus the reduction, and the reduction was already measured FREE by deletion, so the scale loads are the named suspect. That is one more probe of the same family -- hoist the scale out of the group loop at fixed element count -- and it is NOT RUN HERE.",
+ "akb_registration": {
+  "evidence_domain": "accelerator",
+  "civilization": "I-D_ACCELERATOR",
+  "program": "HAWKING ACCELERATOR (S015/S031/S032)",
+  "machine_scope": "Apple M3 Ultra, INSTANCE",
+  "representation_scope": "ws_rtn_q4_g64 where present; the trivial arm reads one scale and no weights",
+  "kernel_scope": "a trivial one-store-per-row probe swept over 64x grid, against thin2 and the shipped matvec",
+  "why_declared": "membership must not depend on what this file was named (S032 s13)."
+ },
+ "identities": {
+  "experiment": {
+   "class": "ACCEL-KERNEL",
+   "knowledge_level": "INSTANCE",
+   "question": "is the isolated matvec's fixed cost submission, grid launch, or per-row work"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "ram_gib": 96,
+   "measured_dram_gb_s": 589.73,
+   "bench_state": "CONTENDED",
+   "quiescence": {
+    "run_1": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 79958,
+       "cpu_pct": 97.5,
+       "rss_gib": 35.13,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 88376,
+       "cpu_pct": 21.2,
+       "rss_gib": 1.95,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 88385,
+       "cpu_pct": 73.3,
+       "rss_gib": 0.05,
+       "comm": "/System/Library/Frameworks/Metal.framework/Versions/A/XPCServices/MTLCompilerService.xpc/Contents/MacOS/MTLCompilerService"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 32.3,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 22.7,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 5,
+     "total_cpu_pct": 247.0,
+     "max_rss_gib": 35.13,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    },
+    "run_2": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 79958,
+       "cpu_pct": 79.9,
+       "rss_gib": 35.22,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 88701,
+       "cpu_pct": 93.5,
+       "rss_gib": 1.94,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 728,
+       "cpu_pct": 41.5,
+       "rss_gib": 1.29,
+       "comm": "/Applications/OrbStack.app/Contents/Frameworks/OrbStack Helper.app/Contents/MacOS/OrbStack Helper"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 32.6,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 21.1,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 5,
+     "total_cpu_pct": 268.6,
+     "max_rss_gib": 35.22,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    }
+   }
+  },
+  "device": {
+   "backend": "Metal",
+   "api": "mx.fast.metal_kernel JIT, MLX"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "NO MODEL EXECUTED. 17408x5120 is BORROWED from the resident's MLP; synthetic weights, no forward pass."
+  },
+  "representation": {
+   "native": "ws_rtn_q4_g64, 4.25 bpw",
+   "note": "identical where read; the trivial arm reads one scale per row"
+  },
+  "runtime": {
+   "analysis": "tools/accelerator/gravity_native.py::source_trivial",
+   "tests": "tools/accelerator/test_grid_probe.py"
+  },
+  "kernel": {
+   "arms": [
+    "trivial at tpr 1/2/4/8/16/32/64",
+    "thin2 at tpr64",
+    "the shipped matvec at tpr64"
+   ],
+   "tg": 128
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device, no transfer crossed, HUMF not involved"
+  }
+ },
+ "bench": {
+  "state": "CONTENDED",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": {
+   "quiet": false,
+   "method": "enumerate",
+   "no_name_filter": true,
+   "thresholds": {
+    "cpu_pct": 20.0,
+    "rss_gib": 2.0
+   },
+   "contenders": [
+    {
+     "pid": 79958,
+     "cpu_pct": 79.9,
+     "rss_gib": 35.22,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 88701,
+     "cpu_pct": 93.5,
+     "rss_gib": 1.94,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 728,
+     "cpu_pct": 41.5,
+     "rss_gib": 1.29,
+     "comm": "/Applications/OrbStack.app/Contents/Frameworks/OrbStack Helper.app/Contents/MacOS/OrbStack Helper"
+    },
+    {
+     "pid": 739,
+     "cpu_pct": 32.6,
+     "rss_gib": 0.02,
+     "comm": "/usr/libexec/avconferenced"
+    },
+    {
+     "pid": 52616,
+     "cpu_pct": 21.1,
+     "rss_gib": 0.02,
+     "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+    }
+   ],
+   "n_contenders": 5,
+   "total_cpu_pct": 268.6,
+   "max_rss_gib": 35.22,
+   "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+  },
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "DERIVED from a quiescence sample this receipt already carried"
+ }
+}

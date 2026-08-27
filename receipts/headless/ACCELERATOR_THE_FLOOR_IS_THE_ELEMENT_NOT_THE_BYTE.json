@@ -353,5 +353,15 @@
   },
   "rule": "S032 s3 -- derived, never asserted",
   "consequence": "round-robin makes contention common mode; the min-of-rounds estimator is stated in the claim boundary"
+ },
+ "AMENDED_2026_08_26_THE_FLOOR_IS_NOT_THE_ELEMENT_EITHER": {
+  "what_this_receipt_claimed": "'The floor is ONE x READ AND ONE FUSED MULTIPLY-ADD PER WEIGHT at 307.7 G elem/s', and from it a crossover at roughly 171 MB below which a matvec's weight traffic is free.",
+  "what_refutes_it": "receipts/headless/ACCELERATOR_THE_FLOOR_IS_NOT_THE_ELEMENT_EITHER.json removed each named operation in turn at the same shape: HALVING the x reads 0.947x, removing the MULTIPLY 0.979x, and REMOVING EVERY x READ 0.987x and 1.019x across two runs. Neither operation the phrase names costs anything. Then it removed the element work itself at a FIXED GRID -- 96.9% of it -- and got back 18%, and a five-point sweep fits a FIXED cost of 0.2450 ms, 86.1% of the full kernel, with 8x the element work reading FLAT to 0.2%.",
+  "what_survives_unchanged": "Every measurement here stands: the word arm at 1.004x, the LUT at 0.839x, and the no-weights deletion control tying the real kernel are all reproduced by this correction rather than contradicted -- they tied because ~86% of the measured time was invariant to what they changed. The instrument correction about effective GB/s stands and is now doubly true.",
+  "what_is_WITHDRAWN": "The ~171 MB crossover, which was derived from treating 307.7 G elem/s as an element rate. It is total elements divided by a time that is 86% fixed at this grid, so the same kernel at a smaller element count reports a lower elem/s without running any differently -- the exact instrument error this receipt itself identified for effective GB/s, in a second place.",
+  "laws_reconciled": [
+   "AKB-THE-MATVEC-FLOOR-IS-THE-ELEMENT-NOT-THE-BYTE"
+  ],
+  "amending_receipt": "receipts/headless/ACCELERATOR_THE_FLOOR_IS_NOT_THE_ELEMENT_EITHER.json"
  }
 }

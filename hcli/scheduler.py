@@ -403,7 +403,7 @@ class Scheduler:
                 threshold=self.no_progress_threshold,
             )
 
-    def _persist(self) -> None:
+    def _persist(self, extra: Optional[Dict[str, Any]] = None) -> None:
         if self.store is None:
             return
         budget = self._repair_budget()
@@ -411,14 +411,17 @@ class Scheduler:
         self._repair_signatures = {
             str(k): set(v) for k, v in (budget.get("signatures") or {}).items()
         }
+        metadata = {
+            "fingerprints": list(self._fingerprints),
+            "no_progress_threshold": self.no_progress_threshold,
+            "active_decode_limit": self.active_decode_limit,
+            "active_decode_limit_source": self.active_decode_limit_source,
+            "last_dispatch": self.last_dispatch,
+            "repair_budget": serialize_repair_budget(budget),
+        }
+        if extra:
+            metadata.update(dict(extra))
         self.store.save(
             self.units,
-            extra={
-                "fingerprints": list(self._fingerprints),
-                "no_progress_threshold": self.no_progress_threshold,
-                "active_decode_limit": self.active_decode_limit,
-                "active_decode_limit_source": self.active_decode_limit_source,
-                "last_dispatch": self.last_dispatch,
-                "repair_budget": serialize_repair_budget(budget),
-            },
+            extra=metadata,
         )

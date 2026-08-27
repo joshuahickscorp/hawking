@@ -1,0 +1,2727 @@
+{
+  "checks": {
+    "a1_three_real_workunits": true,
+    "a2_ten_real_workunits": true,
+    "a3_resident_recovery": true,
+    "a4_process_recovery": true,
+    "a5_idempotency": true,
+    "all_requested_stages_passed": true
+  },
+  "claim_boundary": "native cognition proposes; typed tools, persisted WorkUnits, and fixed verifiers decide; no sovereignty claim",
+  "elapsed_s": 441.355,
+  "finished_at": 1787796641.9716952,
+  "profile_path": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+  "qualification": "LIVE_AGENTOS_AUTONOMY_CONTROL_PLANE",
+  "repo_root": "/Users/scammermike/Downloads/hawking",
+  "schema": "hcli.agentos.autonomy_gate.v1",
+  "stage_status": {
+    "A1_three_workunits": "PASSED",
+    "A2_ten_workunits": "PASSED",
+    "A3_resident_kill": "PASSED",
+    "A4_hcli_process_kill": "PASSED",
+    "A5_post_mutation_crash": "PASSED"
+  },
+  "stages": {
+    "A1_three_workunits": {
+      "checks": {
+        "all_fixed_verifiers_passed": true,
+        "all_typed_tools_ok": true,
+        "all_units_completed": true,
+        "mission_completed": true,
+        "native_model_calls": true,
+        "next_work_selected": true,
+        "no_human_interventions": true,
+        "requested_count_reached": true
+      },
+      "elapsed_s": 100.219,
+      "finished_at": 1787796300.837929,
+      "mission": {
+        "dispatch_order": [
+          "a1-01",
+          "a1-02",
+          "a1-03"
+        ],
+        "goal": "Perform 3 bounded Hawking evidence inspections through typed tools and native cognition.",
+        "jobs": [
+          {
+            "absolute_path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json",
+            "arguments": {
+              "path": "receipts/headless/HCLI_AGENTOS_CHECKPOINT.json"
+            },
+            "derived_content": "{\"schema\":\"hcli.agentos.evidence_observation.v1\",\"source\":\"receipts/headless/HCLI_AGENTOS_CHECKPOINT.json\",\"source_sha256\":\"ad25475b97272e7b33714d21446ef2149d799ebac69e17affc94e1271cb34ba0\",\"tool\":\"receipt.read\",\"unit_id\":\"a1-01\"}\n",
+            "derived_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a1-y7j4hwl8/evidence/a1-01.json",
+            "derived_relative_path": "evidence/a1-01.json",
+            "label": "program checkpoint",
+            "path": "receipts/headless/HCLI_AGENTOS_CHECKPOINT.json",
+            "sha256": "ad25475b97272e7b33714d21446ef2149d799ebac69e17affc94e1271cb34ba0",
+            "tool": "receipt.read",
+            "tool_arguments": {
+              "path": "receipts/headless/HCLI_AGENTOS_CHECKPOINT.json"
+            },
+            "unit_id": "a1-01"
+          },
+          {
+            "absolute_path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json",
+            "arguments": {
+              "path": "receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json"
+            },
+            "derived_content": "{\"schema\":\"hcli.agentos.evidence_observation.v1\",\"source\":\"receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json\",\"source_sha256\":\"acf2e05b8c306cf80f11ad04a5525182e73ad1f79e2adb1f9167d99fa41b3dd6\",\"tool\":\"receipt.read\",\"unit_id\":\"a1-02\"}\n",
+            "derived_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a1-y7j4hwl8/evidence/a1-02.json",
+            "derived_relative_path": "evidence/a1-02.json",
+            "label": "native ladder",
+            "path": "receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json",
+            "sha256": "acf2e05b8c306cf80f11ad04a5525182e73ad1f79e2adb1f9167d99fa41b3dd6",
+            "tool": "receipt.read",
+            "tool_arguments": {
+              "path": "receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json"
+            },
+            "unit_id": "a1-02"
+          },
+          {
+            "absolute_path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json",
+            "arguments": {
+              "path": "receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json"
+            },
+            "derived_content": "{\"schema\":\"hcli.agentos.evidence_observation.v1\",\"source\":\"receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json\",\"source_sha256\":\"57b984274c4bdddbe7125c2c14a32c8ebfb830cbc6d028e4e544f598ea72456b\",\"tool\":\"receipt.read\",\"unit_id\":\"a1-03\"}\n",
+            "derived_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a1-y7j4hwl8/evidence/a1-03.json",
+            "derived_relative_path": "evidence/a1-03.json",
+            "label": "resident proof",
+            "path": "receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json",
+            "sha256": "57b984274c4bdddbe7125c2c14a32c8ebfb830cbc6d028e4e544f598ea72456b",
+            "tool": "receipt.read",
+            "tool_arguments": {
+              "path": "receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json"
+            },
+            "unit_id": "a1-03"
+          }
+        ],
+        "metrics": {
+          "accepted": 3,
+          "attempted": 3,
+          "human_interventions": 0,
+          "inconclusive": 0,
+          "model_calls": 3,
+          "rejected": 0,
+          "retries": 0,
+          "typed_tool_calls": 6,
+          "typed_tool_failures": 0,
+          "verifier_calls": 3,
+          "workunits_declared": 3
+        },
+        "mission_id": "b66dd947-476e-4740-8f13-5b3bd06ab361",
+        "model_calls": [
+          {
+            "completion_tokens": 64,
+            "endpoint": "hawking-native://sealed-3.14/resident",
+            "finish_reason": "length",
+            "max_tokens": 64,
+            "max_tokens_source": "env",
+            "prefix_key": "7bf693881b9bed98adad0866",
+            "prompt_tokens": 949,
+            "runtime_index": 0,
+            "wall_s": 32.124
+          },
+          {
+            "completion_tokens": 64,
+            "endpoint": "hawking-native://sealed-3.14/resident",
+            "finish_reason": "length",
+            "max_tokens": 64,
+            "max_tokens_source": "env",
+            "prefix_key": "92c438c97b27dc0d1fb8e39b",
+            "prompt_tokens": 959,
+            "runtime_index": 0,
+            "wall_s": 32.407
+          },
+          {
+            "completion_tokens": 64,
+            "endpoint": "hawking-native://sealed-3.14/resident",
+            "finish_reason": "length",
+            "max_tokens": 64,
+            "max_tokens_source": "env",
+            "prefix_key": "61702f024f9c7585eee7ff3b",
+            "prompt_tokens": 961,
+            "runtime_index": 0,
+            "wall_s": 32.469
+          }
+        ],
+        "result": {
+          "accepted": 3,
+          "cancelled": false,
+          "failed_units": [],
+          "mission_id": "b66dd947-476e-4740-8f13-5b3bd06ab361",
+          "no_progress_warning": null,
+          "reason": null,
+          "state": "VERIFIED",
+          "status": "completed",
+          "verdict": "ACCEPT"
+        },
+        "tool_events": [
+          {
+            "elapsed_s": 0.0084,
+            "failure_class": null,
+            "invocation_id": "tool-37e7e7f7-14c7-4420-afc6-88568c90d9ae",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a1-y7j4hwl8/.hcli/receipts/tools/tool-37e7e7f7-14c7-4420-afc6-88568c90d9ae.json",
+            "source": "receipts/headless/HCLI_AGENTOS_CHECKPOINT.json",
+            "tool": "receipt.read",
+            "unit_id": "a1-01"
+          },
+          {
+            "derived_path": "evidence/a1-01.json",
+            "elapsed_s": 0.0018,
+            "failure_class": null,
+            "invocation_id": "tool-d8322a31-e9d8-4ae5-82af-e936bda70b49",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a1-y7j4hwl8/.hcli/receipts/tools/tool-d8322a31-e9d8-4ae5-82af-e936bda70b49.json",
+            "source": "receipts/headless/HCLI_AGENTOS_CHECKPOINT.json",
+            "tool": "filesystem.write",
+            "unit_id": "a1-01"
+          },
+          {
+            "elapsed_s": 0.0097,
+            "failure_class": null,
+            "invocation_id": "tool-81254d9e-02c0-47d5-9732-d855ae88d4fb",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a1-y7j4hwl8/.hcli/receipts/tools/tool-81254d9e-02c0-47d5-9732-d855ae88d4fb.json",
+            "source": "receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json",
+            "tool": "receipt.read",
+            "unit_id": "a1-02"
+          },
+          {
+            "derived_path": "evidence/a1-02.json",
+            "elapsed_s": 0.0087,
+            "failure_class": null,
+            "invocation_id": "tool-fafaf08a-ebb1-4f94-98a6-99a0626318f0",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a1-y7j4hwl8/.hcli/receipts/tools/tool-fafaf08a-ebb1-4f94-98a6-99a0626318f0.json",
+            "source": "receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json",
+            "tool": "filesystem.write",
+            "unit_id": "a1-02"
+          },
+          {
+            "elapsed_s": 0.0103,
+            "failure_class": null,
+            "invocation_id": "tool-48d78fd9-d25d-4e27-8858-3381d4077d32",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a1-y7j4hwl8/.hcli/receipts/tools/tool-48d78fd9-d25d-4e27-8858-3381d4077d32.json",
+            "source": "receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json",
+            "tool": "receipt.read",
+            "unit_id": "a1-03"
+          },
+          {
+            "derived_path": "evidence/a1-03.json",
+            "elapsed_s": 0.0096,
+            "failure_class": null,
+            "invocation_id": "tool-33b1b2b8-39e9-4a5e-8e05-dab1f1f9c68c",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a1-y7j4hwl8/.hcli/receipts/tools/tool-33b1b2b8-39e9-4a5e-8e05-dab1f1f9c68c.json",
+            "source": "receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json",
+            "tool": "filesystem.write",
+            "unit_id": "a1-03"
+          }
+        ],
+        "units": {
+          "a1-01": {
+            "assigned_backend": "resident",
+            "assigned_runtime": null,
+            "attempts": 1,
+            "backend_task_id": null,
+            "classification": null,
+            "content_hash": "289e008f5b497c6c0e76992c8d5cb414d23ea978a6942d5f6837844704087b05",
+            "dependencies": [],
+            "description": "Inspect the real program checkpoint evidence at /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json. Use the supplied typed evidence result and give a concise factual summary. Do not mutate files and do not claim acceptance; the fixed verifier checks the source bytes.",
+            "effect_class": null,
+            "failure_context": null,
+            "finished_at": 1787796235.663004,
+            "id": "a1-01",
+            "preferred_backend": "resident",
+            "provider": "resident",
+            "ready_at": 1787796200.6691892,
+            "repair_depth": 0,
+            "repair_exhausted": false,
+            "repair_reason": null,
+            "repair_root": null,
+            "repairs": null,
+            "resource_class": "TEST",
+            "role": "generalist",
+            "running_at": 1787796200.701416,
+            "status": "completed",
+            "verification": {
+              "acceptance_source": "workunit_verifier",
+              "command": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json | grep -q ad25475b97272e7b33714d21446ef2149d799ebac69e17affc94e1271cb34ba0 && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a1-y7j4hwl8/evidence/a1-01.json && grep -q ad25475b97272e7b33714d21446ef2149d799ebac69e17affc94e1271cb34ba0 /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a1-y7j4hwl8/evidence/a1-01.json",
+              "exit_code": 0,
+              "ok": true,
+              "output": ""
+            },
+            "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json | grep -q ad25475b97272e7b33714d21446ef2149d799ebac69e17affc94e1271cb34ba0 && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a1-y7j4hwl8/evidence/a1-01.json && grep -q ad25475b97272e7b33714d21446ef2149d799ebac69e17affc94e1271cb34ba0 /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a1-y7j4hwl8/evidence/a1-01.json",
+            "workspace": null
+          },
+          "a1-02": {
+            "assigned_backend": "resident",
+            "assigned_runtime": null,
+            "attempts": 1,
+            "backend_task_id": null,
+            "classification": null,
+            "content_hash": "309cb78de3465ad9ff53eeb1b681bcbe8d32ae8c9734469a69414fda80b84063",
+            "dependencies": [
+              "a1-01"
+            ],
+            "description": "Inspect the real native ladder evidence at /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json. Use the supplied typed evidence result and give a concise factual summary. Do not mutate files and do not claim acceptance; the fixed verifier checks the source bytes.",
+            "effect_class": null,
+            "failure_context": null,
+            "finished_at": 1787796268.143637,
+            "id": "a1-02",
+            "preferred_backend": "resident",
+            "provider": "resident",
+            "ready_at": 1787796235.66476,
+            "repair_depth": 0,
+            "repair_exhausted": false,
+            "repair_reason": null,
+            "repair_root": null,
+            "repairs": null,
+            "resource_class": "TEST",
+            "role": "generalist",
+            "running_at": 1787796235.68327,
+            "status": "completed",
+            "verification": {
+              "acceptance_source": "workunit_verifier",
+              "command": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json | grep -q acf2e05b8c306cf80f11ad04a5525182e73ad1f79e2adb1f9167d99fa41b3dd6 && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a1-y7j4hwl8/evidence/a1-02.json && grep -q acf2e05b8c306cf80f11ad04a5525182e73ad1f79e2adb1f9167d99fa41b3dd6 /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a1-y7j4hwl8/evidence/a1-02.json",
+              "exit_code": 0,
+              "ok": true,
+              "output": ""
+            },
+            "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json | grep -q acf2e05b8c306cf80f11ad04a5525182e73ad1f79e2adb1f9167d99fa41b3dd6 && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a1-y7j4hwl8/evidence/a1-02.json && grep -q acf2e05b8c306cf80f11ad04a5525182e73ad1f79e2adb1f9167d99fa41b3dd6 /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a1-y7j4hwl8/evidence/a1-02.json",
+            "workspace": null
+          },
+          "a1-03": {
+            "assigned_backend": "resident",
+            "assigned_runtime": null,
+            "attempts": 1,
+            "backend_task_id": null,
+            "classification": null,
+            "content_hash": "d56e8e4f1819c2cd987bb826747a7ee0443302a7b4d911e358b182a95e893802",
+            "dependencies": [
+              "a1-02"
+            ],
+            "description": "Inspect the real resident proof evidence at /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json. Use the supplied typed evidence result and give a concise factual summary. Do not mutate files and do not claim acceptance; the fixed verifier checks the source bytes.",
+            "effect_class": null,
+            "failure_context": null,
+            "finished_at": 1787796300.691895,
+            "id": "a1-03",
+            "preferred_backend": "resident",
+            "provider": "resident",
+            "ready_at": 1787796268.145697,
+            "repair_depth": 0,
+            "repair_exhausted": false,
+            "repair_reason": null,
+            "repair_root": null,
+            "repairs": null,
+            "resource_class": "TEST",
+            "role": "generalist",
+            "running_at": 1787796268.165678,
+            "status": "completed",
+            "verification": {
+              "acceptance_source": "workunit_verifier",
+              "command": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json | grep -q 57b984274c4bdddbe7125c2c14a32c8ebfb830cbc6d028e4e544f598ea72456b && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a1-y7j4hwl8/evidence/a1-03.json && grep -q 57b984274c4bdddbe7125c2c14a32c8ebfb830cbc6d028e4e544f598ea72456b /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a1-y7j4hwl8/evidence/a1-03.json",
+              "exit_code": 0,
+              "ok": true,
+              "output": ""
+            },
+            "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json | grep -q 57b984274c4bdddbe7125c2c14a32c8ebfb830cbc6d028e4e544f598ea72456b && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a1-y7j4hwl8/evidence/a1-03.json && grep -q 57b984274c4bdddbe7125c2c14a32c8ebfb830cbc6d028e4e544f598ea72456b /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a1-y7j4hwl8/evidence/a1-03.json",
+            "workspace": null
+          }
+        }
+      },
+      "profile_path": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+      "provider_profiles": {
+        "local": {
+          "artifact": {},
+          "capabilities": {
+            "features": {
+              "chat_template_kwargs": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796300.713814,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "grammar": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796300.713814,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "prefix_cache": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796300.713814,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "response_format": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796300.713814,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "slots": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796300.713814,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "streaming": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796300.713814,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "tool_calling": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796300.713814,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "vision": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796300.713814,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              }
+            },
+            "schema": "hcli.provider.capabilities.v1"
+          },
+          "compiler": {},
+          "environment": {},
+          "fallbacks": [],
+          "generation": {},
+          "hot_bytes": null,
+          "limits": {},
+          "machine_genome": {},
+          "metadata": {
+            "identity_snapshot": {},
+            "observed_at": 1787796300.71382
+          },
+          "model_id": "unknown",
+          "profile_id": "local",
+          "prompt_contract": {},
+          "provider": "Engine",
+          "qualification": {},
+          "receipts": [],
+          "representation": {},
+          "runtime": {},
+          "schema": "hcli.provider.profile.v1",
+          "tokenizer": {}
+        },
+        "native:qwen3.8-27b-sealed-3.14": {
+          "artifact": {
+            "artifact_inventory": {
+              "artifact_bytes": 10554328856,
+              "artifact_bytes_exact": true,
+              "artifact_bytes_source": "MIX_REPORT.json:payload_bytes",
+              "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+              "mix_id": "mix_all_mlp_affine_g64_ls",
+              "n_tensors": 755
+            },
+            "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+            "model_bytes": 10554328856,
+            "model_path": "/Users/scammermike/noetic/NOETIC_PARENT_A"
+          },
+          "capabilities": {
+            "features": {
+              "chat_template_kwargs": {
+                "enforcement": "enforced",
+                "note": null,
+                "observed_at": 1787796300.713498,
+                "source": "backend.supports",
+                "state": "supported"
+              },
+              "grammar": {
+                "enforcement": "degraded",
+                "note": null,
+                "observed_at": 1787796300.713498,
+                "source": "backend.supports",
+                "state": "unsupported"
+              },
+              "prefix_cache": {
+                "enforcement": "degraded",
+                "note": null,
+                "observed_at": 1787796300.713498,
+                "source": "backend.supports",
+                "state": "unsupported"
+              },
+              "response_format": {
+                "enforcement": "degraded",
+                "note": null,
+                "observed_at": 1787796300.713498,
+                "source": "backend.supports",
+                "state": "unsupported"
+              },
+              "slots": {
+                "enforcement": "degraded",
+                "note": null,
+                "observed_at": 1787796300.713498,
+                "source": "backend.supports",
+                "state": "unsupported"
+              },
+              "streaming": {
+                "enforcement": "degraded",
+                "note": null,
+                "observed_at": 1787796300.713498,
+                "source": "backend.supports",
+                "state": "unsupported"
+              },
+              "tool_calling": {
+                "enforcement": "degraded",
+                "note": null,
+                "observed_at": 1787796300.713498,
+                "source": "backend.supports",
+                "state": "unsupported"
+              },
+              "vision": {
+                "enforcement": "degraded",
+                "note": null,
+                "observed_at": 1787796300.713498,
+                "source": "backend.supports",
+                "state": "unsupported"
+              }
+            },
+            "schema": "hcli.provider.capabilities.v1"
+          },
+          "compiler": {
+            "language": "rust",
+            "profile": "release-fast",
+            "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+          },
+          "environment": {
+            "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+            "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+            "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+            "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+          },
+          "fallbacks": [
+            "transformers tokenizer fallback when unavailable"
+          ],
+          "generation": {
+            "do_sample": false,
+            "enable_thinking": false,
+            "max_new_tokens": 2048,
+            "temperature": 0.0,
+            "top_k": 1,
+            "top_p": 1.0
+          },
+          "hot_bytes": 10554328856,
+          "limits": {
+            "context": 8192,
+            "max_new_tokens": 2048,
+            "max_seq_len": 8192,
+            "n_slots": 1
+          },
+          "machine_genome": {},
+          "metadata": {
+            "identity_snapshot": {
+              "architecture": "unknown",
+              "artifact_inventory": {
+                "artifact_bytes": 10554328856,
+                "artifact_bytes_exact": true,
+                "artifact_bytes_source": "MIX_REPORT.json:payload_bytes",
+                "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+                "mix_id": "mix_all_mlp_affine_g64_ls",
+                "n_tensors": 755
+              },
+              "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+              "backend": "noetic_native",
+              "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+              "binary_sha256_16": "2d5fd0f157fb7987",
+              "capabilities": {},
+              "compiler": {
+                "language": "rust",
+                "profile": "release-fast",
+                "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+              },
+              "context": 8192,
+              "current_runtime": {
+                "complete_tps_current_measured": 24.4086,
+                "complete_tps_historical_qualified": 34.0,
+                "fallbacks": 0
+              },
+              "executable_profile": "release-fast",
+              "fallbacks": [
+                "transformers tokenizer fallback when unavailable"
+              ],
+              "family": "qwen3.8",
+              "fusion_env": {
+                "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+                "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+                "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+                "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+              },
+              "generation": {
+                "do_sample": false,
+                "enable_thinking": false,
+                "max_new_tokens": 2048,
+                "temperature": 0.0,
+                "top_k": 1,
+                "top_p": 1.0
+              },
+              "hot_bytes": null,
+              "limits": {
+                "context": 8192,
+                "max_new_tokens": 2048
+              },
+              "machine_genome": {},
+              "max_seq_len": 8192,
+              "mode": "resident",
+              "model_bytes": 10554328856,
+              "model_id": "qwen3.8-27b-sealed-3.14",
+              "model_path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+              "n_slots": 1,
+              "param_class": "?B",
+              "physical_ebpw": 3.1393,
+              "pid": 91546,
+              "port": null,
+              "profile_path": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+              "profile_schema": "hcli.provider.profile.v1",
+              "prompt_contract": {
+                "fallback_template": "qwen_closed_think",
+                "renderer": "qwen-chat-template-or-closed-think-fallback",
+                "token_count_authority": "native-resident"
+              },
+              "protocol": "hawking.qwen38.resident.v1",
+              "provider": "native",
+              "qualification": "capability 30/43 historical sealed contract",
+              "quantisation": "unknown",
+              "receipts": [
+                "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+                "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+              ],
+              "representation": {
+                "kind": "native-packed",
+                "physical_ebpw": 3.1393,
+                "weights_loaded_once": true
+              },
+              "require_fusion_env": true,
+              "resident_health": {
+                "model_open_count": 1,
+                "pid": 91546,
+                "protocol": "hawking.qwen38.resident.v1",
+                "ready": true,
+                "resident_identity": "sealed-3.14",
+                "restart_count": 0,
+                "weight_upload_count": 1
+              },
+              "resident_identity": "sealed-3.14",
+              "restart_count": 0,
+              "runtime": "hawking-native",
+              "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+              "tokenizer_sha256_16": "0997f410c57a1f4e"
+            },
+            "observed_at": 1787796300.7136772
+          },
+          "model_id": "qwen3.8-27b-sealed-3.14",
+          "profile_id": "native:qwen3.8-27b-sealed-3.14",
+          "prompt_contract": {
+            "fallback_template": "qwen_closed_think",
+            "renderer": "qwen-chat-template-or-closed-think-fallback",
+            "token_count_authority": "native-resident"
+          },
+          "provider": "native",
+          "qualification": {
+            "status": "capability 30/43 historical sealed contract"
+          },
+          "receipts": [
+            "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+            "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+          ],
+          "representation": {
+            "kind": "native-packed",
+            "physical_ebpw": 3.1393,
+            "quantisation": "unknown",
+            "require_fusion_env": true,
+            "weights_loaded_once": true
+          },
+          "runtime": {
+            "backend": "noetic_native",
+            "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+            "binary_sha256_16": "2d5fd0f157fb7987",
+            "current_runtime": {
+              "complete_tps_current_measured": 24.4086,
+              "complete_tps_historical_qualified": 34.0,
+              "fallbacks": 0
+            },
+            "mode": "resident",
+            "pid": 91546,
+            "port": null,
+            "protocol": "hawking.qwen38.resident.v1",
+            "runtime": "hawking-native"
+          },
+          "schema": "hcli.provider.profile.v1",
+          "tokenizer": {
+            "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+            "tokenizer_sha256_16": "0997f410c57a1f4e"
+          }
+        },
+        "resident": {
+          "artifact": {},
+          "capabilities": {
+            "features": {
+              "chat_template_kwargs": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796300.713773,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "grammar": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796300.713773,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "prefix_cache": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796300.713773,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "response_format": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796300.713773,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "slots": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796300.713773,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "streaming": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796300.713773,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "tool_calling": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796300.713773,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "vision": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796300.713773,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              }
+            },
+            "schema": "hcli.provider.capabilities.v1"
+          },
+          "compiler": {},
+          "environment": {},
+          "fallbacks": [],
+          "generation": {},
+          "hot_bytes": null,
+          "limits": {},
+          "machine_genome": {},
+          "metadata": {
+            "identity_snapshot": {},
+            "observed_at": 1787796300.7137809
+          },
+          "model_id": "unknown",
+          "profile_id": "resident",
+          "prompt_contract": {},
+          "provider": "Engine",
+          "qualification": {},
+          "receipts": [],
+          "representation": {},
+          "runtime": {},
+          "schema": "hcli.provider.profile.v1",
+          "tokenizer": {}
+        }
+      },
+      "repo_root": "/Users/scammermike/Downloads/hawking",
+      "requested_workunits": 3,
+      "stage": "a1",
+      "started_at": 1787796200.619284,
+      "status": "PASSED",
+      "work_definition": "real canonical receipts/configuration metadata; no toy artifacts",
+      "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a1-y7j4hwl8"
+    },
+    "A2_ten_workunits": {
+      "checks": {
+        "all_fixed_verifiers_passed": true,
+        "all_typed_tools_ok": true,
+        "all_units_completed": true,
+        "mission_completed": true,
+        "native_model_calls": true,
+        "next_work_selected": true,
+        "no_human_interventions": true,
+        "requested_count_reached": true
+      },
+      "elapsed_s": 329.822,
+      "finished_at": 1787796630.661197,
+      "mission": {
+        "dispatch_order": [
+          "a2-01",
+          "a2-02",
+          "a2-03",
+          "a2-04",
+          "a2-05",
+          "a2-06",
+          "a2-07",
+          "a2-08",
+          "a2-09",
+          "a2-10"
+        ],
+        "goal": "Perform 10 bounded Hawking evidence inspections through typed tools and native cognition.",
+        "jobs": [
+          {
+            "absolute_path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json",
+            "arguments": {
+              "path": "receipts/headless/HCLI_AGENTOS_CHECKPOINT.json"
+            },
+            "derived_content": "{\"schema\":\"hcli.agentos.evidence_observation.v1\",\"source\":\"receipts/headless/HCLI_AGENTOS_CHECKPOINT.json\",\"source_sha256\":\"ad25475b97272e7b33714d21446ef2149d799ebac69e17affc94e1271cb34ba0\",\"tool\":\"receipt.read\",\"unit_id\":\"a2-01\"}\n",
+            "derived_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-01.json",
+            "derived_relative_path": "evidence/a2-01.json",
+            "label": "program checkpoint",
+            "path": "receipts/headless/HCLI_AGENTOS_CHECKPOINT.json",
+            "sha256": "ad25475b97272e7b33714d21446ef2149d799ebac69e17affc94e1271cb34ba0",
+            "tool": "receipt.read",
+            "tool_arguments": {
+              "path": "receipts/headless/HCLI_AGENTOS_CHECKPOINT.json"
+            },
+            "unit_id": "a2-01"
+          },
+          {
+            "absolute_path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json",
+            "arguments": {
+              "path": "receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json"
+            },
+            "derived_content": "{\"schema\":\"hcli.agentos.evidence_observation.v1\",\"source\":\"receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json\",\"source_sha256\":\"acf2e05b8c306cf80f11ad04a5525182e73ad1f79e2adb1f9167d99fa41b3dd6\",\"tool\":\"receipt.read\",\"unit_id\":\"a2-02\"}\n",
+            "derived_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-02.json",
+            "derived_relative_path": "evidence/a2-02.json",
+            "label": "native ladder",
+            "path": "receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json",
+            "sha256": "acf2e05b8c306cf80f11ad04a5525182e73ad1f79e2adb1f9167d99fa41b3dd6",
+            "tool": "receipt.read",
+            "tool_arguments": {
+              "path": "receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json"
+            },
+            "unit_id": "a2-02"
+          },
+          {
+            "absolute_path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json",
+            "arguments": {
+              "path": "receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json"
+            },
+            "derived_content": "{\"schema\":\"hcli.agentos.evidence_observation.v1\",\"source\":\"receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json\",\"source_sha256\":\"57b984274c4bdddbe7125c2c14a32c8ebfb830cbc6d028e4e544f598ea72456b\",\"tool\":\"receipt.read\",\"unit_id\":\"a2-03\"}\n",
+            "derived_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-03.json",
+            "derived_relative_path": "evidence/a2-03.json",
+            "label": "resident proof",
+            "path": "receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json",
+            "sha256": "57b984274c4bdddbe7125c2c14a32c8ebfb830cbc6d028e4e544f598ea72456b",
+            "tool": "receipt.read",
+            "tool_arguments": {
+              "path": "receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json"
+            },
+            "unit_id": "a2-03"
+          },
+          {
+            "absolute_path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_NATIVE_MISSION_GATE.json",
+            "arguments": {
+              "path": "receipts/headless/HCLI_NATIVE_MISSION_GATE.json"
+            },
+            "derived_content": "{\"schema\":\"hcli.agentos.evidence_observation.v1\",\"source\":\"receipts/headless/HCLI_NATIVE_MISSION_GATE.json\",\"source_sha256\":\"b5f4fee89bb6c9339dbdaaf28c6e1141b0fe780bf3ddaeb44dcfdeacc381e9e3\",\"tool\":\"receipt.read\",\"unit_id\":\"a2-04\"}\n",
+            "derived_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-04.json",
+            "derived_relative_path": "evidence/a2-04.json",
+            "label": "native mission",
+            "path": "receipts/headless/HCLI_NATIVE_MISSION_GATE.json",
+            "sha256": "b5f4fee89bb6c9339dbdaaf28c6e1141b0fe780bf3ddaeb44dcfdeacc381e9e3",
+            "tool": "receipt.read",
+            "tool_arguments": {
+              "path": "receipts/headless/HCLI_NATIVE_MISSION_GATE.json"
+            },
+            "unit_id": "a2-04"
+          },
+          {
+            "absolute_path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RECOVERY_GATE.json",
+            "arguments": {
+              "path": "receipts/headless/HCLI_AGENTOS_RECOVERY_GATE.json"
+            },
+            "derived_content": "{\"schema\":\"hcli.agentos.evidence_observation.v1\",\"source\":\"receipts/headless/HCLI_AGENTOS_RECOVERY_GATE.json\",\"source_sha256\":\"cbeab4cf0ad755ff092e2c15d389324bc8f7172b851f66afa1325a77a1d4bd81\",\"tool\":\"receipt.read\",\"unit_id\":\"a2-05\"}\n",
+            "derived_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-05.json",
+            "derived_relative_path": "evidence/a2-05.json",
+            "label": "recovery proof",
+            "path": "receipts/headless/HCLI_AGENTOS_RECOVERY_GATE.json",
+            "sha256": "cbeab4cf0ad755ff092e2c15d389324bc8f7172b851f66afa1325a77a1d4bd81",
+            "tool": "receipt.read",
+            "tool_arguments": {
+              "path": "receipts/headless/HCLI_AGENTOS_RECOVERY_GATE.json"
+            },
+            "unit_id": "a2-05"
+          },
+          {
+            "absolute_path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RESEARCH_GATE.json",
+            "arguments": {
+              "path": "receipts/headless/HCLI_AGENTOS_RESEARCH_GATE.json"
+            },
+            "derived_content": "{\"schema\":\"hcli.agentos.evidence_observation.v1\",\"source\":\"receipts/headless/HCLI_AGENTOS_RESEARCH_GATE.json\",\"source_sha256\":\"0d0daa843fe456da13fe3a512dc0cdffb59300ec466c167ba0aebf9265b4a060\",\"tool\":\"receipt.read\",\"unit_id\":\"a2-06\"}\n",
+            "derived_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-06.json",
+            "derived_relative_path": "evidence/a2-06.json",
+            "label": "research proof",
+            "path": "receipts/headless/HCLI_AGENTOS_RESEARCH_GATE.json",
+            "sha256": "0d0daa843fe456da13fe3a512dc0cdffb59300ec466c167ba0aebf9265b4a060",
+            "tool": "receipt.read",
+            "tool_arguments": {
+              "path": "receipts/headless/HCLI_AGENTOS_RESEARCH_GATE.json"
+            },
+            "unit_id": "a2-06"
+          },
+          {
+            "absolute_path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_VMCP_GATE.json",
+            "arguments": {
+              "path": "receipts/headless/HCLI_AGENTOS_VMCP_GATE.json"
+            },
+            "derived_content": "{\"schema\":\"hcli.agentos.evidence_observation.v1\",\"source\":\"receipts/headless/HCLI_AGENTOS_VMCP_GATE.json\",\"source_sha256\":\"d20acec0869103b2febada9706e8f60b02b2c9b50658429241dc1c49eaef5b3c\",\"tool\":\"receipt.read\",\"unit_id\":\"a2-07\"}\n",
+            "derived_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-07.json",
+            "derived_relative_path": "evidence/a2-07.json",
+            "label": "VMCP proof",
+            "path": "receipts/headless/HCLI_AGENTOS_VMCP_GATE.json",
+            "sha256": "d20acec0869103b2febada9706e8f60b02b2c9b50658429241dc1c49eaef5b3c",
+            "tool": "receipt.read",
+            "tool_arguments": {
+              "path": "receipts/headless/HCLI_AGENTOS_VMCP_GATE.json"
+            },
+            "unit_id": "a2-07"
+          },
+          {
+            "absolute_path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_IDENTITY.json",
+            "arguments": {
+              "path": "receipts/headless/HCLI_FLASH_NEXT_IDENTITY.json"
+            },
+            "derived_content": "{\"schema\":\"hcli.agentos.evidence_observation.v1\",\"source\":\"receipts/headless/HCLI_FLASH_NEXT_IDENTITY.json\",\"source_sha256\":\"104771a257c34df52ffa6e2068a0bfa5b738114dd06f584d81108e0b7137fddd\",\"tool\":\"receipt.read\",\"unit_id\":\"a2-08\"}\n",
+            "derived_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-08.json",
+            "derived_relative_path": "evidence/a2-08.json",
+            "label": "Flash identity",
+            "path": "receipts/headless/HCLI_FLASH_NEXT_IDENTITY.json",
+            "sha256": "104771a257c34df52ffa6e2068a0bfa5b738114dd06f584d81108e0b7137fddd",
+            "tool": "receipt.read",
+            "tool_arguments": {
+              "path": "receipts/headless/HCLI_FLASH_NEXT_IDENTITY.json"
+            },
+            "unit_id": "a2-08"
+          },
+          {
+            "absolute_path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_ACCELERATOR_NATIVE_SMOKE.json",
+            "arguments": {
+              "path": "receipts/headless/HCLI_ACCELERATOR_NATIVE_SMOKE.json"
+            },
+            "derived_content": "{\"schema\":\"hcli.agentos.evidence_observation.v1\",\"source\":\"receipts/headless/HCLI_ACCELERATOR_NATIVE_SMOKE.json\",\"source_sha256\":\"825341f488869d1466345924b5f08c7a2baf5237ca9504916d746e3ee44e242d\",\"tool\":\"receipt.read\",\"unit_id\":\"a2-09\"}\n",
+            "derived_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-09.json",
+            "derived_relative_path": "evidence/a2-09.json",
+            "label": "accelerator smoke",
+            "path": "receipts/headless/HCLI_ACCELERATOR_NATIVE_SMOKE.json",
+            "sha256": "825341f488869d1466345924b5f08c7a2baf5237ca9504916d746e3ee44e242d",
+            "tool": "receipt.read",
+            "tool_arguments": {
+              "path": "receipts/headless/HCLI_ACCELERATOR_NATIVE_SMOKE.json"
+            },
+            "unit_id": "a2-09"
+          },
+          {
+            "absolute_path": "/Users/scammermike/Downloads/hawking/receipts/headless/MODEL_LAKE_ROLLING_PIPELINE.json",
+            "arguments": {},
+            "derived_content": "{\"schema\":\"hcli.agentos.evidence_observation.v1\",\"source\":\"receipts/headless/MODEL_LAKE_ROLLING_PIPELINE.json\",\"source_sha256\":\"8b6ca77196d2ea13c6e71df136d138bd4aadae3328add6aaa32b0c06627ef5ee\",\"tool\":\"modellake.status\",\"unit_id\":\"a2-10\"}\n",
+            "derived_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-10.json",
+            "derived_relative_path": "evidence/a2-10.json",
+            "label": "ModelLake pipeline",
+            "path": "receipts/headless/MODEL_LAKE_ROLLING_PIPELINE.json",
+            "sha256": "8b6ca77196d2ea13c6e71df136d138bd4aadae3328add6aaa32b0c06627ef5ee",
+            "tool": "modellake.status",
+            "tool_arguments": {},
+            "unit_id": "a2-10"
+          }
+        ],
+        "metrics": {
+          "accepted": 10,
+          "attempted": 10,
+          "human_interventions": 0,
+          "inconclusive": 0,
+          "model_calls": 10,
+          "rejected": 0,
+          "retries": 0,
+          "typed_tool_calls": 20,
+          "typed_tool_failures": 0,
+          "verifier_calls": 10,
+          "workunits_declared": 10
+        },
+        "mission_id": "7749bfa2-1049-412e-884e-8df2381e8b6d",
+        "model_calls": [
+          {
+            "completion_tokens": 64,
+            "endpoint": "hawking-native://sealed-3.14/resident",
+            "finish_reason": "length",
+            "max_tokens": 64,
+            "max_tokens_source": "env",
+            "prefix_key": "fd547cf85ffc1396df21b2e7",
+            "prompt_tokens": 948,
+            "runtime_index": 0,
+            "wall_s": 32.142
+          },
+          {
+            "completion_tokens": 64,
+            "endpoint": "hawking-native://sealed-3.14/resident",
+            "finish_reason": "length",
+            "max_tokens": 64,
+            "max_tokens_source": "env",
+            "prefix_key": "95147273cb2fc70da41944ad",
+            "prompt_tokens": 958,
+            "runtime_index": 0,
+            "wall_s": 32.385
+          },
+          {
+            "completion_tokens": 64,
+            "endpoint": "hawking-native://sealed-3.14/resident",
+            "finish_reason": "length",
+            "max_tokens": 64,
+            "max_tokens_source": "env",
+            "prefix_key": "cac78357a465362800d11e53",
+            "prompt_tokens": 960,
+            "runtime_index": 0,
+            "wall_s": 32.463
+          },
+          {
+            "completion_tokens": 61,
+            "endpoint": "hawking-native://sealed-3.14/resident",
+            "finish_reason": "stop",
+            "max_tokens": 64,
+            "max_tokens_source": "env",
+            "prefix_key": "f2bd87d1388c9a01075c103c",
+            "prompt_tokens": 958,
+            "runtime_index": 0,
+            "wall_s": 32.298
+          },
+          {
+            "completion_tokens": 64,
+            "endpoint": "hawking-native://sealed-3.14/resident",
+            "finish_reason": "length",
+            "max_tokens": 64,
+            "max_tokens_source": "env",
+            "prefix_key": "4dd33c63207f3937d73844df",
+            "prompt_tokens": 960,
+            "runtime_index": 0,
+            "wall_s": 32.542
+          },
+          {
+            "completion_tokens": 64,
+            "endpoint": "hawking-native://sealed-3.14/resident",
+            "finish_reason": "length",
+            "max_tokens": 64,
+            "max_tokens_source": "env",
+            "prefix_key": "3e1a3d2c5053bad0cd5d1142",
+            "prompt_tokens": 960,
+            "runtime_index": 0,
+            "wall_s": 32.532
+          },
+          {
+            "completion_tokens": 64,
+            "endpoint": "hawking-native://sealed-3.14/resident",
+            "finish_reason": "length",
+            "max_tokens": 64,
+            "max_tokens_source": "env",
+            "prefix_key": "5b106de40ffce7b068cab335",
+            "prompt_tokens": 961,
+            "runtime_index": 0,
+            "wall_s": 32.736
+          },
+          {
+            "completion_tokens": 64,
+            "endpoint": "hawking-native://sealed-3.14/resident",
+            "finish_reason": "length",
+            "max_tokens": 64,
+            "max_tokens_source": "env",
+            "prefix_key": "fd710a8fae28e8e42a23ecd4",
+            "prompt_tokens": 957,
+            "runtime_index": 0,
+            "wall_s": 33.007
+          },
+          {
+            "completion_tokens": 64,
+            "endpoint": "hawking-native://sealed-3.14/resident",
+            "finish_reason": "length",
+            "max_tokens": 64,
+            "max_tokens_source": "env",
+            "prefix_key": "2c9896f3d55c4f88236f6bb0",
+            "prompt_tokens": 964,
+            "runtime_index": 0,
+            "wall_s": 33.065
+          },
+          {
+            "completion_tokens": 64,
+            "endpoint": "hawking-native://sealed-3.14/resident",
+            "finish_reason": "length",
+            "max_tokens": 64,
+            "max_tokens_source": "env",
+            "prefix_key": "e816c761a1ea971829d1cdaf",
+            "prompt_tokens": 965,
+            "runtime_index": 0,
+            "wall_s": 33.107
+          }
+        ],
+        "result": {
+          "accepted": 10,
+          "cancelled": false,
+          "failed_units": [],
+          "mission_id": "7749bfa2-1049-412e-884e-8df2381e8b6d",
+          "no_progress_warning": null,
+          "reason": null,
+          "state": "VERIFIED",
+          "status": "completed",
+          "verdict": "ACCEPT"
+        },
+        "tool_events": [
+          {
+            "elapsed_s": 0.0071,
+            "failure_class": null,
+            "invocation_id": "tool-2c741e9d-1bd9-473c-a770-f94b5e950ecf",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/.hcli/receipts/tools/tool-2c741e9d-1bd9-473c-a770-f94b5e950ecf.json",
+            "source": "receipts/headless/HCLI_AGENTOS_CHECKPOINT.json",
+            "tool": "receipt.read",
+            "unit_id": "a2-01"
+          },
+          {
+            "derived_path": "evidence/a2-01.json",
+            "elapsed_s": 0.0014,
+            "failure_class": null,
+            "invocation_id": "tool-a4c38a50-2105-4f55-8e44-e48dcb27beef",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/.hcli/receipts/tools/tool-a4c38a50-2105-4f55-8e44-e48dcb27beef.json",
+            "source": "receipts/headless/HCLI_AGENTOS_CHECKPOINT.json",
+            "tool": "filesystem.write",
+            "unit_id": "a2-01"
+          },
+          {
+            "elapsed_s": 0.0105,
+            "failure_class": null,
+            "invocation_id": "tool-b078d87f-1638-48ec-a3be-83adc2d30cda",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/.hcli/receipts/tools/tool-b078d87f-1638-48ec-a3be-83adc2d30cda.json",
+            "source": "receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json",
+            "tool": "receipt.read",
+            "unit_id": "a2-02"
+          },
+          {
+            "derived_path": "evidence/a2-02.json",
+            "elapsed_s": 0.0096,
+            "failure_class": null,
+            "invocation_id": "tool-1c9dd480-7fde-4a13-8de2-ce35acbaa740",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/.hcli/receipts/tools/tool-1c9dd480-7fde-4a13-8de2-ce35acbaa740.json",
+            "source": "receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json",
+            "tool": "filesystem.write",
+            "unit_id": "a2-02"
+          },
+          {
+            "elapsed_s": 0.0109,
+            "failure_class": null,
+            "invocation_id": "tool-dff3860d-3a67-4523-82c8-c61567a51307",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/.hcli/receipts/tools/tool-dff3860d-3a67-4523-82c8-c61567a51307.json",
+            "source": "receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json",
+            "tool": "receipt.read",
+            "unit_id": "a2-03"
+          },
+          {
+            "derived_path": "evidence/a2-03.json",
+            "elapsed_s": 0.0101,
+            "failure_class": null,
+            "invocation_id": "tool-0232b7b0-3549-47e2-9595-dee2a5f11c32",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/.hcli/receipts/tools/tool-0232b7b0-3549-47e2-9595-dee2a5f11c32.json",
+            "source": "receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json",
+            "tool": "filesystem.write",
+            "unit_id": "a2-03"
+          },
+          {
+            "elapsed_s": 0.0133,
+            "failure_class": null,
+            "invocation_id": "tool-66835986-9195-4266-be83-08400187a46d",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/.hcli/receipts/tools/tool-66835986-9195-4266-be83-08400187a46d.json",
+            "source": "receipts/headless/HCLI_NATIVE_MISSION_GATE.json",
+            "tool": "receipt.read",
+            "unit_id": "a2-04"
+          },
+          {
+            "derived_path": "evidence/a2-04.json",
+            "elapsed_s": 0.0101,
+            "failure_class": null,
+            "invocation_id": "tool-6bcd5a4c-d269-4635-a24a-e23ac362c29b",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/.hcli/receipts/tools/tool-6bcd5a4c-d269-4635-a24a-e23ac362c29b.json",
+            "source": "receipts/headless/HCLI_NATIVE_MISSION_GATE.json",
+            "tool": "filesystem.write",
+            "unit_id": "a2-04"
+          },
+          {
+            "elapsed_s": 0.0106,
+            "failure_class": null,
+            "invocation_id": "tool-2c831a3d-da74-4d08-9c6a-7ba8413b691d",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/.hcli/receipts/tools/tool-2c831a3d-da74-4d08-9c6a-7ba8413b691d.json",
+            "source": "receipts/headless/HCLI_AGENTOS_RECOVERY_GATE.json",
+            "tool": "receipt.read",
+            "unit_id": "a2-05"
+          },
+          {
+            "derived_path": "evidence/a2-05.json",
+            "elapsed_s": 0.0106,
+            "failure_class": null,
+            "invocation_id": "tool-0e6ddf8c-f584-4ee7-bed5-fb9a543c670d",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/.hcli/receipts/tools/tool-0e6ddf8c-f584-4ee7-bed5-fb9a543c670d.json",
+            "source": "receipts/headless/HCLI_AGENTOS_RECOVERY_GATE.json",
+            "tool": "filesystem.write",
+            "unit_id": "a2-05"
+          },
+          {
+            "elapsed_s": 0.0114,
+            "failure_class": null,
+            "invocation_id": "tool-59b2c222-0796-4d2a-83f2-bb1b88df9937",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/.hcli/receipts/tools/tool-59b2c222-0796-4d2a-83f2-bb1b88df9937.json",
+            "source": "receipts/headless/HCLI_AGENTOS_RESEARCH_GATE.json",
+            "tool": "receipt.read",
+            "unit_id": "a2-06"
+          },
+          {
+            "derived_path": "evidence/a2-06.json",
+            "elapsed_s": 0.0108,
+            "failure_class": null,
+            "invocation_id": "tool-3b7c5fff-b24a-4c23-b1dd-8eaa65cab9db",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/.hcli/receipts/tools/tool-3b7c5fff-b24a-4c23-b1dd-8eaa65cab9db.json",
+            "source": "receipts/headless/HCLI_AGENTOS_RESEARCH_GATE.json",
+            "tool": "filesystem.write",
+            "unit_id": "a2-06"
+          },
+          {
+            "elapsed_s": 0.0115,
+            "failure_class": null,
+            "invocation_id": "tool-c7fb755a-0b7e-4a93-9982-18ed80fc4585",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/.hcli/receipts/tools/tool-c7fb755a-0b7e-4a93-9982-18ed80fc4585.json",
+            "source": "receipts/headless/HCLI_AGENTOS_VMCP_GATE.json",
+            "tool": "receipt.read",
+            "unit_id": "a2-07"
+          },
+          {
+            "derived_path": "evidence/a2-07.json",
+            "elapsed_s": 0.011,
+            "failure_class": null,
+            "invocation_id": "tool-70608ae9-3eec-495e-a3a0-341751496f7f",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/.hcli/receipts/tools/tool-70608ae9-3eec-495e-a3a0-341751496f7f.json",
+            "source": "receipts/headless/HCLI_AGENTOS_VMCP_GATE.json",
+            "tool": "filesystem.write",
+            "unit_id": "a2-07"
+          },
+          {
+            "elapsed_s": 0.0106,
+            "failure_class": null,
+            "invocation_id": "tool-822929e8-4785-4e50-a68c-a0bd55dc94df",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/.hcli/receipts/tools/tool-822929e8-4785-4e50-a68c-a0bd55dc94df.json",
+            "source": "receipts/headless/HCLI_FLASH_NEXT_IDENTITY.json",
+            "tool": "receipt.read",
+            "unit_id": "a2-08"
+          },
+          {
+            "derived_path": "evidence/a2-08.json",
+            "elapsed_s": 0.0101,
+            "failure_class": null,
+            "invocation_id": "tool-6918fcbf-7837-4d5a-b978-63d84bf880a9",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/.hcli/receipts/tools/tool-6918fcbf-7837-4d5a-b978-63d84bf880a9.json",
+            "source": "receipts/headless/HCLI_FLASH_NEXT_IDENTITY.json",
+            "tool": "filesystem.write",
+            "unit_id": "a2-08"
+          },
+          {
+            "elapsed_s": 0.0111,
+            "failure_class": null,
+            "invocation_id": "tool-705a433f-155f-46a1-a96e-f3f74ec5661f",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/.hcli/receipts/tools/tool-705a433f-155f-46a1-a96e-f3f74ec5661f.json",
+            "source": "receipts/headless/HCLI_ACCELERATOR_NATIVE_SMOKE.json",
+            "tool": "receipt.read",
+            "unit_id": "a2-09"
+          },
+          {
+            "derived_path": "evidence/a2-09.json",
+            "elapsed_s": 0.0102,
+            "failure_class": null,
+            "invocation_id": "tool-75fbbcf6-e016-48b1-b977-80b30b6a8e76",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/.hcli/receipts/tools/tool-75fbbcf6-e016-48b1-b977-80b30b6a8e76.json",
+            "source": "receipts/headless/HCLI_ACCELERATOR_NATIVE_SMOKE.json",
+            "tool": "filesystem.write",
+            "unit_id": "a2-09"
+          },
+          {
+            "elapsed_s": 0.0112,
+            "failure_class": null,
+            "invocation_id": "tool-04598b3a-b0c7-4c6f-8132-20f6f5a14ace",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/.hcli/receipts/tools/tool-04598b3a-b0c7-4c6f-8132-20f6f5a14ace.json",
+            "source": "receipts/headless/MODEL_LAKE_ROLLING_PIPELINE.json",
+            "tool": "modellake.status",
+            "unit_id": "a2-10"
+          },
+          {
+            "derived_path": "evidence/a2-10.json",
+            "elapsed_s": 0.0109,
+            "failure_class": null,
+            "invocation_id": "tool-2333dddb-d81f-4441-8662-4fe3ef52d09a",
+            "ok": true,
+            "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/.hcli/receipts/tools/tool-2333dddb-d81f-4441-8662-4fe3ef52d09a.json",
+            "source": "receipts/headless/MODEL_LAKE_ROLLING_PIPELINE.json",
+            "tool": "filesystem.write",
+            "unit_id": "a2-10"
+          }
+        ],
+        "units": {
+          "a2-01": {
+            "assigned_backend": "resident",
+            "assigned_runtime": null,
+            "attempts": 1,
+            "backend_task_id": null,
+            "classification": null,
+            "content_hash": "9017ce9002cee1861316a3d97b72c19630c5662c412d5c5ee4f6450abc6f3010",
+            "dependencies": [],
+            "description": "Inspect the real program checkpoint evidence at /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json. Use the supplied typed evidence result and give a concise factual summary. Do not mutate files and do not claim acceptance; the fixed verifier checks the source bytes.",
+            "effect_class": null,
+            "failure_context": null,
+            "finished_at": 1787796335.616979,
+            "id": "a2-01",
+            "preferred_backend": "resident",
+            "provider": "resident",
+            "ready_at": 1787796300.888756,
+            "repair_depth": 0,
+            "repair_exhausted": false,
+            "repair_reason": null,
+            "repair_root": null,
+            "repairs": null,
+            "resource_class": "TEST",
+            "role": "generalist",
+            "running_at": 1787796300.913391,
+            "status": "completed",
+            "verification": {
+              "acceptance_source": "workunit_verifier",
+              "command": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json | grep -q ad25475b97272e7b33714d21446ef2149d799ebac69e17affc94e1271cb34ba0 && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-01.json && grep -q ad25475b97272e7b33714d21446ef2149d799ebac69e17affc94e1271cb34ba0 /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-01.json",
+              "exit_code": 0,
+              "ok": true,
+              "output": ""
+            },
+            "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json | grep -q ad25475b97272e7b33714d21446ef2149d799ebac69e17affc94e1271cb34ba0 && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-01.json && grep -q ad25475b97272e7b33714d21446ef2149d799ebac69e17affc94e1271cb34ba0 /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-01.json",
+            "workspace": null
+          },
+          "a2-02": {
+            "assigned_backend": "resident",
+            "assigned_runtime": null,
+            "attempts": 1,
+            "backend_task_id": null,
+            "classification": null,
+            "content_hash": "aaed1b6a48acf8df94fe218d63e67d5b911558f71a472aebe6cbbab9090d10f2",
+            "dependencies": [
+              "a2-01"
+            ],
+            "description": "Inspect the real native ladder evidence at /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json. Use the supplied typed evidence result and give a concise factual summary. Do not mutate files and do not claim acceptance; the fixed verifier checks the source bytes.",
+            "effect_class": null,
+            "failure_context": null,
+            "finished_at": 1787796368.081137,
+            "id": "a2-02",
+            "preferred_backend": "resident",
+            "provider": "resident",
+            "ready_at": 1787796335.6189692,
+            "repair_depth": 0,
+            "repair_exhausted": false,
+            "repair_reason": null,
+            "repair_root": null,
+            "repairs": null,
+            "resource_class": "TEST",
+            "role": "generalist",
+            "running_at": 1787796335.639081,
+            "status": "completed",
+            "verification": {
+              "acceptance_source": "workunit_verifier",
+              "command": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json | grep -q acf2e05b8c306cf80f11ad04a5525182e73ad1f79e2adb1f9167d99fa41b3dd6 && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-02.json && grep -q acf2e05b8c306cf80f11ad04a5525182e73ad1f79e2adb1f9167d99fa41b3dd6 /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-02.json",
+              "exit_code": 0,
+              "ok": true,
+              "output": ""
+            },
+            "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_NATIVE_GATE.json | grep -q acf2e05b8c306cf80f11ad04a5525182e73ad1f79e2adb1f9167d99fa41b3dd6 && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-02.json && grep -q acf2e05b8c306cf80f11ad04a5525182e73ad1f79e2adb1f9167d99fa41b3dd6 /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-02.json",
+            "workspace": null
+          },
+          "a2-03": {
+            "assigned_backend": "resident",
+            "assigned_runtime": null,
+            "attempts": 1,
+            "backend_task_id": null,
+            "classification": null,
+            "content_hash": "48a1ae253039198dc7c4bacba9e514aa21af0585a2fdc35d57000c89fa8b91fa",
+            "dependencies": [
+              "a2-02"
+            ],
+            "description": "Inspect the real resident proof evidence at /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json. Use the supplied typed evidence result and give a concise factual summary. Do not mutate files and do not claim acceptance; the fixed verifier checks the source bytes.",
+            "effect_class": null,
+            "failure_context": null,
+            "finished_at": 1787796400.623934,
+            "id": "a2-03",
+            "preferred_backend": "resident",
+            "provider": "resident",
+            "ready_at": 1787796368.083572,
+            "repair_depth": 0,
+            "repair_exhausted": false,
+            "repair_reason": null,
+            "repair_root": null,
+            "repairs": null,
+            "resource_class": "TEST",
+            "role": "generalist",
+            "running_at": 1787796368.104597,
+            "status": "completed",
+            "verification": {
+              "acceptance_source": "workunit_verifier",
+              "command": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json | grep -q 57b984274c4bdddbe7125c2c14a32c8ebfb830cbc6d028e4e544f598ea72456b && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-03.json && grep -q 57b984274c4bdddbe7125c2c14a32c8ebfb830cbc6d028e4e544f598ea72456b /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-03.json",
+              "exit_code": 0,
+              "ok": true,
+              "output": ""
+            },
+            "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json | grep -q 57b984274c4bdddbe7125c2c14a32c8ebfb830cbc6d028e4e544f598ea72456b && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-03.json && grep -q 57b984274c4bdddbe7125c2c14a32c8ebfb830cbc6d028e4e544f598ea72456b /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-03.json",
+            "workspace": null
+          },
+          "a2-04": {
+            "assigned_backend": "resident",
+            "assigned_runtime": null,
+            "attempts": 1,
+            "backend_task_id": null,
+            "classification": null,
+            "content_hash": "ef4d19ab1312684e17e35b5520826c960ef493efb11f88e498fb09233f04c699",
+            "dependencies": [
+              "a2-03"
+            ],
+            "description": "Inspect the real native mission evidence at /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_NATIVE_MISSION_GATE.json. Use the supplied typed evidence result and give a concise factual summary. Do not mutate files and do not claim acceptance; the fixed verifier checks the source bytes.",
+            "effect_class": null,
+            "failure_context": null,
+            "finished_at": 1787796433.007158,
+            "id": "a2-04",
+            "preferred_backend": "resident",
+            "provider": "resident",
+            "ready_at": 1787796400.626204,
+            "repair_depth": 0,
+            "repair_exhausted": false,
+            "repair_reason": null,
+            "repair_root": null,
+            "repairs": null,
+            "resource_class": "TEST",
+            "role": "generalist",
+            "running_at": 1787796400.6497018,
+            "status": "completed",
+            "verification": {
+              "acceptance_source": "workunit_verifier",
+              "command": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_NATIVE_MISSION_GATE.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_NATIVE_MISSION_GATE.json | grep -q b5f4fee89bb6c9339dbdaaf28c6e1141b0fe780bf3ddaeb44dcfdeacc381e9e3 && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-04.json && grep -q b5f4fee89bb6c9339dbdaaf28c6e1141b0fe780bf3ddaeb44dcfdeacc381e9e3 /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-04.json",
+              "exit_code": 0,
+              "ok": true,
+              "output": ""
+            },
+            "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_NATIVE_MISSION_GATE.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_NATIVE_MISSION_GATE.json | grep -q b5f4fee89bb6c9339dbdaaf28c6e1141b0fe780bf3ddaeb44dcfdeacc381e9e3 && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-04.json && grep -q b5f4fee89bb6c9339dbdaaf28c6e1141b0fe780bf3ddaeb44dcfdeacc381e9e3 /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-04.json",
+            "workspace": null
+          },
+          "a2-05": {
+            "assigned_backend": "resident",
+            "assigned_runtime": null,
+            "attempts": 1,
+            "backend_task_id": null,
+            "classification": null,
+            "content_hash": "0ac290f5ba4fc4e4fc38f4e9f46f29b7f709f616ae29cba6df32a63759acdc3a",
+            "dependencies": [
+              "a2-04"
+            ],
+            "description": "Inspect the real recovery proof evidence at /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RECOVERY_GATE.json. Use the supplied typed evidence result and give a concise factual summary. Do not mutate files and do not claim acceptance; the fixed verifier checks the source bytes.",
+            "effect_class": null,
+            "failure_context": null,
+            "finished_at": 1787796465.6323042,
+            "id": "a2-05",
+            "preferred_backend": "resident",
+            "provider": "resident",
+            "ready_at": 1787796433.009616,
+            "repair_depth": 0,
+            "repair_exhausted": false,
+            "repair_reason": null,
+            "repair_root": null,
+            "repairs": null,
+            "resource_class": "TEST",
+            "role": "generalist",
+            "running_at": 1787796433.030875,
+            "status": "completed",
+            "verification": {
+              "acceptance_source": "workunit_verifier",
+              "command": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RECOVERY_GATE.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RECOVERY_GATE.json | grep -q cbeab4cf0ad755ff092e2c15d389324bc8f7172b851f66afa1325a77a1d4bd81 && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-05.json && grep -q cbeab4cf0ad755ff092e2c15d389324bc8f7172b851f66afa1325a77a1d4bd81 /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-05.json",
+              "exit_code": 0,
+              "ok": true,
+              "output": ""
+            },
+            "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RECOVERY_GATE.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RECOVERY_GATE.json | grep -q cbeab4cf0ad755ff092e2c15d389324bc8f7172b851f66afa1325a77a1d4bd81 && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-05.json && grep -q cbeab4cf0ad755ff092e2c15d389324bc8f7172b851f66afa1325a77a1d4bd81 /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-05.json",
+            "workspace": null
+          },
+          "a2-06": {
+            "assigned_backend": "resident",
+            "assigned_runtime": null,
+            "attempts": 1,
+            "backend_task_id": null,
+            "classification": null,
+            "content_hash": "a58f996d6ddbee686db5f95a2655832cd25e04d843dead98971baf4967315b08",
+            "dependencies": [
+              "a2-05"
+            ],
+            "description": "Inspect the real research proof evidence at /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RESEARCH_GATE.json. Use the supplied typed evidence result and give a concise factual summary. Do not mutate files and do not claim acceptance; the fixed verifier checks the source bytes.",
+            "effect_class": null,
+            "failure_context": null,
+            "finished_at": 1787796498.248638,
+            "id": "a2-06",
+            "preferred_backend": "resident",
+            "provider": "resident",
+            "ready_at": 1787796465.634539,
+            "repair_depth": 0,
+            "repair_exhausted": false,
+            "repair_reason": null,
+            "repair_root": null,
+            "repairs": null,
+            "resource_class": "TEST",
+            "role": "generalist",
+            "running_at": 1787796465.656804,
+            "status": "completed",
+            "verification": {
+              "acceptance_source": "workunit_verifier",
+              "command": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RESEARCH_GATE.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RESEARCH_GATE.json | grep -q 0d0daa843fe456da13fe3a512dc0cdffb59300ec466c167ba0aebf9265b4a060 && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-06.json && grep -q 0d0daa843fe456da13fe3a512dc0cdffb59300ec466c167ba0aebf9265b4a060 /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-06.json",
+              "exit_code": 0,
+              "ok": true,
+              "output": ""
+            },
+            "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RESEARCH_GATE.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RESEARCH_GATE.json | grep -q 0d0daa843fe456da13fe3a512dc0cdffb59300ec466c167ba0aebf9265b4a060 && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-06.json && grep -q 0d0daa843fe456da13fe3a512dc0cdffb59300ec466c167ba0aebf9265b4a060 /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-06.json",
+            "workspace": null
+          },
+          "a2-07": {
+            "assigned_backend": "resident",
+            "assigned_runtime": null,
+            "attempts": 1,
+            "backend_task_id": null,
+            "classification": null,
+            "content_hash": "12d33f60ecae93f795552495133d546121636982daf72df6192d26a37b1df3c3",
+            "dependencies": [
+              "a2-06"
+            ],
+            "description": "Inspect the real VMCP proof evidence at /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_VMCP_GATE.json. Use the supplied typed evidence result and give a concise factual summary. Do not mutate files and do not claim acceptance; the fixed verifier checks the source bytes.",
+            "effect_class": null,
+            "failure_context": null,
+            "finished_at": 1787796531.0694861,
+            "id": "a2-07",
+            "preferred_backend": "resident",
+            "provider": "resident",
+            "ready_at": 1787796498.2509089,
+            "repair_depth": 0,
+            "repair_exhausted": false,
+            "repair_reason": null,
+            "repair_root": null,
+            "repairs": null,
+            "resource_class": "TEST",
+            "role": "generalist",
+            "running_at": 1787796498.273531,
+            "status": "completed",
+            "verification": {
+              "acceptance_source": "workunit_verifier",
+              "command": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_VMCP_GATE.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_VMCP_GATE.json | grep -q d20acec0869103b2febada9706e8f60b02b2c9b50658429241dc1c49eaef5b3c && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-07.json && grep -q d20acec0869103b2febada9706e8f60b02b2c9b50658429241dc1c49eaef5b3c /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-07.json",
+              "exit_code": 0,
+              "ok": true,
+              "output": ""
+            },
+            "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_VMCP_GATE.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_VMCP_GATE.json | grep -q d20acec0869103b2febada9706e8f60b02b2c9b50658429241dc1c49eaef5b3c && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-07.json && grep -q d20acec0869103b2febada9706e8f60b02b2c9b50658429241dc1c49eaef5b3c /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-07.json",
+            "workspace": null
+          },
+          "a2-08": {
+            "assigned_backend": "resident",
+            "assigned_runtime": null,
+            "attempts": 1,
+            "backend_task_id": null,
+            "classification": null,
+            "content_hash": "c9b67902d9e65ab7c57cebc4be0ca89d5a6d5478985165eb10e24da8506b261e",
+            "dependencies": [
+              "a2-07"
+            ],
+            "description": "Inspect the real Flash identity evidence at /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_IDENTITY.json. Use the supplied typed evidence result and give a concise factual summary. Do not mutate files and do not claim acceptance; the fixed verifier checks the source bytes.",
+            "effect_class": null,
+            "failure_context": null,
+            "finished_at": 1787796564.157008,
+            "id": "a2-08",
+            "preferred_backend": "resident",
+            "provider": "resident",
+            "ready_at": 1787796531.071875,
+            "repair_depth": 0,
+            "repair_exhausted": false,
+            "repair_reason": null,
+            "repair_root": null,
+            "repairs": null,
+            "resource_class": "TEST",
+            "role": "science",
+            "running_at": 1787796531.0926669,
+            "status": "completed",
+            "verification": {
+              "acceptance_source": "workunit_verifier",
+              "command": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_IDENTITY.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_IDENTITY.json | grep -q 104771a257c34df52ffa6e2068a0bfa5b738114dd06f584d81108e0b7137fddd && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-08.json && grep -q 104771a257c34df52ffa6e2068a0bfa5b738114dd06f584d81108e0b7137fddd /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-08.json",
+              "exit_code": 0,
+              "ok": true,
+              "output": ""
+            },
+            "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_IDENTITY.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_IDENTITY.json | grep -q 104771a257c34df52ffa6e2068a0bfa5b738114dd06f584d81108e0b7137fddd && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-08.json && grep -q 104771a257c34df52ffa6e2068a0bfa5b738114dd06f584d81108e0b7137fddd /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-08.json",
+            "workspace": null
+          },
+          "a2-09": {
+            "assigned_backend": "resident",
+            "assigned_runtime": null,
+            "attempts": 1,
+            "backend_task_id": null,
+            "classification": null,
+            "content_hash": "7f47fdbc8b6dde5c06c6c3c066dc8aa8cb955afa73aa342e30ed7a3ef91d485f",
+            "dependencies": [
+              "a2-08"
+            ],
+            "description": "Inspect the real accelerator smoke evidence at /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_ACCELERATOR_NATIVE_SMOKE.json. Use the supplied typed evidence result and give a concise factual summary. Do not mutate files and do not claim acceptance; the fixed verifier checks the source bytes.",
+            "effect_class": null,
+            "failure_context": null,
+            "finished_at": 1787796597.3188438,
+            "id": "a2-09",
+            "preferred_backend": "resident",
+            "provider": "resident",
+            "ready_at": 1787796564.159137,
+            "repair_depth": 0,
+            "repair_exhausted": false,
+            "repair_reason": null,
+            "repair_root": null,
+            "repairs": null,
+            "resource_class": "TEST",
+            "role": "generalist",
+            "running_at": 1787796564.180455,
+            "status": "completed",
+            "verification": {
+              "acceptance_source": "workunit_verifier",
+              "command": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_ACCELERATOR_NATIVE_SMOKE.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_ACCELERATOR_NATIVE_SMOKE.json | grep -q 825341f488869d1466345924b5f08c7a2baf5237ca9504916d746e3ee44e242d && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-09.json && grep -q 825341f488869d1466345924b5f08c7a2baf5237ca9504916d746e3ee44e242d /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-09.json",
+              "exit_code": 0,
+              "ok": true,
+              "output": ""
+            },
+            "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_ACCELERATOR_NATIVE_SMOKE.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_ACCELERATOR_NATIVE_SMOKE.json | grep -q 825341f488869d1466345924b5f08c7a2baf5237ca9504916d746e3ee44e242d && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-09.json && grep -q 825341f488869d1466345924b5f08c7a2baf5237ca9504916d746e3ee44e242d /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-09.json",
+            "workspace": null
+          },
+          "a2-10": {
+            "assigned_backend": "resident",
+            "assigned_runtime": null,
+            "attempts": 1,
+            "backend_task_id": null,
+            "classification": null,
+            "content_hash": "3179fcd11ee75d831dd2ae89f19eb1032b21200308938f6bc1d24f414a071cd9",
+            "dependencies": [
+              "a2-09"
+            ],
+            "description": "Inspect the real ModelLake pipeline evidence at /Users/scammermike/Downloads/hawking/receipts/headless/MODEL_LAKE_ROLLING_PIPELINE.json. Use the supplied typed evidence result and give a concise factual summary. Do not mutate files and do not claim acceptance; the fixed verifier checks the source bytes.",
+            "effect_class": null,
+            "failure_context": null,
+            "finished_at": 1787796630.50815,
+            "id": "a2-10",
+            "preferred_backend": "resident",
+            "provider": "resident",
+            "ready_at": 1787796597.321443,
+            "repair_depth": 0,
+            "repair_exhausted": false,
+            "repair_reason": null,
+            "repair_root": null,
+            "repairs": null,
+            "resource_class": "TEST",
+            "role": "generalist",
+            "running_at": 1787796597.343605,
+            "status": "completed",
+            "verification": {
+              "acceptance_source": "workunit_verifier",
+              "command": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/MODEL_LAKE_ROLLING_PIPELINE.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/MODEL_LAKE_ROLLING_PIPELINE.json | grep -q 8b6ca77196d2ea13c6e71df136d138bd4aadae3328add6aaa32b0c06627ef5ee && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-10.json && grep -q 8b6ca77196d2ea13c6e71df136d138bd4aadae3328add6aaa32b0c06627ef5ee /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-10.json",
+              "exit_code": 0,
+              "ok": true,
+              "output": ""
+            },
+            "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/MODEL_LAKE_ROLLING_PIPELINE.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/MODEL_LAKE_ROLLING_PIPELINE.json | grep -q 8b6ca77196d2ea13c6e71df136d138bd4aadae3328add6aaa32b0c06627ef5ee && test -f /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-10.json && grep -q 8b6ca77196d2ea13c6e71df136d138bd4aadae3328add6aaa32b0c06627ef5ee /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc/evidence/a2-10.json",
+            "workspace": null
+          }
+        }
+      },
+      "profile_path": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+      "provider_profiles": {
+        "local": {
+          "artifact": {},
+          "capabilities": {
+            "features": {
+              "chat_template_kwargs": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796630.531743,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "grammar": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796630.531743,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "prefix_cache": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796630.531743,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "response_format": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796630.531743,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "slots": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796630.531743,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "streaming": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796630.531743,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "tool_calling": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796630.531743,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "vision": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796630.531743,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              }
+            },
+            "schema": "hcli.provider.capabilities.v1"
+          },
+          "compiler": {},
+          "environment": {},
+          "fallbacks": [],
+          "generation": {},
+          "hot_bytes": null,
+          "limits": {},
+          "machine_genome": {},
+          "metadata": {
+            "identity_snapshot": {},
+            "observed_at": 1787796630.531749
+          },
+          "model_id": "unknown",
+          "profile_id": "local",
+          "prompt_contract": {},
+          "provider": "Engine",
+          "qualification": {},
+          "receipts": [],
+          "representation": {},
+          "runtime": {},
+          "schema": "hcli.provider.profile.v1",
+          "tokenizer": {}
+        },
+        "native:qwen3.8-27b-sealed-3.14": {
+          "artifact": {
+            "artifact_inventory": {
+              "artifact_bytes": 10554328856,
+              "artifact_bytes_exact": true,
+              "artifact_bytes_source": "MIX_REPORT.json:payload_bytes",
+              "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+              "mix_id": "mix_all_mlp_affine_g64_ls",
+              "n_tensors": 755
+            },
+            "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+            "model_bytes": 10554328856,
+            "model_path": "/Users/scammermike/noetic/NOETIC_PARENT_A"
+          },
+          "capabilities": {
+            "features": {
+              "chat_template_kwargs": {
+                "enforcement": "enforced",
+                "note": null,
+                "observed_at": 1787796630.53142,
+                "source": "backend.supports",
+                "state": "supported"
+              },
+              "grammar": {
+                "enforcement": "degraded",
+                "note": null,
+                "observed_at": 1787796630.53142,
+                "source": "backend.supports",
+                "state": "unsupported"
+              },
+              "prefix_cache": {
+                "enforcement": "degraded",
+                "note": null,
+                "observed_at": 1787796630.53142,
+                "source": "backend.supports",
+                "state": "unsupported"
+              },
+              "response_format": {
+                "enforcement": "degraded",
+                "note": null,
+                "observed_at": 1787796630.53142,
+                "source": "backend.supports",
+                "state": "unsupported"
+              },
+              "slots": {
+                "enforcement": "degraded",
+                "note": null,
+                "observed_at": 1787796630.53142,
+                "source": "backend.supports",
+                "state": "unsupported"
+              },
+              "streaming": {
+                "enforcement": "degraded",
+                "note": null,
+                "observed_at": 1787796630.53142,
+                "source": "backend.supports",
+                "state": "unsupported"
+              },
+              "tool_calling": {
+                "enforcement": "degraded",
+                "note": null,
+                "observed_at": 1787796630.53142,
+                "source": "backend.supports",
+                "state": "unsupported"
+              },
+              "vision": {
+                "enforcement": "degraded",
+                "note": null,
+                "observed_at": 1787796630.53142,
+                "source": "backend.supports",
+                "state": "unsupported"
+              }
+            },
+            "schema": "hcli.provider.capabilities.v1"
+          },
+          "compiler": {
+            "language": "rust",
+            "profile": "release-fast",
+            "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+          },
+          "environment": {
+            "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+            "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+            "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+            "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+          },
+          "fallbacks": [
+            "transformers tokenizer fallback when unavailable"
+          ],
+          "generation": {
+            "do_sample": false,
+            "enable_thinking": false,
+            "max_new_tokens": 2048,
+            "temperature": 0.0,
+            "top_k": 1,
+            "top_p": 1.0
+          },
+          "hot_bytes": 10554328856,
+          "limits": {
+            "context": 8192,
+            "max_new_tokens": 2048,
+            "max_seq_len": 8192,
+            "n_slots": 1
+          },
+          "machine_genome": {},
+          "metadata": {
+            "identity_snapshot": {
+              "architecture": "unknown",
+              "artifact_inventory": {
+                "artifact_bytes": 10554328856,
+                "artifact_bytes_exact": true,
+                "artifact_bytes_source": "MIX_REPORT.json:payload_bytes",
+                "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+                "mix_id": "mix_all_mlp_affine_g64_ls",
+                "n_tensors": 755
+              },
+              "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+              "backend": "noetic_native",
+              "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+              "binary_sha256_16": "2d5fd0f157fb7987",
+              "capabilities": {},
+              "compiler": {
+                "language": "rust",
+                "profile": "release-fast",
+                "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+              },
+              "context": 8192,
+              "current_runtime": {
+                "complete_tps_current_measured": 24.4086,
+                "complete_tps_historical_qualified": 34.0,
+                "fallbacks": 0
+              },
+              "executable_profile": "release-fast",
+              "fallbacks": [
+                "transformers tokenizer fallback when unavailable"
+              ],
+              "family": "qwen3.8",
+              "fusion_env": {
+                "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+                "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+                "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+                "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+              },
+              "generation": {
+                "do_sample": false,
+                "enable_thinking": false,
+                "max_new_tokens": 2048,
+                "temperature": 0.0,
+                "top_k": 1,
+                "top_p": 1.0
+              },
+              "hot_bytes": null,
+              "limits": {
+                "context": 8192,
+                "max_new_tokens": 2048
+              },
+              "machine_genome": {},
+              "max_seq_len": 8192,
+              "mode": "resident",
+              "model_bytes": 10554328856,
+              "model_id": "qwen3.8-27b-sealed-3.14",
+              "model_path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+              "n_slots": 1,
+              "param_class": "?B",
+              "physical_ebpw": 3.1393,
+              "pid": 92982,
+              "port": null,
+              "profile_path": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+              "profile_schema": "hcli.provider.profile.v1",
+              "prompt_contract": {
+                "fallback_template": "qwen_closed_think",
+                "renderer": "qwen-chat-template-or-closed-think-fallback",
+                "token_count_authority": "native-resident"
+              },
+              "protocol": "hawking.qwen38.resident.v1",
+              "provider": "native",
+              "qualification": "capability 30/43 historical sealed contract",
+              "quantisation": "unknown",
+              "receipts": [
+                "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+                "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+              ],
+              "representation": {
+                "kind": "native-packed",
+                "physical_ebpw": 3.1393,
+                "weights_loaded_once": true
+              },
+              "require_fusion_env": true,
+              "resident_health": {
+                "model_open_count": 1,
+                "pid": 92982,
+                "protocol": "hawking.qwen38.resident.v1",
+                "ready": true,
+                "resident_identity": "sealed-3.14",
+                "restart_count": 0,
+                "weight_upload_count": 1
+              },
+              "resident_identity": "sealed-3.14",
+              "restart_count": 0,
+              "runtime": "hawking-native",
+              "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+              "tokenizer_sha256_16": "0997f410c57a1f4e"
+            },
+            "observed_at": 1787796630.531598
+          },
+          "model_id": "qwen3.8-27b-sealed-3.14",
+          "profile_id": "native:qwen3.8-27b-sealed-3.14",
+          "prompt_contract": {
+            "fallback_template": "qwen_closed_think",
+            "renderer": "qwen-chat-template-or-closed-think-fallback",
+            "token_count_authority": "native-resident"
+          },
+          "provider": "native",
+          "qualification": {
+            "status": "capability 30/43 historical sealed contract"
+          },
+          "receipts": [
+            "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+            "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+          ],
+          "representation": {
+            "kind": "native-packed",
+            "physical_ebpw": 3.1393,
+            "quantisation": "unknown",
+            "require_fusion_env": true,
+            "weights_loaded_once": true
+          },
+          "runtime": {
+            "backend": "noetic_native",
+            "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+            "binary_sha256_16": "2d5fd0f157fb7987",
+            "current_runtime": {
+              "complete_tps_current_measured": 24.4086,
+              "complete_tps_historical_qualified": 34.0,
+              "fallbacks": 0
+            },
+            "mode": "resident",
+            "pid": 92982,
+            "port": null,
+            "protocol": "hawking.qwen38.resident.v1",
+            "runtime": "hawking-native"
+          },
+          "schema": "hcli.provider.profile.v1",
+          "tokenizer": {
+            "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+            "tokenizer_sha256_16": "0997f410c57a1f4e"
+          }
+        },
+        "resident": {
+          "artifact": {},
+          "capabilities": {
+            "features": {
+              "chat_template_kwargs": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796630.531701,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "grammar": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796630.531701,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "prefix_cache": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796630.531701,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "response_format": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796630.531701,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "slots": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796630.531701,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "streaming": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796630.531701,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "tool_calling": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796630.531701,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              },
+              "vision": {
+                "enforcement": "unknown",
+                "note": null,
+                "observed_at": 1787796630.531701,
+                "source": "backend has no supports()",
+                "state": "unknown"
+              }
+            },
+            "schema": "hcli.provider.capabilities.v1"
+          },
+          "compiler": {},
+          "environment": {},
+          "fallbacks": [],
+          "generation": {},
+          "hot_bytes": null,
+          "limits": {},
+          "machine_genome": {},
+          "metadata": {
+            "identity_snapshot": {},
+            "observed_at": 1787796630.53171
+          },
+          "model_id": "unknown",
+          "profile_id": "resident",
+          "prompt_contract": {},
+          "provider": "Engine",
+          "qualification": {},
+          "receipts": [],
+          "representation": {},
+          "runtime": {},
+          "schema": "hcli.provider.profile.v1",
+          "tokenizer": {}
+        }
+      },
+      "repo_root": "/Users/scammermike/Downloads/hawking",
+      "requested_workunits": 10,
+      "stage": "a2",
+      "started_at": 1787796300.8393128,
+      "status": "PASSED",
+      "work_definition": "real canonical receipts/configuration metadata; no toy artifacts",
+      "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-a2-iv9rqsqc"
+    },
+    "A3_resident_kill": {
+      "checks": {
+        "death_was_recovered": true,
+        "identity_preserved": true,
+        "mission_completed": true,
+        "model_reopened_once_after_restart": true,
+        "no_fallbacks": true,
+        "no_false_success_before_verifier": true,
+        "pid_generation_changed": true,
+        "resident_killed": true,
+        "resident_was_live": true,
+        "unit_verified": true,
+        "weights_uploaded_once_after_restart": true
+      },
+      "elapsed_s": 10.843,
+      "failure_injection": "SIGKILL native resident immediately before first request",
+      "finished_at": 1787796641.5051048,
+      "mission": {
+        "result": {
+          "accepted": 1,
+          "cancelled": false,
+          "failed_units": [],
+          "mission_id": "2afb8aef-ff3d-42de-be3b-fd390a05fe99",
+          "no_progress_warning": null,
+          "reason": null,
+          "state": "VERIFIED",
+          "status": "completed",
+          "verdict": "ACCEPT"
+        },
+        "unit": {
+          "assigned_backend": "crash-resident",
+          "assigned_runtime": null,
+          "attempts": 1,
+          "backend_task_id": null,
+          "classification": null,
+          "content_hash": "685a26d7e3f2443c981c822cf577033c1b4e1b1cd076be381a3fe4193b1939f6",
+          "dependencies": [],
+          "description": "Report one short sentence after the native resident is recovered; fixed verifier owns acceptance.",
+          "effect_class": null,
+          "failure_context": null,
+          "finished_at": 1787796641.348151,
+          "id": "resident-kill-unit",
+          "preferred_backend": "crash-resident",
+          "provider": "crash-resident",
+          "ready_at": 1787796633.1896892,
+          "repair_depth": 0,
+          "repair_exhausted": false,
+          "repair_reason": null,
+          "repair_root": null,
+          "repairs": null,
+          "resource_class": "TEST",
+          "role": "generalist",
+          "running_at": 1787796633.2240052,
+          "status": "completed",
+          "verification": {
+            "acceptance_source": "workunit_verifier",
+            "command": "test -f /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-kill-ifkfogvu/resident-kill-marker.txt && shasum -a 256 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-kill-ifkfogvu/resident-kill-marker.txt | grep -q 99b080f6f86577ce58c6a36659d14b32c8d6afb2eefb0d3818442e2f88f34acb",
+            "exit_code": 0,
+            "ok": true,
+            "output": ""
+          },
+          "verifier": "test -f /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-kill-ifkfogvu/resident-kill-marker.txt && shasum -a 256 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-kill-ifkfogvu/resident-kill-marker.txt | grep -q 99b080f6f86577ce58c6a36659d14b32c8d6afb2eefb0d3818442e2f88f34acb",
+          "workspace": null
+        }
+      },
+      "profile_path": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+      "provider": {
+        "after": {
+          "architecture": "unknown",
+          "artifact_inventory": {
+            "artifact_bytes": 10554328856,
+            "artifact_bytes_exact": true,
+            "artifact_bytes_source": "MIX_REPORT.json:payload_bytes",
+            "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+            "mix_id": "mix_all_mlp_affine_g64_ls",
+            "n_tensors": 755
+          },
+          "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+          "backend": "hawking_native",
+          "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+          "binary_sha256_16": "2d5fd0f157fb7987",
+          "capabilities": {},
+          "compiler": {
+            "language": "rust",
+            "profile": "release-fast",
+            "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+          },
+          "current_runtime": {
+            "complete_tps_current_measured": 24.4086,
+            "complete_tps_historical_qualified": 34.0,
+            "fallbacks": 0
+          },
+          "executable_profile": "release-fast",
+          "fallbacks": [
+            "transformers tokenizer fallback when unavailable"
+          ],
+          "family": "qwen3.8",
+          "fusion_env": {
+            "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+            "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+            "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+            "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+          },
+          "generation": {
+            "do_sample": false,
+            "enable_thinking": false,
+            "max_new_tokens": 2048,
+            "temperature": 0.0,
+            "top_k": 1,
+            "top_p": 1.0
+          },
+          "hot_bytes": null,
+          "limits": {
+            "context": 8192,
+            "max_new_tokens": 2048
+          },
+          "machine_genome": {},
+          "max_seq_len": 8192,
+          "mode": "resident",
+          "model_id": "qwen3.8-27b-sealed-3.14",
+          "param_class": "?B",
+          "physical_ebpw": 3.1393,
+          "pid": 97834,
+          "profile_schema": "hcli.provider.profile.v1",
+          "prompt_contract": {
+            "fallback_template": "qwen_closed_think",
+            "renderer": "qwen-chat-template-or-closed-think-fallback",
+            "token_count_authority": "native-resident"
+          },
+          "protocol": "hawking.qwen38.resident.v1",
+          "provider": "native",
+          "qualification": "capability 30/43 historical sealed contract",
+          "quantisation": "unknown",
+          "receipts": [
+            "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+            "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+          ],
+          "representation": {
+            "kind": "native-packed",
+            "physical_ebpw": 3.1393,
+            "weights_loaded_once": true
+          },
+          "require_fusion_env": true,
+          "resident_health": {
+            "model_open_count": 1,
+            "pid": 97834,
+            "protocol": "hawking.qwen38.resident.v1",
+            "ready": true,
+            "resident_identity": "sealed-3.14",
+            "restart_count": 1,
+            "weight_upload_count": 1
+          },
+          "resident_identity": "sealed-3.14",
+          "restart_count": 1,
+          "runtime": "hawking-native",
+          "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+          "tokenizer_sha256_16": "0997f410c57a1f4e"
+        },
+        "before": {
+          "architecture": "unknown",
+          "artifact_inventory": {
+            "artifact_bytes": 10554328856,
+            "artifact_bytes_exact": true,
+            "artifact_bytes_source": "MIX_REPORT.json:payload_bytes",
+            "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+            "mix_id": "mix_all_mlp_affine_g64_ls",
+            "n_tensors": 755
+          },
+          "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+          "backend": "hawking_native",
+          "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+          "binary_sha256_16": "2d5fd0f157fb7987",
+          "capabilities": {},
+          "compiler": {
+            "language": "rust",
+            "profile": "release-fast",
+            "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+          },
+          "current_runtime": {
+            "complete_tps_current_measured": 24.4086,
+            "complete_tps_historical_qualified": 34.0,
+            "fallbacks": 0
+          },
+          "executable_profile": "release-fast",
+          "fallbacks": [
+            "transformers tokenizer fallback when unavailable"
+          ],
+          "family": "qwen3.8",
+          "fusion_env": {
+            "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+            "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+            "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+            "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+          },
+          "generation": {
+            "do_sample": false,
+            "enable_thinking": false,
+            "max_new_tokens": 2048,
+            "temperature": 0.0,
+            "top_k": 1,
+            "top_p": 1.0
+          },
+          "hot_bytes": null,
+          "limits": {
+            "context": 8192,
+            "max_new_tokens": 2048
+          },
+          "machine_genome": {},
+          "max_seq_len": 8192,
+          "mode": "resident",
+          "model_id": "qwen3.8-27b-sealed-3.14",
+          "param_class": "?B",
+          "physical_ebpw": 3.1393,
+          "pid": 97777,
+          "profile_schema": "hcli.provider.profile.v1",
+          "prompt_contract": {
+            "fallback_template": "qwen_closed_think",
+            "renderer": "qwen-chat-template-or-closed-think-fallback",
+            "token_count_authority": "native-resident"
+          },
+          "protocol": "hawking.qwen38.resident.v1",
+          "provider": "native",
+          "qualification": "capability 30/43 historical sealed contract",
+          "quantisation": "unknown",
+          "receipts": [
+            "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+            "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+          ],
+          "representation": {
+            "kind": "native-packed",
+            "physical_ebpw": 3.1393,
+            "weights_loaded_once": true
+          },
+          "require_fusion_env": true,
+          "resident_health": {
+            "model_open_count": 1,
+            "pid": 97777,
+            "protocol": "hawking.qwen38.resident.v1",
+            "ready": true,
+            "resident_identity": "sealed-3.14",
+            "restart_count": 0,
+            "weight_upload_count": 1
+          },
+          "resident_identity": "sealed-3.14",
+          "restart_count": 0,
+          "runtime": "hawking-native",
+          "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+          "tokenizer_sha256_16": "0997f410c57a1f4e"
+        },
+        "calls": 1,
+        "killed_pid": 97777,
+        "restart_count": 1
+      },
+      "repo_root": "/Users/scammermike/Downloads/hawking",
+      "stage": "A3_resident_kill",
+      "started_at": 1787796630.662029,
+      "status": "PASSED",
+      "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-kill-ifkfogvu"
+    },
+    "A4_hcli_process_kill": {
+      "before_restart": {
+        "checkpoint_id": "d9ddaf29-50a3-45be-9df9-4ed3f3d2eab3:1787796641.673364",
+        "phase": "running",
+        "units": {
+          "process-recovery-first": {
+            "assigned_backend": "cpu",
+            "assigned_runtime": null,
+            "attempts": 1,
+            "backend_task_id": null,
+            "classification": null,
+            "content_hash": "465ee32fc6f8ac8c2ebb8ca75a871bf81eb3af69ea4b446208bbfefdaa090c2c",
+            "dependencies": [],
+            "description": "Inspect real checkpoint evidence at /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json.",
+            "effect_class": null,
+            "failure_context": null,
+            "finished_at": 1787796641.6724439,
+            "id": "process-recovery-first",
+            "preferred_backend": "cpu",
+            "provider": "cpu",
+            "ready_at": 1787796641.619523,
+            "repair_depth": 0,
+            "repair_exhausted": false,
+            "repair_reason": null,
+            "repair_root": null,
+            "repairs": null,
+            "resource_class": "TEST",
+            "role": "science",
+            "running_at": 1787796641.637943,
+            "status": "completed",
+            "verification": {
+              "acceptance_source": "workunit_verifier",
+              "command": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json | grep -q ad25475b97272e7b33714d21446ef2149d799ebac69e17affc94e1271cb34ba0",
+              "exit_code": 0,
+              "ok": true,
+              "output": ""
+            },
+            "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json | grep -q ad25475b97272e7b33714d21446ef2149d799ebac69e17affc94e1271cb34ba0",
+            "workspace": null
+          },
+          "process-recovery-second": {
+            "assigned_backend": null,
+            "assigned_runtime": null,
+            "attempts": 0,
+            "backend_task_id": null,
+            "classification": null,
+            "content_hash": "b314cd17f48021b6a06b6a35f033e4aeeb76c674b746c7084bdb30574e57e818",
+            "dependencies": [
+              "process-recovery-first"
+            ],
+            "description": "Inspect real Flash identity evidence at /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_IDENTITY.json.",
+            "effect_class": null,
+            "failure_context": null,
+            "finished_at": null,
+            "id": "process-recovery-second",
+            "preferred_backend": "cpu",
+            "provider": "cpu",
+            "ready_at": null,
+            "repair_depth": 0,
+            "repair_exhausted": false,
+            "repair_reason": null,
+            "repair_root": null,
+            "repairs": null,
+            "resource_class": "TEST",
+            "role": "science",
+            "running_at": null,
+            "status": "pending",
+            "verification": null,
+            "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_IDENTITY.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_IDENTITY.json | grep -q 104771a257c34df52ffa6e2068a0bfa5b738114dd06f584d81108e0b7137fddd",
+            "workspace": null
+          }
+        }
+      },
+      "checks": {
+        "all_units_completed": true,
+        "disk_recovered": true,
+        "first_unit_not_duplicated": true,
+        "host_killed": true,
+        "host_started": true,
+        "meaningful_progress_before_kill": true,
+        "next_action_was_recovered_from_disk": true,
+        "no_loss_or_duplication": true,
+        "second_unit_ran_once": true
+      },
+      "continued_result": {
+        "accepted": 2,
+        "cancelled": false,
+        "failed_units": [],
+        "mission_id": "d9ddaf29-50a3-45be-9df9-4ed3f3d2eab3",
+        "no_progress_warning": null,
+        "reason": null,
+        "state": "VERIFIED",
+        "status": "completed",
+        "verdict": "ACCEPT"
+      },
+      "elapsed_s": 0.085,
+      "final_units": {
+        "process-recovery-first": {
+          "assigned_backend": "cpu",
+          "assigned_runtime": null,
+          "attempts": 1,
+          "backend_task_id": null,
+          "classification": null,
+          "content_hash": "465ee32fc6f8ac8c2ebb8ca75a871bf81eb3af69ea4b446208bbfefdaa090c2c",
+          "dependencies": [],
+          "description": "Inspect real checkpoint evidence at /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json.",
+          "effect_class": null,
+          "failure_context": null,
+          "finished_at": 1787796641.6724439,
+          "id": "process-recovery-first",
+          "preferred_backend": "cpu",
+          "provider": "cpu",
+          "ready_at": 1787796641.619523,
+          "repair_depth": 0,
+          "repair_exhausted": false,
+          "repair_reason": null,
+          "repair_root": null,
+          "repairs": null,
+          "resource_class": "TEST",
+          "role": "science",
+          "running_at": 1787796641.637943,
+          "status": "completed",
+          "verification": {
+            "acceptance_source": "workunit_verifier",
+            "command": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json | grep -q ad25475b97272e7b33714d21446ef2149d799ebac69e17affc94e1271cb34ba0",
+            "exit_code": 0,
+            "ok": true,
+            "output": ""
+          },
+          "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json | grep -q ad25475b97272e7b33714d21446ef2149d799ebac69e17affc94e1271cb34ba0",
+          "workspace": null
+        },
+        "process-recovery-second": {
+          "assigned_backend": "cpu",
+          "assigned_runtime": null,
+          "attempts": 1,
+          "backend_task_id": null,
+          "classification": null,
+          "content_hash": "b314cd17f48021b6a06b6a35f033e4aeeb76c674b746c7084bdb30574e57e818",
+          "dependencies": [
+            "process-recovery-first"
+          ],
+          "description": "Inspect real Flash identity evidence at /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_IDENTITY.json.",
+          "effect_class": null,
+          "failure_context": null,
+          "finished_at": 1787796641.7807,
+          "id": "process-recovery-second",
+          "preferred_backend": "cpu",
+          "provider": "cpu",
+          "ready_at": 1787796641.729401,
+          "repair_depth": 0,
+          "repair_exhausted": false,
+          "repair_reason": null,
+          "repair_root": null,
+          "repairs": null,
+          "resource_class": "TEST",
+          "role": "science",
+          "running_at": 1787796641.746298,
+          "status": "completed",
+          "verification": {
+            "acceptance_source": "workunit_verifier",
+            "command": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_IDENTITY.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_IDENTITY.json | grep -q 104771a257c34df52ffa6e2068a0bfa5b738114dd06f584d81108e0b7137fddd",
+            "exit_code": 0,
+            "ok": true,
+            "output": ""
+          },
+          "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_IDENTITY.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_IDENTITY.json | grep -q 104771a257c34df52ffa6e2068a0bfa5b738114dd06f584d81108e0b7137fddd",
+          "workspace": null
+        }
+      },
+      "finished_at": 1787796641.785086,
+      "first_completed_before_kill": {
+        "at": 1787796641.674273,
+        "first_status": "completed",
+        "pid": 97958,
+        "second_status": "pending"
+      },
+      "host_killed": true,
+      "host_pid": 97958,
+      "host_started": {
+        "pid": 97958,
+        "started_at": 1787796641.591831
+      },
+      "recovered_units": {
+        "process-recovery-first": {
+          "assigned_backend": "cpu",
+          "assigned_runtime": null,
+          "attempts": 1,
+          "backend_task_id": null,
+          "classification": null,
+          "content_hash": "465ee32fc6f8ac8c2ebb8ca75a871bf81eb3af69ea4b446208bbfefdaa090c2c",
+          "dependencies": [],
+          "description": "Inspect real checkpoint evidence at /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json.",
+          "effect_class": null,
+          "failure_context": null,
+          "finished_at": 1787796641.6724439,
+          "id": "process-recovery-first",
+          "preferred_backend": "cpu",
+          "provider": "cpu",
+          "ready_at": 1787796641.619523,
+          "repair_depth": 0,
+          "repair_exhausted": false,
+          "repair_reason": null,
+          "repair_root": null,
+          "repairs": null,
+          "resource_class": "TEST",
+          "role": "science",
+          "running_at": 1787796641.637943,
+          "status": "completed",
+          "verification": {
+            "acceptance_source": "workunit_verifier",
+            "command": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json | grep -q ad25475b97272e7b33714d21446ef2149d799ebac69e17affc94e1271cb34ba0",
+            "exit_code": 0,
+            "ok": true,
+            "output": ""
+          },
+          "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json | grep -q ad25475b97272e7b33714d21446ef2149d799ebac69e17affc94e1271cb34ba0",
+          "workspace": null
+        },
+        "process-recovery-second": {
+          "assigned_backend": null,
+          "assigned_runtime": null,
+          "attempts": 0,
+          "backend_task_id": null,
+          "classification": null,
+          "content_hash": "b314cd17f48021b6a06b6a35f033e4aeeb76c674b746c7084bdb30574e57e818",
+          "dependencies": [
+            "process-recovery-first"
+          ],
+          "description": "Inspect real Flash identity evidence at /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_IDENTITY.json.",
+          "effect_class": null,
+          "failure_context": null,
+          "finished_at": null,
+          "id": "process-recovery-second",
+          "preferred_backend": "cpu",
+          "provider": "cpu",
+          "ready_at": 1787796641.729401,
+          "repair_depth": 0,
+          "repair_exhausted": false,
+          "repair_reason": null,
+          "repair_root": null,
+          "repairs": null,
+          "resource_class": "TEST",
+          "role": "science",
+          "running_at": null,
+          "status": "ready",
+          "verification": null,
+          "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_IDENTITY.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_IDENTITY.json | grep -q 104771a257c34df52ffa6e2068a0bfa5b738114dd06f584d81108e0b7137fddd",
+          "workspace": null
+        }
+      },
+      "repo_root": "/Users/scammermike/Downloads/hawking",
+      "stage": "A4_hcli_process_kill",
+      "started_at": 1787796641.7002869,
+      "status": "PASSED",
+      "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-process-kill-04jj978r"
+    },
+    "A5_post_mutation_crash": {
+      "checks": {
+        "acceptance_from_verifier": true,
+        "artifact_survived": true,
+        "crash_injected_after_mutation": true,
+        "host_started": true,
+        "no_duplicate_bytes": true,
+        "no_rewrite": true,
+        "recovery_unit_completed": true,
+        "recovery_verifier_passed": true,
+        "replay_refused_by_typed_tool": true
+      },
+      "elapsed_s": 0.086,
+      "finished_at": 1787796641.971647,
+      "host_exit_code": 17,
+      "host_pid": 97997,
+      "host_started": {
+        "pid": 97997,
+        "started_at": 1787796641.869117
+      },
+      "mutation": {
+        "artifact_sha256_after_recovery": "18328866f6e5873008182420cad63c1e5bf609c1995f81dead78febef921496b",
+        "artifact_sha256_before_recovery": "18328866f6e5873008182420cad63c1e5bf609c1995f81dead78febef921496b",
+        "expected_content_sha256": "18328866f6e5873008182420cad63c1e5bf609c1995f81dead78febef921496b",
+        "mtime_ns_after_recovery": 1787796641870393628,
+        "mtime_ns_before_recovery": 1787796641870393628,
+        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-idempotency-15kcwsho/idempotent-artifact.txt"
+      },
+      "recovery_result": {
+        "accepted": 1,
+        "cancelled": false,
+        "failed_units": [],
+        "mission_id": "178bb2ba-6618-4944-8298-9ce6bf3664c5",
+        "no_progress_warning": null,
+        "reason": null,
+        "state": "VERIFIED",
+        "status": "completed",
+        "verdict": "ACCEPT"
+      },
+      "recovery_unit": {
+        "assigned_backend": "cpu",
+        "assigned_runtime": null,
+        "attempts": 1,
+        "backend_task_id": null,
+        "classification": null,
+        "content_hash": "e018a41b642da9531f04f25dae0eed904bee5993956c2c918fc94768f889b70f",
+        "dependencies": [],
+        "description": "Verify the already durable reversible artifact; do not repeat the mutation.",
+        "effect_class": null,
+        "failure_context": null,
+        "finished_at": 1787796641.966463,
+        "id": "idempotency-recovery-unit",
+        "preferred_backend": "cpu",
+        "provider": "cpu",
+        "ready_at": 1787796641.9142148,
+        "repair_depth": 0,
+        "repair_exhausted": false,
+        "repair_reason": null,
+        "repair_root": null,
+        "repairs": null,
+        "resource_class": "TEST",
+        "role": "verifier",
+        "running_at": 1787796641.931545,
+        "status": "completed",
+        "verification": {
+          "acceptance_source": "workunit_verifier",
+          "command": "test -f /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-idempotency-15kcwsho/idempotent-artifact.txt && shasum -a 256 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-idempotency-15kcwsho/idempotent-artifact.txt | grep -q 18328866f6e5873008182420cad63c1e5bf609c1995f81dead78febef921496b",
+          "exit_code": 0,
+          "ok": true,
+          "output": ""
+        },
+        "verifier": "test -f /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-idempotency-15kcwsho/idempotent-artifact.txt && shasum -a 256 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-idempotency-15kcwsho/idempotent-artifact.txt | grep -q 18328866f6e5873008182420cad63c1e5bf609c1995f81dead78febef921496b",
+        "workspace": null
+      },
+      "replay": {
+        "artifact": null,
+        "deterministic": true,
+        "elapsed_s": 0.00017499923706054688,
+        "error": "FileExistsError: /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-idempotency-15kcwsho/idempotent-artifact.txt",
+        "failure_class": "FileExistsError",
+        "finished_at": 1787796641.970509,
+        "invocation_id": "tool-436df538-385d-4cba-9842-dd3efcb96a8e",
+        "mutation": "reversible_repo",
+        "ok": false,
+        "provenance": {
+          "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-idempotency-15kcwsho/.hcli/receipts/tools/tool-436df538-385d-4cba-9842-dd3efcb96a8e.json",
+          "source": "hcli.tool_registry"
+        },
+        "schema": "hcli.agentos.tool.result.v1",
+        "started_at": 1787796641.970334,
+        "tool": "filesystem.write",
+        "value": null
+      },
+      "repo_root": "/Users/scammermike/Downloads/hawking",
+      "stage": "A5_post_mutation_crash",
+      "started_at": 1787796641.885432,
+      "status": "PASSED",
+      "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-idempotency-15kcwsho"
+    }
+  },
+  "stages_requested": "all",
+  "started_at": 1787796200.617103,
+  "status": "PASSED"
+}

@@ -45,6 +45,7 @@ _PERSISTED_EXTRAS = (
     "verifier",
     "verification",
     "classification",
+    "provider",
 )
 
 GrokLiveness = Callable[[str], Any]

@@ -1,0 +1,429 @@
+{
+ "receipt": "ACCELERATOR_THE_REDUCTION_TAIL_IS_FREE",
+ "date": "2026-08-26",
+ "obligation": "G046 (FRONT D) with G047; S031 s2 optimisation order",
+ "question": "ACCELERATOR_TWO_MORE_LEVERS_DIE eliminated six levers and named ONE structural feature no arm had varied: 'the cross-lane reduction tail -- 64 lanes write threadgroup slots and ONE lane serially sums 64 of them while 63 idle. It is INSIDE the previous block's no-weights control too, so that control cannot separate it ... what would settle it: a variant whose reduction is a simd_sum or a tree, holding the element count fixed -- one arm, and it is not run here.' RUN HERE, and with a fourth arm the previous block did not name, which is what actually ends the question.",
+ "why_a_deletion_control_and_not_only_the_two_named_variants": "Comparing simd_sum and a tree against the serial tail can only say which tail is best. It CANNOT say whether ANY tail matters, because all three still reduce. Deleting the tail entirely bounds what every possible reduction variant can buy: if removing the reduction outright buys nothing, no reduction can. That is a stronger statement than any comparison among the three, and it is the arm that closes the candidate rather than ranking it.",
+ "why_the_deletion_control_stores_from_every_lane": "A store predicated on lane==0 lets the compiler SINK the whole loop into the branch -- the loop is pure and its value is used only there -- so 63 lanes would do NO WORK and the arm would read as a ~64x win measuring dead-code elimination. The unconditional store cannot be sunk, and the measurement confirms the guard worked: the arm lands at 301.5 and 302.3 G elem/s, ON the element floor, not 64x above it. It ADDS 64-fold store traffic (4.4 MB against 17408 x 4 B), which makes the bound CONSERVATIVE -- a tie means the tail is worth at most the tie MINUS those extra stores.",
+ "what_makes_the_arms_comparable": "The body is BYTE-IDENTICAL across all four sources and a test asserts it: same loop, same groups, same fused multiply-adds, so the ELEMENT COUNT is identical and a difference is the tail and nothing else. The shipped NATIVE_MATVEC_TPR is now a composition of that body and the serial tail, pinned byte-identical so the split cannot drift from what executes.",
+ "arms": {
+  "shape": "17408 x 5120, byte unpack, tpr64, tg128, 14 rounds x 20 reps ROUND-ROBIN",
+  "run_1_contended": {
+   "serial": {
+    "min_round_ms": 0.2912,
+    "median_round_ms": 0.3148,
+    "round_spread_pct": 230.0108,
+    "speedup_vs_serial_min": 1.0,
+    "speedup_vs_serial_median": 1.0,
+    "G_elem_per_s_at_min": 306.1105,
+    "rel_err": 0.0
+   },
+   "simd": {
+    "min_round_ms": 0.2969,
+    "median_round_ms": 0.3228,
+    "round_spread_pct": 104.5949,
+    "speedup_vs_serial_min": 0.9806,
+    "speedup_vs_serial_median": 0.9751,
+    "G_elem_per_s_at_min": 300.1814,
+    "rel_err": 0.0
+   },
+   "tree": {
+    "min_round_ms": 0.3034,
+    "median_round_ms": 0.315,
+    "round_spread_pct": 258.8837,
+    "speedup_vs_serial_min": 0.9596,
+    "speedup_vs_serial_median": 0.9993,
+    "G_elem_per_s_at_min": 293.7507,
+    "rel_err": 0.0
+   },
+   "none": {
+    "min_round_ms": 0.2956,
+    "median_round_ms": 0.3185,
+    "round_spread_pct": 257.0719,
+    "speedup_vs_serial_min": 0.9851,
+    "speedup_vs_serial_median": 0.9884,
+    "G_elem_per_s_at_min": 301.5351,
+    "rel_err": 0.9866
+   }
+  },
+  "run_2_cleaner": {
+   "serial": {
+    "min_round_ms": 0.3065,
+    "median_round_ms": 0.3397,
+    "round_spread_pct": 20.8758,
+    "speedup_vs_serial_min": 1.0,
+    "speedup_vs_serial_median": 1.0,
+    "G_elem_per_s_at_min": 290.796,
+    "rel_err": 0.0
+   },
+   "simd": {
+    "min_round_ms": 0.2963,
+    "median_round_ms": 0.3186,
+    "round_spread_pct": 24.0647,
+    "speedup_vs_serial_min": 1.0346,
+    "speedup_vs_serial_median": 1.0663,
+    "G_elem_per_s_at_min": 300.8572,
+    "rel_err": 0.0
+   },
+   "tree": {
+    "min_round_ms": 0.298,
+    "median_round_ms": 0.3447,
+    "round_spread_pct": 15.9552,
+    "speedup_vs_serial_min": 1.0284,
+    "speedup_vs_serial_median": 0.9855,
+    "G_elem_per_s_at_min": 299.0483,
+    "rel_err": 0.0
+   },
+   "none": {
+    "min_round_ms": 0.2948,
+    "median_round_ms": 0.3308,
+    "round_spread_pct": 22.3176,
+    "speedup_vs_serial_min": 1.0396,
+    "speedup_vs_serial_median": 1.0268,
+    "G_elem_per_s_at_min": 302.3032,
+    "rel_err": 0.9864
+   }
+  },
+  "rounds_beating_serial_of_14": {
+   "run_1": {
+    "simd": 9,
+    "tree": 7,
+    "none": 7
+   },
+   "run_2": {
+    "simd": 9,
+    "tree": 8,
+    "none": 10
+   }
+  }
+ },
+ "THE_RESULT_IS_THAT_THE_TAIL_IS_FREE": {
+  "all_eight_minima_ms": "0.2912 0.2948 0.2956 0.2963 0.2969 0.2980 0.3034 0.3065",
+  "band": "5.3% from fastest to slowest across BOTH runs and ALL FOUR arms",
+  "the_deletion_control_never_separates": "0.985x of serial in run 1 and 1.040x in run 2 -- it sits INSIDE the pack both times. DELETING THE REDUCTION ENTIRELY IS INDISTINGUISHABLE FROM KEEPING IT.",
+  "the_direction_flips_between_runs": "serial is FASTEST in run 1 and SLOWEST in run 2. A ranking that reverses on a rerun of the same code is the signature of no effect, and it is reported instead of whichever run flattered a variant."
+ },
+ "P1_SIMD_SUM_IS_INDISTINGUISHABLE": {
+  "predicted": "< 1.10x, falsified at >= 1.15x",
+  "measured": "0.981x min / 0.975x median (run 1); 1.035x min / 1.066x median (run 2)",
+  "rounds_won": "9 of 14 in both runs",
+  "verdict": "CONFIRMED -- and it is the confirmation that closes a candidate rather than opening one"
+ },
+ "P2_THE_TREE_IS_NOT_BETTER_THAN_SIMD_SUM": {
+  "predicted": "C <= B, and C possibly slower than serial",
+  "measured": "tree 0.960x min against simd 0.981x (run 1); 1.028x against 1.035x (run 2)",
+  "verdict": "CONFIRMED in both parts and in both runs -- six barriers buy nothing over one"
+ },
+ "P3_THE_BOUND": {
+  "predicted": "D within 1.10x of serial; D ~= serial ENDS the question",
+  "measured": "0.985x and 1.040x",
+  "verdict": "CONFIRMED -- no reduction variant can win, whatever any variant measures"
+ },
+ "P4_ANTI_VACUITY": {
+  "predicted": "the deletion control MUST be wrong or every comparison here is vacuous",
+  "measured": "rel_err 0.9866 and 0.9864 against the float64 oracle, while serial/simd/tree read 2.02e-07 / 1.43e-07 / 1.44e-07",
+  "verdict": "CONFIRMED -- it returns one lane's partial, and sqrt(1 - 1/64) = 0.992 is where that lands"
+ },
+ "SEVEN_LEVERS_NOW_ELIMINATED_BY_MEASUREMENT": [
+  "fewer weight BYTES -- a 17.3% production cut returned -3.0% raw TPS",
+  "fewer LOAD instructions -- 4-byte word loads, 1.004x",
+  "cheaper DECODE arithmetic -- a 256-entry LUT, 0.839x",
+  "the weight reads AT ALL -- a no-weights control ties the real kernel",
+  "OPERAND REUSE -- x staged in threadgroup memory, 0.870x",
+  "INSTRUCTION-LEVEL PARALLELISM -- four accumulators, 0.987x",
+  "THE CROSS-LANE REDUCTION TAIL -- simd_sum 0.981x, tree 0.960x, and DELETING IT 0.985x"
+ ],
+ "THE_MECHANISM_IS_STILL_UNRESOLVED_AND_THE_CANDIDATE_LIST_IS_NOW_EMPTY": {
+  "position": "Seven levers are dead and the floor's CAUSE is still unnamed. What changed is that the previous block could name ONE untested structural candidate and this one cannot: every part of the kernel outside the per-element work has now been deleted or replaced without moving the time.",
+  "what_that_leaves": "The floor is one x read and one fused multiply-add per weight at ~300 G elem/s, and it is now bounded from BOTH sides -- no surrounding structure costs anything, and no cheaper way to do the per-element work has been found. The previous block's closing that the only lever left is FEWER ELEMENTS has now survived a second real attempt, and its named untested candidate is dead rather than pending.",
+  "what_is_NOT_claimed": "This does NOT name the mechanism setting ~300 G elem/s. Whether that is an issue-rate limit, a latency the occupancy cannot hide, or a memory-system property is UNRESOLVED, and this program's scorecard is five diagnoses written down and two wrong, so no sixth story is offered."
+ },
+ "THE_SHIPPED_LOUD_BARRIER_PRIOR_IS_REFUTED_ON_A_REAL_KERNEL": {
+  "what_it_predicted": "kernel_forge.barrier_control_prior returned expected_p_fired = 1.000 with range (1.0, 1.0) and verdict LOUD_CONTROL for this kernel: no upstream barrier, 19 statements since. ACCELERATOR_BARRIER_WINDOW retracted the QUIET number and KEPT the loud one, writing 'the LOUD case is a reliable prediction, since with no upstream barrier EVERY CELL EVER MEASURED fires 1.00'.",
+  "what_it_measured": {
+   "run_1_sweep": "8 of 8",
+   "run_2_sweep": "1 of 8",
+   "ground_truth_60_runs": "4 of 60 = 0.067",
+   "intact_kernel_wrong": "0 of 60"
+  },
+  "verdict": "REFUTED. The same kernel measures p = 1.00 and p = 0.067 in different processes, so the LOUD case is as unstable as the QUIET one and the asymmetry that block encoded does not survive contact with a shipped kernel.",
+  "the_mechanism_the_prior_cannot_see": "A race window is also closed when THE READING THREAD IS THE SLOWEST ONE. Lanes divide 80 groups round-robin over 64 lanes, so lanes 0-15 do two groups and lanes 16-63 do one -- and lane 0, the lane that reads every slot, is in the group doing the MOST work. It arrives at its read after the lanes it reads from have long since written. That is a property of the WORK DISTRIBUTION ACROSS LANES; the prior reads the source's BARRIER STRUCTURE and cannot see it. Reported as a named blind spot rather than folded into a verdict.",
+  "a_candidate_named_and_NOT_claimed": "run 1 fired 8/8 at 230-259% round-spread and run 2 fired 1/8 at 16-24%, so CONTENTION opening the window is a plausible driver -- n=2 processes, POST-HOC, and it is recorded as a candidate, not a finding.",
+  "shipped": "CONTROL_LOUDNESS_PRIOR['no_upstream_barrier'] moves 1.000 -> None, expected_p_fired is None in BOTH cases with LOUD_OBSERVED_RANGE = (0.067, 1.000) beside it, and blind_to_lane_work_imbalance is a first-class field. The test that asserted 1.0 now asserts None and carries the refutation in its comment, so nobody re-derives the retracted number."
+ },
+ "controls": {
+  "anti_vacuity": "the deletion control is wrong by construction and measured wrong, 0.986",
+  "correctness_precedes_every_timing": "serial 2.02e-07, simd 1.43e-07, tree 1.44e-07 against a shared float64 oracle",
+  "sinking_guard_verified_by_the_measurement": "the deletion arm lands ON the element floor, not 64x above it",
+  "mutations_watched_failing": [
+   "the deletion control made predicated -- caught by the store test",
+   "the tree's stride shifted by one -- caught by correctness",
+   "the deletion control given the serial tail -- caught by anti-vacuity, 3 tests"
+  ],
+  "barrier_control": "reported as measured and NOT relied on; see the refutation block above"
+ },
+ "claim_boundary": [
+  "ONE shape, ONE element count, ONE tpr, ONE machine, INSTANCE. The tail's cost scales with TPR and with how much per-element work sits in front of it; at a much smaller GROUPS/TPR ratio the same tail would be a larger fraction of the kernel and this result would not transfer.",
+  "RUN 1 IS CONTAMINATED AND SAYS SO -- round-spreads 105-259% -- so its medians are unreliable and minima plus an ordinal rounds-won count are reported beside them. Run 2 at 16-24% is the cleaner one and it is the run in which serial comes LAST. What survives contamination is that no arm and no deletion separates from the pack in either run.",
+  "BENCH_STATE CONTENDED, recorded not asserted, with the operator's job NOT killed per S032 s24, so every absolute G elem/s is a lower bound and the arm-to-arm ratios in one process carry the block.",
+  "tpr=32 with simd_sum needs NO threadgroup memory and NO barrier at all -- the cleanest possible reduction -- but changing tpr changes the geometry too, so it is CONFOUNDED and NOT RUN. It is named so it cannot be read as covered; the deletion bound already makes its outcome uninteresting.",
+  "NO SHIPPED KERNEL CHANGED. The serial tail remains what executes -- it is byte-identical to what shipped before this block -- and neither variant earns a place. No performance claim moves.",
+  "the barrier-prior refutation is about an INSTRUMENT's expectation field. No earlier receipt's measured firing count is withdrawn; what is withdrawn is the claim that the loud case is stable."
+ ],
+ "next": "The candidate list is EMPTY at the kernel level: seven levers eliminated and the tail's deletion bounded. The remaining question -- what sets ~300 G elem/s -- is not answerable by another variant of this kernel, since every structure around the per-element work has now been removed without effect. Naming it needs an instrument this machine does not have: reading the GENERATED CODE, which is the xcrun metal gate already recorded twice.",
+ "akb_registration": {
+  "evidence_domain": "accelerator",
+  "civilization": "I-D_ACCELERATOR",
+  "program": "HAWKING ACCELERATOR (S015/S031/S032)",
+  "machine_scope": "Apple M3 Ultra, INSTANCE",
+  "representation_scope": "ws_rtn_q4_g64 in every arm, UNCHANGED",
+  "kernel_scope": "native matvec tpr64 with four reduction tails: serial, simd_sum, tree, deleted",
+  "why_declared": "membership must not depend on what this file was named (S032 s13)."
+ },
+ "identities": {
+  "experiment": {
+   "class": "ACCEL-KERNEL",
+   "knowledge_level": "INSTANCE",
+   "question": "does the cross-lane reduction tail cost anything at the measured element floor"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "ram_gib": 96,
+   "measured_dram_gb_s": 589.73,
+   "bench_state": "CONTENDED",
+   "quiescence": {
+    "run_1_before": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 45352,
+       "cpu_pct": 80.3,
+       "rss_gib": 38.92,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 67224,
+       "cpu_pct": 21.8,
+       "rss_gib": 1.94,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 67251,
+       "cpu_pct": 46.6,
+       "rss_gib": 0.05,
+       "comm": "/System/Library/Frameworks/Metal.framework/Versions/A/XPCServices/MTLCompilerService.xpc/Contents/MacOS/MTLCompilerService"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 35.6,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 24.5,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 5,
+     "total_cpu_pct": 208.8,
+     "max_rss_gib": 38.92,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    },
+    "run_2_before": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 45352,
+       "cpu_pct": 99.4,
+       "rss_gib": 40.87,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 67564,
+       "cpu_pct": 97.2,
+       "rss_gib": 1.94,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 180,
+       "cpu_pct": 21.9,
+       "rss_gib": 0.03,
+       "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 33.2,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 24.7,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 5,
+     "total_cpu_pct": 276.4,
+     "max_rss_gib": 40.87,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    },
+    "barrier_probe": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 45352,
+       "cpu_pct": 100.3,
+       "rss_gib": 40.81,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 68097,
+       "cpu_pct": 96.8,
+       "rss_gib": 1.94,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 728,
+       "cpu_pct": 23.4,
+       "rss_gib": 1.28,
+       "comm": "/Applications/OrbStack.app/Contents/Frameworks/OrbStack Helper.app/Contents/MacOS/OrbStack Helper"
+      },
+      {
+       "pid": 180,
+       "cpu_pct": 21.6,
+       "rss_gib": 0.03,
+       "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 36.5,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 24.9,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 6,
+     "total_cpu_pct": 303.5,
+     "max_rss_gib": 40.81,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    }
+   }
+  },
+  "device": {
+   "backend": "Metal",
+   "api": "mx.fast.metal_kernel JIT, MLX"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "NO MODEL EXECUTED. The shape 17408x5120 is BORROWED from the resident's MLP so the result is relevant to it; synthetic weights, no forward pass, no capability run and no adequacy claim."
+  },
+  "representation": {
+   "native": "ws_rtn_q4_g64, 4.25 bpw",
+   "note": "identical in all four arms"
+  },
+  "runtime": {
+   "analysis": "tools/accelerator/gravity_native.py::source_reduce and REDUCE_TAILS",
+   "tests": "tools/accelerator/test_reduce_tails.py"
+  },
+  "kernel": {
+   "arms": [
+    "serial (shipped)",
+    "simd_sum",
+    "tree",
+    "deleted (control, wrong)"
+   ],
+   "tpr": 64,
+   "tg": 128,
+   "simd_width": 32
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device, no transfer crossed, HUMF not involved"
+  }
+ },
+ "bench": {
+  "state": "CONTENDED",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": {
+   "quiet": false,
+   "method": "enumerate",
+   "no_name_filter": true,
+   "thresholds": {
+    "cpu_pct": 20.0,
+    "rss_gib": 2.0
+   },
+   "contenders": [
+    {
+     "pid": 45352,
+     "cpu_pct": 99.4,
+     "rss_gib": 40.87,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 67564,
+     "cpu_pct": 97.2,
+     "rss_gib": 1.94,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 180,
+     "cpu_pct": 21.9,
+     "rss_gib": 0.03,
+     "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+    },
+    {
+     "pid": 739,
+     "cpu_pct": 33.2,
+     "rss_gib": 0.02,
+     "comm": "/usr/libexec/avconferenced"
+    },
+    {
+     "pid": 52616,
+     "cpu_pct": 24.7,
+     "rss_gib": 0.02,
+     "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+    }
+   ],
+   "n_contenders": 5,
+   "total_cpu_pct": 276.4,
+   "max_rss_gib": 40.87,
+   "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+  },
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "DERIVED from a quiescence sample this receipt already carried"
+ },
+ "TWO_DEFECTS_OF_MINE_THAT_ONLY_A_FULL_RUN_AND_MY_OWN_VALIDATOR_CAUGHT": {
+  "a_silently_truncated_function": "Inserting source_reduce anchored on a dict literal that source_unpack ALSO CONTAINS, and source_unpack comes FIRST in the file, so the insertion landed INSIDE it: source_unpack lost its body and returned None, while its stranded tail became dead code after source_reduce's return. MLX then reported 'source: NoneType' twenty lines into an argument type list, naming neither function. EVERY SINGLE-FILE RUN I DID IN BETWEEN PASSED -- test_reduce_tails, test_kernel_forge and test_akb are all green with source_unpack broken -- and only the full suite showed it. This is CHECKPOINT_002's shape again: a count or a green that is STALE BY THE END OF THE BLOCK THAT PRODUCED IT. The sweep is unaffected because it calls source_reduce alone, and source_reduce's behaviour is unchanged since the stranded code sat AFTER its return.",
+  "a_vacuous_reconciliation_i_declared": "The amendment to ACCELERATOR_BARRIER_WINDOW.json first declared laws_reconciled=['AKB-CONTROL-LOUDNESS-IS-NOT-TRANSFERABLE'] and the AKB's own anti-vacuity arm REFUSED IT. That law's source_receipts do not include the amended receipt, so the amendment never reached it and the declaration reconciled nothing -- a bookkeeping fiction that would have read as diligence. NO law rests on that receipt, so the correct declaration is none. The law is still extended, through the honest linkage: it carries this receipt in its own source_receipts and cites it by name. THE MACHINERY BUILT LAST BLOCK CAUGHT ITS AUTHOR ON THE FIRST REAL USE."
+ },
+ "tests": "621 accelerator tests pass, RE-DERIVED AFTER the last change in this block; ledger 0 violations"
+}

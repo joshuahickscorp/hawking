@@ -9,6 +9,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools/accelerator"))
 import gravity_native as G  # noqa: E402
+import kernel_forge as KF  # noqa: E402
 
 mx = pytest.importorskip("mlx.core")
 
@@ -53,19 +54,31 @@ def test_tpr64_matches_the_same_oracle_as_one_thread_per_row(case):
 
 def test_THE_BARRIER_IS_LOAD_BEARING(case):
     """Without this the correctness test above proves nothing about the barrier.
-    kernel_forge.barrier_control_prior calls this shape LOUD -- nothing is
-    upstream of the barrier, so the threadgroup is unsynchronized when it
-    reaches the conflicting access and the race window is wide."""
+
+    THE REPEAT COUNT IS DERIVED, NOT CHOSEN. This test asserted detection in 8
+    runs on the strength of barrier_control_prior calling the shape LOUD -- and
+    ACCELERATOR_THE_REDUCTION_TAIL_IS_FREE REFUTED that prior ON THIS EXACT
+    KERNEL, measuring 4 of 60 in one process against 8 of 8 in another and
+    setting expected_p_fired to None with LOUD_OBSERVED_RANGE = (0.067, 1.000).
+    At the low end of that measured range 8 runs detect only 1 - 0.933**8 = 42%
+    of the time, so THE TEST WAS A COIN FLIP RESTING ON A RETRACTED NUMBER, and
+    it failed in a full-suite run while passing three times alone. The count now
+    comes from that recorded lower bound; the residual is stated rather than
+    pretended away, because no repeat count reaches certainty against a race."""
     packed, scale, x, oracle = case
     n = np.linalg.norm(oracle)
     bad = G.source_tpr(ROWS, COLS, TPR, TG).replace(
         "threadgroup_barrier(mem_flags::mem_threadgroup);", "")
+    p_low = KF.LOUD_OBSERVED_RANGE[0]          # 0.067, the measured quiet extreme
+    repeat = 40                                 # 1 - (1-p_low)**40 = 0.94 detection
     fired = sum(
         np.linalg.norm(_run(bad, f"tg_nb{i}", packed, scale, x, ROWS * TPR) - oracle) / n > 1e-4
-        for i in range(8))
+        for i in range(repeat))
     assert fired > 0, (
-        "the barrier-stripped control never fired in 8 runs, so this sweep "
-        "establishes nothing about the barrier -- not that it is unnecessary")
+        f"the barrier-stripped control never fired in {repeat} runs. At the measured "
+        f"quiet extreme p={p_low} that happens about {(1 - p_low) ** repeat:.0%} of the "
+        "time, so THIS IS THE QUIET REGIME AND NOT EVIDENCE THE BARRIER IS "
+        "UNNECESSARY -- what it means is that this run established nothing about it")
 
 
 @pytest.mark.parametrize("rows,tpr,tg,why", [

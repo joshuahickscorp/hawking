@@ -1,0 +1,449 @@
+{
+ "receipt": "ACCELERATOR_THE_UNIT_IS_THE_ROW_AT_ITS_OWN_WIDTH",
+ "date": "2026-08-26",
+ "obligation": "G046 (also G043, G047)",
+ "question": "at tpr=64 the row, the threads-per-row and a 2-simdgroup pair are the same 64 lanes; halving tpr separates them -- is the charged unit the ROW at whatever width, or a fixed 64 lanes of hardware",
+ "THE_SHAPE_THE_PREVIOUS_RECEIPT_NAMED_IS_THE_WRONG_ONE": {
+  "what_was_asked_for": "ACCELERATOR_THE_WIDTH_IS_THE_ROW closed with 'at tpr=32 with cols=32768 a lane holds the SAME four groups it holds here, so the groups-per-lane axis can be held fixed while the lane count halves'.",
+  "the_arithmetic": "groups-per-lane = (cols/64)/tpr. At tpr=32, cols=32768 gives GROUPS=512 and SIXTEEN groups per lane -- FOUR TIMES the reference's per-lane work, moving the very axis the sentence was written to hold fixed. cols=8192 gives GROUPS=128 over 32 lanes = FOUR groups and 256 elements per lane, IDENTICAL to the tpr=64 cols=16384 reference.",
+  "caught_how": "by computing it before running rather than by trusting the sentence; pinned by a test so the wrong shape cannot return",
+  "and_the_uniformity_is_asserted_not_assumed": "every lane holds exactly 4 groups at BOTH shapes, so neither carries the lane imbalance that closed a barrier window in an earlier block"
+ },
+ "THE_TWO_HYPOTHESES_AND_WHY_THIS_SHAPE_SEPARATES_THEM": {
+  "H_ROW": "the charged unit is the lanes cooperating on ONE ROW, whatever their count. At tpr=32 a row is 32 lanes and the first departure is k=16 at two runs per row, so it must show the same step tpr=64 showed at ITS first departure, k=32.",
+  "H_64LANE": "the charged unit is a FIXED 64-LANE HARDWARE WIDTH. At tpr=32 that width spans TWO ROWS at unrelated base addresses which are disjoint at every k, so THE CONTROL ALREADY PAYS THE STEP and k=16 is only a second departure -- worth a few points by the previous ladder.",
+  "the_bands_do_not_overlap": "1.20-1.30x against 1.02-1.10x, pre-registered, which is the entire reason for choosing this shape",
+  "and_the_simdgroup_was_already_excluded": "at tpr=64 the k=32 arm gives every SIMDGROUP one contiguous run and still cost 24%, so a 32-lane unit was refuted two blocks ago; this block refutes the other end"
+ },
+ "P1_IS_MINE_AND_IT_IS_CONFIRMED_TWICE": {
+  "prediction": "k16/ctl at tpr=32 measures 1.20-1.30x. FALSIFIER: below 1.15x.",
+  "measured": {
+   "run_1": 1.2213,
+   "run_2": 1.2456
+  },
+  "reference_first_departure_at_tpr64": [
+   1.2434,
+   1.2341,
+   1.2088,
+   1.2499,
+   1.2493,
+   1.2507
+  ],
+  "rounds_control_beats_k16_of_14": {
+   "run_1": 14,
+   "run_2": 14
+  },
+  "verdict": "CONFIRMED, and H_64LANE IS REFUTED BY A BAND IT MISSES BY A FACTOR OF TWO. Two runs per row costs 22.1% and 24.6% at tpr=32 against 20.9%-26.7% across six measurements at tpr=64, at 14 of 14 rounds in both runs. THE UNIT IS THE ROW AT ITS OWN WIDTH -- a set of lanes cooperating on one output -- and not a hardware constant. Halving the row halves the k at which the step appears."
+ },
+ "P3_CONFIRMED_AND_MORE_STARKLY_THAN_AT_TPR64": {
+  "prediction": "the largest single jump is the FIRST one, control to k=16; the anomaly's location deliberately NOT predicted",
+  "ladder_over_control": {
+   "run_1": {
+    "k1": 1.2818,
+    "k2": 1.2267,
+    "k4": 1.2216,
+    "k8": 1.2352,
+    "k16": 1.2213,
+    "ctl32": 1.0
+   },
+   "run_2": {
+    "k1": 1.3077,
+    "k2": 1.2563,
+    "k4": 1.2232,
+    "k8": 1.2316,
+    "k16": 1.2456,
+    "ctl32": 1.0
+   }
+  },
+  "row_runs": {
+   "k1": 32,
+   "k2": 16,
+   "k4": 8,
+   "k8": 4,
+   "k16": 2,
+   "ctl32": 1
+  },
+  "the_step_against_the_remainder": "the FIRST departure, control to two runs, is +22.1% and +24.6%, and EVERYTHING FROM TWO RUNS TO THIRTY-TWO adds only a further 6.0 and 6.2 points. A SIXTEENFOLD INCREASE IN SHATTERING IS WORTH ABOUT A QUARTER OF THE FIRST STEP, which is a sharper form of the shape the tpr=64 ladder already showed.",
+  "and_the_tpr64_ANOMALY_DOES_NOT_REPRODUCE": "ACCELERATOR_THE_PENALTY_IS_A_STEP recorded k=4 as reproducibly the WORST rung at 1.4687/1.4945, which at tpr=64 is SIXTEEN row runs. At tpr=32 sixteen row runs is k=2 and measures 1.2267 and 1.2563 -- ORDINARY. Matched by RUN COUNT rather than by k, which is the comparison that means anything, the anomaly is absent. It is therefore a property of tpr=64 at that k and NOT of the run count, which NARROWS it and still does not explain it.",
+  "the_maximum_rung_scales_with_the_row": "full shattering costs 1.4437/1.4594 at tpr=64 (64 runs) and 1.2818/1.3077 at tpr=32 (32 runs), so the ceiling rises with how many lanes there are to shatter -- consistent with the row being the unit, and reported as consistency rather than as a second finding"
+ },
+ "P4_IS_REFUTED_AND_IT_TOOK_ONE_OF_MY_OWN_NEW_TESTS_WITH_IT": {
+  "what_was_predicted": "the previous receipt asserted the control must read the LOWEST rel_err 'since it sums in the shipped association order', and I carried that prediction into this block.",
+  "measured": {
+   "control": 2.3116160147362882e-07,
+   "k1": 2.2927139184605344e-07,
+   "control_is_lowest": false,
+   "identical_in_both_runs": true
+  },
+  "checked_at_three_further_shapes": {
+   "256x4096": "rotblk1 lowest",
+   "512x8192": "rotblk32 lowest",
+   "1024x4096": "rotblk32 lowest"
+  },
+  "verdict": "REFUTED, AND THE REASONING WAS NEVER SOUND: one association order has no claim to less rounding error than another, so the tpr=64 observation that the control read the lowest error was an ACCIDENT OF THAT SHAPE. The MEASUREMENT there stands; the inference drawn from it does not.",
+  "the_consequence_in_my_own_new_code": "my executing test asserted err[control] <= err[arm]. It PASSED at 256x4096 -- and it would FAIL at the sweep's own shape. A TEST THAT PASSES BECAUSE OF THE SHAPE IT WAS WRITTEN AT is the class this program has now found three times (a barrier repeat count resting on a retracted number, a stamper that edited reality until it held, and this). Replaced with what IS a property of a reordering rather than of a shape: the two arms must DIFFER, which is independent evidence the reorder landed at all.",
+  "amended": "ACCELERATOR_THE_WIDTH_IS_THE_ROW, in place"
+ },
+ "what_this_settles_across_four_blocks": {
+  "excluded": [
+   "the simdgroup, 32 lanes -- k=32 at tpr=64 gives every simdgroup one run and costs 24%",
+   "the threadgroup, 128-512 threads -- swept 1 to 8 disjoint requests, FLAT",
+   "a fixed 64-lane hardware width -- refuted here by a band it misses twofold"
+  ],
+  "surviving": "THE ROW: the lanes cooperating on one output, at whatever width TPR sets. Measured at two widths, 32 and 64, each showing the step at ITS OWN first departure.",
+  "still_not_named": "the MECHANISM. Why a second request costs 22-25% while thirty more cost six points is not explained, neither a transaction count nor a coalescer width fits a step, and NO THIRD CANDIDATE IS OFFERED -- this program's scorecard is five diagnoses written down and two wrong."
+ },
+ "runs": {
+  "run_1": {
+   "k1": {
+    "min_round_ms": 0.4149,
+    "median_round_ms": 0.4513,
+    "round_spread_pct": 12.2,
+    "rel_err": 2.2927139184605344e-07,
+    "row_runs": 32
+   },
+   "k2": {
+    "min_round_ms": 0.3971,
+    "median_round_ms": 0.4198,
+    "round_spread_pct": 15.9,
+    "rel_err": 2.3172650590784618e-07,
+    "row_runs": 16
+   },
+   "k4": {
+    "min_round_ms": 0.3955,
+    "median_round_ms": 0.4113,
+    "round_spread_pct": 7.6,
+    "rel_err": 2.309526372636427e-07,
+    "row_runs": 8
+   },
+   "k8": {
+    "min_round_ms": 0.3998,
+    "median_round_ms": 0.4144,
+    "round_spread_pct": 9.1,
+    "rel_err": 2.3100432265070294e-07,
+    "row_runs": 4
+   },
+   "k16": {
+    "min_round_ms": 0.3953,
+    "median_round_ms": 0.4132,
+    "round_spread_pct": 7.9,
+    "rel_err": 2.3077823598470117e-07,
+    "row_runs": 2
+   },
+   "ctl32": {
+    "min_round_ms": 0.3237,
+    "median_round_ms": 0.3368,
+    "round_spread_pct": 10.0,
+    "rel_err": 2.3116160147362882e-07,
+    "row_runs": 1
+   }
+  },
+  "run_2": {
+   "k1": {
+    "min_round_ms": 0.415,
+    "median_round_ms": 0.443,
+    "round_spread_pct": 13.3,
+    "rel_err": 2.2927139184605344e-07,
+    "row_runs": 32
+   },
+   "k2": {
+    "min_round_ms": 0.3987,
+    "median_round_ms": 0.4127,
+    "round_spread_pct": 6.3,
+    "rel_err": 2.3172650590784618e-07,
+    "row_runs": 16
+   },
+   "k4": {
+    "min_round_ms": 0.3882,
+    "median_round_ms": 0.4105,
+    "round_spread_pct": 10.1,
+    "rel_err": 2.309526372636427e-07,
+    "row_runs": 8
+   },
+   "k8": {
+    "min_round_ms": 0.3909,
+    "median_round_ms": 0.4138,
+    "round_spread_pct": 13.6,
+    "rel_err": 2.3100432265070294e-07,
+    "row_runs": 4
+   },
+   "k16": {
+    "min_round_ms": 0.3953,
+    "median_round_ms": 0.4162,
+    "round_spread_pct": 11.7,
+    "rel_err": 2.3077823598470117e-07,
+    "row_runs": 2
+   },
+   "ctl32": {
+    "min_round_ms": 0.3174,
+    "median_round_ms": 0.3343,
+    "round_spread_pct": 9.5,
+    "rel_err": 2.3116160147362882e-07,
+    "row_runs": 1
+   }
+  }
+ },
+ "controls": [
+  "every arm is a REORDERING so every arm MUST be CORRECT -- the wrong-by-construction anti-vacuity control is unavailable and these are its replacements",
+  "per-lane group SET asserted equal LANE BY LANE at every k",
+  "order asserted DIFFERENT for k<32 and asserted NOT DIFFERENT at k=32",
+  "rotblk32 and rotblk64 asserted to produce the IDENTICAL order at tpr=32, since both divisors floor to zero -- a control that silently became an arm would tie and the tie would read as a finding",
+  "the control pays the IDENTICAL division and modulo, so the comparison is addresses alone",
+  "groups-per-lane asserted UNIFORMLY FOUR at both shapes, so neither carries lane imbalance",
+  "ANTI-VACUITY FOR THE COMPARISON: control and first-departure arm asserted to differ in run count, 1 against 2",
+  "run counts COMPUTED before the timing",
+  "arm order ROTATES by round index",
+  "an executing test runs the generated Metal against a float64 oracle at tpr=32",
+  "a k wider than the row is ASSERTED to collapse to the control rather than SKIPPED, because a declined case must not read as a case with nothing to say"
+ ],
+ "THREE_MUTATIONS_WATCHED_FAILING": {
+  "M1_block_divisor_deleted": "lane/k replaced by lane -- 6 tests fail",
+  "M2_power_of_two_check_disabled": "SURVIVES this file and is caught by test_granularity.py, which owns that guard. Reported rather than presented as a clean sweep: the coverage is real and it is NOT in the file this block added, which is a different statement.",
+  "M3_the_rotation_offset_dropped_from_the_emitted_loop": "the shift removed so every lane starts at its own index -- 6 tests fail",
+  "the_harness_rule_from_the_previous_block_held": "the anchor is asserted UNIQUE rather than merely PRESENT, which is what stopped two mutations silently missing their target last block; all three landed on the first attempt here."
+ },
+ "claim_boundary": "THE MECHANISM IS STILL NOT NAMED and no third candidate is offered. TWO WIDTHS IS TWO POINTS: 32 and 64 lanes both show the step at their own first departure, which excludes a hardware constant at 64 and is NOT a measured relationship between row width and cost; tpr=16 and tpr=128 are not run. THE CROSS-TPR COMPARISON IS OF RATIOS, NOT TIMES -- within one tpr both arms share the lane count, the grid, the reduction width, the element count and the launch geometry exactly, and per-lane work is held at 4 groups and 256 elements in both shapes; the absolute times are NOT comparable across tpr and none is compared. ONE machine, INSTANCE, and the production shape still cannot run this ladder -- at GROUPS=80 over TPR=64 a lane holds two groups, so only two orderings exist. BENCH_STATE CONTENDED, recorded not asserted; round-spreads 6.3% to 15.9%, THE CLEANEST IN THIS FAMILY, with minima the estimator and the ORDINAL 70-of-70 count carrying the verdict. The operator's job was NOT killed per S032 s24. NO SHIPPED KERNEL CHANGED: every arm is CORRECT, so a reordered kernel is a legitimate candidate in principle and every one of them LOSES, so nothing is adopted. No model executed, no capability run, no adequacy claim moves, and PRODUCTION DOES NOT PAY THE SUBMISSION TERM -- unchanged.",
+ "next": "The step is located at the row and its magnitude is stable at two widths, so the open question is no longer WHERE but WHY -- and every arm in this family varies the ORDER while holding the address set fixed, which cannot separate a transaction count from a coalescer width because both are properties of the REQUEST. What would is varying the ADDRESS SPACING at a fixed order: strides of 16, 32, 64 and 128 bytes between adjacent lanes, which changes how many hardware transactions one contiguous-in-index request spans without shattering it. NOT RUN HERE.",
+ "akb_registration": {
+  "evidence_domain": "accelerator",
+  "civilization": "I-D_ACCELERATOR",
+  "program": "HAWKING ACCELERATOR (S015/S031/S032)",
+  "machine_scope": "Apple M3 Ultra, INSTANCE",
+  "representation_scope": "ws_rtn_q4_g64",
+  "kernel_scope": "native matvec under a per-block lane rotation, at two threads-per-row",
+  "laws_reconciled": [
+   "AKB-THE-INSTANT-IS-THE-COST"
+  ],
+  "why_declared": "membership must not depend on what this file was named (S032 s13)."
+ },
+ "identities": {
+  "experiment": {
+   "class": "ACCEL-KERNEL",
+   "knowledge_level": "INSTANCE",
+   "question": "is the charged width the row at its own lane count, or a fixed 64 lanes of hardware"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "ram_gib": 96,
+   "measured_dram_gb_s": 589.73,
+   "bench_state": "CONTENDED",
+   "quiescence": {
+    "run_1": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 12942,
+       "cpu_pct": 71.4,
+       "rss_gib": 52.03,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 32311,
+       "cpu_pct": 25.8,
+       "rss_gib": 0.05,
+       "comm": "/System/Library/Frameworks/Metal.framework/Versions/A/XPCServices/MTLCompilerService.xpc/Contents/MacOS/MTLCompilerService"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 33.0,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 23.4,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 4,
+     "total_cpu_pct": 153.6,
+     "max_rss_gib": 52.03,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    },
+    "run_2": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 12942,
+       "cpu_pct": 100.6,
+       "rss_gib": 52.65,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 32740,
+       "cpu_pct": 56.4,
+       "rss_gib": 1.85,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 29.6,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      }
+     ],
+     "n_contenders": 3,
+     "total_cpu_pct": 186.6,
+     "max_rss_gib": 52.65,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    }
+   }
+  },
+  "device": {
+   "backend": "Metal",
+   "api": "mx.fast.metal_kernel JIT, MLX"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "NO MODEL EXECUTED. 17408x16384 synthetic; the resident's MLP is 17408x5120."
+  },
+  "representation": {
+   "native": "ws_rtn_q4_g64, 4.25 bpw"
+  },
+  "runtime": {
+   "analysis": "tools/accelerator/gravity_native.py::source_operand_probe (rotblkK)",
+   "tests": "tools/accelerator/test_row_is_the_unit.py"
+  },
+  "kernel": {
+   "arms": [
+    "k1",
+    "k2",
+    "k4",
+    "k8",
+    "k16",
+    "ctl32"
+   ],
+   "tpr": 32,
+   "cols": 8192,
+   "tg": 128,
+   "reference": {
+    "tpr": 64,
+    "cols": 16384
+   }
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device, no transfer crossed"
+  }
+ },
+ "bench": {
+  "state": "CONTENDED",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "bench.machine_quiescence, enumerated in-process either side of run 2",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": {
+   "quiet": false,
+   "method": "enumerate",
+   "no_name_filter": true,
+   "thresholds": {
+    "cpu_pct": 20.0,
+    "rss_gib": 2.0
+   },
+   "contenders": [
+    {
+     "pid": 44291,
+     "cpu_pct": 100.0,
+     "rss_gib": 33.14,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 48269,
+     "cpu_pct": 26.9,
+     "rss_gib": 0.95,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 180,
+     "cpu_pct": 22.6,
+     "rss_gib": 0.03,
+     "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+    },
+    {
+     "pid": 739,
+     "cpu_pct": 36.1,
+     "rss_gib": 0.02,
+     "comm": "/usr/libexec/avconferenced"
+    },
+    {
+     "pid": 52616,
+     "cpu_pct": 25.5,
+     "rss_gib": 0.02,
+     "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+    }
+   ],
+   "n_contenders": 5,
+   "total_cpu_pct": 211.1,
+   "max_rss_gib": 33.14,
+   "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+  },
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "DERIVED from a quiescence sample this receipt already carried",
+  "quiescence_before": {
+   "quiet": false,
+   "method": "enumerate",
+   "no_name_filter": true,
+   "thresholds": {
+    "cpu_pct": 20.0,
+    "rss_gib": 2.0
+   },
+   "contenders": [
+    {
+     "pid": 44291,
+     "cpu_pct": 100.7,
+     "rss_gib": 33.14,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 48269,
+     "cpu_pct": 82.8,
+     "rss_gib": 0.95,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 180,
+     "cpu_pct": 24.1,
+     "rss_gib": 0.03,
+     "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+    },
+    {
+     "pid": 739,
+     "cpu_pct": 37.0,
+     "rss_gib": 0.02,
+     "comm": "/usr/libexec/avconferenced"
+    },
+    {
+     "pid": 52616,
+     "cpu_pct": 25.8,
+     "rss_gib": 0.02,
+     "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+    }
+   ],
+   "n_contenders": 5,
+   "total_cpu_pct": 270.4,
+   "max_rss_gib": 33.14,
+   "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+  }
+ },
+ "suite": {
+  "accelerator_tests_passed": 837,
+  "failed": 0,
+  "new_file": "tools/accelerator/test_row_is_the_unit.py (41 tests)",
+  "python": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12 (BY PATH)",
+  "re_derived_after_the_last_change_in_this_block": true,
+  "ledger": "civilization/validate.py"
+ }
+}

@@ -23,6 +23,34 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 SCHEMA = "hawking.headless.nomenclature_census.v1"
+NOMENCLATURE_VERSION = "HAWKING_NOMENCLATURE_V1"
+CANONICAL_PIPELINE = (
+    "SourceSpecimen",
+    "Doctor",
+    "Gravity",
+    "NoeticIR",
+    "NoeticCompiler",
+    "PhysicalGraphCompiler",
+    "HawkingAccelerator",
+    "NoeticExecutableCandidate",
+    "ParetoFrontier",
+    "Singularity",
+    "ResidentInstance",
+)
+CANONICAL_ALIASES = {
+    "source model": "SourceSpecimen",
+    "checkpoint": "SourceSpecimen",
+    "quantization": "GravityOperator",
+    "quantizer": "GravityOperator",
+    "compressed model": "NoeticRepresentation",
+    "compact model": "NoeticRepresentation",
+    "artifact": "semantic inspection required",
+    "winner": "ParetoCandidateOrSingularity",
+    "best model": "ParetoCandidateOrSingularity",
+    "final model": "SingularityOrUnqualifiedCandidate",
+    "production model": "SingularityOrUnqualifiedCandidate",
+    "resident model": "ResidentInstance",
+}
 SURVIVING = ("HCLI", "Odyssey", "Noetic", "Gravity")
 SEALED_EXAMPLES = (
     "hawking.nos.nr_nx_artifact.v1",
@@ -1055,13 +1083,14 @@ def load_negative_science() -> dict:
 def git_identity() -> dict:
     head = git_ok(["git", "rev-parse", "HEAD"]).stdout.strip()
     branch = git_ok(["git", "rev-parse", "--abbrev-ref", "HEAD"]).stdout.strip()
-    sparse = git_ok(["git", "sparse-checkout", "list"]).stdout.splitlines()
+    sparse_result = sh(["git", "sparse-checkout", "list"])
+    sparse = sparse_result.stdout.splitlines() if sparse_result.returncode == 0 else []
     porcelain = git_ok(["git", "status", "--porcelain"]).stdout.splitlines()
     return {
         "root": str(ROOT),
         "head": head,
         "branch": branch,
-        "sparse_checkout": True,
+        "sparse_checkout": sparse_result.returncode == 0,
         "sparse_roots": sparse,
         "dirty_before": porcelain,
     }
@@ -1470,7 +1499,11 @@ def main() -> int:
     print(f"HEAD: {identity['head']}", flush=True)
     print(f"branch: {identity['branch']}", flush=True)
     print(f"root: {identity['root']}", flush=True)
-    print(f"tree authority: git HEAD (sparse checkout; disk is not existence)", flush=True)
+    if identity["sparse_checkout"]:
+        authority_note = "sparse checkout; disk is not existence"
+    else:
+        authority_note = "full checkout; disk checks are supplemental"
+    print(f"tree authority: git HEAD ({authority_note})", flush=True)
     print(f"surviving vocabulary: {', '.join(SURVIVING)}", flush=True)
     print(f"this lane renames nothing, deletes nothing", flush=True)
     print(flush=True)
@@ -1594,12 +1627,15 @@ def main() -> int:
     # don't dump 1500 strings twice at the top; keep examples + count + all in a compact field
     receipt = {
         "schema": SCHEMA,
+        "nomenclature_version": NOMENCLATURE_VERSION,
+        "canonical_pipeline": list(CANONICAL_PIPELINE),
+        "canonical_aliases": dict(CANONICAL_ALIASES),
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "git": {
             "root": identity["root"],
             "head": identity["head"],
             "branch": identity["branch"],
-            "sparse_checkout": True,
+            "sparse_checkout": identity["sparse_checkout"],
             "sparse_roots": identity["sparse_roots"],
             "blob_count_at_head": len(tree_rows),
             "tree_authority": "git ls-tree -r -l HEAD + git grep -I HEAD + git show HEAD:<path>",

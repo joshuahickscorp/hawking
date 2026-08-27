@@ -23,10 +23,12 @@ import subprocess
 import tempfile
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from .context_budget import resolve as resolve_context_budget
@@ -157,6 +159,17 @@ def quantisation_from_path(model_path: str) -> str:
     if m:
         return f"{m.group(1)}bit"
     return "unknown"
+
+
+def is_remote_endpoint(value: Optional[str]) -> bool:
+    """Return true for a public OpenAI-compatible endpoint selector.
+
+    A URL is a model provider selection, not a local filesystem path.  Keeping
+    this predicate here lets RuntimePool and the model registry agree without
+    teaching either one about a particular vendor.
+    """
+    text = str(value or "").strip().lower()
+    return text.startswith(("http://", "https://", "remote://"))
 
 
 def is_mlx_model_dir(path: str) -> bool:
@@ -396,6 +409,55 @@ class RuntimeBackend(ABC):
     @staticmethod
     def _parse_response(data: Any, degraded: List[str]) -> CompletionResult:
         return completion_from_openai(data, degraded)
+
+    # Provider-neutral adapters.  The native/MLX/llama/remote transports keep
+    # their existing CompletionResult API for compatibility, while AgentOS can
+    # speak the same contract to every backend.
+    def generate(self, request: Any, *, timeout: Optional[float] = None) -> Any:
+        from .providers import GenerationRequest, GenerationResponse
+
+        normalized = request if isinstance(request, GenerationRequest) else GenerationRequest.from_mapping(request)
+        result = self.complete(normalized.to_payload(), timeout=timeout)
+        identity = self.identity()
+        response = GenerationResponse.from_completion(
+            result,
+            provider=str(identity.get("provider") or identity.get("runtime") or type(self).__name__),
+        )
+        response.request_id = normalized.request_id
+        return response
+
+    def capabilities(self) -> Any:
+        from .providers import CapabilityContract
+
+        return CapabilityContract.from_backend(self)
+
+    def health(self) -> Any:
+        from .providers import ProviderHealth
+
+        identity = self.identity()
+        provider = str(identity.get("provider") or identity.get("runtime") or type(self).__name__)
+        try:
+            ready = bool(self.ready(0.0))
+        except Exception as exc:  # noqa: BLE001 - health is an observation
+            return ProviderHealth(
+                state="unavailable",
+                ready=False,
+                provider=provider,
+                detail=f"{type(exc).__name__}: {exc}",
+                recoverable=True,
+            )
+        return ProviderHealth(
+            state="healthy" if ready else "unavailable",
+            ready=ready,
+            provider=provider,
+            detail=None if ready else "backend is not ready",
+            recoverable=True,
+        )
+
+    def profile(self) -> Any:
+        from .providers import ResidentProfile
+
+        return ResidentProfile.from_backend(self)
 
 
 # Honest capability table. MLX numbers from receipts/headless/BACKEND_CAPABILITY.json.
@@ -1097,6 +1159,7 @@ class LlamaServerBackend(RuntimeBackend):
             model_bytes = None
         quant = quantisation_from_path(self.model_path)
         return {
+            "provider": "llamacpp",
             "backend": "llama_server",
             "binary": binary,
             "version": version,
@@ -1396,6 +1459,7 @@ class MlxServerBackend(RuntimeBackend):
         quant = mlx_quantisation_label(self.model_path)
         context = mlx_context_length(self.model_path)
         return {
+            "provider": "mlx",
             "backend": "mlx_lm_server",
             "binary": binary,
             "version": version,
@@ -1655,13 +1719,224 @@ class MlxServerBackend(RuntimeBackend):
         return report
 
 
-class NoeticNativeBackend(RuntimeBackend):
-    """Noetic native runtime on the ONE RuntimeBackend interface.
+class OpenAICompatibleBackend(RuntimeBackend):
+    """Remote OpenAI-compatible provider selected by an endpoint URL.
 
-    This is an interface reservation, not a second scheduler and not a
-    fake llama-server. spawn() does not start a process. complete()
-    refuses to invent tokens. Callers that need inference pick MLX
-    (first-class) or llama.cpp (when a GGUF is actually present).
+    The remote provider is deliberately a thin transport adapter.  It does
+    not claim that a vendor supports JSON schema, grammar, chat-template
+    controls, or streaming unless the caller declares those capabilities with
+    ``HCLI_REMOTE_SUPPORTS_*``.  Unknown remote behaviour therefore follows
+    the same prompt-and-validate degradation path as MLX.
+    """
+
+    def __init__(
+        self,
+        model_path: str,
+        port: Optional[int] = None,
+        n_slots: int = 1,
+        **_ignored: Any,
+    ) -> None:
+        del port
+        raw = str(model_path or "").strip()
+        if raw.lower().startswith("remote://"):
+            raw = "https://" + raw[len("remote://"):].lstrip("/")
+        parsed = urllib.parse.urlparse(raw)
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+            raise ValueError("remote provider requires an http(s) endpoint")
+        if parsed.username or parsed.password:
+            raise ValueError("remote endpoint URL credentials are not allowed")
+        query = urllib.parse.parse_qs(parsed.query, keep_blank_values=False)
+        query_model = query.get("model", [None])[0]
+        fragment_model = None
+        if parsed.fragment.startswith("model="):
+            fragment_model = urllib.parse.unquote(parsed.fragment[len("model="):])
+        # Query strings are not part of a stable identity and can contain API
+        # keys.  Do not preserve them in the provider receipt.
+        self.base_url = urllib.parse.urlunparse(
+            (parsed.scheme, parsed.netloc, parsed.path.rstrip("/"), "", "", "")
+        )
+        self.model_name = (
+            os.environ.get("HCLI_REMOTE_MODEL")
+            or query_model
+            or fragment_model
+            or "remote"
+        )
+        self.n_slots = max(1, int(n_slots))
+        self.port = None
+        self.process = None
+        self.pid = None
+        self.start_time = None
+        self._started = False
+
+    def _completion_url(self) -> str:
+        if self.base_url.endswith("/v1/chat/completions"):
+            return self.base_url
+        if self.base_url.endswith("/v1"):
+            return self.base_url + "/chat/completions"
+        return self.base_url + "/v1/chat/completions"
+
+    def selection(self) -> str:
+        """Return a credential-free URL that preserves the selected model."""
+        if self.model_name == "remote":
+            return self.base_url
+        return self.base_url + "#model=" + urllib.parse.quote(self.model_name, safe="")
+
+    def _headers(self) -> Dict[str, str]:
+        headers = {"Content-Type": "application/json", "User-Agent": "hcli/0.1"}
+        token = (
+            os.environ.get("HCLI_REMOTE_API_KEY")
+            or os.environ.get("OPENAI_API_KEY")
+            or os.environ.get("ANTHROPIC_API_KEY")
+        )
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+        return headers
+
+    @staticmethod
+    def _env_bool(name: str, default: bool = False) -> bool:
+        raw = os.environ.get(name)
+        if raw is None:
+            return default
+        return str(raw).strip().lower() in {"1", "true", "yes", "on"}
+
+    def identity(self) -> Dict[str, Any]:
+        return {
+            "provider": "remote",
+            "backend": "openai_compatible",
+            "runtime": "remote",
+            "model_path": self.base_url,
+            "model_id": self.model_name,
+            "model_identity": f"remote:{self.base_url}:{self.model_name}",
+            "context": None,
+            "quantisation": "provider-managed",
+            "n_slots": self.n_slots,
+            "endpoint": self._completion_url(),
+            "pid": None,
+            "port": None,
+            "credential_source": "environment-only" if (
+                os.environ.get("HCLI_REMOTE_API_KEY")
+                or os.environ.get("OPENAI_API_KEY")
+                or os.environ.get("ANTHROPIC_API_KEY")
+            ) else "none",
+            "credential_value": "[REDACTED]" if (
+                os.environ.get("HCLI_REMOTE_API_KEY")
+                or os.environ.get("OPENAI_API_KEY")
+                or os.environ.get("ANTHROPIC_API_KEY")
+            ) else None,
+        }
+
+    def supports(self, feature: str) -> bool:
+        canon = canonical_feature(feature)
+        names = {
+            "response_format": "HCLI_REMOTE_SUPPORTS_RESPONSE_FORMAT",
+            "grammar": "HCLI_REMOTE_SUPPORTS_GRAMMAR",
+            "chat_template_kwargs": "HCLI_REMOTE_SUPPORTS_CHAT_TEMPLATE_KWARGS",
+            "prefix_cache": "HCLI_REMOTE_SUPPORTS_PREFIX_CACHE",
+            "slots": "HCLI_REMOTE_SUPPORTS_SLOTS",
+            "vision": "HCLI_REMOTE_SUPPORTS_VISION",
+            "tool_calling": "HCLI_REMOTE_SUPPORTS_TOOL_CALLING",
+            "streaming": "HCLI_REMOTE_SUPPORTS_STREAMING",
+        }
+        env_name = names.get(canon)
+        return self._env_bool(env_name, False) if env_name else False
+
+    def spawn(self, **kwargs: Any) -> None:
+        del kwargs
+        self._started = True
+
+    def ready(self, timeout: float) -> bool:
+        if not self._started:
+            return False
+        if os.environ.get("HCLI_REMOTE_SKIP_HEALTH", "").strip() == "1":
+            return True
+        parsed = urllib.parse.urlparse(self.base_url)
+        origin = urllib.parse.urlunparse((parsed.scheme, parsed.netloc, "", "", "", ""))
+        path = parsed.path.rstrip("/")
+        if path.endswith("/v1"):
+            api_root = path
+            service_root = path[:-3].rstrip("/")
+        elif path.endswith("/v1/chat/completions"):
+            api_root = path[:-len("/chat/completions")].rstrip("/")
+            service_root = api_root[:-3].rstrip("/") if api_root.endswith("/v1") else api_root
+        else:
+            service_root = path
+            api_root = path + "/v1"
+        candidates = []
+        for suffix in (
+            f"{service_root}/health",
+            f"{service_root}/healthz",
+            f"{api_root}/models",
+            "/health",
+            "/healthz",
+            "/v1/models",
+        ):
+            url = origin + (suffix or "/")
+            if url not in candidates:
+                candidates.append(url)
+        for url in candidates:
+            request = urllib.request.Request(url, headers=self._headers(), method="GET")
+            try:
+                with urllib.request.urlopen(request, timeout=max(0.1, min(3.0, float(timeout)))) as response:
+                    if 200 <= response.status < 500:
+                        return True
+            except urllib.error.HTTPError as exc:
+                # 401/403 proves a reachable provider; the completion call
+                # will report the missing/invalid credential explicitly.
+                if exc.code in {401, 403, 404, 405}:
+                    return True
+            except Exception:
+                continue
+        return False
+
+    def endpoint(self) -> str:
+        return self._completion_url()
+
+    def complete(
+        self, payload: Dict[str, Any], timeout: Optional[float] = None
+    ) -> CompletionResult:
+        prepared, degraded = self._prepare_payload(payload)
+        # HCLI's common payload carries the model selector in ``model``. For
+        # a remote endpoint that selector is an URL, not the provider's model
+        # field; replace it with the normalized model id while preserving an
+        # explicit per-call model override.
+        if (
+            not prepared.get("model")
+            or is_remote_endpoint(str(prepared.get("model")))
+            or prepared.get("model") in {"local", "remote"}
+        ):
+            prepared["model"] = self.model_name
+        body = json.dumps(prepared).encode("utf-8")
+        request = urllib.request.Request(
+            self._completion_url(), data=body, headers=self._headers(), method="POST"
+        )
+        limit = float(timeout if timeout is not None else os.environ.get("HCLI_MODEL_TIMEOUT", "1800"))
+        try:
+            with urllib.request.urlopen(request, timeout=limit) as response:
+                raw = response.read()
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace")
+            raise RuntimeError(f"remote provider HTTP {exc.code}: {detail[:1200]}") from exc
+        except Exception as exc:
+            raise RuntimeError(f"remote provider request failed: {exc}") from exc
+        try:
+            data = json.loads(raw.decode("utf-8", errors="replace"))
+        except (UnicodeError, json.JSONDecodeError) as exc:
+            raise RuntimeError("remote provider returned invalid JSON") from exc
+        return self._parse_response(data, degraded)
+
+    def stop(self) -> Dict[str, Any]:
+        was_started = self._started
+        self._started = False
+        return {"gone": True, "pid": None, "remote": True, "was_started": was_started}
+
+
+class NoeticNativeBackend(RuntimeBackend):
+    """A profile-driven native model runtime on the ONE interface.
+
+    The backend deliberately does not add a scheduler or a second agent
+    stack.  In one-shot mode each completion invokes the supplied native
+    executable.  In resident mode the same backend owns one JSONL child and
+    the pool continues to own admission and request serialization.
     """
 
     def __init__(
@@ -1671,63 +1946,190 @@ class NoeticNativeBackend(RuntimeBackend):
         n_slots: int = 1,
         **_ignored: Any,
     ) -> None:
+        from .hawking_native import (
+            HawkingNativeConfig,
+            HawkingNativeConfigError,
+            config_for_model_path,
+            is_hawking_native_path,
+        )
+
         self.model_path = os.path.realpath(os.path.expanduser(model_path or ""))
         self.port = int(port) if port is not None else None
         self.n_slots = max(1, int(n_slots))
+        candidate_exists = bool(
+            model_path
+            and Path(os.path.expanduser(model_path)).exists()
+            and is_hawking_native_path(model_path)
+        )
+        self._configured = bool(
+            not model_path
+            or os.environ.get("HCLI_HAWKING_NATIVE_CONFIG")
+            or candidate_exists
+        )
+        try:
+            self.config = config_for_model_path(model_path or None)
+        except HawkingNativeConfigError:
+            if self._configured:
+                raise
+            # A forced/legacy native backend may still be constructed for a
+            # capability census with a sentinel path. Keep that construction
+            # side-effect free and refuse only when inference is requested.
+            self.config = HawkingNativeConfig.defaults()
+        from .hawking_native import HawkingNativeConnector
+
+        self.connector = HawkingNativeConnector(self.config)
         self.process = None
         self.pid: Optional[int] = None
         self.start_time: Optional[str] = None
-        self._spawned = False
         self._stopped = False
+        self._spawned = False
 
     def identity(self) -> Dict[str, Any]:
-        return {
-            "backend": "noetic_native",
-            "binary": None,
-            "version": None,
-            "model_path": self.model_path or None,
-            "model_bytes": model_bytes_at(self.model_path) if self.model_path else None,
-            "context": None,
-            "quantisation": None,
-            "n_slots": self.n_slots,
-            "pid": self.pid,
-            "port": self.port,
-            "note": (
-                "interface reservation; complete() does not produce tokens"
-            ),
-        }
+        identity = self.connector.identity()
+        identity.update(
+            {
+                "provider": self.config.provider,
+                "backend": "noetic_native",
+                "profile_path": self.model_path or None,
+                "model_path": self.config.artifact_root,
+                "model_bytes": identity.get("artifact_inventory", {}).get(
+                    "artifact_bytes"
+                ),
+                "context": self.config.max_seq_len,
+                "architecture": self.config.architecture,
+                "param_class": self.config.param_class,
+                "quantisation": self.config.quantisation,
+                "n_slots": self.n_slots,
+                "pid": self.connector.pid,
+                "port": self.port,
+            }
+        )
+        if not self._configured:
+            identity["configuration_required"] = True
+            identity["note"] = (
+                "native profile is not configured; this backend instance is "
+                "a side-effect-free capability placeholder"
+            )
+        return identity
 
     def spawn(self, **kwargs: Any) -> None:
-        if kwargs.get("port") is not None:
-            self.port = int(kwargs["port"])
         if kwargs.get("n_slots") is not None:
             self.n_slots = max(1, int(kwargs["n_slots"]))
+        # A native resident is not an HTTP server. RuntimePool may hand every
+        # backend a candidate port for the common factory signature, but
+        # retaining it would make status/receipts claim a socket exists.
+        self.port = None
+        if not self._configured:
+            self._spawned = True
+            self._stopped = False
+            return
+        self.connector.start(
+            timeout=float(os.environ.get("HCLI_READY_TIMEOUT", "300"))
+        )
+        self.process = self.connector.process
+        self.pid = self.connector.pid
+        if self.pid:
+            self.start_time = process_start_token(self.pid)
         self._spawned = True
         self._stopped = False
 
     def ready(self, timeout: float) -> bool:
-        del timeout
-        return self._spawned and not self._stopped
+        if not self._configured:
+            del timeout
+            return self._spawned and not self._stopped
+        if self._stopped or not self._spawned:
+            return False
+        ready = self.connector.ready(timeout)
+        self.process = self.connector.process
+        self.pid = self.connector.pid
+        return ready
 
     def endpoint(self) -> str:
-        if self.port is None:
-            return "noetic-native://unbound"
-        return f"noetic-native://127.0.0.1:{self.port}"
+        return (
+            f"hawking-native://{self.config.resident_identity}/"
+            f"{self.connector.mode}"
+        )
 
     def stop(self) -> Dict[str, Any]:
         self._stopped = True
         self._spawned = False
-        return {"gone": True, "backend": "noetic_native"}
+        if not self._configured:
+            return {"gone": True, "pid": None, "backend": "noetic_native"}
+        report = self.connector.stop()
+        self.process = None
+        self.pid = None
+        self.start_time = None
+        report["backend"] = "noetic_native"
+        return report
 
     def complete(
         self, payload: Dict[str, Any], timeout: Optional[float] = None
     ) -> CompletionResult:
-        del payload, timeout
-        raise RuntimeError(
-            "noetic native backend has no inference server; "
-            "it is an interface reservation on RuntimeBackend, not a token source"
-        )
+        if not self._configured:
+            del payload, timeout
+            raise RuntimeError(
+                "noetic native interface reservation has no configured model "
+                "profile; refusing to invent tokens"
+            )
+        prepared, degraded = self._prepare_payload(payload)
+        raw = self.connector.complete_payload(prepared, timeout=timeout)
+        hawking = raw.get("hawking")
+        if isinstance(hawking, dict) and degraded:
+            hawking["degraded_features"] = list(degraded)
+        result = self._parse_response(raw, degraded)
+        self.process = self.connector.process
+        self.pid = self.connector.pid
+        self.start_time = process_start_token(self.pid) if self.pid else None
+        return result
 
     def supports(self, feature: str) -> bool:
-        del feature
-        return False
+        canon = canonical_feature(feature)
+        declared = self.config.capabilities
+        if isinstance(declared, dict):
+            declared_features = declared.get("features", declared)
+            if isinstance(declared_features, dict) and canon in declared_features:
+                value = declared_features[canon]
+                if isinstance(value, dict):
+                    state = str(value.get("state") or "unknown").strip().lower()
+                    if state in {"supported", "true", "yes", "available"}:
+                        return True
+                    if state in {"unsupported", "false", "no", "unavailable"}:
+                        return False
+                elif isinstance(value, bool):
+                    return value
+                elif isinstance(value, (int, float)):
+                    return value != 0
+                elif value is not None:
+                    return str(value).strip().lower() in {"supported", "true", "yes", "available"}
+        # The generic native protocol has no implicit structured-output or
+        # grammar support. The shipped Qwen resident's only transport-level
+        # guarantee is its chat-template keyword; all other support must be
+        # declared by the selected profile.
+        return canon == "chat_template_kwargs"
+
+    def log_tail(self, n: int = 2500) -> str:
+        return self.connector.log_tail(n)
+
+    def health_snapshot(self) -> Dict[str, Any]:
+        if not self._configured:
+            return {
+                "ready": self._spawned and not self._stopped,
+                "mode": "unconfigured",
+                "pid": None,
+            }
+        if self.connector.resident is None:
+            return {
+                "ready": self.ready(0.0),
+                "mode": self.connector.mode,
+                "pid": None,
+            }
+        return self.connector.resident.health()
+
+
+# ``noetic_native`` is retained as the serialized backend kind because it is
+# already present in HCLI receipts and capability snapshots.  These aliases
+# expose the actual abstraction to new callers: the provider/profile may be
+# Hawking's current resident today, while the HCLI runtime contract remains
+# usable by any executable that implements the same native JSON protocol.
+NativeRuntimeBackend = NoeticNativeBackend
+HawkingNativeBackend = NativeRuntimeBackend

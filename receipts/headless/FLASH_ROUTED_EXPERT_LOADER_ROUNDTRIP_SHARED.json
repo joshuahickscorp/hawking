@@ -1,0 +1,177 @@
+{
+  "body_mutated": false,
+  "candidate_id": "shared_bf16_basis_nf4_residual",
+  "candidate_label": "[D]",
+  "claim_boundary": "Bounded serialized descriptor and source-block loader round-trip only. This does not establish whole-model capability, native-kernel performance, complete-system EBPW, or Flash TPS.",
+  "comparison": {
+    "capability_parity": "NOT_TESTED",
+    "label": "[D]",
+    "same_dimensions": true,
+    "same_source_sample": true,
+    "whole_model_runtime": "NOT_TESTED"
+  },
+  "elapsed_s": 0.036,
+  "encoded_sample": {
+    "basis_bytes": 10240,
+    "candidate_bytes": 12960,
+    "candidate_sha256": "aeec795e9c161204a408977bf56452d07e73eed7daaf776e71d971c20b4669b7",
+    "label": "[D]",
+    "packed_code_bytes": 2560,
+    "scale_bytes": 160
+  },
+  "expert_index": 0,
+  "finished_at": 1787813917.1392992,
+  "loader_roundtrip": {
+    "code_pack_unpack_parity": true,
+    "decoded_finite": true,
+    "decoded_shape": [
+      2,
+      2560
+    ],
+    "descriptor_json_roundtrip": true,
+    "label": "[D]",
+    "reference_vector": {
+      "cosine": 0.999271843417568,
+      "count": 2,
+      "finite": true,
+      "max_abs_error": 0.048513442277908325,
+      "mean_abs_error": 0.03202362358570099,
+      "rmse": 0.036019809034058485
+    },
+    "source_file_unchanged": true,
+    "source_payload_unchanged": true,
+    "status": "PASSED",
+    "weight_reconstruction": {
+      "cosine": 0.9953335086266856,
+      "count": 5120,
+      "finite": true,
+      "max_abs_error": 0.007244110107421875,
+      "mean_abs_error": 0.0010743883904069662,
+      "rmse": 0.001354405019098436
+    }
+  },
+  "model_lake_manifest": {
+    "bytes": 360053432320,
+    "label": "[V]",
+    "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+    "manifest_sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7",
+    "n_files": 144,
+    "n_sha256_verified": 132,
+    "n_size_only_verified": 12,
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915"
+  },
+  "model_loaded": false,
+  "native_kernel": "NOT_TESTED",
+  "native_loader": "BOUNDED_DESCRIPTOR_ROUNDTRIP_ONLY",
+  "next_experiment": {
+    "action": "implement a native kernel against the serialized descriptor and compare protected complete-token behavior",
+    "id": "flash-routed-expert-native-kernel-parity",
+    "required_before_promotion": [
+      "native kernel",
+      "whole-model capability",
+      "protected complete-token timing",
+      "complete-system EBPW ledger"
+    ],
+    "source_mutation_allowed": false
+  },
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP_SHARED.json",
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "representation_descriptor": {
+    "candidate_id": "shared_bf16_basis_nf4_residual",
+    "full_transform_reference": {
+      "candidate_bytes": 897843200,
+      "candidate_sha256": "eaaa21b52ea0db9cf60c24a97c5f4d690c0dbfaf4ae90bbbd6b39b8b531a3aa1",
+      "effective_bits_per_value": 4.28125,
+      "status": "FULL_TENSOR_TRANSFORM_ONLY"
+    },
+    "label": "[D]",
+    "loader_policy": {
+      "candidate_body_persisted_by_this_tool": false,
+      "dense_rematerialization": "forbidden",
+      "model_load": false,
+      "source_mutation": false,
+      "streaming_block_order": "expert ascending, row ascending, complete column rows"
+    },
+    "schema": "hcli.noetic.representation_descriptor.v1",
+    "source_tensor": {
+      "dtype": "BF16",
+      "group_size": 64,
+      "layout": "row-major [expert, row, column]",
+      "shape": [
+        512,
+        1280,
+        2560
+      ],
+      "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj"
+    },
+    "storage": {
+      "basis_dtype": "little_endian_bfloat16",
+      "basis_scope": "one shared basis row per source row across the routed expert bank",
+      "code_dtype": "uint4_packed",
+      "codebook": [
+        -1.0,
+        -0.6961928,
+        -0.52507305,
+        -0.3949175,
+        -0.28444138,
+        -0.18477343,
+        -0.09105004,
+        0.0,
+        0.0795803,
+        0.1609302,
+        0.2461123,
+        0.33791524,
+        0.44070983,
+        0.562617,
+        0.72295684,
+        1.0
+      ],
+      "nibble_order": "low_nibble_then_high_nibble_row_major",
+      "scale_dtype": "little_endian_float16",
+      "scale_scope": "one residual scale per 64 values"
+    }
+  },
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "row_count": 2,
+  "row_start": 0,
+  "runtime_performance": "NOT_TESTED",
+  "schema": "hcli.agentos.flash_loader_roundtrip.v1",
+  "serialized_descriptor_sha256": "9dfc4a60a527523df48fc993877c9c2cc89d135dff0f3d5a8ae3333eeb974421",
+  "source_label": "[V]",
+  "source_sample": {
+    "bytes": 10240,
+    "expert_index": 0,
+    "label": "[V]",
+    "payload_sha256": "796df7ef195d1e8bd3eba2cc0c7f20a2017898a6d910159fdb47f37f831b1dcb",
+    "row_range": [
+      0,
+      2
+    ],
+    "shape": [
+      2,
+      2560
+    ]
+  },
+  "status": "PASSED",
+  "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj",
+  "transform_receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_FULL_TENSOR_TRANSFORM_PARITY.json",
+  "transform_reference": {
+    "candidate": {
+      "candidate_bytes": 897843200,
+      "candidate_sha256": "eaaa21b52ea0db9cf60c24a97c5f4d690c0dbfaf4ae90bbbd6b39b8b531a3aa1",
+      "effective_bits_per_value": 4.28125,
+      "id": "shared_bf16_basis_nf4_residual"
+    },
+    "label": "[V]",
+    "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_FULL_TENSOR_TRANSFORM_PARITY.json",
+    "receipt_sha256": "f0ad216973c421a4457a9e33b091b05168c4289de8aedd23633747b5c54cf3d3",
+    "source_tensor_payload_sha256": "cac366f51f797c0c939e12e010d97f83f5032ddd27085bb232687c35d26b663a"
+  },
+  "whole_model_capability": "NOT_TESTED",
+  "whole_model_runtime": "NOT_TESTED"
+}

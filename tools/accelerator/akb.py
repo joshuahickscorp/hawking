@@ -1233,6 +1233,64 @@ LAWS: list[dict[str, Any]] = [
             "NOT refute production's 17.35 us, which is a bytes-plus-dispatch number."),
     ),
     dict(
+        law_id="AKB-THE-REDUCTION-TAIL-IS-FREE",
+        statement=(
+            "THE CROSS-LANE REDUCTION TAIL COSTS NOTHING MEASURABLE, AND DELETING IT "
+            "ENTIRELY BOUNDS EVERY POSSIBLE REDUCTION VARIANT. On a 17408x5120 q4_g64 "
+            "matvec at tpr64 the shipped serial tail -- one lane summing 64 threadgroup "
+            "slots while 63 idle -- is INDISTINGUISHABLE from simd_sum at 0.981x and from a "
+            "six-step tree at 0.960x, and a DELETION CONTROL that removes the barrier, the "
+            "threadgroup array and the reduction altogether measures 0.985x. All eight "
+            "minima across two runs and four arms span 5.3%, and the ranking REVERSES "
+            "between runs -- the serial tail took the shortest minimum in one run and the "
+            "longest in the other -- "
+            "which is the signature of no effect. The deletion control is the decisive arm "
+            "because it bounds what ANY tail can buy rather than ranking three tails against "
+            "each other: IF REMOVING THE REDUCTION OUTRIGHT BUYS NOTHING, NO REDUCTION CAN. "
+            "This closes the one structural candidate "
+            "AKB-SIX-LEVERS-ELIMINATED-AND-THE-FLOOR-MECHANISM-IS-UNRESOLVED left named and "
+            "untested, taking the count to SEVEN levers eliminated by measurement. THE "
+            "FLOOR'S MECHANISM IS STILL NOT NAMED and no eighth story is offered -- what "
+            "changed is that the kernel-level candidate list is now EMPTY rather than "
+            "holding one open item."),
+        applicability={
+            "MODEL": NONE, "ARCHITECTURE": NONE,
+            "ORGAN": "MLP-shaped GEMV at 89.1M weights, a shape borrowed from the resident",
+            "REPRESENTATION": "ws_rtn_q4_g64, identical in every arm",
+            "SHAPE": "rows=17408 cols=5120, group 64, tpr64 at tg128",
+            "MACHINE": M3, "RUNTIME": "MLX mx.fast.metal_kernel JIT, 14 round-robin rounds x 20 reps, two runs",
+            "KERNEL": "native matvec with four reduction tails: serial, simd_sum, tree, deleted",
+            "STORAGE_TIER": NONE, "TOPOLOGY": NONE,
+            "WORKLOAD_PHASE": "single-token decode-shaped GEMV, CONTENDED machine"},
+        evidence_class="Measured",
+        source_receipts=["receipts/headless/ACCELERATOR_THE_REDUCTION_TAIL_IS_FREE.json"],
+        citations=[
+            "receipts/headless/ACCELERATOR_THE_REDUCTION_TAIL_IS_FREE.json#THE_RESULT_IS_THAT_THE_TAIL_IS_FREE",
+            "receipts/headless/ACCELERATOR_THE_REDUCTION_TAIL_IS_FREE.json#P3_THE_BOUND",
+            "receipts/headless/ACCELERATOR_THE_REDUCTION_TAIL_IS_FREE.json#why_the_deletion_control_stores_from_every_lane",
+            "receipts/headless/ACCELERATOR_THE_REDUCTION_TAIL_IS_FREE.json#claim_boundary"],
+        status="ACTIVE", superseded_by=None, negative_result=True,
+        confidence_basis=(
+            "The arms are comparable BY CONSTRUCTION and a test asserts it: the kernel body "
+            "is byte-identical across all four sources, so the element count is identical "
+            "and a difference is the tail and nothing else. The deletion control's store is "
+            "UNCONDITIONAL on purpose, because predicating it on lane==0 lets the compiler "
+            "sink the pure loop into the branch and the arm would measure dead-code "
+            "elimination; the guard is verified by the measurement itself, since the arm "
+            "lands ON the ~300 G elem/s element floor rather than 64x above it. It also ADDS "
+            "64-fold store traffic, which makes the bound CONSERVATIVE. Anti-vacuity holds: "
+            "the deletion control reads rel_err 0.986 against the float64 oracle while the "
+            "three real tails read 1.4-2.0e-07, and three mutations were watched failing. "
+            "Run 1 is CONTAMINATED at 105-259% round-spread so minima and an ordinal "
+            "rounds-won count are reported beside every median; run 2 at 16-24% is the "
+            "cleaner one and is the run in which the serial tail comes LAST. ONE shape, ONE "
+            "tpr, ONE machine, INSTANCE -- the tail's share scales with TPR and with the "
+            "per-element work in front of it, so a much smaller GROUPS/TPR ratio would not "
+            "inherit this. tpr=32 with simd_sum, which needs no threadgroup memory and no "
+            "barrier at all, is CONFOUNDED with geometry and NOT RUN. No shipped kernel "
+            "changed and neither variant earns a place."),
+    ),
+    dict(
         law_id="AKB-SIX-LEVERS-ELIMINATED-AND-THE-FLOOR-MECHANISM-IS-UNRESOLVED",
         statement=(
             "THE PER-ELEMENT MATVEC FLOOR SURVIVES OPERAND REUSE AND INSTRUCTION-LEVEL "
@@ -1251,7 +1309,11 @@ LAWS: list[dict[str, Any]] = [
             "ILP. NO SEVENTH MECHANISM IS OFFERED -- this program's scorecard is five "
             "diagnoses written down and two wrong, and the one structural feature no arm "
             "varied, the serial cross-lane reduction tail, is recorded as a NAMED UNTESTED "
-            "CANDIDATE rather than an explanation."),
+            "CANDIDATE rather than an explanation. AMENDED 2026-08-26 by "
+            "receipts/headless/ACCELERATOR_THE_REDUCTION_TAIL_IS_FREE.json: THAT CANDIDATE "
+            "IS NOW DEAD, not pending -- simd_sum 0.981x, a tree 0.960x, and DELETING the "
+            "reduction entirely 0.985x, so the count is SEVEN levers and the candidate list "
+            "at the kernel level is EMPTY."),
         applicability={
             "MODEL": NONE, "ARCHITECTURE": NONE,
             "ORGAN": "MLP-shaped GEMV at 89.1M weights, a shape borrowed from the resident",
@@ -1262,7 +1324,8 @@ LAWS: list[dict[str, Any]] = [
             "STORAGE_TIER": NONE, "TOPOLOGY": NONE,
             "WORKLOAD_PHASE": "single-token decode-shaped GEMV, CONTENDED machine"},
         evidence_class="Measured",
-        source_receipts=["receipts/headless/ACCELERATOR_TWO_MORE_LEVERS_DIE.json"],
+        source_receipts=["receipts/headless/ACCELERATOR_TWO_MORE_LEVERS_DIE.json",
+                         "receipts/headless/ACCELERATOR_THE_REDUCTION_TAIL_IS_FREE.json"],
         citations=["receipts/headless/ACCELERATOR_TWO_MORE_LEVERS_DIE.json#P1_OPERAND_REUSE_IS_REFUTED_AND_NOT_NARROWLY",
                    "receipts/headless/ACCELERATOR_TWO_MORE_LEVERS_DIE.json#P3_INSTRUCTION_LATENCY_IS_INDISTINGUISHABLE",
                    "receipts/headless/ACCELERATOR_TWO_MORE_LEVERS_DIE.json#THE_MECHANISM_IS_UNRESOLVED_AND_I_AM_NOT_REACHING_FOR_A_SIXTH_STORY",
@@ -1283,6 +1346,402 @@ LAWS: list[dict[str, Any]] = [
             "changed and neither variant earns a place."),
     ),
     dict(
+        law_id="AKB-THE-INSTANT-IS-THE-COST",
+        statement=(
+            "WHAT A SIMDGROUP ASKS FOR AT ONE INSTANT COSTS 1.11x TO 1.41x, AT AN ADDRESS SET THAT "
+            "IS IDENTICAL LANE BY LANE. Rotating each lane's inner sequence by its own lane index "
+            "leaves the per-lane group SET unchanged -- not the same count, THE SAME GROUPS -- so "
+            "the per-simdgroup loop-wide set, its span, its fragment count and every stride in it "
+            "are identical by construction, and the only thing that moves is WHICH ITERATION asks "
+            "for WHICH: simdgroup 0's first iteration goes from ONE contiguous 1024-byte run to "
+            "SEVENTEEN runs at GROUPS=80, and to THIRTY-TWO at GROUPS=256. Measured on an Apple M3 "
+            "Ultra at 17408x5120 tpr64: 1.2199x, 1.1103x and 1.1668x across three runs losing 12, "
+            "11 and 14 of 14 round-robin rounds, and 1.4095x at 17408x16384 losing 14 of 14, so "
+            "HARDER SHATTERING COSTS MORE and the structural ladder was computed before the timing. "
+            "THIS IS THE FIRST CONFIRMED MECHANISM AFTER TWELVE ELIMINATIONS -- weight bytes, load "
+            "instructions, decode arithmetic, the weight reads at all, operand reuse, ILP, the "
+            "reduction tail, the x reads, displacement (ill-posed), adjacency, fragmentation, "
+            "stride magnitude and span -- and it explains them rather than replacing them, because "
+            "not one of those levers changed what a simdgroup asks for at an instant while the "
+            "shipped kernel already issues ONE contiguous request per iteration. THE CAUSE IS NOT "
+            "NAMED: coalescer width, transaction count and queue occupancy are not separated here. "
+            "AMENDED BY ACCELERATOR_THE_PENALTY_IS_A_STEP: THE WIDTH IS WRONG AND THE COST IS A "
+            "STEP. A block rotation at k=32 leaves EVERY SIMDGROUP ITERATION one contiguous run "
+            "and still costs 1.2434x and 1.2341x at 14 of 14 rounds twice, so the separating "
+            "width is the THREADGROUP, whose request splits from one run to two there; and a "
+            "six-rung granularity ladder is NOT MONOTONE, with k=4 reproducibly worst, so the "
+            "penalty is a STEP at the first departure from a single contiguous request "
+            "and not a gradient in the run count. AMENDED AGAIN BY "
+            "ACCELERATOR_THE_WIDTH_IS_THE_ROW: THE CHARGED WIDTH IS THE ROW, NOT THE "
+            "THREADGROUP. Sweeping the threadgroup width 64/128/256/512 takes the CONTROL from "
+            "one contiguous threadgroup request to eight and costs NOTHING -- 0.9861/0.9936/"
+            "1.0146 and 1.0035/1.0068/1.0029 against tg=64 across two runs, at coin-flip ordinal "
+            "counts -- while the k=32 penalty holds 1.209x to 1.267x at EVERY width, tracking the "
+            "64 lanes of a row, which a lane rotation never lets the threadgroup move. So the "
+            "unit is excluded at 32 lanes and at 128-512 threads and located at 64, WHERE THE "
+            "ROW, THE THREADS-PER-ROW AND A 2-SIMDGROUP PAIR COINCIDE AND ARE NOT SEPARATED. "
+            "NARROWED AGAIN BY ACCELERATOR_THE_UNIT_IS_THE_ROW_AT_ITS_OWN_WIDTH, WHICH SEPARATES "
+            "THEM: THE UNIT IS THE ROW AT WHATEVER WIDTH TPR SETS AND NOT A HARDWARE CONSTANT. "
+            "At tpr=32 a row is ONE simdgroup while a fixed 64-lane hardware width would span TWO "
+            "rows at unrelated addresses, so the two readings predict non-overlapping bands -- "
+            "and the first departure there costs 1.2213x and 1.2456x at 14 of 14 rounds twice, "
+            "inside the row band and twice the hardware-constant band, with per-lane work held "
+            "identical at four groups and 256 elements. The step is sharper at the narrower row: "
+            "two runs costs 22-25% while everything from two runs to thirty-two adds a further "
+            "six points, and the k=4 anomaly does NOT reproduce at the same run count. "
+            "NOTHING IS ADOPTED -- both arms are correct and the rotated one LOSES AT EVERY SHAPE "
+            "MEASURED, so the shipped order already sits at the best point on this axis."),
+        evidence_domain="accelerator", civilization="I-D_ACCELERATOR",
+        machine_scope="Apple M3 Ultra, INSTANCE",
+        representation_scope="ws_rtn_q4_g64",
+        kernel_scope="native matvec under a per-lane iteration rotation",
+        applicability={
+            "MODEL": NONE, "ARCHITECTURE": NONE,
+            "ORGAN": "MLP-shaped GEMV, a shape borrowed from the resident",
+            "REPRESENTATION": "ws_rtn_q4_g64",
+            "SHAPE": "rows=17408 at cols 5120 (1.25 groups/lane) and 16384 (4 groups/lane), group 64, tpr64 at tg128",
+            "MACHINE": M3,
+            "RUNTIME": "MLX mx.fast.metal_kernel JIT, 14 round-robin rounds x 20 reps, three runs at 5120 and one at 16384",
+            "KERNEL": "native matvec with each lane's inner sequence rotated by its own lane index",
+            "STORAGE_TIER": NONE, "TOPOLOGY": NONE,
+            "WORKLOAD_PHASE": "a SINGLY SUBMITTED decode-shaped GEMV, CONTENDED machine"},
+        evidence_class="Measured",
+        source_receipts=["receipts/headless/ACCELERATOR_THE_INSTANT_IS_THE_COST.json",
+                         "receipts/headless/ACCELERATOR_THE_PENALTY_IS_A_STEP.json",
+                         "receipts/headless/ACCELERATOR_THE_WIDTH_IS_THE_ROW.json",
+                         "receipts/headless/ACCELERATOR_THE_UNIT_IS_THE_ROW_AT_ITS_OWN_WIDTH.json"],
+        citations=[
+            "receipts/headless/ACCELERATOR_THE_INSTANT_IS_THE_COST.json#P1_CONFIRMED_PAST_THE_TOP_OF_MY_OWN_BAND",
+            "receipts/headless/ACCELERATOR_THE_INSTANT_IS_THE_COST.json#P2_CONFIRMED_AND_IT_IS_MONOTONE",
+            "receipts/headless/ACCELERATOR_THE_INSTANT_IS_THE_COST.json#WHAT_THIS_MEANS_FOR_THE_EIGHT_DEAD_LEVERS",
+            "receipts/headless/ACCELERATOR_THE_PENALTY_IS_A_STEP.json#P2_IS_THE_DISCRIMINATOR_AND_IT_IS_REFUTED_PAST_MY_FALSIFIER",
+            "receipts/headless/ACCELERATOR_THE_PENALTY_IS_A_STEP.json#WHAT_THE_SIX_RUNGS_SAY_TOGETHER"],
+        status="ACTIVE", superseded_by=None, negative_result=False,
+        confidence_basis=(
+            "THE ANTI-VACUITY CONTROL IS DIFFERENT IN KIND A THIRD TIME: a reordering permutes the "
+            "same terms so every arm MUST be correct, and the replacements are the per-lane sets "
+            "asserted EQUAL lane by lane, the order asserted DIFFERENT so a rotation that silently "
+            "reduced to the shipped order cannot tie and read as a finding, the loop-wide span and "
+            "fragment count asserted EQUAL rather than assumed, and an executing test running the "
+            "generated Metal against a float64 oracle because the previous block watched a mutation "
+            "survive a suite that pinned only its own Python. The reorder is visible in the answer: "
+            "rel_err moves 2.021e-07 to 2.030e-07 and 2.512e-07 to 2.562e-07, independent evidence "
+            "it landed. rot0 is the control and pays the identical runtime modulo in the shipped "
+            "order, measured free at 5120 (1.0997 / 0.9862 / 1.0169, opposite directions). Three "
+            "mutations watched failing. TWO POINTS on the groups-per-lane axis give a DIRECTION and "
+            "not a shape, and the two shapes differ in total work, a confound named rather than "
+            "buried -- what is not confounded is that rot loses to rot0 at each shape separately. "
+            "BENCH_STATE CONTENDED, round-spreads 14.6% to 333.7%, minima the estimator and the "
+            "ordinal counts carrying the verdict. ONE tpr, ONE machine, INSTANCE. No model "
+            "executed, no capability run, no adequacy claim moves."),
+    ),
+    dict(
+        law_id="AKB-LANE-ORDER-COSTS",
+        statement=(
+            "WHICH LANE TOUCHES WHICH ADDRESS COSTS ABOUT 8% AT FULL ELEMENT COUNT, AT AN IDENTICAL "
+            "ADDRESS SET. Permuting lane -> (lane*37) % 64, a bijection that leaves the row's "
+            "footprint, the threadgroup's footprint, the iteration count, the element count and the "
+            "multiset of per-lane iteration counts UNCHANGED, measures 1.0802x and 1.0793x across two "
+            "runs -- AGREEING TO 0.08% -- and loses 27 OF 28 round-robin rounds. This is the FIRST "
+            "NAMED COMPONENT of the footprint mechanism ACCELERATOR_THE_ENTRY_COST_IS_FOOTPRINT left "
+            "unnamed: the simdgroup's 32 lanes touch the SAME addresses at the same instant either "
+            "way, so it is not reach, not capacity and not cold lines -- the memory system cares which "
+            "lane asks. AMENDED BY ACCELERATOR_THE_SIMDGROUP_SPAN_DOUBLES: THAT EXCLUSION RESTED ON "
+            "WRONG ARITHMETIC. The address set is identical over 64 LANES and NOT over a 32-LANE "
+            "SIMDGROUP, the coalescing unit, where the identity spans a CONTIGUOUS 1024 BYTES and "
+            "EVERY permutation spans 2048 -- so reach and capacity were NEVER EXCLUDED and that "
+            "exclusion must not be cited. The MEASUREMENT stands and survives ROTATING THE ARM "
+            "ORDER, which had never been controlled for; the magnitude softens to a 1.03-1.11x "
+            "range over six runs, and a reversal that keeps adjacency costs like a scatter, so "
+            "adjacency is not the variable either. AMENDED AGAIN BY "
+            "ACCELERATOR_SPAN_IS_REFUTED_COALESCING_IS_NOT: THE SPAN CANDIDATE IS WITHDRAWN. A "
+            "BLOCKED PARTITION varies it without a permutation -- same per-lane count lane by "
+            "lane, simd0 cut from 2560 bytes in two fragments to a contiguous 1536 -- and it is "
+            "1.0315x and 1.0303x SLOWER, so span joins fragmentation and stride magnitude as "
+            "EXCLUDED. What survives is PER-ITERATION COALESCING, which no arm had varied: the "
+            "shipped assignment is the only one issuing ONE contiguous request per iteration, "
+            "and at this shape, tpr and machine no other arm has beaten it. A CANDIDATE, "
+            "NOT A CLAIM. IT DOES NOT HAPPEN AT THIN WORK: 0.9911 and 1.0202 in opposite directions, 5 "
+            "and 7 of 14 rounds, so the effect scales with concurrent requests per lane, which is a "
+            "CANDIDATE and not a claim. THE MAGNITUDES COINCIDE WITH THE FOOTPRINT EFFECT (1.082x and "
+            "1.098x) AND THAT IS NOT AN IDENTITY CLAIM, because confining the footprint moves the "
+            "address set AND the ordering together and these arms do not separate them. AND THE BAND "
+            "WAS TOO WIDE TO SEE IT: 1.08x sits INSIDE the pre-registered +-10% indistinguishable "
+            "band, so the pre-registered verdict is CONFIRMED while the effect is real -- the ORDINAL "
+            "rounds-won count and the cross-run agreement are what carry it, never the ratio."),
+        applicability={
+            "MODEL": NONE, "ARCHITECTURE": NONE,
+            "ORGAN": "MLP-shaped GEMV at 89.1M weights, a shape borrowed from the resident",
+            "REPRESENTATION": "ws_rtn_q4_g64",
+            "SHAPE": "rows=17408 cols=5120, group 64, tpr64 at tg128; full and 2-element-per-group work",
+            "MACHINE": M3,
+            "RUNTIME": "MLX mx.fast.metal_kernel JIT, 14 round-robin rounds x 20 reps, two runs",
+            "KERNEL": "native matvec with lanes permuted over groups by an odd multiplier",
+            "STORAGE_TIER": NONE, "TOPOLOGY": NONE,
+            "WORKLOAD_PHASE": "a SINGLY SUBMITTED decode-shaped GEMV, CONTENDED machine"},
+        evidence_class="Measured",
+        source_receipts=["receipts/headless/ACCELERATOR_LANE_ORDER_COSTS.json",
+                         "receipts/headless/ACCELERATOR_THE_SIMDGROUP_SPAN_DOUBLES.json",
+                         "receipts/headless/ACCELERATOR_SPAN_IS_REFUTED_COALESCING_IS_NOT.json"],
+        citations=[
+            "receipts/headless/ACCELERATOR_LANE_ORDER_COSTS.json#P1_LANE_ORDER_COSTS_AT_FULL_ELEMENT_COUNT",
+            "receipts/headless/ACCELERATOR_LANE_ORDER_COSTS.json#WHAT_THIS_NAMES_THAT_WAS_UNNAMED",
+            "receipts/headless/ACCELERATOR_LANE_ORDER_COSTS.json#P2_AND_IT_DOES_NOT_HAPPEN_AT_THIN_WORK",
+            "receipts/headless/ACCELERATOR_LANE_ORDER_COSTS.json#WHAT_THIS_PROBE_STRUCTURALLY_CANNOT_SEPARATE_SAID_IN_ADVANCE",
+            "receipts/headless/ACCELERATOR_THE_SIMDGROUP_SPAN_DOUBLES.json#AND_THE_CENTRAL_ARITHMETIC_OF_MY_PREVIOUS_BLOCK_IS_WRONG",
+            "receipts/headless/ACCELERATOR_THE_SIMDGROUP_SPAN_DOUBLES.json#THE_ORDER_ARTIFACT_I_HAD_NOT_CONTROLLED_FOR",
+            "receipts/headless/ACCELERATOR_SPAN_IS_REFUTED_COALESCING_IS_NOT.json#P1_IS_MINE_AND_IT_IS_REFUTED_PAST_MY_OWN_FALSIFIER",
+            "receipts/headless/ACCELERATOR_SPAN_IS_REFUTED_COALESCING_IS_NOT.json#WHAT_SURVIVES_IS_A_PROPERTY_NO_ARM_HAD_EVER_VARIED"],
+        status="ACTIVE", superseded_by=None, negative_result=False,
+        confidence_basis=(
+            "THE CONTROL IS THE IDENTITY PERMUTATION, NOT THE SHIPPED KERNEL: _lane1 carries the same "
+            "multiply and modulo as _lane37, so the comparison prices ORDER and not two extra "
+            "instructions, and that arithmetic is separately measured free (0.99x / 1.0398x, mixed in "
+            "direction). THE ANTI-VACUITY CONTROL IS DIFFERENT IN KIND from every other probe in this "
+            "family: those were WRONG BY CONSTRUCTION and had to be, while a bijection MUST BE "
+            "CORRECT, so its replacement is a bijection verified over all 64 lanes rather than "
+            "inferred from coprimality, an assertion that the sources differ in EXACTLY ONE LINE, and "
+            "a refusal of even multipliers which would skip and double-visit groups while looking "
+            "plausible. lane37 reads rel_err 1.952e-07 against lane1's 2.021e-07 -- different, which "
+            "is itself evidence the permutation moved which lane accumulates what. Three mutations "
+            "watched failing, including collapsing the permutation to the identity, which would tie "
+            "and read as a finding. BENCH_STATE CONTENDED at 36-261% round-spread; minima are the "
+            "estimator and the ordinal count carries the verdict. ONE permutation, ONE shape, ONE "
+            "machine, INSTANCE. The reordered kernel is CORRECT and therefore a legitimate candidate, "
+            "and it is SLOWER, so nothing is adopted and no shipped kernel changed."),
+    ),
+    dict(
+        law_id="AKB-THE-ENTRY-COST-IS-FOOTPRINT",
+        statement=(
+            "THE LOOP-ENTRY COST OF AN ISOLATED q4_g64 MATVEC IS THE ADDRESS FOOTPRINT, NOT THE LOOP. "
+            "Confining every address to ONE group while holding the loop bound, the iteration count, "
+            "the element count, the scale loads, the reduction, the grid and the stores IDENTICAL "
+            "measures 1.472x and 1.453x at two elements per group, winning 13 of 14 and 12 of 14 "
+            "round-robin rounds -- and the confined arm lands ON the trivial one-store kernel, 0.2116 "
+            "and 0.2061 ms against 0.2144 and 0.1998, so the ENTIRE loop-entry gap "
+            "AKB-ENTERING-THE-LOOP-COSTS-MORE-THAN-RUNNING-IT measured is address spread. AT THE FULL "
+            "ELEMENT COUNT the same variable is worth 1.082x and 1.098x, 11 and 12 of 14 rounds: "
+            "spreading a row's addresses over 2560 bytes instead of 64 costs 8-10% at production "
+            "shape, which is the FIRST LEVER IN EIGHT BLOCKS TO MOVE ANYTHING. It does NOT contradict "
+            "the weight reads measuring free by deletion "
+            "(ACCELERATOR_THE_FLOOR_IS_THE_ELEMENT_NOT_THE_BYTE): that control deleted packed's 2560 "
+            "bytes per row while LEAVING x's 20480 and the scales in place, so the footprint barely "
+            "moved and the effect could not appear -- a control that deletes one of three operands is "
+            "not a footprint experiment. THE CONFINED ARM IS WRONG BY CONSTRUCTION and is NOT A "
+            "CANDIDATE KERNEL; this says what the cost is MADE OF, not that a faster kernel exists. "
+            "The MECHANISM is not named -- cold lines, TLB reach, cache capacity and coalescing are "
+            "NOT separated here."),
+        applicability={
+            "MODEL": NONE, "ARCHITECTURE": NONE,
+            "ORGAN": "MLP-shaped GEMV at 89.1M weights, a shape borrowed from the resident",
+            "REPRESENTATION": "ws_rtn_q4_g64",
+            "SHAPE": "rows=17408 cols=5120, group 64, tpr64 at tg128; 2 and 64 elements per group",
+            "MACHINE": M3,
+            "RUNTIME": "MLX mx.fast.metal_kernel JIT, 14 round-robin rounds x 20 reps, two runs",
+            "KERNEL": "native matvec with every address confined to N groups at fixed work",
+            "STORAGE_TIER": NONE, "TOPOLOGY": NONE,
+            "WORKLOAD_PHASE": "a SINGLY SUBMITTED decode-shaped GEMV, CONTENDED machine"},
+        evidence_class="Measured",
+        source_receipts=["receipts/headless/ACCELERATOR_THE_ENTRY_COST_IS_FOOTPRINT.json"],
+        citations=[
+            "receipts/headless/ACCELERATOR_THE_ENTRY_COST_IS_FOOTPRINT.json#P1_IS_MINE_AND_IT_IS_REFUTED",
+            "receipts/headless/ACCELERATOR_THE_ENTRY_COST_IS_FOOTPRINT.json#P2_footprint_at_FULL_element_count",
+            "receipts/headless/ACCELERATOR_THE_ENTRY_COST_IS_FOOTPRINT.json#HOW_THIS_RECONCILES_WITH_THE_WEIGHT_READS_BEING_FREE_RATHER_THAN_CONTRADICTING_IT",
+            "receipts/headless/ACCELERATOR_THE_ENTRY_COST_IS_FOOTPRINT.json#WHAT_THIS_IS_NOT"],
+        status="ACTIVE", superseded_by=None, negative_result=False,
+        confidence_basis=(
+            "My own P1 predicted INDISTINGUISHABLE within 10% with a 1.15x falsifier, on the strength "
+            "of three earlier free-read results, and it is refuted past that falsifier TWICE. P2 "
+            "predicted the same at full element count and is refuted too. The single-variable claim is "
+            "asserted LINE BY LINE against the base source rather than believed, the index still "
+            "varies with g so the body cannot be hoisted whole, and local at the FULL group count "
+            "reproduces the shipped kernel exactly so the family contains what executes. Every "
+            "confined probe is WRONG at rel_err ~0.98 and separately checked NON-DEGENERATE, because "
+            "a folded loop is also wrong. Three mutations watched failing. BENCH_STATE CONTENDED with "
+            "round-spreads 110-375%, so minima are the estimator and the ORDINAL 13/14 and 12/14 "
+            "rounds-won counts are what carry the verdict rather than the ratios. ONE shape, ONE tpr, "
+            "ONE machine, INSTANCE. No shipped kernel changed."),
+    ),
+    dict(
+        law_id="AKB-ENTERING-THE-LOOP-COSTS-MORE-THAN-RUNNING-IT",
+        statement=(
+            "IN AN ISOLATED q4_g64 MATVEC THE FIRST ELEMENTS OF THE INNER LOOP COST FAR MORE THAN "
+            "THE REST. Going from NO element work to TWO elements per 64-wide group costs "
+            "0.069-0.099 ms across three runs; going from two to SIXTY-FOUR costs 0.006-0.031 ms. "
+            "The first two elements cost 2.2x to 15x what the remaining sixty-two cost, in every "
+            "run, which is roughly 80x to 500x per element -- a WIDE RANGE because both terms are "
+            "differences between small contended quantities, so the DIRECTION transfers and the "
+            "magnitude is a range. THIS NAMES A SHAPE THAT WAS ALREADY MEASURED AND UNEXPLAINED: "
+            "ACCELERATOR_THE_FLOOR_IS_NOT_THE_ELEMENT_EITHER found a FLAT low region, three arms "
+            "within 0.2% across an 8x work range, and called its linear model wrong in shape "
+            "without naming the shape. The cost sits in the FIRST iteration, so widening 2 to 16 "
+            "adds almost nothing and a knee appears only near full width. AND THE REDUCTION IS NOT "
+            "THE TERM: isolated with a single variable it ties three times (-0.0015, +0.0030, "
+            "-0.0009 ms) and priced at IDENTICAL STORE TRAFFIC it is 0.0023 ms = 3.4% of the gap. "
+            "The mechanism of the first-iteration cost is NOT NAMED -- first touch of cold cache "
+            "lines is the obvious candidate and it is recorded as untested."),
+        applicability={
+            "MODEL": NONE, "ARCHITECTURE": NONE,
+            "ORGAN": "MLP-shaped GEMV at 89.1M weights, a shape borrowed from the resident",
+            "REPRESENTATION": "ws_rtn_q4_g64, identical where read",
+            "SHAPE": "rows=17408 cols=5120, group 64, tpr64 at tg128, 2 vs 64 elements per group",
+            "MACHINE": M3,
+            "RUNTIME": "MLX mx.fast.metal_kernel JIT, 14 round-robin rounds x 20 reps, three runs",
+            "KERNEL": "native matvec decomposed into trivial, reduction-only, loop-without-barrier, loop-with-barrier and full",
+            "STORAGE_TIER": NONE, "TOPOLOGY": NONE,
+            "WORKLOAD_PHASE": "a SINGLY SUBMITTED decode-shaped GEMV, CONTENDED machine"},
+        evidence_class="Measured",
+        source_receipts=["receipts/headless/ACCELERATOR_ENTERING_THE_LOOP_COSTS_MORE_THAN_RUNNING_IT.json"],
+        citations=[
+            "receipts/headless/ACCELERATOR_ENTERING_THE_LOOP_COSTS_MORE_THAN_RUNNING_IT.json#THE_RESULT_THIS_BLOCK_DID_NOT_SET_OUT_TO_GET",
+            "receipts/headless/ACCELERATOR_ENTERING_THE_LOOP_COSTS_MORE_THAN_RUNNING_IT.json#P1_THE_REDUCTION_IS_REFUTED_AS_THE_TERM",
+            "receipts/headless/ACCELERATOR_ENTERING_THE_LOOP_COSTS_MORE_THAN_RUNNING_IT.json#claim_boundary"],
+        status="ACTIVE", superseded_by=None, negative_result=False,
+        confidence_basis=(
+            "The named suspect was REFUTED BY ARITHMETIC BEFORE ANY ARM RAN -- 1.39M scale loads "
+            "over 1.11M threads is 1.25 per thread and cannot be a fifth of a kernel -- so no arm "
+            "was spent on it and the correction is recorded as pre-run. My own P1 predicted the "
+            "reduction was 60% of the term and it is refuted three times. A DEFECT IN MY OWN "
+            "DESIGN is what makes the barrier price trustworthy: the obvious from-above arm also "
+            "turns one predicated store per row into an unconditional store from every lane, 64 "
+            "fold, and its disagreement with the from-below route in SIGN is what exposed it; the "
+            "equal-store arm was built for that and the two routes then agree. Every probe is "
+            "WRONG BY CONSTRUCTION and separately checked NON-DEGENERATE, with the reduction-only "
+            "arm's accumulator depending on the ROW as well as the lane because a per-lane "
+            "constant would reduce to the same value everywhere. Three mutations watched failing, "
+            "and a fourth REPORTED SURVIVING because it hit an identical line in a different tail "
+            "-- re-anchored on two lines, then caught. BENCH_STATE CONTENDED with round-spreads to "
+            "375%; minima are the estimator and medians sit beside them. ONE shape, ONE tpr, ONE "
+            "machine, INSTANCE. No shipped kernel changed."),
+    ),
+    dict(
+        law_id="AKB-GRID-LAUNCH-IS-NOT-FREE",
+        statement=(
+            "DISPATCHING MORE THREADGROUPS COSTS TIME EVEN WITH NO WORK TO DO, at about 2-6 "
+            "nanoseconds per threadgroup on this chip. A trivial one-store-per-row kernel holding "
+            "its OUTPUT fixed while the grid sweeps 136 to 8704 threadgroups -- 64x, with the work "
+            "fixed at nothing -- rose 12.0% and 35.4% across two runs, MONOTONICALLY from tpr4 "
+            "upward in both. The direction reproduces and the MAGNITUDE DOES NOT, so the price is "
+            "a range and not a value. THIS DOES NOT CONTRADICT the earlier measurement that tpr1 "
+            "took longer than tpr64 on the REAL kernel: there the wide grid had 64x the "
+            "parallelism to apply to real work and that gain outweighs the launch cost, while here "
+            "there is no work to parallelise so the launch cost is the only effect left. A LAUNCH "
+            "COST IS INVISIBLE WHENEVER THE GRID BUYS PARALLELISM, which is why it took a kernel "
+            "that does nothing to see it. AMENDED BY ACCELERATOR_THE_WIDTH_IS_THE_ROW: THE "
+            "ATTRIBUTION TO THREADGROUPS IS NOT SUPPORTED BY A CLEANER AXIS. That sweep moved "
+            "THREAD COUNT AND THREADGROUP COUNT TOGETHER; holding threads FIXED at 1,114,112 on a "
+            "REAL kernel while the threadgroup count falls 8x, 17408 to 2176, moves NOTHING -- "
+            "1.5% one way in one run and 0.3% the other in the second, the direction BACKWARDS "
+            "for a launch cost in both, bounding it under 0.5 ns per threadgroup against the 2-6 "
+            "reported here. EITHER the price is per THREAD rather than per threadgroup, which the "
+            "confounded axis could not separate, OR real work hides it; BOTH ARE LIVE AND NEITHER "
+            "IS PICKED. The 12.0% and 35.4% rises are NOT withdrawn -- what is withdrawn is "
+            "reading them as a per-threadgroup price."),
+        applicability={
+            "MODEL": NONE, "ARCHITECTURE": NONE, "ORGAN": NONE,
+            "REPRESENTATION": "one f16 scale read per row; no weights read",
+            "SHAPE": "17408 outputs, grid swept 17408 to 1114112 threads at threadgroup 128",
+            "MACHINE": M3,
+            "RUNTIME": "MLX mx.fast.metal_kernel JIT, 14 round-robin rounds x 20 reps, twice",
+            "KERNEL": "a trivial one-store-per-row probe, WRONG BY CONSTRUCTION",
+            "STORAGE_TIER": NONE, "TOPOLOGY": NONE,
+            "WORKLOAD_PHASE": "a SINGLY SUBMITTED dispatch doing no work"},
+        evidence_class="Measured",
+        source_receipts=["receipts/headless/ACCELERATOR_THE_FLOOR_SPLITS_THREE_WAYS.json",
+                         "receipts/headless/ACCELERATOR_THE_WIDTH_IS_THE_ROW.json"],
+        citations=[
+            "receipts/headless/ACCELERATOR_THE_FLOOR_SPLITS_THREE_WAYS.json#P2_THE_GRID_AXIS_AND_MY_PREDICTION_IS_REFUTED",
+            "receipts/headless/ACCELERATOR_THE_FLOOR_SPLITS_THREE_WAYS.json#THE_DECOMPOSITION",
+            "receipts/headless/ACCELERATOR_THE_FLOOR_SPLITS_THREE_WAYS.json#claim_boundary"],
+        status="ACTIVE", superseded_by=None, negative_result=False,
+        confidence_basis=(
+            "My own pre-registered prediction was FLAT WITHIN 15% and it is REFUTED, which is what "
+            "carries this. The arms differ ONLY in launch: all seven return BITWISE IDENTICAL "
+            "output, pinned by a test, so a timing difference cannot be a different computation. "
+            "The probe is WRONG BY CONSTRUCTION at rel_err 1.000 against the float64 oracle -- the "
+            "anti-vacuity condition -- and separately checked NON-DEGENERATE at 17408 of 17408 "
+            "nonzero with 1289 distinct values, because a kernel storing a CONSTANT is also wrong "
+            "and would time an empty dispatch rather than a cheap one. Every buffer is referenced, "
+            "multiplied by zero where unused, because MLX binds the signature from the named "
+            "inputs and an unreferenced buffer would make this a different dispatch from its "
+            "comparands. Three mutations were watched failing. THE GRID IS VARIED BY CHANGING "
+            "THREADS-PER-ROW, so lane count moves with it -- legitimate only because this kernel "
+            "has NO cross-lane structure at all, and a kernel that did would not inherit this. "
+            "BENCH_STATE CONTENDED with round-spreads 14-472%; minima are the estimator and "
+            "medians sit beside them. ONE shape, ONE machine, INSTANCE. No shipped kernel changed."),
+    ),
+    dict(
+        law_id="AKB-AN-ISOLATED-MATVEC-IS-MOSTLY-NOT-ITS-ELEMENTS",
+        statement=(
+            "AT THIS SHAPE 86% OF AN ISOLATED q4_g64 MATVEC'S MEASURED TIME DOES NOT DEPEND ON "
+            "ITS ELEMENT COUNT. Holding the grid, the lane assignment, the group loop, the "
+            "reduction and the stores FIXED and deleting 96.9% of the inner iterations returns "
+            "18%; a five-point sweep over element counts spanning 32x fits a FIXED cost of "
+            "0.2450 ms on minima and 0.2600 on medians, 86.1% and 84.8% of the full kernel, and "
+            "the three narrowest arms read FLAT to 0.2% across an 8x work range so the shape is a "
+            "FLOOR WITH A KNEE rather than a line. Removing each named per-element operation "
+            "confirms it from the other side: half the x reads 0.947x, the multiply 0.979x, and "
+            "EVERY x READ removed 0.987x and 1.019x. This is the SIXTH independent sighting of "
+            "the ~0.16-0.25 ms per-submission floor and the fitted 0.2450 agrees to 0.5% with the "
+            "0.2438 ms intercept ACCELERATOR_EXPERT_BATCH fitted on a different kernel. IT "
+            "EXPLAINS THE SEVEN DEAD LEVERS rather than adding an eighth: fewer bytes, fewer "
+            "loads, cheaper decode, no weight reads, operand reuse, ILP and the whole reduction "
+            "tail could not move a number five parts fixed to one part element work. PRODUCTION "
+            "DOES NOT PAY IT -- 402 weight-carrying dispatches inside a 29.29 ms token average "
+            "0.0729 ms each, 3.4x BELOW this isolated floor, because 964 dispatches share a "
+            "submission. SUBMISSION AND GRID LAUNCH ARE NOT SEPARATED HERE and no claim divides "
+            "the 0.245 ms between them. AMENDED 2026-08-26 by "
+            "receipts/headless/ACCELERATOR_THE_FLOOR_SPLITS_THREE_WAYS.json, WHICH SEPARATES "
+            "THEM: a trivial one-store-per-row probe holding the OUTPUT fixed while the grid "
+            "sweeps 136 to 8704 threadgroups costs 50-64% of the baseline, extrapolates to "
+            "0.152-0.163 ms at zero threadgroups -- landing on the ~0.157 ms submission "
+            "ACCELERATOR_GRAPH_SUBMISSION measured directly -- and RISES 12% and 35% across the "
+            "64x grid, so grid launch is NOT free at about 2-6 ns per threadgroup. THE FIXED "
+            "COST IS NOT ONE THING: submission is the largest term, grid launch is real and was "
+            "invisible to an axis that held the grid fixed, and 18-30% is the GROUP LOOP, its "
+            "1.39M scale loads and the reduction -- per-row work an INNER-loop sweep holds "
+            "constant and therefore deposits in the intercept. A FIXED INTERCEPT IS ONLY AS "
+            "SPECIFIC AS THE AXIS THAT WAS VARIED. The 86%-not-elements measurement STANDS and "
+            "is corroborated, the element term measuring under 15% there by another route."),
+        applicability={
+            "MODEL": NONE, "ARCHITECTURE": NONE,
+            "ORGAN": "MLP-shaped GEMV at 89.1M weights, a shape borrowed from the resident",
+            "REPRESENTATION": "ws_rtn_q4_g64, identical in every arm",
+            "SHAPE": "rows=17408 cols=5120, group 64, tpr64 at tg128, element count swept 32x",
+            "MACHINE": M3, "RUNTIME": "MLX mx.fast.metal_kernel JIT, 14 round-robin rounds x 20 reps",
+            "KERNEL": "native matvec with one per-element operation removed per arm, and an element-count sweep at fixed grid",
+            "STORAGE_TIER": NONE, "TOPOLOGY": NONE,
+            "WORKLOAD_PHASE": "a SINGLY SUBMITTED decode-shaped GEMV, CONTENDED machine -- and the "
+                              "singly-submitted part is the whole point"},
+        evidence_class="Measured",
+        source_receipts=["receipts/headless/ACCELERATOR_THE_FLOOR_IS_NOT_THE_ELEMENT_EITHER.json",
+                         "receipts/headless/ACCELERATOR_THE_FLOOR_SPLITS_THREE_WAYS.json"],
+        citations=[
+            "receipts/headless/ACCELERATOR_THE_FLOOR_IS_NOT_THE_ELEMENT_EITHER.json#THE_FIT_MAKES_IT_A_NUMBER",
+            "receipts/headless/ACCELERATOR_THE_FLOOR_IS_NOT_THE_ELEMENT_EITHER.json#THE_SIXTH_SIGHTING_AND_IT_EXPLAINS_THE_WHOLE_WALL",
+            "receipts/headless/ACCELERATOR_THE_FLOOR_IS_NOT_THE_ELEMENT_EITHER.json#P1_THE_x_READ_DELETION_TIES",
+            "receipts/headless/ACCELERATOR_THE_FLOOR_IS_NOT_THE_ELEMENT_EITHER.json#claim_boundary"],
+        status="ACTIVE", superseded_by=None, negative_result=True,
+        confidence_basis=(
+            "Two routes to the same floor: the regression intercept is 0.2450 ms and the flat "
+            "region's own minimum is 0.2475, 1% apart. The linear model is WRONG IN SHAPE and the "
+            "receipt says so -- R2 0.888 with three arms flat across 8x work -- so the intercept "
+            "is quoted as a floor estimate and the slope is not offered as a per-element cost. "
+            "Every probe is WRONG BY CONSTRUCTION at rel_err 0.98-4.88 against the baseline's "
+            "2.02e-07, which is the anti-vacuity condition, and each is separately checked "
+            "NON-DEGENERATE at 17408 of 17408 nonzero rows because a folded loop is also wrong. "
+            "The widest sweep arm is asserted BYTE-IDENTICAL to the shipped kernel so the family "
+            "cannot exclude what executes, and a template-drift guard raises rather than letting "
+            "a no-op replacement make a probe BE the baseline. Four mutations were watched "
+            "failing -- and two earlier ones reported surviving without ever landing, a shell "
+            "escaping error that reads exactly like a suite that cannot detect them. BENCH_STATE "
+            "CONTENDED with round-spreads 16-271%, so minima and an ordinal rounds-won count sit "
+            "beside every median. ONE shape, ONE tpr, ONE machine, INSTANCE: the 86% share is "
+            "this shape's, and a kernel with far more element work per submission would show "
+            "less, which is the finding rather than a caveat. No shipped kernel changed and no "
+            "production claim moves."),
+    ),
+    dict(
         law_id="AKB-THE-MATVEC-FLOOR-IS-THE-ELEMENT-NOT-THE-BYTE",
         statement=(
             "A REPRESENTATION-NATIVE MATVEC AT THE RESIDENT'S MLP SHAPE IS BOUND BY ITS "
@@ -1299,7 +1758,17 @@ LAWS: list[dict[str, Any]] = [
             "CONSEQUENCE FOR THE INSTRUMENT: effective GB/s is weight_bytes/time, so when "
             "time is set by elements it measures THE REPRESENTATION'S DENSITY AND NOT THE "
             "MACHINE -- the same kernel would report half the GB/s at half the bpw without "
-            "running any faster."),
+            "running any faster."
+            "AMENDED 2026-08-26 by "
+            "receipts/headless/ACCELERATOR_THE_FLOOR_IS_NOT_THE_ELEMENT_EITHER.json: THIS "
+            "LAW'S OWN NAME IS WRONG. The floor is NEITHER the byte NOR the element. Halving "
+            "the x reads reads 0.947x, removing the MULTIPLY 0.979x, and REMOVING EVERY x READ "
+            "0.987x and 1.019x across two runs -- so neither operation the phrase 'one x read "
+            "and one fused multiply-add' names costs anything. Deleting 96.9% of the element "
+            "work at a FIXED GRID returns 18%, and a five-point sweep fits a FIXED cost of "
+            "0.2450 ms = 86.1% of the full kernel, with eight times the element work reading "
+            "FLAT to 0.2%. What the arms here measured is unchanged; what they tied AGAINST was "
+            "mostly not element work. The ~171 MB crossover is WITHDRAWN."),
         applicability={
             "MODEL": NONE, "ARCHITECTURE": NONE,
             "ORGAN": "MLP-shaped GEMV at 89.1M weights, a shape borrowed from the resident",
@@ -1310,7 +1779,8 @@ LAWS: list[dict[str, Any]] = [
             "STORAGE_TIER": NONE, "TOPOLOGY": NONE,
             "WORKLOAD_PHASE": "single-token decode-shaped GEMV, CONTENDED machine"},
         evidence_class="Measured",
-        source_receipts=["receipts/headless/ACCELERATOR_THE_FLOOR_IS_THE_ELEMENT_NOT_THE_BYTE.json"],
+        source_receipts=["receipts/headless/ACCELERATOR_THE_FLOOR_IS_THE_ELEMENT_NOT_THE_BYTE.json",
+                         "receipts/headless/ACCELERATOR_THE_FLOOR_IS_NOT_THE_ELEMENT_EITHER.json"],
         citations=["receipts/headless/ACCELERATOR_THE_FLOOR_IS_THE_ELEMENT_NOT_THE_BYTE.json#BOTH_PREDICTIONS_LAND_ON_THE_WRONG_SIDE",
                    "receipts/headless/ACCELERATOR_THE_FLOOR_IS_THE_ELEMENT_NOT_THE_BYTE.json#AND_THE_DELETION_CONTROL_SAYS_WHAT_THE_WALL_IS",
                    "receipts/headless/ACCELERATOR_THE_FLOOR_IS_THE_ELEMENT_NOT_THE_BYTE.json#AN_INSTRUMENT_CORRECTION_THAT_MATTERS_MORE_THAN_THE_ARMS",
@@ -1649,7 +2119,18 @@ LAWS: list[dict[str, Any]] = [
             "blind at 1 of 6 widths; a barrier on an INCIDENTAL dependency fired in 4 of 48 "
             "and was blind at 4 of 6 -- a 10x difference in loudness. A sweep whose only "
             "control is loud reports a blind list of length 1 and thereby implies a "
-            "resolving power it does not have."),
+            "resolving power it does not have. EXTENDED 2026-08-26 by "
+            "receipts/headless/ACCELERATOR_THE_REDUCTION_TAIL_IS_FREE.json, which "
+            "amends receipts/headless/ACCELERATOR_BARRIER_WINDOW.json: loudness is not "
+            "transferable BETWEEN controls and it is not even STABLE FOR ONE CONTROL. A "
+            "barrier stripped from gravity_native's serial reduction tail -- classified "
+            "LOUD by the shipped prior, no upstream barrier -- fired 8 of 8 in one process "
+            "and 4 of 60 = 0.067 under ground truth in another, with the intact kernel "
+            "wrong 0 of 60. So the asymmetry that receipt encoded, that the loud case is a "
+            "reliable prediction while the quiet one is not, DOES NOT SURVIVE, and a third "
+            "window-closing mechanism is named: THE READING THREAD BEING THE SLOWEST ONE, "
+            "a property of the work distribution across lanes that a prior reading barrier "
+            "structure cannot see."),
         applicability={
             "MODEL": NONE, "ARCHITECTURE": NONE, "ORGAN": NONE,
             "REPRESENTATION": "dense_f32",
@@ -1658,7 +2139,8 @@ LAWS: list[dict[str, Any]] = [
             "KERNEL": "AirNorm (loud control) and AirTopKSample (quiet control)",
             "STORAGE_TIER": NONE, "TOPOLOGY": NONE, "WORKLOAD_PHASE": "correctness grading"},
         evidence_class="Measured",
-        source_receipts=["receipts/headless/ACCELERATOR_QUIET_CONTROL.json"],
+        source_receipts=["receipts/headless/ACCELERATOR_QUIET_CONTROL.json",
+                         "receipts/headless/ACCELERATOR_THE_REDUCTION_TAIL_IS_FREE.json"],
         citations=["receipts/headless/ACCELERATOR_QUIET_CONTROL.json#headline",
                    "receipts/headless/ACCELERATOR_QUIET_CONTROL.json#claim_boundary"],
         status="ACTIVE", superseded_by=None, negative_result=True,

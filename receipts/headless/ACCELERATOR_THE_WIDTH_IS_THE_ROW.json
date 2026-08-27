@@ -1,0 +1,550 @@
+{
+ "receipt": "ACCELERATOR_THE_WIDTH_IS_THE_ROW",
+ "date": "2026-08-26",
+ "obligation": "G046 (also G043, G047)",
+ "question": "does the memory system charge per THREADGROUP request, as the previous block concluded, or per ROW -- swept by the axis that block named against itself",
+ "TWO_PRE_RUN_CORRECTIONS_TO_THE_AXIS_AS_NAMED": {
+  "what_was_asked_for": "ACCELERATOR_THE_PENALTY_IS_A_STEP closed with: 'the step sits between ONE threadgroup request and TWO, so the axis that would price it is the THREADGROUP WIDTH itself: at tg=64 a threadgroup IS one simdgroup and the k=32 arm would have nothing to split, while at tg=256 there are four.'",
+  "correction_1_the_simdgroup_count_is_wrong": "A simdgroup on this chip is 32 lanes -- measured six independent times in this program. tg=64 is TWO simdgroups and tg=256 is EIGHT, not one and four. The sentence counted simdgroups in units of TPR=64 rather than of the hardware width.",
+  "correction_2_the_named_sweep_CANNOT_VARY_WHAT_IT_WANTS_TO_VARY": "The rotation offset is lane/k where lane = gid %% TPR, so the block structure is over THE 64 LANES OF ONE ROW and is INDEPENDENT OF TG. At every tg a row's iteration-0 request is 64/k runs and a simdgroup's is 32/k. Raising tg packs more ROWS into a threadgroup; it gives k=32 nothing more or less to split. Running the sweep as named and reporting 'the ratio is flat across tg' would have been a check whose answer was FIXED BEFORE THE RUN -- the shape sealed at block 29, where mean circular displacement was identically 16.00 for every multiplicative permutation and the question was ill-posed in that family. NO ARM WAS SPENT ON IT.",
+  "what_is_well_posed_instead": "Rows sit at unrelated base addresses and never merge, so a threadgroup holding R rows issues at least R disjoint runs AT EVERY k, the control included. TG therefore varies the THREADGROUP's request count while leaving the ROW's untouched: per-row runs = 64/k, per-threadgroup runs = tg/k. THE CONTROL ALONE ANSWERS THE QUESTION -- it goes from ONE contiguous threadgroup request at tg=64 to EIGHT at tg=512 while its per-row request stays a single run throughout.",
+  "arithmetic_pinned_by_tests": "tools/accelerator/test_threadgroup_width.py, so the framing cannot return"
+ },
+ "P1_IS_MINE_AND_IT_IS_REFUTED_IN_BOTH_RUNS": {
+  "prediction": "ctl@tg128 / ctl@tg64 >= 1.20, matching the k=32 step, because both go from one threadgroup request to two. FALSIFIER: within 5%, or the wrong direction.",
+  "measured_ctl_over_ctl_tg64": {
+   "run_1": {
+    "64": 1.0,
+    "128": 0.9861,
+    "256": 0.9936,
+    "512": 1.0146
+   },
+   "run_2": {
+    "64": 1.0,
+    "128": 1.0035,
+    "256": 1.0068,
+    "512": 1.0029
+   }
+  },
+  "threadgroup_runs_swept": {
+   "64": 1,
+   "128": 2,
+   "256": 4,
+   "512": 8
+  },
+  "rounds_ctl_tg64_beats_the_wider_control": {
+   "run_1": {
+    "128": 4,
+    "256": 5,
+    "512": 4
+   },
+   "run_2": {
+    "128": 5,
+    "256": 10,
+    "512": 9
+   }
+  },
+  "verdict": "REFUTED PAST MY OWN FALSIFIER TWICE. The shipped order is FLAT across an EIGHTFOLD range in threadgroup request count -- 1.0000/0.9861/0.9936/1.0146 and 1.0000/1.0035/1.0068/1.0029 -- and the ordinal counts are coin flips at 4,5,4 and 5,10,9 of 14. A threadgroup issuing EIGHT disjoint runs costs what one issuing ONE costs. THE THREADGROUP IS NOT THE CHARGED UNIT.",
+  "and_the_confound_runs_AGAINST_the_refutation_not_for_it": "ACCELERATOR_THE_FLOOR_SPLITS_THREE_WAYS measured GRID LAUNCH IS NOT FREE at ~2-6 ns per threadgroup, and tg=64 launches 17408 threadgroups against tg=512's 2176 -- so rising tg gets CHEAPER on launch while the threadgroup hypothesis says it gets dearer. A flat control therefore understates the refutation rather than manufacturing it."
+ },
+ "P2_CONFIRMED_AND_IT_NAMES_THE_UNIT": {
+  "prediction": "the WITHIN-TG ratio k32/ctl is ~1.23-1.25x at EVERY tg, because the row's run count never moves. FALSIFIER: it varies by more than 5 points across tg.",
+  "measured_k32_over_ctl": {
+   "run_1": {
+    "64": 1.2327,
+    "128": 1.2674,
+    "256": 1.256,
+    "512": 1.2566
+   },
+   "run_2": {
+    "64": 1.2088,
+    "128": 1.2499,
+    "256": 1.2493,
+    "512": 1.2507
+   }
+  },
+  "rounds_ctl_beats_k32_of_14": {
+   "run_1": {
+    "64": 12,
+    "128": 14,
+    "256": 14,
+    "512": 14
+   },
+   "run_2": {
+    "64": 14,
+    "128": 14,
+    "256": 13,
+    "512": 14
+   }
+  },
+  "verdict": "CONFIRMED. 1.2327/1.2674/1.2560/1.2566 and 1.2088/1.2499/1.2493/1.2507 -- a 3.5 and 4.2 point spread, inside the pre-registered 5 -- while the control it is measured against went from one threadgroup request to eight underneath it. The control wins 109 OF 112 ROUNDS across both runs. THE PENALTY TRACKS THE ROW'S REQUEST COUNT AND IGNORES THE THREADGROUP'S.",
+  "this_comparison_is_CONFOUND_FREE": "both arms at a given tg share the launch geometry EXACTLY -- same thread count, same threadgroup count, same grid -- so unlike P1 nothing about launch can enter it.",
+  "the_tg64_arm_is_the_low_edge_in_both_runs": "1.2327 and 1.2088 against 1.249-1.267 for the other three, which is where the threadgroup boundary coincides with the row boundary. 1.5-4 points, INSIDE the band, reported as an edge and NOT as a finding."
+ },
+ "P3_CONFIRMED": {
+  "prediction": "every arm is a reordering so all MUST be correct, and the control must read the LOWEST rel_err",
+  "measured": {
+   "ctl_rel_err": 2.5123449673932674e-07,
+   "k32_rel_err": 2.5200275896498046e-07,
+   "identical_at_every_tg": true
+  },
+  "note": "the control reads 2.5123e-07 at all four widths and k32 reads 2.5200e-07 at all four -- the reorder is visible IN THE ANSWER, and the answer does not depend on tg at all, which is what a row-packing change must not touch. An executing test pins byte-equality across tg."
+ },
+ "THE_INCIDENTAL_RESULT_A_LAUNCH_COST_THAT_DOES_NOT_APPEAR": {
+  "what_this_sweep_is_that_the_earlier_one_was_not": "the grid-launch price was measured by sweeping threads-per-row on a trivial kernel, which moved THREAD COUNT and THREADGROUP COUNT TOGETHER (136 to 8704 threadgroups AND 17408 to 1114112 threads). This sweep holds the thread count FIXED at 1,114,112 and varies the threadgroup count 8x, 17408 down to 2176, on a REAL kernel.",
+  "measured": "NOTHING. The control moves 1.5% one way in run 1 and 0.3% the other in run 2, and in BOTH runs the direction is backwards for a launch cost -- FEWER threadgroups measured SLOWER. Bounding it by the larger of the two: 0.0069 ms over 15232 removed threadgroups is UNDER 0.5 ns each, against the 2-6 ns the trivial sweep reported.",
+  "what_it_does_and_does_not_settle": "it does NOT withdraw that measurement; it refutes its ATTRIBUTION to threadgroups. Either the price is per THREAD rather than per threadgroup -- which the confounded axis could not separate -- or real work hides it. BOTH ARE LIVE AND NEITHER IS PICKED, because this program's scorecard is five diagnoses written down and two wrong. What is established is that at fixed thread count, threadgroup count is free on this kernel between 2176 and 17408.",
+  "note": "AKB-GRID-LAUNCH-IS-NOT-FREE is AMENDED IN PLACE rather than left to be read as a per-threadgroup price."
+ },
+ "what_this_corrects_in_my_own_previous_block": {
+  "the_measurements_stand": "every number in ACCELERATOR_THE_PENALTY_IS_A_STEP is unchanged: k=32 costs 1.2434x and 1.2341x, the ladder is non-monotone, k=4 is reproducibly worst, 84 of 84 rounds lost.",
+  "the_reading_is_corrected": "that receipt concluded 'THE UNIT THAT MATTERS HERE IS THE THREADGROUP, NOT THE SIMDGROUP'. The first half is now REFUTED BY THE AXIS THAT RECEIPT ITSELF NAMED. Its 'threadgroup runs' column was the ROW's count (64/k) under the wrong label -- at its own tg=128 the control's real threadgroup request was TWO runs, not the ONE the column recorded.",
+  "what_survives_is_the_negative_half": "the simdgroup is still NOT the unit -- k=32 gives every simdgroup one contiguous run and still costs 24%. So across three blocks the unit has been excluded at 32 lanes and at 128-512 threads and located at 64: THE ROW.",
+  "the_row_and_TPR_and_two_simdgroups_COINCIDE_HERE_AND_ARE_NOT_SEPARATED": "at tpr=64 the row, the threads-per-row and a 2-simdgroup pair are the same 64 lanes, and nothing in this block tells them apart. Naming it 'the row' is the description that fits, NOT a claim that a hardware unit of 64 lanes exists.",
+  "amended_in_place": "receipts/headless/ACCELERATOR_THE_PENALTY_IS_A_STEP.json"
+ },
+ "runs": {
+  "run_1": {
+   "ctl@64": {
+    "min_round_ms": 0.4727,
+    "median_round_ms": 0.5302,
+    "round_spread_pct": 293.2,
+    "rel_err": 2.5123449673932674e-07,
+    "threadgroups": 17408,
+    "simd_runs": 1,
+    "row_runs": 1,
+    "threadgroup_runs": 1
+   },
+   "k32@64": {
+    "min_round_ms": 0.5827,
+    "median_round_ms": 0.6364,
+    "round_spread_pct": 19.2,
+    "rel_err": 2.5200275896498046e-07,
+    "threadgroups": 17408,
+    "simd_runs": 1,
+    "row_runs": 2,
+    "threadgroup_runs": 2
+   },
+   "ctl@128": {
+    "min_round_ms": 0.4661,
+    "median_round_ms": 0.5101,
+    "round_spread_pct": 25.5,
+    "rel_err": 2.5123449673932674e-07,
+    "threadgroups": 8704,
+    "simd_runs": 1,
+    "row_runs": 1,
+    "threadgroup_runs": 2
+   },
+   "k32@128": {
+    "min_round_ms": 0.5907,
+    "median_round_ms": 0.6347,
+    "round_spread_pct": 13.1,
+    "rel_err": 2.5200275896498046e-07,
+    "threadgroups": 8704,
+    "simd_runs": 1,
+    "row_runs": 2,
+    "threadgroup_runs": 4
+   },
+   "ctl@256": {
+    "min_round_ms": 0.4696,
+    "median_round_ms": 0.5137,
+    "round_spread_pct": 22.0,
+    "rel_err": 2.5123449673932674e-07,
+    "threadgroups": 4352,
+    "simd_runs": 1,
+    "row_runs": 1,
+    "threadgroup_runs": 4
+   },
+   "k32@256": {
+    "min_round_ms": 0.5898,
+    "median_round_ms": 0.6289,
+    "round_spread_pct": 11.8,
+    "rel_err": 2.5200275896498046e-07,
+    "threadgroups": 4352,
+    "simd_runs": 1,
+    "row_runs": 2,
+    "threadgroup_runs": 8
+   },
+   "ctl@512": {
+    "min_round_ms": 0.4796,
+    "median_round_ms": 0.5121,
+    "round_spread_pct": 15.5,
+    "rel_err": 2.5123449673932674e-07,
+    "threadgroups": 2176,
+    "simd_runs": 1,
+    "row_runs": 1,
+    "threadgroup_runs": 8
+   },
+   "k32@512": {
+    "min_round_ms": 0.6027,
+    "median_round_ms": 0.6379,
+    "round_spread_pct": 62.4,
+    "rel_err": 2.5200275896498046e-07,
+    "threadgroups": 2176,
+    "simd_runs": 1,
+    "row_runs": 2,
+    "threadgroup_runs": 16
+   }
+  },
+  "run_2": {
+   "ctl@64": {
+    "min_round_ms": 0.4707,
+    "median_round_ms": 0.5167,
+    "round_spread_pct": 20.9,
+    "rel_err": 2.5123449673932674e-07,
+    "threadgroups": 17408,
+    "simd_runs": 1,
+    "row_runs": 1,
+    "threadgroup_runs": 1
+   },
+   "k32@64": {
+    "min_round_ms": 0.569,
+    "median_round_ms": 0.6194,
+    "round_spread_pct": 19.1,
+    "rel_err": 2.5200275896498046e-07,
+    "threadgroups": 17408,
+    "simd_runs": 1,
+    "row_runs": 2,
+    "threadgroup_runs": 2
+   },
+   "ctl@128": {
+    "min_round_ms": 0.4724,
+    "median_round_ms": 0.4985,
+    "round_spread_pct": 15.7,
+    "rel_err": 2.5123449673932674e-07,
+    "threadgroups": 8704,
+    "simd_runs": 1,
+    "row_runs": 1,
+    "threadgroup_runs": 2
+   },
+   "k32@128": {
+    "min_round_ms": 0.5904,
+    "median_round_ms": 0.6162,
+    "round_spread_pct": 9.9,
+    "rel_err": 2.5200275896498046e-07,
+    "threadgroups": 8704,
+    "simd_runs": 1,
+    "row_runs": 2,
+    "threadgroup_runs": 4
+   },
+   "ctl@256": {
+    "min_round_ms": 0.4739,
+    "median_round_ms": 0.5062,
+    "round_spread_pct": 293.3,
+    "rel_err": 2.5123449673932674e-07,
+    "threadgroups": 4352,
+    "simd_runs": 1,
+    "row_runs": 1,
+    "threadgroup_runs": 4
+   },
+   "k32@256": {
+    "min_round_ms": 0.5921,
+    "median_round_ms": 0.6159,
+    "round_spread_pct": 267.0,
+    "rel_err": 2.5200275896498046e-07,
+    "threadgroups": 4352,
+    "simd_runs": 1,
+    "row_runs": 2,
+    "threadgroup_runs": 8
+   },
+   "ctl@512": {
+    "min_round_ms": 0.4721,
+    "median_round_ms": 0.5102,
+    "round_spread_pct": 16.9,
+    "rel_err": 2.5123449673932674e-07,
+    "threadgroups": 2176,
+    "simd_runs": 1,
+    "row_runs": 1,
+    "threadgroup_runs": 8
+   },
+   "k32@512": {
+    "min_round_ms": 0.5905,
+    "median_round_ms": 0.6307,
+    "round_spread_pct": 226.6,
+    "rel_err": 2.5200275896498046e-07,
+    "threadgroups": 2176,
+    "simd_runs": 1,
+    "row_runs": 2,
+    "threadgroup_runs": 16
+   }
+  }
+ },
+ "controls": [
+  "every arm is a REORDERING so every arm MUST be CORRECT -- the wrong-by-construction anti-vacuity control is unavailable and these are its replacements",
+  "per-lane group SET asserted equal LANE BY LANE at k=32 and k=64, not as a multiset",
+  "order asserted DIFFERENT at k=32 and asserted NOT DIFFERENT at k=64, so the control cannot silently become an arm",
+  "the control pays the IDENTICAL division and modulo, so a tg comparison is addresses and launch, never arithmetic",
+  "the tg arms asserted to differ ONLY in the scratch-size constant, so a tg comparison is not a different kernel body",
+  "ANTI-VACUITY FOR THE SWEEP ITSELF: the four tg values asserted to produce four DISTINCT threadgroup request counts, or the comparison would be four copies of one arm and a flat result would mean nothing",
+  "run counts COMPUTED before the timing, never fitted after",
+  "arm order ROTATES by round index so no arm holds first position",
+  "an executing test runs the generated Metal against a float64 oracle at two widths and pins byte-equality across them",
+  "the geometry gate is REACHABLE: tg=32 is a legal Metal threadgroup and a legal divisor of this grid, and it is REFUSED because half a row's partials would live in another threadgroup"
+ ],
+ "THREE_MUTATIONS_WATCHED_FAILING_AND_TWO_OF_THEM_DID_NOT_LAND_THE_FIRST_TIME": {
+  "M1_block_divisor_deleted": "lane/k replaced by lane. CAUGHT BY EXACTLY ONE TEST, and not the one anybody would expect: every rotation is a BIJECTION, so a kernel emitting the wrong divisor still computes the right answer and the executing oracle test CANNOT SEE IT, while the set and order tests verify this file's own Python. Only the emitted-source check caught it, and a test now makes that detection deliberate at all seven k rather than incidental.",
+  "M2_the_geometry_gate_disabled": "caught by the tg=32 refusal test, once it landed on the right copy",
+  "M3_the_scratch_size_stops_following_TG": "hardcoded to part[128u]. Caught by four tests including the executing one, which reads rel_err 0.666 at tg=256 -- which is WHY the executing test runs a width above 128 and not two widths below it.",
+  "THE_HARNESS_DEFECT_ITSELF": "M2 and M3 both reported SURVIVING on their first run and NEITHER HAD LANDED: 'if tg %% tpr:' appears THREE times in the module and 'part[%%(TG)du]' THREE times, and a first-occurrence replace hit a different kernel both times. A MUTATION APPLIED TO THE WRONG TEXT READS EXACTLY LIKE A SUITE THAT CANNOT DETECT IT -- the fifth and sixth time this session -- and the harness asserted only that the anchor was PRESENT. It now asserts the anchor is UNIQUE, which is the difference between the two failures."
+ },
+ "claim_boundary": "THE MECHANISM IS STILL NOT NAMED and this block does not name it -- coalescer width, transaction count and queue occupancy remain unseparated, and no third candidate is offered. THE ROW, TPR AND A 2-SIMDGROUP PAIR ARE THE SAME 64 LANES AT tpr=64 AND ARE NOT SEPARATED; the sweep that would separate them changes TPR, which changes the groups per lane, the reduction width and the grid together, so it is CONFOUNDED and NOT RUN -- named so it cannot be read as covered. P1's comparison carries the launch confound and P2's does not; the confound runs against P1's refutation, which is why the refutation is admitted at all. ONE SHAPE (cols=16384, four groups per lane), ONE tpr, ONE machine, INSTANCE, and the production shape cannot run this ladder at all -- at GROUPS=80 a lane holds two groups and k>=16 collapses to the control. BENCH_STATE CONTENDED, recorded not asserted, round-spreads 9.9% to 293%, with contention landing on ctl@64 in run 1 and on ctl@256 in run 2 -- MINIMA are the estimator, medians sit beside them, and the ORDINAL counts carry both verdicts. The operator's job was NOT killed per S032 s24. NO SHIPPED KERNEL CHANGED: every arm is CORRECT, so a reordered kernel is a legitimate candidate in principle and every one of them LOSES, so nothing is adopted and the shipped order remains the best point measured on this axis. No model executed, no capability run, no adequacy claim moves, and PRODUCTION DOES NOT PAY THE SUBMISSION TERM -- unchanged, since 402 weight-carrying dispatches inside a 29.29 ms token average 0.0729 ms each because 964 dispatches share a submission.",
+ "next": "The charged width is 64 lanes and THREE THINGS COINCIDE THERE. Separating them needs TPR, and TPR moves the groups per lane and the reduction width with it -- but the confound is bounded rather than fatal: at tpr=32 with cols=32768 a lane holds the SAME four groups it holds here, so the groups-per-lane axis can be held fixed while the lane count halves, and if the penalty then appears at k=16 rather than k=32 the unit is the row; if it stays at k=32 the unit is 64 lanes of hardware. NOT RUN HERE.",
+ "akb_registration": {
+  "evidence_domain": "accelerator",
+  "civilization": "I-D_ACCELERATOR",
+  "program": "HAWKING ACCELERATOR (S015/S031/S032)",
+  "machine_scope": "Apple M3 Ultra, INSTANCE",
+  "representation_scope": "ws_rtn_q4_g64",
+  "kernel_scope": "native matvec under a per-block lane rotation, swept over threadgroup width",
+  "laws_reconciled": [
+   "AKB-THE-INSTANT-IS-THE-COST",
+   "AKB-GRID-LAUNCH-IS-NOT-FREE"
+  ],
+  "why_declared": "membership must not depend on what this file was named (S032 s13)."
+ },
+ "identities": {
+  "experiment": {
+   "class": "ACCEL-KERNEL",
+   "knowledge_level": "INSTANCE",
+   "question": "is the charged width the threadgroup, as the previous block concluded, or the row"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "ram_gib": 96,
+   "measured_dram_gb_s": 589.73,
+   "bench_state": "CONTENDED",
+   "quiescence": {
+    "run_1": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 12942,
+       "cpu_pct": 71.4,
+       "rss_gib": 52.03,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 32311,
+       "cpu_pct": 25.8,
+       "rss_gib": 0.05,
+       "comm": "/System/Library/Frameworks/Metal.framework/Versions/A/XPCServices/MTLCompilerService.xpc/Contents/MacOS/MTLCompilerService"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 33.0,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 23.4,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 4,
+     "total_cpu_pct": 153.6,
+     "max_rss_gib": 52.03,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    },
+    "run_2": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 12942,
+       "cpu_pct": 100.6,
+       "rss_gib": 52.65,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 32740,
+       "cpu_pct": 56.4,
+       "rss_gib": 1.85,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 29.6,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      }
+     ],
+     "n_contenders": 3,
+     "total_cpu_pct": 186.6,
+     "max_rss_gib": 52.65,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    }
+   }
+  },
+  "device": {
+   "backend": "Metal",
+   "api": "mx.fast.metal_kernel JIT, MLX"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "NO MODEL EXECUTED. 17408x16384 synthetic; the resident's MLP is 17408x5120."
+  },
+  "representation": {
+   "native": "ws_rtn_q4_g64, 4.25 bpw"
+  },
+  "runtime": {
+   "analysis": "tools/accelerator/gravity_native.py::source_operand_probe (rotblkK)",
+   "tests": "tools/accelerator/test_threadgroup_width.py"
+  },
+  "kernel": {
+   "arms": [
+    "ctl@64",
+    "k32@64",
+    "ctl@128",
+    "k32@128",
+    "ctl@256",
+    "k32@256",
+    "ctl@512",
+    "k32@512"
+   ],
+   "tpr": 64,
+   "tg_swept": [
+    64,
+    128,
+    256,
+    512
+   ]
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device, no transfer crossed"
+  }
+ },
+ "bench": {
+  "state": "CONTENDED",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "bench.machine_quiescence, enumerated in-process either side of run 2",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": {
+   "quiet": false,
+   "method": "enumerate",
+   "no_name_filter": true,
+   "thresholds": {
+    "cpu_pct": 20.0,
+    "rss_gib": 2.0
+   },
+   "contenders": [
+    {
+     "pid": 12942,
+     "cpu_pct": 97.0,
+     "rss_gib": 56.69,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 292,
+     "cpu_pct": 36.0,
+     "rss_gib": 0.08,
+     "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores"
+    },
+    {
+     "pid": 739,
+     "cpu_pct": 31.7,
+     "rss_gib": 0.02,
+     "comm": "/usr/libexec/avconferenced"
+    },
+    {
+     "pid": 52616,
+     "cpu_pct": 20.5,
+     "rss_gib": 0.02,
+     "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+    }
+   ],
+   "n_contenders": 4,
+   "total_cpu_pct": 185.2,
+   "max_rss_gib": 56.69,
+   "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+  },
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "DERIVED from a quiescence sample this receipt already carried",
+  "quiescence_before": {
+   "quiet": false,
+   "method": "enumerate",
+   "no_name_filter": true,
+   "thresholds": {
+    "cpu_pct": 20.0,
+    "rss_gib": 2.0
+   },
+   "contenders": [
+    {
+     "pid": 12942,
+     "cpu_pct": 54.7,
+     "rss_gib": 56.7,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 39354,
+     "cpu_pct": 33.5,
+     "rss_gib": 0.79,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 739,
+     "cpu_pct": 33.5,
+     "rss_gib": 0.02,
+     "comm": "/usr/libexec/avconferenced"
+    },
+    {
+     "pid": 39429,
+     "cpu_pct": 25.1,
+     "rss_gib": 0.02,
+     "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared"
+    },
+    {
+     "pid": 52616,
+     "cpu_pct": 24.1,
+     "rss_gib": 0.02,
+     "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+    },
+    {
+     "pid": 39430,
+     "cpu_pct": 24.9,
+     "rss_gib": 0.01,
+     "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared"
+    }
+   ],
+   "n_contenders": 6,
+   "total_cpu_pct": 195.8,
+   "max_rss_gib": 56.7,
+   "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+  }
+ },
+ "suite": {
+  "accelerator_tests_passed": 796,
+  "failed": 0,
+  "new_file": "tools/accelerator/test_threadgroup_width.py (58 tests)",
+  "python": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12 (BY PATH: python3.12 names two interpreters on this machine)",
+  "re_derived_after_the_last_change_in_this_block": true,
+  "ledger": "civilization/validate.py, 0 violations"
+ },
+ "AMENDED_2026-08-26_THE_ROW_IS_CONFIRMED_AND_MY_REL_ERR_INFERENCE_IS_REFUTED": {
+  "by": "receipts/headless/ACCELERATOR_THE_UNIT_IS_THE_ROW_AT_ITS_OWN_WIDTH.json",
+  "the_main_conclusion_is_CONFIRMED_not_corrected": "this receipt located the unit at 64 lanes and named its own remainder -- the row, the threads-per-row and a 2-simdgroup pair coincide there and are not separated. Halving tpr separates them: at tpr=32 a row is ONE simdgroup and a 64-lane hardware width would span TWO rows, so the two hypotheses predict non-overlapping bands. The first departure at tpr=32 costs 1.2213x and 1.2456x at 14 of 14 rounds twice, inside the 1.20-1.30 band H_ROW predicts and twice the 1.02-1.10 H_64LANE predicts. THE UNIT IS THE ROW AT ITS OWN WIDTH, not a hardware constant.",
+  "the_shape_this_receipt_named_for_that_test_was_wrong": "its `next` says 'at tpr=32 with cols=32768 a lane holds the SAME four groups'. It holds SIXTEEN. cols=8192 is the shape that holds groups-per-lane at four, and the sweep was run there.",
+  "and_ONE_INFERENCE_HERE_IS_REFUTED": "P3 of this receipt asserted the control must read the LOWEST rel_err 'since it sums in the shipped association order'. THE MEASUREMENT STANDS -- the control did read 2.5123e-07 against k32's 2.5200e-07 at this shape -- but THE REASONING WAS NEVER SOUND, because one association order has no claim to less rounding error than another. At tpr=32 the control is NOT lowest in either run (2.31162e-07 against k1's 2.29271e-07), and across four shapes the winner changes. What survives is the weaker and true statement: the arms DIFFER, which is independent evidence the reorder landed.",
+  "laws_reconciled": [
+   "AKB-THE-INSTANT-IS-THE-COST"
+  ],
+  "laws_unaffected": [
+   "AKB-GRID-LAUNCH-IS-NOT-FREE"
+  ],
+  "why_unaffected_and_not_reconciled": "AKB-GRID-LAUNCH-IS-NOT-FREE also rests on this receipt, for the bound that threadgroup count is free at fixed thread count. This amendment narrows WHICH WIDTH is charged for a shattered request and refutes an inference about ROUNDING ORDER; it does not touch the launch measurement, the attribution correction or the bound. RECONCILED would be the wrong word -- it means 'reaches the law and the law already carries the correction', and this reaches it NOT AT ALL. One list would conflate a law that survived a correction with a law the correction never met."
+ }
+}

@@ -1,0 +1,408 @@
+{
+ "receipt": "ACCELERATOR_THE_INSTANT_IS_THE_COST",
+ "date": "2026-08-26",
+ "obligation": "G046 (FRONT D) with G047",
+ "question": "ACCELERATOR_SPAN_IS_REFUTED_COALESCING_IS_NOT excluded SPAN by direct variation and left PER-ITERATION COALESCING as the only surviving candidate, naming the probe in its own words: 'hold a simdgroup's loop-wide address set EXACTLY fixed and change only the ORDER its iterations request them.' Twelve axes had died before it -- weight bytes, load instructions, decode arithmetic, the weight reads at all, operand reuse, ILP, the reduction tail, the x reads, displacement (ill-posed), adjacency, fragmentation, stride magnitude and span.",
+ "THE_VARIABLE_AND_IT_IS_THE_CLEANEST_IN_THE_FAMILY": "ROTATE EACH LANE'S INNER SEQUENCE BY ITS OWN LANE INDEX: lane L visits the SAME groups {L, L+TPR, ...} at index g_i = L + ((i + L) mod n) * TPR. COUNTED, NOT ASSUMED: the per-lane group set is IDENTICAL LANE BY LANE -- not the same count, THE SAME GROUPS -- so the per-simdgroup LOOP-WIDE set, its SPAN (2560 bytes), its FRAGMENT COUNT (2) and every stride in it are identical TOO, by construction rather than by arrangement. THE ONLY THING THAT MOVES IS WHICH ITERATION ASKS FOR WHICH: simdgroup 0's FIRST iteration goes from ONE CONTIGUOUS 1024-BYTE RUN to SEVENTEEN RUNS over the same 2560 bytes. This is the FIRST arm in the family where span, fragmentation, stride and the address set are ALL pinned -- a blocked partition moved the set, a permutation moved the simdgroup's span, so neither could isolate the ordering, which is exactly why both blocks had to report a trade rather than an isolation.",
+ "P1_CONFIRMED_PAST_THE_TOP_OF_MY_OWN_BAND": {
+  "predicted": "rotation COSTS 1.03-1.11x, the band the permutations occupied; falsifier INDISTINGUISHABLE",
+  "measured": "1.2199x / 1.1103x / 1.1668x across three runs, losing 12, 11 and 14 of 14 rounds",
+  "verdict": "CONFIRMED, and ABOVE the band twice -- 1.11 sits on its top edge and 1.22 and 1.17 are past it. The rotated arm wins 1 OF 28 ROUNDS in the first two runs and 0 OF 14 in the cleanest. THIS IS THE LARGEST EFFECT IN THIS FAMILY and it is measured at an address set that is not merely comparable but IDENTICAL, so PER-ITERATION COALESCING IS CONFIRMED AS A MECHANISM -- the first confirmation after twelve consecutive eliminations.",
+  "the_reorder_is_visible_in_the_answer": "rel_err moves 2.021e-07 to 2.030e-07 at 5120 and 2.512e-07 to 2.562e-07 at 16384. A reordering permutes the same terms so the sum reassociates, which is INDEPENDENT EVIDENCE THE REORDER LANDED rather than an inference from the source."
+ },
+ "P2_CONFIRMED_AND_IT_IS_MONOTONE": {
+  "predicted": "at four groups per lane the effect is LARGER; falsifier smaller or absent",
+  "structure_first": "iteration 0 goes from 1 run to 17 at GROUPS=80 and to 32 at GROUPS=256, computed before timing",
+  "measured": "1.4095x at cols=16384, 14 OF 14 ROUNDS, against 1.11-1.22x at cols=5120",
+  "verdict": "CONFIRMED. HARDER SHATTERING COSTS MORE, and the structural ladder was computed BEFORE the run so the measured increase is checked against a prediction rather than fitted to it. The 16384 arms are also the cleanest here at 14.6-47.1% round-spread."
+ },
+ "P3_IS_A_TIE_AT_THE_PRODUCTION_SHAPE_AND_DIRECTIONAL_AT_THE_OTHER": {
+  "predicted": "the runtime modulo costs nothing; baseline against rot0 within 3%",
+  "measured": "1.0997 / 0.9862 / 1.0169 at cols=5120 -- OPPOSITE DIRECTIONS, a tie; 0.9492 at cols=16384, one run",
+  "verdict": "CONFIRMED AS A TIE AT 5120, where the opposite signs are what make it one. At 16384 a SINGLE run shows the baseline 5% faster, which is DIRECTIONAL and unreplicated -- and it does not touch P1 or P2, which compare rot against rot0 with BOTH arms paying the identical arithmetic."
+ },
+ "P4_CONFIRMED_AND_THE_CONTROL_IS_DIFFERENT_IN_KIND_A_THIRD_TIME": "A REORDERING PERMUTES THE SAME TERMS, so like the permutations and the blocked partition every arm MUST be CORRECT and the wrong-by-construction anti-vacuity control is unavailable. The replacements: the per-lane sets are asserted EQUAL to the shipped ones LANE BY LANE, the order is asserted DIFFERENT for at least one lane so a rotation that silently reduced to the shipped order cannot TIE AND READ AS A FINDING, the loop-wide span and fragment count are asserted EQUAL rather than assumed, and an executing test runs the generated Metal against a float64 oracle because the previous block watched a mutation survive a suite that pinned only its own Python.",
+ "WHAT_THIS_MEANS_FOR_THE_EIGHT_DEAD_LEVERS": "NOT ONE IS WITHDRAWN AND ALL OF THEM ARE NOW EXPLAINED FROM ONE PLACE: every lever measured on an isolated submission changed BYTES, INSTRUCTIONS or STRUCTURE and NONE OF THEM CHANGED WHAT A SIMDGROUP ASKS FOR AT ONE INSTANT, which the shipped kernel already does optimally at one contiguous request per iteration. The kernel was not mysteriously immune to improvement -- it was already at the optimum of the one axis that moves, and the levers were all pushing on axes that do not. That also says the finding CANNOT BE ADOPTED: the shipped order is the best point on this axis, so this measures WHAT THE COST IS MADE OF and offers no faster kernel.",
+ "runs": {
+  "cols_5120_run_1": {
+   "rel_err": {
+    "rotlane": "2.030e-07",
+    "rot0": "2.021e-07",
+    "baseline": "2.021e-07"
+   },
+   "minima_ms": {
+    "rotlane": 0.306,
+    "rot0": 0.2509,
+    "baseline": 0.2759
+   },
+   "round_spread_pct": {
+    "rotlane": 202.3,
+    "rot0": 55.0,
+    "baseline": 250.8
+   },
+   "over_rot0": {
+    "rotlane": 1.2199,
+    "rot0": 1.0,
+    "baseline": 1.0997
+   },
+   "rounds_rot0_beats_of_14": {
+    "rotlane": 12,
+    "baseline": 7
+   }
+  },
+  "cols_5120_run_2": {
+   "rel_err": {
+    "rotlane": "2.030e-07",
+    "rot0": "2.021e-07",
+    "baseline": "2.021e-07"
+   },
+   "minima_ms": {
+    "rotlane": 0.3183,
+    "rot0": 0.2866,
+    "baseline": 0.2827
+   },
+   "round_spread_pct": {
+    "rotlane": 199.9,
+    "rot0": 126.2,
+    "baseline": 333.7
+   },
+   "over_rot0": {
+    "rotlane": 1.1103,
+    "rot0": 1.0,
+    "baseline": 0.9862
+   },
+   "rounds_rot0_beats_of_14": {
+    "rotlane": 11,
+    "baseline": 10
+   }
+  },
+  "cols_16384": {
+   "rel_err": {
+    "rotlane": "2.562e-07",
+    "rot0": "2.512e-07",
+    "baseline": "2.512e-07"
+   },
+   "minima_ms": {
+    "rotlane": 0.693,
+    "rot0": 0.4917,
+    "baseline": 0.4667
+   },
+   "round_spread_pct": {
+    "rotlane": 14.6,
+    "rot0": 47.1,
+    "baseline": 34.7
+   },
+   "over_rot0": {
+    "rotlane": 1.4095,
+    "rot0": 1.0,
+    "baseline": 0.9492
+   },
+   "rounds_rot0_beats_of_14": {
+    "rotlane": 14,
+    "baseline": 4
+   }
+  }
+ },
+ "per_iteration_structure": {
+  "cols_5120_GROUPS_80": {
+   "shipped_iter0_runs": 1,
+   "rotated_iter0_runs": 17,
+   "loopwide_simd0": {
+    "groups": 48,
+    "span_bytes": 2560,
+    "fragments": 2,
+    "identical_in_both": true
+   }
+  },
+  "cols_16384_GROUPS_256": {
+   "shipped_iter0_runs": 1,
+   "rotated_iter0_runs": 32,
+   "loopwide_identical_in_both": true
+  }
+ },
+ "A_THIRD_RUN_HAPPENED_BY_ACCIDENT_AND_IS_THE_CLEANEST_ONE": "The cols=16384 sweep was produced with a sed whose anchor DID NOT MATCH, so it ran at 5120 again. CAUGHT BY READING THE CONFIG LINE BACK rather than trusting the edit -- the same class as the mutations this session watched fail to land, and the fourth time in two sessions an edit has been checked for landing rather than assumed. The run is KEPT because it is a legitimate third replicate and the CLEANEST of the three at 22-33% round-spread, where it gives 14 OF 14 ROUNDS.",
+ "controls": {
+  "anti_vacuity": "per-lane sets equal LANE BY LANE, order asserted different, loop-wide span and fragments asserted equal",
+  "arithmetic": "rot0 pays the identical runtime modulo in the shipped order, so rot-vs-rot0 is the ORDER alone",
+  "correctness": "every arm CORRECT, and an executing test ties the index formula to the generated Metal",
+  "order": "arm order ROTATES by round index",
+  "drift": "a missing loop fragment RAISES, and an unknown rotation offset is REFUSED by name",
+  "mutations": "three watched failing -- the rotation removed, the offset guard widened, the drift guard dropped"
+ },
+ "claim_boundary": [
+  "THE MECHANISM IS CONFIRMED AND NOT EXPLAINED. What is established is that the PER-INSTANT REQUEST PATTERN costs, at a fixed address set; WHY a shattered request costs -- coalescer width, transaction count, queue occupancy -- is NOT separated here, and naming one would be the untested diagnosis this program has written down five times and found wrong twice.",
+  "TWO POINTS ON THE GROUPS-PER-LANE AXIS (1.25 and 4), so the ladder has a DIRECTION and not a shape; the two shapes also differ in total work, which is not held fixed and is a confound named rather than buried -- what is not confounded is that rot loses to rot0 AT EACH SHAPE SEPARATELY.",
+  "BENCH_STATE CONTENDED, round-spreads 14.6% to 333.7%, minima the estimator with medians beside them and the ORDINAL counts carrying the verdict; the operator's job NOT killed per S032 s24.",
+  "ONE tpr, ONE machine, INSTANCE. NO SHIPPED KERNEL CHANGED -- both arms are CORRECT so a reordered kernel is a legitimate candidate in principle, and it is SLOWER at every shape, so nothing is adopted and the shipped order is already the best point on this axis.",
+  "No model executed, no capability run, no adequacy claim moves; and PRODUCTION DOES NOT PAY THE SUBMISSION TERM, unchanged -- 402 weight-carrying dispatches inside a 29.29 ms token average 0.0729 ms each because 964 dispatches share a submission."
+ ],
+ "next": "The mechanism is confirmed and its CAUSE is open. The axis that would separate a coalescer width from a transaction count is the GRANULARITY of the shattering: rotate by lane MOD k for k = 2, 4, 8, 32, which sweeps the run count continuously from 2 to 32 at the same identical address set. NOT RUN HERE.",
+ "akb_registration": {
+  "evidence_domain": "accelerator",
+  "civilization": "I-D_ACCELERATOR",
+  "program": "HAWKING ACCELERATOR (S015/S031/S032)",
+  "machine_scope": "Apple M3 Ultra, INSTANCE",
+  "representation_scope": "ws_rtn_q4_g64",
+  "kernel_scope": "native matvec under a per-lane iteration rotation",
+  "why_declared": "membership must not depend on what this file was named (S032 s13)."
+ },
+ "identities": {
+  "experiment": {
+   "class": "ACCEL-KERNEL",
+   "knowledge_level": "INSTANCE",
+   "question": "does the per-instant request pattern cost, at a fixed loop-wide address set"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "ram_gib": 96,
+   "measured_dram_gb_s": 589.73,
+   "bench_state": "CONTENDED",
+   "quiescence": {
+    "cols_5120_run_1": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 12942,
+       "cpu_pct": 118.7,
+       "rss_gib": 50.69,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 26481,
+       "cpu_pct": 61.5,
+       "rss_gib": 1.94,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 26509,
+       "cpu_pct": 27.4,
+       "rss_gib": 0.04,
+       "comm": "/System/Library/Frameworks/Metal.framework/Versions/A/XPCServices/MTLCompilerService.xpc/Contents/MacOS/MTLCompilerService"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 32.6,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 23.4,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 5,
+     "total_cpu_pct": 263.6,
+     "max_rss_gib": 50.69,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    },
+    "cols_5120_run_2": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 12942,
+       "cpu_pct": 93.2,
+       "rss_gib": 51.12,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 26610,
+       "cpu_pct": 96.2,
+       "rss_gib": 1.94,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 728,
+       "cpu_pct": 31.6,
+       "rss_gib": 1.26,
+       "comm": "/Applications/OrbStack.app/Contents/Frameworks/OrbStack Helper.app/Contents/MacOS/OrbStack Helper"
+      },
+      {
+       "pid": 180,
+       "cpu_pct": 20.1,
+       "rss_gib": 0.03,
+       "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 35.7,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 23.8,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 6,
+     "total_cpu_pct": 300.6,
+     "max_rss_gib": 51.12,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    },
+    "cols_16384": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 12942,
+       "cpu_pct": 107.6,
+       "rss_gib": 52.39,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 26979,
+       "cpu_pct": 42.7,
+       "rss_gib": 1.85,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 27023,
+       "cpu_pct": 41.0,
+       "rss_gib": 0.05,
+       "comm": "/System/Library/Frameworks/Metal.framework/Versions/A/XPCServices/MTLCompilerService.xpc/Contents/MacOS/MTLCompilerService"
+      },
+      {
+       "pid": 180,
+       "cpu_pct": 20.6,
+       "rss_gib": 0.03,
+       "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 36.3,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 23.3,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 6,
+     "total_cpu_pct": 271.5,
+     "max_rss_gib": 52.39,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    }
+   }
+  },
+  "device": {
+   "backend": "Metal",
+   "api": "mx.fast.metal_kernel JIT, MLX"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "NO MODEL EXECUTED. 17408x5120 borrowed from the resident's MLP; synthetic weights."
+  },
+  "representation": {
+   "native": "ws_rtn_q4_g64, 4.25 bpw"
+  },
+  "runtime": {
+   "analysis": "tools/accelerator/gravity_native.py::source_operand_probe (rotlane, rot0)",
+   "tests": "tools/accelerator/test_iteration_order.py"
+  },
+  "kernel": {
+   "arms": [
+    "rotlane",
+    "rot0",
+    "baseline"
+   ],
+   "tpr": 64,
+   "tg": 128
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device, no transfer crossed"
+  }
+ },
+ "bench": {
+  "state": "CONTENDED",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": {
+   "quiet": false,
+   "method": "enumerate",
+   "no_name_filter": true,
+   "thresholds": {
+    "cpu_pct": 20.0,
+    "rss_gib": 2.0
+   },
+   "contenders": [
+    {
+     "pid": 12942,
+     "cpu_pct": 107.6,
+     "rss_gib": 52.39,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 26979,
+     "cpu_pct": 42.7,
+     "rss_gib": 1.85,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 27023,
+     "cpu_pct": 41.0,
+     "rss_gib": 0.05,
+     "comm": "/System/Library/Frameworks/Metal.framework/Versions/A/XPCServices/MTLCompilerService.xpc/Contents/MacOS/MTLCompilerService"
+    },
+    {
+     "pid": 180,
+     "cpu_pct": 20.6,
+     "rss_gib": 0.03,
+     "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+    },
+    {
+     "pid": 739,
+     "cpu_pct": 36.3,
+     "rss_gib": 0.02,
+     "comm": "/usr/libexec/avconferenced"
+    },
+    {
+     "pid": 52616,
+     "cpu_pct": 23.3,
+     "rss_gib": 0.02,
+     "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+    }
+   ],
+   "n_contenders": 6,
+   "total_cpu_pct": 271.5,
+   "max_rss_gib": 52.39,
+   "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+  },
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "DERIVED from a quiescence sample this receipt already carried"
+ },
+ "THE_AKB_REFUSED_MY_WORDING_ON_THE_SAME_ARM_AS_LAST_BLOCK": "The full suite refused 15 tests twice over: once for a MISSING APPLICABILITY FIELD -- the eleven axes a law must be scoped on, which the schema requires precisely so a law cannot travel further than its evidence -- and once for 'the rotated one is slower at every shape', A BARE PRESENT-TENSE COMPARATIVE. That is THE SAME ARM that caught me one block ago, and 'at every shape' READS like a scope while naming no shape, which is exactly the sentence the rule exists to stop: it generalises over shapes not measured. Fixed to 'LOSES AT BOTH SHAPES MEASURED', which is what the two points support. Four independent rules in this knowledge base have now each caught their author, and one of them has done it twice.",
+ "AMENDED_2026-08-26_THE_WIDTH_IS_WRONG_AND_THE_COST_IS_A_STEP": {
+  "amending_receipt": "receipts/headless/ACCELERATOR_THE_PENALTY_IS_A_STEP.json",
+  "what_is_withdrawn": "Two readings, not the measurements. (1) PER-ITERATION COALESCING was stated at SIMDGROUP granularity, and a block rotation at k=32 gives EVERY SIMDGROUP ITERATION ONE CONTIGUOUS RUN while still costing 1.2434x and 1.2341x at 14 of 14 rounds in both runs -- so a perfectly coalesced simdgroup request is not enough, and the width that separates the arms is the THREADGROUP, whose request splits from one run to two at exactly that rung. (2) The two points here, 17 runs at 1.11-1.22x and 32 runs at 1.41x, read as a GRADIENT in the run count; a six-rung ladder refuses one -- it is NOT MONOTONE, with k=4 reproducibly the worst rung in both runs, and the penalty is a STEP at the first departure from a single contiguous threadgroup request rather than a quantity proportional to the shattering.",
+  "what_stands": "EVERY MEASUREMENT. Rotation costs, the address set was identical lane by lane, the reorder is visible in rel_err, and the shipped order is still the best point measured on this axis -- the amending block loses to its control at every one of six rungs across two runs, 84 of 84 rounds.",
+  "laws_reconciled": [
+   "AKB-THE-INSTANT-IS-THE-COST"
+  ]
+ }
+}

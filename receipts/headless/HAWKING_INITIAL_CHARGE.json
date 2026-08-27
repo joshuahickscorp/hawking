@@ -1,0 +1,740 @@
+{
+  "background_missions": {
+    "governed_exclusive": [
+      "Qwen27 protected complete-token benchmark",
+      "Flash dense-vs-NF organ/full-model A/B"
+    ],
+    "safe_default": [
+      "research/receipt mining/architecture census/source verification/tests",
+      "ModelLake supervision and verified resumable acquisition"
+    ]
+  },
+  "charge_id": "HAWKING_INITIAL_CHARGE",
+  "claim_boundary": "This is a durable provider-neutral work charge and queue seed. It does not certify model quality, accelerator performance, FPGA hardware, ModelLake completeness, or sovereignty.",
+  "created_at": 1787799105.4393249,
+  "disk_is_authority": true,
+  "goal": "HAWKING_INITIAL_CHARGE: execute provider-neutral Hawking science across Qwen3.8-27B control, Flash-Next Gravity/Accelerator, ModelLake, FPGA preboard, evidence/negative science, and HCLI self-repair only when a real failure exposes it. Disk state, typed tools, and fixed verifiers remain authoritative.",
+  "mission_id": "8a9ae0ed-6ff4-4c8f-b08b-53943b20307d",
+  "mission_state_path": "/Users/scammermike/Downloads/hawking/.hcli/initial-charge/.hcli/mission/state.json",
+  "next_action": "recover this Mission from mission_state_path, select the next dependency-ready WorkUnit, route by role/provider policy, and require its fixed verifier",
+  "provider_neutral": true,
+  "receipts": [
+    "receipts/headless/HCLI_ACCELERATOR_REGRESSION.json",
+    "receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json",
+    "receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json",
+    "receipts/headless/NOETIC_DISPATCH_FUSION.json"
+  ],
+  "refreshed_at": 1787800373.483317,
+  "repo_root": "/Users/scammermike/Downloads/hawking",
+  "retry_state": {
+    "continue": "AgentOS(/Users/scammermike/Downloads/hawking/.hcli/initial-charge).continue_mission()",
+    "policy": "Mission/Scheduler retry and repair budgets remain authoritative",
+    "reconstruct": "AgentOS(/Users/scammermike/Downloads/hawking/.hcli/initial-charge).recover_mission()"
+  },
+  "schema": "hcli.agentos.initial_charge.v1",
+  "status": "IDEMPOTENT_EXISTING_CHARGE",
+  "stop_conditions": [
+    "verifier integrity failure",
+    "canonical deletion or corruption request",
+    "capacity headroom or protected-path violation",
+    "capability regression or hidden fallback",
+    "hardware/auth/payment escalation"
+  ],
+  "units": [
+    {
+      "allowed_mutations": [
+        "ModelLake partial download and verification only",
+        "receipts/headless/**"
+      ],
+      "dependencies": [],
+      "evidence": [
+        {
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json",
+          "present": true,
+          "relative_path": "receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json",
+          "sha256": "e266b8a18167699b4700984c54e4b2f2b69f007596ca05b7c77635b0548faed9"
+        }
+      ],
+      "evidence_paths": [
+        "receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json"
+      ],
+      "id": "P0-A-modellake-supervision",
+      "next_experiment": "Re-census the mounted ModelLake, then supervise the pinned Flash-Next acquisition with resumable hash verification and atomic publication.",
+      "priority": "P0",
+      "provider_neutral": true,
+      "receipts": [
+        "receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json"
+      ],
+      "required_verifier": "exact pinned revision, per-file size/hash, atomic final publication, and no protected-path mutation",
+      "resource_class": "IO_HEAVY",
+      "retry_state": {
+        "attempts": 0,
+        "max_attempts": 3,
+        "policy": "rerun non-adoptable unit after verifier-visible failure",
+        "status": "ready"
+      },
+      "role": "model_lake_supervisor",
+      "stop_condition": "Stop before deletion, capacity headroom below the protected threshold, hash mismatch, or an unrecognized acquisition process.",
+      "workunit": {
+        "assigned_backend": null,
+        "assigned_runtime": null,
+        "attempts": 0,
+        "backend_task_id": null,
+        "classification": null,
+        "content_hash": "3793c5b2a85e9627a38fbcfa6a6715750ee85325426241d9dcb1bbd542632692",
+        "dependencies": [],
+        "description": "Re-census the mounted ModelLake, then supervise the pinned Flash-Next acquisition with resumable hash verification and atomic publication. Required verifier: exact pinned revision, per-file size/hash, atomic final publication, and no protected-path mutation Stop condition: Stop before deletion, capacity headroom below the protected threshold, hash mismatch, or an unrecognized acquisition process.",
+        "effect_class": "READ_ONLY",
+        "failure_context": null,
+        "finished_at": null,
+        "id": "P0-A-modellake-supervision",
+        "preferred_backend": null,
+        "provider": null,
+        "ready_at": 1787799105.43663,
+        "repair_depth": 0,
+        "repair_exhausted": false,
+        "repair_reason": null,
+        "repair_root": null,
+        "repairs": null,
+        "resource_class": "IO_HEAVY",
+        "role": "model_lake_supervisor",
+        "running_at": null,
+        "status": "ready",
+        "verification": null,
+        "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json | grep -q e266b8a18167699b4700984c54e4b2f2b69f007596ca05b7c77635b0548faed9",
+        "workspace": "/Users/scammermike/Downloads/hawking/.hcli/initial-charge"
+      }
+    },
+    {
+      "allowed_mutations": [
+        "receipts/headless/**",
+        "bounded metadata indexes"
+      ],
+      "dependencies": [],
+      "evidence": [
+        {
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json",
+          "present": true,
+          "relative_path": "receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json",
+          "sha256": "0facd9022cb0d3f964618bdadd132ec6e142b2b30a5b614235583a208e8c5106"
+        }
+      ],
+      "evidence_paths": [
+        "receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json"
+      ],
+      "id": "P0-B-flash-architecture-census",
+      "next_experiment": "Extend the pinned metadata organ graph as verified files arrive; keep bytes, active bytes/token, state bytes/token, FLOPs, and dispatches explicitly unknown until measured.",
+      "priority": "P0",
+      "provider_neutral": true,
+      "receipts": [
+        "receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json"
+      ],
+      "required_verifier": "pinned revision, architecture fingerprint, tensor-index identity, and explicit unmeasured physical fields",
+      "resource_class": "STATIC_ANALYSIS",
+      "retry_state": {
+        "attempts": 0,
+        "max_attempts": 3,
+        "policy": "rerun non-adoptable unit after verifier-visible failure",
+        "status": "ready"
+      },
+      "role": "architecture_science",
+      "stop_condition": "Stop on pinned identity mismatch or any attempt to infer physical execution from metadata alone.",
+      "workunit": {
+        "assigned_backend": null,
+        "assigned_runtime": null,
+        "attempts": 0,
+        "backend_task_id": null,
+        "classification": null,
+        "content_hash": "da5250dfd4c692e2a6d71e0ccadf7a9db9f9bb894ddfa52199943d510defdfb1",
+        "dependencies": [],
+        "description": "Extend the pinned metadata organ graph as verified files arrive; keep bytes, active bytes/token, state bytes/token, FLOPs, and dispatches explicitly unknown until measured. Required verifier: pinned revision, architecture fingerprint, tensor-index identity, and explicit unmeasured physical fields Stop condition: Stop on pinned identity mismatch or any attempt to infer physical execution from metadata alone.",
+        "effect_class": "READ_ONLY",
+        "failure_context": null,
+        "finished_at": null,
+        "id": "P0-B-flash-architecture-census",
+        "preferred_backend": null,
+        "provider": null,
+        "ready_at": 1787799105.436631,
+        "repair_depth": 0,
+        "repair_exhausted": false,
+        "repair_reason": null,
+        "repair_root": null,
+        "repairs": null,
+        "resource_class": "STATIC_ANALYSIS",
+        "role": "architecture_science",
+        "running_at": null,
+        "status": "ready",
+        "verification": null,
+        "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json | grep -q 0facd9022cb0d3f964618bdadd132ec6e142b2b30a5b614235583a208e8c5106",
+        "workspace": "/Users/scammermike/Downloads/hawking/.hcli/initial-charge"
+      }
+    },
+    {
+      "allowed_mutations": [
+        "receipts/headless/**"
+      ],
+      "dependencies": [],
+      "evidence": [
+        {
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_ACCELERATOR_REGRESSION.json",
+          "present": true,
+          "relative_path": "receipts/headless/HCLI_ACCELERATOR_REGRESSION.json",
+          "sha256": "3c834a7b1fbd86a3d02f4ec17cafe6f6e43a0848f9354310ce5d5fb498cf6f80"
+        },
+        {
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/NOETIC_DISPATCH_FUSION.json",
+          "present": true,
+          "relative_path": "receipts/headless/NOETIC_DISPATCH_FUSION.json",
+          "sha256": "21010338a9682e95d9ec363452aec094822a01ba4c8f232d589ea7a84b30a59a"
+        }
+      ],
+      "evidence_paths": [
+        "receipts/headless/HCLI_ACCELERATOR_REGRESSION.json",
+        "receipts/headless/NOETIC_DISPATCH_FUSION.json"
+      ],
+      "id": "P0-C-precedent-and-transfer-index",
+      "next_experiment": "Mine prior Hawking receipts into the Flash precedent map and the Qwen27-versus-Flash transfer map; receipts outrank prose summaries.",
+      "priority": "P0",
+      "provider_neutral": true,
+      "receipts": [
+        "receipts/headless/HCLI_ACCELERATOR_REGRESSION.json",
+        "receipts/headless/NOETIC_DISPATCH_FUSION.json"
+      ],
+      "required_verifier": "source receipt presence, source hash, classification boundary, and deterministic map fingerprint",
+      "resource_class": "CPU_HEAVY",
+      "retry_state": {
+        "attempts": 0,
+        "max_attempts": 3,
+        "policy": "rerun non-adoptable unit after verifier-visible failure",
+        "status": "ready"
+      },
+      "role": "evidence_science",
+      "stop_condition": "Stop on unreadable authority receipts or a classification that would turn an architecture-specific result into a universal law.",
+      "workunit": {
+        "assigned_backend": null,
+        "assigned_runtime": null,
+        "attempts": 0,
+        "backend_task_id": null,
+        "classification": null,
+        "content_hash": "3fc8f39267b976cf84b967f2c5fca43887166799e9105ff4193607c3dd0b0556",
+        "dependencies": [],
+        "description": "Mine prior Hawking receipts into the Flash precedent map and the Qwen27-versus-Flash transfer map; receipts outrank prose summaries. Required verifier: source receipt presence, source hash, classification boundary, and deterministic map fingerprint Stop condition: Stop on unreadable authority receipts or a classification that would turn an architecture-specific result into a universal law.",
+        "effect_class": "READ_ONLY",
+        "failure_context": null,
+        "finished_at": null,
+        "id": "P0-C-precedent-and-transfer-index",
+        "preferred_backend": null,
+        "provider": null,
+        "ready_at": 1787799105.436632,
+        "repair_depth": 0,
+        "repair_exhausted": false,
+        "repair_reason": null,
+        "repair_root": null,
+        "repairs": null,
+        "resource_class": "CPU_HEAVY",
+        "role": "evidence_science",
+        "running_at": null,
+        "status": "ready",
+        "verification": null,
+        "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_ACCELERATOR_REGRESSION.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_ACCELERATOR_REGRESSION.json | grep -q 3c834a7b1fbd86a3d02f4ec17cafe6f6e43a0848f9354310ce5d5fb498cf6f80 && test -f /Users/scammermike/Downloads/hawking/receipts/headless/NOETIC_DISPATCH_FUSION.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/NOETIC_DISPATCH_FUSION.json | grep -q 21010338a9682e95d9ec363452aec094822a01ba4c8f232d589ea7a84b30a59a",
+        "workspace": "/Users/scammermike/Downloads/hawking/.hcli/initial-charge"
+      }
+    },
+    {
+      "allowed_mutations": [
+        "temporary benchmark artifacts",
+        "receipts/headless/**",
+        "native kernel source only with an explicit candidate receipt"
+      ],
+      "dependencies": [
+        "P0-C-precedent-and-transfer-index"
+      ],
+      "evidence": [
+        {
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_ACCELERATOR_REGRESSION.json",
+          "present": true,
+          "relative_path": "receipts/headless/HCLI_ACCELERATOR_REGRESSION.json",
+          "sha256": "3c834a7b1fbd86a3d02f4ec17cafe6f6e43a0848f9354310ce5d5fb498cf6f80"
+        },
+        {
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/NOETIC_DISPATCH_FUSION.json",
+          "present": true,
+          "relative_path": "receipts/headless/NOETIC_DISPATCH_FUSION.json",
+          "sha256": "21010338a9682e95d9ec363452aec094822a01ba4c8f232d589ea7a84b30a59a"
+        }
+      ],
+      "evidence_paths": [
+        "receipts/headless/HCLI_ACCELERATOR_REGRESSION.json",
+        "receipts/headless/NOETIC_DISPATCH_FUSION.json"
+      ],
+      "id": "P0-D-qwen27-regression",
+      "next_experiment": "Use a protected, quiesced native A/B to explain the sealed resident's historical ~34 TPS versus current ~24 TPS, then test one measured complete-token hypothesis at a time.",
+      "priority": "P0",
+      "provider_neutral": true,
+      "receipts": [
+        "receipts/headless/HCLI_ACCELERATOR_REGRESSION.json"
+      ],
+      "required_verifier": "binary/artifact/tokenizer identity, complete wall/GPU timing, dispatches, fallbacks, capability, quiescence, and reproducible A/B receipt",
+      "resource_class": "GPU_EXCLUSIVE",
+      "retry_state": {
+        "attempts": 0,
+        "max_attempts": 3,
+        "policy": "rerun non-adoptable unit after verifier-visible failure",
+        "status": "pending"
+      },
+      "role": "accelerator_science",
+      "stop_condition": "Stop on fallback, capability deviation, contaminated benchmark state, missing identity, or any attempt to promote raw TPS as accepted TPS.",
+      "workunit": {
+        "assigned_backend": null,
+        "assigned_runtime": null,
+        "attempts": 0,
+        "backend_task_id": null,
+        "classification": null,
+        "content_hash": "675e4640aeb5d6bab223c3c1d1660ca9624f35a93e229757c2d4161ff18170c6",
+        "dependencies": [
+          "P0-C-precedent-and-transfer-index"
+        ],
+        "description": "Use a protected, quiesced native A/B to explain the sealed resident's historical ~34 TPS versus current ~24 TPS, then test one measured complete-token hypothesis at a time. Required verifier: binary/artifact/tokenizer identity, complete wall/GPU timing, dispatches, fallbacks, capability, quiescence, and reproducible A/B receipt Stop condition: Stop on fallback, capability deviation, contaminated benchmark state, missing identity, or any attempt to promote raw TPS as accepted TPS.",
+        "effect_class": "READ_ONLY",
+        "failure_context": null,
+        "finished_at": null,
+        "id": "P0-D-qwen27-regression",
+        "preferred_backend": null,
+        "provider": null,
+        "ready_at": null,
+        "repair_depth": 0,
+        "repair_exhausted": false,
+        "repair_reason": null,
+        "repair_root": null,
+        "repairs": null,
+        "resource_class": "GPU_EXCLUSIVE",
+        "role": "accelerator_science",
+        "running_at": null,
+        "status": "pending",
+        "verification": null,
+        "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_ACCELERATOR_REGRESSION.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_ACCELERATOR_REGRESSION.json | grep -q 3c834a7b1fbd86a3d02f4ec17cafe6f6e43a0848f9354310ce5d5fb498cf6f80 && test -f /Users/scammermike/Downloads/hawking/receipts/headless/NOETIC_DISPATCH_FUSION.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/NOETIC_DISPATCH_FUSION.json | grep -q 21010338a9682e95d9ec363452aec094822a01ba4c8f232d589ea7a84b30a59a",
+        "workspace": "/Users/scammermike/Downloads/hawking/.hcli/initial-charge"
+      }
+    },
+    {
+      "allowed_mutations": [
+        "temporary candidate artifacts",
+        "receipts/headless/**"
+      ],
+      "dependencies": [
+        "P0-A-modellake-supervision",
+        "P0-B-flash-architecture-census",
+        "P0-C-precedent-and-transfer-index"
+      ],
+      "evidence": [
+        {
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json",
+          "present": true,
+          "relative_path": "receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json",
+          "sha256": "0facd9022cb0d3f964618bdadd132ec6e142b2b30a5b614235583a208e8c5106"
+        },
+        {
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_PRECEDENT_MAP.json",
+          "present": true,
+          "relative_path": "receipts/headless/FLASH_NEXT_PRECEDENT_MAP.json",
+          "sha256": "567f459e82cbeb8a6d904bd2ac1b822019bac099884f7f69a74ff7d8fc971db0"
+        }
+      ],
+      "evidence_paths": [
+        "receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json",
+        "receipts/headless/FLASH_NEXT_PRECEDENT_MAP.json"
+      ],
+      "id": "P1-A-flash-gravity-candidates",
+      "next_experiment": "Search expert-axis sharing/bases/residuals, n-gram factorized lookup/generation, DeltaNet state representation, sparse attention routing, and MTP accounting.",
+      "priority": "P1",
+      "provider_neutral": true,
+      "receipts": [
+        "receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json"
+      ],
+      "required_verifier": "complete-system EBPW ledger including all required byte categories and capability-preserving reference comparison",
+      "resource_class": "CPU_HEAVY",
+      "retry_state": {
+        "attempts": 0,
+        "max_attempts": 3,
+        "policy": "rerun non-adoptable unit after verifier-visible failure",
+        "status": "pending"
+      },
+      "role": "representation_science",
+      "stop_condition": "Stop any candidate that omits required capability, hides MTP work, rematerializes a dense parent, or lacks a complete-system byte ledger.",
+      "workunit": {
+        "assigned_backend": null,
+        "assigned_runtime": null,
+        "attempts": 0,
+        "backend_task_id": null,
+        "classification": null,
+        "content_hash": "c8199619670dc00a08544eadaf9c9f0c1f729be3b7d215c1b4e945205dd8a457",
+        "dependencies": [
+          "P0-A-modellake-supervision",
+          "P0-B-flash-architecture-census",
+          "P0-C-precedent-and-transfer-index"
+        ],
+        "description": "Search expert-axis sharing/bases/residuals, n-gram factorized lookup/generation, DeltaNet state representation, sparse attention routing, and MTP accounting. Required verifier: complete-system EBPW ledger including all required byte categories and capability-preserving reference comparison Stop condition: Stop any candidate that omits required capability, hides MTP work, rematerializes a dense parent, or lacks a complete-system byte ledger.",
+        "effect_class": "REVERSIBLE",
+        "failure_context": null,
+        "finished_at": null,
+        "id": "P1-A-flash-gravity-candidates",
+        "preferred_backend": null,
+        "provider": null,
+        "ready_at": null,
+        "repair_depth": 0,
+        "repair_exhausted": false,
+        "repair_reason": null,
+        "repair_root": null,
+        "repairs": null,
+        "resource_class": "CPU_HEAVY",
+        "role": "representation_science",
+        "running_at": null,
+        "status": "pending",
+        "verification": null,
+        "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json | grep -q 0facd9022cb0d3f964618bdadd132ec6e142b2b30a5b614235583a208e8c5106",
+        "workspace": "/Users/scammermike/Downloads/hawking/.hcli/initial-charge"
+      }
+    },
+    {
+      "allowed_mutations": [
+        "native kernel source",
+        "temporary build output",
+        "receipts/headless/**"
+      ],
+      "dependencies": [
+        "P1-A-flash-gravity-candidates"
+      ],
+      "evidence": [
+        {
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json",
+          "present": true,
+          "relative_path": "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json",
+          "sha256": "0b27eb4f8a7c20214840c267101196bfbb6ffa3c85f3db9d50a3cc05873d8175"
+        }
+      ],
+      "evidence_paths": [
+        "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json"
+      ],
+      "id": "P1-B-representation-native-kernels",
+      "next_experiment": "Build native NF expert GEMV, router/gather, DeltaNet state/update, n-gram lookup, sparse attention, MTP, fused epilogue, and telemetry primitives shared where physically useful with Qwen27.",
+      "priority": "P1",
+      "provider_neutral": true,
+      "receipts": [],
+      "required_verifier": "same-source parity, native executable identity, kernel genome, complete wall/GPU timing, dispatch/sync accounting",
+      "resource_class": "COMPILE",
+      "retry_state": {
+        "attempts": 0,
+        "max_attempts": 3,
+        "policy": "rerun non-adoptable unit after verifier-visible failure",
+        "status": "pending"
+      },
+      "role": "kernel_engineering",
+      "stop_condition": "Stop on parity failure, hidden dense fallback, incomplete kernel genome, or a primitive-only win that loses complete-token work.",
+      "workunit": {
+        "assigned_backend": null,
+        "assigned_runtime": null,
+        "attempts": 0,
+        "backend_task_id": null,
+        "classification": null,
+        "content_hash": "5b077c2c008be61c04e2161cb440d413da7cf8d60f5140e24f159a73cc3bc60f",
+        "dependencies": [
+          "P1-A-flash-gravity-candidates"
+        ],
+        "description": "Build native NF expert GEMV, router/gather, DeltaNet state/update, n-gram lookup, sparse attention, MTP, fused epilogue, and telemetry primitives shared where physically useful with Qwen27. Required verifier: same-source parity, native executable identity, kernel genome, complete wall/GPU timing, dispatch/sync accounting Stop condition: Stop on parity failure, hidden dense fallback, incomplete kernel genome, or a primitive-only win that loses complete-token work.",
+        "effect_class": "REVERSIBLE",
+        "failure_context": null,
+        "finished_at": null,
+        "id": "P1-B-representation-native-kernels",
+        "preferred_backend": null,
+        "provider": null,
+        "ready_at": null,
+        "repair_depth": 0,
+        "repair_exhausted": false,
+        "repair_reason": null,
+        "repair_root": null,
+        "repairs": null,
+        "resource_class": "COMPILE",
+        "role": "kernel_engineering",
+        "running_at": null,
+        "status": "pending",
+        "verification": null,
+        "verifier": "test -f <dependency-evidence>",
+        "workspace": "/Users/scammermike/Downloads/hawking/.hcli/initial-charge"
+      }
+    },
+    {
+      "allowed_mutations": [
+        "receipts/headless/**"
+      ],
+      "dependencies": [
+        "P1-A-flash-gravity-candidates",
+        "P1-B-representation-native-kernels"
+      ],
+      "evidence": [
+        {
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json",
+          "present": true,
+          "relative_path": "receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json",
+          "sha256": "0facd9022cb0d3f964618bdadd132ec6e142b2b30a5b614235583a208e8c5106"
+        }
+      ],
+      "evidence_paths": [
+        "receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json"
+      ],
+      "id": "P1-C-flash-pareto-ledger",
+      "next_experiment": "Maintain the joint frontier over complete EBPW, hot/active/device bytes per token, FLOPs, dispatches, sync, complete ns, protected capability, and accepted TPS.",
+      "priority": "P1",
+      "provider_neutral": true,
+      "receipts": [],
+      "required_verifier": "evaluate_flash_promotion with all byte fields, fallback disclosure, dense-vs-NF A/B, whole-model reference, and protected receipt",
+      "resource_class": "STATIC_ANALYSIS",
+      "retry_state": {
+        "attempts": 0,
+        "max_attempts": 3,
+        "policy": "rerun non-adoptable unit after verifier-visible failure",
+        "status": "pending"
+      },
+      "role": "promotion_verifier",
+      "stop_condition": "Never promote below 1.00 complete EBPW or below 50 accepted capability-preserving TPS; retain misses as Pareto intermediates.",
+      "workunit": {
+        "assigned_backend": null,
+        "assigned_runtime": null,
+        "attempts": 0,
+        "backend_task_id": null,
+        "classification": null,
+        "content_hash": "413ac3dcce33147de6a7445dc03ae85f858cbb33b606d10af52c0bf710b17cdc",
+        "dependencies": [
+          "P1-A-flash-gravity-candidates",
+          "P1-B-representation-native-kernels"
+        ],
+        "description": "Maintain the joint frontier over complete EBPW, hot/active/device bytes per token, FLOPs, dispatches, sync, complete ns, protected capability, and accepted TPS. Required verifier: evaluate_flash_promotion with all byte fields, fallback disclosure, dense-vs-NF A/B, whole-model reference, and protected receipt Stop condition: Never promote below 1.00 complete EBPW or below 50 accepted capability-preserving TPS; retain misses as Pareto intermediates.",
+        "effect_class": "REVERSIBLE",
+        "failure_context": null,
+        "finished_at": null,
+        "id": "P1-C-flash-pareto-ledger",
+        "preferred_backend": null,
+        "provider": null,
+        "ready_at": null,
+        "repair_depth": 0,
+        "repair_exhausted": false,
+        "repair_reason": null,
+        "repair_root": null,
+        "repairs": null,
+        "resource_class": "STATIC_ANALYSIS",
+        "role": "promotion_verifier",
+        "running_at": null,
+        "status": "pending",
+        "verification": null,
+        "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json | grep -q 0facd9022cb0d3f964618bdadd132ec6e142b2b30a5b614235583a208e8c5106",
+        "workspace": "/Users/scammermike/Downloads/hawking/.hcli/initial-charge"
+      }
+    },
+    {
+      "allowed_mutations": [
+        "temporary benchmark artifacts",
+        "receipts/headless/**"
+      ],
+      "dependencies": [
+        "P1-C-flash-pareto-ledger"
+      ],
+      "evidence": [
+        {
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json",
+          "present": true,
+          "relative_path": "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json",
+          "sha256": "0b27eb4f8a7c20214840c267101196bfbb6ffa3c85f3db9d50a3cc05873d8175"
+        }
+      ],
+      "evidence_paths": [
+        "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json"
+      ],
+      "id": "P1-D-dense-vs-nf-organ-ab",
+      "next_experiment": "Run same-source/input/device/bench-state A/B for each serious organ, then repeat at whole-organ and whole-model scale when physically available.",
+      "priority": "P1",
+      "provider_neutral": true,
+      "receipts": [],
+      "required_verifier": "dense-vs-NF A/B protocol with representation bytes, bytes touched, GPU/wall ns, dispatches, deviation, capability, and complete-token verdict",
+      "resource_class": "GPU_EXCLUSIVE",
+      "retry_state": {
+        "attempts": 0,
+        "max_attempts": 3,
+        "policy": "rerun non-adoptable unit after verifier-visible failure",
+        "status": "pending"
+      },
+      "role": "benchmark_science",
+      "stop_condition": "Stop and record INCONCLUSIVE if any identity, input, device, state, or capability control is not matched.",
+      "workunit": {
+        "assigned_backend": null,
+        "assigned_runtime": null,
+        "attempts": 0,
+        "backend_task_id": null,
+        "classification": null,
+        "content_hash": "4dff10f7570936bd607f05f1a4c472612d40494315d13e5c90722dbbbe7ba0c6",
+        "dependencies": [
+          "P1-C-flash-pareto-ledger"
+        ],
+        "description": "Run same-source/input/device/bench-state A/B for each serious organ, then repeat at whole-organ and whole-model scale when physically available. Required verifier: dense-vs-NF A/B protocol with representation bytes, bytes touched, GPU/wall ns, dispatches, deviation, capability, and complete-token verdict Stop condition: Stop and record INCONCLUSIVE if any identity, input, device, state, or capability control is not matched.",
+        "effect_class": "REVERSIBLE",
+        "failure_context": null,
+        "finished_at": null,
+        "id": "P1-D-dense-vs-nf-organ-ab",
+        "preferred_backend": null,
+        "provider": null,
+        "ready_at": null,
+        "repair_depth": 0,
+        "repair_exhausted": false,
+        "repair_reason": null,
+        "repair_root": null,
+        "repairs": null,
+        "resource_class": "GPU_EXCLUSIVE",
+        "role": "benchmark_science",
+        "running_at": null,
+        "status": "pending",
+        "verification": null,
+        "verifier": "test -f <dependency-evidence>",
+        "workspace": "/Users/scammermike/Downloads/hawking/.hcli/initial-charge"
+      }
+    },
+    {
+      "allowed_mutations": [
+        "FPGA preboard source and schemas",
+        "receipts/headless/**"
+      ],
+      "dependencies": [
+        "P0-B-flash-architecture-census",
+        "P0-C-precedent-and-transfer-index"
+      ],
+      "evidence": [
+        {
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_PREBOARD.json",
+          "present": true,
+          "relative_path": "receipts/headless/HCLI_AGENTOS_PREBOARD.json",
+          "sha256": "7bf8d99ae71f94ac1c19326466ea86f396b4d623368bd96ee801c3abb9dc0eeb"
+        },
+        {
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json",
+          "present": true,
+          "relative_path": "receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json",
+          "sha256": "0facd9022cb0d3f964618bdadd132ec6e142b2b30a5b614235583a208e8c5106"
+        }
+      ],
+      "evidence_paths": [
+        "receipts/headless/HCLI_AGENTOS_PREBOARD.json",
+        "receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json"
+      ],
+      "id": "P1-E-fpga-both-models",
+      "next_experiment": "Build HWIR, HBM, partition/link simulation, cache, harness, and verifier maps separately for Qwen27 and Flash-Next; simulation labels stay [S].",
+      "priority": "P1",
+      "provider_neutral": true,
+      "receipts": [],
+      "required_verifier": "both model maps, deterministic HWIR fingerprint, simulated transport receipt, and explicit no-board claim boundary",
+      "resource_class": "COMPILE",
+      "retry_state": {
+        "attempts": 0,
+        "max_attempts": 3,
+        "policy": "rerun non-adoptable unit after verifier-visible failure",
+        "status": "pending"
+      },
+      "role": "fpga_preboard_engineering",
+      "stop_condition": "Stop at preboard boundaries; no physical board or U50 performance claim without hardware receipt.",
+      "workunit": {
+        "assigned_backend": null,
+        "assigned_runtime": null,
+        "attempts": 0,
+        "backend_task_id": null,
+        "classification": null,
+        "content_hash": "420fb215692b81465526c11e91857a4346ef3d5ed60a855c4367ef7b71e792b6",
+        "dependencies": [
+          "P0-B-flash-architecture-census",
+          "P0-C-precedent-and-transfer-index"
+        ],
+        "description": "Build HWIR, HBM, partition/link simulation, cache, harness, and verifier maps separately for Qwen27 and Flash-Next; simulation labels stay [S]. Required verifier: both model maps, deterministic HWIR fingerprint, simulated transport receipt, and explicit no-board claim boundary Stop condition: Stop at preboard boundaries; no physical board or U50 performance claim without hardware receipt.",
+        "effect_class": "REVERSIBLE",
+        "failure_context": null,
+        "finished_at": null,
+        "id": "P1-E-fpga-both-models",
+        "preferred_backend": null,
+        "provider": null,
+        "ready_at": null,
+        "repair_depth": 0,
+        "repair_exhausted": false,
+        "repair_reason": null,
+        "repair_root": null,
+        "repairs": null,
+        "resource_class": "COMPILE",
+        "role": "fpga_preboard_engineering",
+        "running_at": null,
+        "status": "pending",
+        "verification": null,
+        "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_PREBOARD.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_PREBOARD.json | grep -q 7bf8d99ae71f94ac1c19326466ea86f396b4d623368bd96ee801c3abb9dc0eeb && test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json | grep -q 0facd9022cb0d3f964618bdadd132ec6e142b2b30a5b614235583a208e8c5106",
+        "workspace": "/Users/scammermike/Downloads/hawking/.hcli/initial-charge"
+      }
+    },
+    {
+      "allowed_mutations": [
+        "receipts/headless/**"
+      ],
+      "dependencies": [
+        "P0-C-precedent-and-transfer-index"
+      ],
+      "evidence": [
+        {
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_PREBOARD.json",
+          "present": true,
+          "relative_path": "receipts/headless/HCLI_AGENTOS_PREBOARD.json",
+          "sha256": "7bf8d99ae71f94ac1c19326466ea86f396b4d623368bd96ee801c3abb9dc0eeb"
+        }
+      ],
+      "evidence_paths": [
+        "receipts/headless/HCLI_AGENTOS_PREBOARD.json"
+      ],
+      "id": "P2-negative-science-doctor-vmcp-prep",
+      "next_experiment": "Use negative receipts to constrain the next experiment and prepare Doctor/VMCP evidence surfaces without touching protected systems or starting Odyssey.",
+      "priority": "P2",
+      "provider_neutral": true,
+      "receipts": [],
+      "required_verifier": "negative receipt census, explicit boundary, no VMCP/protected-system mutation, no Odyssey launch",
+      "resource_class": "LIGHT_CONTROL",
+      "retry_state": {
+        "attempts": 0,
+        "max_attempts": 3,
+        "policy": "rerun non-adoptable unit after verifier-visible failure",
+        "status": "pending"
+      },
+      "role": "evidence_science",
+      "stop_condition": "Stop at evidence/preparation boundaries; do not declare impossibility from a bounded negative and do not promote Odyssey.",
+      "workunit": {
+        "assigned_backend": null,
+        "assigned_runtime": null,
+        "attempts": 0,
+        "backend_task_id": null,
+        "classification": null,
+        "content_hash": "c89060f2fb05674ff20890ade9c7fbcee1a354c19f095bed3c3a5e9e13540054",
+        "dependencies": [
+          "P0-C-precedent-and-transfer-index"
+        ],
+        "description": "Use negative receipts to constrain the next experiment and prepare Doctor/VMCP evidence surfaces without touching protected systems or starting Odyssey. Required verifier: negative receipt census, explicit boundary, no VMCP/protected-system mutation, no Odyssey launch Stop condition: Stop at evidence/preparation boundaries; do not declare impossibility from a bounded negative and do not promote Odyssey.",
+        "effect_class": "REVERSIBLE",
+        "failure_context": null,
+        "finished_at": null,
+        "id": "P2-negative-science-doctor-vmcp-prep",
+        "preferred_backend": null,
+        "provider": null,
+        "ready_at": null,
+        "repair_depth": 0,
+        "repair_exhausted": false,
+        "repair_reason": null,
+        "repair_root": null,
+        "repairs": null,
+        "resource_class": "LIGHT_CONTROL",
+        "role": "evidence_science",
+        "running_at": null,
+        "status": "pending",
+        "verification": null,
+        "verifier": "test -f /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_PREBOARD.json && shasum -a 256 /Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_PREBOARD.json | grep -q 7bf8d99ae71f94ac1c19326466ea86f396b4d623368bd96ee801c3abb9dc0eeb",
+        "workspace": "/Users/scammermike/Downloads/hawking/.hcli/initial-charge"
+      }
+    }
+  ],
+  "workspace": "/Users/scammermike/Downloads/hawking/.hcli/initial-charge"
+}

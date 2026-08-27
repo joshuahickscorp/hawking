@@ -16,9 +16,12 @@ class ModelInfo:
     param_class: str
     quantization: str
     is_projector: bool = False
+    provider: str = "local"
 
     @property
     def display_name(self) -> str:
+        if self.provider == "remote":
+            return f"remote {self.name}"
         return f"{self.family} {self.param_class} {self.quantization}"
 
     @property
@@ -216,6 +219,7 @@ def _make_info(full: str, filename: str, size: int) -> ModelInfo:
         param_class=_infer_param_class(filename),
         quantization=_infer_quantization(filename),
         is_projector=_is_projector(full, filename),
+        provider="llamacpp",
     )
 
 
@@ -231,6 +235,19 @@ def discover_models(roots: Optional[List[str]] = None) -> List[ModelInfo]:
     for root in roots:
         if not os.path.isdir(root):
             continue
+        # Native profiles/artifacts are model selections too.  Discovery only
+        # reads their identity metadata; it never starts a runtime or opens
+        # the weight catalog.
+        from .hawking_native import is_hawking_native_path
+
+        if is_hawking_native_path(root):
+            full = os.path.realpath(root)
+            if full not in seen:
+                info = _info_from_path(full)
+                if info is not None:
+                    seen.add(full)
+                    models.append(info)
+            continue
         if _is_mlx_dir(root):
             full = os.path.realpath(root)
             if full not in seen:
@@ -238,6 +255,15 @@ def discover_models(roots: Optional[List[str]] = None) -> List[ModelInfo]:
                 models.append(_info_from_mlx(full))
             continue
         for dirpath, dirnames, filenames in os.walk(root):
+            if is_hawking_native_path(dirpath):
+                full = os.path.realpath(dirpath)
+                if full not in seen:
+                    info = _info_from_path(full)
+                    if info is not None:
+                        seen.add(full)
+                        models.append(info)
+                dirnames[:] = []
+                continue
             if _is_mlx_dir(dirpath):
                 full = os.path.realpath(dirpath)
                 if full not in seen:
@@ -246,7 +272,24 @@ def discover_models(roots: Optional[List[str]] = None) -> List[ModelInfo]:
                 dirnames[:] = []
                 continue
             for fn in filenames:
-                if fn.lower().endswith(".gguf"):
+                low = fn.lower()
+                full_candidate = os.path.realpath(os.path.join(dirpath, fn))
+                # A provider profile is a first-class model selection even if
+                # its filename is vendor-neutral.  The predicate parses the
+                # JSON shape before admitting it, so arbitrary config JSON is
+                # not exposed as a selectable model.
+                if low.endswith((".noetic", ".hawking", ".hawking.json")) or (
+                    low.endswith(".json") and is_hawking_native_path(full_candidate)
+                ):
+                    full = full_candidate
+                    if full in seen:
+                        continue
+                    info = _info_from_path(full)
+                    if info is not None:
+                        seen.add(full)
+                        models.append(info)
+                    continue
+                if low.endswith(".gguf"):
                     full = os.path.realpath(os.path.join(dirpath, fn))
                     if full in seen:
                         continue
@@ -284,11 +327,61 @@ def _info_from_mlx(path: str) -> ModelInfo:
     ),
         quantization=mlx_quantisation_label(path),
         is_projector=False,
+        provider="mlx",
     )
 
 
 def _info_from_path(path: str) -> Optional[ModelInfo]:
+    from .backends import OpenAICompatibleBackend, is_remote_endpoint
+    from .hawking_native import config_for_model_path, is_hawking_native_path
+
+    if is_remote_endpoint(path):
+        # URLs are valid explicit selections even though they cannot be found
+        # by local discovery.  RuntimePool will health-check the endpoint.
+        remote = OpenAICompatibleBackend(path)
+        identity = remote.identity()
+        parsed = remote.selection()
+        return ModelInfo(
+            path=parsed,
+            name=str(identity.get("model_id") or "remote"),
+            size_bytes=0,
+            family="Remote",
+            param_class="?B",
+            quantization="provider-managed",
+            provider="remote",
+        )
+
     path = os.path.realpath(os.path.expanduser(path))
+
+    if is_hawking_native_path(path):
+        try:
+            config = config_for_model_path(path)
+            identity = config.identity()
+            size = int(
+                (identity.get("artifact_inventory") or {}).get("artifact_bytes") or 0
+            )
+            name = config.resident_identity
+            family = str(config.family or "Unknown")
+            param_class = str(config.param_class or "?B")
+            quantization = str(config.quantisation or "unknown")
+            provider = str(config.provider or "native")
+        except Exception:
+            size = 0
+            name = os.path.basename(path.rstrip(os.sep))
+            family = "Unknown"
+            param_class = "?B"
+            quantization = "unknown"
+            provider = "native"
+        return ModelInfo(
+            path=path,
+            name=name,
+            size_bytes=size,
+            family=family,
+            param_class=param_class,
+            quantization=quantization,
+            is_projector=False,
+            provider=provider,
+        )
     if os.path.isdir(path) and _is_mlx_dir(path):
         return _info_from_mlx(path)
     if not os.path.isfile(path):

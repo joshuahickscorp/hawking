@@ -1,0 +1,131 @@
+{
+  "calls": [
+    {
+      "confidence": "source-links-extracted",
+      "count": 5,
+      "error": null,
+      "failure_class": null,
+      "ok": true,
+      "provider": "bing-html",
+      "retrieved_at": 1787788259.9453409,
+      "source_url": "https://www.bing.com/search?q=VisionMCP+public+API+evidence+tools",
+      "sources": [
+        {
+          "title": "uson.mxhttp://tesis.uson.mx \u203a digital \u203a tesis \u203a docs \u00b7 PDF fileCAPITULO 4 4. ESTRUCTURA DEL TIPO PENAL. - Universidad de Sonora",
+          "url": "https://www.bing.com/ck/a?!&&p=a768b50f429c8199eda0b5a40a6277a574611ae58870b8c98a7b08da2e80ee7cJmltdHM9MTc4NzcwMjQwMA&ptn=3&ver=2&hsh=4&fclid=337e8f43-c9d0-6a69-1f50-9882c82e6b48&u=a1aHR0cDovL3Rlc2lzLnVzb24ubXgvZGlnaXRhbC90ZXNpcy9kb2NzLzIyNzkzL0NhcGl0dWxvNC5wZGY&ntb=1"
+        },
+        {
+          "title": "scribd.comhttps://es.scribd.com \u203a ... \u203a elementos-del-delito-y-del-tipo-penal-en-mexicoElementos del Tipo Penal en M\u00e9xico",
+          "url": "https://www.bing.com/ck/a?!&&p=a4a5d49f6abab0818f35d9934d7262886b79072e9b02da5811e10e69efec393eJmltdHM9MTc4NzcwMjQwMA&ptn=3&ver=2&hsh=4&fclid=337e8f43-c9d0-6a69-1f50-9882c82e6b48&u=a1aHR0cHM6Ly9lcy5zY3JpYmQuY29tL2RvY3VtZW50Lzc5ODI4NzUzNy9lbGVtZW50b3MtZGVsLWRlbGl0by15LWRlbC10aXBvLXBlbmFsLWVuLW1leGljbw&ntb=1"
+        },
+        {
+          "title": "derechomexicano.com.mxhttps://derechomexicano.com.mx \u203a elementos-del-tipo-penalELEMENTOS DEL TIPO PENAL - derechomexicano.com.mx",
+          "url": "https://www.bing.com/ck/a?!&&p=227a24cb6ce8d2649d63519a801f64d6036994153bdf6dded8407eb6800d5747JmltdHM9MTc4NzcwMjQwMA&ptn=3&ver=2&hsh=4&fclid=337e8f43-c9d0-6a69-1f50-9882c82e6b48&u=a1aHR0cHM6Ly9kZXJlY2hvbWV4aWNhbm8uY29tLm14L2VsZW1lbnRvcy1kZWwtdGlwby1wZW5hbC8&ntb=1"
+        },
+        {
+          "title": "scjn.gob.mxhttps://www.scjn.gob.mx \u203a sites \u203a default \u203a files \u203a listas \u203a documen\u2026 \u00b7 PDF fileAMPARO EN REVISI\u00d3N 625/2022 QUEJOSO Y RECURRENTE: *****",
+          "url": "https://www.bing.com/ck/a?!&&p=3de272ee6b54fe10641b1bff86224ec9433be9aaa3a67cb17584b59367b4a899JmltdHM9MTc4NzcwMjQwMA&ptn=3&ver=2&hsh=4&fclid=337e8f43-c9d0-6a69-1f50-9882c82e6b48&u=a1aHR0cHM6Ly93d3cuc2Nqbi5nb2IubXgvc2l0ZXMvZGVmYXVsdC9maWxlcy9saXN0YXMvZG9jdW1lbnRvX2Rvcy8yMDIzLTEwLzIzMTAwOS1BUi02MjUtMjAyMi5wZGY&ntb=1"
+        },
+        {
+          "title": "unam.mxhttps://www.paginaspersonales.unam.mx \u203a ... \u203a CUADRO_ELE\u2026 \u00b7 PDF fileAN\u00c1LISIS DEL DELITO Y DE LOS ELEMENTOS DEL TIPO PENAL.",
+          "url": "https://www.bing.com/ck/a?!&&p=2dbf5ceef3f3af22ed56b397650c85de885abd5a4e2e837693e196f462906f28JmltdHM9MTc4NzcwMjQwMA&ptn=3&ver=2&hsh=4&fclid=337e8f43-c9d0-6a69-1f50-9882c82e6b48&u=a1aHR0cHM6Ly93d3cucGFnaW5hc3BlcnNvbmFsZXMudW5hbS5teC9maWxlcy8xNzIzL0NVQURST19FTEVNRU5UT1NfUEVOQUwucGRm&ntb=1"
+        }
+      ],
+      "tool": "web.search",
+      "unresolved": []
+    },
+    {
+      "confidence": "high",
+      "error": null,
+      "exact_uri": "file:///Users/scammermike/Downloads/hawking/visionmcp/src/visionmcp",
+      "failure_class": null,
+      "live_core_surface": {
+        "constructed": true,
+        "tool_names": [
+          "project.create",
+          "project.status",
+          "system.doctor",
+          "vision.capabilities",
+          "vision.close_project",
+          "vision.compare",
+          "vision.explain_region",
+          "vision.get_artifact",
+          "vision.list_artifacts",
+          "vision.observe",
+          "vision.open_project",
+          "vision.progress",
+          "vision.query",
+          "vision.review_queue",
+          "vision.verify"
+        ],
+        "worker_started": false
+      },
+      "ok": true,
+      "selected_profile": {
+        "allowlist_size": 15,
+        "default": true,
+        "description": "Default public surface: project, observe local media, query evidence, verify receipts, and list capabilities. No browser, Blender, or model weights.",
+        "experimental": false,
+        "includes": [
+          "core"
+        ],
+        "name": "core",
+        "tool_count_mode": "allowlist"
+      },
+      "source": "file:///Users/scammermike/Downloads/hawking/visionmcp/src/visionmcp",
+      "status": "AVAILABLE",
+      "tool": "vmcp.inspect",
+      "unresolved": []
+    },
+    {
+      "available_count": 7,
+      "blocked_count": 2,
+      "confidence": "high",
+      "error": null,
+      "exact_uri": "file:///Users/scammermike/Downloads/hawking/visionmcp/src/visionmcp",
+      "failure_class": null,
+      "ok": true,
+      "profile": "core",
+      "result_schema": {
+        "plugins": "visionmcp.plugin/v1",
+        "projects": "visionmcp.project/v1",
+        "receipts": "visionmcp.public-alpha.receipt/v1",
+        "resource_uri_prefix": "vision://v1",
+        "resources": "visionmcp.resource/v1",
+        "tools": "visionmcp.tools/v1"
+      },
+      "retrieved_at": 1787788260.250634,
+      "source": "file:///Users/scammermike/Downloads/hawking/visionmcp/src/visionmcp",
+      "status": "OBSERVED",
+      "tool": "vision.capabilities"
+    },
+    {
+      "bytes": 766,
+      "error": null,
+      "failure_class": null,
+      "ok": true,
+      "path": "/Users/scammermike/Downloads/hawking/visionmcp/src/visionmcp/api.py",
+      "sha256": "73f8279c459d6f8782245ccfd948654c41aea42a525176026085d146665cdc17",
+      "tool": "filesystem.read"
+    }
+  ],
+  "checks": {
+    "external_search": true,
+    "local_deterministic_validation": true,
+    "vmcp_source_rediscovered": true,
+    "vmcp_tool_called": true
+  },
+  "conclusion": "HCLI records the VMCP capability response as evidence; deterministic source hashing validates only the local API contract, not visual or model inference.",
+  "credentials_secret_free": true,
+  "finished_at": 1787788260.252105,
+  "hypothesis": "The discovered VMCP core profile is callable and exposes a versioned capability/evidence surface; optional backends must remain capability-gated.",
+  "inference_boundary": "VMCP observation/decompilation is evidence and never physical truth or verifier authority.",
+  "next_action": "route a concrete local visual/repository target through a profile-specific VMCP tool and retain its receipt before making a capability claim",
+  "qualification": "VMCP_OPERATIONAL",
+  "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_VMCP_GATE.json",
+  "repo_root": "/Users/scammermike/Downloads/hawking",
+  "schema": "hcli.agentos.vmcp_gate.v1",
+  "started_at": 1787788259.674498,
+  "status": "PASSED",
+  "workspace": "/Users/scammermike/Downloads/hawking"
+}

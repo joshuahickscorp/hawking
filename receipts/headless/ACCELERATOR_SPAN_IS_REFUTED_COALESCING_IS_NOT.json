@@ -1,0 +1,353 @@
+{
+ "receipt": "ACCELERATOR_SPAN_IS_REFUTED_COALESCING_IS_NOT",
+ "date": "2026-08-26",
+ "obligation": "G046 (FRONT D) with G047",
+ "question": "ACCELERATOR_THE_SIMDGROUP_SPAN_DOUBLES excluded FRAGMENTATION (2 to 32 fragments at one cost) and STRIDE MAGNITUDE (96 against 1184 bytes at one cost), left SPAN as the surviving candidate, and named its own weakness in its own words: 'nothing here varies the span independently because A PERMUTATION CANNOT, so it is the surviving candidate AFTER fragmentation and stride magnitude are excluded and NOT a measured relationship.' It named the probe: 'give each simdgroup a contiguous half-row by splitting rows across simdgroups rather than interleaving.'",
+ "THE_ONE_VARIABLE": "GROUPS=80 over TPR=64, so the shipped loop gives lane L groups {L, L+64}: 16 lanes do two and 48 do one. A BLOCKED PARTITION gives lane L a CONTIGUOUS run of EXACTLY THE COUNT THE SHIPPED LOOP GIVES IT, laid out in lane order -- cnt(L) = ceil((GROUPS-L)/TPR) unchanged LANE BY LANE, not merely as a multiset. COUNTED, NOT ASSUMED: simd0 goes from 48 groups spanning 2560 BYTES IN TWO FRAGMENTS to the SAME 48 groups spanning A CONTIGUOUS 1536, while simd1 is 32 groups in 1024 bytes in both. Per-lane count identical, per-simdgroup total identical, threadgroup footprint identical. ONLY simd0's span moves, and it moves 40% in the direction the previous block said should help.",
+ "P1_IS_MINE_AND_IT_IS_REFUTED_PAST_MY_OWN_FALSIFIER": {
+  "predicted": "blocked beats blockedctl by 1.01-1.06x; falsifier at blockedctl winning by >1.03x",
+  "measured": "blockedctl wins 1.0315x and 1.0303x, AGREEING TO 0.1% ACROSS TWO RUNS, 8 of 14 and 9 of 14 rounds",
+  "verdict": "REFUTED. NARROWING THE SPAN BY 40% AND DEFRAGMENTING IT COSTS 3%. Blocked does not beat the control on ANY estimator in EITHER run, so SPAN IS EXCLUDED AS THE MECHANISM -- and with fragmentation and stride magnitude already excluded, EVERY CANDIDATE THE PREVIOUS BLOCK NAMED IS NOW DEAD. The 3% magnitude is held more weakly than the direction: two runs agreeing to 0.1% on minima against a 17-of-28 ordinal count is a mild majority, not the 27-of-28 that carried the lane-order result, so the DIRECTION is what this rests on.",
+  "and_the_ratio_only_just_clears_my_own_falsifier": "1.0315 and 1.0303 against a falsifier written at 1.03 -- stated because a threshold cleared by 0.1% is not the same as one cleared by a mile, and the refutation does not need the margin: blocked was predicted to WIN and it LOST in both runs."
+ },
+ "WHAT_SURVIVES_IS_A_PROPERTY_NO_ARM_HAD_EVER_VARIED": "Span, fragmentation and stride are all properties of THE ADDRESSES A SIMDGROUP TOUCHES OVER THE WHOLE LOOP. What a coalescer sees is what it asks for AT ONE INSTANT. Counted for simdgroup 0's FIRST ITERATION: the SHIPPED assignment issues ONE CONTIGUOUS RUN (32 lanes, 32 consecutive 32-byte groups, a 1024-byte request), BLOCKED shatters it into 17 RUNS, and the M=37 permutation into 20. THE SHIPPED ASSIGNMENT IS THE ONLY ONE OF THE THREE THAT COALESCES PER ITERATION, AND IT IS THE ONLY ONE THAT IS FASTEST. That is consistent with every measurement in both blocks and is the FIRST CANDIDATE NOT YET EXCLUDED -- offered as a CANDIDATE and NOT A CLAIM, because this program's scorecard is five diagnoses written down and two wrong, and nothing here varies per-iteration coalescing while holding the loop-wide address set fixed.",
+ "AND_THE_TWO_AXES_ARE_IN_TENSION_WHICH_IS_WHY_THIS_IS_NOT_A_CLEAN_SWEEP": "BLOCKED IMPROVED THE SPAN AND DESTROYED THE PER-ITERATION COALESCING, in one change, because no assignment maximises both: giving a lane a contiguous run necessarily spreads what consecutive lanes ask for at the same instant. So this block did not isolate span -- IT TRADED SPAN AGAINST COALESCING and measured which way the trade goes. The honest statement is that COALESCING DOMINATES SPAN by enough to reverse a 40% span improvement, NOT that span costs nothing. Saying otherwise would claim an isolation the design cannot deliver, and the tension is pinned by a test so the next reader does not try to design around it.",
+ "P2_CONFIRMED": {
+  "predicted": "baseline and blockedctl INDISTINGUISHABLE within 3%, or P1 compares arms differing in more than addresses",
+  "measured": "1.0417 and 0.9348 -- OPPOSITE DIRECTIONS across the two runs",
+  "verdict": "CONFIRMED AS A TIE, and the opposite signs are what make it one: the extra offset arithmetic costs nothing measurable, so blockedctl is a fair stand-in for the shipped kernel and P1's comparison is addresses alone. The run-2 baseline carries 206% round-spread against run 1's 3.9%, which is where the 0.93 comes from."
+ },
+ "P3_CONFIRMED_AND_THE_CONTROL_IS_DIFFERENT_IN_KIND_AGAIN": "A BLOCKED PARTITION IS STILL A PARTITION, so like the permutations every arm MUST be CORRECT and the wrong-by-construction anti-vacuity control is unavailable. Measured 2.04e-07 / 2.02e-07 / 2.02e-07. The replacements: the partition is verified an EXACT COVER of all 80 groups, the per-lane counts are asserted EQUAL to the strided ones LANE BY LANE rather than as a multiset, and the assignment is asserted NOT to be the strided one -- an arm that silently reduced to the shipped assignment would TIE and the tie would read as a finding.",
+ "A_MUTATION_SURVIVED_AND_THE_SUITE_WAS_PINNING_ITS_OWN_ARITHMETIC": "Changing the kernel's emitted offset to a bare `lane` LEFT ALL TEN TESTS PASSING. They computed cnt() and off() IN PYTHON and verified the exact cover, the lane-by-lane counts and the spans of THAT REIMPLEMENTATION -- none of them read the generated Metal, so the suite was pinning arithmetic IT OWNED rather than arithmetic IT SHIPPED. A test that verifies a model of the kernel instead of the kernel is the check-that-cannot-fail in a new place, and it was found by WATCHING THE MUTATION SURVIVE rather than by re-reading the tests. FIXED by an eleventh test that RUNS both probes against a float64 oracle at a small shape: a wrong offset stops the assignment being an exact cover, so execution is what ties the formula to the thing that executes. The mutation now aborts the suite at exit 134 -- DETECTION BY GPU FAULT, NOT BY ASSERTION, which is stated because a crash is a coarser signal than a failed assert and a reader should know which they get.",
+ "A_SECOND_MUTATION_SURVIVED_AND_IT_WAS_THE_CONTROL_ITSELF": "Deleting the control's zero-multiply -- the line that CONSUMES _off and _cnt so the compiler cannot fold them -- left the suite green, because the test asserted only that the SOURCE CONTAINS `_off`. A declaration the compiler is free to delete is a control that HAS STOPPED PAYING THE ARITHMETIC IT EXISTS TO PAY, which silently turns P1 back into addresses PLUS arithmetic, the exact confound the control was built to remove. The test now asserts the CONSUME LINE. Whether the compiler actually folds it is a question about GENERATED CODE and xcrun metal is ABSENT -- the named gate, recorded a fourth time -- so the source-level consume is the strongest check available here and is asserted rather than assumed.",
+ "AND_A_DRIFT_TEST_OF_MINE_WAS_AIMED_AT_THE_WRONG_CONSTANT": "The template-drift test monkeypatched NATIVE_MATVEC_TPR_BODY, and source_tpr builds from the PRE-CONCATENATED NATIVE_MATVEC_TPR -- so the patch changed nothing, no raise fired, and the test reported a failure of the guard. Caught because it FAILED rather than passed, which is the lucky direction: a drift test aimed at the wrong constant normally PASSES while proving nothing. FOURTH TIME THIS SESSION a check has been applied to text it does not govern.",
+ "runs": {
+  "run_1": {
+   "rel_err": {
+    "blocked": "2.04e-07",
+    "blockedctl": "2.02e-07",
+    "baseline": "2.02e-07"
+   },
+   "minima_ms": {
+    "blocked": 0.2834,
+    "blockedctl": 0.2747,
+    "baseline": 0.2862
+   },
+   "round_spread_pct": {
+    "blocked": 24.8,
+    "blockedctl": 27.0,
+    "baseline": 3.9
+   },
+   "over_blockedctl": {
+    "blocked": 1.0315,
+    "blockedctl": 1.0,
+    "baseline": 1.0417
+   },
+   "rounds_blockedctl_beats_of_14": {
+    "blocked": 8,
+    "baseline": 7
+   }
+  },
+  "run_2": {
+   "rel_err": {
+    "blocked": "2.04e-07",
+    "blockedctl": "2.02e-07",
+    "baseline": "2.02e-07"
+   },
+   "minima_ms": {
+    "blocked": 0.3114,
+    "blockedctl": 0.3022,
+    "baseline": 0.2825
+   },
+   "round_spread_pct": {
+    "blocked": 72.4,
+    "blockedctl": 65.7,
+    "baseline": 206.3
+   },
+   "over_blockedctl": {
+    "blocked": 1.0303,
+    "blockedctl": 1.0,
+    "baseline": 0.9348
+   },
+   "rounds_blockedctl_beats_of_14": {
+    "blocked": 9,
+    "baseline": 6
+   }
+  }
+ },
+ "per_simdgroup_arithmetic": {
+  "strided_shipped": {
+   "simd0": {
+    "groups": 48,
+    "span_bytes": 2560,
+    "fragments": 2
+   },
+   "simd1": {
+    "groups": 32,
+    "span_bytes": 1024,
+    "fragments": 1
+   }
+  },
+  "blocked": {
+   "simd0": {
+    "groups": 48,
+    "span_bytes": 1536,
+    "fragments": 1
+   },
+   "simd1": {
+    "groups": 32,
+    "span_bytes": 1024,
+    "fragments": 1
+   }
+  },
+  "per_iteration_runs_simd0_iter0": {
+   "strided_shipped": 1,
+   "blocked": 17,
+   "lane37": 20
+  }
+ },
+ "what_this_corrects_in_my_own_previous_block": "ACCELERATOR_THE_SIMDGROUP_SPAN_DOUBLES's MEASUREMENTS ALL STAND -- every permutation costs 1.03-1.11x, the effect survives rotating the arm order, fragmentation and stride magnitude are excluded, and the simdgroup-span arithmetic that corrected the block before it is unchanged. What is WITHDRAWN is its conclusion that SPAN IS THE SURVIVING CANDIDATE: the span has now been varied directly, in the helpful direction, and it made things WORSE. That receipt is AMENDED IN PLACE, and AKB-LANE-ORDER-COSTS is amended again and declared laws_reconciled, which the validator refuses unless the law's own statement cites this receipt.",
+ "controls": {
+  "anti_vacuity": "exact cover of all 80 groups, per-lane counts equal LANE BY LANE, assignment asserted NOT the strided one",
+  "arithmetic": "blockedctl pays blocked's offset arithmetic at the SHIPPED addresses, so P1 is addresses alone",
+  "correctness": "every arm CORRECT at 2.02-2.04e-07 against a shared float64 oracle, and an executing test ties the formula to the kernel",
+  "order": "arm order ROTATES by round index, the instrument the previous block added after finding the identity always ran first",
+  "drift": "a fragment missing from the source RAISES rather than letting a no-op replacement make a probe BE its base"
+ },
+ "claim_boundary": [
+  "THIS DOES NOT ISOLATE SPAN. Blocked improves the span and destroys per-iteration coalescing together, so what is measured is WHICH WAY THE TRADE GOES, not the price of either alone. A design that varies one while holding the other is not available at this geometry and may not exist at any.",
+  "ONLY simd0's span moves; simd1 is identical in both arms, so the effect is diluted by roughly half against a design where every simdgroup improved -- which makes the REFUTATION stronger, not weaker, since blocked was predicted to win and lost even on the half that changed.",
+  "THE ORDINAL EVIDENCE IS WEAK: 8 of 14 and 9 of 14, a mild majority, against the lane-order block's 27 of 28. The two runs' minima agreeing to 0.1% is what carries the 3%, and minima and ordinals disagreeing in strength is exactly what the previous two blocks warned about.",
+  "BENCH_STATE CONTENDED, round-spreads 3.9% to 206%, minima the estimator, medians beside them; the operator's job NOT killed per S032 s24.",
+  "ONE shape, ONE tpr, ONE machine, INSTANCE -- and GROUPS=80 over TPR=64 is what makes the two axes collide the way they do; a shape where GROUPS divides TPR would collide differently.",
+  "NO SHIPPED KERNEL CHANGED. Both arms are CORRECT, so unlike the wrong-by-construction probes a blocked kernel is a legitimate candidate in principle -- and it is SLOWER, so nothing is adopted. No model executed, no capability run, no adequacy claim moves."
+ ],
+ "next": "Per-iteration coalescing is the surviving candidate and NOTHING HERE VARIES IT INDEPENDENTLY. What would: hold the loop-wide address set of a simdgroup EXACTLY fixed and change only the ORDER in which its iterations request them -- reversing each lane's inner run, which leaves every address and every count identical and moves only what is asked for at each instant. NOT RUN HERE.",
+ "akb_registration": {
+  "evidence_domain": "accelerator",
+  "civilization": "I-D_ACCELERATOR",
+  "program": "HAWKING ACCELERATOR (S015/S031/S032)",
+  "machine_scope": "Apple M3 Ultra, INSTANCE",
+  "representation_scope": "ws_rtn_q4_g64",
+  "kernel_scope": "native matvec under a blocked group partition",
+  "why_declared": "membership must not depend on what this file was named (S032 s13)."
+ },
+ "identities": {
+  "experiment": {
+   "class": "ACCEL-KERNEL",
+   "knowledge_level": "INSTANCE",
+   "question": "does narrowing the per-simdgroup span at fixed per-lane work make the matvec faster"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "ram_gib": 96,
+   "measured_dram_gb_s": 589.73,
+   "bench_state": "CONTENDED",
+   "quiescence": {
+    "run_1": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 12942,
+       "cpu_pct": 100.0,
+       "rss_gib": 42.01,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 19479,
+       "cpu_pct": 62.9,
+       "rss_gib": 1.94,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 19503,
+       "cpu_pct": 35.3,
+       "rss_gib": 0.04,
+       "comm": "/System/Library/Frameworks/Metal.framework/Versions/A/XPCServices/MTLCompilerService.xpc/Contents/MacOS/MTLCompilerService"
+      },
+      {
+       "pid": 180,
+       "cpu_pct": 20.6,
+       "rss_gib": 0.03,
+       "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 35.5,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 20.7,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 6,
+     "total_cpu_pct": 275.0,
+     "max_rss_gib": 42.01,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    },
+    "run_2": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 12942,
+       "cpu_pct": 102.8,
+       "rss_gib": 42.43,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 19609,
+       "cpu_pct": 97.1,
+       "rss_gib": 1.94,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 292,
+       "cpu_pct": 57.2,
+       "rss_gib": 0.17,
+       "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores"
+      },
+      {
+       "pid": 17566,
+       "cpu_pct": 22.5,
+       "rss_gib": 0.05,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 180,
+       "cpu_pct": 20.6,
+       "rss_gib": 0.03,
+       "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 36.1,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 24.5,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 7,
+     "total_cpu_pct": 360.8,
+     "max_rss_gib": 42.43,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    }
+   }
+  },
+  "device": {
+   "backend": "Metal",
+   "api": "mx.fast.metal_kernel JIT, MLX"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "NO MODEL EXECUTED. 17408x5120 borrowed from the resident's MLP; synthetic weights."
+  },
+  "representation": {
+   "native": "ws_rtn_q4_g64, 4.25 bpw"
+  },
+  "runtime": {
+   "analysis": "tools/accelerator/gravity_native.py::source_operand_probe (blocked, blockedctl)",
+   "tests": "tools/accelerator/test_blocked_span.py"
+  },
+  "kernel": {
+   "arms": [
+    "blocked",
+    "blockedctl",
+    "baseline"
+   ],
+   "tpr": 64,
+   "tg": 128
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device, no transfer crossed"
+  }
+ },
+ "bench": {
+  "state": "CONTENDED",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": {
+   "quiet": false,
+   "method": "enumerate",
+   "no_name_filter": true,
+   "thresholds": {
+    "cpu_pct": 20.0,
+    "rss_gib": 2.0
+   },
+   "contenders": [
+    {
+     "pid": 12942,
+     "cpu_pct": 102.8,
+     "rss_gib": 42.43,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 19609,
+     "cpu_pct": 97.1,
+     "rss_gib": 1.94,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 292,
+     "cpu_pct": 57.2,
+     "rss_gib": 0.17,
+     "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores"
+    },
+    {
+     "pid": 17566,
+     "cpu_pct": 22.5,
+     "rss_gib": 0.05,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 180,
+     "cpu_pct": 20.6,
+     "rss_gib": 0.03,
+     "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+    },
+    {
+     "pid": 739,
+     "cpu_pct": 36.1,
+     "rss_gib": 0.02,
+     "comm": "/usr/libexec/avconferenced"
+    },
+    {
+     "pid": 52616,
+     "cpu_pct": 24.5,
+     "rss_gib": 0.02,
+     "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+    }
+   ],
+   "n_contenders": 7,
+   "total_cpu_pct": 360.8,
+   "max_rss_gib": 42.43,
+   "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+  },
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "DERIVED from a quiescence sample this receipt already carried"
+ },
+ "AND_THE_AKB_REFUSED_MY_WORDING_ON_A_THIRD_ARM": "The full suite refused 15 tests because my amendment to AKB-LANE-ORDER-COSTS wrote 'it is the only one that is fastest' -- a BARE PRESENT-TENSE COMPARATIVE, which the knowledge base forbids because a comparative with no scope is the sentence that travels to another shape, another tpr or another machine and stops being true. This is a DIFFERENT ARM from the two that fired earlier in this session: those were ANTI-VACUITY, refusing a laws_reconciled declaration whose law did not cite the amending receipt, and this one is about the STATEMENT'S OWN WORDING. Fixed by scoping it -- 'at this shape, tpr and machine no other arm has beaten it' -- which is what the measurement supports. Three refusals from three independent rules, each catching its author."
+}

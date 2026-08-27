@@ -1,0 +1,475 @@
+{
+ "receipt": "ACCELERATOR_THE_SIMDGROUP_SPAN_DOUBLES",
+ "date": "2026-08-26",
+ "obligation": "G046 (FRONT D) with G047",
+ "question": "ACCELERATOR_LANE_ORDER_COSTS measured lane -> (lane*37) % 64 costing 1.08x and named the next axis in its own words: 'M=3 moves a lane three slots while M=37 scatters it across the simdgroup, so sweeping M would say whether the cost tracks DISPLACEMENT or merely DISORDER.'",
+ "MY_OWN_FRAMING_IS_REFUTED_BEFORE_ANY_ARM_RAN": "Enumerating the maps first: MEAN CIRCULAR DISPLACEMENT IS IDENTICALLY 16.00 FOR EVERY NON-IDENTITY ODD MULTIPLIER -- 3, 17, 33, 37 and 63 alike. That is a property of the multiplicative group mod 64, not an accident of the choices, so A MULTIPLICATIVE PERMUTATION CANNOT VARY DISPLACEMENT AT ALL and the displacement-versus-disorder question I wrote down is ILL-POSED IN THIS FAMILY. Running the sweep and reporting 'no displacement trend' would have been a check whose answer was fixed before the run -- the shape this program has sealed six times. NO ARM WAS SPENT ON IT, and the arithmetic is pinned by a test so the framing cannot come back.",
+ "AND_THE_CENTRAL_ARITHMETIC_OF_MY_PREVIOUS_BLOCK_IS_WRONG": "ACCELERATOR_LANE_ORDER_COSTS rested its whole mechanism reading on one sentence: 'a permutation leaves THE SET OF ADDRESSES THE SIMDGROUP TOUCHES AT EACH INSTANT EXACTLY IDENTICAL'. THAT IS TRUE OVER 64 LANES AND FALSE OVER A 32-LANE SIMDGROUP -- and the simdgroup is the coalescing unit, so the false half is the one that mattered. Counted: the IDENTITY gives a simdgroup a CONTIGUOUS 1024-BYTE SPAN in 1 fragment, while EVERY permutation gives it 2048 BYTES, exactly double, because half the groups a simdgroup now touches live in the other half of the row. I wrote 'identical' from the THREADGROUP-level fact and applied it at SIMDGROUP level.",
+ "P1_IS_MINE_AND_IT_IS_REFUTED": {
+  "the_discriminator": "M=63 is -1 mod 64, a REVERSAL: 62 of 63 adjacent lane pairs stay adjacent where every other permutation keeps 0 of 63. It was chosen as the one point separating adjacency from everything else.",
+  "predicted": "INDISTINGUISHABLE from the identity within 3%, falsifier at >= 1.05x",
+  "measured": "1.0944 and 1.0759 in the two cleaner runs, losing 10 of 14 and 11 of 14 rounds",
+  "verdict": "REFUTED PAST THE FALSIFIER. THE REVERSAL COSTS LIKE THE SCATTER, so adjacency is not the variable -- and the reason is the corrected arithmetic above: reversing the lane order gives simdgroup 0 groups {0, 33..63}, a 2048-byte span in 2 fragments, NOT the identity's contiguous 1024."
+ },
+ "WHAT_THE_FOUR_ARMS_SAY_TOGETHER": "Fragment count ranges 2 (M=63) to 32 (M=33), a 16x spread, while every arm doubles the span from 1024 to 2048 bytes -- and THE COST DOES NOT TRACK FRAGMENTATION, landing at 1.03-1.11x for all four with M=33, the MOST fragmented, consistently the CHEAPEST. The cost tracks the SPAN, which is the one thing every permutation changes identically. Stride magnitude is ruled out the same way: 96 bytes (M=3) and 1184 (M=37) cost the same within noise.",
+ "THE_ORDER_ARTIFACT_I_HAD_NOT_CONTROLLED_FOR": "Round-robin fixed a transient landing on ONE arm, but every round still ran the arms IN THE SAME ORDER with the identity FIRST -- so a systematic advantage to the first position (clock ramp, cache state, contention arriving later in a round) would have been charged to arm IDENTITY, and THE PREVIOUS BLOCK'S 27-OF-28 RESULT WOULD HAVE BEEN AN ARTIFACT. Tested rather than assumed: the arm order now ROTATES by round index so every arm holds every position equally, and the effect SURVIVES -- the identity still wins 11, 11, 10 and 12 of 14 in the rotated clean run. ORDER IS NOT THE EXPLANATION and the previous block's separation stands. The rotation ships regardless, because an instrument whose blind spot has been checked once is not the same as one that cannot have it.",
+ "P3_AND_THE_REPRODUCTION_IS_WEAKER_THAN_LAST_BLOCK_AND_SAYS_SO": {
+  "predicted": "M=37 lands at 1.07-1.09x a third time",
+  "measured": "1.0266 / 1.0603 / 1.0730 / 1.0598 across four runs, rounds 7 / 12 / 12 / 6 of 14",
+  "verdict": "PARTIALLY CONFIRMED AND NOTICEABLY NOISIER. Two runs land in the band and two do not; the previous block's two runs agreed to 0.08% and this block's four span 1.027 to 1.073. THE DIFFERENCE IS THE MACHINE, NOT THE KERNEL: round-spreads here reach 220-618% against that block's 36-261%, and the two runs that reproduce are the two with the tighter spreads. The 1.08x figure is NOT re-confirmed as a value; what reproduces is the DIRECTION and the ordinal separation, which is what that block said carried it in the first place."
+ },
+ "runs": {
+  "fixed_order_run_1": {
+   "minima_ms": {
+    "lane1": 0.3088,
+    "lane63": 0.3122,
+    "lane3": 0.3126,
+    "lane33": 0.3057,
+    "lane37": 0.317
+   },
+   "round_spread_pct": {
+    "lane1": 220.0,
+    "lane63": 237.4,
+    "lane3": 204.2,
+    "lane33": 203.6,
+    "lane37": 200.5
+   },
+   "over_identity": {
+    "lane1": 1.0,
+    "lane63": 1.0109,
+    "lane3": 1.0123,
+    "lane33": 0.9899,
+    "lane37": 1.0266
+   },
+   "rounds_identity_beats_of_14": {
+    "lane63": 7,
+    "lane3": 9,
+    "lane33": 7,
+    "lane37": 7
+   }
+  },
+  "fixed_order_run_2": {
+   "minima_ms": {
+    "lane1": 0.2873,
+    "lane63": 0.3144,
+    "lane3": 0.3186,
+    "lane33": 0.314,
+    "lane37": 0.3046
+   },
+   "round_spread_pct": {
+    "lane1": 26.9,
+    "lane63": 27.1,
+    "lane3": 39.5,
+    "lane33": 16.6,
+    "lane37": 44.6
+   },
+   "over_identity": {
+    "lane1": 1.0,
+    "lane63": 1.0944,
+    "lane3": 1.1089,
+    "lane33": 1.0931,
+    "lane37": 1.0603
+   },
+   "rounds_identity_beats_of_14": {
+    "lane63": 10,
+    "lane3": 12,
+    "lane33": 11,
+    "lane37": 12
+   }
+  },
+  "rotated_order_run_1": {
+   "minima_ms": {
+    "lane1": 0.2826,
+    "lane63": 0.3041,
+    "lane3": 0.3022,
+    "lane33": 0.2915,
+    "lane37": 0.3032
+   },
+   "round_spread_pct": {
+    "lane1": 229.8,
+    "lane63": 219.8,
+    "lane3": 25.6,
+    "lane33": 11.9,
+    "lane37": 455.1
+   },
+   "over_identity": {
+    "lane1": 1.0,
+    "lane63": 1.0759,
+    "lane3": 1.0693,
+    "lane33": 1.0313,
+    "lane37": 1.073
+   },
+   "rounds_identity_beats_of_14": {
+    "lane63": 11,
+    "lane3": 11,
+    "lane33": 10,
+    "lane37": 12
+   }
+  },
+  "rotated_order_run_2": {
+   "minima_ms": {
+    "lane1": 0.3038,
+    "lane63": 0.3109,
+    "lane3": 0.3183,
+    "lane33": 0.315,
+    "lane37": 0.322
+   },
+   "round_spread_pct": {
+    "lane1": 618.5,
+    "lane63": 204.5,
+    "lane3": 224.5,
+    "lane33": 480.2,
+    "lane37": 72.8
+   },
+   "over_identity": {
+    "lane1": 1.0,
+    "lane63": 1.0235,
+    "lane3": 1.0476,
+    "lane33": 1.0368,
+    "lane37": 1.0598
+   },
+   "rounds_identity_beats_of_14": {
+    "lane63": 7,
+    "lane3": 8,
+    "lane33": 5,
+    "lane37": 6
+   }
+  }
+ },
+ "per_simdgroup_footprint": {
+  "M=1": {
+   "span_bytes": 1024,
+   "fragments": 1
+  },
+  "M=3": {
+   "span_bytes": 2048,
+   "fragments": 22
+  },
+  "M=33": {
+   "span_bytes": 2048,
+   "fragments": 32
+  },
+  "M=37": {
+   "span_bytes": 2048,
+   "fragments": 20
+  },
+  "M=63": {
+   "span_bytes": 2048,
+   "fragments": 2
+  },
+  "per_threadgroup": "every M covers groups 0..63 = 2048 bytes in 1 fragment -- the half that IS identical"
+ },
+ "what_this_leaves_standing_in_the_previous_block": "THE MEASUREMENT STANDS: lane order costs, the identity is faster, and it is not the extra multiply and modulo. WHAT IS WITHDRAWN IS THE MECHANISM SENTENCE -- 'the address set per instant is identical, so it is NOT reach, NOT capacity and NOT cold lines' -- because the set is NOT identical at simdgroup granularity, so reach and capacity were never excluded and that exclusion must not be cited. AKB-LANE-ORDER-COSTS is AMENDED IN PLACE and declared laws_reconciled, which the validator refuses unless the law's own statement cites this receipt.",
+ "controls": {
+  "anti_vacuity": "every arm is a BIJECTION and therefore MUST be correct -- rel_err 1.86e-07 to 2.02e-07, all under 1e-5",
+  "bijection": "verified over all 64 lanes for every multiplier, and asserted NOT the identity for each",
+  "displacement": "pinned at exactly 16.0 for all five non-identity multipliers so the ill-posed framing cannot return",
+  "span_and_fragments_are_separate": "a test asserts the fragment range is at least 10x at one span, or the sweep could not tell them apart",
+  "order": "arm order rotated by round index; the effect survives, which is the control not the finding"
+ },
+ "claim_boundary": [
+  "FOUR RUNS AND THEY DO NOT ALL AGREE. Fixed-order run 1 (spreads 200-237%) shows NOTHING at 7/9/7/7 rounds; the other three show the effect at 10-12 of 14. The two quietest runs carry it and the noisiest does not, which is the expected direction and is NOT proof -- a reader should take 1.03-1.11x as the range and the ordinal counts as the evidence.",
+  "BENCH_STATE CONTENDED throughout, round-spreads 12% to 618%. Minima are the estimator.",
+  "THE SPAN CONCLUSION IS AN INFERENCE FROM FOUR ARMS THAT ALL DOUBLE IT. Nothing here varies the span independently -- a permutation cannot -- so 'the cost tracks the span' is the surviving candidate after fragmentation and stride magnitude are excluded, NOT a measured relationship. Varying the span at fixed work needs a different construction and is NOT BUILT HERE.",
+  "ONE shape, ONE tpr, ONE machine, INSTANCE. NO SHIPPED KERNEL CHANGED -- these arms are correct and all four are SLOWER, so nothing is adopted; no model executed, no capability run, no adequacy claim moves."
+ ],
+ "next": "Varying the per-simdgroup span WITHOUT a permutation: give each simdgroup a contiguous half-row by splitting rows across simdgroups rather than interleaving them, which changes the span while keeping every lane's work and the threadgroup footprint fixed. NOT RUN HERE.",
+ "akb_registration": {
+  "evidence_domain": "accelerator",
+  "civilization": "I-D_ACCELERATOR",
+  "program": "HAWKING ACCELERATOR (S015/S031/S032)",
+  "machine_scope": "Apple M3 Ultra, INSTANCE",
+  "representation_scope": "ws_rtn_q4_g64",
+  "kernel_scope": "native matvec under five lane permutations",
+  "why_declared": "membership must not depend on what this file was named (S032 s13)."
+ },
+ "identities": {
+  "experiment": {
+   "class": "ACCEL-KERNEL",
+   "knowledge_level": "INSTANCE",
+   "question": "does lane-order cost track displacement, adjacency, stride or per-simdgroup span"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "ram_gib": 96,
+   "measured_dram_gb_s": 589.73,
+   "bench_state": "CONTENDED",
+   "quiescence": {
+    "fixed_order_run_1": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 79958,
+       "cpu_pct": 56.0,
+       "rss_gib": 45.02,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 9825,
+       "cpu_pct": 62.2,
+       "rss_gib": 1.94,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 728,
+       "cpu_pct": 30.5,
+       "rss_gib": 1.36,
+       "comm": "/Applications/OrbStack.app/Contents/Frameworks/OrbStack Helper.app/Contents/MacOS/OrbStack Helper"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 36.2,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 23.3,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      },
+      {
+       "pid": 9835,
+       "cpu_pct": 24.1,
+       "rss_gib": 0.0,
+       "comm": "(ps)"
+      }
+     ],
+     "n_contenders": 6,
+     "total_cpu_pct": 232.3,
+     "max_rss_gib": 45.02,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    },
+    "fixed_order_run_2": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 79958,
+       "cpu_pct": 79.8,
+       "rss_gib": 41.18,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 9944,
+       "cpu_pct": 69.3,
+       "rss_gib": 1.94,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 35.1,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 24.1,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 4,
+     "total_cpu_pct": 208.3,
+     "max_rss_gib": 41.18,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    },
+    "rotated_order_run_1": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 79958,
+       "cpu_pct": 103.8,
+       "rss_gib": 38.15,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 10270,
+       "cpu_pct": 90.3,
+       "rss_gib": 1.95,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 35.0,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 23.6,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 4,
+     "total_cpu_pct": 252.7,
+     "max_rss_gib": 38.15,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    },
+    "rotated_order_run_2": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 79958,
+       "cpu_pct": 88.0,
+       "rss_gib": 37.14,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 10372,
+       "cpu_pct": 71.8,
+       "rss_gib": 1.94,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 35.6,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 21.5,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      },
+      {
+       "pid": 1,
+       "cpu_pct": 31.6,
+       "rss_gib": 0.01,
+       "comm": "/sbin/launchd"
+      }
+     ],
+     "n_contenders": 5,
+     "total_cpu_pct": 248.5,
+     "max_rss_gib": 37.14,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    }
+   }
+  },
+  "device": {
+   "backend": "Metal",
+   "api": "mx.fast.metal_kernel JIT, MLX"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "NO MODEL EXECUTED. 17408x5120 borrowed from the resident's MLP; synthetic weights."
+  },
+  "representation": {
+   "native": "ws_rtn_q4_g64, 4.25 bpw"
+  },
+  "runtime": {
+   "analysis": "tools/accelerator/gravity_native.py::source_operand_probe (_laneM)",
+   "tests": "tools/accelerator/test_simdgroup_span.py, tools/accelerator/test_lane_order.py"
+  },
+  "kernel": {
+   "arms": [
+    "lane1",
+    "lane63",
+    "lane3",
+    "lane33",
+    "lane37"
+   ],
+   "tpr": 64,
+   "tg": 128
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device, no transfer crossed"
+  }
+ },
+ "bench": {
+  "state": "CONTENDED",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": {
+   "quiet": false,
+   "method": "enumerate",
+   "no_name_filter": true,
+   "thresholds": {
+    "cpu_pct": 20.0,
+    "rss_gib": 2.0
+   },
+   "contenders": [
+    {
+     "pid": 79958,
+     "cpu_pct": 56.0,
+     "rss_gib": 45.02,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 9825,
+     "cpu_pct": 62.2,
+     "rss_gib": 1.94,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 728,
+     "cpu_pct": 30.5,
+     "rss_gib": 1.36,
+     "comm": "/Applications/OrbStack.app/Contents/Frameworks/OrbStack Helper.app/Contents/MacOS/OrbStack Helper"
+    },
+    {
+     "pid": 739,
+     "cpu_pct": 36.2,
+     "rss_gib": 0.02,
+     "comm": "/usr/libexec/avconferenced"
+    },
+    {
+     "pid": 52616,
+     "cpu_pct": 23.3,
+     "rss_gib": 0.02,
+     "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+    },
+    {
+     "pid": 9835,
+     "cpu_pct": 24.1,
+     "rss_gib": 0.0,
+     "comm": "(ps)"
+    }
+   ],
+   "n_contenders": 6,
+   "total_cpu_pct": 232.3,
+   "max_rss_gib": 45.02,
+   "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+  },
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "DERIVED from a quiescence sample this receipt already carried"
+ },
+ "A_TEST_IN_THIS_SUITE_RESTED_ON_A_NUMBER_THIS_PROGRAM_HAD_ALREADY_RETRACTED": "The full suite failed on test_THE_BARRIER_IS_LOAD_BEARING, which then PASSED THREE TIMES IN ISOLATION on a file this block never touched. It asserted a barrier-strip control fires in 8 runs, justified in its own docstring by kernel_forge.barrier_control_prior calling the shape LOUD -- and ACCELERATOR_THE_REDUCTION_TAIL_IS_FREE REFUTED THAT PRIOR ON THIS EXACT KERNEL, measuring 4 of 60 in one process against 8 of 8 in another and setting expected_p_fired to None with LOUD_OBSERVED_RANGE = (0.067, 1.000). At that measured quiet extreme EIGHT RUNS DETECT 42% OF THE TIME, so the assertion was a coin flip resting on a number the program had already withdrawn -- the correction reached the instrument and never reached the test that cited it. A GREEN THAT DEPENDS ON A RACE FIRING IS NOT REPRODUCIBLE FROM A CLEAN CHECKOUT, the same class as the stamper-that-was-a-tool. FIXED BY DERIVING THE REPEAT COUNT FROM THE RECORDED RANGE rather than choosing one: 40 runs gives 94% detection at p=0.067, and the residual 6% is stated IN THE FAILURE MESSAGE, which now says a miss means THE QUIET REGIME and explicitly NOT that the barrier is unnecessary. No repeat count reaches certainty against a race and the test says so.",
+ "AMENDED_2026-08-26_THE_SPAN_CANDIDATE_IS_WITHDRAWN": {
+  "amending_receipt": "receipts/headless/ACCELERATOR_SPAN_IS_REFUTED_COALESCING_IS_NOT.json",
+  "what_is_withdrawn": "This receipt's conclusion that THE SPAN IS THE SURVIVING CANDIDATE. It said so while naming its own weakness -- 'nothing here varies the span independently because a permutation cannot' -- and a BLOCKED PARTITION can: same per-lane count LANE BY LANE, same per-simdgroup total, simd0's span cut from 2560 bytes in two fragments to a CONTIGUOUS 1536. IT IS 1.0315x AND 1.0303x SLOWER, agreeing to 0.1% across two runs. Narrowing the span in the direction this receipt said should help COSTS 3%, so span joins fragmentation and stride magnitude as EXCLUDED and every candidate this receipt named is now dead.",
+  "what_stands": "EVERY MEASUREMENT. All four permutations cost 1.03-1.11x, the effect survives rotating the arm order, fragmentation is excluded at a 16x range on one span, stride magnitude is excluded at 96 against 1184 bytes, and the simdgroup-span arithmetic that corrected ACCELERATOR_LANE_ORDER_COSTS is unchanged and is what made the blocked probe designable at all.",
+  "what_replaces_it": "PER-ITERATION COALESCING, a property no arm in either block had varied: span, fragmentation and stride all describe the addresses a simdgroup touches OVER THE WHOLE LOOP, while a coalescer sees what it asks for AT ONE INSTANT. The shipped assignment issues ONE contiguous 1024-byte request at iteration 0; blocked shatters it into 17 runs and M=37 into 20, and the shipped one is the only one that is fastest. A CANDIDATE, NOT A CLAIM -- and the amending block could not isolate it either, because improving the span necessarily destroys the coalescing.",
+  "laws_reconciled": [
+   "AKB-LANE-ORDER-COSTS"
+  ]
+ }
+}

@@ -278,7 +278,12 @@ def test_a_barrier_with_NOTHING_upstream_is_a_LOUD_control():
     # The loud case IS a reliable prediction: every cell ever measured with no
     # upstream barrier fires 1.00 -- all eight factorial cells and every width and
     # work count in the window sweep.
-    assert p["expected_p_fired"] == 1.0
+    # REFUTED 2026-08-26: the loud case carried 1.000 until gravity_native's serial
+    # reduction tail -- no upstream barrier, so LOUD by this prior -- measured 0.067
+    # over 60 runs with the intact kernel wrong 0 of 60. No number is offered now.
+    assert p["expected_p_fired"] is None
+    assert p["expected_p_fired_range"] == kf.LOUD_OBSERVED_RANGE
+    assert p["blind_to_lane_work_imbalance"] is True
 
 
 def test_a_barrier_JUST_AFTER_ANOTHER_is_a_QUIET_control_and_says_so():

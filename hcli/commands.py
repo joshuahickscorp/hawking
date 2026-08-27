@@ -100,9 +100,14 @@ def format_status(snapshot: Dict[str, Any]) -> str:
     occupancy = snap.get("occupancy")
     if not isinstance(occupancy, dict):
         occupancy = None
+    runtime = snap.get("runtime")
+    if not isinstance(runtime, dict):
+        runtime = None
     qwen = snap.get("qwen")
     if not isinstance(qwen, dict):
         qwen = None
+    provider_status = runtime or qwen
+    provider_label = "Runtime" if runtime is not None else "Qwen"
     grok = snap.get("grok")
     if not isinstance(grok, dict):
         grok = None
@@ -130,35 +135,35 @@ def format_status(snapshot: Dict[str, Any]) -> str:
     if reason:
         wu_line += f" blocked_reason={reason}"
 
-    if not qwen:
-        qwen_line = "Qwen unknown"
+    if not provider_status:
+        qwen_line = f"{provider_label} unknown"
     else:
-        health = qwen.get("health")
+        health = provider_status.get("health")
         if health and health != "ok":
-            queued = qwen.get("queued")
+            queued = provider_status.get("queued")
             queued_s = str(queued) if queued is not None else "unknown"
             qwen_line = (
-                "Qwen health=down resident=0 active=0 "
+                f"{provider_label} health=down resident=0 active=0 "
                 f"queued={queued_s} n_ctx=unknown prompt=unknown tps=unknown"
             )
         elif health == "ok":
             qwen_line = (
-                f"Qwen health=ok resident={_fmt_unknown(qwen.get('resident'))} "
-                f"active={_fmt_unknown(qwen.get('active_decode'))} "
-                f"queued={_fmt_unknown(qwen.get('queued'))} "
-                f"n_ctx={_fmt_unknown(qwen.get('n_ctx'))} "
-                f"prompt={_fmt_unknown(qwen.get('prompt_tokens'))} "
-                f"tps={_fmt_unknown(qwen.get('tps'))}"
+                f"{provider_label} health=ok resident={_fmt_unknown(provider_status.get('resident'))} "
+                f"active={_fmt_unknown(provider_status.get('active_decode'))} "
+                f"queued={_fmt_unknown(provider_status.get('queued'))} "
+                f"n_ctx={_fmt_unknown(provider_status.get('n_ctx'))} "
+                f"prompt={_fmt_unknown(provider_status.get('prompt_tokens'))} "
+                f"tps={_fmt_unknown(provider_status.get('tps'))}"
             )
         else:
             qwen_line = (
-                "Qwen health=unknown "
-                f"resident={_fmt_unknown(qwen.get('resident'))} "
-                f"active={_fmt_unknown(qwen.get('active_decode'))} "
-                f"queued={_fmt_unknown(qwen.get('queued'))} "
-                f"n_ctx={_fmt_unknown(qwen.get('n_ctx'))} "
-                f"prompt={_fmt_unknown(qwen.get('prompt_tokens'))} "
-                f"tps={_fmt_unknown(qwen.get('tps'))}"
+                f"{provider_label} health=unknown "
+                f"resident={_fmt_unknown(provider_status.get('resident'))} "
+                f"active={_fmt_unknown(provider_status.get('active_decode'))} "
+                f"queued={_fmt_unknown(provider_status.get('queued'))} "
+                f"n_ctx={_fmt_unknown(provider_status.get('n_ctx'))} "
+                f"prompt={_fmt_unknown(provider_status.get('prompt_tokens'))} "
+                f"tps={_fmt_unknown(provider_status.get('tps'))}"
             )
 
     if not grok:
@@ -472,7 +477,7 @@ def _status_has_observed_fields(snap: Dict[str, Any]) -> bool:
         return True
     if snap.get("watchdog") not in (None, "", "unknown"):
         return True
-    if snap.get("qwen") or snap.get("grok"):
+    if snap.get("runtime") or snap.get("qwen") or snap.get("grok"):
         return True
     return False
 
@@ -576,6 +581,9 @@ class CommandHandler:
             "  /status - show session status\n"
             "  /models - list available models\n"
             "  /model - select model\n"
+            "  /tools - list typed AgentOS tools\n"
+            "  /provider - show the selected provider profile\n"
+            "  /flash-next - show the pinned Flash-Next acquisition identity\n"
             "  /goal - set active goal\n"
             "  /ultragoal - create or show the durable Goal + ledger + DAG\n"
             "  /mission - run a persistent mission\n"
@@ -644,6 +652,47 @@ class CommandHandler:
             return f"Model not found: {arg}"
         name = getattr(self.controller, "model_name", None) or result
         return f"Switched to {name}"
+
+    def _cmd_tools(self, arg: str) -> str:
+        del arg
+        from .tool_registry import default_tool_registry
+
+        workspace = getattr(self.controller, "workspace_root", None) or os.getcwd()
+        registry = default_tool_registry(workspace)
+        tools = registry.discover()
+        self.last_value = tools
+        return "\n".join(
+            f"{item['name']}  mutation={item['mutation']}"
+            for item in tools
+        )
+
+    def _cmd_provider(self, arg: str) -> str:
+        del arg
+        from .providers import profile_from_backend
+
+        pool = getattr(self.controller, "runtime_pool", None)
+        rows = []
+        for runtime in getattr(pool, "runtimes", []) or []:
+            backend = getattr(runtime, "backend", None)
+            if backend is not None:
+                rows.append(profile_from_backend(backend).to_dict())
+        if not rows:
+            model = getattr(self.controller, "model", None)
+            rows = [{"model_id": model, "provider": "unspawned"}] if model else []
+        self.last_value = rows
+        return json.dumps(rows, indent=2, sort_keys=True)
+
+    def _cmd_flash_next(self, arg: str) -> str:
+        from .flash_next import flash_next_profile
+
+        report = flash_next_profile(arg.strip() or None)
+        self.last_value = report
+        profile = report["profile"]
+        return (
+            f"{profile['model_id']} revision="
+            f"{profile['artifact']['pinned_revision']} "
+            f"qualification={profile['qualification']['status']}"
+        )
 
     def _cmd_goal(self, arg: str) -> str:
         if not arg:

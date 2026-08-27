@@ -60,6 +60,10 @@ class WorkUnit:
     repair_reason: Optional[str] = None
     repair_exhausted: bool = False
     classification: Optional[str] = None
+    # Provider preference is execution policy, not work identity.  It is
+    # persisted so a restart does not silently route a specialist unit through
+    # the current resident.
+    provider: Optional[str] = None
 
     def __post_init__(self) -> None:
         self.resource_class = normalize_resource_class(self.resource_class)
@@ -94,6 +98,7 @@ class WorkUnit:
             "running_at": self.running_at,
             "finished_at": self.finished_at,
             "classification": self.classification,
+            "provider": self.provider,
             "content_hash": content_identity(self),
         }
 
@@ -128,6 +133,7 @@ class WorkUnit:
             running_at=_opt_float(data.get("running_at")),
             finished_at=_opt_float(data.get("finished_at")),
             classification=data.get("classification"),
+            provider=data.get("provider"),
         )
 
 
@@ -392,6 +398,7 @@ def emit_repair(
         failure_context=failure_context,
         verifier=getattr(wu, "verifier", None),
         preferred_backend=getattr(wu, "preferred_backend", None),
+        provider=getattr(wu, "provider", None),
         repair_root=root,
         repair_depth=depth,
     )

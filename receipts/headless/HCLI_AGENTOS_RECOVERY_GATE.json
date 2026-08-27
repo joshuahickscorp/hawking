@@ -1,0 +1,85 @@
+{
+  "checks": {
+    "benchmark_rejected": true,
+    "malformed_json": true,
+    "network_unavailable": true,
+    "nonsense_model": true,
+    "recovery": true
+  },
+  "claim_boundary": "This proves the tested AgentOS control-plane failure paths with a disposable fixture; it is not proof of production resident sovereignty.",
+  "controls": {
+    "benchmark_rejected": {
+      "failure_class": "PERMISSION_DENIED",
+      "status": "REJECTED"
+    },
+    "malformed_json": {
+      "error_type": "HawkingNativeProtocolError",
+      "status": "REJECTED"
+    },
+    "network_unavailable": {
+      "failure_class": "URLError",
+      "status": "REJECTED"
+    },
+    "nonsense_model": {
+      "failed_units": [
+        "nonsense-unit",
+        "nonsense-unit.repair.1"
+      ],
+      "result": {
+        "accepted": 0,
+        "cancelled": false,
+        "failed_units": [
+          "nonsense-unit",
+          "nonsense-unit.repair.1"
+        ],
+        "mission_id": "dfd9d0c9-e821-4930-9baf-782b9f949385",
+        "no_progress_warning": null,
+        "reason": null,
+        "state": "INCONCLUSIVE",
+        "status": "completed",
+        "verdict": "INCONCLUSIVE"
+      },
+      "status": "REJECTED"
+    }
+  },
+  "finished_at": 1787788288.194433,
+  "next_action": "run the same gate against each configured production provider and persist its receipts before claiming unattended sovereignty",
+  "owned_workspace": true,
+  "qualification": "FIXTURE_PHYSICAL_CONTROL_PLANE_ONLY",
+  "receipt_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-recovery-gate-5lkxm_gq/.hcli/receipts/recovery-gate.json",
+  "recovery": {
+    "artifact_persisted": true,
+    "continued_result": {
+      "accepted": 1,
+      "cancelled": false,
+      "failed_units": [
+        "recovery-unit"
+      ],
+      "mission_id": "ff79d182-78df-4d3c-9b39-5fdfa7950ae7",
+      "no_progress_warning": null,
+      "reason": null,
+      "state": "INCONCLUSIVE",
+      "status": "completed",
+      "verdict": "INCONCLUSIVE"
+    },
+    "control_checkpoint": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-recovery-gate-5lkxm_gq/.hcli/agentos/checkpoint.json",
+    "host_killed": true,
+    "host_started": true,
+    "mission_state": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-recovery-gate-5lkxm_gq/.hcli/mission/state.json",
+    "reasoning_started": true,
+    "recovered_before_continue": {
+      "mission_id": "ff79d182-78df-4d3c-9b39-5fdfa7950ae7",
+      "unit_state": "FAILED_RECOVERABLE",
+      "unit_status": "failed"
+    },
+    "recovered_work_unit_id": "recovery-unit.repair.1",
+    "resident_killed": true,
+    "safe_work_unit_verified": true,
+    "status": "PASSED",
+    "tool_started": true
+  },
+  "schema": "hcli.agentos.recovery_gate.v1",
+  "started_at": 1787788285.725548,
+  "status": "PASSED",
+  "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-recovery-gate-5lkxm_gq"
+}

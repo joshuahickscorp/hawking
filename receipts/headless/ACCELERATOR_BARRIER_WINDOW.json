@@ -197,5 +197,14 @@
   "f32, one machine, INSTANCE. Nothing timed and the lake fill was NOT quiesced, which cannot bias a correctness count.",
   "NO SHIPPED KERNEL WAS MODIFIED, so no performance or correctness claim about any AIR primitive moves."
  ],
- "tests": "451 accelerator tests pass (was 450)."
+ "tests": "451 accelerator tests pass (was 450).",
+ "AMENDED_2026_08_26_THE_LOUD_HALF_OF_THE_ASYMMETRY_IS_REFUTED": {
+  "what_this_receipt_claimed": "This receipt retracted the QUIET number and kept the loud one, writing that WHAT SURVIVES IS AN ASYMMETRY: 'the LOUD case is a reliable prediction, since with no upstream barrier EVERY CELL EVER MEASURED fires 1.00'. kernel_forge shipped that as expected_p_fired = 1.000 with range (1.0, 1.0).",
+  "what_refutes_it": "receipts/headless/ACCELERATOR_THE_REDUCTION_TAIL_IS_FREE.json measured a REAL SHIPPED kernel that this prior classifies LOUD -- gravity_native's serial reduction tail, no upstream barrier, 19 statements since -- at 8 of 8 in one process, 1 of 8 in another, and 4 of 60 = 0.067 under ground truth with the intact kernel wrong 0 of 60. The same kernel spans p = 0.067 to 1.00 across processes, so THE LOUD CASE IS AS UNSTABLE AS THE QUIET ONE.",
+  "why_the_synthetic_family_never_showed_it": "A window is also closed when THE READING THREAD IS THE SLOWEST ONE. Here 80 groups divide round-robin over 64 lanes, so lanes 0-15 do two groups and lanes 16-63 do one -- and lane 0, the lane that reads every slot, sits in the group doing the MOST work, arriving at its read after the lanes it reads from have long since written. That is a property of the WORK DISTRIBUTION ACROSS LANES, and this receipt's kernels had a uniform body, so the mechanism could not appear in them.",
+  "what_survives": "The BETWEEN/BEFORE work sweep, the crossover moving with width, and the finding that a threadgroup barrier does not fully resynchronize a wide threadgroup are UNCHANGED -- they were measured. What is withdrawn is only the ASYMMETRY: neither case carries a number now.",
+  "shipped": "CONTROL_LOUDNESS_PRIOR['no_upstream_barrier'] moves 1.000 -> None, expected_p_fired is None in BOTH cases with LOUD_OBSERVED_RANGE = (0.067, 1.000) beside it, and blind_to_lane_work_imbalance is a first-class field naming what the prior cannot see.",
+  "amending_receipt": "receipts/headless/ACCELERATOR_THE_REDUCTION_TAIL_IS_FREE.json",
+  "why_no_laws_reconciled_is_declared": "My first draft declared AKB-CONTROL-LOUDNESS-IS-NOT-TRANSFERABLE reconciled here and the AKB's own anti-vacuity arm refused it. THE DECLARATION WAS VACUOUS: that law's source_receipts are ACCELERATOR_QUIET_CONTROL.json and the new receipt, NOT this one, so the amendment never reached it and nothing was being reconciled. NO LAW RESTS ON THIS RECEIPT -- it is classified NO_VERDICT_FIELD, unextracted with a reason -- so the correct declaration is none at all. The law IS extended, and it is extended through the honest linkage: it now carries the new receipt in its own source_receipts and cites it by name."
+ }
 }

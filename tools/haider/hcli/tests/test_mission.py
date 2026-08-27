@@ -188,6 +188,29 @@ class TestMissionLoop(unittest.TestCase):
             self.assertEqual(b_ctx.get("unit_id"), "b")
             self.assertNotEqual(a_ctx, b_ctx)
 
+    def test_shared_runtime_pool_survives_mission_cleanup(self):
+        class SharedPool:
+            def __init__(self):
+                self.runtimes = []
+                self.stop_calls = 0
+
+            def stop(self):
+                self.stop_calls += 1
+
+        with tempfile.TemporaryDirectory() as tmp:
+            pool = SharedPool()
+            mission = Mission(
+                tmp,
+                engine=StubEngine(tmp),
+                units={"a": _wu("a")},
+                runtime_pool=pool,
+                stop_runtime_pool=False,
+                quiet=True,
+                no_progress_threshold=100,
+            )
+            mission.run()
+            self.assertEqual(pool.stop_calls, 0)
+
     def test_repair_not_repetition(self):
         with tempfile.TemporaryDirectory() as tmp:
             units = {"orig": _wu("orig")}

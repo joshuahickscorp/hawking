@@ -1,0 +1,318 @@
+{
+ "receipt": "ACCELERATOR_THE_ENTRY_COST_IS_FOOTPRINT",
+ "date": "2026-08-26",
+ "obligation": "G046 (FRONT D) with G047; S031 s2 optimisation order",
+ "question": "ACCELERATOR_ENTERING_THE_LOOP_COSTS_MORE_THAN_RUNNING_IT measured that the FIRST two elements of a 64-wide group cost 2.2x-15x what the remaining sixty-two cost, and named exactly one candidate against itself: 'the first iteration is where each thread FIRST TOUCHES packed, scales and x, so COLD CACHE LINES are the obvious candidate -- NOT MEASURED HERE.' It also named the probe: change WHICH LINES the first iteration touches at fixed element count.",
+ "the_variable_and_it_is_exactly_one": "_localN confines every address to N groups (g % N) while the loop bound, the ITERATION COUNT, the ELEMENT COUNT, the scale-load count, the reduction, the grid and the stores are ALL UNCHANGED -- asserted line by line against the base source rather than believed. At N=1 a row touches 32 bytes of packed and 64 x elements; at N=80 it touches 2560 bytes and 5120. SAME WORK, 80x THE FOOTPRINT. The index still varies with g so the body is NOT loop-invariant and cannot be hoisted whole, which would have made the arm measure hoisting instead.",
+ "P1_IS_MINE_AND_IT_IS_REFUTED": {
+  "predicted": "INDISTINGUISHABLE within 10%, because this program has measured the weight reads FREE by deletion, every x read FREE by deletion, and halving the x reads FREE. Falsifier: >= 1.15x.",
+  "measured": "1.472x and 1.453x, winning 13 of 14 and 12 of 14 round-robin rounds",
+  "verdict": "REFUTED PAST MY OWN FALSIFIER, TWICE. FOOTPRINT IS THE ENTRY COST. And the stronger form: thin2_local1 measures 0.2116 and 0.2061 ms against the TRIVIAL kernel's 0.2144 and 0.1998 -- within 1.3% and 3.2%. CONFINING THE FOOTPRINT COLLAPSES THE ENTIRE LOOP-ENTRY GAP, so the gap was never the loop, the scale loads, the reduction or the elements. It was the ADDRESS SPREAD."
+ },
+ "P2_footprint_at_FULL_element_count": {
+  "predicted": "INDISTINGUISHABLE; the production-shaped version of the same question, never run before",
+  "measured": "1.082x and 1.098x, 11 of 14 and 12 of 14 rounds",
+  "verdict": "REFUTED TOO, and this is the number that means something for a real kernel: at the full 17408x5120 element count, spreading addresses over 2560 bytes per row instead of 64 costs 8-10%. It reproduces in direction AND magnitude across two runs. THE MEMORY SYSTEM IS NOT FREE AT PRODUCTION SHAPE, which is the first time in eight blocks that anything has moved."
+ },
+ "P3_the_entry_gap_reproduces": "0.0971 and 0.0997 ms, inside the pre-registered 0.05-0.12 band both times",
+ "minima_ms": {
+  "run_1": {
+   "trivial": 0.2144,
+   "thin2_local1": 0.2116,
+   "thin2": 0.3115,
+   "thin64_local2": 0.2793,
+   "baseline": 0.3023
+  },
+  "run_2": {
+   "trivial": 0.1998,
+   "thin2_local1": 0.2061,
+   "thin2": 0.2995,
+   "thin64_local2": 0.2799,
+   "baseline": 0.3074
+  }
+ },
+ "comparisons": {
+  "run_1": {
+   "P1_thin_local1_over_thin2": 1.472,
+   "P1_rounds_local1_beats_thin2": 13,
+   "P2_full_local2_over_baseline": 1.082,
+   "P2_rounds_local2_beats_baseline": 11,
+   "P3_entry_gap_ms": 0.0971,
+   "rounds_won_overall": {
+    "trivial": 7,
+    "thin2_local1": 7,
+    "thin2": 0,
+    "thin64_local2": 0,
+    "baseline": 0
+   }
+  },
+  "run_2": {
+   "P1_thin_local1_over_thin2": 1.4532,
+   "P1_rounds_local1_beats_thin2": 12,
+   "P2_full_local2_over_baseline": 1.0982,
+   "P2_rounds_local2_beats_baseline": 12,
+   "P3_entry_gap_ms": 0.0997,
+   "rounds_won_overall": {
+    "trivial": 9,
+    "thin2_local1": 3,
+    "thin2": 0,
+    "thin64_local2": 2,
+    "baseline": 0
+   }
+  }
+ },
+ "round_spread_pct": {
+  "run_1": {
+   "trivial": 281.6,
+   "thin2_local1": 239.7,
+   "thin2": 205.6,
+   "thin64_local2": 233.0,
+   "baseline": 169.3
+  },
+  "run_2": {
+   "trivial": 374.6,
+   "thin2_local1": 357.5,
+   "thin2": 220.4,
+   "thin64_local2": 110.0,
+   "baseline": 207.8
+  }
+ },
+ "HOW_THIS_RECONCILES_WITH_THE_WEIGHT_READS_BEING_FREE_RATHER_THAN_CONTRADICTING_IT": "ACCELERATOR_THE_FLOOR_IS_THE_ELEMENT_NOT_THE_BYTE deleted the packed reads outright and measured a TIE, and that stands. It does not conflict with this, and the reason is the axis: THAT CONTROL BARELY CHANGED THE FOOTPRINT. Deleting packed removes 2560 bytes per row while LEAVING x's 20480 bytes and the scale loads exactly where they were, so the address spread the row touches is essentially unchanged and a footprint effect could not appear. _localN confines packed AND x AND the scales TOGETHER. A CONTROL THAT DELETES ONE OF THREE OPERANDS IS NOT A FOOTPRINT EXPERIMENT, and this is the same lesson ACCELERATOR_THE_FLOOR_SPLITS_THREE_WAYS already sealed in different words: A FIXED INTERCEPT IS ONLY AS SPECIFIC AS THE AXIS THAT WAS VARIED. Neither the deletion result nor the seven dead levers are withdrawn; what changes is that an eighth axis exists and IT IS NOT DEAD.",
+ "WHAT_THIS_IS_NOT": "THE CONFINED ARM IS WRONG BY CONSTRUCTION -- it multiplies by the wrong weights, reading rel_err 0.98 against the oracle, and it is NOT A CANDIDATE KERNEL. A real matvec must read all of its weights and all of x, so this does not say a faster kernel exists; it says WHAT THE COST IS MADE OF. Whether any real kernel can recover part of the 8-10% by reordering which lanes touch which lines is a SEPARATE QUESTION AND IS NOT ANSWERED HERE.",
+ "controls": {
+  "anti_vacuity": "every confined probe WRONG at rel_err ~0.98 against the baseline's 2.021e-07",
+  "non_degeneracy": "each separately checked, since a folded loop is also wrong",
+  "single_variable": "asserted LINE BY LINE -- every line of the base except the two address lines must appear verbatim in the confined source, and the loop count must match",
+  "the_widest_confinement_IS_the_baseline": "local at the full group count reproduces the shipped kernel EXACTLY (< 1e-5), so the family contains what executes",
+  "template_drift": "a fragment that is not in the source RAISES rather than letting a no-op replacement make a probe BE its base",
+  "mutations_watched_failing": [
+   "the c0 confinement removed -- caught by the single-variable test",
+   "the divisor check disabled -- caught by the refusal test",
+   "the fragment guard dropped -- caught by the drift test"
+  ]
+ },
+ "claim_boundary": [
+  "ONE shape, ONE tpr, ONE machine, INSTANCE. The thin-work figure is 1.45-1.47x and the full-work figure is 1.08-1.10x; they are DIFFERENT NUMBERS FOR DIFFERENT ELEMENT COUNTS and neither transfers to the other.",
+  "BENCH_STATE CONTENDED and badly so, round-spreads 110-375%. MINIMA are the estimator, medians sit beside them, and an ORDINAL rounds-won count sits beside both -- 13/14 and 12/14 is what carries P1, not the ratio.",
+  "THE MECHANISM IS STILL NOT NAMED. Footprint is measured; whether it is cold lines, TLB reach, cache capacity or coalescing is NOT separated here, and this program's scorecard is five diagnoses written down and two wrong, so no sixth guess is offered.",
+  "NO SHIPPED KERNEL CHANGED -- every confined probe is WRONG BY CONSTRUCTION; no model executed, no capability run, no adequacy claim moves.",
+  "PRODUCTION DOES NOT PAY THE SUBMISSION TERM, unchanged: 402 weight-carrying dispatches inside a 29.29 ms token average 0.0729 ms each because 964 dispatches share a submission."
+ ],
+ "next": "Separating the footprint mechanism is the first thing in this program that a LANE-ORDER change could answer without generated code: hold the footprint AND the work fixed and change only WHICH LANE touches which group, which distinguishes a per-lane reach limit from a per-threadgroup one. NOT RUN HERE.",
+ "akb_registration": {
+  "evidence_domain": "accelerator",
+  "civilization": "I-D_ACCELERATOR",
+  "program": "HAWKING ACCELERATOR (S015/S031/S032)",
+  "machine_scope": "Apple M3 Ultra, INSTANCE",
+  "representation_scope": "ws_rtn_q4_g64",
+  "kernel_scope": "native matvec, addresses confined to N groups at fixed work",
+  "why_declared": "membership must not depend on what this file was named (S032 s13)."
+ },
+ "identities": {
+  "experiment": {
+   "class": "ACCEL-KERNEL",
+   "knowledge_level": "INSTANCE",
+   "question": "does the address footprint cost anything at fixed element count"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "ram_gib": 96,
+   "measured_dram_gb_s": 589.73,
+   "bench_state": "CONTENDED",
+   "quiescence": {
+    "run_1": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 79958,
+       "cpu_pct": 81.1,
+       "rss_gib": 39.02,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 2012,
+       "cpu_pct": 33.1,
+       "rss_gib": 1.94,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 2028,
+       "cpu_pct": 48.7,
+       "rss_gib": 0.05,
+       "comm": "/System/Library/Frameworks/Metal.framework/Versions/A/XPCServices/MTLCompilerService.xpc/Contents/MacOS/MTLCompilerService"
+      },
+      {
+       "pid": 180,
+       "cpu_pct": 20.7,
+       "rss_gib": 0.03,
+       "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 36.7,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 26.6,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 6,
+     "total_cpu_pct": 246.9,
+     "max_rss_gib": 39.02,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    },
+    "run_2": {
+     "quiet": false,
+     "method": "enumerate",
+     "no_name_filter": true,
+     "thresholds": {
+      "cpu_pct": 20.0,
+      "rss_gib": 2.0
+     },
+     "contenders": [
+      {
+       "pid": 79958,
+       "cpu_pct": 66.2,
+       "rss_gib": 39.65,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 2177,
+       "cpu_pct": 99.6,
+       "rss_gib": 1.94,
+       "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+      },
+      {
+       "pid": 728,
+       "cpu_pct": 22.3,
+       "rss_gib": 1.28,
+       "comm": "/Applications/OrbStack.app/Contents/Frameworks/OrbStack Helper.app/Contents/MacOS/OrbStack Helper"
+      },
+      {
+       "pid": 292,
+       "cpu_pct": 25.4,
+       "rss_gib": 0.12,
+       "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores"
+      },
+      {
+       "pid": 739,
+       "cpu_pct": 34.7,
+       "rss_gib": 0.02,
+       "comm": "/usr/libexec/avconferenced"
+      },
+      {
+       "pid": 52616,
+       "cpu_pct": 25.0,
+       "rss_gib": 0.02,
+       "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+      }
+     ],
+     "n_contenders": 6,
+     "total_cpu_pct": 273.2,
+     "max_rss_gib": 39.65,
+     "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+    }
+   }
+  },
+  "device": {
+   "backend": "Metal",
+   "api": "mx.fast.metal_kernel JIT, MLX"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "NO MODEL EXECUTED. 17408x5120 is BORROWED from the resident's MLP; synthetic weights."
+  },
+  "representation": {
+   "native": "ws_rtn_q4_g64, 4.25 bpw"
+  },
+  "runtime": {
+   "analysis": "tools/accelerator/gravity_native.py::source_operand_probe (_localN)",
+   "tests": "tools/accelerator/test_footprint.py"
+  },
+  "kernel": {
+   "arms": [
+    "trivial",
+    "thin2_local1",
+    "thin2",
+    "thin64_local2",
+    "baseline"
+   ],
+   "tpr": 64,
+   "tg": 128
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single device, no transfer crossed"
+  }
+ },
+ "bench": {
+  "state": "CONTENDED",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": {
+   "quiet": false,
+   "method": "enumerate",
+   "no_name_filter": true,
+   "thresholds": {
+    "cpu_pct": 20.0,
+    "rss_gib": 2.0
+   },
+   "contenders": [
+    {
+     "pid": 79958,
+     "cpu_pct": 66.2,
+     "rss_gib": 39.65,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 2177,
+     "cpu_pct": 99.6,
+     "rss_gib": 1.94,
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    },
+    {
+     "pid": 728,
+     "cpu_pct": 22.3,
+     "rss_gib": 1.28,
+     "comm": "/Applications/OrbStack.app/Contents/Frameworks/OrbStack Helper.app/Contents/MacOS/OrbStack Helper"
+    },
+    {
+     "pid": 292,
+     "cpu_pct": 25.4,
+     "rss_gib": 0.12,
+     "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores"
+    },
+    {
+     "pid": 739,
+     "cpu_pct": 34.7,
+     "rss_gib": 0.02,
+     "comm": "/usr/libexec/avconferenced"
+    },
+    {
+     "pid": 52616,
+     "cpu_pct": 25.0,
+     "rss_gib": 0.02,
+     "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTEncoderXPCService.xpc/Contents/MacOS/VTEncoderXPCService"
+    }
+   ],
+   "n_contenders": 6,
+   "total_cpu_pct": 273.2,
+   "max_rss_gib": 39.65,
+   "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive."
+  },
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "DERIVED from a quiescence sample this receipt already carried"
+ }
+}

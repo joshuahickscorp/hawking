@@ -1,0 +1,1937 @@
+{
+  "NOT_FOR_PROMOTION": true,
+  "arms": [
+    {
+      "NOT_FOR_PROMOTION": true,
+      "arm": "swiglu",
+      "bench": {
+        "machine": "Darwin arm64 (macOS-27.0-arm64-arm-64bit-Mach-O)",
+        "note": "Qwen27 MLP selector A/B arm 'swiglu'; parser/graph diagnostic. Only a protected paired run may support a performance claim.",
+        "quiescence": {
+          "contenders": [
+            {
+              "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+              "cpu_pct": 43.1,
+              "pid": 180,
+              "rss_gib": 0.21
+            },
+            {
+              "comm": "/usr/libexec/avconferenced",
+              "cpu_pct": 75.6,
+              "pid": 739,
+              "rss_gib": 0.12
+            },
+            {
+              "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+              "cpu_pct": 24.3,
+              "pid": 88075,
+              "rss_gib": 0.05
+            },
+            {
+              "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+              "cpu_pct": 101.2,
+              "pid": 59666,
+              "rss_gib": 0.04
+            },
+            {
+              "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+              "cpu_pct": 30.3,
+              "pid": 59677,
+              "rss_gib": 0.03
+            }
+          ],
+          "max_rss_gib": 0.21,
+          "method": "enumerate",
+          "n_contenders": 5,
+          "no_name_filter": true,
+          "quiet": false,
+          "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+          "thresholds": {
+            "cpu_pct": 20.0,
+            "rss_gib": 2.0
+          },
+          "total_cpu_pct": 274.5
+        },
+        "recorded_at": "2026-08-27T05:12:07Z",
+        "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+        "samples": {
+          "after": {
+            "contenders": [
+              {
+                "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+                "cpu_pct": 42.8,
+                "pid": 180,
+                "rss_gib": 0.21
+              },
+              {
+                "comm": "/System/Library/ExtensionKit/Extensions/Storage.appex/Contents/MacOS/Storage",
+                "cpu_pct": 49.8,
+                "pid": 59654,
+                "rss_gib": 0.13
+              },
+              {
+                "comm": "/usr/libexec/avconferenced",
+                "cpu_pct": 90.2,
+                "pid": 739,
+                "rss_gib": 0.12
+              },
+              {
+                "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+                "cpu_pct": 103.6,
+                "pid": 59666,
+                "rss_gib": 0.04
+              },
+              {
+                "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+                "cpu_pct": 98.8,
+                "pid": 59677,
+                "rss_gib": 0.03
+              }
+            ],
+            "max_rss_gib": 0.21,
+            "method": "enumerate",
+            "n_contenders": 5,
+            "no_name_filter": true,
+            "quiet": false,
+            "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+            "thresholds": {
+              "cpu_pct": 20.0,
+              "rss_gib": 2.0
+            },
+            "total_cpu_pct": 385.2
+          },
+          "before": {
+            "contenders": [
+              {
+                "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+                "cpu_pct": 43.1,
+                "pid": 180,
+                "rss_gib": 0.21
+              },
+              {
+                "comm": "/usr/libexec/avconferenced",
+                "cpu_pct": 75.6,
+                "pid": 739,
+                "rss_gib": 0.12
+              },
+              {
+                "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+                "cpu_pct": 24.3,
+                "pid": 88075,
+                "rss_gib": 0.05
+              },
+              {
+                "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+                "cpu_pct": 101.2,
+                "pid": 59666,
+                "rss_gib": 0.04
+              },
+              {
+                "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+                "cpu_pct": 30.3,
+                "pid": 59677,
+                "rss_gib": 0.03
+              }
+            ],
+            "max_rss_gib": 0.21,
+            "method": "enumerate",
+            "n_contenders": 5,
+            "no_name_filter": true,
+            "quiet": false,
+            "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+            "thresholds": {
+              "cpu_pct": 20.0,
+              "rss_gib": 2.0
+            },
+            "total_cpu_pct": 274.5
+          }
+        },
+        "state": "CONTENDED"
+      },
+      "benchmark_class": "DIAGNOSTIC_CONTAMINATED",
+      "claim_boundary": "QUALIFIED_PROTECTED is valid only when machine_quiescence reports quiet=true before and after and bench_block derives QUIESCED. DIAGNOSTIC_CONTAMINATED observations may answer structural or execution questions but are not promotion evidence.",
+      "config_identity": {
+        "architecture": "unknown",
+        "artifact_inventory": {
+          "artifact_bytes": 10554328856,
+          "artifact_bytes_exact": true,
+          "artifact_bytes_source": "MIX_REPORT.json:payload_bytes",
+          "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+          "mix_id": "mix_all_mlp_affine_g64_ls",
+          "n_tensors": 755
+        },
+        "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+        "binary": "/Users/scammermike/Downloads/hawking/.hcli/instrumented/ascension_qwen38_resident",
+        "binary_sha256_16": "f18da6ed64ed77d0",
+        "capabilities": {},
+        "compiler": {
+          "language": "rust",
+          "profile": "release-fast",
+          "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+        },
+        "current_runtime": {
+          "complete_tps_current_measured": 24.4086,
+          "complete_tps_historical_qualified": 34.0,
+          "fallbacks": 0
+        },
+        "executable_profile": "release-fast",
+        "fallbacks": [
+          "transformers tokenizer fallback when unavailable"
+        ],
+        "family": "qwen3.8",
+        "fusion_env": {
+          "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+          "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+          "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+          "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+        },
+        "generation": {
+          "do_sample": false,
+          "enable_thinking": false,
+          "max_new_tokens": 2048,
+          "temperature": 0.0,
+          "top_k": 1,
+          "top_p": 1.0
+        },
+        "hot_bytes": null,
+        "limits": {
+          "context": 8192,
+          "max_new_tokens": 2048
+        },
+        "machine_genome": {},
+        "max_seq_len": 8192,
+        "mode": "resident",
+        "model_id": "qwen3.8-27b-sealed-3.14",
+        "param_class": "?B",
+        "physical_ebpw": 3.1393,
+        "profile_schema": "hcli.provider.profile.v1",
+        "prompt_contract": {
+          "fallback_template": "qwen_closed_think",
+          "renderer": "qwen-chat-template-or-closed-think-fallback",
+          "token_count_authority": "native-resident"
+        },
+        "protocol": "hawking.qwen38.resident.v1",
+        "provider": "native",
+        "qualification": "capability 30/43 historical sealed contract",
+        "quantisation": "unknown",
+        "receipts": [
+          "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+          "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+        ],
+        "representation": {
+          "kind": "native-packed",
+          "physical_ebpw": 3.1393,
+          "weights_loaded_once": true
+        },
+        "require_fusion_env": false,
+        "resident_identity": "sealed-3.14",
+        "runtime": "hawking-native",
+        "runtime_env": {
+          "HAWKING_TRACE_DISPATCH": "1"
+        },
+        "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+        "tokenizer_sha256_16": "0997f410c57a1f4e"
+      },
+      "contamination": [
+        "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+        "/System/Library/ExtensionKit/Extensions/Storage.appex/Contents/MacOS/Storage",
+        "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+        "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+        "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+        "/usr/libexec/avconferenced"
+      ],
+      "elapsed_s": 3.824,
+      "finished_at": 1787807527.653607,
+      "fusion_env": {
+        "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+        "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+        "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+        "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+      },
+      "graph_identity": {
+        "dispatches": 15700,
+        "dispatches_per_token": 2616.6666666666665,
+        "kernel_histogram": [
+          [
+            "qwen80_add_residual_rmsnorm_tg",
+            3200
+          ],
+          [
+            "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+            1625
+          ],
+          [
+            "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+            1600
+          ],
+          [
+            "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+            1600
+          ],
+          [
+            "qwen38_gated_delta_decode_vi_simd",
+            1200
+          ],
+          [
+            "qwen38_qkvz_rearrange_conv_l2_f32",
+            1200
+          ],
+          [
+            "qwen80_ba_to_decay_beta_f32",
+            1200
+          ],
+          [
+            "qwen80_deltanet_gated_rmsnorm_tg",
+            1200
+          ],
+          [
+            "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+            1200
+          ],
+          [
+            "mha_decode_f32",
+            400
+          ],
+          [
+            "qwen38_attention_apply_sigmoid_gate",
+            400
+          ],
+          [
+            "qwen38_gqa_qk_norm_rope_cache_tg",
+            400
+          ],
+          [
+            "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+            400
+          ],
+          [
+            "qwen80_residual_rmsnorm_tg",
+            25
+          ],
+          [
+            "qwen_uniform_q4_embedding_lookup",
+            25
+          ],
+          [
+            "sample_argmax_f32",
+            25
+          ]
+        ],
+        "trace_enabled": true
+      },
+      "live": {
+        "decode_metrics": {
+          "dispatches": 3140,
+          "generated_tokens_after_prefill": 5,
+          "gpu_ns": 139316247,
+          "steps": 5,
+          "wall_ns": 145216750,
+          "wall_ns_per_step": 29043350.0
+        },
+        "decode_steps": 5,
+        "dispatches": 15700,
+        "dispatches_per_token": 2616.6666666666665,
+        "error": null,
+        "fallbacks": 0,
+        "generated_tokens": 6,
+        "gpu_ns_per_token": 123074685.5,
+        "kernel_genome": {
+          "exact_when_trace_enabled": true,
+          "histogram": [
+            [
+              "qwen80_add_residual_rmsnorm_tg",
+              3200
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+              1625
+            ],
+            [
+              "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+              1600
+            ],
+            [
+              "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+              1600
+            ],
+            [
+              "qwen38_gated_delta_decode_vi_simd",
+              1200
+            ],
+            [
+              "qwen38_qkvz_rearrange_conv_l2_f32",
+              1200
+            ],
+            [
+              "qwen80_ba_to_decay_beta_f32",
+              1200
+            ],
+            [
+              "qwen80_deltanet_gated_rmsnorm_tg",
+              1200
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+              1200
+            ],
+            [
+              "mha_decode_f32",
+              400
+            ],
+            [
+              "qwen38_attention_apply_sigmoid_gate",
+              400
+            ],
+            [
+              "qwen38_gqa_qk_norm_rope_cache_tg",
+              400
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+              400
+            ],
+            [
+              "qwen80_residual_rmsnorm_tg",
+              25
+            ],
+            [
+              "qwen_uniform_q4_embedding_lookup",
+              25
+            ],
+            [
+              "sample_argmax_f32",
+              25
+            ]
+          ],
+          "trace_enabled": true
+        },
+        "metric_absence_reasons": {
+          "dispatches": null,
+          "gpu_ns_per_token": null,
+          "kernel_genome": null,
+          "prefill_steps": null,
+          "wall_minus_gpu_ns": null
+        },
+        "native_generation_wall_ns": 853003708,
+        "native_metrics": {
+          "capability": {
+            "complete_token_accounting": true,
+            "dense_w_materialized": 0,
+            "fallbacks": 0,
+            "resident": true,
+            "weights_loaded_once": true
+          },
+          "complete_wall_ns": 853040833,
+          "complete_wall_ns_per_generated_token": 142173472.16666666,
+          "decode": {
+            "dispatches": 3140,
+            "generated_tokens_after_prefill": 5,
+            "gpu_ns": 139316247,
+            "steps": 5,
+            "wall_ns": 145216750,
+            "wall_ns_per_step": 29043350.0
+          },
+          "dispatches": 15700,
+          "dispatches_per_generated_token": 2616.6666666666665,
+          "generated_tokens": 6,
+          "generation_wall_ns": 853003708,
+          "gpu_ns": 738448113,
+          "gpu_ns_per_generated_token": 123074685.5,
+          "kernel_genome": {
+            "exact_when_trace_enabled": true,
+            "histogram": [
+              [
+                "qwen80_add_residual_rmsnorm_tg",
+                3200
+              ],
+              [
+                "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+                1625
+              ],
+              [
+                "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+                1600
+              ],
+              [
+                "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+                1600
+              ],
+              [
+                "qwen38_gated_delta_decode_vi_simd",
+                1200
+              ],
+              [
+                "qwen38_qkvz_rearrange_conv_l2_f32",
+                1200
+              ],
+              [
+                "qwen80_ba_to_decay_beta_f32",
+                1200
+              ],
+              [
+                "qwen80_deltanet_gated_rmsnorm_tg",
+                1200
+              ],
+              [
+                "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+                1200
+              ],
+              [
+                "mha_decode_f32",
+                400
+              ],
+              [
+                "qwen38_attention_apply_sigmoid_gate",
+                400
+              ],
+              [
+                "qwen38_gqa_qk_norm_rope_cache_tg",
+                400
+              ],
+              [
+                "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+                400
+              ],
+              [
+                "qwen80_residual_rmsnorm_tg",
+                25
+              ],
+              [
+                "qwen_uniform_q4_embedding_lookup",
+                25
+              ],
+              [
+                "sample_argmax_f32",
+                25
+              ]
+            ],
+            "trace_enabled": true
+          },
+          "prefill": {
+            "dispatches": 12560,
+            "gpu_ns": 599131866,
+            "steps": 20,
+            "wall_ns": 702970625,
+            "wall_ns_per_step": 35148531.25
+          },
+          "step_trace": {
+            "dispatches": [
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628
+            ],
+            "encode_ns": [
+              2163959,
+              469693,
+              451547,
+              434753,
+              489214,
+              423378,
+              489710,
+              430426,
+              450537,
+              437745,
+              467538,
+              417098,
+              419163,
+              446590,
+              453903,
+              522335,
+              458885,
+              448714,
+              460215,
+              532798,
+              440501,
+              457869,
+              445167,
+              520751,
+              473468
+            ],
+            "gpu_ns": [
+              72078500,
+              27483833,
+              27680333,
+              27842124,
+              27530583,
+              27488125,
+              27782708,
+              27932416,
+              27524124,
+              27441499,
+              27807958,
+              27929999,
+              27513750,
+              27766500,
+              27821958,
+              27998291,
+              27689208,
+              27842958,
+              27968666,
+              28008333,
+              27666541,
+              28001041,
+              27950000,
+              28113166,
+              27585499
+            ],
+            "submit_ns": [
+              50916,
+              6709,
+              4666,
+              4709,
+              5417,
+              5542,
+              6250,
+              5625,
+              4833,
+              6042,
+              5083,
+              4042,
+              4250,
+              4625,
+              6250,
+              5833,
+              6083,
+              5125,
+              5542,
+              7250,
+              4209,
+              7000,
+              6667,
+              4208,
+              4875
+            ],
+            "wait_ns": [
+              149761500,
+              27793291,
+              28132459,
+              28275125,
+              27986916,
+              28406791,
+              28206792,
+              28336375,
+              27970333,
+              28908375,
+              28193625,
+              28312000,
+              27965208,
+              28240917,
+              28331958,
+              28896208,
+              28040125,
+              28220959,
+              28474291,
+              28338209,
+              28020000,
+              28456458,
+              28405958,
+              28716958,
+              28019875
+            ],
+            "wall_ns": [
+              152430000,
+              28526542,
+              28840416,
+              28966500,
+              28707125,
+              29086250,
+              28946334,
+              28996084,
+              28681625,
+              29591917,
+              28906584,
+              28991250,
+              28610083,
+              28927875,
+              29057125,
+              29668708,
+              28749000,
+              28916792,
+              29200792,
+              29162458,
+              28700917,
+              29157958,
+              29094250,
+              29509292,
+              28753166
+            ]
+          },
+          "wall_minus_gpu_ns": 114592720
+        },
+        "new_token_ids": [
+          39,
+          14006,
+          42,
+          1658,
+          8116,
+          248046
+        ],
+        "ok": true,
+        "output_text": "HAWKING_OK",
+        "prefill_metrics": {
+          "dispatches": 12560,
+          "gpu_ns": 599131866,
+          "steps": 20,
+          "wall_ns": 702970625,
+          "wall_ns_per_step": 35148531.25
+        },
+        "prefill_steps": 20,
+        "prompt_tokens": 20,
+        "request": {
+          "max_tokens": 16,
+          "prompt": "Return exactly: HAWKING_OK"
+        },
+        "resident_health": {
+          "model_open_count": 1,
+          "pid": 88449,
+          "resident_identity": "sealed-3.14",
+          "restart_count": 0,
+          "weight_upload_count": 1
+        },
+        "wall_minus_gpu_ns": 114592720,
+        "wall_ns": 3780716875,
+        "wall_ns_per_token": 630119479.167
+      },
+      "machine_snapshot": {
+        "after": {
+          "contenders": [
+            {
+              "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+              "cpu_pct": 42.8,
+              "pid": 180,
+              "rss_gib": 0.21
+            },
+            {
+              "comm": "/System/Library/ExtensionKit/Extensions/Storage.appex/Contents/MacOS/Storage",
+              "cpu_pct": 49.8,
+              "pid": 59654,
+              "rss_gib": 0.13
+            },
+            {
+              "comm": "/usr/libexec/avconferenced",
+              "cpu_pct": 90.2,
+              "pid": 739,
+              "rss_gib": 0.12
+            },
+            {
+              "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+              "cpu_pct": 103.6,
+              "pid": 59666,
+              "rss_gib": 0.04
+            },
+            {
+              "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+              "cpu_pct": 98.8,
+              "pid": 59677,
+              "rss_gib": 0.03
+            }
+          ],
+          "max_rss_gib": 0.21,
+          "method": "enumerate",
+          "n_contenders": 5,
+          "no_name_filter": true,
+          "quiet": false,
+          "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+          "thresholds": {
+            "cpu_pct": 20.0,
+            "rss_gib": 2.0
+          },
+          "total_cpu_pct": 385.2
+        },
+        "before": {
+          "contenders": [
+            {
+              "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+              "cpu_pct": 43.1,
+              "pid": 180,
+              "rss_gib": 0.21
+            },
+            {
+              "comm": "/usr/libexec/avconferenced",
+              "cpu_pct": 75.6,
+              "pid": 739,
+              "rss_gib": 0.12
+            },
+            {
+              "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+              "cpu_pct": 24.3,
+              "pid": 88075,
+              "rss_gib": 0.05
+            },
+            {
+              "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+              "cpu_pct": 101.2,
+              "pid": 59666,
+              "rss_gib": 0.04
+            },
+            {
+              "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+              "cpu_pct": 30.3,
+              "pid": 59677,
+              "rss_gib": 0.03
+            }
+          ],
+          "max_rss_gib": 0.21,
+          "method": "enumerate",
+          "n_contenders": 5,
+          "no_name_filter": true,
+          "quiet": false,
+          "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+          "thresholds": {
+            "cpu_pct": 20.0,
+            "rss_gib": 2.0
+          },
+          "total_cpu_pct": 274.5
+        }
+      },
+      "protected_window": false,
+      "qualification": false,
+      "role": "control",
+      "runtime_env": {
+        "HAWKING_TRACE_DISPATCH": "1"
+      },
+      "started_at": 1787807523.8296251
+    },
+    {
+      "NOT_FOR_PROMOTION": true,
+      "arm": "1",
+      "bench": {
+        "machine": "Darwin arm64 (macOS-27.0-arm64-arm-64bit-Mach-O)",
+        "note": "Qwen27 MLP selector A/B arm '1'; parser/graph diagnostic. Only a protected paired run may support a performance claim.",
+        "quiescence": {
+          "contenders": [
+            {
+              "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+              "cpu_pct": 42.8,
+              "pid": 180,
+              "rss_gib": 0.21
+            },
+            {
+              "comm": "/System/Library/ExtensionKit/Extensions/Storage.appex/Contents/MacOS/Storage",
+              "cpu_pct": 49.8,
+              "pid": 59654,
+              "rss_gib": 0.13
+            },
+            {
+              "comm": "/usr/libexec/avconferenced",
+              "cpu_pct": 90.2,
+              "pid": 739,
+              "rss_gib": 0.12
+            },
+            {
+              "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+              "cpu_pct": 103.6,
+              "pid": 59666,
+              "rss_gib": 0.04
+            },
+            {
+              "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+              "cpu_pct": 98.8,
+              "pid": 59677,
+              "rss_gib": 0.03
+            }
+          ],
+          "max_rss_gib": 0.21,
+          "method": "enumerate",
+          "n_contenders": 5,
+          "no_name_filter": true,
+          "quiet": false,
+          "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+          "thresholds": {
+            "cpu_pct": 20.0,
+            "rss_gib": 2.0
+          },
+          "total_cpu_pct": 385.2
+        },
+        "recorded_at": "2026-08-27T05:12:11Z",
+        "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+        "samples": {
+          "after": {
+            "contenders": [
+              {
+                "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+                "cpu_pct": 42.9,
+                "pid": 180,
+                "rss_gib": 0.21
+              },
+              {
+                "comm": "/usr/libexec/avconferenced",
+                "cpu_pct": 86.9,
+                "pid": 739,
+                "rss_gib": 0.12
+              },
+              {
+                "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+                "cpu_pct": 98.3,
+                "pid": 59666,
+                "rss_gib": 0.04
+              },
+              {
+                "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+                "cpu_pct": 177.0,
+                "pid": 59677,
+                "rss_gib": 0.03
+              }
+            ],
+            "max_rss_gib": 0.21,
+            "method": "enumerate",
+            "n_contenders": 4,
+            "no_name_filter": true,
+            "quiet": false,
+            "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+            "thresholds": {
+              "cpu_pct": 20.0,
+              "rss_gib": 2.0
+            },
+            "total_cpu_pct": 405.1
+          },
+          "before": {
+            "contenders": [
+              {
+                "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+                "cpu_pct": 42.8,
+                "pid": 180,
+                "rss_gib": 0.21
+              },
+              {
+                "comm": "/System/Library/ExtensionKit/Extensions/Storage.appex/Contents/MacOS/Storage",
+                "cpu_pct": 49.8,
+                "pid": 59654,
+                "rss_gib": 0.13
+              },
+              {
+                "comm": "/usr/libexec/avconferenced",
+                "cpu_pct": 90.2,
+                "pid": 739,
+                "rss_gib": 0.12
+              },
+              {
+                "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+                "cpu_pct": 103.6,
+                "pid": 59666,
+                "rss_gib": 0.04
+              },
+              {
+                "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+                "cpu_pct": 98.8,
+                "pid": 59677,
+                "rss_gib": 0.03
+              }
+            ],
+            "max_rss_gib": 0.21,
+            "method": "enumerate",
+            "n_contenders": 5,
+            "no_name_filter": true,
+            "quiet": false,
+            "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+            "thresholds": {
+              "cpu_pct": 20.0,
+              "rss_gib": 2.0
+            },
+            "total_cpu_pct": 385.2
+          }
+        },
+        "state": "CONTENDED"
+      },
+      "benchmark_class": "DIAGNOSTIC_CONTAMINATED",
+      "claim_boundary": "QUALIFIED_PROTECTED is valid only when machine_quiescence reports quiet=true before and after and bench_block derives QUIESCED. DIAGNOSTIC_CONTAMINATED observations may answer structural or execution questions but are not promotion evidence.",
+      "config_identity": {
+        "architecture": "unknown",
+        "artifact_inventory": {
+          "artifact_bytes": 10554328856,
+          "artifact_bytes_exact": true,
+          "artifact_bytes_source": "MIX_REPORT.json:payload_bytes",
+          "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+          "mix_id": "mix_all_mlp_affine_g64_ls",
+          "n_tensors": 755
+        },
+        "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+        "binary": "/Users/scammermike/Downloads/hawking/.hcli/instrumented/ascension_qwen38_resident",
+        "binary_sha256_16": "f18da6ed64ed77d0",
+        "capabilities": {},
+        "compiler": {
+          "language": "rust",
+          "profile": "release-fast",
+          "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+        },
+        "current_runtime": {
+          "complete_tps_current_measured": 24.4086,
+          "complete_tps_historical_qualified": 34.0,
+          "fallbacks": 0
+        },
+        "executable_profile": "release-fast",
+        "fallbacks": [
+          "transformers tokenizer fallback when unavailable"
+        ],
+        "family": "qwen3.8",
+        "fusion_env": {
+          "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+          "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+          "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+          "HAWKING_QWEN38_FUSE_MLP": "1"
+        },
+        "generation": {
+          "do_sample": false,
+          "enable_thinking": false,
+          "max_new_tokens": 2048,
+          "temperature": 0.0,
+          "top_k": 1,
+          "top_p": 1.0
+        },
+        "hot_bytes": null,
+        "limits": {
+          "context": 8192,
+          "max_new_tokens": 2048
+        },
+        "machine_genome": {},
+        "max_seq_len": 8192,
+        "mode": "resident",
+        "model_id": "qwen3.8-27b-sealed-3.14",
+        "param_class": "?B",
+        "physical_ebpw": 3.1393,
+        "profile_schema": "hcli.provider.profile.v1",
+        "prompt_contract": {
+          "fallback_template": "qwen_closed_think",
+          "renderer": "qwen-chat-template-or-closed-think-fallback",
+          "token_count_authority": "native-resident"
+        },
+        "protocol": "hawking.qwen38.resident.v1",
+        "provider": "native",
+        "qualification": "capability 30/43 historical sealed contract",
+        "quantisation": "unknown",
+        "receipts": [
+          "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+          "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+        ],
+        "representation": {
+          "kind": "native-packed",
+          "physical_ebpw": 3.1393,
+          "weights_loaded_once": true
+        },
+        "require_fusion_env": false,
+        "resident_identity": "sealed-3.14",
+        "runtime": "hawking-native",
+        "runtime_env": {
+          "HAWKING_TRACE_DISPATCH": "1"
+        },
+        "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+        "tokenizer_sha256_16": "0997f410c57a1f4e"
+      },
+      "contamination": [
+        "/System/Library/ExtensionKit/Extensions/Storage.appex/Contents/MacOS/Storage",
+        "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+        "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+        "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+        "/usr/libexec/avconferenced"
+      ],
+      "elapsed_s": 3.825,
+      "finished_at": 1787807531.5193028,
+      "fusion_env": {
+        "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+        "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+        "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+        "HAWKING_QWEN38_FUSE_MLP": "1"
+      },
+      "graph_identity": {
+        "dispatches": 15700,
+        "dispatches_per_token": 2616.6666666666665,
+        "kernel_histogram": [
+          [
+            "qwen80_add_residual_rmsnorm_tg",
+            3200
+          ],
+          [
+            "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+            1625
+          ],
+          [
+            "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+            1600
+          ],
+          [
+            "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+            1600
+          ],
+          [
+            "qwen38_gated_delta_decode_vi_simd",
+            1200
+          ],
+          [
+            "qwen38_qkvz_rearrange_conv_l2_f32",
+            1200
+          ],
+          [
+            "qwen80_ba_to_decay_beta_f32",
+            1200
+          ],
+          [
+            "qwen80_deltanet_gated_rmsnorm_tg",
+            1200
+          ],
+          [
+            "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+            1200
+          ],
+          [
+            "mha_decode_f32",
+            400
+          ],
+          [
+            "qwen38_attention_apply_sigmoid_gate",
+            400
+          ],
+          [
+            "qwen38_gqa_qk_norm_rope_cache_tg",
+            400
+          ],
+          [
+            "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+            400
+          ],
+          [
+            "qwen80_residual_rmsnorm_tg",
+            25
+          ],
+          [
+            "qwen_uniform_q4_embedding_lookup",
+            25
+          ],
+          [
+            "sample_argmax_f32",
+            25
+          ]
+        ],
+        "trace_enabled": true
+      },
+      "live": {
+        "decode_metrics": {
+          "dispatches": 3140,
+          "generated_tokens_after_prefill": 5,
+          "gpu_ns": 139300706,
+          "steps": 5,
+          "wall_ns": 144813959,
+          "wall_ns_per_step": 28962791.8
+        },
+        "decode_steps": 5,
+        "dispatches": 15700,
+        "dispatches_per_token": 2616.6666666666665,
+        "error": null,
+        "fallbacks": 0,
+        "generated_tokens": 6,
+        "gpu_ns_per_token": 123304372.66666667,
+        "kernel_genome": {
+          "exact_when_trace_enabled": true,
+          "histogram": [
+            [
+              "qwen80_add_residual_rmsnorm_tg",
+              3200
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+              1625
+            ],
+            [
+              "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+              1600
+            ],
+            [
+              "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+              1600
+            ],
+            [
+              "qwen38_gated_delta_decode_vi_simd",
+              1200
+            ],
+            [
+              "qwen38_qkvz_rearrange_conv_l2_f32",
+              1200
+            ],
+            [
+              "qwen80_ba_to_decay_beta_f32",
+              1200
+            ],
+            [
+              "qwen80_deltanet_gated_rmsnorm_tg",
+              1200
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+              1200
+            ],
+            [
+              "mha_decode_f32",
+              400
+            ],
+            [
+              "qwen38_attention_apply_sigmoid_gate",
+              400
+            ],
+            [
+              "qwen38_gqa_qk_norm_rope_cache_tg",
+              400
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+              400
+            ],
+            [
+              "qwen80_residual_rmsnorm_tg",
+              25
+            ],
+            [
+              "qwen_uniform_q4_embedding_lookup",
+              25
+            ],
+            [
+              "sample_argmax_f32",
+              25
+            ]
+          ],
+          "trace_enabled": true
+        },
+        "metric_absence_reasons": {
+          "dispatches": null,
+          "gpu_ns_per_token": null,
+          "kernel_genome": null,
+          "prefill_steps": null,
+          "wall_minus_gpu_ns": null
+        },
+        "native_generation_wall_ns": 862003750,
+        "native_metrics": {
+          "capability": {
+            "complete_token_accounting": true,
+            "dense_w_materialized": 0,
+            "fallbacks": 0,
+            "resident": true,
+            "weights_loaded_once": true
+          },
+          "complete_wall_ns": 862035750,
+          "complete_wall_ns_per_generated_token": 143672625.0,
+          "decode": {
+            "dispatches": 3140,
+            "generated_tokens_after_prefill": 5,
+            "gpu_ns": 139300706,
+            "steps": 5,
+            "wall_ns": 144813959,
+            "wall_ns_per_step": 28962791.8
+          },
+          "dispatches": 15700,
+          "dispatches_per_generated_token": 2616.6666666666665,
+          "generated_tokens": 6,
+          "generation_wall_ns": 862003750,
+          "gpu_ns": 739826236,
+          "gpu_ns_per_generated_token": 123304372.66666667,
+          "kernel_genome": {
+            "exact_when_trace_enabled": true,
+            "histogram": [
+              [
+                "qwen80_add_residual_rmsnorm_tg",
+                3200
+              ],
+              [
+                "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+                1625
+              ],
+              [
+                "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+                1600
+              ],
+              [
+                "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+                1600
+              ],
+              [
+                "qwen38_gated_delta_decode_vi_simd",
+                1200
+              ],
+              [
+                "qwen38_qkvz_rearrange_conv_l2_f32",
+                1200
+              ],
+              [
+                "qwen80_ba_to_decay_beta_f32",
+                1200
+              ],
+              [
+                "qwen80_deltanet_gated_rmsnorm_tg",
+                1200
+              ],
+              [
+                "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+                1200
+              ],
+              [
+                "mha_decode_f32",
+                400
+              ],
+              [
+                "qwen38_attention_apply_sigmoid_gate",
+                400
+              ],
+              [
+                "qwen38_gqa_qk_norm_rope_cache_tg",
+                400
+              ],
+              [
+                "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+                400
+              ],
+              [
+                "qwen80_residual_rmsnorm_tg",
+                25
+              ],
+              [
+                "qwen_uniform_q4_embedding_lookup",
+                25
+              ],
+              [
+                "sample_argmax_f32",
+                25
+              ]
+            ],
+            "trace_enabled": true
+          },
+          "prefill": {
+            "dispatches": 12560,
+            "gpu_ns": 600525530,
+            "steps": 20,
+            "wall_ns": 712322584,
+            "wall_ns_per_step": 35616129.2
+          },
+          "step_trace": {
+            "dispatches": [
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628,
+              628
+            ],
+            "encode_ns": [
+              2124152,
+              453236,
+              633863,
+              496659,
+              488052,
+              457533,
+              446955,
+              428464,
+              478109,
+              423577,
+              445488,
+              441210,
+              447293,
+              443750,
+              427176,
+              505667,
+              443409,
+              558546,
+              439936,
+              499738,
+              439300,
+              445278,
+              448254,
+              436077,
+              482835
+            ],
+            "gpu_ns": [
+              75256583,
+              27832791,
+              27553083,
+              27411291,
+              27740750,
+              27715333,
+              27396374,
+              27473708,
+              27774874,
+              27816124,
+              27493875,
+              27480374,
+              27898250,
+              27814249,
+              27509125,
+              27515666,
+              27850916,
+              27885999,
+              27464916,
+              27641249,
+              27905374,
+              28071208,
+              27569375,
+              27877624,
+              27877125
+            ],
+            "submit_ns": [
+              31333,
+              6042,
+              8375,
+              5500,
+              7041,
+              5042,
+              5208,
+              5458,
+              5250,
+              4250,
+              4958,
+              4209,
+              4667,
+              5625,
+              4166,
+              3959,
+              6416,
+              7000,
+              5833,
+              5833,
+              6125,
+              4334,
+              4750,
+              5167,
+              5500
+            ],
+            "wait_ns": [
+              159351125,
+              28135541,
+              28391000,
+              27775292,
+              28079458,
+              28063333,
+              27938625,
+              28573750,
+              28874458,
+              28132000,
+              27928000,
+              28827708,
+              28464166,
+              28196875,
+              28460500,
+              27820459,
+              28164750,
+              28374958,
+              27870416,
+              28521000,
+              28225250,
+              28798625,
+              27925875,
+              28215625,
+              28151333
+            ],
+            "wall_ns": [
+              161964833,
+              28840708,
+              29363000,
+              28536292,
+              28826166,
+              28761625,
+              28637750,
+              29233625,
+              29616708,
+              28777542,
+              28612708,
+              29515917,
+              29138583,
+              28886666,
+              29131167,
+              28589292,
+              28842250,
+              29189875,
+              28554958,
+              29296959,
+              28938334,
+              29479459,
+              28610791,
+              28888667,
+              28895458
+            ]
+          },
+          "wall_minus_gpu_ns": 122209514
+        },
+        "new_token_ids": [
+          39,
+          14006,
+          42,
+          1658,
+          8116,
+          248046
+        ],
+        "ok": true,
+        "output_text": "HAWKING_OK",
+        "prefill_metrics": {
+          "dispatches": 12560,
+          "gpu_ns": 600525530,
+          "steps": 20,
+          "wall_ns": 712322584,
+          "wall_ns_per_step": 35616129.2
+        },
+        "prefill_steps": 20,
+        "prompt_tokens": 20,
+        "request": {
+          "max_tokens": 16,
+          "prompt": "Return exactly: HAWKING_OK"
+        },
+        "resident_health": {
+          "model_open_count": 1,
+          "pid": 88501,
+          "resident_identity": "sealed-3.14",
+          "restart_count": 0,
+          "weight_upload_count": 1
+        },
+        "wall_minus_gpu_ns": 122209514,
+        "wall_ns": 3791889790,
+        "wall_ns_per_token": 631981631.667
+      },
+      "machine_snapshot": {
+        "after": {
+          "contenders": [
+            {
+              "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+              "cpu_pct": 42.9,
+              "pid": 180,
+              "rss_gib": 0.21
+            },
+            {
+              "comm": "/usr/libexec/avconferenced",
+              "cpu_pct": 86.9,
+              "pid": 739,
+              "rss_gib": 0.12
+            },
+            {
+              "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+              "cpu_pct": 98.3,
+              "pid": 59666,
+              "rss_gib": 0.04
+            },
+            {
+              "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+              "cpu_pct": 177.0,
+              "pid": 59677,
+              "rss_gib": 0.03
+            }
+          ],
+          "max_rss_gib": 0.21,
+          "method": "enumerate",
+          "n_contenders": 4,
+          "no_name_filter": true,
+          "quiet": false,
+          "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+          "thresholds": {
+            "cpu_pct": 20.0,
+            "rss_gib": 2.0
+          },
+          "total_cpu_pct": 405.1
+        },
+        "before": {
+          "contenders": [
+            {
+              "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+              "cpu_pct": 42.8,
+              "pid": 180,
+              "rss_gib": 0.21
+            },
+            {
+              "comm": "/System/Library/ExtensionKit/Extensions/Storage.appex/Contents/MacOS/Storage",
+              "cpu_pct": 49.8,
+              "pid": 59654,
+              "rss_gib": 0.13
+            },
+            {
+              "comm": "/usr/libexec/avconferenced",
+              "cpu_pct": 90.2,
+              "pid": 739,
+              "rss_gib": 0.12
+            },
+            {
+              "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+              "cpu_pct": 103.6,
+              "pid": 59666,
+              "rss_gib": 0.04
+            },
+            {
+              "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+              "cpu_pct": 98.8,
+              "pid": 59677,
+              "rss_gib": 0.03
+            }
+          ],
+          "max_rss_gib": 0.21,
+          "method": "enumerate",
+          "n_contenders": 5,
+          "no_name_filter": true,
+          "quiet": false,
+          "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+          "thresholds": {
+            "cpu_pct": 20.0,
+            "rss_gib": 2.0
+          },
+          "total_cpu_pct": 385.2
+        }
+      },
+      "protected_window": false,
+      "qualification": false,
+      "role": "alias_mutation",
+      "runtime_env": {
+        "HAWKING_TRACE_DISPATCH": "1"
+      },
+      "started_at": 1787807527.69394
+    }
+  ],
+  "base_identity": {
+    "architecture": "unknown",
+    "artifact_inventory": {
+      "artifact_bytes": 10554328856,
+      "artifact_bytes_exact": true,
+      "artifact_bytes_source": "MIX_REPORT.json:payload_bytes",
+      "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+      "mix_id": "mix_all_mlp_affine_g64_ls",
+      "n_tensors": 755
+    },
+    "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+    "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+    "binary_sha256_16": "2d5fd0f157fb7987",
+    "capabilities": {},
+    "compiler": {
+      "language": "rust",
+      "profile": "release-fast",
+      "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+    },
+    "current_runtime": {
+      "complete_tps_current_measured": 24.4086,
+      "complete_tps_historical_qualified": 34.0,
+      "fallbacks": 0
+    },
+    "executable_profile": "release-fast",
+    "fallbacks": [
+      "transformers tokenizer fallback when unavailable"
+    ],
+    "family": "qwen3.8",
+    "fusion_env": {
+      "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+      "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+      "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+      "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+    },
+    "generation": {
+      "do_sample": false,
+      "enable_thinking": false,
+      "max_new_tokens": 2048,
+      "temperature": 0.0,
+      "top_k": 1,
+      "top_p": 1.0
+    },
+    "hot_bytes": null,
+    "limits": {
+      "context": 8192,
+      "max_new_tokens": 2048
+    },
+    "machine_genome": {},
+    "max_seq_len": 8192,
+    "mode": "resident",
+    "model_id": "qwen3.8-27b-sealed-3.14",
+    "param_class": "?B",
+    "physical_ebpw": 3.1393,
+    "profile_schema": "hcli.provider.profile.v1",
+    "prompt_contract": {
+      "fallback_template": "qwen_closed_think",
+      "renderer": "qwen-chat-template-or-closed-think-fallback",
+      "token_count_authority": "native-resident"
+    },
+    "protocol": "hawking.qwen38.resident.v1",
+    "provider": "native",
+    "qualification": "capability 30/43 historical sealed contract",
+    "quantisation": "unknown",
+    "receipts": [
+      "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+      "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+    ],
+    "representation": {
+      "kind": "native-packed",
+      "physical_ebpw": 3.1393,
+      "weights_loaded_once": true
+    },
+    "require_fusion_env": true,
+    "resident_identity": "sealed-3.14",
+    "runtime": "hawking-native",
+    "runtime_env": {},
+    "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+    "tokenizer_sha256_16": "0997f410c57a1f4e"
+  },
+  "benchmark_class": "DIAGNOSTIC_CONTAMINATED",
+  "benchmark_policy": {
+    "diagnostic_NOT_FOR_PROMOTION": true,
+    "diagnostic_class": "DIAGNOSTIC_CONTAMINATED",
+    "diagnostic_qualification": false,
+    "protected_class": "QUALIFIED_PROTECTED"
+  },
+  "checks": {
+    "benchmark_class_recorded_per_arm": true,
+    "both_arms_attempted": true,
+    "diagnostic_runs_not_for_promotion": true,
+    "exactly_two_registered_arms": true,
+    "native_metrics_and_absence_reasons_recorded": true,
+    "no_source_or_profile_mutation": true,
+    "profile_valid": true,
+    "source_truth_recorded": true
+  },
+  "claim_boundary": "The A/B can resolve parser and graph identity. A DIAGNOSTIC_CONTAMINATED result is not a protected performance qualification; even a protected selector result is not Flash or Qwen promotion evidence.",
+  "contamination": [
+    "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+    "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+    "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+    "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+    "/usr/libexec/avconferenced"
+  ],
+  "elapsed_s": 7.739,
+  "experiment": {
+    "control": "HAWKING_QWEN38_FUSE_MLP=swiglu",
+    "hypothesis": "HAWKING_QWEN38_FUSE_MLP=1 is an alias for the strongest swiglu fusion, not the unfused graph",
+    "id": "qwen27-mlp-selector-swiglu-vs-1",
+    "max_new_tokens": 16,
+    "model_scope": "current profile-driven resident only",
+    "mutation": "HAWKING_QWEN38_FUSE_MLP=1",
+    "one_experiment_at_a_time": true,
+    "profile_mutation": false,
+    "prompt": "Return exactly: HAWKING_OK",
+    "source_mutation": false
+  },
+  "experiment_verdict": "ACCEPT",
+  "finished_at": 1787807531.528233,
+  "machine": {
+    "architecture": "arm64",
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O"
+  },
+  "machine_snapshot": {
+    "after": {
+      "contenders": [
+        {
+          "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+          "cpu_pct": 42.9,
+          "pid": 180,
+          "rss_gib": 0.21
+        },
+        {
+          "comm": "/usr/libexec/avconferenced",
+          "cpu_pct": 86.9,
+          "pid": 739,
+          "rss_gib": 0.12
+        },
+        {
+          "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+          "cpu_pct": 98.3,
+          "pid": 59666,
+          "rss_gib": 0.04
+        },
+        {
+          "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+          "cpu_pct": 177.0,
+          "pid": 59677,
+          "rss_gib": 0.03
+        }
+      ],
+      "max_rss_gib": 0.21,
+      "method": "enumerate",
+      "n_contenders": 4,
+      "no_name_filter": true,
+      "quiet": false,
+      "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+      "thresholds": {
+        "cpu_pct": 20.0,
+        "rss_gib": 2.0
+      },
+      "total_cpu_pct": 405.1
+    },
+    "before": {
+      "contenders": [
+        {
+          "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+          "cpu_pct": 43.1,
+          "pid": 180,
+          "rss_gib": 0.21
+        },
+        {
+          "comm": "/usr/libexec/avconferenced",
+          "cpu_pct": 75.6,
+          "pid": 739,
+          "rss_gib": 0.12
+        },
+        {
+          "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+          "cpu_pct": 24.3,
+          "pid": 88075,
+          "rss_gib": 0.05
+        },
+        {
+          "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+          "cpu_pct": 101.2,
+          "pid": 59666,
+          "rss_gib": 0.04
+        },
+        {
+          "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+          "cpu_pct": 30.3,
+          "pid": 59677,
+          "rss_gib": 0.03
+        }
+      ],
+      "max_rss_gib": 0.21,
+      "method": "enumerate",
+      "n_contenders": 5,
+      "no_name_filter": true,
+      "quiet": false,
+      "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+      "thresholds": {
+        "cpu_pct": 20.0,
+        "rss_gib": 2.0
+      },
+      "total_cpu_pct": 274.5
+    }
+  },
+  "profile_path": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+  "protected_window": false,
+  "qualification": false,
+  "reason": "swiglu and 1 selected the same observed dispatch/kernel identity and generated ids",
+  "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN27_MLP_DIAGNOSTIC_AB.json",
+  "repo_root": "/Users/scammermike/Downloads/hawking",
+  "schema": "hcli.agentos.qwen27_mlp_diagnostic_ab.v1",
+  "selector_verdict": "EQUIVALENT_STRONGEST_GRAPH_AND_OUTPUT",
+  "source_graph_by_arm": {
+    "1": {
+      "dispatch_consequence": {
+        "baseline_source_derived": 964,
+        "physical_dispatch_trace": null,
+        "physical_trace_status": "NOT_MEASURED",
+        "saved_by_control": {
+          "add_rmsnorm": 128,
+          "ba_delta": 0,
+          "dn_inproj": 48,
+          "gqa_qkv": 32,
+          "mlp": 128
+        },
+        "selected_source_derived": 628
+      },
+      "dispatch_constants": {
+        "deltanet_layers": 48,
+        "dense_mlp_suffix_dispatches": 6,
+        "gqa_layers": 16,
+        "layers": 64,
+        "mixer_prefix_dispatches": 9,
+        "terminal_head_kernels": 3
+      },
+      "effective_controls": {
+        "fuse_add_rmsnorm": true,
+        "fuse_ba_delta": false,
+        "fuse_dn_inproj": true,
+        "fuse_gqa_qkv": true,
+        "mlp_fusion": "swiglu"
+      },
+      "kernel_family": "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+      "profile_values": {
+        "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+        "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+        "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+        "HAWKING_QWEN38_FUSE_MLP": "1"
+      }
+    },
+    "swiglu": {
+      "dispatch_consequence": {
+        "baseline_source_derived": 964,
+        "physical_dispatch_trace": null,
+        "physical_trace_status": "NOT_MEASURED",
+        "saved_by_control": {
+          "add_rmsnorm": 128,
+          "ba_delta": 0,
+          "dn_inproj": 48,
+          "gqa_qkv": 32,
+          "mlp": 128
+        },
+        "selected_source_derived": 628
+      },
+      "dispatch_constants": {
+        "deltanet_layers": 48,
+        "dense_mlp_suffix_dispatches": 6,
+        "gqa_layers": 16,
+        "layers": 64,
+        "mixer_prefix_dispatches": 9,
+        "terminal_head_kernels": 3
+      },
+      "effective_controls": {
+        "fuse_add_rmsnorm": true,
+        "fuse_ba_delta": false,
+        "fuse_dn_inproj": true,
+        "fuse_gqa_qkv": true,
+        "mlp_fusion": "swiglu"
+      },
+      "kernel_family": "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+      "profile_values": {
+        "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+        "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+        "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+        "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+      }
+    }
+  },
+  "source_truth": {
+    "accepted_off": [
+      "unset",
+      "",
+      "0",
+      "off",
+      "false",
+      "no"
+    ],
+    "accepted_pair": [
+      "pair",
+      "gate_up"
+    ],
+    "accepted_strongest": [
+      "swiglu",
+      "gate_up_swiglu",
+      "1",
+      "true",
+      "on",
+      "yes"
+    ],
+    "source_of_truth": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs::Qwen38MlpFusion::from_env",
+    "unknown_value": "PANIC_BEFORE_GRAPH_SELECTION"
+  },
+  "status": "PASSED"
+}

@@ -82,12 +82,24 @@ def test_the_stamper_is_a_TOOL_and_its_check_mode_agrees_with_this_file():
     assert S.main(["--check"]) == 0
 
 
-def test_the_stamper_is_IDEMPOTENT():
+def test_the_stamper_is_IDEMPOTENT_AND_THIS_TEST_DOES_NOT_WRITE():
     """Running it twice must not restamp, or every run would rewrite the corpus and
-    a real drift would be invisible in the diff."""
+    a real drift would be invisible in the diff.
+
+    THIS TEST USED TO CALL THE WRITE PATH, and that made it a TOOL rather than a
+    CHECK: adding an unstamped receipt made the suite FAIL, the failing run then
+    STAMPED it, and the next run PASSED with no code changed in between --
+    demonstrated 2026-08-26 at 6 failed then 7 passed on an untouched tree. A green
+    that requires a previous run is not reproducible from a clean checkout, and a
+    check that edits reality until it holds is the check-that-cannot-fail wearing
+    the other hat. --check reports without writing, so idempotency is now asserted
+    the only way that does not depend on having written."""
     import stamp_bench_state as S
     before = {f.name: raw for f, raw, _ in S.performance_receipts()}
-    assert S.main([]) == 0
+    assert S.main(["--check"]) == 0, (
+        "the corpus holds an unstamped performance receipt; run "
+        "`python3 tools/accelerator/stamp_bench_state.py` yourself. The suite will "
+        "not do it for you -- that is the defect this test was fixed to stop.")
     after = {f.name: f.read_text() for f, _, _ in S.performance_receipts()}
     changed = [n for n in before if before[n] != after.get(n)]
-    assert not changed, changed[:5]
+    assert not changed, f"the CHECK path wrote to {changed[:5]}"

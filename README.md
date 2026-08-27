@@ -71,6 +71,35 @@ The binaries that produced the Q80 and DSV4F token numbers are
 `ascension_qwen80_mixed_hybrid_greedy`, and
 `gravity_deepseek_v4_native_token_graph`.
 
+## HCLI provider boundary
+
+HCLI keeps the current sealed Hawking resident as one native profile rather
+than making Qwen the control-plane assumption. `--model` accepts an MLX model
+directory, GGUF artifact, native profile, or OpenAI-compatible endpoint; a
+remote model can be selected with `HCLI_REMOTE_MODEL=name` or a safe URL
+fragment such as `https://host/v1#model=name`. AgentOS records the provider,
+artifact, tokenizer, runtime, capability, and verification provenance in the
+same result envelope for every selection.
+
+The read-only physical boundary can be inspected with `hcli connectivity`.
+`hcli flash-next` records the pinned Qwen3.8-Flash-Next identity and ModelLake
+staging plan only; it does not download or promote the model.
+
+The provider-neutral AgentOS control plane is inspectable without starting a
+model: `hcli agentos tools`, `hcli agentos status`, and
+`hcli agentos checkpoint`. Its operational gates are explicit commands:
+`hcli agentos research-gate`, `hcli agentos vmcp-gate`,
+`hcli agentos recovery-gate`, `hcli agentos native-gate`, and
+`hcli agentos resident-gate`. `hcli agentos native-mission-gate` runs one
+reversible typed-tool/deterministic-verifier mission. The native gate
+reproduces the live resident through direct protocol, connector, provider,
+plain cognition, structured cognition, and the literal `hcli --task` surface;
+the resident gate adds 20-request PID/model-open/upload/isolation evidence.
+Use `hcli --plain` when a caller needs provider text instead of HCLI's
+structured result envelope. These commands persist machine-readable receipts
+under `receipts/headless/`; the current Qwen resident is one profile used by
+the native connector, not a requirement of the provider or mission interfaces.
+
 ## Two crate families
 
 22 crates under `crates/`.
