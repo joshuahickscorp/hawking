@@ -8,10 +8,12 @@ correct refusal into a false readiness and Odyssey I would launch on sand.
 """
 import hashlib
 import json
+import pathlib
 
 import pytest
 
 from tools.future import specimen_verify as sv
+from tools.future import status_causality as sc
 from tools.future._common import REPO, RECEIPTS
 
 
@@ -286,3 +288,87 @@ def test_a_bounded_pass_carries_prior_verdicts_forward(tmp_path, monkeypatch):
     assert len(kept) == 1, "a prior verdict was dropped by a bounded pass"
     assert kept[0]["whole_tree_verified"] is True
     assert "kept@1" in doc["not_reached_this_pass"]
+
+
+# ---------------------------------------------------------------------------
+# G007 consumer: verify_specimen records the five causality fields.
+# ---------------------------------------------------------------------------
+
+
+def test_verify_specimen_records_the_five_causality_fields(tmp_path, monkeypatch):
+    """A coverage number no test defends will drift back to zero."""
+    spec = _fixture_specimen(tmp_path)
+    monkeypatch.setattr(sv, "SPECIMENS", spec.parent)
+    r = sv.verify_specimen("fixture@abc")
+    assert sv.records_five_fields(r)
+    src = pathlib.Path(sv.__file__).read_text()
+    assert "sc.emit(" in src
+    assert r["status"] == "WHOLE_TREE_VERIFIED"
+    assert r["whole_tree_verified"] is True
+    assert r["probe_performed"]
+    assert "recompute" in r["probe_performed"] or "sha256" in r["probe_performed"]
+    assert r["direct_observation"] != r["status"]
+    assert r["direct_observation"] != r["interpretation"]
+    assert "n_files=" in r["direct_observation"]
+    assert r["causality_verdict"] in {sc.SUPPORTED, sc.OVERREACHING, sc.UNTESTED}
+
+
+def test_unsupplied_observation_records_untested_not_a_restatement():
+    result = {
+        "specimen": "fixture@abc",
+        "status": "WHOLE_TREE_VERIFIED",
+        "whole_tree_verified": True,
+    }
+    rec = sv.record_specimen_causality(
+        result, probe_performed="", direct_observation=""
+    )
+    assert rec["verdict"] == sc.UNTESTED
+    assert rec["direct_observation"] in ("", None)
+    assert rec["direct_observation"] != "WHOLE_TREE_VERIFIED"
+    assert "WHOLE_TREE_VERIFIED" not in str(rec["direct_observation"] or "")
+    assert result["status"] == "WHOLE_TREE_VERIFIED"
+    assert result["whole_tree_verified"] is True
+    assert rec["interpretation"] != rec["direct_observation"]
+
+
+def test_overreaching_does_not_override_specimen_status(tmp_path, monkeypatch):
+    def overreach(status, **kwargs):
+        return {
+            "probe_performed": kwargs.get("probe_performed") or "p",
+            "direct_observation": kwargs.get("direct_observation") or "o",
+            "interpretation": kwargs.get("interpretation") or status,
+            "confidence": {
+                "level": "LOW",
+                "about": "a",
+                "would_raise": "b",
+                "would_lower": "c",
+            },
+            "alternatives": [
+                {
+                    "hypothetical": "h",
+                    "consistent_with_observation": True,
+                    "consistent_with_claim": False,
+                }
+            ],
+            "verdict": sc.OVERREACHING,
+            "falsifier": "f",
+            "probe_kind": sc.PROBE_HASH,
+            "claim_kind": sc.CLAIM_OBJECT_ABSENCE,
+        }
+
+    monkeypatch.setattr(sv.sc, "emit", overreach)
+    spec = _fixture_specimen(tmp_path)
+    monkeypatch.setattr(sv, "SPECIMENS", spec.parent)
+    r = sv.verify_specimen("fixture@abc")
+    assert r["status"] == "WHOLE_TREE_VERIFIED"
+    assert r["whole_tree_verified"] is True
+    assert r["causality_verdict"] == sc.OVERREACHING
+
+
+def test_coverage_receipt_names_specimen_verify_as_recording():
+    path = RECEIPTS / "STATUS_CAUSALITY_COVERAGE.json"
+    doc = json.loads(path.read_text())
+    assert "specimen_verify" in doc["recording_five_fields"]
+    assert doc["n_gates"] == 18
+    assert "resident_gate" in doc["recording_five_fields"]
+    assert "flash_meta_teacher_capture_boundary" in doc["not_recording_five_fields"]

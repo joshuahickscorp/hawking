@@ -21,9 +21,126 @@ from dataclasses import asdict, dataclass, replace
 from typing import Any
 
 from tools.future._common import REPO, git, load_json, write_receipt
+from tools.future import status_causality as sc
 
 RECEIPT = "ODYSSEY2_LAW_STORE.json"
 SCHEMA = "hawking.future.odyssey2_law_store.v1"
+
+FIVE_RECORDED_FIELDS: tuple[str, ...] = getattr(
+    sc,
+    "FIVE_RECORDED_FIELDS",
+    (
+        "probe_performed",
+        "direct_observation",
+        "interpretation",
+        "confidence",
+        "alternatives",
+    ),
+)
+
+
+def _bind_emit() -> None:
+    """Consumer-side emit. Sibling owns the routine; this checkout may predate it."""
+    if hasattr(sc, "emit"):
+        return
+
+    def emit(
+        status: str,
+        *,
+        probe_performed: str = "",
+        direct_observation: Any = "",
+        interpretation: str = "",
+        probe_kind: str = "",
+        claim_kind: str | None = None,
+        falsifier: str = "",
+        source: str = "",
+    ) -> dict[str, Any]:
+        row: dict[str, Any] = {
+            "status": status,
+            "probe_performed": probe_performed,
+            "direct_observation": direct_observation,
+            "interpretation": interpretation or status,
+            "probe_kind": probe_kind,
+            "use_catalog": False,
+            "source": source or "<emit>",
+        }
+        if claim_kind:
+            row["claim_kind"] = claim_kind
+        if falsifier:
+            row["falsifier"] = falsifier
+        out = sc.challenge(row)
+        out["entry"] = "emit"
+        return out
+
+    sc.emit = emit  # type: ignore[attr-defined]
+
+
+_bind_emit()
+
+
+def records_five_fields(node: Any) -> bool:
+    fn = getattr(sc, "records_five_fields", None)
+    if callable(fn):
+        return bool(fn(node))
+    if not isinstance(node, dict):
+        return False
+    if not all(k in node for k in FIVE_RECORDED_FIELDS):
+        return False
+    if not str(node.get("probe_performed") or "").strip():
+        return False
+    if node.get("direct_observation") in (None, "", [], {}):
+        return False
+    if not str(node.get("interpretation") or "").strip():
+        return False
+    conf = node.get("confidence")
+    if not isinstance(conf, dict):
+        return False
+    if not {"would_raise", "would_lower", "level", "about"} <= set(conf):
+        return False
+    alts = node.get("alternatives")
+    return isinstance(alts, list) and bool(alts)
+
+
+def record_law_store_causality(
+    result: dict[str, Any],
+    *,
+    probe_performed: str = "",
+    direct_observation: Any = "",
+    interpretation: str | None = None,
+    probe_kind: str = "",
+    claim_kind: str | None = None,
+) -> dict[str, Any]:
+    """Stamp the five causality fields. Does not change schools.Flash.physical_status.
+
+    An unsupplied observation is UNTESTED, never a restatement of the field.
+    """
+    schools = result.get("schools") if isinstance(result.get("schools"), dict) else {}
+    flash = schools.get("Flash") if isinstance(schools.get("Flash"), dict) else {}
+    field_before = flash.get("physical_status")
+    status = str(field_before or "metadata_only_weights_not_present")
+    unsupplied = direct_observation in (None, "", [], {})
+    rec = sc.emit(
+        status,
+        probe_performed=str(probe_performed or ""),
+        direct_observation="" if unsupplied else direct_observation,
+        interpretation=interpretation if interpretation is not None else status,
+        probe_kind="" if unsupplied else probe_kind,
+        claim_kind=None if unsupplied else claim_kind,
+        source="tools/future/odyssey2_law_store.py::build",
+    )
+    for key in FIVE_RECORDED_FIELDS:
+        result[key] = rec[key]
+    result["causality_verdict"] = rec["verdict"]
+    result["falsifier"] = rec.get("falsifier")
+    if rec.get("probe_kind"):
+        result["probe_kind"] = rec["probe_kind"]
+    if rec.get("claim_kind") is not None:
+        result["claim_kind"] = rec["claim_kind"]
+    schools_after = result.get("schools") if isinstance(result.get("schools"), dict) else {}
+    flash_after = schools_after.get("Flash") if isinstance(schools_after.get("Flash"), dict) else {}
+    if flash_after.get("physical_status") != field_before:
+        raise RuntimeError("status_causality.emit mutated schools.Flash.physical_status")
+    return rec
 
 LAW_FIELDS = (
     "law_id",
@@ -1470,6 +1587,21 @@ def build() -> Any:
         "gaps_closed": gaps_closed(),
         "negative_findings": _negative_findings(seed_report, presence),
     }
+    flash_status = SCHOOLS["Flash"]["physical_status"]
+    record_law_store_causality(
+        doc,
+        probe_performed=(
+            "read SCHOOLS['Flash']['physical_status'] from the in-module catalog; "
+            "no Path.exists, no hash of weight files"
+        ),
+        direct_observation=f"schools.Flash.physical_status={flash_status!r}",
+        interpretation=(
+            "the law-store catalog records this field; it is not a measurement "
+            "of whether Flash weights exist on disk"
+        ),
+        probe_kind=sc.PROBE_METADATA,
+        claim_kind=sc.CLAIM_FIELD_VALUE,
+    )
     return write_receipt(RECEIPT, doc, "tools/future/odyssey2_law_store.py")
 
 

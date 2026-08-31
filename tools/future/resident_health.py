@@ -550,6 +550,51 @@ def make_sample(
     }
 
 
+
+RESIDENT_STORE_REL = (".hcli", "resident", "state.json")
+
+
+def _declared_from_resident_store(
+    workspace: str | os.PathLike[str] | None,
+) -> tuple[int | None, str | None, str | None]:
+    """Read the pid the resident itself DECLARED, or nothing.
+
+    hcli/agentos/resident.py persists worker_pid and worker_start_token to
+    .hcli/resident/state.json via resident_state_path(). sample() never looked
+    there, so a resident started through the real CLI was UNDECLARED to its own
+    health probe - and therefore to the concurrency doctor, which then refused
+    (correctly) to invent a pid from the largest RSS neighbour. Two components
+    that should agree, did not.
+
+    This reads a DECLARATION. It never guesses: no store, no worker_pid, or a
+    pid whose start_token no longer matches all return nothing, and the caller
+    stays UNDECLARED rather than being handed a stale or invented identity.
+    """
+    roots: list[Path] = []
+    if workspace is not None:
+        roots.append(Path(workspace).expanduser().resolve())
+    roots.append(Path.cwd())
+    for root in roots:
+        path = root.joinpath(*RESIDENT_STORE_REL)
+        try:
+            doc = json.loads(path.read_text())
+        except (OSError, ValueError):
+            continue
+        if not isinstance(doc, dict):
+            continue
+        raw = doc.get("worker_pid")
+        if not isinstance(raw, int):
+            continue
+        token = doc.get("worker_start_token")
+        # A declaration whose start_token no longer matches is a DEAD
+        # declaration, not a live resident. Refuse it rather than reporting a
+        # recycled pid as PRESENT.
+        if token is not None and process_start_token(raw) != token:
+            continue
+        return raw, token if isinstance(token, str) else None, str(path)
+    return None, None, None
+
+
 def sample(
     *,
     pid: int | None = None,
@@ -563,6 +608,9 @@ def sample(
     env_pid = os.environ.get("HAWKING_RESIDENT_PID")
     if pid is None and env_pid and env_pid.strip().lstrip("-").isdigit():
         pid = int(env_pid.strip())
+    declared_from = "argument" if pid is not None and not env_pid else None
+    if pid is None:
+        pid, start_token, declared_from = _declared_from_resident_store(workspace)
 
     if pid is None:
         presence = "UNDECLARED"

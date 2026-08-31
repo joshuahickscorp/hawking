@@ -1,0 +1,44 @@
+{
+ "claim_boundary": "This gate checks the tests that correspond to the paths being landed and that receipts parse. It does not run the full suite, does not typecheck, and does not verify provenance. A green gate means those two things passed, not that the change is correct.",
+ "escape_hatch": {
+  "behaviour": "lands anyway, appends KNOWN_RED_CHECKPOINT and the justification to the commit body, and records it here",
+  "flag": "--known-red <justification>",
+  "not_quiet": true
+ },
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "last_check": {
+  "green": false,
+  "paths": [
+   "tools/future/_gate_probe_red2.py"
+  ],
+  "receipts": {
+   "green": true,
+   "malformed": []
+  },
+  "tests": {
+   "green": false,
+   "ran": true,
+   "returncode": 1,
+   "tail": [
+    "=========================== short test summary info ============================",
+    "FAILED tools/future/test__gate_probe_red2.py::test_red - assert False",
+    "1 failed in 0.03s"
+   ],
+   "tests": [
+    "tools/future/test__gate_probe_red2.py"
+   ],
+   "why": "pytest failed"
+  },
+  "verdict": "RED"
+ },
+ "law": "NO CANONICAL SOURCE COMMIT WHILE THE REQUIRED ACCEPTANCE SUITE IS RED. A behaviourally-correct-but-red test is still a red integration state.",
+ "recorded_by": "tools/future/integration_gate.py",
+ "schema": "hawking.future.integration_gate.v1",
+ "version": 1,
+ "what_is_checked": [
+  "for every tools/future module being landed, its own test_*.py if one exists \u2014 narrow on purpose, because a slow full-suite gate gets bypassed and a bypassed gate is worse than a narrow one",
+  "every .json path being landed must parse"
+ ],
+ "why_it_is_a_door_not_a_rule": "The rule already existed and was broken: commit db4dacede landed the path-to-71 receipt while its own suite had a failing assertion. The failure was a rounding comparison and the behaviour was correct, which is exactly the case a remembered rule loses. Enforcement has to be mechanical."
+}

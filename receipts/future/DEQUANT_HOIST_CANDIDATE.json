@@ -1,0 +1,61 @@
+{
+ "accounting": {
+  "decode_cheapening": 32.0,
+  "folded": {
+   "bitops": 16,
+   "decode_fma_per_weight_byte": 0.0417,
+   "dequant_fma": 0.25,
+   "fma_per_weight_byte": 1.375,
+   "int_to_float": 8,
+   "mac_fma": 8,
+   "total_fma": 8.25
+  },
+  "group_size": 64,
+  "incumbent": {
+   "bitops": 16,
+   "decode_fma_per_weight_byte": 1.3333,
+   "dequant_fma": 8,
+   "fma_per_weight_byte": 2.6667,
+   "int_to_float": 8,
+   "mac_fma": 8,
+   "total_fma": 16
+  },
+  "int_to_float_unchanged_because": "the codes still have to become floats to multiply x. The saving is the dequant FMA, not the conversions, and claiming the conversions too would be the easiest way to overstate this.",
+  "total_arithmetic_cheapening": 1.9394,
+  "weight_bytes_per_iteration": 6,
+  "weights_per_iteration": 8
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T20:33:45Z",
+  "recorded_by": "tools/future/dequant_hoist_candidate.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. The incumbent inner loop is READ from MLP_ALU_ROOFLINE and refuses if its own FMA counts do not reconcile to its reported fma_per_weight_byte. The folded column is ALGEBRA, not a measurement: no kernel exists, nothing was timed, and an FMA count is not a GB/s. It is a candidate worth building, not a result.",
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "identity": {
+  "algebra": "sum_i (s*c_i + b) * x_i  ==  s * sum_i(c_i*x_i) + b * sum_i(x_i)",
+  "exact_in_exact_arithmetic": true,
+  "what_changes": "not WHERE the scale lives - every previous attempt changed that and made decode more expensive - but WHEN the affine is applied: once per group instead of once per weight.",
+  "why_sum_x_is_free": "sum_i(x_i) over a group is a property of x and the group, NOT of the output row, so it is shared across all 17408 rows of gate/up and hoists out of the row loop entirely. That is what makes the second term cost nothing per row."
+ },
+ "meets_the_requirement": {
+  "clears": true,
+  "offered_total_cheapening": 1.9394,
+  "required_total_cheapening": 1.509
+ },
+ "risks": {
+  "expressibility": "the sum_x hoist needs a per-group reduction over x available to every row block. Whether the current geo_tpr64 tiling can carry it without an extra pass is UNVERIFIED.",
+  "not_bit_identical": "the summation order changes, so this is the fold_addqx class: that one landed PASS_JUSTIFIED_TOLERANCE and DEFAULT-OFF after 22309 of 69632 gate bytes differed, cause SOURCE_ORDER_FMA_ASSOCIATION. This candidate inherits that bar and must clear it the same way.",
+  "precision": "accumulating c_i*x_i in code space sums 2-bit codes times activations before any scale is applied, so the accumulator's dynamic range differs from the incumbent's. UNTESTED, and the direction is not obvious - codes are small, which helps, and there are 64 of them per group, which does not.",
+  "register_pressure": "two accumulators per row instead of one, and the class C occupancy question cannot be read on this toolchain (registers_per_thread is null). So the arithmetic saving could be given back to occupancy and nothing on disk can predict that.",
+  "status": "UNBUILT, UNMEASURED, arithmetic argument only"
+ },
+ "schema": "hawking.future.dequant_hoist_candidate.v1",
+ "seal_sha256": "90df64da497822e242598d1f57156546bc65959d5bb787d4baf82ab92c00430e",
+ "version": 1
+}

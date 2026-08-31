@@ -90,6 +90,125 @@ def write_receipt(name: str, doc: dict[str, Any], recorded_by: str) -> Path:
     return out
 
 
+class MeasurementProvenanceError(ValueError):
+    """Raised when a receipt asserts a hardware number without saying when, under
+    what load, and whether the GPU lane lock was held."""
+
+
+def measurement_provenance(
+    *,
+    lock_held: bool,
+    loadavg: str | None = None,
+    lane: str | None = None,
+    measured_at: str | None = None,
+    retrofit: bool = False,
+) -> dict[str, Any]:
+    """Provenance every hardware number needs and none of them carried.
+
+    write_receipt REFUSES hardware fields, so measurement receipts hand-rolled
+    their own json.dumps and inherited no bench block at all. The consequence
+    showed up the day /tmp/hawking-gpu-lane.lock was found wedged as a stale file:
+    placing the four headline measurements against that contention window had to
+    be done from GIT LANDING TIMES, because none of them recorded when it ran.
+    Landing time is a proxy - a receipt can be produced long before it lands - and
+    that margin happened to be hours. Contention windows are discovered after the
+    fact, so the stamp has to exist before anyone knows they need it.
+    """
+    if loadavg is None:
+        try:
+            one, five, fifteen = os.getloadavg()
+            loadavg = f"{{ {one:.2f} {five:.2f} {fifteen:.2f} }}"
+        except (OSError, AttributeError):
+            loadavg = None
+    now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    if retrofit and measured_at is None:
+        # A receipt REGENERATED from a stored raw measurement must not stamp the
+        # regeneration time as the measurement time. That would be a fabricated
+        # provenance - precisely the thing this block exists to prevent - and it
+        # is an easy mistake because the writer happens to be running now.
+        return {
+            "measured_at": None,
+            "measured_at_source": "RETROFIT_UNKNOWN",
+            "receipt_regenerated_at": now,
+            "gpu_lane_lock_held": None,
+            "loadavg": loadavg,
+            "lane": lane,
+            "absolutes_are_measured_under_load": True,
+            "why": (
+                "this receipt predates measurement provenance; the raw capture "
+                "carries no timestamp, so the measurement time is genuinely "
+                "unknown and is recorded as unknown rather than invented"
+            ),
+        }
+    return {
+        "measured_at": measured_at or now,
+        "measured_at_source": "CAPTURED" if measured_at else "WRITE_TIME",
+        "gpu_lane_lock_held": bool(lock_held),
+        "loadavg": loadavg,
+        "lane": lane,
+        "absolutes_are_measured_under_load": True,
+        "why": (
+            "a hardware number that cannot be placed in time cannot be audited "
+            "against a contention window"
+        ),
+    }
+
+
+REQUIRED_PROVENANCE = ("measured_at", "gpu_lane_lock_held", "loadavg")
+
+
+def _has_hardware_number(node: Any) -> bool:
+    if isinstance(node, dict):
+        for key, value in node.items():
+            if key in HARDWARE_FIELDS and isinstance(value, (int, float)):
+                return True
+            if _has_hardware_number(value):
+                return True
+    elif isinstance(node, list):
+        return any(_has_hardware_number(v) for v in node)
+    return False
+
+
+def write_measured_receipt(
+    path: str | Path,
+    doc: dict[str, Any],
+    recorded_by: str,
+    *,
+    provenance: dict[str, Any] | None = None,
+) -> Path:
+    """Write a receipt that IS allowed to carry hardware numbers - and therefore
+    must say when it measured them, under what load, and whether it held the lane
+    lock. The sidecar writer refuses hardware; this one requires provenance for it.
+    """
+    doc.setdefault("recorded_by", recorded_by)
+    if provenance is not None:
+        doc["measurement_provenance"] = provenance
+    prov = doc.get("measurement_provenance")
+    if _has_hardware_number(doc):
+        if not isinstance(prov, dict):
+            raise MeasurementProvenanceError(
+                f"{recorded_by}: receipt carries a hardware number and no "
+                f"measurement_provenance block; use measurement_provenance()"
+            )
+        missing = [k for k in REQUIRED_PROVENANCE if k not in prov]
+        if missing:
+            raise MeasurementProvenanceError(
+                f"{recorded_by}: measurement_provenance is missing {missing}; "
+                f"a hardware number that cannot be placed in time cannot be "
+                f"audited against a contention window"
+            )
+        if not prov.get("measured_at") and prov.get("measured_at_source") != "RETROFIT_UNKNOWN":
+            raise MeasurementProvenanceError(
+                f"{recorded_by}: measured_at is empty; landing time is a proxy, "
+                f"not a measurement time"
+            )
+    seal(doc)
+    out = Path(path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(doc, indent=1, sort_keys=True) + "\n")
+    return out
+
+
 def load_json(path: str | Path) -> dict[str, Any]:
     return json.loads(Path(path).read_text())
 

@@ -1,0 +1,37 @@
+{
+ "claim_boundary": "The lease governs WHEN an absolute may be taken, not what it means. A protected window makes an absolute eligible; it does not make a dirty-source build clean or a single run repeatable.",
+ "contaminated_window": {
+  "allowed": "PAIRED_RELATIVE",
+  "reserved_for_protected": "PROTECTED_ABSOLUTE",
+  "reserved_why": "canonical absolutes and any number used for promotion",
+  "why": "absolutes move with load while ratios do not - isolated qkvz read 601 GB/s in one run and 347 in another while its ARM A ratio held at 1.57x both times. A matched pair is valid under contention."
+ },
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "measurement_provenance": {
+  "absolutes_are_measured_under_load": true,
+  "gpu_lane_lock_held": false,
+  "lane": "protected-lease",
+  "loadavg": "{ 7.93 10.46 10.06 }",
+  "measured_at": "2026-08-31T18:59:37Z",
+  "measured_at_source": "WRITE_TIME",
+  "why": "a hardware number that cannot be placed in time cannot be audited against a contention window"
+ },
+ "policy": {
+  "does_not_ask_each_time": "the user decided this for G075; re-asking is the ceremony S025 \u00a741 says to remove",
+  "refuses_if_not_quiescent": true,
+  "resume_is_in_a_finally": true,
+  "steps": [
+   "stop contaminators",
+   "verify quiescence",
+   "measure",
+   "resume",
+   "verify resumed"
+  ]
+ },
+ "recorded_by": "tools/future/protected_bench_lease.py",
+ "run": null,
+ "schema": "hawking.future.protected_bench_lease.v1",
+ "seal_sha256": "eedd738b35b51d3a2c4ad0f3e8170966d19dca2ed24e4e59ada9dd8f33f8cd69",
+ "version": 1
+}

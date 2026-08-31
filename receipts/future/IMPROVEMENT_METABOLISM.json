@@ -1,0 +1,2122 @@
+{
+ "alu_ingest": {
+  "changed": true,
+  "defect": null,
+  "demoted": [
+   "mlp.why_330.A",
+   "mlp.why_330.A1",
+   "mlp.why_330.A2",
+   "mlp.why_330.A3"
+  ],
+  "descendants_updated": [],
+  "formal_verdict": "MIXED",
+  "mixed": [
+   "mlp.why_330",
+   "mlp.why_330.B"
+  ],
+  "notes": [],
+  "nothing_changed": false,
+  "nuance": "strong evidence for B, rule not satisfied: ARM A jumped 1.5089x from 329.6 to 497.4 GB/s on the same 83558400 bytes with loads surviving, but the pre-registered ALU_BOUND rule needed ARM B to scale sub-linearly and ARM B time/byte was 1.0427 (linear=True, sublinear=False) because half K also halves FMAs. Formal verdict MIXED, not ALU_BOUND.",
+  "promoted": [
+   "mlp.why_330.B1"
+  ],
+  "receipt_name": "MLP_ALU_ROOFLINE.json",
+  "schema": "hawking.future.mlp_alu_roofline.v1",
+  "settled": []
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T14:46:49Z",
+  "recorded_by": "tools/future/improvement_metabolism.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "cited": {
+  "causal_budget": {
+   "cited_token_ms": 28.817,
+   "cited_tps": 34.7,
+   "deltanet_dispatches": 337,
+   "deltanet_ms_saved_at_497": 2.273,
+   "deltanet_organ_gb": 2.961659904,
+   "deltanet_organ_gb_s": 360.0,
+   "deltanet_organ_ms": 8.227,
+   "demonstrated_regime_cited_tps": 47.76,
+   "mlp_ms_saved_at_497": 4.79,
+   "mlp_organ_gb": 5.347795776,
+   "mlp_organ_gb_s": 344.1,
+   "mlp_organ_ms": 15.541,
+   "roof_on_todays_bytes_cited_tps": 66.13,
+   "source": "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json"
+  },
+  "deltanet_generated": {
+   "candidate_id": "generated_transition_coefficients",
+   "fit": null,
+   "net_bytes": 2134548400,
+   "predicted_ms_saved": 5.790869111111111,
+   "source": "receipts/future/DELTANET_GENERATED_TRANSITION.json",
+   "verdict": null
+  },
+  "deltanet_isolation": {
+   "arithmetic": "8.227 ms at 360.0 GB/s over 2.961659904 GB; isolated in_proj_qkvz 600.9 GB/s would be 4.929 ms; unexplained 3.298 ms (campaign language: up to 4 ms)",
+   "counterfactual_organ_ms_at_isolated_rate": 4.929,
+   "isolated_kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+   "isolated_kernel_gb_s": 600.9,
+   "organ_gb": 2.961659904,
+   "organ_gb_s": 360.0,
+   "organ_ms": 8.227,
+   "source": [
+    "receipts/future/MLP_ALU_ROOFLINE.json",
+    "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json"
+   ],
+   "unexplained_ms": 3.298
+  },
+  "deltanet_multistep": {
+   "argmax_is_not_parity": true,
+   "generated_transition_landed": false,
+   "one_step_only_admissible": false,
+   "source": "receipts/future/DELTANET_MULTISTEP.json"
+  },
+  "function_replacement": {
+   "affordable_f16_rank_cap": 617,
+   "families": [
+    "FACTORIZE_THE_FACTORS",
+    "DICTIONARY_PROGRAM",
+    "PRODUCT_DICTIONARY",
+    "CONDITIONAL_PROGRAM",
+    "GENERATED_BLOCK",
+    "NONLINEAR_GENERATOR"
+   ],
+   "n_nonlinear_families": 6,
+   "n_survivors_nonlinear": 0,
+   "n_survivors_shared": 0,
+   "next": "Do not widen FACTORIZE_THE_FACTORS, dictionaries, conditionals, generated blocks, or silu-readout generators. The cheap round is the kill and the scars name the mechanism. Function replacement as a class remains the economics path; the live instantiation is a full-width structured nonlinear that is not an r-bottleneck.",
+   "oracle_pca_r64_held_out_relative_l2": 0.895354,
+   "predicted_ms_saved_if_F_holds": 2.3414,
+   "shared_candidates_measured_negative": 17,
+   "source": [
+    "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+    "receipts/future/MLP_SHARED_PROGRAM.json",
+    "receipts/future/MLP_FUNCTIONAL_RANK.json",
+    "receipts/future/EXECUTABLE_ECONOMICS.json"
+   ],
+   "uses_essentially_all_of_W": "MEASURED_NEGATIVE"
+  },
+  "mlp_alu": {
+   "arm_a_gb_s": 497.4,
+   "arm_a_over_production": 1.5089,
+   "arm_b_linear": true,
+   "arm_b_sublinear": false,
+   "arm_b_time_over_byte": 1.0427,
+   "lm_head_gb_s": 497.4,
+   "loads_survived": true,
+   "max_total_threads_per_threadgroup": 1024,
+   "mlp_verdict": "MIXED",
+   "occupancy_limited": false,
+   "production_decode_fma_per_weight_byte": 1.3333,
+   "production_gb_s": 329.6,
+   "required_decode_cheapening": 1.509,
+   "source": "receipts/future/MLP_ALU_ROOFLINE.json",
+   "target_decode_fma_per_weight_byte_at_497": 0.8835,
+   "threadgroups_per_core": 145.06666666666666,
+   "threads_per_threadgroup": 128,
+   "verdict": "MIXED",
+   "weight_bytes": 83558400,
+   "weight_mb": 83.56,
+   "why_not_forced": "ARM A jumped but ARM B tracked bytes (half K also halves FMAs, so linear scaling is predicted by both ALU and bandwidth); the pre-registered rule will not promote that pair to ALU_BOUND"
+  },
+  "odyssey_gate": {
+   "met": [
+    "resident_autonomy_trial_pass",
+    "specimen_curriculum_ready",
+    "modellake_identity",
+    "doctor_callable",
+    "gravity_callable",
+    "nr_nx_path_callable",
+    "evidence_hierarchy",
+    "negative_science",
+    "workgraphs",
+    "self_refill",
+    "dirty_measurement",
+    "protected_scheduling",
+    "transfer_substrate",
+    "adversary_substrate",
+    "crash_recovery",
+    "receipts"
+   ],
+   "n_criteria": 16,
+   "n_met": 16,
+   "n_unmet": 0,
+   "phase_transition": "STARTED",
+   "source": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+   "unmet": [],
+   "verdict": "LAUNCH"
+  },
+  "path_to_71": {
+   "best_composed_cited_tps": 42.36,
+   "best_composed_path": "PATH_04",
+   "best_composed_token_ms": 23.605,
+   "cited_token_ms": 28.722,
+   "cited_tps": 34.82,
+   "source": "receipts/future/PATH_TO_71.json",
+   "still_to_remove_ms": 9.52,
+   "target_token_ms": 14.085
+  }
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. Every GB/s, ms, byte and occupancy figure is cited from a named landed receipt; this module does not re-measure and does not hold a GPU lease. MIXED is a first-class verdict: strong evidence for a branch with a pre-registered rule unsatisfied is not a pass and is not a fail.",
+ "evidence_class": "STATIC_ONLY",
+ "formal_verdict": "MIXED",
+ "frontiers": {
+  "aux_byte_levers": {
+   "biggest_unknown": "capability of the exact-byte levers (no generate gate has been run)",
+   "causal_hypotheses": {
+    "cheapest_decisive_experiment": "refit HGRAVF01 at group_size=1024 and run a held-out reconstruction plus organ error on a real layer; python3 tools/future/mlp_auxiliary_information.py --build",
+    "children": [
+     {
+      "cheapest_decisive_experiment": "refit HGRAVF01 at group_size=1024 and run a held-out reconstruction plus organ error on a real layer; python3 tools/future/mlp_auxiliary_information.py --build",
+      "children": [],
+      "evidence": [],
+      "evidence_for": null,
+      "expected_runtime_s": 300.0,
+      "falsifier": "held-out reconstruction plus organ error on a real layer; capability UNMEASURED until that screen runs. Overlapping levers are not additive (PATH_TO_71 skipped aux_u8 against group_size_1024)",
+      "formal_verdict": null,
+      "id": "mlp.aux.group_size_1024",
+      "max_possible_gain_ms": 2.914,
+      "notes": "",
+      "parent_id": "mlp.aux.root",
+      "prior_confidence": 0.45,
+      "reopen_if": null,
+      "required_resource": "CPU",
+      "rule_satisfied": null,
+      "status": "OPEN",
+      "title": "group_size_1024",
+      "wake_condition": null
+     },
+     {
+      "cheapest_decisive_experiment": "refit HGRAVF01 at group_size=256; same capability screen as group_size_1024; python3 tools/future/mlp_auxiliary_information.py --build",
+      "children": [],
+      "evidence": [],
+      "evidence_for": null,
+      "expected_runtime_s": 300.0,
+      "falsifier": "held-out reconstruction plus organ error on a real layer; capability UNMEASURED until that screen runs. Overlapping levers are not additive (PATH_TO_71 skipped aux_u8 against group_size_1024)",
+      "formal_verdict": null,
+      "id": "mlp.aux.group_size_256",
+      "max_possible_gain_ms": 2.331,
+      "notes": "",
+      "parent_id": "mlp.aux.root",
+      "prior_confidence": 0.45,
+      "reopen_if": null,
+      "required_resource": "CPU",
+      "rule_satisfied": null,
+      "status": "OPEN",
+      "title": "group_size_256",
+      "wake_condition": null
+     },
+     {
+      "cheapest_decisive_experiment": "u8 of per-group scale/bias (byte model exact) plus held-out organ error; python3 tools/future/mlp_auxiliary_information.py --build",
+      "children": [],
+      "evidence": [],
+      "evidence_for": null,
+      "expected_runtime_s": 300.0,
+      "falsifier": "held-out reconstruction plus organ error on a real layer; capability UNMEASURED until that screen runs. Overlapping levers are not additive (PATH_TO_71 skipped aux_u8 against group_size_1024)",
+      "formal_verdict": null,
+      "id": "mlp.aux.quantize_aux_u8",
+      "max_possible_gain_ms": 1.554,
+      "notes": "",
+      "parent_id": "mlp.aux.root",
+      "prior_confidence": 0.45,
+      "reopen_if": null,
+      "required_resource": "CPU",
+      "rule_satisfied": null,
+      "status": "OPEN",
+      "title": "quantize_aux_u8",
+      "wake_condition": null
+     }
+    ],
+    "evidence": [],
+    "evidence_for": null,
+    "expected_runtime_s": 300.0,
+    "falsifier": "a generate-gate failure at the claimed group size / u8 aux kills the lever; a byte model without a capability screen stays PROSPECTIVE",
+    "formal_verdict": null,
+    "id": "mlp.aux.root",
+    "max_possible_gain_ms": 2.914,
+    "notes": "",
+    "parent_id": null,
+    "prior_confidence": 0.45,
+    "reopen_if": null,
+    "required_resource": "CPU",
+    "rule_satisfied": null,
+    "status": "OPEN",
+    "title": "auxiliary byte levers on the 1.07 GB scale/bias/header",
+    "wake_condition": null
+   },
+   "current_best": {
+    "auxiliary_bytes": 1069605696,
+    "group_size": 64,
+    "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json"
+   },
+   "id": "aux_byte_levers",
+   "live_candidates": [
+    {
+     "id": "mlp.aux.root",
+     "max_possible_gain_ms": 2.914,
+     "prior_confidence": 0.45,
+     "required_resource": "CPU",
+     "status": "OPEN"
+    },
+    {
+     "id": "mlp.aux.group_size_1024",
+     "max_possible_gain_ms": 2.914,
+     "prior_confidence": 0.45,
+     "required_resource": "CPU",
+     "status": "OPEN"
+    },
+    {
+     "id": "mlp.aux.group_size_256",
+     "max_possible_gain_ms": 2.331,
+     "prior_confidence": 0.45,
+     "required_resource": "CPU",
+     "status": "OPEN"
+    },
+    {
+     "id": "mlp.aux.quantize_aux_u8",
+     "max_possible_gain_ms": 1.554,
+     "prior_confidence": 0.45,
+     "required_resource": "CPU",
+     "status": "OPEN"
+    }
+   ],
+   "next_decisive_experiments": [
+    "refit HGRAVF01 at group_size=1024 and run a held-out reconstruction plus organ error on a real layer; python3 tools/future/mlp_auxiliary_information.py --build",
+    "refit HGRAVF01 at group_size=256; same capability screen as group_size_1024; python3 tools/future/mlp_auxiliary_information.py --build",
+    "u8 of per-group scale/bias (byte model exact) plus held-out organ error; python3 tools/future/mlp_auxiliary_information.py --build"
+   ],
+   "objective": "The MLP auxiliary arrays are 1,069,605,696 bytes (receipts/future/MLP_AUXILIARY_INFORMATION.json). Open exact-byte levers: group_size_1024 (2.914 ms, 1.0027008 GB), group_size_256 (2.331 ms), quantize_aux_u8 (1.554 ms). Capability is UNMEASURED. This frontier exists because these are the only remaining exact-byte moves on today's weights.",
+   "remaining_gap": {
+    "capability": "UNMEASURED",
+    "cited_ms": 2.914,
+    "overlaps": "aux_u8 overlaps group_size; PATH_TO_71 does not sum them"
+   },
+   "resource_requirements": [
+    "CPU",
+    "GPU_PROTECTED"
+   ],
+   "scars": [
+    {
+     "id": "drop_biases",
+     "reopen_if": "a packing that does not use the bias channel",
+     "scope": "HGRAVF01 bias arrays of sealed-3.14",
+     "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
+     "id": "generate_scales_from_group_index",
+     "reopen_if": "a new source that is not this residual of S",
+     "scope": "HGRAVF01 scale arrays of sealed-3.14",
+     "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+     "verdict": "MEASURED_NEGATIVE"
+    }
+   ],
+   "target": {
+    "capability": "UNMEASURED",
+    "cited_ms_saved": 2.914,
+    "gb_saved": 1.0027008,
+    "id": "group_size_1024"
+   },
+   "why_it_exists": {
+    "biggest_unknown": "capability of the exact-byte levers (no generate gate has been run)",
+    "current_best": {
+     "auxiliary_bytes": 1069605696,
+     "group_size": 64,
+     "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json"
+    },
+    "id": "aux_byte_levers",
+    "live_candidates": [
+     {
+      "id": "mlp.aux.root",
+      "max_possible_gain_ms": 2.914,
+      "prior_confidence": 0.45,
+      "required_resource": "CPU",
+      "status": "OPEN"
+     },
+     {
+      "id": "mlp.aux.group_size_1024",
+      "max_possible_gain_ms": 2.914,
+      "prior_confidence": 0.45,
+      "required_resource": "CPU",
+      "status": "OPEN"
+     },
+     {
+      "id": "mlp.aux.group_size_256",
+      "max_possible_gain_ms": 2.331,
+      "prior_confidence": 0.45,
+      "required_resource": "CPU",
+      "status": "OPEN"
+     },
+     {
+      "id": "mlp.aux.quantize_aux_u8",
+      "max_possible_gain_ms": 1.554,
+      "prior_confidence": 0.45,
+      "required_resource": "CPU",
+      "status": "OPEN"
+     }
+    ],
+    "n_hypotheses": 4,
+    "n_scars": 2,
+    "next_decisive_experiments": [
+     "refit HGRAVF01 at group_size=1024 and run a held-out reconstruction plus organ error on a real layer; python3 tools/future/mlp_auxiliary_information.py --build",
+     "refit HGRAVF01 at group_size=256; same capability screen as group_size_1024; python3 tools/future/mlp_auxiliary_information.py --build",
+     "u8 of per-group scale/bias (byte model exact) plus held-out organ error; python3 tools/future/mlp_auxiliary_information.py --build"
+    ],
+    "objective": "The MLP auxiliary arrays are 1,069,605,696 bytes (receipts/future/MLP_AUXILIARY_INFORMATION.json). Open exact-byte levers: group_size_1024 (2.914 ms, 1.0027008 GB), group_size_256 (2.331 ms), quantize_aux_u8 (1.554 ms). Capability is UNMEASURED. This frontier exists because these are the only remaining exact-byte moves on today's weights.",
+    "remaining_gap": {
+     "capability": "UNMEASURED",
+     "cited_ms": 2.914,
+     "overlaps": "aux_u8 overlaps group_size; PATH_TO_71 does not sum them"
+    },
+    "resource_requirements": [
+     "CPU",
+     "GPU_PROTECTED"
+    ],
+    "target": {
+     "capability": "UNMEASURED",
+     "cited_ms_saved": 2.914,
+     "gb_saved": 1.0027008,
+     "id": "group_size_1024"
+    }
+   }
+  },
+  "deltanet_execution": {
+   "biggest_unknown": "Which of the 337 dispatches consume the 3.298 ms that isolated in_proj_qkvz does not.",
+   "causal_hypotheses": {
+    "cheapest_decisive_experiment": "subtract isolated in_proj_qkvz time at 600.9 GB/s from the cited organ 8.227 ms / 2.961659904 GB / 360.0 GB/s; name the kernels that make the 3.298 ms residual",
+    "children": [
+     {
+      "cheapest_decisive_experiment": "census GPU ns of every DeltaNet dispatch class in the 337-dispatch organ (cited 337 dispatches, 8.227 ms, 360.0 GB/s) against isolated qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 at 600.9 GB/s; python3 tools/future/mlp_alu_roofline.py --record plus the organ workgraph in receipts/future/FLASH_ORGAN_WORKGRAPHS.json",
+      "children": [],
+      "evidence": [],
+      "evidence_for": null,
+      "expected_runtime_s": 120.0,
+      "falsifier": "if the sum of isolated kernel times at their measured GB/s equals 8.227 ms, there is no unexplained organ cost; a residual near 3.298 ms means the largest named kernel is not the organ's cost",
+      "formal_verdict": null,
+      "id": "dn.unexplained.other_kernels",
+      "max_possible_gain_ms": 3.298,
+      "notes": "",
+      "parent_id": "dn.unexplained",
+      "prior_confidence": 0.55,
+      "reopen_if": null,
+      "required_resource": "ANALYSIS",
+      "rule_satisfied": null,
+      "status": "OPEN",
+      "title": "kernels other than isolated in_proj_qkvz consume the organ milliseconds",
+      "wake_condition": null
+     },
+     {
+      "cheapest_decisive_experiment": "compare organ 8.227 ms to isolated qkvz counterfactual 4.929 ms; attribute the 3.298 ms residual to BA/delta (receipts/future/BA_DELTA_AB.json, 0.1384 ms qualified) vs unnamed kernels. python3 tools/future/ba_delta_ab.py --build",
+      "children": [],
+      "evidence": [],
+      "evidence_for": null,
+      "expected_runtime_s": 60.0,
+      "falsifier": "BA_DELTA_AB qualified 0.1384 ms; that cannot cover a ~3 ms residual. A fusion/ceremony claim must name a dispatch class whose GPU ns sum to the 3.298 ms gap",
+      "formal_verdict": null,
+      "id": "dn.unexplained.fusion_or_ba",
+      "max_possible_gain_ms": 3.298,
+      "notes": "",
+      "parent_id": "dn.unexplained",
+      "prior_confidence": 0.3,
+      "reopen_if": null,
+      "required_resource": "ANALYSIS",
+      "rule_satisfied": null,
+      "status": "OPEN",
+      "title": "BA/delta / fusion ceremony, not the Q4 matvec, is the organ cost",
+      "wake_condition": null
+     }
+    ],
+    "evidence": [],
+    "evidence_for": null,
+    "expected_runtime_s": 60.0,
+    "falsifier": "an organ-level accounting that sums to 8.227 ms with named kernels closes this; until then the largest kernel is not the cost",
+    "formal_verdict": null,
+    "id": "dn.unexplained",
+    "max_possible_gain_ms": 3.298,
+    "notes": "",
+    "parent_id": null,
+    "prior_confidence": 0.5,
+    "reopen_if": null,
+    "required_resource": "ANALYSIS",
+    "rule_satisfied": null,
+    "status": "OPEN",
+    "title": "DeltaNet organ 360 GB/s vs isolated largest kernel 600.9 GB/s",
+    "wake_condition": null
+   },
+   "current_best": {
+    "cited_isolated_kernel_gb_s": 600.9,
+    "cited_organ_gb_s": 360.0,
+    "cited_organ_ms": 8.227,
+    "source": [
+     "receipts/future/MLP_ALU_ROOFLINE.json",
+     "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json"
+    ]
+   },
+   "id": "deltanet_execution",
+   "live_candidates": [
+    {
+     "id": "dn.unexplained.fusion_or_ba",
+     "max_possible_gain_ms": 3.298,
+     "prior_confidence": 0.3,
+     "required_resource": "ANALYSIS",
+     "status": "OPEN"
+    },
+    {
+     "id": "dn.unexplained",
+     "max_possible_gain_ms": 3.298,
+     "prior_confidence": 0.5,
+     "required_resource": "ANALYSIS",
+     "status": "OPEN"
+    },
+    {
+     "id": "dn.unexplained.other_kernels",
+     "max_possible_gain_ms": 3.298,
+     "prior_confidence": 0.55,
+     "required_resource": "ANALYSIS",
+     "status": "OPEN"
+    }
+   ],
+   "next_decisive_experiments": [
+    "compare organ 8.227 ms to isolated qkvz counterfactual 4.929 ms; attribute the 3.298 ms residual to BA/delta (receipts/future/BA_DELTA_AB.json, 0.1384 ms qualified) vs unnamed kernels. python3 tools/future/ba_delta_ab.py --build",
+    "subtract isolated in_proj_qkvz time at 600.9 GB/s from the cited organ 8.227 ms / 2.961659904 GB / 360.0 GB/s; name the kernels that make the 3.298 ms residual",
+    "census GPU ns of every DeltaNet dispatch class in the 337-dispatch organ (cited 337 dispatches, 8.227 ms, 360.0 GB/s) against isolated qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 at 600.9 GB/s; python3 tools/future/mlp_alu_roofline.py --record plus the organ workgraph in receipts/future/FLASH_ORGAN_WORKGRAPHS.json"
+   ],
+   "objective": "The DeltaNet organ is 360.0 GB/s over 8.227 ms. Its largest kernel (qwen_uniform_q4_group64_matvec_geo_tpr64_tg128) measures 600.9 GB/s in isolation. Arithmetic: 8.227 ms at 360.0 GB/s over 2.961659904 GB; isolated in_proj_qkvz 600.9 GB/s would be 4.929 ms; unexplained 3.298 ms (campaign language: up to 4 ms). This frontier exists because that residual is now the largest unexplained cost in the token.",
+   "remaining_gap": {
+    "cited_counterfactual_ms": 4.929,
+    "cited_unexplained_ms": 3.298,
+    "formula": "organ_ms - organ_gb / isolated_kernel_gb_s * 1000"
+   },
+   "resource_requirements": [
+    "ANALYSIS",
+    "GPU_PROTECTED"
+   ],
+   "scars": [
+    {
+     "id": "deltanet_q3",
+     "reopen_if": "a sensitivity measurement that licenses lower bits; entropies 3.465-3.479 of 4 and any_supported=false is this scar",
+     "scope": "deltanet q/k/v/z bit-descent",
+     "source": "receipts/future/PATH_TO_71.json",
+     "verdict": "REFUTED"
+    }
+   ],
+   "target": {
+    "cited_unexplained_ms": 0.0,
+    "label": "organ time explained by named kernels"
+   },
+   "why_it_exists": {
+    "biggest_unknown": "Which of the 337 dispatches consume the 3.298 ms that isolated in_proj_qkvz does not.",
+    "current_best": {
+     "cited_isolated_kernel_gb_s": 600.9,
+     "cited_organ_gb_s": 360.0,
+     "cited_organ_ms": 8.227,
+     "source": [
+      "receipts/future/MLP_ALU_ROOFLINE.json",
+      "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json"
+     ]
+    },
+    "id": "deltanet_execution",
+    "live_candidates": [
+     {
+      "id": "dn.unexplained.fusion_or_ba",
+      "max_possible_gain_ms": 3.298,
+      "prior_confidence": 0.3,
+      "required_resource": "ANALYSIS",
+      "status": "OPEN"
+     },
+     {
+      "id": "dn.unexplained",
+      "max_possible_gain_ms": 3.298,
+      "prior_confidence": 0.5,
+      "required_resource": "ANALYSIS",
+      "status": "OPEN"
+     },
+     {
+      "id": "dn.unexplained.other_kernels",
+      "max_possible_gain_ms": 3.298,
+      "prior_confidence": 0.55,
+      "required_resource": "ANALYSIS",
+      "status": "OPEN"
+     }
+    ],
+    "n_hypotheses": 3,
+    "n_scars": 1,
+    "next_decisive_experiments": [
+     "compare organ 8.227 ms to isolated qkvz counterfactual 4.929 ms; attribute the 3.298 ms residual to BA/delta (receipts/future/BA_DELTA_AB.json, 0.1384 ms qualified) vs unnamed kernels. python3 tools/future/ba_delta_ab.py --build",
+     "subtract isolated in_proj_qkvz time at 600.9 GB/s from the cited organ 8.227 ms / 2.961659904 GB / 360.0 GB/s; name the kernels that make the 3.298 ms residual",
+     "census GPU ns of every DeltaNet dispatch class in the 337-dispatch organ (cited 337 dispatches, 8.227 ms, 360.0 GB/s) against isolated qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 at 600.9 GB/s; python3 tools/future/mlp_alu_roofline.py --record plus the organ workgraph in receipts/future/FLASH_ORGAN_WORKGRAPHS.json"
+    ],
+    "objective": "The DeltaNet organ is 360.0 GB/s over 8.227 ms. Its largest kernel (qwen_uniform_q4_group64_matvec_geo_tpr64_tg128) measures 600.9 GB/s in isolation. Arithmetic: 8.227 ms at 360.0 GB/s over 2.961659904 GB; isolated in_proj_qkvz 600.9 GB/s would be 4.929 ms; unexplained 3.298 ms (campaign language: up to 4 ms). This frontier exists because that residual is now the largest unexplained cost in the token.",
+    "remaining_gap": {
+     "cited_counterfactual_ms": 4.929,
+     "cited_unexplained_ms": 3.298,
+     "formula": "organ_ms - organ_gb / isolated_kernel_gb_s * 1000"
+    },
+    "resource_requirements": [
+     "ANALYSIS",
+     "GPU_PROTECTED"
+    ],
+    "target": {
+     "cited_unexplained_ms": 0.0,
+     "label": "organ time explained by named kernels"
+    }
+   }
+  },
+  "mlp_execution": {
+   "biggest_unknown": "Whether cheaper decode (B1) can be isolated from conversion (B2) and accumulation (B3) without an ARM B that also cuts bytes \u2014 the landed conjunction is MIXED until a keep-K FMA-thinned arm exists. registers_per_thread is null so C2 is unmeasured.",
+   "causal_hypotheses": {
+    "cheapest_decisive_experiment": "matched pair ARM A + ARM B on one representative layer of sealed-3.14 production affine2 geo_tpr64; python3 tools/future/mlp_alu_roofline.py --measure --record. Verdict is the pre-registered conjunction, not ARM A alone",
+    "children": [
+     {
+      "cheapest_decisive_experiment": "matched pair ARM A (bytes identical, arithmetic stripped) on one representative layer; python3 tools/future/mlp_alu_roofline.py --measure --record",
+      "children": [
+       {
+        "cheapest_decisive_experiment": "matched pair ARM A: production vs stripped-ALU on the same weight_bytes=83558400, MTLCommandBuffer GPUStartTime/GPUEndTime; command python3 tools/future/mlp_alu_roofline.py --measure --record",
+        "children": [],
+        "evidence": [
+         {
+          "confidence_after": 0.088,
+          "confidence_before": 0.4,
+          "evidence_for": false,
+          "formal_verdict": null,
+          "note": "same 83558400 bytes, ARM A 497.4 GB/s vs production 329.6; raw DRAM did not cap the stripped arm.",
+          "polarity": "DEMOTE",
+          "receipt": "MLP_ALU_ROOFLINE.json",
+          "rule_satisfied": false
+         }
+        ],
+        "evidence_for": false,
+        "expected_runtime_s": 180.0,
+        "falsifier": "ARM A (same bytes, arithmetic stripped) jumps >= 1.25x over production with loads surviving -> raw DRAM is not the ceiling of this kernel",
+        "formal_verdict": null,
+        "id": "mlp.why_330.A1",
+        "max_possible_gain_ms": 4.79,
+        "notes": "",
+        "parent_id": "mlp.why_330.A",
+        "prior_confidence": 0.088,
+        "reopen_if": null,
+        "required_resource": "GPU_PROTECTED",
+        "rule_satisfied": false,
+        "status": "DEMOTED",
+        "title": "A1 raw DRAM",
+        "wake_condition": null
+       },
+       {
+        "cheapest_decisive_experiment": "ARM A stripped vs zero-load floor vs ARM A half-K on the same geo_tpr64 production access pattern, weight_bytes=83558400; python3 tools/future/mlp_alu_roofline.py --measure --record",
+        "children": [],
+        "evidence": [
+         {
+          "confidence_after": 0.077,
+          "confidence_before": 0.35,
+          "evidence_for": false,
+          "formal_verdict": null,
+          "note": "loads survived (stripped 168000 ns vs zero-load 32416 ns); transaction inefficiency of the production access pattern is not the ceiling.",
+          "polarity": "DEMOTE",
+          "receipt": "MLP_ALU_ROOFLINE.json",
+          "rule_satisfied": false
+         }
+        ],
+        "evidence_for": false,
+        "expected_runtime_s": 180.0,
+        "falsifier": "stripped time above the zero-load floor and dropping when bytes halve proves the loads survived; a transaction tax that vanished when arithmetic vanished is not a memory-transaction ceiling",
+        "formal_verdict": null,
+        "id": "mlp.why_330.A2",
+        "max_possible_gain_ms": 4.79,
+        "notes": "",
+        "parent_id": "mlp.why_330.A",
+        "prior_confidence": 0.077,
+        "reopen_if": null,
+        "required_resource": "GPU_PROTECTED",
+        "rule_satisfied": false,
+        "status": "DEMOTED",
+        "title": "A2 transaction inefficiency",
+        "wake_condition": null
+       },
+       {
+        "cheapest_decisive_experiment": "python3 tools/future/mlp_alu_roofline.py --record; cite mlp.production.occupancy.threads_per_threadgroup vs max_total_threads_per_threadgroup and threadgroups_per_core on qwen_affine_q2_group32_matvec_geo_tpr64_tg128 from receipts/future/MLP_ALU_ROOFLINE.json",
+        "children": [],
+        "evidence": [
+         {
+          "confidence_after": 0.066,
+          "confidence_before": 0.3,
+          "evidence_for": false,
+          "formal_verdict": null,
+          "note": "occupancy ruled out: 128 threads/threadgroup against max 1024, 145.06666666666666 threadgroups/core; occupancy_limited=False.",
+          "polarity": "DEMOTE",
+          "receipt": "MLP_ALU_ROOFLINE.json",
+          "rule_satisfied": false
+         }
+        ],
+        "evidence_for": false,
+        "expected_runtime_s": 30.0,
+        "falsifier": "threads_per_threadgroup well below max AND threadgroups_per_core >> 1 rules occupancy/cache-thrash-from-oversubscription out as the ceiling",
+        "formal_verdict": null,
+        "id": "mlp.why_330.A3",
+        "max_possible_gain_ms": 4.79,
+        "notes": "",
+        "parent_id": "mlp.why_330.A",
+        "prior_confidence": 0.066,
+        "reopen_if": null,
+        "required_resource": "GPU_PROTECTED",
+        "rule_satisfied": false,
+        "status": "DEMOTED",
+        "title": "A3 cache behaviour",
+        "wake_condition": null
+       }
+      ],
+      "evidence": [
+       {
+        "confidence_after": 0.0924,
+        "confidence_before": 0.42,
+        "evidence_for": false,
+        "formal_verdict": null,
+        "note": "ARM A kept production bytes and access pattern and jumped; a bandwidth ceiling on this kernel is not what 329.6 GB/s is.",
+        "polarity": "DEMOTE",
+        "receipt": "MLP_ALU_ROOFLINE.json",
+        "rule_satisfied": false
+       }
+      ],
+      "evidence_for": false,
+      "expected_runtime_s": 180.0,
+      "falsifier": "ARM A stays within 1.12x of production -> memory-system bound; ARM A jumps >= 1.25x -> not a bandwidth ceiling of this kernel",
+      "formal_verdict": null,
+      "id": "mlp.why_330.A",
+      "max_possible_gain_ms": 4.79,
+      "notes": "",
+      "parent_id": "mlp.why_330",
+      "prior_confidence": 0.0924,
+      "reopen_if": null,
+      "required_resource": "GPU_PROTECTED",
+      "rule_satisfied": false,
+      "status": "DEMOTED",
+      "title": "A bandwidth ceiling",
+      "wake_condition": null
+     },
+     {
+      "cheapest_decisive_experiment": "pre-registered matched pair: ARM A jump AND ARM B sub-linear. python3 tools/future/mlp_alu_roofline.py --measure --record. ALU_BOUND only if both conjuncts fire and loads survive",
+      "children": [
+       {
+        "cheapest_decisive_experiment": "python3 tools/future/mlp_alu_roofline.py --record; cite mlp.decode_tax.production_decode_fma_per_weight_byte (8 dequant FMA / 6 weight bytes) against to_match_lm_head_497.target_decode_fma_per_weight_byte",
+        "children": [],
+        "evidence": [
+         {
+          "confidence_after": 0.721,
+          "confidence_before": 0.38,
+          "evidence_for": true,
+          "formal_verdict": null,
+          "note": "production decode costs 1.3333 dequant-FMA per weight-byte; 497.4 GB/s at the same issue rate needs 0.8835 (cheapening 1.509).",
+          "polarity": "PROMOTE",
+          "receipt": "MLP_ALU_ROOFLINE.json",
+          "rule_satisfied": false
+         }
+        ],
+        "evidence_for": true,
+        "expected_runtime_s": 10.0,
+        "falsifier": "if stripping decode+dequant (keeping the same loads) does not move GB/s, unpack/decode is not the lever; if it lands on the LM-head rate, decode FMA/byte is the quantified lever",
+        "formal_verdict": null,
+        "id": "mlp.why_330.B1",
+        "max_possible_gain_ms": 4.79,
+        "notes": "",
+        "parent_id": "mlp.why_330.B",
+        "prior_confidence": 0.721,
+        "reopen_if": null,
+        "required_resource": "ANALYSIS",
+        "rule_satisfied": false,
+        "status": "PROMOTED",
+        "title": "B1 unpack/decode",
+        "wake_condition": null
+       },
+       {
+        "cheapest_decisive_experiment": "ARM A' keep production K and dequant-FMA, replace int-to-float with a bitcast sink, same weight_bytes; extend alu_roofline_organs.rs --arm-a conversion-stripped then python3 tools/future/mlp_alu_roofline.py --measure --record",
+        "children": [],
+        "evidence": [],
+        "evidence_for": null,
+        "expected_runtime_s": 180.0,
+        "falsifier": "conversion-only strip that does not move time falsifies B2 as the dominant arithmetic; a jump comparable to full ARM A isolates it",
+        "formal_verdict": null,
+        "id": "mlp.why_330.B2",
+        "max_possible_gain_ms": 4.79,
+        "notes": "",
+        "parent_id": "mlp.why_330.B",
+        "prior_confidence": 0.28,
+        "reopen_if": null,
+        "required_resource": "GPU_PROTECTED",
+        "rule_satisfied": null,
+        "status": "OPEN",
+        "title": "B2 conversion",
+        "wake_condition": null
+       },
+       {
+        "cheapest_decisive_experiment": "ARM B': keep production weight_bytes and cut MAC-FMA issue in half without cutting K (skip every other MAC, retain dequant). Command: python3 tools/future/mlp_alu_roofline.py --measure --record after alu_roofline_organs.rs --arm-b ops-thinned --keep-k",
+        "children": [],
+        "evidence": [],
+        "evidence_for": null,
+        "expected_runtime_s": 180.0,
+        "falsifier": "time tracks remaining FMA count at constant bytes -> accumulation/arithmetic ceiling; time stays at production -> accumulation is not it. The landed ARM B (half K) CANNOT close this: it halves FMAs with bytes",
+        "formal_verdict": null,
+        "id": "mlp.why_330.B3",
+        "max_possible_gain_ms": 4.79,
+        "notes": "",
+        "parent_id": "mlp.why_330.B",
+        "prior_confidence": 0.28,
+        "reopen_if": null,
+        "required_resource": "GPU_PROTECTED",
+        "rule_satisfied": null,
+        "status": "OPEN",
+        "title": "B3 accumulation",
+        "wake_condition": null
+       }
+      ],
+      "evidence": [
+       {
+        "confidence_after": 0.67,
+        "confidence_before": 0.4,
+        "evidence_for": true,
+        "formal_verdict": "MIXED",
+        "note": "strong evidence for the arithmetic ceiling, rule not satisfied. ARM A jumped but ARM B tracked bytes (half K also halves FMAs, so linear scaling is predicted by both ALU and bandwidth); the pre-registered rule will not promote that pair to ALU_BOUND",
+        "polarity": "MIXED",
+        "receipt": "MLP_ALU_ROOFLINE.json",
+        "rule_satisfied": false
+       }
+      ],
+      "evidence_for": true,
+      "expected_runtime_s": 180.0,
+      "falsifier": "ALU_BOUND iff ARM A >= 1.25x AND ARM B time/byte > 1.20 AND loads survived. ARM A jump with ARM B linear (half K also halves FMAs) is MIXED, not ALU_BOUND \u2014 the conjunction is the falsifier",
+      "formal_verdict": "MIXED",
+      "id": "mlp.why_330.B",
+      "max_possible_gain_ms": 4.79,
+      "notes": "strong evidence for B, rule not satisfied",
+      "parent_id": "mlp.why_330",
+      "prior_confidence": 0.67,
+      "reopen_if": null,
+      "required_resource": "GPU_PROTECTED",
+      "rule_satisfied": false,
+      "status": "MIXED",
+      "title": "B arithmetic ceiling",
+      "wake_condition": null
+     },
+     {
+      "cheapest_decisive_experiment": "C1 chain length plus C2 registers_per_thread on the production geo_tpr64 body; both from the same pipeline-state dump as occupancy",
+      "children": [
+       {
+        "cheapest_decisive_experiment": "disassemble qwen_affine_q2_group32_matvec_geo_tpr64_tg128 inner loop and report dependent dequant-then-MAC chain length vs dual-issue slots; xcrun metal / air-lld if present, else PARK on compiler",
+        "children": [],
+        "evidence": [],
+        "evidence_for": null,
+        "expected_runtime_s": 60.0,
+        "falsifier": "an inner-loop chain that dual-issues dequant with MAC at the measured issue rate falsifies a dependency ceiling; a serial dequant-MAC chain at 1.33 FMA/byte that matches the 1.51x ARM A jump supports it",
+        "formal_verdict": null,
+        "id": "mlp.why_330.C1",
+        "max_possible_gain_ms": 4.79,
+        "notes": "",
+        "parent_id": "mlp.why_330.C",
+        "prior_confidence": 0.22,
+        "reopen_if": null,
+        "required_resource": "GPU_PROTECTED",
+        "rule_satisfied": null,
+        "status": "OPEN",
+        "title": "C1 instruction chain",
+        "wake_condition": null
+       },
+       {
+        "cheapest_decisive_experiment": "python3 tools/future/mlp_alu_roofline.py --record; cite mlp.production.occupancy.registers_per_thread on qwen_affine_q2_group32_matvec_geo_tpr64_tg128 (currently null: toolchain does not expose it)",
+        "children": [],
+        "evidence": [],
+        "evidence_for": null,
+        "expected_runtime_s": 30.0,
+        "falsifier": "registers_per_thread reported and occupancy_of_max_threads rising when arithmetic is stripped would support spill/pressure; a null register count cannot confirm C2 and cannot kill it",
+        "formal_verdict": null,
+        "id": "mlp.why_330.C2",
+        "max_possible_gain_ms": 4.79,
+        "notes": "",
+        "parent_id": "mlp.why_330.C",
+        "prior_confidence": 0.22,
+        "reopen_if": null,
+        "required_resource": "GPU_PROTECTED",
+        "rule_satisfied": null,
+        "status": "OPEN",
+        "title": "C2 register pressure",
+        "wake_condition": null
+       }
+      ],
+      "evidence": [],
+      "evidence_for": null,
+      "expected_runtime_s": 60.0,
+      "falsifier": "a reported register count AND an inner-loop DAG that still dual-issues at production issue rate falsifies a dependency ceiling independent of B1 decode tax",
+      "formal_verdict": null,
+      "id": "mlp.why_330.C",
+      "max_possible_gain_ms": 4.79,
+      "notes": "",
+      "parent_id": "mlp.why_330",
+      "prior_confidence": 0.25,
+      "reopen_if": null,
+      "required_resource": "GPU_PROTECTED",
+      "rule_satisfied": null,
+      "status": "OPEN",
+      "title": "C dependency ceiling",
+      "wake_condition": null
+     },
+     {
+      "cheapest_decisive_experiment": "counterfactual dispatch topology: one MLP layer as 1 fused region vs production 3 dispatches already ran (MLP_REGION_FALSIFIER.json 331.6 -> 332.2 GB/s). Remaining D probe: tile/SIMD-group mapping of geo_tpr64 vs LM-head Q4 on the same 83.56 MB working set, python3 tools/future/mlp_alu_roofline.py --measure --record",
+      "children": [],
+      "evidence": [],
+      "evidence_for": null,
+      "expected_runtime_s": 180.0,
+      "falsifier": "region granularity is already GRANULARITY_REFUTED at 332.2 vs 331.6; a topology claim that does not beat that delta is the same scar. Reopen only for a different physical mapping (not buffer contiguity)",
+      "formal_verdict": null,
+      "id": "mlp.why_330.D",
+      "max_possible_gain_ms": 4.79,
+      "notes": "",
+      "parent_id": "mlp.why_330",
+      "prior_confidence": 0.18,
+      "reopen_if": null,
+      "required_resource": "GPU_PROTECTED",
+      "rule_satisfied": null,
+      "status": "OPEN",
+      "title": "D physical execution topology",
+      "wake_condition": null
+     }
+    ],
+    "evidence": [
+     {
+      "confidence_after": 0.67,
+      "confidence_before": 0.5,
+      "evidence_for": true,
+      "formal_verdict": "MIXED",
+      "note": "strong evidence for B, rule not satisfied: ARM A jumped 1.5089x from 329.6 to 497.4 GB/s on the same 83558400 bytes with loads surviving, but the pre-registered ALU_BOUND rule needed ARM B to scale sub-linearly and ARM B time/byte was 1.0427 (linear=True, sublinear=False) because half K also halves FMAs. Formal verdict MIXED, not ALU_BOUND.",
+      "polarity": "MIXED",
+      "receipt": "MLP_ALU_ROOFLINE.json",
+      "rule_satisfied": false
+     }
+    ],
+    "evidence_for": true,
+    "expected_runtime_s": 180.0,
+    "falsifier": "pre-registered: A jumps AND B sub-linear AND loads survived -> ALU_BOUND; A stays -> MEMORY_SYSTEM_BOUND; anything else (including A jumps, B linear because half K halves FMAs) -> MIXED. Do not force a binary",
+    "formal_verdict": "MIXED",
+    "id": "mlp.why_330",
+    "max_possible_gain_ms": 4.79,
+    "notes": "strong evidence for B, rule not satisfied: ARM A jumped 1.5089x from 329.6 to 497.4 GB/s on the same 83558400 bytes with loads surviving, but the pre-registered ALU_BOUND rule needed ARM B to scale sub-linearly and ARM B time/byte was 1.0427 (linear=True, sublinear=False) because half K also halves FMAs. Formal verdict MIXED, not ALU_BOUND.",
+    "parent_id": null,
+    "prior_confidence": 0.67,
+    "reopen_if": null,
+    "required_resource": "GPU_PROTECTED",
+    "rule_satisfied": false,
+    "status": "MIXED",
+    "title": "WHY IS THE MLP AT ~330 GB/s?",
+    "wake_condition": null
+   },
+   "current_best": {
+    "cited_layer_production_gb_s": 329.6,
+    "cited_organ_gb_s": 344.1,
+    "cited_organ_ms": 15.541,
+    "source": [
+     "receipts/future/MLP_ALU_ROOFLINE.json",
+     "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json"
+    ]
+   },
+   "id": "mlp_execution",
+   "live_candidates": [
+    {
+     "id": "mlp.why_330.D",
+     "max_possible_gain_ms": 4.79,
+     "prior_confidence": 0.18,
+     "required_resource": "GPU_PROTECTED",
+     "status": "OPEN"
+    },
+    {
+     "id": "mlp.why_330.C1",
+     "max_possible_gain_ms": 4.79,
+     "prior_confidence": 0.22,
+     "required_resource": "GPU_PROTECTED",
+     "status": "OPEN"
+    },
+    {
+     "id": "mlp.why_330.C2",
+     "max_possible_gain_ms": 4.79,
+     "prior_confidence": 0.22,
+     "required_resource": "GPU_PROTECTED",
+     "status": "OPEN"
+    },
+    {
+     "id": "mlp.why_330.C",
+     "max_possible_gain_ms": 4.79,
+     "prior_confidence": 0.25,
+     "required_resource": "GPU_PROTECTED",
+     "status": "OPEN"
+    },
+    {
+     "id": "mlp.why_330.B2",
+     "max_possible_gain_ms": 4.79,
+     "prior_confidence": 0.28,
+     "required_resource": "GPU_PROTECTED",
+     "status": "OPEN"
+    },
+    {
+     "id": "mlp.why_330.B3",
+     "max_possible_gain_ms": 4.79,
+     "prior_confidence": 0.28,
+     "required_resource": "GPU_PROTECTED",
+     "status": "OPEN"
+    },
+    {
+     "id": "mlp.why_330",
+     "max_possible_gain_ms": 4.79,
+     "prior_confidence": 0.67,
+     "required_resource": "GPU_PROTECTED",
+     "status": "MIXED"
+    },
+    {
+     "id": "mlp.why_330.B",
+     "max_possible_gain_ms": 4.79,
+     "prior_confidence": 0.67,
+     "required_resource": "GPU_PROTECTED",
+     "status": "MIXED"
+    },
+    {
+     "id": "mlp.why_330.B1",
+     "max_possible_gain_ms": 4.79,
+     "prior_confidence": 0.721,
+     "required_resource": "ANALYSIS",
+     "status": "PROMOTED"
+    }
+   ],
+   "next_decisive_experiments": [
+    "counterfactual dispatch topology: one MLP layer as 1 fused region vs production 3 dispatches already ran (MLP_REGION_FALSIFIER.json 331.6 -> 332.2 GB/s). Remaining D probe: tile/SIMD-group mapping of geo_tpr64 vs LM-head Q4 on the same 83.56 MB working set, python3 tools/future/mlp_alu_roofline.py --measure --record",
+    "disassemble qwen_affine_q2_group32_matvec_geo_tpr64_tg128 inner loop and report dependent dequant-then-MAC chain length vs dual-issue slots; xcrun metal / air-lld if present, else PARK on compiler",
+    "python3 tools/future/mlp_alu_roofline.py --record; cite mlp.production.occupancy.registers_per_thread on qwen_affine_q2_group32_matvec_geo_tpr64_tg128 (currently null: toolchain does not expose it)",
+    "C1 chain length plus C2 registers_per_thread on the production geo_tpr64 body; both from the same pipeline-state dump as occupancy",
+    "ARM A' keep production K and dequant-FMA, replace int-to-float with a bitcast sink, same weight_bytes; extend alu_roofline_organs.rs --arm-a conversion-stripped then python3 tools/future/mlp_alu_roofline.py --measure --record",
+    "ARM B': keep production weight_bytes and cut MAC-FMA issue in half without cutting K (skip every other MAC, retain dequant). Command: python3 tools/future/mlp_alu_roofline.py --measure --record after alu_roofline_organs.rs --arm-b ops-thinned --keep-k"
+   ],
+   "objective": "Explain and close the MLP's ~330 GB/s. The organ is 15.541 ms at 344.1 GB/s; one representative layer measures production 329.6 GB/s on 83.56 MB. The target is the LM head's demonstrated 497.4 GB/s, worth 4.79 ms if the organ reaches it. This frontier exists because that gap is the largest executor-shaped term in the causal budget.",
+   "remaining_gap": {
+    "cited_ms": 4.79,
+    "id": "reach_demonstrated_bandwidth_mlp",
+    "source": "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json"
+   },
+   "resource_requirements": [
+    "GPU_PROTECTED",
+    "ANALYSIS"
+   ],
+   "scars": [
+    {
+     "evidence": "one MLP layer in one staging buffer under one serial encoder measured 332.2 GB/s against production 331.6, bit-identical",
+     "id": "region_granularity",
+     "reopen_if": "a different mechanism than the one this receipt killed; retrying the same lever is the scar",
+     "scope": "mlp_executor",
+     "source": "receipts/future/MLP_REGION_FALSIFIER.json",
+     "verdict": "GRANULARITY_REFUTED"
+    },
+    {
+     "evidence": "i.i.d. Shannon 1.87018 bits of 2 stored; Markov-1 adds 0.00195; 93.5% of the code body is independent information",
+     "id": "entropy_code_the_mlp_codes",
+     "reopen_if": "a different mechanism than the one this receipt killed; retrying the same lever is the scar",
+     "scope": "mlp_executor",
+     "source": "receipts/future/MLP_CODE_INFORMATION.json",
+     "verdict": "AT_THE_FLOOR"
+    },
+    {
+     "evidence": "every decode+consume candidate eliminates ZERO intermediate bytes; the kernels decode in-register and dense_w_materialized stays 0",
+     "id": "fuse_representation_decode",
+     "reopen_if": "a different mechanism than the one this receipt killed; retrying the same lever is the scar",
+     "scope": "mlp_executor",
+     "source": "receipts/future/REPRESENTATION_DECODE_FUSION.json",
+     "verdict": "ALREADY_FUSED"
+    },
+    {
+     "evidence": "host gap is 0.989 ms of a 29.043 ms token, measured over three runs and stable to five decimals",
+     "id": "eliminate_all_host_gap",
+     "reopen_if": "a different mechanism than the one this receipt killed; retrying the same lever is the scar",
+     "scope": "mlp_executor",
+     "source": "receipts/future/WALL_GPU_RECONCILIATION.json",
+     "verdict": "BOUNDED_TOO_SMALL"
+    },
+    {
+     "id": "catalog_addressing",
+     "reopen_if": "a different physical mapping than the named scar",
+     "scope": "mlp_executor",
+     "source": "receipts/future/MLP_ALU_ROOFLINE.json",
+     "verdict": "REFUTED_ELSEWHERE"
+    },
+    {
+     "id": "raw_dispatch_count",
+     "reopen_if": "a different physical mapping than the named scar",
+     "scope": "mlp_executor",
+     "source": "receipts/future/MLP_ALU_ROOFLINE.json",
+     "verdict": "REFUTED_ELSEWHERE"
+    },
+    {
+     "id": "bytes_per_dispatch",
+     "reopen_if": "a different physical mapping than the named scar",
+     "scope": "mlp_executor",
+     "source": "receipts/future/MLP_ALU_ROOFLINE.json",
+     "verdict": "REFUTED_ELSEWHERE"
+    }
+   ],
+   "target": {
+    "cited_gb_s": 497.4,
+    "cited_ms_at_demonstrated": 10.751,
+    "source": "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json"
+   },
+   "why_it_exists": {
+    "biggest_unknown": "Whether cheaper decode (B1) can be isolated from conversion (B2) and accumulation (B3) without an ARM B that also cuts bytes \u2014 the landed conjunction is MIXED until a keep-K FMA-thinned arm exists. registers_per_thread is null so C2 is unmeasured.",
+    "current_best": {
+     "cited_layer_production_gb_s": 329.6,
+     "cited_organ_gb_s": 344.1,
+     "cited_organ_ms": 15.541,
+     "source": [
+      "receipts/future/MLP_ALU_ROOFLINE.json",
+      "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json"
+     ]
+    },
+    "id": "mlp_execution",
+    "live_candidates": [
+     {
+      "id": "mlp.why_330.D",
+      "max_possible_gain_ms": 4.79,
+      "prior_confidence": 0.18,
+      "required_resource": "GPU_PROTECTED",
+      "status": "OPEN"
+     },
+     {
+      "id": "mlp.why_330.C1",
+      "max_possible_gain_ms": 4.79,
+      "prior_confidence": 0.22,
+      "required_resource": "GPU_PROTECTED",
+      "status": "OPEN"
+     },
+     {
+      "id": "mlp.why_330.C2",
+      "max_possible_gain_ms": 4.79,
+      "prior_confidence": 0.22,
+      "required_resource": "GPU_PROTECTED",
+      "status": "OPEN"
+     },
+     {
+      "id": "mlp.why_330.C",
+      "max_possible_gain_ms": 4.79,
+      "prior_confidence": 0.25,
+      "required_resource": "GPU_PROTECTED",
+      "status": "OPEN"
+     },
+     {
+      "id": "mlp.why_330.B2",
+      "max_possible_gain_ms": 4.79,
+      "prior_confidence": 0.28,
+      "required_resource": "GPU_PROTECTED",
+      "status": "OPEN"
+     },
+     {
+      "id": "mlp.why_330.B3",
+      "max_possible_gain_ms": 4.79,
+      "prior_confidence": 0.28,
+      "required_resource": "GPU_PROTECTED",
+      "status": "OPEN"
+     },
+     {
+      "id": "mlp.why_330",
+      "max_possible_gain_ms": 4.79,
+      "prior_confidence": 0.67,
+      "required_resource": "GPU_PROTECTED",
+      "status": "MIXED"
+     },
+     {
+      "id": "mlp.why_330.B",
+      "max_possible_gain_ms": 4.79,
+      "prior_confidence": 0.67,
+      "required_resource": "GPU_PROTECTED",
+      "status": "MIXED"
+     },
+     {
+      "id": "mlp.why_330.B1",
+      "max_possible_gain_ms": 4.79,
+      "prior_confidence": 0.721,
+      "required_resource": "ANALYSIS",
+      "status": "PROMOTED"
+     }
+    ],
+    "n_hypotheses": 13,
+    "n_scars": 7,
+    "next_decisive_experiments": [
+     "counterfactual dispatch topology: one MLP layer as 1 fused region vs production 3 dispatches already ran (MLP_REGION_FALSIFIER.json 331.6 -> 332.2 GB/s). Remaining D probe: tile/SIMD-group mapping of geo_tpr64 vs LM-head Q4 on the same 83.56 MB working set, python3 tools/future/mlp_alu_roofline.py --measure --record",
+     "disassemble qwen_affine_q2_group32_matvec_geo_tpr64_tg128 inner loop and report dependent dequant-then-MAC chain length vs dual-issue slots; xcrun metal / air-lld if present, else PARK on compiler",
+     "python3 tools/future/mlp_alu_roofline.py --record; cite mlp.production.occupancy.registers_per_thread on qwen_affine_q2_group32_matvec_geo_tpr64_tg128 (currently null: toolchain does not expose it)",
+     "C1 chain length plus C2 registers_per_thread on the production geo_tpr64 body; both from the same pipeline-state dump as occupancy",
+     "ARM A' keep production K and dequant-FMA, replace int-to-float with a bitcast sink, same weight_bytes; extend alu_roofline_organs.rs --arm-a conversion-stripped then python3 tools/future/mlp_alu_roofline.py --measure --record",
+     "ARM B': keep production weight_bytes and cut MAC-FMA issue in half without cutting K (skip every other MAC, retain dequant). Command: python3 tools/future/mlp_alu_roofline.py --measure --record after alu_roofline_organs.rs --arm-b ops-thinned --keep-k"
+    ],
+    "objective": "Explain and close the MLP's ~330 GB/s. The organ is 15.541 ms at 344.1 GB/s; one representative layer measures production 329.6 GB/s on 83.56 MB. The target is the LM head's demonstrated 497.4 GB/s, worth 4.79 ms if the organ reaches it. This frontier exists because that gap is the largest executor-shaped term in the causal budget.",
+    "remaining_gap": {
+     "cited_ms": 4.79,
+     "id": "reach_demonstrated_bandwidth_mlp",
+     "source": "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json"
+    },
+    "resource_requirements": [
+     "GPU_PROTECTED",
+     "ANALYSIS"
+    ],
+    "target": {
+     "cited_gb_s": 497.4,
+     "cited_ms_at_demonstrated": 10.751,
+     "source": "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json"
+    }
+   }
+  },
+  "mlp_function_replacement": {
+   "biggest_unknown": "a full-width structured nonlinear (Monarch / butterfly / distilled operator) that is not an r-dimensional bottleneck",
+   "causal_hypotheses": {
+    "cheapest_decisive_experiment": "score function_replacement through executable_economics.score with bytes_added billed, then a held-out F replacement that is not an r-bottleneck; python3 tools/future/mlp_nonlinear_program.py --build",
+    "children": [
+     {
+      "cheapest_decisive_experiment": "held-out relative L2 of FACTORIZE_THE_FACTORS on the sealed-3.14 teacher corpus, prompt_id split, billed through executable_economics.score; python3 tools/future/mlp_nonlinear_program.py --build",
+      "children": [],
+      "evidence": [],
+      "evidence_for": null,
+      "expected_runtime_s": 120.0,
+      "falsifier": "held-out relative L2 in the 0.9 band at any affordable size is the cheap kill (landed 0.976845)",
+      "formal_verdict": null,
+      "id": "mlp.fn.r_bottleneck.FACTORIZE_THE_FACTORS",
+      "max_possible_gain_ms": 2.3414,
+      "notes": "gate, up and down are individually high-rank. Truncated SVD at rank 32 leaves Frobenius residual energy gate=0.968575 up=0.984304 down=0.980244. Composing the three with exact silu and product has held-out relative L2 0.976845. Even with two factors exact, one rank-64 factor sits at gate=0.878896 up=0.95432 down=0.941705. Gate's image is more compressible (PCA r=64 relative L2 0.514282) than F, but not enough to replace the map. The shared-program 0.9-band result was not an artifact of approximating the composite.",
+      "parent_id": "mlp.fn.root",
+      "prior_confidence": 0.05,
+      "reopen_if": "Do not reopen as another rank sweep of gate/up/down. Reopen only for a full-width structured factorization (Monarch, butterfly, or an exact sparse factor) that is not an r-dimensional bottleneck.",
+      "required_resource": "CPU",
+      "rule_satisfied": null,
+      "status": "KILLED",
+      "title": "r-bottleneck family FACTORIZE_THE_FACTORS",
+      "wake_condition": null
+     },
+     {
+      "cheapest_decisive_experiment": "held-out relative L2 of DICTIONARY_PROGRAM on the sealed-3.14 teacher corpus, prompt_id split, billed through executable_economics.score; python3 tools/future/mlp_nonlinear_program.py --build",
+      "children": [],
+      "evidence": [],
+      "evidence_for": null,
+      "expected_runtime_s": 120.0,
+      "falsifier": "held-out relative L2 in the 0.9 band at any affordable size is the cheap kill (landed 0.994711)",
+      "formal_verdict": null,
+      "id": "mlp.fn.r_bottleneck.DICTIONARY_PROGRAM",
+      "max_possible_gain_ms": 2.3414,
+      "notes": "F(x) does not cluster on this manifold. X-routed codebook K=16 has held-out relative L2 0.994711; even the Y-assignment oracle is 0.947216 (diagnostic, not authority). A small codebook of F is not a program for F.",
+      "parent_id": "mlp.fn.root",
+      "prior_confidence": 0.05,
+      "reopen_if": "Reopen only if a new source (not frozen W, not this F-manifold) actually clusters. Raw-weight PQ/VQ is a different scar (NNS-017).",
+      "required_resource": "CPU",
+      "rule_satisfied": null,
+      "status": "KILLED",
+      "title": "r-bottleneck family DICTIONARY_PROGRAM",
+      "wake_condition": null
+     },
+     {
+      "cheapest_decisive_experiment": "held-out relative L2 of PRODUCT_DICTIONARY on the sealed-3.14 teacher corpus, prompt_id split, billed through executable_economics.score; python3 tools/future/mlp_nonlinear_program.py --build",
+      "children": [],
+      "evidence": [],
+      "evidence_for": null,
+      "expected_runtime_s": 120.0,
+      "falsifier": "held-out relative L2 in the 0.9 band at any affordable size is the cheap kill (landed 0.997237)",
+      "formal_verdict": null,
+      "id": "mlp.fn.r_bottleneck.PRODUCT_DICTIONARY",
+      "max_possible_gain_ms": 2.3414,
+      "notes": "Product codebooks over 16 sub-blocks of K=16 still sit at held-out relative L2 0.997237 (Y-assignment oracle 0.937674). F is not a product of small block codebooks on this manifold.",
+      "parent_id": "mlp.fn.root",
+      "prior_confidence": 0.05,
+      "reopen_if": "Reopen only if a new source (not frozen W, not this F-manifold) actually clusters. Raw-weight PQ/VQ is a different scar (NNS-017).",
+      "required_resource": "CPU",
+      "rule_satisfied": null,
+      "status": "KILLED",
+      "title": "r-bottleneck family PRODUCT_DICTIONARY",
+      "wake_condition": null
+     },
+     {
+      "cheapest_decisive_experiment": "held-out relative L2 of CONDITIONAL_PROGRAM on the sealed-3.14 teacher corpus, prompt_id split, billed through executable_economics.score; python3 tools/future/mlp_nonlinear_program.py --build",
+      "children": [],
+      "evidence": [],
+      "evidence_for": null,
+      "expected_runtime_s": 120.0,
+      "falsifier": "held-out relative L2 in the 0.9 band at any affordable size is the cheap kill (landed 0.91666)",
+      "formal_verdict": null,
+      "id": "mlp.fn.r_bottleneck.CONDITIONAL_PROGRAM",
+      "max_possible_gain_ms": 2.3414,
+      "notes": "A condition on x (k-means, E=8) selecting a rank-16 expert (or a mean) has held-out relative L2 0.91666. The condition is cheap and is billed; the programs it selects are still high-rank maps of x. A cheap default plus an exceptional path does not replace F.",
+      "parent_id": "mlp.fn.root",
+      "prior_confidence": 0.05,
+      "reopen_if": "Reopen only for a condition whose exceptional path is a different function, not another small linear map of x. Billing the condition remains mandatory.",
+      "required_resource": "CPU",
+      "rule_satisfied": null,
+      "status": "KILLED",
+      "title": "r-bottleneck family CONDITIONAL_PROGRAM",
+      "wake_condition": null
+     },
+     {
+      "cheapest_decisive_experiment": "held-out relative L2 of GENERATED_BLOCK on the sealed-3.14 teacher corpus, prompt_id split, billed through executable_economics.score; python3 tools/future/mlp_nonlinear_program.py --build",
+      "children": [],
+      "evidence": [],
+      "evidence_for": null,
+      "expected_runtime_s": 120.0,
+      "falsifier": "held-out relative L2 in the 0.9 band at any affordable size is the cheap kill (landed 0.942662)",
+      "formal_verdict": null,
+      "id": "mlp.fn.r_bottleneck.GENERATED_BLOCK",
+      "max_possible_gain_ms": 2.3414,
+      "notes": "Unconstrained per-block rank-16 maps on 16 output blocks (the best a lookup generator G(layer, row_block) can emit at this size) have held-out relative L2 0.942662. A smaller MLP of (layer, block) is strictly weaker. Block index does not buy a compact local representation of F.",
+      "parent_id": "mlp.fn.root",
+      "prior_confidence": 0.05,
+      "reopen_if": "Reopen only if G is the kernel of a block (no dense W) AND held-out F drops below the kill. Generating W then GEMV stays REJECTED_DENSE_REMAT.",
+      "required_resource": "CPU",
+      "rule_satisfied": null,
+      "status": "KILLED",
+      "title": "r-bottleneck family GENERATED_BLOCK",
+      "wake_condition": null
+     },
+     {
+      "cheapest_decisive_experiment": "held-out relative L2 of NONLINEAR_GENERATOR on the sealed-3.14 teacher corpus, prompt_id split, billed through executable_economics.score; python3 tools/future/mlp_nonlinear_program.py --build",
+      "children": [],
+      "evidence": [],
+      "evidence_for": null,
+      "expected_runtime_s": 120.0,
+      "falsifier": "held-out relative L2 in the 0.9 band at any affordable size is the cheap kill (landed 0.918286)",
+      "formal_verdict": null,
+      "id": "mlp.fn.r_bottleneck.NONLINEAR_GENERATOR",
+      "max_possible_gain_ms": 2.3414,
+      "notes": "An MLP-shaped generator (silu_readout, r=128) has held-out relative L2 0.918286. A silu readout of a small latent is still an r-dimensional bottleneck through a high-rank output; it matches the SHARED_INPUT silu readout already killed, not a full-width structured nonlinear.",
+      "parent_id": "mlp.fn.root",
+      "prior_confidence": 0.05,
+      "reopen_if": "Reopen only for a full-width structured nonlinear (Monarch / butterfly / distilled operator that is not an r-bottleneck). A wider silu readout of a latent is this family at a larger rank.",
+      "required_resource": "CPU",
+      "rule_satisfied": null,
+      "status": "KILLED",
+      "title": "r-bottleneck family NONLINEAR_GENERATOR",
+      "wake_condition": null
+     },
+     {
+      "cheapest_decisive_experiment": "cheap round: one representative layer (38), Monarch or butterfly factorisation of F that is not rank-r, held-out relative L2 on the teacher corpus prompt_id split, bytes via executable_economics.score; python3 tools/future/mlp_nonlinear_program.py --build",
+      "children": [],
+      "evidence": [],
+      "evidence_for": null,
+      "expected_runtime_s": 600.0,
+      "falsifier": "held-out relative L2 in the 0.9 band at affordable size kills this instantiation (do not widen rank). Function replacement as a class stays open only if a different full-width algebra is proposed",
+      "formal_verdict": null,
+      "id": "mlp.fn.full_width_structured",
+      "max_possible_gain_ms": 2.3414,
+      "notes": "",
+      "parent_id": "mlp.fn.root",
+      "prior_confidence": 0.35,
+      "reopen_if": null,
+      "required_resource": "CPU",
+      "rule_satisfied": null,
+      "status": "OPEN",
+      "title": "full-width structured operator (Monarch / butterfly / distilled, not an r-bottleneck)",
+      "wake_condition": null
+     }
+    ],
+    "evidence": [],
+    "evidence_for": null,
+    "expected_runtime_s": 600.0,
+    "falsifier": "a candidate whose held-out relative L2 stays in the 0.9 band is MEASURED_NEGATIVE; dense rematerialization of W is REJECTED_DENSE_REMAT",
+    "formal_verdict": null,
+    "id": "mlp.fn.root",
+    "max_possible_gain_ms": 2.3414,
+    "notes": "",
+    "parent_id": null,
+    "prior_confidence": 0.4,
+    "reopen_if": null,
+    "required_resource": "CPU",
+    "rule_satisfied": null,
+    "status": "OPEN",
+    "title": "MLP function replacement: stop storing q, represent F",
+    "wake_condition": null
+   },
+   "current_best": {
+    "affordable_f16_rank_cap": 617,
+    "n_survivors_nonlinear": 0,
+    "n_survivors_shared": 0,
+    "oracle_pca_r64_held_out_relative_l2": 0.895354
+   },
+   "id": "mlp_function_replacement",
+   "live_candidates": [
+    {
+     "id": "mlp.fn.full_width_structured",
+     "max_possible_gain_ms": 2.3414,
+     "prior_confidence": 0.35,
+     "required_resource": "CPU",
+     "status": "OPEN"
+    },
+    {
+     "id": "mlp.fn.root",
+     "max_possible_gain_ms": 2.3414,
+     "prior_confidence": 0.4,
+     "required_resource": "CPU",
+     "status": "OPEN"
+    }
+   ],
+   "next_decisive_experiments": [
+    "cheap round: one representative layer (38), Monarch or butterfly factorisation of F that is not rank-r, held-out relative L2 on the teacher corpus prompt_id split, bytes via executable_economics.score; python3 tools/future/mlp_nonlinear_program.py --build",
+    "score function_replacement through executable_economics.score with bytes_added billed, then a held-out F replacement that is not an r-bottleneck; python3 tools/future/mlp_nonlinear_program.py --build"
+   ],
+   "objective": "PATH_TO_71 best composed path reaches 42.36 cited TPS; 71 needs another 9.52 ms. Both organs are at their entropy floor, so the only remaining source of that magnitude is weights that need not exist independently. Six r-bottleneck families are MEASURED_NEGATIVE; the live reopen is a full-width structured operator. This frontier exists because function_replacement is the only economics candidate that is live and material at 2.3414 ms if F holds.",
+   "remaining_gap": {
+    "best_composed_cited_tps": 42.36,
+    "cited_ms": 9.52,
+    "source": "receipts/future/PATH_TO_71.json"
+   },
+   "resource_requirements": [
+    "CPU",
+    "REPRESENTATION"
+   ],
+   "scars": [
+    {
+     "held_out_relative_l2_best": 0.976845,
+     "id": "FACTORIZE_THE_FACTORS",
+     "mechanism": "gate, up and down are individually high-rank. Truncated SVD at rank 32 leaves Frobenius residual energy gate=0.968575 up=0.984304 down=0.980244. Composing the three with exact silu and product has held-out relative L2 0.976845. Even with two factors exact, one rank-64 factor sits at gate=0.878896 up=0.95432 down=0.941705. Gate's image is more compressible (PCA r=64 relative L2 0.514282) than F, but not enough to replace the map. The shared-program 0.9-band result was not an artifact of approximating the composite.",
+     "reopen_if": "Do not reopen as another rank sweep of gate/up/down. Reopen only for a full-width structured factorization (Monarch, butterfly, or an exact sparse factor) that is not an r-dimensional bottleneck.",
+     "scope": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+     "source": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
+     "held_out_relative_l2_best": 0.994711,
+     "id": "DICTIONARY_PROGRAM",
+     "mechanism": "F(x) does not cluster on this manifold. X-routed codebook K=16 has held-out relative L2 0.994711; even the Y-assignment oracle is 0.947216 (diagnostic, not authority). A small codebook of F is not a program for F.",
+     "reopen_if": "Reopen only if a new source (not frozen W, not this F-manifold) actually clusters. Raw-weight PQ/VQ is a different scar (NNS-017).",
+     "scope": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+     "source": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
+     "held_out_relative_l2_best": 0.997237,
+     "id": "PRODUCT_DICTIONARY",
+     "mechanism": "Product codebooks over 16 sub-blocks of K=16 still sit at held-out relative L2 0.997237 (Y-assignment oracle 0.937674). F is not a product of small block codebooks on this manifold.",
+     "reopen_if": "Reopen only if a new source (not frozen W, not this F-manifold) actually clusters. Raw-weight PQ/VQ is a different scar (NNS-017).",
+     "scope": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+     "source": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
+     "held_out_relative_l2_best": 0.91666,
+     "id": "CONDITIONAL_PROGRAM",
+     "mechanism": "A condition on x (k-means, E=8) selecting a rank-16 expert (or a mean) has held-out relative L2 0.91666. The condition is cheap and is billed; the programs it selects are still high-rank maps of x. A cheap default plus an exceptional path does not replace F.",
+     "reopen_if": "Reopen only for a condition whose exceptional path is a different function, not another small linear map of x. Billing the condition remains mandatory.",
+     "scope": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+     "source": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
+     "held_out_relative_l2_best": 0.942662,
+     "id": "GENERATED_BLOCK",
+     "mechanism": "Unconstrained per-block rank-16 maps on 16 output blocks (the best a lookup generator G(layer, row_block) can emit at this size) have held-out relative L2 0.942662. A smaller MLP of (layer, block) is strictly weaker. Block index does not buy a compact local representation of F.",
+     "reopen_if": "Reopen only if G is the kernel of a block (no dense W) AND held-out F drops below the kill. Generating W then GEMV stays REJECTED_DENSE_REMAT.",
+     "scope": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+     "source": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
+     "held_out_relative_l2_best": 0.918286,
+     "id": "NONLINEAR_GENERATOR",
+     "mechanism": "An MLP-shaped generator (silu_readout, r=128) has held-out relative L2 0.918286. A silu readout of a small latent is still an r-dimensional bottleneck through a high-rank output; it matches the SHARED_INPUT silu readout already killed, not a full-width structured nonlinear.",
+     "reopen_if": "Reopen only for a full-width structured nonlinear (Monarch / butterfly / distilled operator that is not an r-bottleneck). A wider silu readout of a latent is this family at a larger rank.",
+     "scope": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+     "source": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+     "verdict": "MEASURED_NEGATIVE"
+    }
+   ],
+   "target": {
+    "label": "replace F, do not code q better",
+    "predicted_ms_saved_if_F_holds": 2.3414,
+    "source": "receipts/future/EXECUTABLE_ECONOMICS.json"
+   },
+   "why_it_exists": {
+    "biggest_unknown": "a full-width structured nonlinear (Monarch / butterfly / distilled operator) that is not an r-dimensional bottleneck",
+    "current_best": {
+     "affordable_f16_rank_cap": 617,
+     "n_survivors_nonlinear": 0,
+     "n_survivors_shared": 0,
+     "oracle_pca_r64_held_out_relative_l2": 0.895354
+    },
+    "id": "mlp_function_replacement",
+    "live_candidates": [
+     {
+      "id": "mlp.fn.full_width_structured",
+      "max_possible_gain_ms": 2.3414,
+      "prior_confidence": 0.35,
+      "required_resource": "CPU",
+      "status": "OPEN"
+     },
+     {
+      "id": "mlp.fn.root",
+      "max_possible_gain_ms": 2.3414,
+      "prior_confidence": 0.4,
+      "required_resource": "CPU",
+      "status": "OPEN"
+     }
+    ],
+    "n_hypotheses": 8,
+    "n_scars": 6,
+    "next_decisive_experiments": [
+     "cheap round: one representative layer (38), Monarch or butterfly factorisation of F that is not rank-r, held-out relative L2 on the teacher corpus prompt_id split, bytes via executable_economics.score; python3 tools/future/mlp_nonlinear_program.py --build",
+     "score function_replacement through executable_economics.score with bytes_added billed, then a held-out F replacement that is not an r-bottleneck; python3 tools/future/mlp_nonlinear_program.py --build"
+    ],
+    "objective": "PATH_TO_71 best composed path reaches 42.36 cited TPS; 71 needs another 9.52 ms. Both organs are at their entropy floor, so the only remaining source of that magnitude is weights that need not exist independently. Six r-bottleneck families are MEASURED_NEGATIVE; the live reopen is a full-width structured operator. This frontier exists because function_replacement is the only economics candidate that is live and material at 2.3414 ms if F holds.",
+    "remaining_gap": {
+     "best_composed_cited_tps": 42.36,
+     "cited_ms": 9.52,
+     "source": "receipts/future/PATH_TO_71.json"
+    },
+    "resource_requirements": [
+     "CPU",
+     "REPRESENTATION"
+    ],
+    "target": {
+     "label": "replace F, do not code q better",
+     "predicted_ms_saved_if_F_holds": 2.3414,
+     "source": "receipts/future/EXECUTABLE_ECONOMICS.json"
+    }
+   }
+  },
+  "odyssey_gate": {
+   "biggest_unknown": "none unmet",
+   "causal_hypotheses": {
+    "cheapest_decisive_experiment": "python3 tools/future/odyssey_launch.py --verify",
+    "children": [],
+    "evidence": [],
+    "evidence_for": null,
+    "expected_runtime_s": 30.0,
+    "falsifier": "ODYSSEY_I_LAUNCH.json is written only when every criterion is met; the sealed receipt is LAUNCH with unmet=[]",
+    "formal_verdict": null,
+    "id": "odyssey.gate",
+    "max_possible_gain_ms": 0.0,
+    "notes": "",
+    "parent_id": null,
+    "prior_confidence": 0.8,
+    "reopen_if": null,
+    "required_resource": "ODYSSEY",
+    "rule_satisfied": null,
+    "status": "OPEN",
+    "title": "Odyssey I launch gate 16/16",
+    "wake_condition": null
+   },
+   "current_best": {
+    "n_criteria": 16,
+    "n_met": 16,
+    "source": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+    "verdict": "LAUNCH"
+   },
+   "id": "odyssey_gate",
+   "live_candidates": [
+    {
+     "id": "odyssey.gate",
+     "max_possible_gain_ms": 0.0,
+     "prior_confidence": 0.8,
+     "required_resource": "ODYSSEY",
+     "status": "OPEN"
+    }
+   ],
+   "next_decisive_experiments": [
+    "python3 tools/future/odyssey_launch.py --verify"
+   ],
+   "objective": "Odyssey I (WHAT IS TRUE?) is LAUNCH at 16/16 cited from receipts/future/ODYSSEY_LAUNCH_GATE.json. Unmet: []. This frontier exists because a green scaffold is not Odyssey started.",
+   "remaining_gap": {
+    "n_unmet": 0,
+    "unmet": []
+   },
+   "resource_requirements": [
+    "ODYSSEY",
+    "TOOLING"
+   ],
+   "scars": [],
+   "target": {
+    "n_criteria": 16,
+    "n_met": 16,
+    "verdict": "LAUNCH"
+   },
+   "why_it_exists": {
+    "biggest_unknown": "none unmet",
+    "current_best": {
+     "n_criteria": 16,
+     "n_met": 16,
+     "source": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+     "verdict": "LAUNCH"
+    },
+    "id": "odyssey_gate",
+    "live_candidates": [
+     {
+      "id": "odyssey.gate",
+      "max_possible_gain_ms": 0.0,
+      "prior_confidence": 0.8,
+      "required_resource": "ODYSSEY",
+      "status": "OPEN"
+     }
+    ],
+    "n_hypotheses": 1,
+    "n_scars": 0,
+    "next_decisive_experiments": [
+     "python3 tools/future/odyssey_launch.py --verify"
+    ],
+    "objective": "Odyssey I (WHAT IS TRUE?) is LAUNCH at 16/16 cited from receipts/future/ODYSSEY_LAUNCH_GATE.json. Unmet: []. This frontier exists because a green scaffold is not Odyssey started.",
+    "remaining_gap": {
+     "n_unmet": 0,
+     "unmet": []
+    },
+    "resource_requirements": [
+     "ODYSSEY",
+     "TOOLING"
+    ],
+    "target": {
+     "n_criteria": 16,
+     "n_met": 16,
+     "verdict": "LAUNCH"
+    }
+   }
+  }
+ },
+ "gpu_authority": false,
+ "ingest_log": [
+  {
+   "changed": true,
+   "defect": null,
+   "demoted": [
+    "mlp.why_330.A",
+    "mlp.why_330.A1",
+    "mlp.why_330.A2",
+    "mlp.why_330.A3"
+   ],
+   "descendants_updated": [],
+   "formal_verdict": "MIXED",
+   "mixed": [
+    "mlp.why_330",
+    "mlp.why_330.B"
+   ],
+   "notes": [],
+   "nothing_changed": false,
+   "nuance": "strong evidence for B, rule not satisfied: ARM A jumped 1.5089x from 329.6 to 497.4 GB/s on the same 83558400 bytes with loads surviving, but the pre-registered ALU_BOUND rule needed ARM B to scale sub-linearly and ARM B time/byte was 1.0427 (linear=True, sublinear=False) because half K also halves FMAs. Formal verdict MIXED, not ALU_BOUND.",
+   "promoted": [
+    "mlp.why_330.B1"
+   ],
+   "receipt_name": "MLP_ALU_ROOFLINE.json",
+   "schema": "hawking.future.mlp_alu_roofline.v1",
+   "settled": []
+  }
+ ],
+ "law": "EVERY RESULT MUST CHANGE WHAT HAWKING DOES NEXT",
+ "measurement_class": "STATIC_ONLY",
+ "mlp_330_tree": {
+  "cheapest_decisive_experiment": "matched pair ARM A + ARM B on one representative layer of sealed-3.14 production affine2 geo_tpr64; python3 tools/future/mlp_alu_roofline.py --measure --record. Verdict is the pre-registered conjunction, not ARM A alone",
+  "children": [
+   {
+    "cheapest_decisive_experiment": "matched pair ARM A (bytes identical, arithmetic stripped) on one representative layer; python3 tools/future/mlp_alu_roofline.py --measure --record",
+    "children": [
+     {
+      "cheapest_decisive_experiment": "matched pair ARM A: production vs stripped-ALU on the same weight_bytes=83558400, MTLCommandBuffer GPUStartTime/GPUEndTime; command python3 tools/future/mlp_alu_roofline.py --measure --record",
+      "children": [],
+      "evidence": [
+       {
+        "confidence_after": 0.088,
+        "confidence_before": 0.4,
+        "evidence_for": false,
+        "formal_verdict": null,
+        "note": "same 83558400 bytes, ARM A 497.4 GB/s vs production 329.6; raw DRAM did not cap the stripped arm.",
+        "polarity": "DEMOTE",
+        "receipt": "MLP_ALU_ROOFLINE.json",
+        "rule_satisfied": false
+       }
+      ],
+      "evidence_for": false,
+      "expected_runtime_s": 180.0,
+      "falsifier": "ARM A (same bytes, arithmetic stripped) jumps >= 1.25x over production with loads surviving -> raw DRAM is not the ceiling of this kernel",
+      "formal_verdict": null,
+      "id": "mlp.why_330.A1",
+      "max_possible_gain_ms": 4.79,
+      "notes": "",
+      "parent_id": "mlp.why_330.A",
+      "prior_confidence": 0.088,
+      "reopen_if": null,
+      "required_resource": "GPU_PROTECTED",
+      "rule_satisfied": false,
+      "status": "DEMOTED",
+      "title": "A1 raw DRAM",
+      "wake_condition": null
+     },
+     {
+      "cheapest_decisive_experiment": "ARM A stripped vs zero-load floor vs ARM A half-K on the same geo_tpr64 production access pattern, weight_bytes=83558400; python3 tools/future/mlp_alu_roofline.py --measure --record",
+      "children": [],
+      "evidence": [
+       {
+        "confidence_after": 0.077,
+        "confidence_before": 0.35,
+        "evidence_for": false,
+        "formal_verdict": null,
+        "note": "loads survived (stripped 168000 ns vs zero-load 32416 ns); transaction inefficiency of the production access pattern is not the ceiling.",
+        "polarity": "DEMOTE",
+        "receipt": "MLP_ALU_ROOFLINE.json",
+        "rule_satisfied": false
+       }
+      ],
+      "evidence_for": false,
+      "expected_runtime_s": 180.0,
+      "falsifier": "stripped time above the zero-load floor and dropping when bytes halve proves the loads survived; a transaction tax that vanished when arithmetic vanished is not a memory-transaction ceiling",
+      "formal_verdict": null,
+      "id": "mlp.why_330.A2",
+      "max_possible_gain_ms": 4.79,
+      "notes": "",
+      "parent_id": "mlp.why_330.A",
+      "prior_confidence": 0.077,
+      "reopen_if": null,
+      "required_resource": "GPU_PROTECTED",
+      "rule_satisfied": false,
+      "status": "DEMOTED",
+      "title": "A2 transaction inefficiency",
+      "wake_condition": null
+     },
+     {
+      "cheapest_decisive_experiment": "python3 tools/future/mlp_alu_roofline.py --record; cite mlp.production.occupancy.threads_per_threadgroup vs max_total_threads_per_threadgroup and threadgroups_per_core on qwen_affine_q2_group32_matvec_geo_tpr64_tg128 from receipts/future/MLP_ALU_ROOFLINE.json",
+      "children": [],
+      "evidence": [
+       {
+        "confidence_after": 0.066,
+        "confidence_before": 0.3,
+        "evidence_for": false,
+        "formal_verdict": null,
+        "note": "occupancy ruled out: 128 threads/threadgroup against max 1024, 145.06666666666666 threadgroups/core; occupancy_limited=False.",
+        "polarity": "DEMOTE",
+        "receipt": "MLP_ALU_ROOFLINE.json",
+        "rule_satisfied": false
+       }
+      ],
+      "evidence_for": false,
+      "expected_runtime_s": 30.0,
+      "falsifier": "threads_per_threadgroup well below max AND threadgroups_per_core >> 1 rules occupancy/cache-thrash-from-oversubscription out as the ceiling",
+      "formal_verdict": null,
+      "id": "mlp.why_330.A3",
+      "max_possible_gain_ms": 4.79,
+      "notes": "",
+      "parent_id": "mlp.why_330.A",
+      "prior_confidence": 0.066,
+      "reopen_if": null,
+      "required_resource": "GPU_PROTECTED",
+      "rule_satisfied": false,
+      "status": "DEMOTED",
+      "title": "A3 cache behaviour",
+      "wake_condition": null
+     }
+    ],
+    "evidence": [
+     {
+      "confidence_after": 0.0924,
+      "confidence_before": 0.42,
+      "evidence_for": false,
+      "formal_verdict": null,
+      "note": "ARM A kept production bytes and access pattern and jumped; a bandwidth ceiling on this kernel is not what 329.6 GB/s is.",
+      "polarity": "DEMOTE",
+      "receipt": "MLP_ALU_ROOFLINE.json",
+      "rule_satisfied": false
+     }
+    ],
+    "evidence_for": false,
+    "expected_runtime_s": 180.0,
+    "falsifier": "ARM A stays within 1.12x of production -> memory-system bound; ARM A jumps >= 1.25x -> not a bandwidth ceiling of this kernel",
+    "formal_verdict": null,
+    "id": "mlp.why_330.A",
+    "max_possible_gain_ms": 4.79,
+    "notes": "",
+    "parent_id": "mlp.why_330",
+    "prior_confidence": 0.0924,
+    "reopen_if": null,
+    "required_resource": "GPU_PROTECTED",
+    "rule_satisfied": false,
+    "status": "DEMOTED",
+    "title": "A bandwidth ceiling",
+    "wake_condition": null
+   },
+   {
+    "cheapest_decisive_experiment": "pre-registered matched pair: ARM A jump AND ARM B sub-linear. python3 tools/future/mlp_alu_roofline.py --measure --record. ALU_BOUND only if both conjuncts fire and loads survive",
+    "children": [
+     {
+      "cheapest_decisive_experiment": "python3 tools/future/mlp_alu_roofline.py --record; cite mlp.decode_tax.production_decode_fma_per_weight_byte (8 dequant FMA / 6 weight bytes) against to_match_lm_head_497.target_decode_fma_per_weight_byte",
+      "children": [],
+      "evidence": [
+       {
+        "confidence_after": 0.721,
+        "confidence_before": 0.38,
+        "evidence_for": true,
+        "formal_verdict": null,
+        "note": "production decode costs 1.3333 dequant-FMA per weight-byte; 497.4 GB/s at the same issue rate needs 0.8835 (cheapening 1.509).",
+        "polarity": "PROMOTE",
+        "receipt": "MLP_ALU_ROOFLINE.json",
+        "rule_satisfied": false
+       }
+      ],
+      "evidence_for": true,
+      "expected_runtime_s": 10.0,
+      "falsifier": "if stripping decode+dequant (keeping the same loads) does not move GB/s, unpack/decode is not the lever; if it lands on the LM-head rate, decode FMA/byte is the quantified lever",
+      "formal_verdict": null,
+      "id": "mlp.why_330.B1",
+      "max_possible_gain_ms": 4.79,
+      "notes": "",
+      "parent_id": "mlp.why_330.B",
+      "prior_confidence": 0.721,
+      "reopen_if": null,
+      "required_resource": "ANALYSIS",
+      "rule_satisfied": false,
+      "status": "PROMOTED",
+      "title": "B1 unpack/decode",
+      "wake_condition": null
+     },
+     {
+      "cheapest_decisive_experiment": "ARM A' keep production K and dequant-FMA, replace int-to-float with a bitcast sink, same weight_bytes; extend alu_roofline_organs.rs --arm-a conversion-stripped then python3 tools/future/mlp_alu_roofline.py --measure --record",
+      "children": [],
+      "evidence": [],
+      "evidence_for": null,
+      "expected_runtime_s": 180.0,
+      "falsifier": "conversion-only strip that does not move time falsifies B2 as the dominant arithmetic; a jump comparable to full ARM A isolates it",
+      "formal_verdict": null,
+      "id": "mlp.why_330.B2",
+      "max_possible_gain_ms": 4.79,
+      "notes": "",
+      "parent_id": "mlp.why_330.B",
+      "prior_confidence": 0.28,
+      "reopen_if": null,
+      "required_resource": "GPU_PROTECTED",
+      "rule_satisfied": null,
+      "status": "OPEN",
+      "title": "B2 conversion",
+      "wake_condition": null
+     },
+     {
+      "cheapest_decisive_experiment": "ARM B': keep production weight_bytes and cut MAC-FMA issue in half without cutting K (skip every other MAC, retain dequant). Command: python3 tools/future/mlp_alu_roofline.py --measure --record after alu_roofline_organs.rs --arm-b ops-thinned --keep-k",
+      "children": [],
+      "evidence": [],
+      "evidence_for": null,
+      "expected_runtime_s": 180.0,
+      "falsifier": "time tracks remaining FMA count at constant bytes -> accumulation/arithmetic ceiling; time stays at production -> accumulation is not it. The landed ARM B (half K) CANNOT close this: it halves FMAs with bytes",
+      "formal_verdict": null,
+      "id": "mlp.why_330.B3",
+      "max_possible_gain_ms": 4.79,
+      "notes": "",
+      "parent_id": "mlp.why_330.B",
+      "prior_confidence": 0.28,
+      "reopen_if": null,
+      "required_resource": "GPU_PROTECTED",
+      "rule_satisfied": null,
+      "status": "OPEN",
+      "title": "B3 accumulation",
+      "wake_condition": null
+     }
+    ],
+    "evidence": [
+     {
+      "confidence_after": 0.67,
+      "confidence_before": 0.4,
+      "evidence_for": true,
+      "formal_verdict": "MIXED",
+      "note": "strong evidence for the arithmetic ceiling, rule not satisfied. ARM A jumped but ARM B tracked bytes (half K also halves FMAs, so linear scaling is predicted by both ALU and bandwidth); the pre-registered rule will not promote that pair to ALU_BOUND",
+      "polarity": "MIXED",
+      "receipt": "MLP_ALU_ROOFLINE.json",
+      "rule_satisfied": false
+     }
+    ],
+    "evidence_for": true,
+    "expected_runtime_s": 180.0,
+    "falsifier": "ALU_BOUND iff ARM A >= 1.25x AND ARM B time/byte > 1.20 AND loads survived. ARM A jump with ARM B linear (half K also halves FMAs) is MIXED, not ALU_BOUND \u2014 the conjunction is the falsifier",
+    "formal_verdict": "MIXED",
+    "id": "mlp.why_330.B",
+    "max_possible_gain_ms": 4.79,
+    "notes": "strong evidence for B, rule not satisfied",
+    "parent_id": "mlp.why_330",
+    "prior_confidence": 0.67,
+    "reopen_if": null,
+    "required_resource": "GPU_PROTECTED",
+    "rule_satisfied": false,
+    "status": "MIXED",
+    "title": "B arithmetic ceiling",
+    "wake_condition": null
+   },
+   {
+    "cheapest_decisive_experiment": "C1 chain length plus C2 registers_per_thread on the production geo_tpr64 body; both from the same pipeline-state dump as occupancy",
+    "children": [
+     {
+      "cheapest_decisive_experiment": "disassemble qwen_affine_q2_group32_matvec_geo_tpr64_tg128 inner loop and report dependent dequant-then-MAC chain length vs dual-issue slots; xcrun metal / air-lld if present, else PARK on compiler",
+      "children": [],
+      "evidence": [],
+      "evidence_for": null,
+      "expected_runtime_s": 60.0,
+      "falsifier": "an inner-loop chain that dual-issues dequant with MAC at the measured issue rate falsifies a dependency ceiling; a serial dequant-MAC chain at 1.33 FMA/byte that matches the 1.51x ARM A jump supports it",
+      "formal_verdict": null,
+      "id": "mlp.why_330.C1",
+      "max_possible_gain_ms": 4.79,
+      "notes": "",
+      "parent_id": "mlp.why_330.C",
+      "prior_confidence": 0.22,
+      "reopen_if": null,
+      "required_resource": "GPU_PROTECTED",
+      "rule_satisfied": null,
+      "status": "OPEN",
+      "title": "C1 instruction chain",
+      "wake_condition": null
+     },
+     {
+      "cheapest_decisive_experiment": "python3 tools/future/mlp_alu_roofline.py --record; cite mlp.production.occupancy.registers_per_thread on qwen_affine_q2_group32_matvec_geo_tpr64_tg128 (currently null: toolchain does not expose it)",
+      "children": [],
+      "evidence": [],
+      "evidence_for": null,
+      "expected_runtime_s": 30.0,
+      "falsifier": "registers_per_thread reported and occupancy_of_max_threads rising when arithmetic is stripped would support spill/pressure; a null register count cannot confirm C2 and cannot kill it",
+      "formal_verdict": null,
+      "id": "mlp.why_330.C2",
+      "max_possible_gain_ms": 4.79,
+      "notes": "",
+      "parent_id": "mlp.why_330.C",
+      "prior_confidence": 0.22,
+      "reopen_if": null,
+      "required_resource": "GPU_PROTECTED",
+      "rule_satisfied": null,
+      "status": "OPEN",
+      "title": "C2 register pressure",
+      "wake_condition": null
+     }
+    ],
+    "evidence": [],
+    "evidence_for": null,
+    "expected_runtime_s": 60.0,
+    "falsifier": "a reported register count AND an inner-loop DAG that still dual-issues at production issue rate falsifies a dependency ceiling independent of B1 decode tax",
+    "formal_verdict": null,
+    "id": "mlp.why_330.C",
+    "max_possible_gain_ms": 4.79,
+    "notes": "",
+    "parent_id": "mlp.why_330",
+    "prior_confidence": 0.25,
+    "reopen_if": null,
+    "required_resource": "GPU_PROTECTED",
+    "rule_satisfied": null,
+    "status": "OPEN",
+    "title": "C dependency ceiling",
+    "wake_condition": null
+   },
+   {
+    "cheapest_decisive_experiment": "counterfactual dispatch topology: one MLP layer as 1 fused region vs production 3 dispatches already ran (MLP_REGION_FALSIFIER.json 331.6 -> 332.2 GB/s). Remaining D probe: tile/SIMD-group mapping of geo_tpr64 vs LM-head Q4 on the same 83.56 MB working set, python3 tools/future/mlp_alu_roofline.py --measure --record",
+    "children": [],
+    "evidence": [],
+    "evidence_for": null,
+    "expected_runtime_s": 180.0,
+    "falsifier": "region granularity is already GRANULARITY_REFUTED at 332.2 vs 331.6; a topology claim that does not beat that delta is the same scar. Reopen only for a different physical mapping (not buffer contiguity)",
+    "formal_verdict": null,
+    "id": "mlp.why_330.D",
+    "max_possible_gain_ms": 4.79,
+    "notes": "",
+    "parent_id": "mlp.why_330",
+    "prior_confidence": 0.18,
+    "reopen_if": null,
+    "required_resource": "GPU_PROTECTED",
+    "rule_satisfied": null,
+    "status": "OPEN",
+    "title": "D physical execution topology",
+    "wake_condition": null
+   }
+  ],
+  "evidence": [
+   {
+    "confidence_after": 0.67,
+    "confidence_before": 0.5,
+    "evidence_for": true,
+    "formal_verdict": "MIXED",
+    "note": "strong evidence for B, rule not satisfied: ARM A jumped 1.5089x from 329.6 to 497.4 GB/s on the same 83558400 bytes with loads surviving, but the pre-registered ALU_BOUND rule needed ARM B to scale sub-linearly and ARM B time/byte was 1.0427 (linear=True, sublinear=False) because half K also halves FMAs. Formal verdict MIXED, not ALU_BOUND.",
+    "polarity": "MIXED",
+    "receipt": "MLP_ALU_ROOFLINE.json",
+    "rule_satisfied": false
+   }
+  ],
+  "evidence_for": true,
+  "expected_runtime_s": 180.0,
+  "falsifier": "pre-registered: A jumps AND B sub-linear AND loads survived -> ALU_BOUND; A stays -> MEMORY_SYSTEM_BOUND; anything else (including A jumps, B linear because half K halves FMAs) -> MIXED. Do not force a binary",
+  "formal_verdict": "MIXED",
+  "id": "mlp.why_330",
+  "max_possible_gain_ms": 4.79,
+  "notes": "strong evidence for B, rule not satisfied: ARM A jumped 1.5089x from 329.6 to 497.4 GB/s on the same 83558400 bytes with loads surviving, but the pre-registered ALU_BOUND rule needed ARM B to scale sub-linearly and ARM B time/byte was 1.0427 (linear=True, sublinear=False) because half K also halves FMAs. Formal verdict MIXED, not ALU_BOUND.",
+  "parent_id": null,
+  "prior_confidence": 0.67,
+  "reopen_if": null,
+  "required_resource": "GPU_PROTECTED",
+  "rule_satisfied": false,
+  "status": "MIXED",
+  "title": "WHY IS THE MLP AT ~330 GB/s?",
+  "wake_condition": null
+ },
+ "no_era_vi": true,
+ "no_odyssey_iv": true,
+ "nuance": "strong evidence for B, rule not satisfied: ARM A jumped 1.5089x from 329.6 to 497.4 GB/s on the same 83558400 bytes with loads surviving, but the pre-registered ALU_BOUND rule needed ARM B to scale sub-linearly and ARM B time/byte was 1.0427 (linear=True, sublinear=False) because half K also halves FMAs. Formal verdict MIXED, not ALU_BOUND.",
+ "produces_diagnostic_relative": false,
+ "produces_protected_absolute": false,
+ "recorded_by": "tools/future/improvement_metabolism.py",
+ "role_balance": {
+  "counts": {
+   "ADVERSARY": 1,
+   "FALSIFIER": 1,
+   "MUTATION": 1,
+   "ORACLE": 1,
+   "PROBE": 3,
+   "QUALIFICATION": 2,
+   "REPLICATION": 1
+  },
+  "missing_roles": [],
+  "n": 10,
+  "note": "all seven scientific roles are present",
+  "unbalanced": false
+ },
+ "schema": "hawking.future.improvement_metabolism.v1",
+ "seal_sha256": "5897332bb1acdf24c4f42c503da9f1fd248b20b4e10275c9eb5292b4a3bb2b64",
+ "sources": {
+  "receipts/future/DELTANET_GENERATED_TRANSITION.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/DELTANET_GENERATED_TRANSITION.json",
+  "receipts/future/DELTANET_MULTISTEP.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/DELTANET_MULTISTEP.json",
+  "receipts/future/EXECUTABLE_ECONOMICS.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/EXECUTABLE_ECONOMICS.json",
+  "receipts/future/MLP_ALU_ROOFLINE.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/MLP_ALU_ROOFLINE.json",
+  "receipts/future/MLP_FUNCTIONAL_RANK.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/MLP_FUNCTIONAL_RANK.json",
+  "receipts/future/MLP_NONLINEAR_PROGRAM.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/MLP_NONLINEAR_PROGRAM.json",
+  "receipts/future/MLP_SHARED_PROGRAM.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/MLP_SHARED_PROGRAM.json",
+  "receipts/future/ODYSSEY_LAUNCH_GATE.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/ODYSSEY_LAUNCH_GATE.json",
+  "receipts/future/PATH_TO_71.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/PATH_TO_71.json",
+  "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json"
+ },
+ "tenet": "HAWKING IMPROVES BY COLLAPSING UNCERTAINTY FASTER THAN IT CREATES IT",
+ "version": 1,
+ "what_the_alu_result_did": {
+  "collapsed_to_ALU_BOUND": false,
+  "demoted": [
+   "mlp.why_330.A",
+   "mlp.why_330.A1",
+   "mlp.why_330.A2",
+   "mlp.why_330.A3"
+  ],
+  "formal_verdict": "MIXED",
+  "mixed": [
+   "mlp.why_330",
+   "mlp.why_330.B"
+  ],
+  "not_a_fail": true,
+  "not_a_pass": true,
+  "nuance": "strong evidence for B, rule not satisfied: ARM A jumped 1.5089x from 329.6 to 497.4 GB/s on the same 83558400 bytes with loads surviving, but the pre-registered ALU_BOUND rule needed ARM B to scale sub-linearly and ARM B time/byte was 1.0427 (linear=True, sublinear=False) because half K also halves FMAs. Formal verdict MIXED, not ALU_BOUND.",
+  "promoted": [
+   "mlp.why_330.B1"
+  ]
+ },
+ "work_units": [
+  {
+   "expected_runtime_s": 180.0,
+   "experiment": "ARM B' keep-K FMA-thinned: production weight_bytes=83558400, skip every other MAC, judge sub-linear time vs production; python3 tools/future/mlp_alu_roofline.py --measure --record",
+   "frontier_id": "mlp_execution",
+   "hypothesis_id": "mlp.why_330.B",
+   "id": "wu.mlp.arm_b_keep_k",
+   "required_resource": "GPU_PROTECTED",
+   "role": "FALSIFIER",
+   "status": "QUEUED",
+   "terminal": {
+    "hypothesis_id": "mlp.why_330.B",
+    "kind": "PARK",
+    "note": null,
+    "wake_condition": "protected GPU lease held AND alu_roofline_organs example binary present AND --arm-b ops-thinned --keep-k implemented"
+   }
+  },
+  {
+   "expected_runtime_s": 180.0,
+   "experiment": "ARM A conversion-stripped (int-to-float bitcast sink, dequant-FMA kept, weight_bytes=83558400); python3 tools/future/mlp_alu_roofline.py --measure --record",
+   "frontier_id": "mlp_execution",
+   "hypothesis_id": "mlp.why_330.B2",
+   "id": "wu.mlp.b2_conversion",
+   "required_resource": "GPU_PROTECTED",
+   "role": "PROBE",
+   "status": "QUEUED",
+   "terminal": null
+  },
+  {
+   "expected_runtime_s": 30.0,
+   "experiment": "python3 tools/future/mlp_alu_roofline.py --record; cite mlp.production.occupancy.registers_per_thread on qwen_affine_q2_group32_matvec_geo_tpr64_tg128 (currently null)",
+   "frontier_id": "mlp_execution",
+   "hypothesis_id": "mlp.why_330.C2",
+   "id": "wu.mlp.c2_registers",
+   "required_resource": "GPU_PROTECTED",
+   "role": "PROBE",
+   "status": "QUEUED",
+   "terminal": null
+  },
+  {
+   "expected_runtime_s": 120.0,
+   "experiment": "census GPU ns of every DeltaNet dispatch class in the 337-dispatch organ (cited 337 dispatches, 8.227 ms, 360.0 GB/s) against isolated qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 at 600.9 GB/s; python3 tools/future/mlp_alu_roofline.py --record plus the organ workgraph in receipts/future/FLASH_ORGAN_WORKGRAPHS.json",
+   "frontier_id": "deltanet_execution",
+   "hypothesis_id": "dn.unexplained.other_kernels",
+   "id": "wu.dn.kernel_census",
+   "required_resource": "ANALYSIS",
+   "role": "PROBE",
+   "status": "QUEUED",
+   "terminal": null
+  },
+  {
+   "expected_runtime_s": 600.0,
+   "experiment": "Monarch / butterfly factorisation of F on teacher-corpus layer 38, held-out relative L2, bytes via executable_economics.score; python3 tools/future/mlp_nonlinear_program.py --build",
+   "frontier_id": "mlp_function_replacement",
+   "hypothesis_id": "mlp.fn.full_width_structured",
+   "id": "wu.fn.monarch",
+   "required_resource": "CPU",
+   "role": "MUTATION",
+   "status": "QUEUED",
+   "terminal": null
+  },
+  {
+   "expected_runtime_s": 120.0,
+   "experiment": "oracle PCA of F at rank 64 on the teacher corpus (landed held-out relative L2 0.895354); python3 tools/future/mlp_shared_program.py --build",
+   "frontier_id": "mlp_function_replacement",
+   "hypothesis_id": "mlp.fn.root",
+   "id": "wu.fn.oracle_pca",
+   "required_resource": "CPU",
+   "role": "ORACLE",
+   "status": "QUEUED",
+   "terminal": null
+  },
+  {
+   "expected_runtime_s": 180.0,
+   "experiment": "repeat the matched pair on a second representative layer of sealed-3.14 with the same ARM A/B protocol; python3 tools/future/mlp_alu_roofline.py --measure --record",
+   "frontier_id": "mlp_execution",
+   "hypothesis_id": "mlp.why_330",
+   "id": "wu.mlp.alu_replication",
+   "required_resource": "GPU_PROTECTED",
+   "role": "REPLICATION",
+   "status": "QUEUED",
+   "terminal": null
+  },
+  {
+   "expected_runtime_s": 300.0,
+   "experiment": "refit HGRAVF01 at group_size=1024 and run a held-out reconstruction plus organ error on a real layer; python3 tools/future/mlp_auxiliary_information.py --build",
+   "frontier_id": "aux_byte_levers",
+   "hypothesis_id": "mlp.aux.group_size_1024",
+   "id": "wu.aux.g1024_capability",
+   "required_resource": "CPU",
+   "role": "QUALIFICATION",
+   "status": "QUEUED",
+   "terminal": null
+  },
+  {
+   "expected_runtime_s": 5.0,
+   "experiment": "attack the collapse MIXED -> ALU_BOUND: assert the pre-registered rule (ARM A jump AND ARM B sub-linear) against the landed arm_b_sublinear=False arm_b_linear=True; a promotion that ignores ARM B is the adversary win. python3 tools/future/improvement_metabolism.py --build",
+   "frontier_id": "mlp_execution",
+   "hypothesis_id": "mlp.why_330.B",
+   "id": "wu.mlp.mixed_adversary",
+   "required_resource": "ANALYSIS",
+   "role": "ADVERSARY",
+   "status": "QUEUED",
+   "terminal": null
+  },
+  {
+   "expected_runtime_s": 30.0,
+   "experiment": "python3 tools/future/odyssey_launch.py --verify",
+   "frontier_id": "odyssey_gate",
+   "hypothesis_id": "odyssey.gate",
+   "id": "wu.odyssey.unmet",
+   "required_resource": "ODYSSEY",
+   "role": "QUALIFICATION",
+   "status": "QUEUED",
+   "terminal": null
+  }
+ ]
+}

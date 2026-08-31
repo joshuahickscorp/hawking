@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T21:57:12Z",
+  "recorded_at": "2026-08-31T08:26:11Z",
   "recorded_by": "tools/future/concurrency_doctor.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -83,7 +83,7 @@
   "swap": {
    "note": "cumulative vm_stat Swapins, not a per-level experiment rate",
    "status": "OK",
-   "swap_ins": 50136891
+   "swap_ins": 53727101
   }
  },
  "is_a_measurement": false,
@@ -114,7 +114,7 @@
     "swap": {
      "note": "cumulative vm_stat Swapins, not a per-level experiment rate",
      "status": "OK",
-     "swap_ins": 50136891
+     "swap_ins": 53727101
     }
    },
    "concurrency": 1,
@@ -172,7 +172,7 @@
     "swap": {
      "note": "cumulative vm_stat Swapins, not a per-level experiment rate",
      "status": "OK",
-     "swap_ins": 50136891
+     "swap_ins": 53727101
     }
    },
    "concurrency": 2,
@@ -230,7 +230,7 @@
     "swap": {
      "note": "cumulative vm_stat Swapins, not a per-level experiment rate",
      "status": "OK",
-     "swap_ins": 50136891
+     "swap_ins": 53727101
     }
    },
    "concurrency": 3,
@@ -288,7 +288,7 @@
     "swap": {
      "note": "cumulative vm_stat Swapins, not a per-level experiment rate",
      "status": "OK",
-     "swap_ins": 50136891
+     "swap_ins": 53727101
     }
    },
    "concurrency": 4,
@@ -564,7 +564,7 @@
   "workunit": "one CPU_ANALYSIS unit for the plan; the live experiment is GPU_EXCLUSIVE and SLEEPING until resident+lease+quiescence"
  },
  "schema": "hawking.future.concurrency_doctor.v1",
- "seal_sha256": "9813472fd221034764c139685dc083a903e6412e47ba6e403bd12a736d12dddc",
+ "seal_sha256": "382faa6944dd07c3723ef55241016077a4cb0f543f4d84b35a1fba5790ad0e86",
  "sleeping_workunit": {
   "assigned_backend": null,
   "assigned_runtime": null,

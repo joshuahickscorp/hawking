@@ -39,9 +39,128 @@ from tools.future import repro_science as rs
 from tools.future import static_kernel_verify as skv
 from tools.future import workunit_species as ws
 from tools.future._common import HARDWARE_FIELDS, git
+from tools.future import status_causality as sc
 
 RECEIPT = "QUALIFICATION_PIPELINE.json"
 SCHEMA = "hawking.future.qualification_pipeline.v1"
+
+FIVE_RECORDED_FIELDS: tuple[str, ...] = getattr(
+    sc,
+    "FIVE_RECORDED_FIELDS",
+    (
+        "probe_performed",
+        "direct_observation",
+        "interpretation",
+        "confidence",
+        "alternatives",
+    ),
+)
+
+
+def _bind_emit() -> None:
+    """Consumer-side emit. Sibling owns the routine; this checkout may predate it."""
+    if hasattr(sc, "emit"):
+        return
+
+    def emit(
+        status: str,
+        *,
+        probe_performed: str = "",
+        direct_observation: Any = "",
+        interpretation: str = "",
+        probe_kind: str = "",
+        claim_kind: str | None = None,
+        falsifier: str = "",
+        source: str = "",
+    ) -> dict[str, Any]:
+        row: dict[str, Any] = {
+            "status": status,
+            "probe_performed": probe_performed,
+            "direct_observation": direct_observation,
+            "interpretation": interpretation or status,
+            "probe_kind": probe_kind,
+            "use_catalog": False,
+            "source": source or "<emit>",
+        }
+        if claim_kind:
+            row["claim_kind"] = claim_kind
+        if falsifier:
+            row["falsifier"] = falsifier
+        out = sc.challenge(row)
+        out["entry"] = "emit"
+        return out
+
+    sc.emit = emit  # type: ignore[attr-defined]
+
+
+_bind_emit()
+
+
+def records_five_fields(node: Any) -> bool:
+    fn = getattr(sc, "records_five_fields", None)
+    if callable(fn):
+        return bool(fn(node))
+    if not isinstance(node, dict):
+        return False
+    if not all(k in node for k in FIVE_RECORDED_FIELDS):
+        return False
+    if not str(node.get("probe_performed") or "").strip():
+        return False
+    if node.get("direct_observation") in (None, "", [], {}):
+        return False
+    if not str(node.get("interpretation") or "").strip():
+        return False
+    conf = node.get("confidence")
+    if not isinstance(conf, dict):
+        return False
+    if not {"would_raise", "would_lower", "level", "about"} <= set(conf):
+        return False
+    alts = node.get("alternatives")
+    return isinstance(alts, list) and bool(alts)
+
+
+def record_preflight_causality(
+    result: dict[str, Any],
+    *,
+    probe_performed: str = "",
+    direct_observation: Any = "",
+    interpretation: str | None = None,
+    probe_kind: str = "",
+    claim_kind: str | None = None,
+) -> dict[str, Any]:
+    """Stamp the five causality fields. Does not change blocking_defect_count.
+
+    An unsupplied observation is UNTESTED, never a restatement of READY/BLOCKED.
+    """
+    blocking_before = result.get("blocking_defect_count")
+    waste_before = result.get("would_waste_a_protected_window")
+    status = str(result.get("status") or "STATIC_ONLY")
+    unsupplied = direct_observation in (None, "", [], {})
+    rec = sc.emit(
+        status,
+        probe_performed=str(probe_performed or ""),
+        direct_observation="" if unsupplied else direct_observation,
+        interpretation=interpretation if interpretation is not None else status,
+        probe_kind="" if unsupplied else probe_kind,
+        claim_kind=None if unsupplied else claim_kind,
+        source="tools/future/qualification_pipeline.py::run_static_preflight",
+    )
+    for key in FIVE_RECORDED_FIELDS:
+        result[key] = rec[key]
+    result["causality_verdict"] = rec["verdict"]
+    result["falsifier"] = rec.get("falsifier")
+    if rec.get("probe_kind"):
+        result["probe_kind"] = rec["probe_kind"]
+    if rec.get("claim_kind") is not None:
+        result["claim_kind"] = rec["claim_kind"]
+    if (
+        result.get("blocking_defect_count") != blocking_before
+        or result.get("would_waste_a_protected_window") != waste_before
+    ):
+        raise RuntimeError("status_causality.emit mutated the preflight verdict")
+    return rec
+
+
 VERSION = 1
 RECORDED_BY = "tools.future.qualification_pipeline.py"
 CHECKPOINT_SCHEMA = "hawking.future.qualification_pipeline.checkpoint.v1"
@@ -186,7 +305,40 @@ def load_staged_plan(queue: Mapping[str, Any]) -> dict[str, Any]:
 
 def run_static_preflight() -> dict[str, Any]:
     """Zero-GPU host/shader ABI scan. Invokes the sibling; does not reimplement it."""
-    return skv.scan()
+    result = skv.scan()
+    blocking = int(result.get("blocking_defect_count") or 0)
+    waste = bool(result.get("would_waste_a_protected_window"))
+    counts = result.get("counts") or {}
+    if waste or blocking > 0:
+        status = "BLOCKED"
+        interpretation = (
+            f"static preflight found {blocking} ERROR finding(s); "
+            "a protected window would be wasted"
+        )
+    else:
+        status = "STATIC_ONLY"
+        interpretation = (
+            "static host/shader ABI scan reported no blocking ERROR; this "
+            "sidecar still has no GPU authority so the candidate is not READY"
+        )
+    result["status"] = status
+    record_preflight_causality(
+        result,
+        probe_performed=(
+            "static_kernel_verify.scan(): host/shader ABI analysis of .metal "
+            "sources and Rust hosts; blocking_defect_count from ERROR findings; "
+            "zero GPU, no lease"
+        ),
+        direct_observation=(
+            f"blocking_defect_count={blocking}; "
+            f"would_waste_a_protected_window={waste}; counts={counts}; "
+            f"evidence_class={result.get('evidence_class')}"
+        ),
+        interpretation=interpretation,
+        probe_kind=sc.PROBE_MEASURED_FLAGS,
+        claim_kind=sc.CLAIM_FIELD_VALUE,
+    )
+    return result
 
 
 # ---------------------------------------------------------------------------

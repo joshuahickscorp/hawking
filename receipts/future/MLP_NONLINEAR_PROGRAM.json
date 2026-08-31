@@ -1,0 +1,3705 @@
+{
+ "answers": {
+  "do_the_bytes_clear_one_percent_of_complete_token_time": "YES as a projection for the compact programs: replacing 5.35 GB of MLP with tens to hundreds of MB would clear the S020 1% bar. Function does not hold, so every candidate is MEASURED_NEGATIVE and the economics verdict is IMMATERIAL.",
+  "does_any_cheap_nonlinear_or_conditional_family_replace_F": "NO on this cheap round. Every family sits in the 0.9 band at every affordable size. Function replacement as a class is not closed: a full-width structured nonlinear (Monarch / butterfly / distilled operator that is not an r-bottleneck) is a different experiment.",
+  "should_round_2_go_wider_on_these_families": "NO. The cheap round is the kill. A 0.9-band error at affordable size is the scar. Do not widen rank, K, experts, or blocks on these instantiations.",
+  "was_the_shared_program_result_an_artifact_of_approximating_the_composite": "NO. FACTORIZE_THE_FACTORS at rank 32 has held-out relative L2 0.976845 (cosine 0.187399), in the 0.9 band and not better than the mean predictor. Gate/up/down are not individually low-rank on this body; composing truncated factors with exact silu and product does not recover F."
+ },
+ "anti_fabrication": {
+  "detectors": [
+   "UNBILLED_PROGRAM_BYTE",
+   "TRAIN_REPORTED_AS_HELD_OUT",
+   "HOLD_Y_USED_AS_INDEX",
+   "REJECTED_DENSE_REMAT",
+   "LINEAR_SHARED_SUBSPACE",
+   "SYNTHETIC_ROW",
+   "HELD_OUT_PROMPT_LEAK"
+  ],
+  "loud_exceptions": [
+   "UnbilledProgramByte",
+   "TrainReportedAsHeldOut",
+   "HoldYUsedAsIndex",
+   "RematConsumer",
+   "LinearSharedSubspaceDead",
+   "CorpusUnavailable",
+   "WeightsUnavailable"
+  ],
+  "rule": "emit_candidate is the only constructor. A used dictionary, generator, core, or condition with 0 billed bytes raises UnbilledProgramByte. A train-set figure labelled held-out raises TrainReportedAsHeldOut. An index computed from held-out Y raises HoldYUsedAsIndex. A consumer that rematerializes dense W raises RematConsumer. Naming SHARED_* as a family raises LinearSharedSubspaceDead. A return-flag nobody checks is not a guard."
+ },
+ "baselines": {
+  "held_out_split": "hold",
+  "mean_held_out_cosine": 0.246961,
+  "mean_held_out_relative_l2": 0.970246,
+  "mean_train_relative_l2_diagnostic": 0.965062,
+  "note": "baselines are held-out; they are not candidates",
+  "zero_held_out_relative_l2": 1.0
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T07:36:10Z",
+  "recorded_by": "tools/future/mlp_nonlinear_program.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "candidate_counts": {
+  "measured_negative": 18,
+  "n": 18,
+  "open": 0,
+  "rejected_dense_remat": 0
+ },
+ "candidates": [
+  {
+   "algebra": "g=Ug(Vg^T x); u=Uu(Vu^T x); h=silu(g)*u; y=Ud(Vd^T h)",
+   "byte_breakdown": {
+    "codebook_k": 0,
+    "condition_bytes": 0,
+    "element_bytes": 2,
+    "family": "FACTORIZE_THE_FACTORS",
+    "hidden": 5120,
+    "index_bytes": 0,
+    "intermediate": 17408,
+    "metadata_bytes": 16384,
+    "model_scope_dictionary_bytes": 0,
+    "model_scope_generator_bytes": 0,
+    "n_blocks": 1,
+    "n_experts": 0,
+    "n_layers": 64,
+    "per_layer_core_bytes": 1081344,
+    "per_layer_residual_bytes": 0,
+    "rank": 8,
+    "two_layer": 0,
+    "z_rank": 0
+   },
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 69206016,
+    "metadata": 16384,
+    "residuals": 0,
+    "state": 0,
+    "total": 69222400
+   },
+   "cheap_kill": true,
+   "clears_s020_time_bar_if_function_held": true,
+   "codebook_k": 0,
+   "consumer": {
+    "algebra": "g = Ug (Vg^T x); u = Uu (Vu^T x); h = silu(g) * u; y = Ud (Vd^T h). silu and the product stay exact.",
+    "also": [
+     "StationaryRepresentation"
+    ],
+    "consumes_directly": true,
+    "family": "FACTORIZE_THE_FACTORS",
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "Six skinny matvecs plus the incumbent silu and product. Materializing Ug Sg Vg^T into Wg (and the same for up, down) is REJECTED_DENSE_REMAT."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused native primitive per layer. ASSUMPTION. Unfused lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION.",
+     "scorer": "tools.future.executable_economics.score"
+    },
+    "bytes_added": {
+     "embeddings": 0,
+     "generator": 69206016,
+     "metadata": 16384,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 69222400,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "factorize_the_factors_r8",
+    "live": false,
+    "net_bytes": -5278573376,
+    "predicted_ms_delta": -15.3402,
+    "predicted_ms_delta_range": [
+     -23.6283,
+     -10.6123
+    ],
+    "predicted_ms_saved": 15.3402,
+    "predicted_token_ms": 13.3818,
+    "predicted_tps": 74.729,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.6283,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.2012,
+     "byte_ms_delta": -15.3402,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5278573376,
+    "predicted_ms_saved": 15.3402,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "family": "FACTORIZE_THE_FACTORS",
+   "held_out_cosine": 0.125983,
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.9918,
+   "held_out_relative_l2": 0.991407,
+   "held_out_split": "hold",
+   "id": "factorize_the_factors_r8",
+   "index_from": "x",
+   "kill_band": 0.85,
+   "n_blocks": 1,
+   "n_experts": 0,
+   "n_hold_prompts": 15,
+   "n_layers_billed": 64,
+   "per_capability_domain": {
+    "code": 0.994263,
+    "long-horizon-coherence": 0.976674,
+    "plain-prose": 0.98989,
+    "reasoning": 0.993462,
+    "tool-calling": 0.9712
+   },
+   "per_position_band": {
+    "early": 0.989043,
+    "late": 0.991248,
+    "middle": 0.993893
+   },
+   "program": "factorized_swiglu",
+   "rank": 8,
+   "status": "MEASURED_NEGATIVE",
+   "status_why": "held-out relative L2 0.991407 sits in the 0.9 band (>=0.85); cheap kill",
+   "train_cosine_diagnostic": 0.103259,
+   "train_relative_fro_diagnostic": 0.993974,
+   "train_relative_l2_diagnostic": 0.99369,
+   "train_split": "train",
+   "two_layer": false,
+   "weight_frobenius_residual_energy": {
+    "down": 0.993092,
+    "gate": 0.984423,
+    "up": 0.99543
+   },
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W",
+   "worst_domain": "code",
+   "worst_domain_relative_l2": 0.994263,
+   "worst_prompt_id": "math:08",
+   "worst_prompt_relative_l2": 0.997983,
+   "z_rank": 0
+  },
+  {
+   "algebra": "g=Ug(Vg^T x); u=Uu(Vu^T x); h=silu(g)*u; y=Ud(Vd^T h)",
+   "byte_breakdown": {
+    "codebook_k": 0,
+    "condition_bytes": 0,
+    "element_bytes": 2,
+    "family": "FACTORIZE_THE_FACTORS",
+    "hidden": 5120,
+    "index_bytes": 0,
+    "intermediate": 17408,
+    "metadata_bytes": 16384,
+    "model_scope_dictionary_bytes": 0,
+    "model_scope_generator_bytes": 0,
+    "n_blocks": 1,
+    "n_experts": 0,
+    "n_layers": 64,
+    "per_layer_core_bytes": 2162688,
+    "per_layer_residual_bytes": 0,
+    "rank": 16,
+    "two_layer": 0,
+    "z_rank": 0
+   },
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 138412032,
+    "metadata": 16384,
+    "residuals": 0,
+    "state": 0,
+    "total": 138428416
+   },
+   "cheap_kill": true,
+   "clears_s020_time_bar_if_function_held": true,
+   "codebook_k": 0,
+   "consumer": {
+    "algebra": "g = Ug (Vg^T x); u = Uu (Vu^T x); h = silu(g) * u; y = Ud (Vd^T h). silu and the product stay exact.",
+    "also": [
+     "StationaryRepresentation"
+    ],
+    "consumes_directly": true,
+    "family": "FACTORIZE_THE_FACTORS",
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "Six skinny matvecs plus the incumbent silu and product. Materializing Ug Sg Vg^T into Wg (and the same for up, down) is REJECTED_DENSE_REMAT."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused native primitive per layer. ASSUMPTION. Unfused lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION.",
+     "scorer": "tools.future.executable_economics.score"
+    },
+    "bytes_added": {
+     "embeddings": 0,
+     "generator": 138412032,
+     "metadata": 16384,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 138428416,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "factorize_the_factors_r16",
+    "live": false,
+    "net_bytes": -5209367360,
+    "predicted_ms_delta": -15.1391,
+    "predicted_ms_delta_range": [
+     -23.3186,
+     -10.4732
+    ],
+    "predicted_ms_saved": 15.1391,
+    "predicted_token_ms": 13.5829,
+    "predicted_tps": 73.622,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.3186,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.4023,
+     "byte_ms_delta": -15.1391,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5209367360,
+    "predicted_ms_saved": 15.1391,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "family": "FACTORIZE_THE_FACTORS",
+   "held_out_cosine": 0.192034,
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.977454,
+   "held_out_relative_l2": 0.977858,
+   "held_out_split": "hold",
+   "id": "factorize_the_factors_r16",
+   "index_from": "x",
+   "kill_band": 0.85,
+   "n_blocks": 1,
+   "n_experts": 0,
+   "n_hold_prompts": 15,
+   "n_layers_billed": 64,
+   "per_capability_domain": {
+    "code": 0.984502,
+    "long-horizon-coherence": 0.937268,
+    "plain-prose": 0.97567,
+    "reasoning": 0.980874,
+    "tool-calling": 0.937816
+   },
+   "per_position_band": {
+    "early": 0.974148,
+    "late": 0.978382,
+    "middle": 0.980976
+   },
+   "program": "factorized_swiglu",
+   "rank": 16,
+   "status": "MEASURED_NEGATIVE",
+   "status_why": "held-out relative L2 0.977858 sits in the 0.9 band (>=0.85); cheap kill",
+   "train_cosine_diagnostic": 0.17643,
+   "train_relative_fro_diagnostic": 0.980902,
+   "train_relative_l2_diagnostic": 0.981595,
+   "train_split": "train",
+   "two_layer": false,
+   "weight_frobenius_residual_energy": {
+    "down": 0.988703,
+    "gate": 0.978955,
+    "up": 0.991504
+   },
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W",
+   "worst_domain": "code",
+   "worst_domain_relative_l2": 0.984502,
+   "worst_prompt_id": "code:14",
+   "worst_prompt_relative_l2": 0.990283,
+   "z_rank": 0
+  },
+  {
+   "algebra": "g=Ug(Vg^T x); u=Uu(Vu^T x); h=silu(g)*u; y=Ud(Vd^T h)",
+   "byte_breakdown": {
+    "codebook_k": 0,
+    "condition_bytes": 0,
+    "element_bytes": 2,
+    "family": "FACTORIZE_THE_FACTORS",
+    "hidden": 5120,
+    "index_bytes": 0,
+    "intermediate": 17408,
+    "metadata_bytes": 16384,
+    "model_scope_dictionary_bytes": 0,
+    "model_scope_generator_bytes": 0,
+    "n_blocks": 1,
+    "n_experts": 0,
+    "n_layers": 64,
+    "per_layer_core_bytes": 4325376,
+    "per_layer_residual_bytes": 0,
+    "rank": 32,
+    "two_layer": 0,
+    "z_rank": 0
+   },
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 276824064,
+    "metadata": 16384,
+    "residuals": 0,
+    "state": 0,
+    "total": 276840448
+   },
+   "cheap_kill": true,
+   "clears_s020_time_bar_if_function_held": true,
+   "codebook_k": 0,
+   "consumer": {
+    "algebra": "g = Ug (Vg^T x); u = Uu (Vu^T x); h = silu(g) * u; y = Ud (Vd^T h). silu and the product stay exact.",
+    "also": [
+     "StationaryRepresentation"
+    ],
+    "consumes_directly": true,
+    "family": "FACTORIZE_THE_FACTORS",
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "Six skinny matvecs plus the incumbent silu and product. Materializing Ug Sg Vg^T into Wg (and the same for up, down) is REJECTED_DENSE_REMAT."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused native primitive per layer. ASSUMPTION. Unfused lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION.",
+     "scorer": "tools.future.executable_economics.score"
+    },
+    "bytes_added": {
+     "embeddings": 0,
+     "generator": 276824064,
+     "metadata": 16384,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 276840448,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "factorize_the_factors_r32",
+    "live": false,
+    "net_bytes": -5070955328,
+    "predicted_ms_delta": -14.7369,
+    "predicted_ms_delta_range": [
+     -22.699,
+     -10.1949
+    ],
+    "predicted_ms_saved": 14.7369,
+    "predicted_token_ms": 13.9851,
+    "predicted_tps": 71.504,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 22.699,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.8045,
+     "byte_ms_delta": -14.7369,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5070955328,
+    "predicted_ms_saved": 14.7369,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "family": "FACTORIZE_THE_FACTORS",
+   "held_out_cosine": 0.187399,
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.97628,
+   "held_out_relative_l2": 0.976845,
+   "held_out_split": "hold",
+   "id": "factorize_the_factors_r32",
+   "index_from": "x",
+   "kill_band": 0.85,
+   "n_blocks": 1,
+   "n_experts": 0,
+   "n_hold_prompts": 15,
+   "n_layers_billed": 64,
+   "per_capability_domain": {
+    "code": 0.984905,
+    "long-horizon-coherence": 0.933829,
+    "plain-prose": 0.972823,
+    "reasoning": 0.975287,
+    "tool-calling": 0.929135
+   },
+   "per_position_band": {
+    "early": 0.973186,
+    "late": 0.976394,
+    "middle": 0.980899
+   },
+   "program": "factorized_swiglu",
+   "rank": 32,
+   "status": "MEASURED_NEGATIVE",
+   "status_why": "held-out relative L2 0.976845 sits in the 0.9 band (>=0.85); cheap kill",
+   "train_cosine_diagnostic": 0.18282,
+   "train_relative_fro_diagnostic": 0.977227,
+   "train_relative_l2_diagnostic": 0.978041,
+   "train_split": "train",
+   "two_layer": false,
+   "weight_frobenius_residual_energy": {
+    "down": 0.980244,
+    "gate": 0.968575,
+    "up": 0.984304
+   },
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W",
+   "worst_domain": "code",
+   "worst_domain_relative_l2": 0.984905,
+   "worst_prompt_id": "code:14",
+   "worst_prompt_relative_l2": 0.990385,
+   "z_rank": 0
+  },
+  {
+   "algebra": "g=Ug(Vg^T x); u=Uu(Vu^T x); h=silu(g)*u; y=Ud(Vd^T h)",
+   "byte_breakdown": {
+    "codebook_k": 0,
+    "condition_bytes": 0,
+    "element_bytes": 2,
+    "family": "FACTORIZE_THE_FACTORS",
+    "hidden": 5120,
+    "index_bytes": 0,
+    "intermediate": 17408,
+    "metadata_bytes": 16384,
+    "model_scope_dictionary_bytes": 0,
+    "model_scope_generator_bytes": 0,
+    "n_blocks": 1,
+    "n_experts": 0,
+    "n_layers": 64,
+    "per_layer_core_bytes": 8650752,
+    "per_layer_residual_bytes": 0,
+    "rank": 64,
+    "two_layer": 0,
+    "z_rank": 0
+   },
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 553648128,
+    "metadata": 16384,
+    "residuals": 0,
+    "state": 0,
+    "total": 553664512
+   },
+   "cheap_kill": true,
+   "clears_s020_time_bar_if_function_held": true,
+   "codebook_k": 0,
+   "consumer": {
+    "algebra": "g = Ug (Vg^T x); u = Uu (Vu^T x); h = silu(g) * u; y = Ud (Vd^T h). silu and the product stay exact.",
+    "also": [
+     "StationaryRepresentation"
+    ],
+    "consumes_directly": true,
+    "family": "FACTORIZE_THE_FACTORS",
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "Six skinny matvecs plus the incumbent silu and product. Materializing Ug Sg Vg^T into Wg (and the same for up, down) is REJECTED_DENSE_REMAT."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused native primitive per layer. ASSUMPTION. Unfused lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION.",
+     "scorer": "tools.future.executable_economics.score"
+    },
+    "bytes_added": {
+     "embeddings": 0,
+     "generator": 553648128,
+     "metadata": 16384,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 553664512,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "factorize_the_factors_r64",
+    "live": false,
+    "net_bytes": -4794131264,
+    "predicted_ms_delta": -13.9324,
+    "predicted_ms_delta_range": [
+     -21.4599,
+     -9.6384
+    ],
+    "predicted_ms_saved": 13.9324,
+    "predicted_token_ms": 14.7896,
+    "predicted_tps": 67.615,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 21.4599,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 1.609,
+     "byte_ms_delta": -13.9324,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -4794131264,
+    "predicted_ms_saved": 13.9324,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "family": "FACTORIZE_THE_FACTORS",
+   "held_out_cosine": 0.170641,
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.981201,
+   "held_out_relative_l2": 0.981309,
+   "held_out_split": "hold",
+   "id": "factorize_the_factors_r64",
+   "index_from": "x",
+   "kill_band": 0.85,
+   "n_blocks": 1,
+   "n_experts": 0,
+   "n_hold_prompts": 15,
+   "n_layers_billed": 64,
+   "per_capability_domain": {
+    "code": 0.986931,
+    "long-horizon-coherence": 0.944423,
+    "plain-prose": 0.981187,
+    "reasoning": 0.981154,
+    "tool-calling": 0.94725
+   },
+   "per_position_band": {
+    "early": 0.978003,
+    "late": 0.981703,
+    "middle": 0.984162
+   },
+   "program": "factorized_swiglu",
+   "rank": 64,
+   "status": "MEASURED_NEGATIVE",
+   "status_why": "held-out relative L2 0.981309 sits in the 0.9 band (>=0.85); cheap kill",
+   "train_cosine_diagnostic": 0.167957,
+   "train_relative_fro_diagnostic": 0.981302,
+   "train_relative_l2_diagnostic": 0.981797,
+   "train_split": "train",
+   "two_layer": false,
+   "weight_frobenius_residual_energy": {
+    "down": 0.964443,
+    "gate": 0.950687,
+    "up": 0.97031
+   },
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W",
+   "worst_domain": "code",
+   "worst_domain_relative_l2": 0.986931,
+   "worst_prompt_id": "code:14",
+   "worst_prompt_relative_l2": 0.991378,
+   "z_rank": 0
+  },
+  {
+   "algebra": "z = V x; k = nearest(z, z_c); y = codebook[k]",
+   "byte_breakdown": {
+    "codebook_k": 16,
+    "condition_bytes": 512,
+    "element_bytes": 2,
+    "family": "DICTIONARY_PROGRAM",
+    "hidden": 5120,
+    "index_bytes": 4096,
+    "intermediate": 17408,
+    "metadata_bytes": 20992,
+    "model_scope_dictionary_bytes": 163840,
+    "model_scope_generator_bytes": 0,
+    "n_blocks": 1,
+    "n_experts": 0,
+    "n_layers": 64,
+    "per_layer_core_bytes": 163840,
+    "per_layer_residual_bytes": 0,
+    "rank": 16,
+    "two_layer": 0,
+    "z_rank": 16
+   },
+   "bytes_added": {
+    "embeddings": 163840,
+    "generator": 10485760,
+    "metadata": 20992,
+    "residuals": 0,
+    "state": 0,
+    "total": 10670592
+   },
+   "cheap_kill": true,
+   "clears_s020_time_bar_if_function_held": true,
+   "codebook_k": 16,
+   "consumer": {
+    "algebra": "z = V x; k = nearest(z, z_centroids); y = codebook[k]",
+    "also": [
+     "TiledProjection"
+    ],
+    "consumes_directly": true,
+    "family": "DICTIONARY_PROGRAM",
+    "primitive": "StationaryRepresentation",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "The codebook is resident. An index from x selects a codeword. Expanding indices into dense W is REJECTED_DENSE_REMAT."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 344.1,
+     "bandwidth_gb_s_range": [
+      344.1,
+      376.7
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+     "bandwidth_regime": "affine_q2_family",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused native primitive per layer. ASSUMPTION. Unfused lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION.",
+     "scorer": "tools.future.executable_economics.score"
+    },
+    "bytes_added": {
+     "embeddings": 163840,
+     "generator": 10485760,
+     "metadata": 20992,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 10670592,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "StationaryRepresentation",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "dictionary_program_k16_z16",
+    "live": false,
+    "net_bytes": -5337125184,
+    "predicted_ms_delta": -15.5104,
+    "predicted_ms_delta_range": [
+     -15.5104,
+     -14.1681
+    ],
+    "predicted_ms_saved": 15.5104,
+    "predicted_token_ms": 13.2116,
+    "predicted_tps": 75.691,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 15.5104,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.031,
+     "byte_ms_delta": -15.5104,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5337125184,
+    "predicted_ms_saved": 15.5104,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "family": "DICTIONARY_PROGRAM",
+   "held_out_cosine": 0.249478,
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.998424,
+   "held_out_relative_l2": 0.994711,
+   "held_out_split": "hold",
+   "id": "dictionary_program_k16_z16",
+   "index_from": "x",
+   "kill_band": 0.85,
+   "n_blocks": 1,
+   "n_experts": 0,
+   "n_hold_prompts": 15,
+   "n_layers_billed": 64,
+   "oracle_note": "oracle assigns held-out Y to the nearest train centroid; it is a lower bound, not the program, and not error_authority",
+   "oracle_y_assignment_relative_l2": 0.947216,
+   "per_capability_domain": {
+    "code": 0.994992,
+    "long-horizon-coherence": 0.94356,
+    "plain-prose": 1.019841,
+    "reasoning": 0.978073,
+    "tool-calling": 0.986979
+   },
+   "per_position_band": {
+    "early": 0.973577,
+    "late": 1.015256,
+    "middle": 0.994699
+   },
+   "program": "codebook_index_from_x",
+   "rank": 16,
+   "status": "MEASURED_NEGATIVE",
+   "status_why": "held-out relative L2 0.994711 sits in the 0.9 band (>=0.85); cheap kill",
+   "train_cosine_diagnostic": 0.299129,
+   "train_relative_fro_diagnostic": 0.976625,
+   "train_relative_l2_diagnostic": 0.974248,
+   "train_split": "train",
+   "two_layer": false,
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W",
+   "worst_domain": "plain-prose",
+   "worst_domain_relative_l2": 1.019841,
+   "worst_prompt_id": "prose:07",
+   "worst_prompt_relative_l2": 1.046343,
+   "z_rank": 16
+  },
+  {
+   "algebra": "z = V x; k = nearest(z, z_c); y = codebook[k]",
+   "byte_breakdown": {
+    "codebook_k": 64,
+    "condition_bytes": 2048,
+    "element_bytes": 2,
+    "family": "DICTIONARY_PROGRAM",
+    "hidden": 5120,
+    "index_bytes": 16384,
+    "intermediate": 17408,
+    "metadata_bytes": 34816,
+    "model_scope_dictionary_bytes": 163840,
+    "model_scope_generator_bytes": 0,
+    "n_blocks": 1,
+    "n_experts": 0,
+    "n_layers": 64,
+    "per_layer_core_bytes": 655360,
+    "per_layer_residual_bytes": 0,
+    "rank": 16,
+    "two_layer": 0,
+    "z_rank": 16
+   },
+   "bytes_added": {
+    "embeddings": 163840,
+    "generator": 41943040,
+    "metadata": 34816,
+    "residuals": 0,
+    "state": 0,
+    "total": 42141696
+   },
+   "cheap_kill": true,
+   "clears_s020_time_bar_if_function_held": true,
+   "codebook_k": 64,
+   "consumer": {
+    "algebra": "z = V x; k = nearest(z, z_centroids); y = codebook[k]",
+    "also": [
+     "TiledProjection"
+    ],
+    "consumes_directly": true,
+    "family": "DICTIONARY_PROGRAM",
+    "primitive": "StationaryRepresentation",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "The codebook is resident. An index from x selects a codeword. Expanding indices into dense W is REJECTED_DENSE_REMAT."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 344.1,
+     "bandwidth_gb_s_range": [
+      344.1,
+      376.7
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+     "bandwidth_regime": "affine_q2_family",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused native primitive per layer. ASSUMPTION. Unfused lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION.",
+     "scorer": "tools.future.executable_economics.score"
+    },
+    "bytes_added": {
+     "embeddings": 163840,
+     "generator": 41943040,
+     "metadata": 34816,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 42141696,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "StationaryRepresentation",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "dictionary_program_k64_z16",
+    "live": false,
+    "net_bytes": -5305654080,
+    "predicted_ms_delta": -15.4189,
+    "predicted_ms_delta_range": [
+     -15.4189,
+     -14.0846
+    ],
+    "predicted_ms_saved": 15.4189,
+    "predicted_token_ms": 13.3031,
+    "predicted_tps": 75.171,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 15.4189,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.1225,
+     "byte_ms_delta": -15.4189,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5305654080,
+    "predicted_ms_saved": 15.4189,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "family": "DICTIONARY_PROGRAM",
+   "held_out_cosine": 0.265249,
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 1.015445,
+   "held_out_relative_l2": 1.011264,
+   "held_out_split": "hold",
+   "id": "dictionary_program_k64_z16",
+   "index_from": "x",
+   "kill_band": 0.85,
+   "n_blocks": 1,
+   "n_experts": 0,
+   "n_hold_prompts": 15,
+   "n_layers_billed": 64,
+   "oracle_note": "oracle assigns held-out Y to the nearest train centroid; it is a lower bound, not the program, and not error_authority",
+   "oracle_y_assignment_relative_l2": 0.939283,
+   "per_capability_domain": {
+    "code": 0.996977,
+    "long-horizon-coherence": 0.985137,
+    "plain-prose": 1.060241,
+    "reasoning": 1.021185,
+    "tool-calling": 1.083028
+   },
+   "per_position_band": {
+    "early": 1.022354,
+    "late": 0.998494,
+    "middle": 1.013284
+   },
+   "program": "codebook_index_from_x",
+   "rank": 16,
+   "status": "MEASURED_NEGATIVE",
+   "status_why": "held-out relative L2 1.011264 sits in the 0.9 band (>=0.85); cheap kill",
+   "train_cosine_diagnostic": 0.351163,
+   "train_relative_fro_diagnostic": 0.968778,
+   "train_relative_l2_diagnostic": 0.966445,
+   "train_split": "train",
+   "two_layer": false,
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W",
+   "worst_domain": "tool-calling",
+   "worst_domain_relative_l2": 1.083028,
+   "worst_prompt_id": "instruction:06",
+   "worst_prompt_relative_l2": 1.102402,
+   "z_rank": 16
+  },
+  {
+   "algebra": "z = V x; k = nearest(z, z_c); y = codebook[k]",
+   "byte_breakdown": {
+    "codebook_k": 256,
+    "condition_bytes": 8192,
+    "element_bytes": 2,
+    "family": "DICTIONARY_PROGRAM",
+    "hidden": 5120,
+    "index_bytes": 65536,
+    "intermediate": 17408,
+    "metadata_bytes": 90112,
+    "model_scope_dictionary_bytes": 163840,
+    "model_scope_generator_bytes": 0,
+    "n_blocks": 1,
+    "n_experts": 0,
+    "n_layers": 64,
+    "per_layer_core_bytes": 2621440,
+    "per_layer_residual_bytes": 0,
+    "rank": 16,
+    "two_layer": 0,
+    "z_rank": 16
+   },
+   "bytes_added": {
+    "embeddings": 163840,
+    "generator": 167772160,
+    "metadata": 90112,
+    "residuals": 0,
+    "state": 0,
+    "total": 168026112
+   },
+   "cheap_kill": true,
+   "clears_s020_time_bar_if_function_held": true,
+   "codebook_k": 256,
+   "consumer": {
+    "algebra": "z = V x; k = nearest(z, z_centroids); y = codebook[k]",
+    "also": [
+     "TiledProjection"
+    ],
+    "consumes_directly": true,
+    "family": "DICTIONARY_PROGRAM",
+    "primitive": "StationaryRepresentation",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "The codebook is resident. An index from x selects a codeword. Expanding indices into dense W is REJECTED_DENSE_REMAT."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 344.1,
+     "bandwidth_gb_s_range": [
+      344.1,
+      376.7
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+     "bandwidth_regime": "affine_q2_family",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused native primitive per layer. ASSUMPTION. Unfused lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION.",
+     "scorer": "tools.future.executable_economics.score"
+    },
+    "bytes_added": {
+     "embeddings": 163840,
+     "generator": 167772160,
+     "metadata": 90112,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 168026112,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "StationaryRepresentation",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "dictionary_program_k256_z16",
+    "live": false,
+    "net_bytes": -5179769664,
+    "predicted_ms_delta": -15.0531,
+    "predicted_ms_delta_range": [
+     -15.0531,
+     -13.7504
+    ],
+    "predicted_ms_saved": 15.0531,
+    "predicted_token_ms": 13.6689,
+    "predicted_tps": 73.159,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 15.0531,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.4883,
+     "byte_ms_delta": -15.0531,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5179769664,
+    "predicted_ms_saved": 15.0531,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "family": "DICTIONARY_PROGRAM",
+   "held_out_cosine": 0.266196,
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 1.052208,
+   "held_out_relative_l2": 1.045537,
+   "held_out_split": "hold",
+   "id": "dictionary_program_k256_z16",
+   "index_from": "x",
+   "kill_band": 0.85,
+   "n_blocks": 1,
+   "n_experts": 0,
+   "n_hold_prompts": 15,
+   "n_layers_billed": 64,
+   "oracle_note": "oracle assigns held-out Y to the nearest train centroid; it is a lower bound, not the program, and not error_authority",
+   "oracle_y_assignment_relative_l2": 0.929179,
+   "per_capability_domain": {
+    "code": 1.043193,
+    "long-horizon-coherence": 1.022967,
+    "plain-prose": 1.073467,
+    "reasoning": 1.082322,
+    "tool-calling": 0.964517
+   },
+   "per_position_band": {
+    "early": 1.050124,
+    "late": 1.034252,
+    "middle": 1.052448
+   },
+   "program": "codebook_index_from_x",
+   "rank": 16,
+   "status": "MEASURED_NEGATIVE",
+   "status_why": "held-out relative L2 1.045537 sits in the 0.9 band (>=0.85); cheap kill",
+   "train_cosine_diagnostic": 0.411372,
+   "train_relative_fro_diagnostic": 0.952404,
+   "train_relative_l2_diagnostic": 0.944647,
+   "train_split": "train",
+   "two_layer": false,
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W",
+   "worst_domain": "reasoning",
+   "worst_domain_relative_l2": 1.082322,
+   "worst_prompt_id": "prose:07",
+   "worst_prompt_relative_l2": 1.112902,
+   "z_rank": 16
+  },
+  {
+   "algebra": "z = V x; y_b = codebook_b[nearest(z, z_c_b)]",
+   "byte_breakdown": {
+    "codebook_k": 16,
+    "condition_bytes": 8192,
+    "element_bytes": 2,
+    "family": "PRODUCT_DICTIONARY",
+    "hidden": 5120,
+    "index_bytes": 65536,
+    "intermediate": 17408,
+    "metadata_bytes": 90112,
+    "model_scope_dictionary_bytes": 163840,
+    "model_scope_generator_bytes": 0,
+    "n_blocks": 16,
+    "n_experts": 0,
+    "n_layers": 64,
+    "per_layer_core_bytes": 163840,
+    "per_layer_residual_bytes": 0,
+    "rank": 16,
+    "two_layer": 0,
+    "z_rank": 16
+   },
+   "bytes_added": {
+    "embeddings": 163840,
+    "generator": 10485760,
+    "metadata": 90112,
+    "residuals": 0,
+    "state": 0,
+    "total": 10739712
+   },
+   "cheap_kill": true,
+   "clears_s020_time_bar_if_function_held": true,
+   "codebook_k": 16,
+   "consumer": {
+    "algebra": "z = V x; for each block b: k_b = nearest(z, z_centroids_b); y = concat(codebook_b[k_b])",
+    "also": [
+     "StationaryRepresentation",
+     "TiledProjection"
+    ],
+    "consumes_directly": true,
+    "family": "PRODUCT_DICTIONARY",
+    "primitive": "DirectRoutedAccumulate",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "Product codes are gathered and concatenated. Expanding the tuple into dense W is REJECTED_DENSE_REMAT."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused native primitive per layer. ASSUMPTION. Unfused lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION.",
+     "scorer": "tools.future.executable_economics.score"
+    },
+    "bytes_added": {
+     "embeddings": 163840,
+     "generator": 10485760,
+     "metadata": 90112,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 10739712,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "DirectRoutedAccumulate",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "product_dictionary_b16_k16_z16",
+    "live": false,
+    "net_bytes": -5337056064,
+    "predicted_ms_delta": -15.5102,
+    "predicted_ms_delta_range": [
+     -23.8901,
+     -10.7299
+    ],
+    "predicted_ms_saved": 15.5102,
+    "predicted_token_ms": 13.2118,
+    "predicted_tps": 75.69,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.8901,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.0312,
+     "byte_ms_delta": -15.5102,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5337056064,
+    "predicted_ms_saved": 15.5102,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "family": "PRODUCT_DICTIONARY",
+   "held_out_cosine": 0.244936,
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.9975,
+   "held_out_relative_l2": 0.997237,
+   "held_out_split": "hold",
+   "id": "product_dictionary_b16_k16_z16",
+   "index_from": "x",
+   "kill_band": 0.85,
+   "n_blocks": 16,
+   "n_experts": 0,
+   "n_hold_prompts": 15,
+   "n_layers_billed": 64,
+   "oracle_note": "oracle product-quantizes held-out Y; not the program; not authority",
+   "oracle_y_assignment_relative_l2": 0.937674,
+   "per_capability_domain": {
+    "code": 0.993988,
+    "long-horizon-coherence": 0.97248,
+    "plain-prose": 1.018699,
+    "reasoning": 1.040259,
+    "tool-calling": 0.957087
+   },
+   "per_position_band": {
+    "early": 0.984599,
+    "late": 1.002495,
+    "middle": 1.004343
+   },
+   "program": "product_codebook_index_from_x",
+   "rank": 16,
+   "status": "MEASURED_NEGATIVE",
+   "status_why": "held-out relative L2 0.997237 sits in the 0.9 band (>=0.85); cheap kill",
+   "train_cosine_diagnostic": 0.294372,
+   "train_relative_fro_diagnostic": 0.977516,
+   "train_relative_l2_diagnostic": 0.978533,
+   "train_split": "train",
+   "two_layer": false,
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W",
+   "worst_domain": "reasoning",
+   "worst_domain_relative_l2": 1.040259,
+   "worst_prompt_id": "math:08",
+   "worst_prompt_relative_l2": 1.050102,
+   "z_rank": 16
+  },
+  {
+   "algebra": "z = V x; y_b = codebook_b[nearest(z, z_c_b)]",
+   "byte_breakdown": {
+    "codebook_k": 32,
+    "condition_bytes": 32768,
+    "element_bytes": 2,
+    "family": "PRODUCT_DICTIONARY",
+    "hidden": 5120,
+    "index_bytes": 262144,
+    "intermediate": 17408,
+    "metadata_bytes": 311296,
+    "model_scope_dictionary_bytes": 163840,
+    "model_scope_generator_bytes": 0,
+    "n_blocks": 32,
+    "n_experts": 0,
+    "n_layers": 64,
+    "per_layer_core_bytes": 327680,
+    "per_layer_residual_bytes": 0,
+    "rank": 16,
+    "two_layer": 0,
+    "z_rank": 16
+   },
+   "bytes_added": {
+    "embeddings": 163840,
+    "generator": 20971520,
+    "metadata": 311296,
+    "residuals": 0,
+    "state": 0,
+    "total": 21446656
+   },
+   "cheap_kill": true,
+   "clears_s020_time_bar_if_function_held": true,
+   "codebook_k": 32,
+   "consumer": {
+    "algebra": "z = V x; for each block b: k_b = nearest(z, z_centroids_b); y = concat(codebook_b[k_b])",
+    "also": [
+     "StationaryRepresentation",
+     "TiledProjection"
+    ],
+    "consumes_directly": true,
+    "family": "PRODUCT_DICTIONARY",
+    "primitive": "DirectRoutedAccumulate",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "Product codes are gathered and concatenated. Expanding the tuple into dense W is REJECTED_DENSE_REMAT."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused native primitive per layer. ASSUMPTION. Unfused lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION.",
+     "scorer": "tools.future.executable_economics.score"
+    },
+    "bytes_added": {
+     "embeddings": 163840,
+     "generator": 20971520,
+     "metadata": 311296,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 21446656,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "DirectRoutedAccumulate",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "product_dictionary_b32_k32_z16",
+    "live": false,
+    "net_bytes": -5326349120,
+    "predicted_ms_delta": -15.4791,
+    "predicted_ms_delta_range": [
+     -23.8422,
+     -10.7084
+    ],
+    "predicted_ms_saved": 15.4791,
+    "predicted_token_ms": 13.2429,
+    "predicted_tps": 75.512,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.8422,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.0623,
+     "byte_ms_delta": -15.4791,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5326349120,
+    "predicted_ms_saved": 15.4791,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "family": "PRODUCT_DICTIONARY",
+   "held_out_cosine": 0.249796,
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 1.002938,
+   "held_out_relative_l2": 1.002303,
+   "held_out_split": "hold",
+   "id": "product_dictionary_b32_k32_z16",
+   "index_from": "x",
+   "kill_band": 0.85,
+   "n_blocks": 32,
+   "n_experts": 0,
+   "n_hold_prompts": 15,
+   "n_layers_billed": 64,
+   "oracle_note": "oracle product-quantizes held-out Y; not the program; not authority",
+   "oracle_y_assignment_relative_l2": 0.928342,
+   "per_capability_domain": {
+    "code": 0.998388,
+    "long-horizon-coherence": 0.999568,
+    "plain-prose": 1.012016,
+    "reasoning": 1.047832,
+    "tool-calling": 0.984073
+   },
+   "per_position_band": {
+    "early": 0.991313,
+    "late": 1.007154,
+    "middle": 1.008199
+   },
+   "program": "product_codebook_index_from_x",
+   "rank": 16,
+   "status": "MEASURED_NEGATIVE",
+   "status_why": "held-out relative L2 1.002303 sits in the 0.9 band (>=0.85); cheap kill",
+   "train_cosine_diagnostic": 0.309154,
+   "train_relative_fro_diagnostic": 0.978482,
+   "train_relative_l2_diagnostic": 0.979656,
+   "train_split": "train",
+   "two_layer": false,
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W",
+   "worst_domain": "reasoning",
+   "worst_domain_relative_l2": 1.047832,
+   "worst_prompt_id": "math:08",
+   "worst_prompt_relative_l2": 1.053832,
+   "z_rank": 16
+  },
+  {
+   "algebra": "e = nearest(x, centroids); y = program_e(x)",
+   "byte_breakdown": {
+    "codebook_k": 0,
+    "condition_bytes": 40960,
+    "element_bytes": 2,
+    "family": "CONDITIONAL_PROGRAM",
+    "hidden": 5120,
+    "index_bytes": 0,
+    "intermediate": 17408,
+    "metadata_bytes": 57344,
+    "model_scope_dictionary_bytes": 0,
+    "model_scope_generator_bytes": 0,
+    "n_blocks": 1,
+    "n_experts": 4,
+    "n_layers": 64,
+    "per_layer_core_bytes": 40960,
+    "per_layer_residual_bytes": 0,
+    "rank": 0,
+    "two_layer": 0,
+    "z_rank": 0
+   },
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 2621440,
+    "metadata": 57344,
+    "residuals": 0,
+    "state": 0,
+    "total": 2678784
+   },
+   "cheap_kill": true,
+   "clears_s020_time_bar_if_function_held": true,
+   "codebook_k": 0,
+   "condition": "kmeans_x",
+   "consumer": {
+    "algebra": "e = nearest(x, condition_centroids); y = program_e(x)  (mean of expert)",
+    "also": [
+     "TiledProjection"
+    ],
+    "consumes_directly": true,
+    "family": "CONDITIONAL_PROGRAM",
+    "n_experts": 4,
+    "primitive": "ConditionalPhysicalProgram",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "The condition selects a resident expert program. Materializing every expert into a dense W is REJECTED_DENSE_REMAT."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 344.1,
+     "bandwidth_gb_s_range": [
+      344.1,
+      376.7
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+     "bandwidth_regime": "affine_q2_family",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused native primitive per layer. ASSUMPTION. Unfused lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION.",
+     "scorer": "tools.future.executable_economics.score"
+    },
+    "bytes_added": {
+     "embeddings": 0,
+     "generator": 2621440,
+     "metadata": 57344,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 2678784,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "ConditionalPhysicalProgram",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "conditional_program_e4_r0",
+    "live": false,
+    "net_bytes": -5345116992,
+    "predicted_ms_delta": -15.5336,
+    "predicted_ms_delta_range": [
+     -15.5336,
+     -14.1893
+    ],
+    "predicted_ms_saved": 15.5336,
+    "predicted_token_ms": 13.1884,
+    "predicted_tps": 75.824,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 15.5336,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.0078,
+     "byte_ms_delta": -15.5336,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5345116992,
+    "predicted_ms_saved": 15.5336,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "family": "CONDITIONAL_PROGRAM",
+   "held_out_cosine": 0.264884,
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.96558,
+   "held_out_relative_l2": 0.965764,
+   "held_out_split": "hold",
+   "id": "conditional_program_e4_r0",
+   "index_from": "x",
+   "kill_band": 0.85,
+   "n_blocks": 1,
+   "n_experts": 4,
+   "n_hold_prompts": 15,
+   "n_layers_billed": 64,
+   "per_capability_domain": {
+    "code": 0.971432,
+    "long-horizon-coherence": 0.929403,
+    "plain-prose": 0.967585,
+    "reasoning": 0.969116,
+    "tool-calling": 0.917772
+   },
+   "per_position_band": {
+    "early": 0.955433,
+    "late": 0.97366,
+    "middle": 0.967933
+   },
+   "program": "mean_expert",
+   "rank": 0,
+   "status": "MEASURED_NEGATIVE",
+   "status_why": "held-out relative L2 0.965764 sits in the 0.9 band (>=0.85); cheap kill",
+   "train_cosine_diagnostic": 0.282297,
+   "train_relative_fro_diagnostic": 0.958234,
+   "train_relative_l2_diagnostic": 0.959449,
+   "train_split": "train",
+   "two_layer": false,
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W",
+   "worst_domain": "code",
+   "worst_domain_relative_l2": 0.971432,
+   "worst_prompt_id": "prose:07",
+   "worst_prompt_relative_l2": 0.985196,
+   "z_rank": 0
+  },
+  {
+   "algebra": "e = nearest(x, centroids); y = program_e(x)",
+   "byte_breakdown": {
+    "codebook_k": 0,
+    "condition_bytes": 40960,
+    "element_bytes": 2,
+    "family": "CONDITIONAL_PROGRAM",
+    "hidden": 5120,
+    "index_bytes": 0,
+    "intermediate": 17408,
+    "metadata_bytes": 57344,
+    "model_scope_dictionary_bytes": 0,
+    "model_scope_generator_bytes": 0,
+    "n_blocks": 1,
+    "n_experts": 4,
+    "n_layers": 64,
+    "per_layer_core_bytes": 655360,
+    "per_layer_residual_bytes": 0,
+    "rank": 8,
+    "two_layer": 0,
+    "z_rank": 0
+   },
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 41943040,
+    "metadata": 57344,
+    "residuals": 0,
+    "state": 0,
+    "total": 42000384
+   },
+   "cheap_kill": true,
+   "clears_s020_time_bar_if_function_held": true,
+   "codebook_k": 0,
+   "condition": "kmeans_x",
+   "consumer": {
+    "algebra": "e = nearest(x, condition_centroids); y = program_e(x)  (rank-8 linear)",
+    "also": [
+     "TiledProjection"
+    ],
+    "consumes_directly": true,
+    "family": "CONDITIONAL_PROGRAM",
+    "n_experts": 4,
+    "primitive": "ConditionalPhysicalProgram",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "The condition selects a resident expert program. Materializing every expert into a dense W is REJECTED_DENSE_REMAT."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 344.1,
+     "bandwidth_gb_s_range": [
+      344.1,
+      376.7
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+     "bandwidth_regime": "affine_q2_family",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused native primitive per layer. ASSUMPTION. Unfused lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION.",
+     "scorer": "tools.future.executable_economics.score"
+    },
+    "bytes_added": {
+     "embeddings": 0,
+     "generator": 41943040,
+     "metadata": 57344,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 42000384,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "ConditionalPhysicalProgram",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "conditional_program_e4_r8",
+    "live": false,
+    "net_bytes": -5305795392,
+    "predicted_ms_delta": -15.4193,
+    "predicted_ms_delta_range": [
+     -15.4193,
+     -14.0849
+    ],
+    "predicted_ms_saved": 15.4193,
+    "predicted_token_ms": 13.3027,
+    "predicted_tps": 75.173,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 15.4193,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.1221,
+     "byte_ms_delta": -15.4193,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5305795392,
+    "predicted_ms_saved": 15.4193,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "family": "CONDITIONAL_PROGRAM",
+   "held_out_cosine": 0.321288,
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.945387,
+   "held_out_relative_l2": 0.944361,
+   "held_out_split": "hold",
+   "id": "conditional_program_e4_r8",
+   "index_from": "x",
+   "kill_band": 0.85,
+   "n_blocks": 1,
+   "n_experts": 4,
+   "n_hold_prompts": 15,
+   "n_layers_billed": 64,
+   "per_capability_domain": {
+    "code": 0.949801,
+    "long-horizon-coherence": 0.883977,
+    "plain-prose": 0.960623,
+    "reasoning": 0.952382,
+    "tool-calling": 0.874083
+   },
+   "per_position_band": {
+    "early": 0.929703,
+    "late": 0.952893,
+    "middle": 0.950138
+   },
+   "program": "rank_expert",
+   "rank": 8,
+   "status": "MEASURED_NEGATIVE",
+   "status_why": "held-out relative L2 0.944361 sits in the 0.9 band (>=0.85); cheap kill",
+   "train_cosine_diagnostic": 0.383806,
+   "train_relative_fro_diagnostic": 0.919238,
+   "train_relative_l2_diagnostic": 0.919159,
+   "train_split": "train",
+   "two_layer": false,
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W",
+   "worst_domain": "plain-prose",
+   "worst_domain_relative_l2": 0.960623,
+   "worst_prompt_id": "prose:07",
+   "worst_prompt_relative_l2": 0.978276,
+   "z_rank": 0
+  },
+  {
+   "algebra": "e = nearest(x, centroids); y = program_e(x)",
+   "byte_breakdown": {
+    "codebook_k": 0,
+    "condition_bytes": 81920,
+    "element_bytes": 2,
+    "family": "CONDITIONAL_PROGRAM",
+    "hidden": 5120,
+    "index_bytes": 0,
+    "intermediate": 17408,
+    "metadata_bytes": 98304,
+    "model_scope_dictionary_bytes": 0,
+    "model_scope_generator_bytes": 0,
+    "n_blocks": 1,
+    "n_experts": 8,
+    "n_layers": 64,
+    "per_layer_core_bytes": 2621440,
+    "per_layer_residual_bytes": 0,
+    "rank": 16,
+    "two_layer": 0,
+    "z_rank": 0
+   },
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 167772160,
+    "metadata": 98304,
+    "residuals": 0,
+    "state": 0,
+    "total": 167870464
+   },
+   "cheap_kill": true,
+   "clears_s020_time_bar_if_function_held": true,
+   "codebook_k": 0,
+   "condition": "kmeans_x",
+   "consumer": {
+    "algebra": "e = nearest(x, condition_centroids); y = program_e(x)  (rank-16 linear)",
+    "also": [
+     "TiledProjection"
+    ],
+    "consumes_directly": true,
+    "family": "CONDITIONAL_PROGRAM",
+    "n_experts": 8,
+    "primitive": "ConditionalPhysicalProgram",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "The condition selects a resident expert program. Materializing every expert into a dense W is REJECTED_DENSE_REMAT."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 344.1,
+     "bandwidth_gb_s_range": [
+      344.1,
+      376.7
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+     "bandwidth_regime": "affine_q2_family",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused native primitive per layer. ASSUMPTION. Unfused lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION.",
+     "scorer": "tools.future.executable_economics.score"
+    },
+    "bytes_added": {
+     "embeddings": 0,
+     "generator": 167772160,
+     "metadata": 98304,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 167870464,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "ConditionalPhysicalProgram",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "conditional_program_e8_r16",
+    "live": false,
+    "net_bytes": -5179925312,
+    "predicted_ms_delta": -15.0535,
+    "predicted_ms_delta_range": [
+     -15.0535,
+     -13.7508
+    ],
+    "predicted_ms_saved": 15.0535,
+    "predicted_token_ms": 13.6685,
+    "predicted_tps": 73.161,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 15.0535,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.4879,
+     "byte_ms_delta": -15.0535,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5179925312,
+    "predicted_ms_saved": 15.0535,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "family": "CONDITIONAL_PROGRAM",
+   "held_out_cosine": 0.377132,
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.92263,
+   "held_out_relative_l2": 0.91666,
+   "held_out_split": "hold",
+   "id": "conditional_program_e8_r16",
+   "index_from": "x",
+   "kill_band": 0.85,
+   "n_blocks": 1,
+   "n_experts": 8,
+   "n_hold_prompts": 15,
+   "n_layers_billed": 64,
+   "per_capability_domain": {
+    "code": 0.913719,
+    "long-horizon-coherence": 0.883014,
+    "plain-prose": 0.949019,
+    "reasoning": 0.940461,
+    "tool-calling": 0.859995
+   },
+   "per_position_band": {
+    "early": 0.887837,
+    "late": 0.930418,
+    "middle": 0.931075
+   },
+   "program": "rank_expert",
+   "rank": 16,
+   "status": "MEASURED_NEGATIVE",
+   "status_why": "held-out relative L2 0.91666 sits in the 0.9 band (>=0.85); cheap kill",
+   "train_cosine_diagnostic": 0.491369,
+   "train_relative_fro_diagnostic": 0.862073,
+   "train_relative_l2_diagnostic": 0.85831,
+   "train_split": "train",
+   "two_layer": false,
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W",
+   "worst_domain": "plain-prose",
+   "worst_domain_relative_l2": 0.949019,
+   "worst_prompt_id": "prose:07",
+   "worst_prompt_relative_l2": 0.966669,
+   "z_rank": 0
+  },
+  {
+   "algebra": "for b: (U_b, V_b) = G(layer, b); y_b = U_b (V_b^T x)",
+   "byte_breakdown": {
+    "codebook_k": 0,
+    "condition_bytes": 0,
+    "element_bytes": 2,
+    "family": "GENERATED_BLOCK",
+    "hidden": 5120,
+    "index_bytes": 0,
+    "intermediate": 17408,
+    "metadata_bytes": 16384,
+    "model_scope_dictionary_bytes": 0,
+    "model_scope_generator_bytes": 128,
+    "n_blocks": 16,
+    "n_experts": 0,
+    "n_layers": 64,
+    "per_layer_core_bytes": 1392640,
+    "per_layer_residual_bytes": 0,
+    "rank": 8,
+    "two_layer": 0,
+    "z_rank": 0
+   },
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 89129088,
+    "metadata": 16384,
+    "residuals": 0,
+    "state": 0,
+    "total": 89145472
+   },
+   "cheap_kill": true,
+   "clears_s020_time_bar_if_function_held": true,
+   "codebook_k": 0,
+   "consumer": {
+    "algebra": "for row-block b: (U_b, V_b) = G(layer, b); y_b = U_b (V_b^T x)",
+    "also": [
+     "LocalStateMachine"
+    ],
+    "consumes_directly": true,
+    "family": "GENERATED_BLOCK",
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "G emits skinny factors of a block, consumed as two matvecs. Assembling the tiles into dense W is REJECTED_DENSE_REMAT (that would be generated_weights, not this family)."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused native primitive per layer. ASSUMPTION. Unfused lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION.",
+     "scorer": "tools.future.executable_economics.score"
+    },
+    "bytes_added": {
+     "embeddings": 0,
+     "generator": 89129088,
+     "metadata": 16384,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 89145472,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "generated_block_b16_r8",
+    "live": false,
+    "net_bytes": -5258650304,
+    "predicted_ms_delta": -15.2823,
+    "predicted_ms_delta_range": [
+     -23.5392,
+     -10.5723
+    ],
+    "predicted_ms_saved": 15.2823,
+    "predicted_token_ms": 13.4397,
+    "predicted_tps": 74.407,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.5392,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.2591,
+     "byte_ms_delta": -15.2823,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5258650304,
+    "predicted_ms_saved": 15.2823,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "family": "GENERATED_BLOCK",
+   "generator_kind": "lookup_table_of_block_factors",
+   "held_out_cosine": 0.303922,
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.95323,
+   "held_out_relative_l2": 0.951989,
+   "held_out_split": "hold",
+   "id": "generated_block_b16_r8",
+   "index_from": "x",
+   "kill_band": 0.85,
+   "n_blocks": 16,
+   "n_experts": 0,
+   "n_hold_prompts": 15,
+   "n_layers_billed": 64,
+   "note": "Unconstrained per-block factors: a strictly smaller MLP generator of (layer, block) cannot beat this.",
+   "per_capability_domain": {
+    "code": 0.95589,
+    "long-horizon-coherence": 0.9248,
+    "plain-prose": 0.959196,
+    "reasoning": 0.953528,
+    "tool-calling": 0.897721
+   },
+   "per_position_band": {
+    "early": 0.939134,
+    "late": 0.960694,
+    "middle": 0.95582
+   },
+   "program": "lookup_block_factors",
+   "rank": 8,
+   "status": "MEASURED_NEGATIVE",
+   "status_why": "held-out relative L2 0.951989 sits in the 0.9 band (>=0.85); cheap kill",
+   "train_cosine_diagnostic": 0.35475,
+   "train_relative_fro_diagnostic": 0.934216,
+   "train_relative_l2_diagnostic": 0.933782,
+   "train_split": "train",
+   "two_layer": false,
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W",
+   "worst_domain": "plain-prose",
+   "worst_domain_relative_l2": 0.959196,
+   "worst_prompt_id": "prose:07",
+   "worst_prompt_relative_l2": 0.979165,
+   "z_rank": 0
+  },
+  {
+   "algebra": "for b: (U_b, V_b) = G(layer, b); y_b = U_b (V_b^T x)",
+   "byte_breakdown": {
+    "codebook_k": 0,
+    "condition_bytes": 0,
+    "element_bytes": 2,
+    "family": "GENERATED_BLOCK",
+    "hidden": 5120,
+    "index_bytes": 0,
+    "intermediate": 17408,
+    "metadata_bytes": 16384,
+    "model_scope_dictionary_bytes": 0,
+    "model_scope_generator_bytes": 128,
+    "n_blocks": 16,
+    "n_experts": 0,
+    "n_layers": 64,
+    "per_layer_core_bytes": 2785280,
+    "per_layer_residual_bytes": 0,
+    "rank": 16,
+    "two_layer": 0,
+    "z_rank": 0
+   },
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 178258048,
+    "metadata": 16384,
+    "residuals": 0,
+    "state": 0,
+    "total": 178274432
+   },
+   "cheap_kill": true,
+   "clears_s020_time_bar_if_function_held": true,
+   "codebook_k": 0,
+   "consumer": {
+    "algebra": "for row-block b: (U_b, V_b) = G(layer, b); y_b = U_b (V_b^T x)",
+    "also": [
+     "LocalStateMachine"
+    ],
+    "consumes_directly": true,
+    "family": "GENERATED_BLOCK",
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "G emits skinny factors of a block, consumed as two matvecs. Assembling the tiles into dense W is REJECTED_DENSE_REMAT (that would be generated_weights, not this family)."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused native primitive per layer. ASSUMPTION. Unfused lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION.",
+     "scorer": "tools.future.executable_economics.score"
+    },
+    "bytes_added": {
+     "embeddings": 0,
+     "generator": 178258048,
+     "metadata": 16384,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 178274432,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "generated_block_b16_r16",
+    "live": false,
+    "net_bytes": -5169521344,
+    "predicted_ms_delta": -15.0233,
+    "predicted_ms_delta_range": [
+     -23.1402,
+     -10.3931
+    ],
+    "predicted_ms_saved": 15.0233,
+    "predicted_token_ms": 13.6987,
+    "predicted_tps": 73.0,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.1402,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.5181,
+     "byte_ms_delta": -15.0233,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5169521344,
+    "predicted_ms_saved": 15.0233,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "family": "GENERATED_BLOCK",
+   "generator_kind": "lookup_table_of_block_factors",
+   "held_out_cosine": 0.327977,
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.943758,
+   "held_out_relative_l2": 0.942662,
+   "held_out_split": "hold",
+   "id": "generated_block_b16_r16",
+   "index_from": "x",
+   "kill_band": 0.85,
+   "n_blocks": 16,
+   "n_experts": 0,
+   "n_hold_prompts": 15,
+   "n_layers_billed": 64,
+   "note": "Unconstrained per-block factors: a strictly smaller MLP generator of (layer, block) cannot beat this.",
+   "per_capability_domain": {
+    "code": 0.946184,
+    "long-horizon-coherence": 0.909578,
+    "plain-prose": 0.956384,
+    "reasoning": 0.951711,
+    "tool-calling": 0.868804
+   },
+   "per_position_band": {
+    "early": 0.931414,
+    "late": 0.949026,
+    "middle": 0.94728
+   },
+   "program": "lookup_block_factors",
+   "rank": 16,
+   "status": "MEASURED_NEGATIVE",
+   "status_why": "held-out relative L2 0.942662 sits in the 0.9 band (>=0.85); cheap kill",
+   "train_cosine_diagnostic": 0.389652,
+   "train_relative_fro_diagnostic": 0.919753,
+   "train_relative_l2_diagnostic": 0.919222,
+   "train_split": "train",
+   "two_layer": false,
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W",
+   "worst_domain": "plain-prose",
+   "worst_domain_relative_l2": 0.956384,
+   "worst_prompt_id": "prose:07",
+   "worst_prompt_relative_l2": 0.974814,
+   "z_rank": 0
+  },
+  {
+   "algebra": "y = P silu(V x)",
+   "byte_breakdown": {
+    "codebook_k": 0,
+    "condition_bytes": 0,
+    "element_bytes": 2,
+    "family": "NONLINEAR_GENERATOR",
+    "hidden": 5120,
+    "index_bytes": 0,
+    "intermediate": 17408,
+    "metadata_bytes": 16384,
+    "model_scope_dictionary_bytes": 0,
+    "model_scope_generator_bytes": 0,
+    "n_blocks": 1,
+    "n_experts": 0,
+    "n_layers": 64,
+    "per_layer_core_bytes": 655360,
+    "per_layer_residual_bytes": 0,
+    "rank": 32,
+    "two_layer": 0,
+    "z_rank": 0
+   },
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 41943040,
+    "metadata": 16384,
+    "residuals": 0,
+    "state": 0,
+    "total": 41959424
+   },
+   "cheap_kill": true,
+   "clears_s020_time_bar_if_function_held": true,
+   "codebook_k": 0,
+   "consumer": {
+    "algebra": "y = P silu(W_h silu(V x))",
+    "also": [
+     "LocalStateMachine"
+    ],
+    "consumes_directly": true,
+    "family": "NONLINEAR_GENERATOR",
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "The MLP-shaped generator is the kernel. Emitting W and running GEMV is generated_weights and REJECTED_DENSE_REMAT."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused native primitive per layer. ASSUMPTION. Unfused lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION.",
+     "scorer": "tools.future.executable_economics.score"
+    },
+    "bytes_added": {
+     "embeddings": 0,
+     "generator": 41943040,
+     "metadata": 16384,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 41959424,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "nonlinear_generator_r32_silu",
+    "live": false,
+    "net_bytes": -5305836352,
+    "predicted_ms_delta": -15.4195,
+    "predicted_ms_delta_range": [
+     -23.7504,
+     -10.6671
+    ],
+    "predicted_ms_saved": 15.4195,
+    "predicted_token_ms": 13.3025,
+    "predicted_tps": 75.174,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.7504,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.1219,
+     "byte_ms_delta": -15.4195,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5305836352,
+    "predicted_ms_saved": 15.4195,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "family": "NONLINEAR_GENERATOR",
+   "held_out_cosine": 0.340127,
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.938941,
+   "held_out_relative_l2": 0.937872,
+   "held_out_split": "hold",
+   "id": "nonlinear_generator_r32_silu",
+   "index_from": "x",
+   "kill_band": 0.85,
+   "n_blocks": 1,
+   "n_experts": 0,
+   "n_hold_prompts": 15,
+   "n_layers_billed": 64,
+   "per_capability_domain": {
+    "code": 0.938857,
+    "long-horizon-coherence": 0.912515,
+    "plain-prose": 0.955439,
+    "reasoning": 0.951757,
+    "tool-calling": 0.873159
+   },
+   "per_position_band": {
+    "early": 0.929303,
+    "late": 0.941228,
+    "middle": 0.942902
+   },
+   "program": "silu_readout",
+   "rank": 32,
+   "status": "MEASURED_NEGATIVE",
+   "status_why": "held-out relative L2 0.937872 sits in the 0.9 band (>=0.85); cheap kill",
+   "train_cosine_diagnostic": 0.415526,
+   "train_relative_fro_diagnostic": 0.906939,
+   "train_relative_l2_diagnostic": 0.907061,
+   "train_split": "train",
+   "two_layer": false,
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W",
+   "worst_domain": "plain-prose",
+   "worst_domain_relative_l2": 0.955439,
+   "worst_prompt_id": "prose:07",
+   "worst_prompt_relative_l2": 0.97324,
+   "z_rank": 0
+  },
+  {
+   "algebra": "y = P silu(V x)",
+   "byte_breakdown": {
+    "codebook_k": 0,
+    "condition_bytes": 0,
+    "element_bytes": 2,
+    "family": "NONLINEAR_GENERATOR",
+    "hidden": 5120,
+    "index_bytes": 0,
+    "intermediate": 17408,
+    "metadata_bytes": 16384,
+    "model_scope_dictionary_bytes": 0,
+    "model_scope_generator_bytes": 0,
+    "n_blocks": 1,
+    "n_experts": 0,
+    "n_layers": 64,
+    "per_layer_core_bytes": 1310720,
+    "per_layer_residual_bytes": 0,
+    "rank": 64,
+    "two_layer": 0,
+    "z_rank": 0
+   },
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 83886080,
+    "metadata": 16384,
+    "residuals": 0,
+    "state": 0,
+    "total": 83902464
+   },
+   "cheap_kill": true,
+   "clears_s020_time_bar_if_function_held": true,
+   "codebook_k": 0,
+   "consumer": {
+    "algebra": "y = P silu(W_h silu(V x))",
+    "also": [
+     "LocalStateMachine"
+    ],
+    "consumes_directly": true,
+    "family": "NONLINEAR_GENERATOR",
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "The MLP-shaped generator is the kernel. Emitting W and running GEMV is generated_weights and REJECTED_DENSE_REMAT."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused native primitive per layer. ASSUMPTION. Unfused lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION.",
+     "scorer": "tools.future.executable_economics.score"
+    },
+    "bytes_added": {
+     "embeddings": 0,
+     "generator": 83886080,
+     "metadata": 16384,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 83902464,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "nonlinear_generator_r64_silu",
+    "live": false,
+    "net_bytes": -5263893312,
+    "predicted_ms_delta": -15.2976,
+    "predicted_ms_delta_range": [
+     -23.5626,
+     -10.5828
+    ],
+    "predicted_ms_saved": 15.2976,
+    "predicted_token_ms": 13.4244,
+    "predicted_tps": 74.491,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.5626,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.2438,
+     "byte_ms_delta": -15.2976,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5263893312,
+    "predicted_ms_saved": 15.2976,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "family": "NONLINEAR_GENERATOR",
+   "held_out_cosine": 0.364652,
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.930374,
+   "held_out_relative_l2": 0.928327,
+   "held_out_split": "hold",
+   "id": "nonlinear_generator_r64_silu",
+   "index_from": "x",
+   "kill_band": 0.85,
+   "n_blocks": 1,
+   "n_experts": 0,
+   "n_hold_prompts": 15,
+   "n_layers_billed": 64,
+   "per_capability_domain": {
+    "code": 0.926836,
+    "long-horizon-coherence": 0.904615,
+    "plain-prose": 0.95091,
+    "reasoning": 0.947077,
+    "tool-calling": 0.877059
+   },
+   "per_position_band": {
+    "early": 0.917219,
+    "late": 0.931549,
+    "middle": 0.935988
+   },
+   "program": "silu_readout",
+   "rank": 64,
+   "status": "MEASURED_NEGATIVE",
+   "status_why": "held-out relative L2 0.928327 sits in the 0.9 band (>=0.85); cheap kill",
+   "train_cosine_diagnostic": 0.462474,
+   "train_relative_fro_diagnostic": 0.883945,
+   "train_relative_l2_diagnostic": 0.883852,
+   "train_split": "train",
+   "two_layer": false,
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W",
+   "worst_domain": "plain-prose",
+   "worst_domain_relative_l2": 0.95091,
+   "worst_prompt_id": "prose:07",
+   "worst_prompt_relative_l2": 0.96802,
+   "z_rank": 0
+  },
+  {
+   "algebra": "y = P silu(V x)",
+   "byte_breakdown": {
+    "codebook_k": 0,
+    "condition_bytes": 0,
+    "element_bytes": 2,
+    "family": "NONLINEAR_GENERATOR",
+    "hidden": 5120,
+    "index_bytes": 0,
+    "intermediate": 17408,
+    "metadata_bytes": 16384,
+    "model_scope_dictionary_bytes": 0,
+    "model_scope_generator_bytes": 0,
+    "n_blocks": 1,
+    "n_experts": 0,
+    "n_layers": 64,
+    "per_layer_core_bytes": 2621440,
+    "per_layer_residual_bytes": 0,
+    "rank": 128,
+    "two_layer": 0,
+    "z_rank": 0
+   },
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 167772160,
+    "metadata": 16384,
+    "residuals": 0,
+    "state": 0,
+    "total": 167788544
+   },
+   "cheap_kill": true,
+   "clears_s020_time_bar_if_function_held": true,
+   "codebook_k": 0,
+   "consumer": {
+    "algebra": "y = P silu(W_h silu(V x))",
+    "also": [
+     "LocalStateMachine"
+    ],
+    "consumes_directly": true,
+    "family": "NONLINEAR_GENERATOR",
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "The MLP-shaped generator is the kernel. Emitting W and running GEMV is generated_weights and REJECTED_DENSE_REMAT."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused native primitive per layer. ASSUMPTION. Unfused lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION.",
+     "scorer": "tools.future.executable_economics.score"
+    },
+    "bytes_added": {
+     "embeddings": 0,
+     "generator": 167772160,
+     "metadata": 16384,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 167788544,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "nonlinear_generator_r128_silu",
+    "live": false,
+    "net_bytes": -5180007232,
+    "predicted_ms_delta": -15.0538,
+    "predicted_ms_delta_range": [
+     -23.1871,
+     -10.4142
+    ],
+    "predicted_ms_saved": 15.0538,
+    "predicted_token_ms": 13.6682,
+    "predicted_tps": 73.162,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.1871,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.4876,
+     "byte_ms_delta": -15.0538,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5180007232,
+    "predicted_ms_saved": 15.0538,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "family": "NONLINEAR_GENERATOR",
+   "held_out_cosine": 0.386919,
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.920883,
+   "held_out_relative_l2": 0.918286,
+   "held_out_split": "hold",
+   "id": "nonlinear_generator_r128_silu",
+   "index_from": "x",
+   "kill_band": 0.85,
+   "n_blocks": 1,
+   "n_experts": 0,
+   "n_hold_prompts": 15,
+   "n_layers_billed": 64,
+   "per_capability_domain": {
+    "code": 0.915118,
+    "long-horizon-coherence": 0.89416,
+    "plain-prose": 0.949861,
+    "reasoning": 0.940723,
+    "tool-calling": 0.854093
+   },
+   "per_position_band": {
+    "early": 0.905,
+    "late": 0.92183,
+    "middle": 0.927764
+   },
+   "program": "silu_readout",
+   "rank": 128,
+   "status": "MEASURED_NEGATIVE",
+   "status_why": "held-out relative L2 0.918286 sits in the 0.9 band (>=0.85); cheap kill",
+   "train_cosine_diagnostic": 0.516691,
+   "train_relative_fro_diagnostic": 0.851553,
+   "train_relative_l2_diagnostic": 0.852216,
+   "train_split": "train",
+   "two_layer": false,
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W",
+   "worst_domain": "plain-prose",
+   "worst_domain_relative_l2": 0.949861,
+   "worst_prompt_id": "prose:07",
+   "worst_prompt_relative_l2": 0.968318,
+   "z_rank": 0
+  },
+  {
+   "algebra": "y = P silu(W_h silu(V x))",
+   "byte_breakdown": {
+    "codebook_k": 0,
+    "condition_bytes": 0,
+    "element_bytes": 2,
+    "family": "NONLINEAR_GENERATOR",
+    "hidden": 5120,
+    "index_bytes": 0,
+    "intermediate": 17408,
+    "metadata_bytes": 16384,
+    "model_scope_dictionary_bytes": 0,
+    "model_scope_generator_bytes": 8192,
+    "n_blocks": 1,
+    "n_experts": 0,
+    "n_layers": 64,
+    "per_layer_core_bytes": 1310720,
+    "per_layer_residual_bytes": 0,
+    "rank": 64,
+    "two_layer": 1,
+    "z_rank": 0
+   },
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 83894272,
+    "metadata": 16384,
+    "residuals": 0,
+    "state": 0,
+    "total": 83910656
+   },
+   "cheap_kill": true,
+   "clears_s020_time_bar_if_function_held": true,
+   "codebook_k": 0,
+   "consumer": {
+    "algebra": "y = P silu(W_h silu(V x))",
+    "also": [
+     "LocalStateMachine"
+    ],
+    "consumes_directly": true,
+    "family": "NONLINEAR_GENERATOR",
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "The MLP-shaped generator is the kernel. Emitting W and running GEMV is generated_weights and REJECTED_DENSE_REMAT."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused native primitive per layer. ASSUMPTION. Unfused lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION.",
+     "scorer": "tools.future.executable_economics.score"
+    },
+    "bytes_added": {
+     "embeddings": 0,
+     "generator": 83894272,
+     "metadata": 16384,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 83910656,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "nonlinear_generator_r64_two_layer",
+    "live": false,
+    "net_bytes": -5263885120,
+    "predicted_ms_delta": -15.2975,
+    "predicted_ms_delta_range": [
+     -23.5626,
+     -10.5828
+    ],
+    "predicted_ms_saved": 15.2975,
+    "predicted_token_ms": 13.4245,
+    "predicted_tps": 74.491,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.5626,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.2439,
+     "byte_ms_delta": -15.2975,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5263885120,
+    "predicted_ms_saved": 15.2975,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "family": "NONLINEAR_GENERATOR",
+   "held_out_cosine": 0.340375,
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.938822,
+   "held_out_relative_l2": 0.937729,
+   "held_out_split": "hold",
+   "id": "nonlinear_generator_r64_two_layer",
+   "index_from": "x",
+   "kill_band": 0.85,
+   "n_blocks": 1,
+   "n_experts": 0,
+   "n_hold_prompts": 15,
+   "n_layers_billed": 64,
+   "per_capability_domain": {
+    "code": 0.936976,
+    "long-horizon-coherence": 0.912091,
+    "plain-prose": 0.958426,
+    "reasoning": 0.953524,
+    "tool-calling": 0.888246
+   },
+   "per_position_band": {
+    "early": 0.928614,
+    "late": 0.940109,
+    "middle": 0.944283
+   },
+   "program": "two_layer_silu",
+   "rank": 64,
+   "status": "MEASURED_NEGATIVE",
+   "status_why": "held-out relative L2 0.937729 sits in the 0.9 band (>=0.85); cheap kill",
+   "train_cosine_diagnostic": 0.435264,
+   "train_relative_fro_diagnostic": 0.897129,
+   "train_relative_l2_diagnostic": 0.897749,
+   "train_split": "train",
+   "two_layer": true,
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W",
+   "worst_domain": "plain-prose",
+   "worst_domain_relative_l2": 0.958426,
+   "worst_prompt_id": "prose:07",
+   "worst_prompt_relative_l2": 0.973545,
+   "z_rank": 0
+  }
+ ],
+ "claim_boundary": "Static sidecar artifact. No hardware measurement and no generate gate. Held-out errors are CPU arithmetic on the sealed-3.14 MLP teacher corpus (real post_attn_norm X, exact affine-Q2 SwiGLU F(X), split by prompt_id). They are not capability and not a protected complete-token number. Predicted ms/token is executable_economics arithmetic over cited organ times with a stated bandwidth-regime ASSUMPTION. gpu_authority is false. evidence_class is STATIC_ONLY. Linear shared subspaces (SHARED_INPUT / SHARED_OUTPUT / SHARED_BOTH) are not re-tested; MLP_SHARED_PROGRAM is the scar, and oracle PCA of F at rank 64 is already ~0.89 held-out.",
+ "corpus": {
+  "disjoint": true,
+  "layer": 38,
+  "layer_role": "typical",
+  "n_hold": 2511,
+  "n_train": 8758,
+  "payload_dir": "/Users/scammermike/Downloads/hawking/workspace/ops/local/scratch/mlp_teacher_corpus",
+  "receipt": "receipts/future/MLP_TEACHER_CORPUS.json",
+  "split_unit": "prompt_id",
+  "why_layer": "Layer 38 is the teacher-corpus typical H(q) representative (closest to the 64-layer mean among layers other than 0). Layer 0 is a high-entropy outlier and is not typical.",
+  "x_sha256": "ac92446ecb711ef84dd2fda04c249b185da523d714f77e879efc82834b04f8d9",
+  "y_sha256": "53928f933050d25522991d884f531bc37f567ec1cd92d106bfef7c1a4e742fe2"
+ },
+ "element_bytes": 2,
+ "evidence_class": "STATIC_ONLY",
+ "factorize_the_factors": {
+  "best": {
+   "bytes_added_total": 276840448,
+   "held_out_cosine": 0.187399,
+   "held_out_relative_l2": 0.976845,
+   "id": "factorize_the_factors_r32",
+   "per_capability_domain": {
+    "code": 0.984905,
+    "long-horizon-coherence": 0.933829,
+    "plain-prose": 0.972823,
+    "reasoning": 0.975287,
+    "tool-calling": 0.929135
+   },
+   "per_position_band": {
+    "early": 0.973186,
+    "late": 0.976394,
+    "middle": 0.980899
+   },
+   "rank": 32,
+   "weight_frobenius_residual_energy": {
+    "down": 0.980244,
+    "gate": 0.968575,
+    "up": 0.984304
+   },
+   "worst_prompt_id": "code:14",
+   "worst_prompt_relative_l2": 0.990385
+  },
+  "by_rank": [
+   {
+    "held_out_cosine": 0.125983,
+    "held_out_relative_l2": 0.991407,
+    "id": "factorize_the_factors_r8",
+    "per_capability_domain": {
+     "code": 0.994263,
+     "long-horizon-coherence": 0.976674,
+     "plain-prose": 0.98989,
+     "reasoning": 0.993462,
+     "tool-calling": 0.9712
+    },
+    "per_position_band": {
+     "early": 0.989043,
+     "late": 0.991248,
+     "middle": 0.993893
+    },
+    "rank": 8,
+    "status": "MEASURED_NEGATIVE",
+    "train_relative_l2_diagnostic": 0.99369,
+    "weight_frobenius_residual_energy": {
+     "down": 0.993092,
+     "gate": 0.984423,
+     "up": 0.99543
+    },
+    "worst_prompt_relative_l2": 0.997983
+   },
+   {
+    "held_out_cosine": 0.192034,
+    "held_out_relative_l2": 0.977858,
+    "id": "factorize_the_factors_r16",
+    "per_capability_domain": {
+     "code": 0.984502,
+     "long-horizon-coherence": 0.937268,
+     "plain-prose": 0.97567,
+     "reasoning": 0.980874,
+     "tool-calling": 0.937816
+    },
+    "per_position_band": {
+     "early": 0.974148,
+     "late": 0.978382,
+     "middle": 0.980976
+    },
+    "rank": 16,
+    "status": "MEASURED_NEGATIVE",
+    "train_relative_l2_diagnostic": 0.981595,
+    "weight_frobenius_residual_energy": {
+     "down": 0.988703,
+     "gate": 0.978955,
+     "up": 0.991504
+    },
+    "worst_prompt_relative_l2": 0.990283
+   },
+   {
+    "held_out_cosine": 0.187399,
+    "held_out_relative_l2": 0.976845,
+    "id": "factorize_the_factors_r32",
+    "per_capability_domain": {
+     "code": 0.984905,
+     "long-horizon-coherence": 0.933829,
+     "plain-prose": 0.972823,
+     "reasoning": 0.975287,
+     "tool-calling": 0.929135
+    },
+    "per_position_band": {
+     "early": 0.973186,
+     "late": 0.976394,
+     "middle": 0.980899
+    },
+    "rank": 32,
+    "status": "MEASURED_NEGATIVE",
+    "train_relative_l2_diagnostic": 0.978041,
+    "weight_frobenius_residual_energy": {
+     "down": 0.980244,
+     "gate": 0.968575,
+     "up": 0.984304
+    },
+    "worst_prompt_relative_l2": 0.990385
+   },
+   {
+    "held_out_cosine": 0.170641,
+    "held_out_relative_l2": 0.981309,
+    "id": "factorize_the_factors_r64",
+    "per_capability_domain": {
+     "code": 0.986931,
+     "long-horizon-coherence": 0.944423,
+     "plain-prose": 0.981187,
+     "reasoning": 0.981154,
+     "tool-calling": 0.94725
+    },
+    "per_position_band": {
+     "early": 0.978003,
+     "late": 0.981703,
+     "middle": 0.984162
+    },
+    "rank": 64,
+    "status": "MEASURED_NEGATIVE",
+    "train_relative_l2_diagnostic": 0.981797,
+    "weight_frobenius_residual_energy": {
+     "down": 0.964443,
+     "gate": 0.950687,
+     "up": 0.97031
+    },
+    "worst_prompt_relative_l2": 0.991378
+   }
+  ],
+  "cheap_kill": true,
+  "consumer": {
+   "algebra": "g = Ug (Vg^T x); u = Uu (Vu^T x); h = silu(g) * u; y = Ud (Vd^T h). silu and the product stay exact.",
+   "also": [
+    "StationaryRepresentation"
+   ],
+   "consumes_directly": true,
+   "family": "FACTORIZE_THE_FACTORS",
+   "primitive": "TiledProjection",
+   "rematerialize_dense_W": false,
+   "runs_ordinary_gemv": false,
+   "status": "DIRECT_CONSUME",
+   "why_not_gemv": "Six skinny matvecs plus the incumbent silu and product. Materializing Ug Sg Vg^T into Wg (and the same for up, down) is REJECTED_DENSE_REMAT."
+  },
+  "diagnostics": {
+   "image_pca_r64_held_out": {
+    "gate": 0.514282,
+    "hidden_silu_times_up": 0.953584,
+    "n_train_subsample": 2048,
+    "note": "Image PCA of the factor outputs on hold, basis fit on a train subsample. Not a program: it uses the exact factor activations.",
+    "up": 0.88576
+   },
+   "single_factor_r64_others_exact": {
+    "down": 0.941705,
+    "gate": 0.878896,
+    "note": "Two factors exact (full W), one truncated-SVD at rank 64, exact silu and product. Isolates which matrix is the bottleneck.",
+    "up": 0.95432
+   },
+   "teacher_identity_held_out_relative_l2": 0.0
+  },
+  "family": "FACTORIZE_THE_FACTORS",
+  "held_out_kill_rel": 0.25,
+  "kill_band": 0.85,
+  "layer": 38,
+  "mechanism": "gate, up and down are individually high-rank. Truncated SVD at rank 32 leaves Frobenius residual energy gate=0.968575 up=0.984304 down=0.980244. Composing the three with exact silu and product has held-out relative L2 0.976845. Even with two factors exact, one rank-64 factor sits at gate=0.878896 up=0.95432 down=0.941705. Gate's image is more compressible (PCA r=64 relative L2 0.514282) than F, but not enough to replace the map. The shared-program 0.9-band result was not an artifact of approximating the composite.",
+  "ran_first": true,
+  "ranks": [
+   8,
+   16,
+   32,
+   64
+  ],
+  "shared_program_was_not_an_artifact": true,
+  "status": "MEASURED_NEGATIVE",
+  "why": "Composing truncated-SVD gate, up and down at rank 64, with exact silu and product, stays in the 0.9 band (worse than the mean predictor). The shared-program result was not an artifact of approximating the composite: the parts are not individually low-rank on this body either."
+ },
+ "families": [
+  "FACTORIZE_THE_FACTORS",
+  "DICTIONARY_PROGRAM",
+  "PRODUCT_DICTIONARY",
+  "CONDITIONAL_PROGRAM",
+  "GENERATED_BLOCK",
+  "NONLINEAR_GENERATOR"
+ ],
+ "family_verdicts": [
+  {
+   "best_held_out_cosine": 0.187399,
+   "best_held_out_relative_l2": 0.976845,
+   "best_id": "factorize_the_factors_r32",
+   "bytes_added_total_at_best": 276840448,
+   "cheap_kill": true,
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer_status": "DIRECT_CONSUME",
+   "family": "FACTORIZE_THE_FACTORS",
+   "mechanism": "gate, up and down are individually high-rank. Truncated SVD at rank 32 leaves Frobenius residual energy gate=0.968575 up=0.984304 down=0.980244. Composing the three with exact silu and product has held-out relative L2 0.976845. Even with two factors exact, one rank-64 factor sits at gate=0.878896 up=0.95432 down=0.941705. Gate's image is more compressible (PCA r=64 relative L2 0.514282) than F, but not enough to replace the map. The shared-program 0.9-band result was not an artifact of approximating the composite.",
+   "n_rows": 4,
+   "native_consumer": {
+    "algebra": "g = Ug (Vg^T x); u = Uu (Vu^T x); h = silu(g) * u; y = Ud (Vd^T h). silu and the product stay exact.",
+    "also": [
+     "StationaryRepresentation"
+    ],
+    "consumes_directly": true,
+    "family": "FACTORIZE_THE_FACTORS",
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "Six skinny matvecs plus the incumbent silu and product. Materializing Ug Sg Vg^T into Wg (and the same for up, down) is REJECTED_DENSE_REMAT."
+   },
+   "per_capability_domain": {
+    "code": 0.984905,
+    "long-horizon-coherence": 0.933829,
+    "plain-prose": 0.972823,
+    "reasoning": 0.975287,
+    "tool-calling": 0.929135
+   },
+   "per_position_band": {
+    "early": 0.973186,
+    "late": 0.976394,
+    "middle": 0.980899
+   },
+   "status": "MEASURED_NEGATIVE",
+   "why": "held-out relative L2 0.976845 is in the 0.9 band at every affordable size; do not go wider on this family. Mechanism: gate, up and down are individually high-rank. Truncated SVD at rank 32 leaves Frobenius residual energy gate=0.968575 up=0.984304 down=0.980244. Composing the three with exact silu and product has held-out relative L2 0.976845. Even with two factors exact, one rank-64 factor sits at gate=0.878896 up=0.95432 down=0.941705. Gate's image is more compressible (PCA r=64 relative L2 0.514282) than F, but not enough to replace the map. The shared-program 0.9-band result was not an artifact of approximating the composite.",
+   "worst_prompt_id": "code:14",
+   "worst_prompt_relative_l2": 0.990385
+  },
+  {
+   "best_held_out_cosine": 0.249478,
+   "best_held_out_relative_l2": 0.994711,
+   "best_id": "dictionary_program_k16_z16",
+   "bytes_added_total_at_best": 10670592,
+   "cheap_kill": true,
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer_status": "DIRECT_CONSUME",
+   "family": "DICTIONARY_PROGRAM",
+   "mechanism": "F(x) does not cluster on this manifold. X-routed codebook K=16 has held-out relative L2 0.994711; even the Y-assignment oracle is 0.947216 (diagnostic, not authority). A small codebook of F is not a program for F.",
+   "n_rows": 3,
+   "native_consumer": {
+    "algebra": "z = V x; k = nearest(z, z_centroids); y = codebook[k]",
+    "also": [
+     "TiledProjection"
+    ],
+    "consumes_directly": true,
+    "family": "DICTIONARY_PROGRAM",
+    "primitive": "StationaryRepresentation",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "The codebook is resident. An index from x selects a codeword. Expanding indices into dense W is REJECTED_DENSE_REMAT."
+   },
+   "per_capability_domain": {
+    "code": 0.994992,
+    "long-horizon-coherence": 0.94356,
+    "plain-prose": 1.019841,
+    "reasoning": 0.978073,
+    "tool-calling": 0.986979
+   },
+   "per_position_band": {
+    "early": 0.973577,
+    "late": 1.015256,
+    "middle": 0.994699
+   },
+   "status": "MEASURED_NEGATIVE",
+   "why": "held-out relative L2 0.994711 is in the 0.9 band at every affordable size; do not go wider on this family. Mechanism: F(x) does not cluster on this manifold. X-routed codebook K=16 has held-out relative L2 0.994711; even the Y-assignment oracle is 0.947216 (diagnostic, not authority). A small codebook of F is not a program for F.",
+   "worst_prompt_id": "prose:07",
+   "worst_prompt_relative_l2": 1.046343
+  },
+  {
+   "best_held_out_cosine": 0.244936,
+   "best_held_out_relative_l2": 0.997237,
+   "best_id": "product_dictionary_b16_k16_z16",
+   "bytes_added_total_at_best": 10739712,
+   "cheap_kill": true,
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer_status": "DIRECT_CONSUME",
+   "family": "PRODUCT_DICTIONARY",
+   "mechanism": "Product codebooks over 16 sub-blocks of K=16 still sit at held-out relative L2 0.997237 (Y-assignment oracle 0.937674). F is not a product of small block codebooks on this manifold.",
+   "n_rows": 2,
+   "native_consumer": {
+    "algebra": "z = V x; for each block b: k_b = nearest(z, z_centroids_b); y = concat(codebook_b[k_b])",
+    "also": [
+     "StationaryRepresentation",
+     "TiledProjection"
+    ],
+    "consumes_directly": true,
+    "family": "PRODUCT_DICTIONARY",
+    "primitive": "DirectRoutedAccumulate",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "Product codes are gathered and concatenated. Expanding the tuple into dense W is REJECTED_DENSE_REMAT."
+   },
+   "per_capability_domain": {
+    "code": 0.993988,
+    "long-horizon-coherence": 0.97248,
+    "plain-prose": 1.018699,
+    "reasoning": 1.040259,
+    "tool-calling": 0.957087
+   },
+   "per_position_band": {
+    "early": 0.984599,
+    "late": 1.002495,
+    "middle": 1.004343
+   },
+   "status": "MEASURED_NEGATIVE",
+   "why": "held-out relative L2 0.997237 is in the 0.9 band at every affordable size; do not go wider on this family. Mechanism: Product codebooks over 16 sub-blocks of K=16 still sit at held-out relative L2 0.997237 (Y-assignment oracle 0.937674). F is not a product of small block codebooks on this manifold.",
+   "worst_prompt_id": "math:08",
+   "worst_prompt_relative_l2": 1.050102
+  },
+  {
+   "best_held_out_cosine": 0.377132,
+   "best_held_out_relative_l2": 0.91666,
+   "best_id": "conditional_program_e8_r16",
+   "bytes_added_total_at_best": 167870464,
+   "cheap_kill": true,
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer_status": "DIRECT_CONSUME",
+   "family": "CONDITIONAL_PROGRAM",
+   "mechanism": "A condition on x (k-means, E=8) selecting a rank-16 expert (or a mean) has held-out relative L2 0.91666. The condition is cheap and is billed; the programs it selects are still high-rank maps of x. A cheap default plus an exceptional path does not replace F.",
+   "n_rows": 3,
+   "native_consumer": {
+    "algebra": "e = nearest(x, condition_centroids); y = program_e(x)  (rank-16 linear)",
+    "also": [
+     "TiledProjection"
+    ],
+    "consumes_directly": true,
+    "family": "CONDITIONAL_PROGRAM",
+    "n_experts": 8,
+    "primitive": "ConditionalPhysicalProgram",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "The condition selects a resident expert program. Materializing every expert into a dense W is REJECTED_DENSE_REMAT."
+   },
+   "per_capability_domain": {
+    "code": 0.913719,
+    "long-horizon-coherence": 0.883014,
+    "plain-prose": 0.949019,
+    "reasoning": 0.940461,
+    "tool-calling": 0.859995
+   },
+   "per_position_band": {
+    "early": 0.887837,
+    "late": 0.930418,
+    "middle": 0.931075
+   },
+   "status": "MEASURED_NEGATIVE",
+   "why": "held-out relative L2 0.91666 is in the 0.9 band at every affordable size; do not go wider on this family. Mechanism: A condition on x (k-means, E=8) selecting a rank-16 expert (or a mean) has held-out relative L2 0.91666. The condition is cheap and is billed; the programs it selects are still high-rank maps of x. A cheap default plus an exceptional path does not replace F.",
+   "worst_prompt_id": "prose:07",
+   "worst_prompt_relative_l2": 0.966669
+  },
+  {
+   "best_held_out_cosine": 0.327977,
+   "best_held_out_relative_l2": 0.942662,
+   "best_id": "generated_block_b16_r16",
+   "bytes_added_total_at_best": 178274432,
+   "cheap_kill": true,
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer_status": "DIRECT_CONSUME",
+   "family": "GENERATED_BLOCK",
+   "mechanism": "Unconstrained per-block rank-16 maps on 16 output blocks (the best a lookup generator G(layer, row_block) can emit at this size) have held-out relative L2 0.942662. A smaller MLP of (layer, block) is strictly weaker. Block index does not buy a compact local representation of F.",
+   "n_rows": 2,
+   "native_consumer": {
+    "algebra": "for row-block b: (U_b, V_b) = G(layer, b); y_b = U_b (V_b^T x)",
+    "also": [
+     "LocalStateMachine"
+    ],
+    "consumes_directly": true,
+    "family": "GENERATED_BLOCK",
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "G emits skinny factors of a block, consumed as two matvecs. Assembling the tiles into dense W is REJECTED_DENSE_REMAT (that would be generated_weights, not this family)."
+   },
+   "per_capability_domain": {
+    "code": 0.946184,
+    "long-horizon-coherence": 0.909578,
+    "plain-prose": 0.956384,
+    "reasoning": 0.951711,
+    "tool-calling": 0.868804
+   },
+   "per_position_band": {
+    "early": 0.931414,
+    "late": 0.949026,
+    "middle": 0.94728
+   },
+   "status": "MEASURED_NEGATIVE",
+   "why": "held-out relative L2 0.942662 is in the 0.9 band at every affordable size; do not go wider on this family. Mechanism: Unconstrained per-block rank-16 maps on 16 output blocks (the best a lookup generator G(layer, row_block) can emit at this size) have held-out relative L2 0.942662. A smaller MLP of (layer, block) is strictly weaker. Block index does not buy a compact local representation of F.",
+   "worst_prompt_id": "prose:07",
+   "worst_prompt_relative_l2": 0.974814
+  },
+  {
+   "best_held_out_cosine": 0.386919,
+   "best_held_out_relative_l2": 0.918286,
+   "best_id": "nonlinear_generator_r128_silu",
+   "bytes_added_total_at_best": 167788544,
+   "cheap_kill": true,
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer_status": "DIRECT_CONSUME",
+   "family": "NONLINEAR_GENERATOR",
+   "mechanism": "An MLP-shaped generator (silu_readout, r=128) has held-out relative L2 0.918286. A silu readout of a small latent is still an r-dimensional bottleneck through a high-rank output; it matches the SHARED_INPUT silu readout already killed, not a full-width structured nonlinear.",
+   "n_rows": 4,
+   "native_consumer": {
+    "algebra": "y = P silu(W_h silu(V x))",
+    "also": [
+     "LocalStateMachine"
+    ],
+    "consumes_directly": true,
+    "family": "NONLINEAR_GENERATOR",
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "The MLP-shaped generator is the kernel. Emitting W and running GEMV is generated_weights and REJECTED_DENSE_REMAT."
+   },
+   "per_capability_domain": {
+    "code": 0.915118,
+    "long-horizon-coherence": 0.89416,
+    "plain-prose": 0.949861,
+    "reasoning": 0.940723,
+    "tool-calling": 0.854093
+   },
+   "per_position_band": {
+    "early": 0.905,
+    "late": 0.92183,
+    "middle": 0.927764
+   },
+   "status": "MEASURED_NEGATIVE",
+   "why": "held-out relative L2 0.918286 is in the 0.9 band at every affordable size; do not go wider on this family. Mechanism: An MLP-shaped generator (silu_readout, r=128) has held-out relative L2 0.918286. A silu readout of a small latent is still an r-dimensional bottleneck through a high-rank output; it matches the SHARED_INPUT silu readout already killed, not a full-width structured nonlinear.",
+   "worst_prompt_id": "prose:07",
+   "worst_prompt_relative_l2": 0.968318
+  }
+ ],
+ "gaps_closed": [
+  "FACTORIZE_THE_FACTORS run first on real teacher corpus, held out by prompt, with exact silu and product",
+  "per-capability-domain, per-position-band, worst-prompt, cosine reported; authority remains held_out_relative_l2",
+  "dictionaries, generators, cores, indices, metadata, and the condition billed once",
+  "executable_economics.score used for every byte figure and ms/token projection",
+  "native-consumer sketches on atlas primitives; remat-then-GEMV refused",
+  "linear shared subspace refused as a candidate family (MLP_SHARED_PROGRAM scar)",
+  "train-set figure cannot be reported as held-out; hold-Y codebook index cannot be reported as held-out",
+  "negative_index queried; proposal families not refused; W-space scars cited as cousins",
+  "CAPABILITY_INFORMATION_MAP cited for residual budget; none allocated because nothing survived"
+ ],
+ "git_head": "99bb52631c1fe2e9a496f5cf255cb2cd7b0f0743",
+ "go_wider": false,
+ "gpu_authority": false,
+ "index": {
+  "cousins_not_this_object": [
+   "MLP_SHARED_PROGRAM: SHARED_INPUT / SHARED_OUTPUT / SHARED_BOTH at r<=64 are MEASURED_NEGATIVE; oracle PCA of F at r=64 is ~0.89. This module does not retry those shapes.",
+   "NS-global-dense-lowrank-qwen38 is SVD-of-W as a global dense body. FACTORIZE_THE_FACTORS is composed F of three separately truncated SwiGLU factors with exact silu and product, scored on real X. It is not labelled global_dense_lowrank (that family would refuse).",
+   "NNS-016: weight-space 99% energy needs 92-95% of ranks on this parent. That is spectrum of W, not composed F. This experiment is the function-space control the shared-program lane skipped.",
+   "NNS-017 / dictionary_programs in the byte census: raw frozen-W PQ/VQ. This dictionary is of F on the teacher corpus, indexed from x, not a restatement of NNS-017.",
+   "NNS-013 latent_accumulation (narrow SwiGLU) is a different family. FACTORIZE keeps the 17408-d intermediate and truncates the maps."
+  ],
+  "model": "qwen3.8-27b",
+  "note": "GENERAL_PHYSICAL scars refuse whatever model is named. The proposal families function_replacement and factorized_programs are not refused. global_dense_lowrank is a cousin and is not the proposal. synthetic_activation is a method scar: this module refuses to fit on Gaussian X.",
+  "organ": "mlp",
+  "proceed": true,
+  "proposal_refused": [],
+  "queries": [
+   {
+    "hypothesis_family": "function_replacement",
+    "model": "qwen3.8-27b",
+    "n_hits": 0,
+    "organ": "mlp",
+    "top": []
+   },
+   {
+    "hypothesis_family": "factorized_programs",
+    "model": "qwen3.8-27b",
+    "n_hits": 0,
+    "organ": "mlp",
+    "top": []
+   },
+   {
+    "hypothesis_family": "generated_programs",
+    "model": "qwen3.8-27b",
+    "n_hits": 0,
+    "organ": "mlp",
+    "top": []
+   },
+   {
+    "hypothesis_family": "generated_weights",
+    "model": "qwen3.8-27b",
+    "n_hits": 0,
+    "organ": "mlp",
+    "top": []
+   },
+   {
+    "hypothesis_family": "learned_codebook",
+    "model": "qwen3.8-27b",
+    "n_hits": 0,
+    "organ": "mlp",
+    "top": []
+   },
+   {
+    "hypothesis_family": "raw_weight_pq_vq",
+    "model": "qwen3.8-27b",
+    "n_hits": 0,
+    "organ": "mlp",
+    "top": []
+   },
+   {
+    "hypothesis_family": "low_rank",
+    "model": "qwen3.8-27b",
+    "n_hits": 1,
+    "organ": "mlp",
+    "top": [
+     {
+      "hypothesis_family": "low_rank",
+      "level": "MODEL_SPECIFIC",
+      "reopen_condition": "Do not cite 5.9\u00d7. Reopen a recon-cost claim only on a named launch geometry with GPU timestamps, same-vehicle, real X. Cheap codecs previously rejected for recon cost are quality-eligible at tpr64.",
+      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-011",
+      "verdict": "LIVE_REOPEN_HOLDS"
+     }
+    ]
+   },
+   {
+    "hypothesis_family": "global_dense_lowrank",
+    "model": "qwen3.8-27b",
+    "n_hits": 1,
+    "organ": "mlp",
+    "top": [
+     {
+      "hypothesis_family": "global_dense_lowrank",
+      "level": "MODEL_SPECIFIC",
+      "reopen_condition": "the new architecture invalidates the old premise (bible \u00a719)",
+      "scar_id": "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json#NS-global-dense-lowrank-qwen38",
+      "verdict": "DEAD on that dense body. Does NOT automatically kill cross-expert low-rank structure in MoE."
+     }
+    ]
+   },
+   {
+    "hypothesis_family": "shared_basis",
+    "model": "qwen3.8-27b",
+    "n_hits": 0,
+    "organ": "mlp",
+    "top": []
+   },
+   {
+    "hypothesis_family": "latent_accumulation",
+    "model": "qwen3.8-27b",
+    "n_hits": 0,
+    "organ": "mlp",
+    "top": []
+   },
+   {
+    "hypothesis_family": "synthetic_activation",
+    "model": "qwen3.8-27b",
+    "n_hits": 2,
+    "organ": "mlp",
+    "top": [
+     {
+      "hypothesis_family": "synthetic_activation",
+      "level": "MODEL_SPECIFIC",
+      "reopen_condition": "never as a promotion or ranking path. Synthetic X is allowed only as a kernel numeric fixture, never as a codec-selection or sub-bit evidence input.",
+      "scar_id": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-009",
+      "verdict": "REFUTED"
+     },
+     {
+      "hypothesis_family": "synthetic_activation",
+      "level": "MODEL_SPECIFIC",
+      "reopen_condition": "Real teacher-forced / captured-BF16 X. Down_proj on post-SwiGLU X, not layer hidden (NS-012).",
+      "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#activation_aware_vs_synthetic_evaluation_trap",
+      "verdict": "KILLS. Same mechanism as #4, first-class graveyard class."
+     }
+    ]
+   }
+  ],
+  "refusals": [
+   {
+    "hypothesis_family": "global_dense_lowrank",
+    "level": "MODEL_SPECIFIC",
+    "reason": "known-dead hypothesis; rediscovery is not free. Reopen only under the cited reopen_condition.",
+    "reopen_condition": "the new architecture invalidates the old premise (bible \u00a719)",
+    "scar_id": "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json#NS-global-dense-lowrank-qwen38"
+   },
+   {
+    "hypothesis_family": "synthetic_activation",
+    "level": "MODEL_SPECIFIC",
+    "reason": "known-dead hypothesis; rediscovery is not free. Reopen only under the cited reopen_condition.",
+    "reopen_condition": "never as a promotion or ranking path. Synthetic X is allowed only as a kernel numeric fixture, never as a codec-selection or sub-bit evidence input.",
+    "scar_id": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-009"
+   }
+  ]
+ },
+ "metric": {
+  "authority": "held_out_relative_l2",
+  "cosine": "mean row cosine; reported, not authority",
+  "formula": "E_x ||F(x) - F_hat(x)|| / E_x ||F(x)||",
+  "kill_band": 0.85,
+  "kill_rel": 0.25,
+  "oracle_y_assignment": "diagnostic lower bound for dictionaries; not authority",
+  "per_capability_domain": [
+   "reasoning",
+   "code",
+   "tool-calling",
+   "long-horizon-coherence",
+   "plain-prose"
+  ],
+  "per_position_band": [
+   "early",
+   "middle",
+   "late"
+  ],
+  "relative_frobenius": "diagnostic only",
+  "split": "prompt_id hold set of the teacher corpus",
+  "weight_reconstruction": "diagnostic only; not authority; not scored",
+  "worst_prompt": "per-prompt mean-L2; a small mean that destroys one prompt is not a winner"
+ },
+ "n_layers_billed": 64,
+ "n_survivors": 0,
+ "negative_findings": [
+  "FACTORIZE_THE_FACTORS r=8..64 held-out relative L2 stays in the 0.9 band (best 0.976845)",
+  "DICTIONARY_PROGRAM X-routed K=16..256 stays in the 0.9 band; the Y-assignment oracle does too",
+  "PRODUCT_DICTIONARY 16xK16 and 32xK32 stay in the 0.9 band",
+  "CONDITIONAL_PROGRAM E=4..8 with mean or rank-16 experts stays in the 0.9 band",
+  "GENERATED_BLOCK unconstrained per-block rank-8/16 stays in the 0.9 band",
+  "NONLINEAR_GENERATOR silu readout r=32..128 and two-layer r=64 stay in the 0.9 band",
+  "oracle PCA of F at r=64 is already ~0.89 held-out (cited, not re-run): the output is not low-rank"
+ ],
+ "next": "Do not widen FACTORIZE_THE_FACTORS, dictionaries, conditionals, generated blocks, or silu-readout generators. The cheap round is the kill and the scars name the mechanism. Function replacement as a class remains the economics path; the live instantiation is a full-width structured nonlinear that is not an r-bottleneck.",
+ "nomenclature": {
+  "direct_consume": "DIRECT_CONSUME",
+  "held_out_authority": "held_out_relative_l2",
+  "kill_band": "held-out relative L2 >= 0.85 is the 0.9-band cheap kill",
+  "measured_negative": "MEASURED_NEGATIVE",
+  "open": "OPEN",
+  "rejected_dense_remat": "REJECTED_DENSE_REMAT",
+  "static_only": "this sidecar. Models propose; protected deterministic evidence decides."
+ },
+ "oracle_output_pca_cited": {
+  "cited": true,
+  "note": "Cited, not re-run. PCA of F at rank 64 is already ~0.89 held-out; the output manifold is not low-rank. This module does not propose another linear basis.",
+  "rank_64_held_out_relative_l2": 0.895354,
+  "shared_program_negative_findings": [
+   "SHARED_INPUT linear r=8..64 held-out relative L2 stays above 0.91",
+   "SHARED_OUTPUT linear r=8..64 held-out relative L2 stays above 0.91",
+   "SHARED_BOTH + k=32 residual does not leave the 0.9 band",
+   "oracle PCA of F at r=64 is already ~0.89 held-out: the output is not low-rank",
+   "a silu readout of the same latent is not better than linear"
+  ],
+  "source": "receipts/future/MLP_SHARED_PROGRAM.json"
+ },
+ "purpose": "After linear shared programs died (oracle PCA of F at rank 64 is ~0.89 held-out; the output manifold is not low-rank), test the families that respect SwiGLU structure: factorize the three maps separately, dictionaries, product dictionaries, a conditional program, a generated block, and an MLP-shaped generator. FACTORIZE_THE_FACTORS runs first.",
+ "ranks": [
+  8,
+  16,
+  32,
+  64
+ ],
+ "recorded_by": "tools/future/mlp_nonlinear_program.py",
+ "residual_budget": {
+  "allocated_to_survivors_bytes": 0,
+  "any_supported": true,
+  "cited": true,
+  "licensed_mlp_bytes": 2785280,
+  "licensed_regions_include_mlp_slice": true,
+  "licensed_token_share": 0.0028028380503877935,
+  "n_survivors": 0,
+  "note": "No surviving program, so this experiment does not reassign the map's licensed 0.28% of the token. That allocation is mostly DeltaNet/GQA plus a 2.8 MB MLP slice already named by the map; it is not a function-replacement residual.",
+  "source": "receipts/future/CAPABILITY_INFORMATION_MAP.json"
+ },
+ "round": "cheap_first",
+ "scars": [
+  {
+   "cheap_kill": true,
+   "family": "FACTORIZE_THE_FACTORS",
+   "held_out_relative_l2_best": 0.976845,
+   "level": "MODEL_SPECIFIC",
+   "mechanism": "gate, up and down are individually high-rank. Truncated SVD at rank 32 leaves Frobenius residual energy gate=0.968575 up=0.984304 down=0.980244. Composing the three with exact silu and product has held-out relative L2 0.976845. Even with two factors exact, one rank-64 factor sits at gate=0.878896 up=0.95432 down=0.941705. Gate's image is more compressible (PCA r=64 relative L2 0.514282) than F, but not enough to replace the map. The shared-program 0.9-band result was not an artifact of approximating the composite.",
+   "not": "a retry of SHARED_INPUT / SHARED_OUTPUT / SHARED_BOTH",
+   "object": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+   "organ": "mlp",
+   "parent": "qwen3.8-27b sealed-3.14",
+   "reopen": "Do not reopen as another rank sweep of gate/up/down. Reopen only for a full-width structured factorization (Monarch, butterfly, or an exact sparse factor) that is not an r-dimensional bottleneck.",
+   "status": "MEASURED_NEGATIVE"
+  },
+  {
+   "cheap_kill": true,
+   "family": "DICTIONARY_PROGRAM",
+   "held_out_relative_l2_best": 0.994711,
+   "level": "MODEL_SPECIFIC",
+   "mechanism": "F(x) does not cluster on this manifold. X-routed codebook K=16 has held-out relative L2 0.994711; even the Y-assignment oracle is 0.947216 (diagnostic, not authority). A small codebook of F is not a program for F.",
+   "not": "a retry of SHARED_INPUT / SHARED_OUTPUT / SHARED_BOTH",
+   "object": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+   "organ": "mlp",
+   "parent": "qwen3.8-27b sealed-3.14",
+   "reopen": "Reopen only if a new source (not frozen W, not this F-manifold) actually clusters. Raw-weight PQ/VQ is a different scar (NNS-017).",
+   "status": "MEASURED_NEGATIVE"
+  },
+  {
+   "cheap_kill": true,
+   "family": "PRODUCT_DICTIONARY",
+   "held_out_relative_l2_best": 0.997237,
+   "level": "MODEL_SPECIFIC",
+   "mechanism": "Product codebooks over 16 sub-blocks of K=16 still sit at held-out relative L2 0.997237 (Y-assignment oracle 0.937674). F is not a product of small block codebooks on this manifold.",
+   "not": "a retry of SHARED_INPUT / SHARED_OUTPUT / SHARED_BOTH",
+   "object": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+   "organ": "mlp",
+   "parent": "qwen3.8-27b sealed-3.14",
+   "reopen": "Reopen only if a new source (not frozen W, not this F-manifold) actually clusters. Raw-weight PQ/VQ is a different scar (NNS-017).",
+   "status": "MEASURED_NEGATIVE"
+  },
+  {
+   "cheap_kill": true,
+   "family": "CONDITIONAL_PROGRAM",
+   "held_out_relative_l2_best": 0.91666,
+   "level": "MODEL_SPECIFIC",
+   "mechanism": "A condition on x (k-means, E=8) selecting a rank-16 expert (or a mean) has held-out relative L2 0.91666. The condition is cheap and is billed; the programs it selects are still high-rank maps of x. A cheap default plus an exceptional path does not replace F.",
+   "not": "a retry of SHARED_INPUT / SHARED_OUTPUT / SHARED_BOTH",
+   "object": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+   "organ": "mlp",
+   "parent": "qwen3.8-27b sealed-3.14",
+   "reopen": "Reopen only for a condition whose exceptional path is a different function, not another small linear map of x. Billing the condition remains mandatory.",
+   "status": "MEASURED_NEGATIVE"
+  },
+  {
+   "cheap_kill": true,
+   "family": "GENERATED_BLOCK",
+   "held_out_relative_l2_best": 0.942662,
+   "level": "MODEL_SPECIFIC",
+   "mechanism": "Unconstrained per-block rank-16 maps on 16 output blocks (the best a lookup generator G(layer, row_block) can emit at this size) have held-out relative L2 0.942662. A smaller MLP of (layer, block) is strictly weaker. Block index does not buy a compact local representation of F.",
+   "not": "a retry of SHARED_INPUT / SHARED_OUTPUT / SHARED_BOTH",
+   "object": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+   "organ": "mlp",
+   "parent": "qwen3.8-27b sealed-3.14",
+   "reopen": "Reopen only if G is the kernel of a block (no dense W) AND held-out F drops below the kill. Generating W then GEMV stays REJECTED_DENSE_REMAT.",
+   "status": "MEASURED_NEGATIVE"
+  },
+  {
+   "cheap_kill": true,
+   "family": "NONLINEAR_GENERATOR",
+   "held_out_relative_l2_best": 0.918286,
+   "level": "MODEL_SPECIFIC",
+   "mechanism": "An MLP-shaped generator (silu_readout, r=128) has held-out relative L2 0.918286. A silu readout of a small latent is still an r-dimensional bottleneck through a high-rank output; it matches the SHARED_INPUT silu readout already killed, not a full-width structured nonlinear.",
+   "not": "a retry of SHARED_INPUT / SHARED_OUTPUT / SHARED_BOTH",
+   "object": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+   "organ": "mlp",
+   "parent": "qwen3.8-27b sealed-3.14",
+   "reopen": "Reopen only for a full-width structured nonlinear (Monarch / butterfly / distilled operator that is not an r-bottleneck). A wider silu readout of a latent is this family at a larger rank.",
+   "status": "MEASURED_NEGATIVE"
+  }
+ ],
+ "schema": "hawking.future.mlp_nonlinear_program.v1",
+ "seal_sha256": "fca9aed0f4bd4086597bb54875af15095012c9b802d72e57209edba25eda548a",
+ "selftest": {
+  "held_out_leak_codes": [
+   "TrainReportedAsHeldOut"
+  ],
+  "held_out_leak_refused": true,
+  "honest_fixture_emit_ok": true,
+  "linear_codes": [
+   "LinearSharedSubspaceDead"
+  ],
+  "linear_shared_subspace_refused": true,
+  "remat_codes": [
+   "REJECTED_DENSE_REMAT"
+  ],
+  "remat_consumer_refused": true,
+  "unbilled_codes": [
+   "UnbilledProgramByte"
+  ],
+  "unbilled_condition_refused": true,
+  "unbilled_program_byte_refused": true,
+  "y_hold_index_codes": [
+   "HoldYUsedAsIndex"
+  ],
+  "y_hold_index_refused": true
+ },
+ "survivors": [],
+ "version": 1,
+ "what_this_does_not_prove": [
+  "that a full-width structured nonlinear (Monarch/butterfly) cannot replace F",
+  "that a distilled operator which is not an r-dimensional bottleneck cannot replace F",
+  "capability at generate",
+  "a protected TPS or complete-token number",
+  "that raw-weight PQ/VQ (NNS-017) was re-tested; it was not; this dictionary is of F",
+  "that SVD-of-W energy (NNS-016) was re-measured as a spectrum; this object is composed F"
+ ]
+}

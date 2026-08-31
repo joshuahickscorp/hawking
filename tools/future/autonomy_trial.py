@@ -32,6 +32,7 @@ import argparse
 import hashlib
 import json
 import re
+import time
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -106,6 +107,7 @@ _POWER_TORTURE_EXTRA = (
     "mutation_proposed_and_rolled_back",
     "status_causality_challenged",
     "protected_work_parked_not_idled",
+    "no_idle_while_work_exists",
 )
 
 _THREE_H_EXTRA = (
@@ -120,6 +122,69 @@ REQUIRED_CONDITIONS: dict[str, tuple[str, ...]] = {
     "30m": THIRTEEN_ACCEPTANCE + _POWER_TORTURE_EXTRA,
     "3h": THIRTEEN_ACCEPTANCE + _THREE_H_EXTRA,
     "6h": THIRTEEN_ACCEPTANCE + _SIX_H_EXTRA,
+}
+
+# The original 16 30m conditions (G036 "16/16"). no_idle_while_work_exists was
+# added later so a 477s silent gap could not hide behind a 16/16 pass.
+SIXTEEN_THIRTY_M: tuple[str, ...] = THIRTEEN_ACCEPTANCE + _POWER_TORTURE_EXTRA[:-1]
+assert SIXTEEN_THIRTY_M == (
+    THIRTEEN_ACCEPTANCE
+    + (
+        "mutation_proposed_and_rolled_back",
+        "status_causality_challenged",
+        "protected_work_parked_not_idled",
+    )
+)
+
+FOUR_THIRTY_M: tuple[str, ...] = (
+    "refill_work",
+    "overlap_detached_work",
+    "use_negative_science",
+    "alter_priority_from_evidence",
+)
+
+# Gravity-wave scars 6fc77f169 made refuse_if_dead actually key. A run that
+# "uses negative science" while these are unreachable is not using the index.
+CAMPAIGN_SCIENCE_SCARS: tuple[str, ...] = (
+    "mlp_function_replacement",
+    "MONARCH",
+    "BUTTERFLY",
+    "FACTORIZE_THE_FACTORS",
+    "PRODUCT_DICTIONARY",
+    "CONDITIONAL_PROGRAM",
+    "GENERATED_BLOCK",
+    "NONLINEAR_GENERATOR",
+)
+
+NEG_INDEX_REL = "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
+TIMELINE_30M_REL = "receipts/future/AUTONOMY_TIMELINE_30m.json"
+GPU_LANE_LOCK = Path("/tmp/hawking-gpu-lane.lock")
+
+# Real call sites in the driver. Quoted by the independent 30m judgement.
+# Line numbers drift; the function is the site.
+FOUR_CALL_SITES: dict[str, str] = {
+    "work_refilled": (
+        "tools/future/autonomy_run.py:_try_refill and the empty-queue branch "
+        "after frontiers.refill returns novel work"
+    ),
+    "detached_started": (
+        "tools/future/autonomy_run.py:emit_detached_started from "
+        "_kickoff_overlap around a live no_wait_scheduler handle"
+    ),
+    "detached_overlap_confirmed": (
+        "tools/future/autonomy_run.py:_kickoff_overlap after "
+        "no_wait_scheduler.poll reports >=2 jobs not terminal at one instant"
+    ),
+    "negative_science_query": (
+        "tools/future/autonomy_run.py:generate loop via emit_negative_science_query"
+    ),
+    "negative_science_refusal": (
+        "tools/future/autonomy_run.py:generate loop via emit_negative_science_refusal"
+    ),
+    "priority_altered": (
+        "tools/future/autonomy_run.py:emit_priority_altered from _apply_replan "
+        "after a landing result reorders remaining work"
+    ),
 }
 
 AUTO_FAIL_AWAITING = "awaiting_instructions_while_safe_work_remains"
@@ -177,6 +242,18 @@ AWAITING_KINDS = frozenset(
         "all_tasks_complete",
     }
 )
+# Event the driver must emit before it sleeps on a subprocess. Distinct from
+# AWAITING_KINDS: this is a survey of a dry refill, not a conversational wait.
+IDLE_JUSTIFIED_KIND = "idle_justified"
+# Sealed 30m transcript (receipts/future/AUTONOMY_TIMELINE_30m.json): honest
+# consecutive-event gaps are 2s, 18s, 22s (inline work), 23s (compose). The
+# defect is 477s of no events while next_work_left still named twelve
+# frontiers. 60s is above every honest gap on that file and 1/8 of the defect;
+# a 25s driver run cannot produce it. Gaps opened by workunit_launched are
+# performing that unit, not idle, even when they exceed this.
+IDLE_WHILE_WORK_GAP_S = 60
+# A gap that starts with one of these is the unit running, not the loop waiting.
+IDLE_PERFORMING_KINDS = frozenset({"workunit_launched"})
 HARDWARE_IDLE_KINDS = frozenset({"hardware_blocked_wait", "waiting_resource"})
 F_ID = re.compile(r"^F\d+$")
 
@@ -1011,13 +1088,34 @@ def eval_reject_bad_idea_on_evidence(view: TimelineView) -> dict[str, Any]:
     return _met("reject_bad_idea_on_evidence", "rejected a bad idea on evidence", hits)
 
 
+def event_is_staged(event: Mapping[str, Any]) -> bool:
+    """A staged event is theatre: it was injected to satisfy a detector.
+
+    G030: the four 30m conditions close by truthful reporting at the real
+    call sites, NEVER a staged event. A payload that admits it is staged,
+    synthetic, or injected_for_condition cannot earn a condition.
+    """
+    payload = _payload(event)
+    if event.get("staged") is True or payload.get("staged") is True:
+        return True
+    if event.get("synthetic") is True or payload.get("synthetic") is True:
+        return True
+    if payload.get("injected_for_condition") or event.get("injected_for_condition"):
+        return True
+    return False
+
+
 def eval_refill_work(view: TimelineView) -> dict[str, Any]:
     ingests = view.of("result_ingested")
     if not ingests:
         return _unmet("refill_work", "cannot refill: no ingested result precedes it")
     t_ing = min(int(e.get("t_s") or 0) for e in ingests)
     hits: list[dict[str, Any]] = []
+    staged_only = False
     for event in view.of("work_refilled"):
+        if event_is_staged(event):
+            staged_only = True
+            continue
         if int(event.get("t_s") or 0) <= t_ing:
             continue
         payload = _payload(event)
@@ -1025,10 +1123,13 @@ def eval_refill_work(view: TimelineView) -> dict[str, Any]:
         if ids or payload.get("unit"):
             hits.append(event)
     if not hits:
-        return _unmet(
-            "refill_work",
-            "no work_refilled event after an ingested result",
-        )
+        detail = "no work_refilled event after an ingested result"
+        if staged_only:
+            detail = (
+                "only a staged work_refilled was present; a staged event "
+                "cannot satisfy refill_work"
+            )
+        return _unmet("refill_work", detail)
     return _met("refill_work", "refilled work after ingesting a result", hits)
 
 
@@ -1047,6 +1148,177 @@ def eval_never_conversational_wait(view: TimelineView) -> dict[str, Any]:
         "met": True,
         "cites": [],
         "detail": "no conversational wait on the timeline",
+        "event_seqs": [],
+    }
+
+
+def _named_leftover_ids(event: Mapping[str, Any]) -> list[str]:
+    """Frontier / unit ids a leftover or refill event actually named.
+
+    An exhausted refill that reported n=0 is not leftover work.
+    """
+    payload = _payload(event)
+    raw = (
+        list(payload.get("unit_ids") or [])
+        + list(payload.get("ids") or [])
+        + list(payload.get("entry_ids") or [])
+    )
+    ids = [str(x).strip() for x in raw if str(x).strip()]
+    if payload.get("exhausted") is True and not ids:
+        return []
+    return ids
+
+
+def _idle_justification_ok(event: Mapping[str, Any]) -> bool:
+    """A sleep is legitimate only if this event surveyed a dry refill and named the wait."""
+    if str(event.get("kind") or "") != IDLE_JUSTIFIED_KIND:
+        return False
+    payload = _payload(event)
+    if not str(payload.get("why") or "").strip():
+        return False
+    asked = payload.get("frontiers_asked")
+    returned = payload.get("returned")
+    if asked is None and returned is None:
+        return False
+    if asked is not None and not isinstance(asked, list):
+        return False
+    if returned is not None and not isinstance(returned, list):
+        return False
+    waiting = payload.get("waiting_on")
+    if not isinstance(waiting, list) or not waiting:
+        return False
+    novel = payload.get("n_novel")
+    if novel is None and isinstance(returned, list):
+        novel = sum(
+            1
+            for row in returned
+            if isinstance(row, Mapping) and str(row.get("returned") or "") == "novel"
+        )
+    try:
+        n_novel = int(novel or 0)
+    except (TypeError, ValueError):
+        n_novel = 0
+    if n_novel > 0:
+        return False
+    return True
+
+
+def _work_remained_across_gap(
+    view: TimelineView, gap_start_t: int, gap_end_t: int
+) -> list[str]:
+    """Ids showing runnable leftover still existed at or after the silent interval.
+
+    FIRST, ask the evidence rather than the driver. A runnability_snapshot taken
+    AT the wait reports, per frontier, what it held, what survived the scars and
+    what had not been launched - so n_runnable is a COUNT, not a claim. Zero
+    means the wait was justified and there is nothing for this condition to
+    convict.
+
+    Why it has to be the snapshot and nothing else: I first keyed this on the
+    driver's own `exhausted` flag, and the archived 477 s control caught it
+    inside a minute. That run emits the IDENTICAL pre-gap signal - next_work_left
+    t=88, exhausted True, n 0, ids [] - and ended with twelve frontiers holding
+    novel work the driver had missed. The flag was FALSE there, so any rule
+    keyed on it acquits the original defect.
+
+    The snapshot cannot lie the same way: it is derived from the frontier set,
+    the scar list and the launched set at that instant. And the archived control
+    carries no snapshot at all, so it stays convicted - which is what a negative
+    control is for.
+    """
+    for event in view.of("runnability_snapshot"):
+        t_ev = int(event.get("t_s") or 0)
+        if not (gap_start_t - 30 <= t_ev <= gap_start_t + 5):
+            continue
+        payload = _payload(event)
+        if payload.get("error"):
+            continue  # a snapshot that failed is not evidence either way
+        if int(payload.get("n_runnable") or 0) == 0:
+            return []
+    named: list[str] = []
+    for event in view.of("next_work_left", "work_refilled"):
+        t_ev = int(event.get("t_s") or 0)
+        if t_ev < gap_end_t:
+            continue
+        named.extend(_named_leftover_ids(event))
+    for event, unit in view.launched():
+        t_ev = int(event.get("t_s") or 0)
+        if t_ev < gap_end_t:
+            continue
+        fid = str(
+            _payload(event).get("frontier_id") or unit.get("frontier_id") or unit.get("id") or ""
+        )
+        if fid:
+            named.append(fid)
+    if not named:
+        named = [str(r.get("id") or "") for r in view.safe_work if r.get("id")]
+    # Stable unique order.
+    seen: set[str] = set()
+    out: list[str] = []
+    for item in named:
+        if item and item not in seen:
+            seen.add(item)
+            out.append(item)
+    return out
+
+
+def eval_no_idle_while_work_exists(view: TimelineView) -> dict[str, Any]:
+    """FAIL a long silent gap with leftover work and no idle_justified opener.
+
+    never_conversational_wait only sees phrases and AWAITING_KINDS. The 30m
+    torture idled 477s on `time.sleep` with neither, so it passed 16/16.
+    """
+    cid = "no_idle_while_work_exists"
+    events = view.events
+    bad: list[dict[str, Any]] = []
+    leftover_for_bad: list[str] = []
+    t_pairs: list[str] = []
+    justified: list[dict[str, Any]] = []
+    for prev, nxt in zip(events, events[1:]):
+        t0 = int(prev.get("t_s") or 0)
+        t1 = int(nxt.get("t_s") or 0)
+        gap = t1 - t0
+        if gap < IDLE_WHILE_WORK_GAP_S:
+            continue
+        kind0 = str(prev.get("kind") or "")
+        if kind0 in IDLE_PERFORMING_KINDS:
+            continue
+        if _idle_justification_ok(prev):
+            justified.append(prev)
+            continue
+        remained = _work_remained_across_gap(view, t0, t1)
+        if not remained:
+            continue
+        bad.append(prev)
+        bad.append(nxt)
+        leftover_for_bad.extend(remained)
+        t_pairs.append(f"{t0}->{t1}s ({gap}s)")
+    if bad:
+        seen: set[str] = set()
+        left: list[str] = []
+        for item in leftover_for_bad:
+            if item not in seen:
+                seen.add(item)
+                left.append(item)
+        return _unmet(
+            cid,
+            (
+                f"silent interval of >={IDLE_WHILE_WORK_GAP_S}s with leftover "
+                f"frontier work and no {IDLE_JUSTIFIED_KIND} justification: "
+                f"{', '.join(t_pairs)}; leftover={left[:12]}"
+            ),
+            [f"seq:{e.get('seq')}" for e in bad] + left[:12],
+        )
+    detail = (
+        f"no unjustified idle gap >={IDLE_WHILE_WORK_GAP_S}s while work remained"
+    )
+    if justified:
+        return _met(cid, detail, justified)
+    return {
+        "id": cid,
+        "met": True,
+        "cites": [],
+        "detail": detail,
         "event_seqs": [],
     }
 
@@ -1133,7 +1405,9 @@ def _detached_overlap(events: Sequence[Mapping[str, Any]]) -> tuple[bool, list[s
 
 
 def eval_overlap_detached_work(view: TimelineView) -> dict[str, Any]:
-    ok, jobs, cited = _detached_overlap(view.events)
+    live = [e for e in view.events if not event_is_staged(e)]
+    staged = [e for e in view.events if event_is_staged(e)]
+    ok, jobs, cited = _detached_overlap(live)
     if ok:
         hits = [e for e in cited if str(e.get("kind") or "") == "detached_started"]
         return _met(
@@ -1142,39 +1416,56 @@ def eval_overlap_detached_work(view: TimelineView) -> dict[str, Any]:
             hits,
             jobs,
         )
-    return _unmet(
-        "overlap_detached_work",
-        "no overlapping detached_started intervals (need two jobs running at once)",
-    )
+    detail = "no overlapping detached_started intervals (need two jobs running at once)"
+    if staged and any(str(e.get("kind") or "") == "detached_started" for e in staged):
+        detail = (
+            "only staged detached_started events were present; a staged "
+            "event cannot satisfy overlap_detached_work"
+        )
+    return _unmet("overlap_detached_work", detail)
 
 
 def eval_use_negative_science(view: TimelineView) -> dict[str, Any]:
     hits: list[dict[str, Any]] = []
+    staged_only = False
     for event in view.of("negative_science_query", "negative_science_refusal"):
+        if event_is_staged(event):
+            staged_only = True
+            continue
         payload = _payload(event)
         if _cites(event) or payload.get("source_path") or payload.get("query"):
             hits.append(event)
     if not hits:
-        return _unmet(
-            "use_negative_science",
-            "no negative_science_query/refusal citing the index or a scar",
-        )
+        detail = "no negative_science_query/refusal citing the index or a scar"
+        if staged_only:
+            detail = (
+                "only a staged negative-science event was present; a staged "
+                "event cannot satisfy use_negative_science"
+            )
+        return _unmet("use_negative_science", detail)
     return _met("use_negative_science", "used negative science", hits)
 
 
 def eval_alter_priority_from_evidence(view: TimelineView) -> dict[str, Any]:
     hits: list[dict[str, Any]] = []
+    staged_only = False
     for event in view.of("priority_altered"):
+        if event_is_staged(event):
+            staged_only = True
+            continue
         payload = _payload(event)
         before = payload.get("before")
         after = payload.get("after")
         if isinstance(before, list) and isinstance(after, list) and before != after and _cites(event):
             hits.append(event)
     if not hits:
-        return _unmet(
-            "alter_priority_from_evidence",
-            "no priority_altered event with before != after citing evidence",
-        )
+        detail = "no priority_altered event with before != after citing evidence"
+        if staged_only:
+            detail = (
+                "only a staged priority_altered was present; a staged event "
+                "cannot satisfy alter_priority_from_evidence"
+            )
+        return _unmet("alter_priority_from_evidence", detail)
     return _met("alter_priority_from_evidence", "altered experiment priority from evidence", hits)
 
 
@@ -1395,6 +1686,7 @@ EVALUATORS = {
     "mutation_proposed_and_rolled_back": eval_mutation_proposed_and_rolled_back,
     "status_causality_challenged": eval_status_causality_challenged,
     "protected_work_parked_not_idled": eval_protected_work_parked_not_idled,
+    "no_idle_while_work_exists": eval_no_idle_while_work_exists,
     "overlap_detached_work": eval_overlap_detached_work,
     "use_negative_science": eval_use_negative_science,
     "alter_priority_from_evidence": eval_alter_priority_from_evidence,
@@ -2748,6 +3040,8 @@ def recovered_implementation() -> list[dict[str, Any]]:
 def gaps_closed() -> list[str]:
     return [
         "Four progressive trials (15m/1h/3h/6h) with hard behavioural conditions judged from a timeline.",
+        "A staged event (staged/synthetic/injected_for_condition) cannot satisfy refill_work, overlap_detached_work, use_negative_science, or alter_priority_from_evidence.",
+        "The 30m trial is frozen (power_torture.hash_substrate before==after), run for 1800s, and judged from the sealed timeline; degeneracy.measure and no_wait_orchestration.classify run over that same transcript.",
         "A timer is not a pass: --verify fails unmet conditions even when elapsed_s >= duration_s.",
         "Three automatic failures encoded and watched to fire: awaiting-instructions, hardware-idle, busywork flood.",
         "--record captures; --verify judges; combining them in one invocation is refused.",
@@ -2817,6 +3111,727 @@ def resident_callable(units: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     }
 
 
+# ---------------------------------------------------------------------------
+# Independent 30m judgement from the SEALED timeline (not the runner summary).
+# G030 + G036: freeze, run the real 30 minutes, quote the four conditions
+# from events at real call sites, run degeneracy + no-wait over THIS run.
+# ---------------------------------------------------------------------------
+
+
+def campaign_science_scars_reachable() -> dict[str, Any]:
+    """refuse_if_dead must key this campaign's own scars. Reachability is live."""
+    from tools.future import negative_index as ni
+
+    reachable: dict[str, dict[str, Any]] = {}
+    missing: list[str] = []
+    pool: list[Any] | None
+    try:
+        pool = ni.ingest()
+    except Exception as exc:
+        return {
+            "ok": False,
+            "reachable": {},
+            "missing": list(CAMPAIGN_SCIENCE_SCARS),
+            "why": f"negative_index.ingest failed: {type(exc).__name__}: {exc}",
+        }
+    for name in CAMPAIGN_SCIENCE_SCARS:
+        try:
+            dead = ni.refuse_if_dead({"hypothesis_family": name}, pool)
+        except TypeError:
+            dead = ni.refuse_if_dead({"hypothesis_family": name})
+        except Exception as exc:
+            missing.append(name)
+            reachable[name] = {"reachable": False, "error": f"{type(exc).__name__}: {exc}"}
+            continue
+        if dead:
+            reachable[name] = {
+                "reachable": True,
+                "scar_id": dead.get("scar_id") or dead.get("id"),
+                "source_path": dead.get("source_path"),
+                "verdict": dead.get("verdict") or dead.get("status"),
+            }
+        else:
+            missing.append(name)
+            reachable[name] = {"reachable": False}
+    return {
+        "ok": not missing,
+        "reachable": reachable,
+        "missing": missing,
+        "n_reachable": sum(1 for row in reachable.values() if row.get("reachable")),
+        "n_named": len(CAMPAIGN_SCIENCE_SCARS),
+        "index": NEG_INDEX_REL,
+    }
+
+
+def _priority_zero_start(event: Mapping[str, Any]) -> bool:
+    """A detached_started that is the long/composer-detached job (priority 0).
+
+    The falsy-zero defect ranked these last (`prio or 99`) so they never
+    started. An assertion that the sort is fixed is not a job that ran.
+    """
+    if str(event.get("kind") or "") != "detached_started":
+        return False
+    if event_is_staged(event):
+        return False
+    payload = _payload(event)
+    pid = payload.get("pid")
+    if not isinstance(pid, int) or pid <= 0:
+        return False
+    if payload.get("started_at") is None:
+        return False
+    if payload.get("long_subprocess") is True:
+        return True
+    if payload.get("priority") == 0:
+        return True
+    launch = str(payload.get("launch") or "").lower()
+    if launch in {"detached", "no_wait", "no-wait"}:
+        return True
+    cap = str(payload.get("capability") or "")
+    uid = str(payload.get("unit_id") or payload.get("job_id") or "")
+    if "specimen_verify" in cap or "specimen_verify" in uid:
+        return True
+    if "NO_WAIT" in uid or "TORTURE.NO_WAIT" in uid:
+        return True
+    return False
+
+
+def _quote_event(event: Mapping[str, Any], *, observation: str) -> dict[str, Any]:
+    kind = str(event.get("kind") or "")
+    payload = _payload(event)
+    return {
+        "kind": kind,
+        "seq": event.get("seq"),
+        "t_s": event.get("t_s"),
+        "cites": _cites(event),
+        "call_site": FOUR_CALL_SITES.get(kind) or payload.get("call_site"),
+        "observation": observation,
+        "staged": event_is_staged(event),
+        "payload_excerpt": {
+            k: payload.get(k)
+            for k in (
+                "job_id",
+                "pid",
+                "started_at",
+                "finished_at",
+                "unit_id",
+                "capability",
+                "unit_ids",
+                "n",
+                "queue_remaining_when_asked",
+                "source",
+                "why",
+                "before",
+                "after",
+                "cause",
+                "query",
+                "source_path",
+                "scar_id",
+                "hypothesis_family",
+                "job_ids",
+                "n_live",
+                "how",
+            )
+            if k in payload
+        },
+    }
+
+
+def judge_four_from_sealed(timeline: Mapping[str, Any]) -> dict[str, Any]:
+    """Judge the four G030 conditions from the sealed transcript, not the summary.
+
+    Each condition quotes the event, its call site, and what it observed.
+    A staged event is an automatic miss. overlap_detached_work additionally
+    requires a priority-0 detached job that actually STARTED and overlapped.
+    use_negative_science additionally requires this campaign's scars to be
+    reachable in the live index.
+    """
+    view = TimelineView(timeline, "30m")
+    rows: dict[str, dict[str, Any]] = {}
+
+    # refill_work
+    refill_eval = eval_refill_work(view)
+    refill_hits = [
+        e
+        for e in view.of("work_refilled")
+        if not event_is_staged(e)
+        and (list(_payload(e).get("unit_ids") or []) or _cites(e) or _payload(e).get("unit"))
+    ]
+    refill_quote = None
+    if refill_hits:
+        ev = refill_hits[0]
+        pay = _payload(ev)
+        refill_quote = _quote_event(
+            ev,
+            observation=(
+                f"frontiers.refill returned n={pay.get('n')} novel unit_ids "
+                f"{list(pay.get('unit_ids') or [])[:8]} with "
+                f"queue_remaining_when_asked={pay.get('queue_remaining_when_asked')} "
+                f"source={pay.get('source')!r} after a result_ingested"
+            ),
+        )
+    rows["refill_work"] = {
+        **refill_eval,
+        "quote": refill_quote,
+        "staged_cannot_satisfy": True,
+    }
+
+    # overlap_detached_work + priority-0 start
+    overlap_eval = eval_overlap_detached_work(view)
+    live_events = [e for e in view.events if not event_is_staged(e)]
+    ok, jobs, cited = _detached_overlap(live_events)
+    starts = [
+        e
+        for e in live_events
+        if str(e.get("kind") or "") == "detached_started"
+    ]
+    prio0 = [e for e in starts if _priority_zero_start(e)]
+    confirmed = [
+        e
+        for e in live_events
+        if str(e.get("kind") or "") == "detached_overlap_confirmed"
+        and not event_is_staged(e)
+    ]
+    prio0_ids = []
+    for ev in prio0:
+        pay = _payload(ev)
+        token = str(pay.get("job_id") or pay.get("unit_id") or "")
+        if token:
+            prio0_ids.append(token)
+    prio0_in_overlap = bool(ok) and any(
+        any(token in str(j) or str(j) in token for j in jobs) for token in prio0_ids
+    )
+    # Also match by the overlapping job_ids against start events that are prio0.
+    if ok and not prio0_in_overlap:
+        job_set = {str(j) for j in jobs}
+        for ev in prio0:
+            pay = _payload(ev)
+            if str(pay.get("job_id") or "") in job_set or str(pay.get("unit_id") or "") in job_set:
+                prio0_in_overlap = True
+                break
+    # Confirmed-without-prio0-start is not enough: the defect was they never started.
+    # Overlap of two short jobs while the long job sat at the back is the same miss.
+    if not prio0:
+        overlap_met = False
+        overlap_detail = (
+            "no priority-0 detached job STARTED (live pid + started_at on a "
+            "long/composer-detached unit); the falsy-zero defect sorted those "
+            "last and they never ran. A sort-is-fixed assertion is not this."
+        )
+    elif not ok:
+        overlap_met = False
+        overlap_detail = overlap_eval.get("detail") or (
+            "no overlapping detached_started intervals (need two jobs running at once)"
+        )
+    elif not prio0_in_overlap:
+        overlap_met = False
+        overlap_detail = (
+            f"priority-0 job(s) started ({prio0_ids}) but were not in an "
+            f"overlapping pair {jobs}; overlap without the long job running "
+            "is the same miss as ranking it last"
+        )
+    else:
+        overlap_met = True
+        overlap_detail = overlap_eval.get("detail") or f"detached jobs overlapped: {jobs}"
+    quote_src = prio0[0] if prio0 else (starts[0] if starts else None)
+    overlap_quote = None
+    if quote_src is not None:
+        pay = _payload(quote_src)
+        overlap_quote = _quote_event(
+            quote_src,
+            observation=(
+                f"pid={pay.get('pid')} started_at={pay.get('started_at')} "
+                f"job_id={pay.get('job_id')} unit_id={pay.get('unit_id')} "
+                f"capability={pay.get('capability')} overlapped={jobs} "
+                f"confirmed={bool(confirmed)}"
+            ),
+        )
+    rows["overlap_detached_work"] = {
+        "id": "overlap_detached_work",
+        "met": bool(overlap_met),
+        "cites": overlap_eval.get("cites") or [],
+        "detail": overlap_detail,
+        "event_seqs": overlap_eval.get("event_seqs") or [],
+        "jobs": jobs,
+        "priority_zero_started": [str(_payload(e).get("job_id") or _payload(e).get("unit_id")) for e in prio0],
+        "priority_zero_in_overlap": prio0_in_overlap,
+        "quote": overlap_quote,
+        "staged_cannot_satisfy": True,
+    }
+
+    # use_negative_science + real index + campaign scars reachable
+    ns_eval = eval_use_negative_science(view)
+    scars = campaign_science_scars_reachable()
+    ns_hits = [
+        e
+        for e in view.of("negative_science_query", "negative_science_refusal")
+        if not event_is_staged(e)
+    ]
+    cites_index = False
+    cited_sources: list[str] = []
+    for ev in ns_hits:
+        pay = _payload(ev)
+        src = str(pay.get("source_path") or "")
+        for c in _cites(ev) + ([src] if src else []):
+            cited_sources.append(c)
+            if "NEGATIVE_SCIENCE" in c or c.startswith("receipts/future/MLP_") or c.startswith("receipts/future/CAMPAIGN_SCARS"):
+                cites_index = True
+    ns_met = bool(ns_eval.get("met")) and scars.get("ok") is True and (cites_index or bool(ns_hits))
+    if not scars.get("ok"):
+        ns_met = False
+        ns_detail = (
+            "campaign science scars are not reachable in the live index: "
+            + ", ".join(scars.get("missing") or [])
+            + " — a run that uses negative science without these being "
+            "reachable is not using it (6fc77f169)"
+        )
+    elif not ns_hits:
+        ns_met = False
+        ns_detail = ns_eval.get("detail") or "no negative-science event on the sealed timeline"
+    else:
+        ns_detail = (
+            f"consulted the real index; {scars.get('n_reachable')}/{scars.get('n_named')} "
+            f"campaign science scars reachable; {len(ns_hits)} query/refusal event(s)"
+        )
+        ns_met = True
+    ns_quote = None
+    if ns_hits:
+        ev = ns_hits[0]
+        pay = _payload(ev)
+        ns_quote = _quote_event(
+            ev,
+            observation=(
+                f"kind={ev.get('kind')} query={pay.get('query')} "
+                f"source_path={pay.get('source_path')} scar_id={pay.get('scar_id')} "
+                f"reachable_scars={sorted(k for k, v in (scars.get('reachable') or {}).items() if v.get('reachable'))}"
+            ),
+        )
+    rows["use_negative_science"] = {
+        "id": "use_negative_science",
+        "met": bool(ns_met),
+        "cites": ns_eval.get("cites") or [],
+        "detail": ns_detail,
+        "event_seqs": ns_eval.get("event_seqs") or [],
+        "campaign_science_scars": scars,
+        "cited_sources": cited_sources[:12],
+        "quote": ns_quote,
+        "staged_cannot_satisfy": True,
+    }
+
+    # alter_priority_from_evidence
+    prio_eval = eval_alter_priority_from_evidence(view)
+    prio_hits = [
+        e
+        for e in view.of("priority_altered")
+        if not event_is_staged(e)
+        and isinstance(_payload(e).get("before"), list)
+        and isinstance(_payload(e).get("after"), list)
+        and _payload(e).get("before") != _payload(e).get("after")
+        and _cites(e)
+    ]
+    prio_quote = None
+    if prio_hits:
+        ev = prio_hits[0]
+        pay = _payload(ev)
+        prio_quote = _quote_event(
+            ev,
+            observation=(
+                f"remaining queue reordered cause={pay.get('cause')!r} "
+                f"before[:6]={list(pay.get('before') or [])[:6]} "
+                f"after[:6]={list(pay.get('after') or [])[:6]} "
+                f"cites={_cites(ev)}"
+            ),
+        )
+    rows["alter_priority_from_evidence"] = {
+        **prio_eval,
+        "met": bool(prio_eval.get("met")) and bool(prio_hits),
+        "quote": prio_quote,
+        "staged_cannot_satisfy": True,
+    }
+
+    unmet = [cid for cid in FOUR_THIRTY_M if not rows[cid].get("met")]
+    return {
+        "conditions": rows,
+        "unmet": unmet,
+        "all_four_met": not unmet,
+        "staged_event_cannot_satisfy": True,
+        "judged_from": "sealed_timeline_events",
+        "ignored": ["runner_summary", "summary", "self_report", "self_verdict"],
+    }
+
+
+def _pid_alive(pid: Any) -> bool | None:
+    if not isinstance(pid, int) or pid <= 0:
+        return None
+    try:
+        _os.kill(pid, 0)
+        return True
+    except OSError:
+        return False
+
+
+def _parse_gpu_lock_file(path: Path) -> dict[str, Any]:
+    """Read a JSON lock FILE (this host's current protocol) without deleting it."""
+    row: dict[str, Any] = {
+        "path": str(path),
+        "present": path.exists(),
+        "kind": None,
+        "owner": None,
+        "pid": None,
+        "pid_alive": None,
+        "parked": False,
+        "contended": False,
+    }
+    if not path.exists():
+        row["kind"] = "absent"
+        return row
+    if path.is_dir():
+        row["kind"] = "directory"
+        owner_p = path / "owner"
+        pid_p = path / "pid"
+        if owner_p.is_file():
+            try:
+                row["owner"] = owner_p.read_text(encoding="utf-8").strip() or None
+            except OSError:
+                pass
+        if pid_p.is_file():
+            try:
+                text = pid_p.read_text(encoding="utf-8").strip()
+                row["pid"] = int(text) if text.isdigit() else text
+            except OSError:
+                pass
+        row["pid_alive"] = _pid_alive(row["pid"])
+        row["parked"] = True
+        return row
+    if path.is_file():
+        row["kind"] = "file"
+        try:
+            row["bytes"] = path.stat().st_size
+        except OSError:
+            row["bytes"] = None
+        try:
+            raw = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            raw = None
+        if isinstance(raw, Mapping):
+            row["owner"] = raw.get("holder") or raw.get("owner")
+            pid = raw.get("pid")
+            row["pid"] = int(pid) if isinstance(pid, int) else pid
+            row["acquired_at"] = raw.get("acquired_at")
+            row["holder_parked"] = raw.get("parked")
+        row["pid_alive"] = _pid_alive(row["pid"])
+        row["parked"] = True
+        return row
+    row["kind"] = "other"
+    row["parked"] = True
+    return row
+
+
+def park_gpu_lane_lock(*, timeout_s: float = 25 * 60) -> dict[str, Any]:
+    """Park on the GPU lane lock. Never flock, never delete, never fabricate a pid.
+
+    A live holder is waited out. A dead or absent lock is recorded and we proceed
+    (this trial parks GPU work SLEEPING and runs CPU orchestration). Contending
+    is the failure mode.
+    """
+    t0 = time.time()
+    row = _parse_gpu_lock_file(GPU_LANE_LOCK)
+    try:
+        from tools.future import power_torture as pt
+
+        inspected = pt.inspect_gpu_lane_lock(GPU_LANE_LOCK)
+        row["inspect_gpu_lane_lock"] = {
+            k: inspected.get(k)
+            for k in ("path", "present", "kind", "owner", "pid", "pid_alive", "waited_for", "parked", "contended")
+        }
+    except Exception as exc:
+        row["inspect_gpu_lane_lock"] = {"error": f"{type(exc).__name__}: {exc}"}
+    pid = row.get("pid")
+    alive = _pid_alive(pid)
+    row["pid_alive"] = alive
+    row["contended"] = False
+    if alive is True and isinstance(pid, int):
+        row["parked"] = True
+        row["waited_for"] = (
+            f"live GPU-lane holder pid={pid} owner={row.get('owner')!r}; "
+            "parking until it exits rather than contending"
+        )
+        deadline = t0 + float(timeout_s)
+        while time.time() < deadline:
+            if _pid_alive(pid) is not True:
+                break
+            if not GPU_LANE_LOCK.exists():
+                break
+            time.sleep(2.0)
+        row["pid_alive_after_wait"] = _pid_alive(pid)
+        row["present_after_wait"] = GPU_LANE_LOCK.exists()
+    else:
+        row["waited_for"] = (
+            None
+            if not row.get("present")
+            else (
+                f"lock present kind={row.get('kind')} pid={pid} alive={alive}; "
+                "not a live holder, not contended"
+            )
+        )
+    row["waited_s"] = round(time.time() - t0, 3)
+    row["parked"] = True
+    row["gpu_authority"] = False
+    return row
+
+
+def hash_trial_substrate() -> dict[str, Any]:
+    """Same freeze POWER_TORTURE_30M used: power_torture.hash_substrate()."""
+    from tools.future.power_torture import hash_substrate
+
+    return hash_substrate()
+
+
+def verify_trial_substrate(before: Mapping[str, Any], after: Mapping[str, Any]) -> dict[str, Any]:
+    from tools.future.power_torture import verify_substrate
+
+    return verify_substrate(before, after)
+
+
+def run_instruments_on_timeline(source: Mapping[str, Any] | str | Path) -> dict[str, Any]:
+    """Degeneracy measure + no-wait classifier over THIS run's timeline.
+
+    The 1h trial failed both. A 30m trial that repeats either fails, and it
+    must not exempt itself from the instruments that caught its predecessor.
+    """
+    from tools.future import autonomy_degeneracy as ad
+    from tools.future import no_wait_orchestration as nwo
+
+    deg = ad.measure(source)
+    nowait = nwo.classify(source)
+    deg_verdict = str(deg.get("verdict") or "")
+    nowait_verdict = str(nowait.get("verdict") or "")
+    return {
+        "degeneracy": {
+            "verdict": deg_verdict,
+            "reason": deg.get("reason"),
+            "degenerate_axes": list(deg.get("degenerate_axes") or []),
+            "elapsed_s": deg.get("elapsed_s"),
+            "n_events": deg.get("n_events"),
+            "instrument": "tools.future.autonomy_degeneracy.measure",
+        },
+        "no_wait": {
+            "verdict": nowait_verdict,
+            "reason": nowait.get("reason"),
+            "n_forcing_intervals": nowait.get("n_forcing_intervals"),
+            "n_slow_intervals": nowait.get("n_slow_intervals"),
+            "n_blocked_intervals": nowait.get("n_blocked_intervals"),
+            "instrument": "tools.future.no_wait_orchestration.classify",
+        },
+        "either_fails": (
+            deg_verdict == "FAIL"
+            or nowait_verdict == "FAIL_NO_WAIT_ORCHESTRATION"
+        ),
+        "exempted": False,
+    }
+
+
+def freeze_and_run_30m(
+    *,
+    timeline_path: Path | None = None,
+    duration_s: int | None = None,
+    park_timeout_s: float = 25 * 60,
+) -> dict[str, Any]:
+    """Freeze the substrate, park the GPU lock, run 30 real minutes, hash after.
+
+    Does not judge. Judging reads the sealed timeline in a separate step so
+    the driver cannot grade itself.
+    """
+    from tools.future import autonomy_run as ar
+
+    dest = Path(timeline_path) if timeline_path else (RECEIPTS / "AUTONOMY_TIMELINE_30m.json")
+    duration = int(duration_s) if duration_s is not None else int(TRIAL_DURATION_S["30m"])
+    gpu = park_gpu_lane_lock(timeout_s=park_timeout_s)
+    before = hash_trial_substrate()
+    started = time.time()
+    result = ar.run("30m", dest, duration)
+    wall_s = time.time() - started
+    after = hash_trial_substrate()
+    substrate = verify_trial_substrate(before, after)
+    if dest.is_file():
+        digest = sha256_file(dest)
+    else:
+        digest = None
+    return {
+        "trial": "30m",
+        "timeline_path": _repo_rel(dest) if dest.is_file() else str(dest),
+        "duration_s_budget": duration,
+        "elapsed_s": result.get("elapsed_s") if isinstance(result, Mapping) else None,
+        "wall_s": round(wall_s, 3),
+        "driver_summary": (
+            {
+                k: result.get(k)
+                for k in (
+                    "launched",
+                    "receipts_ingested",
+                    "refused_on_evidence",
+                    "scars_consulted",
+                    "composed_replan_pairs",
+                    "hypotheses_proposed",
+                    "hypotheses_still_live",
+                    "blocked_lanes_parked",
+                    "resident_model_cognition",
+                    "elapsed_s",
+                    "timeline",
+                )
+                if isinstance(result, Mapping) and k in result
+            }
+            if isinstance(result, Mapping)
+            else None
+        ),
+        "gpu_lane_lock": gpu,
+        "substrate": {
+            "before_digest": before.get("digest"),
+            "after_digest": after.get("digest"),
+            "equal": substrate.get("equal"),
+            "verdict": substrate.get("verdict"),
+            "moved": substrate.get("moved") or [],
+            "n_files": before.get("n_files"),
+            "n_shaders": before.get("n_shaders"),
+            "why": substrate.get("why"),
+        },
+        "timeline_seal_digest": digest,
+        "judged": False,
+        "evidence_class": "STATIC_ONLY",
+        "gpu_authority": False,
+    }
+
+
+def judge_frozen_30m(
+    timeline_path: Path | str,
+    *,
+    run_record: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Judge the sealed 30m timeline. Separate from freeze_and_run_30m."""
+    path = Path(timeline_path)
+    doc = load_timeline(path)
+    verdict = verify("30m", path)
+    four = judge_four_from_sealed(doc)
+    instruments = run_instruments_on_timeline(path)
+    elapsed = int(verdict.get("elapsed_s") or 0)
+    duration = int(verdict.get("duration_s") or TRIAL_DURATION_S["30m"])
+    met_ids = [c["id"] for c in verdict.get("conditions") or [] if c.get("met")]
+    sixteen_unmet = [cid for cid in SIXTEEN_THIRTY_M if cid not in met_ids]
+    four_unmet = list(four.get("unmet") or [])
+    substrate = dict((run_record or {}).get("substrate") or {})
+    substrate_ok = substrate.get("equal") is True
+    if substrate.get("verdict") == "INVALIDATED_BY_SUBSTRATE_MUTATION":
+        substrate_ok = False
+    elapsed_ok = elapsed >= duration
+    staged_used = any(
+        (row.get("quote") or {}).get("staged") is True
+        for row in (four.get("conditions") or {}).values()
+        if isinstance(row, Mapping)
+    )
+    sixteen_of_sixteen = (
+        not sixteen_unmet
+        and elapsed_ok
+        and substrate_ok
+        and not staged_used
+        and four.get("all_four_met") is True
+    )
+    persist = persist_verdict(verdict, path, timeline_doc=doc)
+    no_idle_met = "no_idle_while_work_exists" in met_ids
+    instrument_fail = bool(instruments.get("either_fails"))
+    bits: list[str] = []
+    if sixteen_of_sixteen:
+        bits.append("16/16")
+    else:
+        bits.append(
+            "unmet: "
+            + ", ".join(
+                sixteen_unmet
+                + (["elapsed<30m"] if not elapsed_ok else [])
+                + (["substrate_moved"] if not substrate_ok else [])
+                + (["staged_event"] if staged_used else [])
+                + ([f"four:{u}" for u in four_unmet if u not in sixteen_unmet])
+            )
+        )
+    if not no_idle_met:
+        bits.append("no_idle_while_work_exists unmet")
+    if instrument_fail:
+        bits.append(
+            "instruments FAIL "
+            f"degeneracy={instruments.get('degeneracy', {}).get('verdict')} "
+            f"no_wait={instruments.get('no_wait', {}).get('verdict')}"
+        )
+    overall = (
+        "PASS"
+        if sixteen_of_sixteen and no_idle_met and not instrument_fail and not staged_used
+        else "FAIL"
+    )
+    record = {
+        "schema": "hawking.future.autonomy_trial.frozen_30m.v1",
+        "trial": "30m",
+        "elapsed_s": elapsed,
+        "duration_s": duration,
+        "elapsed_meets_duration": elapsed_ok,
+        "timer_is_not_a_pass": True,
+        "substrate": substrate,
+        "gpu_lane_lock": (run_record or {}).get("gpu_lane_lock"),
+        "timeline_path": _repo_rel(path),
+        "timeline_seal_digest": (run_record or {}).get("timeline_seal_digest")
+        or persist["record"].get("timeline_seal_digest"),
+        "verify": {
+            "verdict": verdict.get("verdict"),
+            "reason": verdict.get("reason"),
+            "unmet": verdict.get("unmet"),
+            "n_conditions": len(verdict.get("conditions") or []),
+            "n_met": len(met_ids),
+            "automatic_failures": [f.get("id") for f in (verdict.get("automatic_failures") or [])],
+        },
+        "sixteen": {
+            "required": list(SIXTEEN_THIRTY_M),
+            "unmet": sixteen_unmet,
+            "n_met": len(SIXTEEN_THIRTY_M) - len(sixteen_unmet),
+            "sixteen_of_sixteen": sixteen_of_sixteen,
+        },
+        "four": four,
+        "instruments": instruments,
+        "staged_event_used": staged_used,
+        "no_idle_while_work_exists": no_idle_met,
+        "overall": overall,
+        "report": "; ".join(bits),
+        "evidence_class": "STATIC_ONLY",
+        "gpu_authority": False,
+        "judged_from": "sealed_timeline",
+        "ignored_runner_summary": True,
+    }
+    existing = load_owned_receipt()
+    existing["frozen_30m_run"] = record
+    by = dict(existing.get("persisted_verdicts_by_trial") or {})
+    by["30m"] = persist["record"]
+    existing["persisted_verdicts_by_trial"] = by
+    existing["last_persisted_verdict"] = persist["record"]
+    existing.setdefault("schema", SCHEMA)
+    existing.setdefault("version", VERSION)
+    existing["evidence_class"] = "STATIC_ONLY"
+    existing["gpu_authority"] = False
+    write_receipt(RECEIPT, existing, RECORDED_BY)
+    return record
+
+
+def run_frozen_30m_trial(
+    *,
+    timeline_path: Path | None = None,
+    duration_s: int | None = None,
+    park_timeout_s: float = 25 * 60,
+) -> dict[str, Any]:
+    """Orchestrate freeze → run → (separate) judge. Driver never grades itself."""
+    dest = Path(timeline_path) if timeline_path else (RECEIPTS / "AUTONOMY_TIMELINE_30m.json")
+    ran = freeze_and_run_30m(
+        timeline_path=dest,
+        duration_s=duration_s,
+        park_timeout_s=park_timeout_s,
+    )
+    judged = judge_frozen_30m(dest, run_record=ran)
+    return {"run": ran, "judgement": judged}
+
+
 def next_workunits(frontier: Mapping[str, Any]) -> list[dict[str, str]]:
     safe = remaining_safe_work(frontier)
     rows = [
@@ -2844,6 +3859,7 @@ def build() -> Path:
     prior = load_owned_receipt()
     persisted_by = dict(prior.get("persisted_verdicts_by_trial") or {})
     last_persisted = prior.get("last_persisted_verdict")
+    frozen_30m = prior.get("frozen_30m_run")
     proofs = prove_negative_controls()
     passing = prove_passing_timelines()
     units = emit_trial_workunits()
@@ -2890,6 +3906,7 @@ def build() -> Path:
         ),
         "verify_persists_verdict": True,
         "receipt_name": RECEIPT,
+        "frozen_30m_run": frozen_30m,
         "persisted_verdicts_by_trial": persisted_by,
         "last_persisted_verdict": last_persisted,
         "frontier_census": {
@@ -2961,6 +3978,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     ap.add_argument("--selftest", action="store_true")
     ap.add_argument("--verify", metavar="TRIAL", choices=list(TRIAL_IDS))
     ap.add_argument("--record", action="store_true")
+    ap.add_argument("--run-frozen", metavar="TRIAL", choices=["30m"])
     ap.add_argument("--trial", choices=list(TRIAL_IDS))
     ap.add_argument("--timeline", type=Path)
     ap.add_argument("--init", action="store_true")
@@ -2971,6 +3989,18 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         if args.record and args.verify:
             _fail("self_grade", "judging is separate from running; do not pass --record and --verify together")
+        if args.run_frozen and (args.record or args.verify):
+            _fail(
+                "self_grade",
+                "--run-frozen already sequences freeze+run then a separate judge; "
+                "do not combine it with --record or --verify",
+            )
+        if args.run_frozen:
+            dest = args.timeline or (RECEIPTS / "AUTONOMY_TIMELINE_30m.json")
+            out = run_frozen_30m_trial(timeline_path=Path(dest))
+            print(json.dumps(out["judgement"], indent=1, sort_keys=True, default=str))
+            overall = str((out.get("judgement") or {}).get("overall") or "FAIL")
+            return 0 if overall == "PASS" else 1
         if args.selftest:
             out = selftest()
             print(out)

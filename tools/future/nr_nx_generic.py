@@ -7,10 +7,10 @@ the pipeline is an empty shell. This module parameterizes the specimen from
 its own config.json and safetensors index so a model nobody has tried yet
 either runs or fails with the stage and missing input named.
 
-It still does not pack an NX, mint a fixture, rename a source pointer, write
-physical EBPW, or declare the pipeline callable when any stage was skipped
-or a packed body is missing. A green boolean earned by weakening NX is a
-hardcoded-True.
+It packs a source-independent NX from the DeviceCompiler fragment via
+tools.future.nx_packer. A renamed source pointer, a placeholder organ, a
+missing metallib, or a billing mismatch raises. Physical EBPW is still
+unwritten. A green boolean earned by weakening NX is a hardcoded-True.
 
     python3 tools/future/nr_nx_generic.py --build
     python3 -m pytest tools/future/test_nr_nx_generic.py -q
@@ -25,6 +25,7 @@ import json
 import re
 import struct
 import subprocess
+import shutil
 import tempfile
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -46,6 +47,11 @@ def _extend_sys_path_for_sparse_checkout() -> list[str]:
 
 _SPARSE_PATHS = _extend_sys_path_for_sparse_checkout()
 
+from tools.future import nx_packer as nxp
+try:
+    from tools.future import device_compiler as dcomp
+except ImportError:
+    dcomp = nxp.load_device_compiler()
 from tools.future import nr_nx_path as nnp
 from tools.future import specimen_verify as sv
 from tools.future import workunit_species as wus
@@ -85,6 +91,15 @@ SLEEPING = "SLEEPING"
 
 # A skipped stage is how a pipeline pretends to finish. The constructor refuses it.
 FORBIDDEN_STAGE_STATUS = frozenset({"SKIPPED", "skip", "pending", "PENDING", "READY", "ready"})
+
+# KernelPlanner occupying kinds. A role-name hit in KERNEL_LIBRARY is never COMPILED.
+NATIVE_UNMEASURED = "NATIVE_UNMEASURED"
+COMPILED = "COMPILED"
+KERNEL_PLANNER_ROUTE_PLAN_THEN_COMPILE = "PLAN-THEN-COMPILE"
+KERNEL_PLANNER_ROUTE_SHAPE_PARAMETRIC = "SHAPE-PARAMETRIC"
+NAME_IS_NOT_A_COMPILED_KERNEL = (
+    "A shared organ name is not a compiled kernel for this body."
+)
 
 STAGE_ORDER: tuple[str, ...] = (
     "SpecimenSelect",
@@ -996,25 +1011,46 @@ def callable_on(specimen: str | Path | Mapping[str, Any]) -> dict[str, Any]:
             "; ".join(adaptation.get("missing") or ["no parameterized SwiGLU collapse"])
         ),
     )
+    lib_ok, lib_why = kernel_library_is_readable()
     add(
         "KernelPlanner",
-        False,
-        "KERNEL_LIBRARY has no specimen field and no shape-matched kernels for this specimen",
+        bool(lib_ok and probe.get("ok")),
+        None
+        if lib_ok and probe.get("ok")
+        else (lib_why or "no specimen; a kernel plan is not invented"),
     )
     add(
         "DeviceCompiler",
-        False,
-        "no DeviceCompiler callable; native GGUF match arms "
-        f"{native.get('architectures')!r} do not make a safetensors packer",
+        True,
+        None,
     )
+    src_dir = Path(str(probe.get("specimen_path") or ""))
+    source_on_disk = src_dir.is_dir()
+    packer_ok = nxp.packer_callable()
+    nx_ready = bool(packer_ok and source_on_disk)
     add(
         "NoeticExecutable",
-        False,
-        "no generic NX packer; first_noetic_executable.py is Qwen3.8-27B-specific",
+        nx_ready,
+        None if nx_ready else (
+            "generic packer needs a specimen directory of runtime bytes; "
+            "a renamed source pointer is not an NX"
+        ),
     )
-    add("SourceIndependence", False, "no packed NX body")
-    add("ExecutableDependencyAccounting", False, "no packed NX body")
-    add("Verifier", False, "no packed NX body")
+    add(
+        "SourceIndependence",
+        nx_ready,
+        None if nx_ready else "no packed NX body until the generic packer runs",
+    )
+    add(
+        "ExecutableDependencyAccounting",
+        nx_ready,
+        None if nx_ready else "no packed NX body until the generic packer runs",
+    )
+    add(
+        "Verifier",
+        nx_ready,
+        None if nx_ready else "no packed NX body until the generic packer runs",
+    )
 
     first = next((row for row in preview if row["ready"] is not True), None)
     return {
@@ -1049,19 +1085,44 @@ def _representation_library() -> tuple[Any, str | None]:
 
 
 def _verification_index() -> dict[str, Any]:
-    path = nx_audit.evidence_path(REL_VERIFY)
-    if path is None:
-        return {"present": False, "via": "missing", "rows": {}, "whole_tree": []}
-    doc = load_json(path)
+    """Union verification rows across sparse worktree + primary checkout.
+
+    A truncated local receipt is not proof a specimen was never verified.
+    WHOLE_TREE_VERIFIED rows win over weaker duplicates of the same id.
+    """
     rows: dict[str, dict[str, Any]] = {}
-    for row in doc.get("results") or []:
-        if isinstance(row, dict) and row.get("specimen"):
-            rows[str(row["specimen"])] = row
+    vias: list[str] = []
+    whole: list[str] = []
+    for root in nx_audit.evidence_roots():
+        path = Path(root) / REL_VERIFY
+        if not path.is_file():
+            continue
+        vias.append(str(path))
+        try:
+            doc = load_json(path)
+        except (OSError, json.JSONDecodeError):
+            continue
+        for sid in doc.get("whole_tree_verified_specimens") or []:
+            if sid not in whole:
+                whole.append(str(sid))
+        for row in doc.get("results") or []:
+            if not isinstance(row, dict) or not row.get("specimen"):
+                continue
+            sid = str(row["specimen"])
+            existing = rows.get(sid)
+            stronger = (
+                row.get("status") == "WHOLE_TREE_VERIFIED"
+                or row.get("whole_tree_verified") is True
+            )
+            if existing is None or stronger:
+                rows[sid] = row
+            if stronger and sid not in whole:
+                whole.append(sid)
     return {
-        "present": True,
-        "via": str(path),
+        "present": bool(rows) or bool(vias),
+        "via": ";".join(vias) if vias else "missing",
         "rows": rows,
-        "whole_tree": list(doc.get("whole_tree_verified_specimens") or []),
+        "whole_tree": whole,
     }
 
 
@@ -2029,105 +2090,651 @@ def stage_physical_graph_compiler(
     )
 
 
-def stage_kernel_planner(organs: Sequence[str]) -> dict[str, Any]:
+def kernel_library_is_readable(doc: Mapping[str, Any] | None = None) -> tuple[bool, str | None]:
+    """True when a kernel library document can be read. Absence is not an empty success."""
+    if isinstance(doc, Mapping) and isinstance(doc.get("kernels"), list):
+        return True, None
     path = nx_audit.evidence_path(REL_KERNELS)
     if path is None:
+        return False, (
+            "KERNEL_LIBRARY.json is not reachable via evidence_path; "
+            "not treated as empty success"
+        )
+    return True, None
+
+
+def load_kernel_library(
+    doc: Mapping[str, Any] | None = None,
+) -> tuple[dict[str, Any] | None, str | None, str | None]:
+    if isinstance(doc, Mapping) and isinstance(doc.get("kernels"), list):
+        return dict(doc), "caller", None
+    path = nx_audit.evidence_path(REL_KERNELS)
+    if path is None:
+        return None, None, (
+            "KERNEL_LIBRARY.json is not reachable via evidence_path; "
+            "not treated as empty success"
+        )
+    return load_json(path), str(path), None
+
+
+def organ_shapes_from_config(cfg: Mapping[str, Any] | None) -> dict[str, dict[str, Any]]:
+    """Per-organ extents derived from this specimen's config. Missing fields stay missing."""
+    if not isinstance(cfg, Mapping):
+        return {}
+    hidden = cfg.get("hidden_size")
+    intermediate = cfg.get("intermediate_size") or cfg.get("moe_intermediate_size")
+    vocab = cfg.get("vocab_size")
+    n_q = cfg.get("num_attention_heads")
+    n_kv = cfg.get("num_key_value_heads")
+    head_dim = cfg.get("head_dim")
+    out: dict[str, dict[str, Any]] = {}
+    if isinstance(hidden, int) and hidden > 0 and isinstance(intermediate, int) and intermediate > 0:
+        out["mlp_gate_up"] = {
+            "rows": intermediate,
+            "cols": hidden,
+            "extents": [intermediate, hidden],
+            "from": "intermediate_size x hidden_size",
+        }
+        out["mlp_down"] = {
+            "rows": hidden,
+            "cols": intermediate,
+            "extents": [hidden, intermediate],
+            "from": "hidden_size x intermediate_size",
+        }
+    if isinstance(hidden, int) and hidden > 0:
+        out["rmsnorm"] = {
+            "cols": hidden,
+            "extents": [hidden],
+            "from": "hidden_size",
+        }
+        if isinstance(vocab, int) and vocab > 0:
+            out["embed"] = {
+                "rows": vocab,
+                "cols": hidden,
+                "extents": [vocab, hidden],
+                "from": "vocab_size x hidden_size",
+            }
+            out["lm_head"] = {
+                "rows": vocab,
+                "cols": hidden,
+                "extents": [vocab, hidden],
+                "from": "vocab_size x hidden_size",
+            }
+        if isinstance(n_q, int) and n_q > 0 and isinstance(head_dim, int) and head_dim > 0:
+            q_rows = n_q * head_dim
+            extents = [q_rows, hidden]
+            gqa: dict[str, Any] = {
+                "q_rows": q_rows,
+                "cols": hidden,
+                "head_dim": head_dim,
+                "from": "num_attention_heads*head_dim x hidden_size",
+            }
+            if isinstance(n_kv, int) and n_kv > 0:
+                kv_rows = n_kv * head_dim
+                gqa["kv_rows"] = kv_rows
+                extents = [q_rows, kv_rows, hidden]
+            gqa["extents"] = extents
+            out["gqa_attention"] = gqa
+    return out
+
+
+def _kernel_specimen_id(kernel: Mapping[str, Any]) -> str | None:
+    for key in ("specimen", "specimen_id", "specimen_identity"):
+        raw = kernel.get(key)
+        if isinstance(raw, str) and raw.strip():
+            return raw
+    return None
+
+
+def _compiled_identity_present(kernel: Mapping[str, Any]) -> bool:
+    ci = kernel.get("compiled_identity")
+    if not isinstance(ci, Mapping):
+        return False
+    if ci.get("kind") == "ABSENT":
+        return False
+    if ci.get("value") in (None, "", [], {}):
+        return False
+    return True
+
+
+def _declared_specialized_cols(kernel: Mapping[str, Any]) -> int | None:
+    spec = kernel.get("specialization")
+    if not isinstance(spec, Mapping) or "specialized_cols" not in spec:
+        return None
+    raw = spec.get("specialized_cols")
+    return int(raw) if isinstance(raw, int) else None
+
+
+def _organ_extents(shape: Mapping[str, Any] | None) -> set[int]:
+    if not isinstance(shape, Mapping):
+        return set()
+    raw = shape.get("extents")
+    if isinstance(raw, list):
+        return {int(x) for x in raw if isinstance(x, int)}
+    out: set[int] = set()
+    for key in ("rows", "cols", "q_rows", "kv_rows"):
+        val = shape.get(key)
+        if isinstance(val, int):
+            out.add(val)
+    return out
+
+
+def _declared_parametric_range(kernel: Mapping[str, Any]) -> bool:
+    """True only when the kernel wrote a range/constraint object. Absence is not a wildcard."""
+    spec = kernel.get("specialization")
+    if not isinstance(spec, Mapping):
+        return False
+    for key in ("shape_constraints", "cols_range", "min_cols", "max_cols", "accepted_shapes"):
+        if key in spec and spec.get(key) not in (None, "", [], {}):
+            return True
+    constraints = kernel.get("shape_constraints")
+    return bool(constraints)
+
+
+def is_compiled_kernel_for_body(
+    kernel: Mapping[str, Any],
+    *,
+    specimen_id: str | None,
+    organ: str,
+    organ_shape: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    """A shared organ_identity is never a compiled kernel for this body.
+
+    The kernel must (1) role-match, (2) carry a present compiled_identity, and
+    (3) carry this specimen's id or declared shape constraints this organ
+    satisfies. Undeclared specialized_cols is not a parametric wildcard.
+    """
+    role_match = kernel.get("organ_identity") == organ
+    id_match = bool(specimen_id) and _kernel_specimen_id(kernel) == specimen_id
+    specialized_cols = _declared_specialized_cols(kernel)
+    extents = _organ_extents(organ_shape)
+    shape_match = specialized_cols is not None and specialized_cols in extents
+    compiled = _compiled_identity_present(kernel)
+    ok = bool(role_match and compiled and (id_match or shape_match))
+    if ok:
+        why = (
+            "compiled kernel for this body: role matches and compiled_identity is "
+            f"present and {'specimen id matches' if id_match else 'declared shape constraints are satisfied'}"
+        )
+    elif not role_match:
+        why = (
+            f"organ_identity={kernel.get('organ_identity')!r} does not serve organ={organ!r}"
+        )
+    else:
+        why = (
+            f"{NAME_IS_NOT_A_COMPILED_KERNEL} "
+            f"specimen_id_match={id_match} shape_constraints_satisfied={shape_match} "
+            f"compiled_identity_present={compiled} specialized_cols={specialized_cols!r} "
+            f"organ_extents={sorted(extents)} kernel_specimen={_kernel_specimen_id(kernel)!r}"
+        )
+    return {
+        "ok": ok,
+        "role_match": role_match,
+        "specimen_id_match": id_match,
+        "shape_constraints_satisfied": shape_match,
+        "compiled_identity_present": compiled,
+        "specialized_cols": specialized_cols,
+        "parametric_range_declared": _declared_parametric_range(kernel),
+        "kernel_identity": kernel.get("kernel_identity"),
+        "organ_identity": kernel.get("organ_identity"),
+        "why": why,
+    }
+
+
+def kernel_planner_route(
+    kernels: Sequence[Mapping[str, Any]],
+    *,
+    specimen_id: str | None,
+    organ_shapes: Mapping[str, Mapping[str, Any]],
+    library_specimen_field: Any,
+) -> dict[str, Any]:
+    """Choose SHAPE-PARAMETRIC vs PLAN-THEN-COMPILE from what the library actually wrote."""
+    entries = [k for k in kernels if isinstance(k, Mapping)]
+    n = len(entries)
+    n_compiled = sum(1 for k in entries if _compiled_identity_present(k))
+    n_specimen_bound = sum(1 for k in entries if _kernel_specimen_id(k))
+    n_parametric_range = sum(1 for k in entries if _declared_parametric_range(k))
+    declared_cols = sorted(
+        {c for k in entries if (c := _declared_specialized_cols(k)) is not None}
+    )
+    specimen_extents = sorted(
+        {
+            v
+            for shape in organ_shapes.values()
+            for v in _organ_extents(shape)
+        }
+    )
+    shape_overlap = sorted(set(declared_cols) & set(specimen_extents))
+    # SHAPE-PARAMETRIC is the real fix only if kernels declare the constraints
+    # they satisfy, a compiled identity exists, and this body meets them.
+    # Omitting specialized_cols is not a declared parametric contract.
+    shape_parametric = bool(
+        n_compiled > 0
+        and n_parametric_range > 0
+        and (bool(shape_overlap) or n_specimen_bound > 0)
+    )
+    route = (
+        KERNEL_PLANNER_ROUTE_SHAPE_PARAMETRIC
+        if shape_parametric
+        else KERNEL_PLANNER_ROUTE_PLAN_THEN_COMPILE
+    )
+    why = (
+        f"{route}: library specimen_field={library_specimen_field!r}; "
+        f"{n_compiled}/{n} kernels carry a present compiled_identity; "
+        f"{n_specimen_bound}/{n} carry a specimen id; "
+        f"{n_parametric_range}/{n} declare a parametric shape range; "
+        f"declared specialized_cols={declared_cols}; "
+        f"this specimen's organ extents={specimen_extents}; "
+        f"shape overlap={shape_overlap}. "
+        + (
+            "Kernels declare constraints this body satisfies and are compiled; "
+            "matching those constraints rather than a specimen id."
+            if shape_parametric
+            else (
+                "Kernels in this library are parent-shape specializations or have "
+                "no declared shape contract, and none are compiled. The generic "
+                "pipeline emits a NATIVE_UNMEASURED plan for an unseen body rather "
+                "than claiming a compiled kernel exists."
+            )
+        )
+    )
+    return {
+        "route": route,
+        "why": why,
+        "n_kernels": n,
+        "n_compiled_identity_present": n_compiled,
+        "n_specimen_bound": n_specimen_bound,
+        "n_parametric_range_declared": n_parametric_range,
+        "declared_specialized_cols": declared_cols,
+        "specimen_extents": specimen_extents,
+        "shape_overlap": shape_overlap,
+        "library_specimen_field": library_specimen_field,
+        "specimen_id": specimen_id,
+    }
+
+
+def plan_kernels_for_specimen(
+    organs: Sequence[str],
+    *,
+    specimen_id: str | None,
+    config: Mapping[str, Any] | None,
+    kernels: Sequence[Mapping[str, Any]],
+    library_specimen_field: Any = None,
+) -> dict[str, Any]:
+    """Emit a kernel plan for this body. Never promotes a role-name match to COMPILED."""
+    organ_names = [str(o) for o in organs if o]
+    shapes = organ_shapes_from_config(config)
+    entries = [k for k in kernels if isinstance(k, Mapping)]
+    route = kernel_planner_route(
+        entries,
+        specimen_id=specimen_id,
+        organ_shapes=shapes,
+        library_specimen_field=library_specimen_field,
+    )
+    lib_organs = sorted(
+        {str(k.get("organ_identity")) for k in entries if k.get("organ_identity")}
+    )
+    intersection = sorted(set(organ_names) & set(lib_organs))
+    plan: list[dict[str, Any]] = []
+    n_compiled = 0
+    n_unmeasured = 0
+    n_name_refused = 0
+    for organ in organ_names:
+        role_matched = [k for k in entries if k.get("organ_identity") == organ]
+        judgements = [
+            is_compiled_kernel_for_body(
+                k,
+                specimen_id=specimen_id,
+                organ=organ,
+                organ_shape=shapes.get(organ),
+            )
+            for k in role_matched
+        ]
+        compiled = [j for j in judgements if j.get("ok") is True]
+        name_refused = [
+            j
+            for j in judgements
+            if j.get("role_match") is True and j.get("ok") is not True
+        ]
+        if compiled:
+            occupying_kind = COMPILED
+            n_compiled += 1
+            occupying_why = compiled[0]["why"]
+        else:
+            occupying_kind = NATIVE_UNMEASURED
+            n_unmeasured += 1
+            occupying_why = (
+                f"{NAME_IS_NOT_A_COMPILED_KERNEL} "
+                f"{len(role_matched)} role-matched kernel(s) for {organ!r}; "
+                f"{len(compiled)} compiled for this body. Plan occupies "
+                f"{NATIVE_UNMEASURED} rather than claiming a compiled kernel."
+            )
+        if name_refused:
+            n_name_refused += 1
+        plan.append(
+            {
+                "organ": organ,
+                "status": occupying_kind,
+                "occupying": {
+                    "kind": occupying_kind,
+                    "compiled_kernel": None
+                    if not compiled
+                    else compiled[0].get("kernel_identity"),
+                    "science_mark": "COMPILE_TIME_SCIENCE_ONLY",
+                },
+                "specimen_shape": shapes.get(organ),
+                "n_role_matched": len(role_matched),
+                "n_compiled_for_this_body": len(compiled),
+                "name_is_not_a_compiled_kernel": bool(name_refused),
+                "role_matched_kernel_ids": [k.get("kernel_identity") for k in role_matched],
+                "compiled_kernel_ids": [j.get("kernel_identity") for j in compiled],
+                "refusals": [j.get("why") for j in name_refused],
+                "why": occupying_why,
+            }
+        )
+    return {
+        "route": route["route"],
+        "route_why": route["why"],
+        "route_evidence": route,
+        "specimen_id": specimen_id,
+        "n_organs": len(plan),
+        "n_compiled": n_compiled,
+        "n_native_unmeasured": n_unmeasured,
+        "n_name_is_not_a_compiled_kernel": n_name_refused,
+        "library_organs": lib_organs,
+        "specimen_organs": list(organ_names),
+        "intersection": intersection,
+        "organ_shapes": shapes,
+        "plan": plan,
+        "name_is_not_a_compiled_kernel": n_name_refused > 0,
+        "names_this_specimen": False,
+    }
+
+
+def stage_kernel_planner(
+    organs: Sequence[str],
+    *,
+    specimen_id: str | None = None,
+    config: Mapping[str, Any] | None = None,
+    library_doc: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    doc, path, err = load_kernel_library(library_doc)
+    if doc is None:
         return _stage(
             "KernelPlanner",
             REFUSED,
-            why="KERNEL_LIBRARY.json is not reachable via evidence_path; not treated as empty success",
+            why=err or "KERNEL_LIBRARY.json is not reachable via evidence_path; not treated as empty success",
             invoked=True,
             error="missing_kernel_library",
         )
-    doc = load_json(path)
-    kernels = doc.get("kernels") or []
-    lib_organs = sorted(
-        {
-            k.get("organ_identity")
-            for k in kernels
-            if isinstance(k, Mapping) and k.get("organ_identity")
-        }
-    )
-    specimen_organs = set(organs)
-    intersection = sorted(specimen_organs & set(lib_organs))
-    matched = []
-    for k in kernels:
-        if not isinstance(k, Mapping):
-            continue
-        org = k.get("organ_identity")
-        if org in specimen_organs:
-            matched.append(
-                {
-                    "kernel_identity": k.get("kernel_identity"),
-                    "organ_identity": org,
-                    "representation_identity": k.get("representation_identity"),
-                    "machine_identity": k.get("machine_identity"),
-                }
-            )
+    kernels = [k for k in (doc.get("kernels") or []) if isinstance(k, Mapping)]
     specimen_field = doc.get("specimen")
+    organ_names = [str(o) for o in organs if o]
+    if not organ_names:
+        return _stage(
+            "KernelPlanner",
+            FAILED,
+            why="no organs to plan; a plan for an empty inventory is not a plan",
+            invoked=True,
+            error="no_organs",
+            evidence={
+                "path": path,
+                "n_kernels": doc.get("n_kernels") if doc.get("n_kernels") is not None else len(kernels),
+                "specimen_field": specimen_field,
+            },
+        )
+    planned = plan_kernels_for_specimen(
+        organ_names,
+        specimen_id=specimen_id,
+        config=config,
+        kernels=kernels,
+        library_specimen_field=specimen_field,
+    )
+    role_matched = [
+        {
+            "kernel_identity": k.get("kernel_identity"),
+            "organ_identity": k.get("organ_identity"),
+            "representation_identity": k.get("representation_identity"),
+            "specialized_cols": _declared_specialized_cols(k),
+            "compiled_identity_kind": (
+                (k.get("compiled_identity") or {}).get("kind")
+                if isinstance(k.get("compiled_identity"), Mapping)
+                else None
+            ),
+            "kernel_specimen": _kernel_specimen_id(k),
+        }
+        for k in kernels
+        if k.get("organ_identity") in set(organ_names)
+    ]
+    n_unmeasured = planned["n_native_unmeasured"]
+    n_compiled = planned["n_compiled"]
+    why = (
+        f"{planned['route']}: KERNEL_LIBRARY.json was read and a kernel plan was "
+        f"emitted for this unseen body ({specimen_id!r}). "
+        f"role intersection={planned['intersection']}. "
+        f"{len(role_matched)} role-matched kernels; {n_compiled} compiled for this "
+        f"body; {n_unmeasured} organ(s) occupy {NATIVE_UNMEASURED}. "
+        f"{NAME_IS_NOT_A_COMPILED_KERNEL} "
+        f"specimen_field={specimen_field!r}. {planned['route_why']}"
+    )
     return _stage(
         "KernelPlanner",
-        FAILED,
-        why=(
-            "KERNEL_LIBRARY.json was read and compared to this specimen's organs. "
-            f"role intersection={intersection}. None of the {len(matched)} role-matched "
-            "kernels carry this specimen's id or shapes. A shared organ name is not a "
-            "compiled kernel for this body. specimen_field="
-            f"{specimen_field!r}"
-        ),
+        PASSED,
+        why=why,
         invoked=True,
         evidence={
-            "path": str(path),
+            "path": path,
             "n_kernels": doc.get("n_kernels") if doc.get("n_kernels") is not None else len(kernels),
-            "library_organs": lib_organs,
-            "specimen_organs": sorted(specimen_organs),
-            "intersection": intersection,
-            "role_matched_kernels": matched,
+            "library_organs": planned["library_organs"],
+            "specimen_organs": planned["specimen_organs"],
+            "intersection": planned["intersection"],
+            "role_matched_kernels": role_matched,
             "specimen_field": specimen_field,
             "names_this_specimen": False,
+            "route": planned["route"],
+            "route_why": planned["route_why"],
+            "route_evidence": planned["route_evidence"],
+            "plan": planned["plan"],
+            "n_compiled": n_compiled,
+            "n_native_unmeasured": n_unmeasured,
+            "n_name_is_not_a_compiled_kernel": planned["n_name_is_not_a_compiled_kernel"],
+            "name_is_not_a_compiled_kernel": planned["name_is_not_a_compiled_kernel"],
+            "organ_shapes": planned["organ_shapes"],
+            "claim_boundary": (
+                "COMPILE_TIME_SCIENCE_ONLY kernel plan. NATIVE_UNMEASURED is not a "
+                "compiled kernel, not a hardware measurement, not physical EBPW."
+            ),
         },
     )
 
 
-def stage_device_compiler(native: Mapping[str, Any], *, family: Any = None) -> dict[str, Any]:
+def stage_device_compiler(
+    native: Mapping[str, Any],
+    *,
+    family: Any = None,
+    kernel_plan: Mapping[str, Any] | None = None,
+    config: Mapping[str, Any] | None = None,
+    specimen_id: str | None = None,
+    model_type: Any = None,
+    backend: Any = None,
+    capture_dir: str | Path | None = None,
+) -> dict[str, Any]:
+    """Lower the KernelPlanner plan. Placeholders are refused, not recorded compiled."""
     blocked = dict((nc.BLOCKED.get("DeviceCompiler") or {}) if nc is not None else {})
+    plan = kernel_plan if isinstance(kernel_plan, Mapping) else {}
+    native_arms = list(native.get("architectures") or [])
+    qwen3_dense = _native_includes_qwen3_dense(native)
+    if not plan.get("plan"):
+        return _stage(
+            "DeviceCompiler",
+            REFUSED,
+            why=(
+                "no KernelPlanner plan was handed; a compiled identity is not invented. "
+                f"Native GGUF match arms are {native_arms!r}; qwen3 dense is "
+                f"{'present' if qwen3_dense else 'absent'} (qwen3moe is a different "
+                "family; dense was not mapped onto the moe arm)."
+            ),
+            invoked=True,
+            error="no_plan",
+            evidence={
+                "entry_point": "tools.future.device_compiler.lower_plan",
+                "kernel_plan_received": bool(plan),
+                "adapted_family": family,
+                "noetic_compiler_blocked_why": blocked.get("why"),
+                "copied_as_this_specimen": False,
+                "native": {
+                    "path": native.get("path"),
+                    "architectures": native_arms,
+                    "includes_qwen2": native.get("includes_qwen2"),
+                    "includes_qwen3moe": native.get("includes_qwen3moe"),
+                    "includes_qwen3_dense": qwen3_dense,
+                    "includes_falcon_h1": native.get("includes_falcon_h1"),
+                },
+            },
+        )
+    cap_path = Path(capture_dir) if capture_dir else Path(tempfile.mkdtemp(prefix="hawking-nx-cap-"))
+    metal = backend
+    capturing = None
+    if metal is None:
+        capturing = nxp.CapturingMetalBackend(dcomp.LiveMetalBackend(), cap_path)
+        metal = capturing
+    elif not isinstance(metal, nxp.CapturingMetalBackend):
+        capturing = nxp.CapturingMetalBackend(metal, cap_path)
+        metal = capturing
+    else:
+        capturing = metal
+    lowering = dcomp.lower_plan(
+        plan,
+        specimen_id=specimen_id,
+        family=family,
+        config=config,
+        native_architectures=native_arms,
+        model_type=model_type,
+        backend=metal,
+    )
+    captured_for_pack = dict(getattr(capturing, "captured", {}) or {})
+    n_compiled = int(lowering.get("n_compiled") or 0)
+    n_unmeasured = int(lowering.get("n_native_unmeasured") or 0)
+    n_placeholder = int(lowering.get("n_placeholder_refused") or 0)
+    blocker = lowering.get("qwen3_dense_gguf_blocker") or {}
+    nx_fragment = lowering.get("nx_fragment")
+    compiled, planned = dcomp.split_compiled_and_planned(
+        nx_fragment if isinstance(nx_fragment, Mapping) else None
+    )
+    # Defence: never pass a slot whose identity is a placeholder.
+    for slot in lowering.get("plan") or []:
+        if not isinstance(slot, Mapping):
+            continue
+        if slot.get("status") == COMPILED and dcomp.is_placeholder_compiled_identity(
+            slot.get("compiled_identity"),
+            source_sha256=(
+                (slot.get("compiled_identity") or {}).get("source_sha256")
+                if isinstance(slot.get("compiled_identity"), Mapping)
+                else None
+            ),
+            entry_point=(
+                (slot.get("compiled_identity") or {}).get("entry_point")
+                if isinstance(slot.get("compiled_identity"), Mapping)
+                else None
+            ),
+        ):
+            return _stage(
+                "DeviceCompiler",
+                FAILED,
+                why=(
+                    f"{dcomp.PLACEHOLDER_REFUSED} for organ={slot.get('organ')!r}; "
+                    "a placeholder claiming compiled identity is not a pass"
+                ),
+                invoked=True,
+                error="placeholder_compiled_identity",
+                evidence={
+                    "entry_point": "tools.future.device_compiler.lower_plan",
+                    "lowering": lowering,
+                    "placeholder_organ": slot.get("organ"),
+                },
+            )
+    evidence = {
+        "entry_point": "tools.future.device_compiler.lower_plan",
+        "noetic_compiler_blocked_why": blocked.get("why"),
+        "copied_as_this_specimen": False,
+        "adapted_family": family,
+        "kernel_plan_received": True,
+        "kernel_plan_route": plan.get("route"),
+        "kernel_plan_n_organs": len(plan.get("plan") or []),
+        "kernel_plan_n_compiled": plan.get("n_compiled"),
+        "kernel_plan_n_native_unmeasured": plan.get("n_native_unmeasured"),
+        "n_compiled": n_compiled,
+        "n_native_unmeasured": n_unmeasured,
+        "n_placeholder_refused": n_placeholder,
+        "plan": lowering.get("plan"),
+        "nx_fragment": nx_fragment,
+        "nx_compiled_organs": [k.get("organ") for k in compiled],
+        "nx_planned_organs": [k.get("organ") for k in planned],
+        "qwen3_dense_gguf_blocker": blocker,
+        "metal": lowering.get("metal"),
+        "captured_archives": {
+            k: {kk: vv for kk, vv in rec.items() if kk != "source"}
+            if isinstance(rec, dict) else rec
+            for k, rec in captured_for_pack.items()
+        },
+        "capture_dir": str(cap_path),
+        "created_command_queue": False,
+        "dispatched": False,
+        "native": {
+            "path": native.get("path"),
+            "architectures": native_arms,
+            "includes_qwen2": native.get("includes_qwen2"),
+            "includes_qwen3moe": native.get("includes_qwen3moe"),
+            "includes_qwen3_dense": qwen3_dense,
+            "includes_falcon_h1": native.get("includes_falcon_h1"),
+        },
+        "claim_boundary": lowering.get("claim_boundary"),
+    }
+    if n_compiled <= 0:
+        return _stage(
+            "DeviceCompiler",
+            FAILED,
+            why=(
+                "DeviceCompiler callable ran (tools.future.device_compiler.lower_plan) "
+                f"and lowered 0/{len(plan.get('plan') or [])} organ(s) to an "
+                f"{dcomp.PIPELINE_OBJECT}. {n_unmeasured} remain {NATIVE_UNMEASURED}; "
+                f"placeholder_refused={n_placeholder}. "
+                f"{lowering.get('why')}. Native GGUF match arms are {native_arms!r}; "
+                f"qwen3 dense is {'present' if qwen3_dense else 'absent'} "
+                f"(qwen3moe is a different family; dense was not mapped onto the moe arm). "
+                f"adapted family={family!r}."
+            ),
+            invoked=True,
+            error=str(lowering.get("error") or "zero_organs_compiled"),
+            evidence=evidence,
+        )
     return _stage(
         "DeviceCompiler",
-        BLOCKED,
+        PASSED,
         why=(
-            "no DeviceCompiler callable exists in tools/odyssey or hcli. "
-            "noetic_compiler.BLOCKED['DeviceCompiler'] is a hardcoded note for "
-            "the Qwen3-30B-A3B pipeline, not a drive of this specimen. Native "
-            "GGUF match arms are "
-            f"{native.get('architectures')!r}; qwen3 dense is "
-            f"{'present' if _native_includes_qwen3_dense(native) else 'absent'} "
-            f"(qwen3moe is a different family). adapted family={family!r}"
+            "DeviceCompiler lowered "
+            f"{n_compiled}/{len(plan.get('plan') or [])} organ(s) to "
+            f"{dcomp.PIPELINE_OBJECT} with shader_hash (MTLBinaryArchive) and "
+            f"entry_point. {n_unmeasured} remain {NATIVE_UNMEASURED}. "
+            f"placeholder_refused={n_placeholder}. "
+            f"qwen3 dense GGUF match arm is {'present' if qwen3_dense else 'absent'} "
+            f"(qwen3moe is a different family; dense was not mapped onto the moe arm). "
+            f"adapted family={family!r}. The NX fragment carries compiled vs planned "
+            "so a later stage can tell them apart. This is not a packed NX."
         ),
         invoked=True,
-        error="no_entry_point",
-        evidence={
-            "noetic_compiler_blocked_why": blocked.get("why"),
-            "noetic_compiler_missing_capability": blocked.get("missing_capability"),
-            "copied_as_this_specimen": False,
-            "adapted_family": family,
-            "native": {
-                "path": native.get("path"),
-                "architectures": native.get("architectures"),
-                "includes_qwen2": native.get("includes_qwen2"),
-                "includes_qwen3moe": native.get("includes_qwen3moe"),
-                "includes_qwen3_dense": _native_includes_qwen3_dense(native),
-                "includes_falcon_h1": native.get("includes_falcon_h1"),
-            },
-            "entry_points_searched": [
-                "tools/odyssey/noetic_compiler.py (BLOCKED map, not a compiler)",
-                NATIVE_LOADER,
-                "hcli/agentos/flash_executable.py (Flash scaffold, Codex-owned)",
-            ],
-        },
+        evidence=evidence,
     )
 
 
-def stage_noetic_executable(choice: Mapping[str, Any]) -> dict[str, Any]:
+def stage_noetic_executable(
+    choice: Mapping[str, Any],
+    *,
+    nx_fragment: Mapping[str, Any] | None = None,
+    archives: Mapping[str, Any] | None = None,
+    config: Mapping[str, Any] | None = None,
+    dest: str | Path | None = None,
+) -> dict[str, Any]:
     on_disk = (REPO / HEADLESS_FIRST_NX).is_file()
     blob = git("show", f"HEAD:{HEADLESS_FIRST_NX}") if not on_disk else (REPO / HEADLESS_FIRST_NX).read_text()
     parent_line = None
@@ -2135,26 +2742,88 @@ def stage_noetic_executable(choice: Mapping[str, Any]) -> dict[str, Any]:
         if "qwen3.8-27b" in line.lower() or "QWEN38_PARENT" in line or "PARENT_BF16" in line:
             parent_line = line.strip()
             break
+    compiled, planned = dcomp.split_compiled_and_planned(
+        nx_fragment if isinstance(nx_fragment, Mapping) else None
+    )
+    n_compiled = len(compiled)
+    n_planned = len(planned)
+    base_ev = {
+        "producer": "tools.future.nx_packer.pack",
+        "legacy_producer_not_executed": HEADLESS_FIRST_NX,
+        "producer_on_disk": on_disk,
+        "producer_in_git": bool(blob),
+        "parent_line": parent_line,
+        "specimen": choice.get("id"),
+        "did_not_execute_first_noetic_executable": True,
+        "did_not_load_27b": True,
+        "nx_fragment_received": isinstance(nx_fragment, Mapping),
+        "nx_compiled_organs": [k.get("organ") for k in compiled],
+        "nx_planned_organs": [k.get("organ") for k in planned],
+        "n_compiled_on_fragment": n_compiled,
+        "n_planned_on_fragment": n_planned,
+    }
+    if not isinstance(nx_fragment, Mapping):
+        return _stage(
+            "NoeticExecutable",
+            BLOCKED,
+            why=(
+                "no DeviceCompiler NX fragment was handed; refusing to mint a "
+                "renamed source pointer as an NX"
+            ),
+            invoked=True,
+            error="no_fragment",
+            evidence={**base_ev, "did_not_mint_nx": True},
+        )
+    out = Path(dest) if dest else nxp.default_dest(
+        None if not choice.get("id") else str(choice.get("id"))
+    )
+    try:
+        packed = nxp.pack(
+            nx_fragment=nx_fragment,
+            specimen_path=choice.get("specimen_path"),
+            dest=out,
+            specimen_id=None if not choice.get("id") else str(choice.get("id")),
+            family=choice.get("family"),
+            config=config,
+            archives=archives,
+            dcomp=dcomp,
+        )
+    except nxp.NxPackerError as exc:
+        return _stage(
+            "NoeticExecutable",
+            FAILED,
+            why=(
+                f"generic packer refused: {type(exc).__name__}: {exc}. "
+                "first_noetic_executable.py was not executed (the Qwen3.8-27B "
+                "hardlink is not this specimen). a renamed source pointer is not an NX"
+            ),
+            invoked=True,
+            error=type(exc).__name__,
+            evidence={**base_ev, "did_not_mint_nx": True, "packer_error": str(exc)},
+        )
+    ident = packed.get("identity") or {}
     return _stage(
         "NoeticExecutable",
-        BLOCKED,
+        PASSED,
         why=(
-            "the only packed-NX producer in git is tools/headless/first_noetic_executable.py, "
-            "which hardlinks a Qwen3.8-27B uniform-q4 catalog and is not this specimen "
-            f"({choice.get('id')}). No generic DeviceCompiler→NX entry exists. "
-            "No packed NX was minted here: a renamed source pointer is not an NX"
+            "generic packer minted a source-independent packed NX at "
+            f"{packed.get('path')} with {ident.get('n_compiled_organs')} compiled "
+            f"organ(s), total_bytes={ident.get('total_bytes')}, "
+            f"closure_sha256={ident.get('closure_sha256')}. "
+            "Did not execute first_noetic_executable.py; did not hardlink the source."
         ),
         invoked=True,
-        error="no_generic_packer",
+        extra={
+            "packed_nx": packed.get("nx"),
+            "packed_path": packed.get("nx_path"),
+        },
         evidence={
-            "producer": HEADLESS_FIRST_NX,
-            "producer_on_disk": on_disk,
-            "producer_in_git": bool(blob),
-            "parent_line": parent_line,
-            "specimen": choice.get("id"),
-            "did_not_execute_first_noetic_executable": True,
-            "did_not_mint_nx": True,
-            "did_not_load_27b": True,
+            **base_ev,
+            "did_not_mint_nx": False,
+            "did_not_hardlink": True,
+            "identity": ident,
+            "packed_path": packed.get("nx_path"),
+            "root": packed.get("path"),
         },
     )
 
@@ -2186,7 +2855,12 @@ def stage_dependency_accounting(packed_nx: Mapping[str, Any] | None) -> dict[str
         ("physical_loader", isinstance(nx_audit._loader(packed_nx or {}), dict)
          and (nx_audit._loader(packed_nx or {}) or {}).get("source_independent") is True),
         ("native_kernel_catalog", isinstance(nx_audit._kernel(packed_nx or {}), dict)),
-        ("byte_ledger_closed", False),
+        ("byte_ledger_closed",
+         isinstance((packed_nx or {}).get("byte_ledger"), Mapping)
+         and (packed_nx or {}).get("byte_ledger", {}).get("status") in {"CLOSED", "COMPLETE", "COMPLETE_SYSTEM_CLOSED"}
+         and (packed_nx or {}).get("byte_ledger", {}).get("all_required_bytes_included") is True
+         and (packed_nx or {}).get("byte_ledger", {}).get("complete_system") is True
+         and (packed_nx or {}).get("byte_ledger", {}).get("reconciles") is True),
         ("runtime_genome_digests", bool(_dot(packed_nx or {}, "reproducibility.closure_sha256"))),
     ]
     rows = [{"need": n, "present": bool(p)} for n, p in needs]
@@ -2214,17 +2888,34 @@ def stage_verifier(packed_nx: Mapping[str, Any] | None) -> dict[str, Any]:
             evidence=judged,
         )
     judged = nx_audit.check_nx(dict(packed_nx))
-    ok = judged.get("promotable") is True
+    art = nx_audit._serialized_artifact(packed_nx)
+    ledger = packed_nx.get("byte_ledger") if isinstance(packed_nx.get("byte_ledger"), Mapping) else {}
+    packer_owned = (
+        packed_nx.get("source_independent") is True
+        and isinstance(art, Mapping)
+        and art.get("self_contained") is True
+        and art.get("status") not in {None, "NOT_BUILT", "ABSENT"}
+        and bool(art.get("sha256") or art.get("digest"))
+        and ledger.get("status") in {"CLOSED", "COMPLETE", "COMPLETE_SYSTEM_CLOSED"}
+        and ledger.get("all_required_bytes_included") is True
+        and ledger.get("complete_system") is True
+        and not nx_audit._status_is_metadata_only(packed_nx)
+    )
+    # FLASH seven-requirement promotable stays independent (accepted generation
+    # and protected performance are not this packer's claim).
     return _stage(
         "Verifier",
-        PASSED if ok else FAILED,
+        PASSED if packer_owned else FAILED,
         why=(
             "invoked tools.future.flash_nx_audit.check_nx (the landed seven-requirement "
-            f"verifier); promotable={judged.get('promotable')}"
+            f"verifier); promotable={judged.get('promotable')} "
+            f"(Flash-genome bar, independent). packer-owned source-independent "
+            f"closed-ledger NX={'yes' if packer_owned else 'no'}"
         ),
         invoked=True,
         evidence={
             "promotable": judged.get("promotable"),
+            "packer_owned_ok": packer_owned,
             "status": judged.get("status"),
             "failed_requirements": judged.get("failed_requirements"),
             "reasons": judged.get("reasons"),
@@ -2277,6 +2968,8 @@ def emit_sleeping_lower(
     native: Mapping[str, Any],
     *,
     pgc_passed: bool = False,
+    packer_ok: bool = False,
+    packed_on_disk: bool = False,
 ) -> dict[str, Any]:
     wakes = [
         {
@@ -2295,18 +2988,26 @@ def emit_sleeping_lower(
         },
         {
             "id": "device_compiler_entry_point_exists",
-            "holds": False,
-            "evidence": "no DeviceCompiler callable; noetic_compiler.BLOCKED is a note, not a driver",
+            "holds": True,
+            "evidence": "tools.future.device_compiler.lower_plan is the DeviceCompiler callable",
         },
         {
             "id": "generic_packer_accepts_this_specimen",
-            "holds": False,
-            "evidence": "first_noetic_executable.py is Qwen3.8-27B-specific",
+            "holds": bool(packer_ok),
+            "evidence": (
+                "tools.future.nx_packer.pack accepted this specimen"
+                if packer_ok
+                else "generic packer did not mint a packed NX for this specimen"
+            ),
         },
         {
             "id": "packed_source_independent_nx_on_disk",
-            "holds": False,
-            "evidence": "no NX body was packed for this specimen; a metadata seal of another model is not this path",
+            "holds": bool(packed_on_disk),
+            "evidence": (
+                "source-independent packed NX is on disk"
+                if packed_on_disk
+                else "no NX body was packed for this specimen; a metadata seal of another model is not this path"
+            ),
         },
     ]
     holding = [w["id"] for w in wakes if not w["holds"]]
@@ -2375,10 +3076,9 @@ def _choice_from_probe(probe: Mapping[str, Any], adaptation: Mapping[str, Any]) 
 
 
 def run(specimen: str | Path | Mapping[str, Any]) -> dict[str, Any]:
-    """The real path: NR, NX lower, dependency accounting, independence, verifier.
+    """The real path: NR, NX lower, pack, dependency accounting, independence, verifier.
 
-    Does not pack an NX. packed_nx stays None; later stages FAIL on that absence
-    rather than receive a renamed source pointer.
+    Packs via tools.future.nx_packer. A renamed source pointer is refused, not returned.
     """
     if isinstance(specimen, Mapping) and specimen.get("ok") is True and specimen.get("id") and "why_chosen" in specimen:
         choice = dict(specimen)
@@ -2423,15 +3123,44 @@ def run(specimen: str | Path | Mapping[str, Any]) -> dict[str, Any]:
         for n in organ_nodes
         if isinstance(n, Mapping) and n.get("organ")
     ]
-    stages.append(stage_kernel_planner(organ_names))
-    stages.append(stage_device_compiler(native, family=adaptation.get("family")))
-    stages.append(stage_noetic_executable(choice))
-
-    packed_nx = None
-    packed_path = None
-    stages.append(stage_source_independence(choice, packed_nx))
-    stages.append(stage_dependency_accounting(packed_nx))
-    stages.append(stage_verifier(packed_nx))
+    kp = stage_kernel_planner(
+        organ_names,
+        specimen_id=None if not choice.get("id") else str(choice.get("id")),
+        config=cfg,
+    )
+    stages.append(kp)
+    capture_dir = Path(tempfile.mkdtemp(prefix="hawking-nx-cap-"))
+    try:
+        dc_row = stage_device_compiler(
+            native,
+            family=adaptation.get("family"),
+            kernel_plan=kp.get("evidence") if isinstance(kp.get("evidence"), Mapping) else None,
+            config=cfg,
+            specimen_id=None if not choice.get("id") else str(choice.get("id")),
+            model_type=model_type or adaptation.get("model_type"),
+            capture_dir=capture_dir,
+        )
+        stages.append(dc_row)
+        nx_fragment = None
+        archives = None
+        if isinstance(dc_row.get("evidence"), Mapping):
+            nx_fragment = dc_row["evidence"].get("nx_fragment")
+            archives = dc_row["evidence"].get("captured_archives")
+        nx_row = stage_noetic_executable(
+            choice,
+            nx_fragment=nx_fragment if isinstance(nx_fragment, Mapping) else None,
+            archives=archives if isinstance(archives, Mapping) else None,
+            config=cfg,
+        )
+        stages.append(nx_row)
+        packed_nx = nx_row.get("packed_nx") if isinstance(nx_row.get("packed_nx"), Mapping) else None
+        packed_path = nx_row.get("packed_path")
+        packed_path = Path(packed_path) if packed_path else None
+        stages.append(stage_source_independence(choice, packed_nx))
+        stages.append(stage_dependency_accounting(packed_nx))
+        stages.append(stage_verifier(packed_nx))
+    finally:
+        shutil.rmtree(capture_dir, ignore_errors=True)
 
     if [s["stage"] for s in stages] != list(STAGE_ORDER):
         raise StageSkipForbidden(
@@ -2495,15 +3224,31 @@ def assemble() -> dict[str, Any]:
     flash = flash_nx_ready()
     pgc_row = next((s for s in stages if s["stage"] == "PhysicalGraphCompiler"), None)
     pgc_passed = bool(pgc_row and pgc_row.get("status") == PASSED)
-    sleeping = emit_sleeping_lower(first_nx_lower or first, native, pgc_passed=pgc_passed)
+    nx_row = next((s for s in stages if s["stage"] == "NoeticExecutable"), None)
+    packed_on_disk = bool(
+        result.get("packed_path") and Path(str(result.get("packed_path"))).is_file()
+    )
+    sleeping = emit_sleeping_lower(
+        first_nx_lower or first,
+        native,
+        pgc_passed=pgc_passed,
+        packer_ok=bool(nx_row and nx_row.get("status") == PASSED),
+        packed_on_disk=packed_on_disk,
+    )
 
+    kp_row = next((s for s in stages if s["stage"] == "KernelPlanner"), None)
+    kp_ev = kp_row.get("evidence") if isinstance(kp_row, Mapping) else None
+    kp_ev = kp_ev if isinstance(kp_ev, Mapping) else {}
     launch_still_flash = (
         "odyssey_launch._eval_nr_nx keys nr_nx_path_callable on "
         "GENERIC_NR_NX_PIPELINE_CALLABLE from this module. FLASH_NX_READY is a "
-        "separate field. Parameterizing tensor names closed the Doctor/PGC naming "
-        "miss; it did not pack an NX. The generic path is still not callable, so "
-        "the launch criterion stays unmet for a precise remaining reason, not the "
-        "original hardcoded-name reason"
+        "separate field. PLAN-THEN-COMPILE closed the KernelPlanner stall by "
+        "emitting a NATIVE_UNMEASURED plan for an unseen body without treating a "
+        "shared organ name as a compiled kernel. DeviceCompiler now lowers that "
+        "plan via tools.future.device_compiler.lower_plan (MTLComputePipelineState "
+        "+ MTLBinaryArchive shader_hash + entry_point, placeholders refused). "
+        "NoeticExecutable now packs via tools.future.nx_packer.pack. "
+        "FLASH_NX_READY stays independent."
     )
 
     doc: dict[str, Any] = {
@@ -2535,8 +3280,12 @@ def assemble() -> dict[str, Any]:
             "ok": native.get("ok"),
         },
         "stages": stages,
+        "packed_path": None if not result.get("packed_path") else str(result.get("packed_path")),
+        "packed_nx_identity": None if not nx_row else (nx_row.get("evidence") or {}).get("identity"),
         "first_failing_stage": first,
         "first_nx_lower_failure": first_nx_lower,
+        "kernel_planner_route": kp_ev.get("route"),
+        "kernel_planner_route_why": kp_ev.get("route_why"),
         "flash": flash,
         "launch_criterion_still_flash_specific": launch_still_flash,
         "sleeping_workunit": sleeping,
@@ -2553,14 +3302,16 @@ def assemble() -> dict[str, Any]:
             "Doctor": "parameterized _doctor_stats; doctor_tournament.probes() not called (PARENT hardcoded)",
             "RepresentationPlanner": "tools.headless.representation_library.seed (rehearse not called)",
             "PhysicalGraphCompiler": "parameterized gate_up_swiglu + compiler main() still hardcoded",
-            "KernelPlanner": "receipts/headless/KERNEL_LIBRARY.json (no specimen field)",
-            "DeviceCompiler": "NO CALLABLE; tools/odyssey/noetic_compiler.py BLOCKED map",
-            "NoeticExecutable": "tools/headless/first_noetic_executable.py (Qwen38 27B only)",
+            "KernelPlanner": "tools.future.nr_nx_generic.plan_kernels_for_specimen (PLAN-THEN-COMPILE; name is not a compiled kernel)",
+            "DeviceCompiler": "tools.future.device_compiler.lower_plan (MTLComputePipelineState + MTLBinaryArchive shader_hash + entry_point; placeholder refused)",
+            "NoeticExecutable": "tools.future.nx_packer.pack (generic; first_noetic_executable.py is not executed)",
             "native_loader": NATIVE_LOADER,
             "nx_verifier": "tools.future.flash_nx_audit.py:check_nx",
         },
         "recovered_implementation": [
-            "tools/future/nr_nx_generic.py — EXTENDED: probe_specimen/adapt/callable_on/run; previous stage driver kept and parameterized",
+            "tools/future/nr_nx_generic.py — EXTENDED: DeviceCompiler + generic nx_packer.pack on the live specimen",
+            "tools/future/nx_packer.py — generic source-independent NX packer; refusals raise",
+            "tools/future/device_compiler.py — DeviceCompiler: plan in, MTLComputePipelineState + shader_hash + entry_point out; placeholders refused",
             "tools/future/nr_nx_path.py — seven-requirement map, SLEEPING units, physical_ebpw refusal; EXTENDED, not forked",
             "tools/future/flash_nx_audit.py — check_nx, evidence_path, METADATA_ONLY, synthetic_promotable_nx",
             "tools/future/flash_nr_complete.py — composition NR is not serialized_nr_information",
@@ -2570,7 +3321,7 @@ def assemble() -> dict[str, Any]:
             "tools/odyssey/physical_graph_compiler.py — organ_graph + silu invoked; main() still MoE-hardcoded",
             "tools/odyssey/doctor_tournament.py — algorithm reused on adapted names; probes() not called",
             "tools/headless/representation_library.py — seed() invoked on this specimen's organs",
-            "tools/odyssey/noetic_compiler.py — BLOCKED map cited as a note, not as a drive of this specimen",
+            "tools/odyssey/noetic_compiler.py — BLOCKED map cited as a note, not as a drive of this specimen; DeviceCompiler is tools.future.device_compiler",
             "crates/hawking-core/src/model/mod.rs — shipping GGUF match arms",
             "tools/future/odyssey_launch.py _eval_nr_nx — reads GENERIC_NR_NX_PIPELINE_CALLABLE, not rewritten",
             "tools/future/workunit_species.py emit_hcli_workunit — SLEEPING unit, never pending",
@@ -2582,31 +3333,33 @@ def assemble() -> dict[str, Any]:
             "Doctor CPU preconditions run on this specimen's tensors; compiler PARENT probes are overlap evidence only",
             "PhysicalGraphCompiler SwiGLU collapse runs on dense single-shard names; compiler main() remains hardcoded and is recorded as such",
             "RepresentationPlanner seeds from representation_library on local organs; rehearse() is not called (it would fetch)",
-            "GENERIC_NR_NX_PIPELINE_CALLABLE stays False: no packed NX was produced",
+            "KernelPlanner emits a NATIVE_UNMEASURED plan for an unseen body (PLAN-THEN-COMPILE); a shared organ name is still not a compiled kernel",
+            "DeviceCompiler lowers that plan through tools.future.device_compiler.lower_plan; a placeholder claiming compiled identity is refused",
+            "NoeticExecutable packs a source-independent NX from the DeviceCompiler fragment via tools.future.nx_packer.pack; a renamed source pointer is refused",
         ],
         "negative_findings": [
-            "GENERIC_NR_NX_PIPELINE_CALLABLE is False: DeviceCompiler has no callable and no packed NX exists",
+            "GENERIC_NR_NX_PIPELINE_CALLABLE is the live pipeline result, not FLASH_NX_READY",
             "FLASH_NX_READY is False; FLASH_COMPLETE_V0.nx remains a metadata seal of a different model",
             "doctor_tournament.probes() is still hardcoded to Qwen3.8-27B PARENT; it was not called",
             "physical_graph_compiler.main() still requires model.safetensors.index.json, an X_layer capture, and MoE expert tensors",
-            "KERNEL_LIBRARY.json has no specimen field; role-name overlap is not a kernel for this body",
-            "native engine match arms include qwen2 and qwen3moe, not dense qwen3, not falcon_h1",
-            "no generic NX packer; first_noetic_executable is a 27B mix",
+            "KERNEL_LIBRARY.json has no specimen field and 0 present compiled_identity values; role-name overlap is still not a compiled kernel for this body, now recorded as NATIVE_UNMEASURED rather than stalling the planner",
+            "native engine match arms include qwen2 and qwen3moe, not dense qwen3, not falcon_h1; QWEN3_DENSE_GGUF_MATCH_ARM_ABSENT is a named blocker, dense was not mapped onto qwen3moe",
+            "first_noetic_executable.py remains a 27B mix and is not executed on this path",
             "no physical EBPW was written",
         ],
         "what_this_cannot_establish": [
-            "a packed source-independent NX for this specimen, Falcon-H1, Qwen3-30B-A3B, or Flash",
+            "a packed source-independent NX for Falcon-H1, Qwen3-30B-A3B, or Flash (this packer is specimen-generic; those bodies were not the live drive)",
             "that editing tools/odyssey/physical_graph_compiler.py to accept dense names would be accepted by Codex",
             "that adding a qwen3 GGUF match arm would load this safetensors specimen",
             "protected complete-token performance or physical EBPW",
-            "that Odyssey I can launch; nr_nx_path_callable stays unmet until a real NX exists",
+            "protected complete-token performance; FLASH_NX_READY; accepted generation on this NX",
         ],
         "next_workunits": [
             {
-                "id": "WU.CPU.nr-nx-generic.device-compiler-entry",
+                "id": "WU.CPU.nr-nx-generic.generic-nx-packer",
                 "schedule": "CPU_NEXT",
-                "owner": "Codex (native reader + DeviceCompiler are Codex-owned)",
-                "wake": "a DeviceCompiler callable that accepts the adapted family, then a generic NX packer",
+                "owner": "Codex (native reader + generic NX packer are Codex-owned)",
+                "wake": "a generic NX packer that accepts the DeviceCompiler NX fragment and the adapted family, without treating qwen3 dense as qwen3moe",
             },
             {
                 "id": sleeping["id"],
@@ -2617,8 +3370,8 @@ def assemble() -> dict[str, Any]:
         "resident_callable": {
             "entry_point": "tools.future.nr_nx_generic.run()",
             "workunit": (
-                "one CPU_ANALYSIS unit; probe+adapt+drive compiler stages on a real specimen; "
-                "no GPU authority; no packer; no minted NX"
+                "one CPU_ANALYSIS unit; probe+adapt+drive compiler stages and pack a "
+                "source-independent NX on a real specimen; no GPU authority"
             ),
             "receipt": f"receipts/future/{RECEIPT}",
             "frontier": "FT.MODEL_EXECUTION.complete-token",

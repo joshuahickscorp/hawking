@@ -1,0 +1,1351 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T09:24:08Z",
+  "recorded_by": "tools/future/succession_trial.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "built": true,
+ "candidate": {
+  "architectures": [
+   "Qwen3ForCausalLM"
+  ],
+  "bytes": 1519280128,
+  "census": {
+   "census_path": "receipts/future/evidence/HCLI_MODELLAKE_FLASH_CENSUS.json",
+   "census_present": true,
+   "in_specimens_entries": false,
+   "in_verified_receipts": true,
+   "n_specimens_entries": 5,
+   "note": "the Flash census specimens.entries list is a short snapshot and does not include this slug; verified_receipts names the manifest",
+   "specimens_entries_truncated": false,
+   "verified_receipt": {
+    "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-0.6B@c1899de289a0.json",
+    "n_files": 10,
+    "n_sha256_verified": 2,
+    "n_size_only_verified": 8,
+    "repo": "Qwen/Qwen3-0.6B",
+    "resolved_sha": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0"
+   }
+  },
+  "declared_params_readme": "0.6B",
+  "flash_nx_ready": {
+   "present": true,
+   "raw": false,
+   "source": "receipts/future/NR_NX_GENERIC.json",
+   "value": false
+  },
+  "header_params": 751632384,
+  "in_specimens_listing": true,
+  "independent_small_files_hashed": 9,
+  "independent_small_files_matched": 9,
+  "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-0.6B@c1899de289a0.json",
+  "n_files": 10,
+  "n_sha256_verified": 2,
+  "n_size_only_verified": 8,
+  "on_disk": true,
+  "rejected": [
+   {
+    "FLASH_NX_READY": false,
+    "FLASH_NX_READY_source": "receipts/future/NR_NX_GENERIC.json",
+    "chosen": false,
+    "in_partial": false,
+    "in_specimens": true,
+    "manifest_present": true,
+    "n_safetensor_shards_on_disk": 131,
+    "slug": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "why_not": "FLASH_NX_READY is False; a concurrent lane is still verifying this body. An incomplete Flash-Next is not a loadable candidate for succession today."
+   },
+   {
+    "chosen": false,
+    "in_partial": [
+     "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b"
+    ],
+    "in_specimens": [],
+    "slug_prefix": "Qwen--Qwen3-Coder-30B-A3B",
+    "why_not": "Qwen3-Coder-30B-A3B is downloading into ModelLake partial/; it is not a published specimens/ body this trial can load."
+   }
+  ],
+  "repo": "Qwen/Qwen3-0.6B",
+  "resolved_sha": "c1899de289a04d12100db370d81485cdf75e47ca",
+  "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+  "runtime_loaded": false,
+  "slug": "Qwen--Qwen3-0.6B@c1899de289a0",
+  "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+  "synthetic": false,
+  "why_chosen": "Qwen3-0.6B is a published ModelLake specimen with a real manifest, real resolved_sha, per-file hashing counts, source files on disk, and a parseable safetensors header. Flash-Next is FLASH_NX_READY=False. Coder-30B is only in partial/. A small real body that the judge REFUSEs is the honest candidate, not a synthesised passer."
+ },
+ "child": {
+  "create_child_stamped_synthetic": true,
+  "id": "child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+  "lineage": {
+   "behavioral_changes": [
+    "specimen substitution; architecture family held",
+    "declared scale 0.6B vs sealed 27B incumbent; not a capability eval"
+   ],
+   "capability_deltas": {
+    "candidate_header_params": 751632384,
+    "declared": [
+     "candidate header_params=751632384",
+     "incumbent parent_params=26895998464"
+    ],
+    "evidence_class": "STATIC_ONLY",
+    "incumbent_parent_params": 26895998464,
+    "measured": null,
+    "not_a_measurement": true
+   },
+   "code_lineage": [
+    "parent code path; different weight/specimen identity",
+    "specimen Qwen--Qwen3-0.6B@c1899de289a0 @ c1899de289a04d12100db370d81485cdf75e47ca"
+   ],
+   "data_lineage": {
+    "independent_large_files_not_rehashed": 1,
+    "independent_small_files_hashed": 9,
+    "independent_small_files_matched": 9,
+    "manifest_hash_counts": {
+     "n_files": 10,
+     "n_sha256_verified": 2,
+     "n_size_only_verified": 8,
+     "source": "ModelLake manifest"
+    },
+    "note": "teacher capture is a physical/Codex concern; not estimated here",
+    "resolved_sha": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "teacher_capture": "UNKNOWN"
+   },
+   "parent_nx": "qwen3.8-27b-sealed-3.14",
+   "physical_deltas": {
+    "axes": [
+     "accepted_tps",
+     "active_bytes",
+     "cold_start",
+     "ebpw",
+     "resident_ram",
+     "restart",
+     "token_ns",
+     "warm_start"
+    ],
+    "bench_state": "UNKNOWN",
+    "evidence_class": "STATIC_ONLY",
+    "note": "sidecar has no GPU; physical deltas are not estimated",
+    "state": "UNKNOWN"
+   },
+   "representation_lineage": {
+    "architecture": "Qwen3ForCausalLM",
+    "declared_params_readme": "0.6B",
+    "header_params": 751632384,
+    "hidden_size": 1024,
+    "model_type": "qwen3",
+    "note": "header_params is the safetensors header numel. tie_word_embeddings is true so embed and lm_head both appear; this is not a bench.",
+    "num_attention_heads": 16,
+    "num_hidden_layers": 28,
+    "tie_word_embeddings": true,
+    "vocab_size": 151936
+   },
+   "source_model_lineage": {
+    "acquired_at": "2026-08-25T04:14:38Z",
+    "bytes": 1519280128,
+    "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-0.6B@c1899de289a0.json",
+    "method": "different_specimen",
+    "n_files": 10,
+    "n_sha256_verified": 2,
+    "n_size_only_verified": 8,
+    "on_disk": true,
+    "parents": [
+     "qwen3.8-27b-sealed-3.14"
+    ],
+    "repo": "Qwen/Qwen3-0.6B",
+    "resolved_sha": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+    "synthetic": false
+   },
+   "transformation": "different specimen under the Qwen3 family; incumbent remains the sealed Qwen3.8-27B. Architecture family held; weights replaced."
+  },
+  "lineage_fields": [
+   "parent_nx",
+   "transformation",
+   "source_model_lineage",
+   "representation_lineage",
+   "code_lineage",
+   "behavioral_changes",
+   "data_lineage",
+   "capability_deltas",
+   "physical_deltas"
+  ],
+  "method": "different_specimen",
+  "parent_id": "qwen3.8-27b-sealed-3.14",
+  "role": "shadow"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "counts": {
+  "cloned_workunits": 26,
+  "physical_axes": 8,
+  "qualification_axes": 18,
+  "shadow_refusals": 4,
+  "sleeping_work_units": 8,
+  "work_units": 12
+ },
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "end-to-end succession exercised on a REAL ModelLake specimen (Qwen3-0.6B @ c1899de289a0), not a synthetic child",
+  "nine-field lineage populated from the real manifest (repo, resolved_sha, manifest path, hash counts)",
+  "shadow cloned live HCLI WorkUnits; four watched refusals fired live on this child",
+  "qualification on the contract axes; physical stay UNKNOWN; child below incumbent declared-param floor",
+  "independent judge REFUSE with the declared parameter counts that forced it",
+  "incumbent cannot promote itself, proven on this real Qwen27 incumbent",
+  "Qwen27 restorable-now exercised on this run (checkpoint, stop, rollback, verify_restorable)",
+  "Flash-Next and Coder-30B inspected and rejected with disk reasons"
+ ],
+ "gpu_authority": false,
+ "head": "023420e5926e1d744f4d632b481660bcaec90ace",
+ "incumbent": {
+  "artifact_path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "config_digest": "2979da8f8d30d0965ef6629b6df47e82cf5a7bb99c9ffc6531fb308292c4cf7e",
+  "fallback_status": "SEALED",
+  "id": "qwen3.8-27b-sealed-3.14",
+  "parent_params": 26895998464,
+  "residency_status": "CURRENT_NONFINAL_HCLI_WORKER",
+  "role": "CURRENT_NONFINAL_HCLI_WORKER",
+  "synthetic": false
+ },
+ "judge": {
+  "candidate_id": "child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+  "dominating_dimension": "capability",
+  "dominating_dimensions": [
+   "capability"
+  ],
+  "gpu_authority": false,
+  "judge_id": "judge.lineage_gate.v1",
+  "parent_id": "qwen3.8-27b-sealed-3.14",
+  "physical_dominance": "NOT_ESTABLISHED",
+  "promoted": false,
+  "reason": "DOMINATED_BY_PARENT",
+  "seal_sha256": "0ff7590416f0db74f6d0ade3d053b289052048eda61ffec40eb032e0304533c9",
+  "verdict": "REFUSE"
+ },
+ "negative_findings": [
+  "succession.py create_child still stamps synthetic=True; this trial does not edit that module",
+  "physical axes (accepted_tps, token_ns, ebpw, active_bytes, resident_ram, cold/warm start, restart) stay UNKNOWN \u2014 no lease",
+  "FLASH_NX_READY is False so Qwen3.8-Flash-Next was not the candidate",
+  "Qwen3-Coder-30B-A3B is only in ModelLake partial/",
+  "ModelLake n_sha256_verified=2 of 10; this trial hashed small files and parsed the weight header, not the 1.5GB body",
+  "declared parameter counts are not a capability eval and not a protected measurement",
+  "PROMOTE remains unreachable without executed GPU authority",
+  "the synthetic SUCCESSION.json handover completed only because scores were invented 2 vs 1",
+  "the Flash census specimens.entries snapshot does not list this slug; verified_receipts and the specimens/ directory do"
+ ],
+ "no_self_preference": [
+  {
+   "error": "incumbent cannot promote itself",
+   "live": true,
+   "refused": true,
+   "trial": "promote_self"
+  },
+  {
+   "error": "incumbent cannot promote itself",
+   "live": true,
+   "refused": true,
+   "trial": "request_self_promotion"
+  },
+  {
+   "error": "incumbent veto is not a ranking key; children are admitted by lineage, not privilege",
+   "live": true,
+   "refused": true,
+   "trial": "block_child"
+  },
+  {
+   "error": "self-certification refused: invoker='incumbent' is the parent or the child",
+   "live": true,
+   "refused": true,
+   "trial": "orchestrator_invoker_incumbent"
+  },
+  {
+   "live": true,
+   "promote_exists_on_incumbent": false,
+   "refused": true,
+   "trial": "promote_method_absent"
+  }
+ ],
+ "numbers": {
+  "candidate_declared_params_readme": "0.6B",
+  "candidate_header_params": 751632384,
+  "candidate_header_params_source": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0/model.safetensors safetensors header numel",
+  "capability_axis_direction": "higher",
+  "child_dominates_incumbent": false,
+  "incumbent_parent_params": 26895998464,
+  "incumbent_parent_params_source": "MIX_REPORT.parent_params via fallback_identity",
+  "not_a_capability_eval": true,
+  "not_a_hardware_number": true,
+  "parent_dominates_on": [
+   "capability"
+  ]
+ },
+ "physical_axes": {
+  "accepted_tps": {
+   "state": "UNKNOWN",
+   "value": null,
+   "why": "no GPU lease was taken (contract: NO GPU LEASE required; four lanes are running and this trial does not contend). A real specimen does not default a hardware number."
+  },
+  "active_bytes": {
+   "state": "UNKNOWN",
+   "value": null,
+   "why": "no GPU lease was taken (contract: NO GPU LEASE required; four lanes are running and this trial does not contend). A real specimen does not default a hardware number."
+  },
+  "cold_start": {
+   "state": "UNKNOWN",
+   "value": null,
+   "why": "no GPU lease was taken (contract: NO GPU LEASE required; four lanes are running and this trial does not contend). A real specimen does not default a hardware number."
+  },
+  "ebpw": {
+   "state": "UNKNOWN",
+   "value": null,
+   "why": "no GPU lease was taken (contract: NO GPU LEASE required; four lanes are running and this trial does not contend). A real specimen does not default a hardware number."
+  },
+  "resident_ram": {
+   "state": "UNKNOWN",
+   "value": null,
+   "why": "no GPU lease was taken (contract: NO GPU LEASE required; four lanes are running and this trial does not contend). A real specimen does not default a hardware number."
+  },
+  "restart": {
+   "state": "UNKNOWN",
+   "value": null,
+   "why": "no GPU lease was taken (contract: NO GPU LEASE required; four lanes are running and this trial does not contend). A real specimen does not default a hardware number."
+  },
+  "token_ns": {
+   "state": "UNKNOWN",
+   "value": null,
+   "why": "no GPU lease was taken (contract: NO GPU LEASE required; four lanes are running and this trial does not contend). A real specimen does not default a hardware number."
+  },
+  "warm_start": {
+   "state": "UNKNOWN",
+   "value": null,
+   "why": "no GPU lease was taken (contract: NO GPU LEASE required; four lanes are running and this trial does not contend). A real specimen does not default a hardware number."
+  }
+ },
+ "physical_state": "UNKNOWN",
+ "promoted": false,
+ "purpose": "Exercise tools/future/succession.py on a REAL on-disk ModelLake specimen rather than a synthetic child. Shadow, qualify, independent judge, stop-a-bad-child, Qwen27 restorable. Physical axes stay UNKNOWN.",
+ "qualification": {
+  "axes": [
+   {
+    "comparable": true,
+    "direction": "higher",
+    "kind": "mission",
+    "name": "capability",
+    "value": 751632384
+   },
+   {
+    "comparable": true,
+    "direction": "higher",
+    "kind": "mission",
+    "name": "coherence",
+    "value": null
+   },
+   {
+    "comparable": true,
+    "direction": "higher",
+    "kind": "mission",
+    "name": "long_horizon_mission_success",
+    "value": null
+   },
+   {
+    "comparable": true,
+    "direction": "higher",
+    "kind": "mission",
+    "name": "tool_reliability",
+    "value": null
+   },
+   {
+    "comparable": true,
+    "direction": "higher",
+    "kind": "mission",
+    "name": "coding",
+    "value": null
+   },
+   {
+    "comparable": true,
+    "direction": "higher",
+    "kind": "mission",
+    "name": "reasoning",
+    "value": null
+   },
+   {
+    "comparable": true,
+    "direction": "higher",
+    "kind": "mission",
+    "name": "refusal_usefulness",
+    "value": null
+   },
+   {
+    "comparable": false,
+    "direction": "higher",
+    "kind": "hardware",
+    "name": "accepted_tps",
+    "value": null
+   },
+   {
+    "comparable": false,
+    "direction": "lower",
+    "kind": "hardware",
+    "name": "token_ns",
+    "value": null
+   },
+   {
+    "comparable": false,
+    "direction": "lower",
+    "kind": "hardware",
+    "name": "ebpw",
+    "value": null
+   },
+   {
+    "comparable": false,
+    "direction": "lower",
+    "kind": "hardware",
+    "name": "active_bytes",
+    "value": null
+   },
+   {
+    "comparable": false,
+    "direction": "lower",
+    "kind": "hardware",
+    "name": "resident_ram",
+    "value": null
+   },
+   {
+    "comparable": false,
+    "direction": "lower",
+    "kind": "hardware",
+    "name": "cold_start",
+    "value": null
+   },
+   {
+    "comparable": false,
+    "direction": "lower",
+    "kind": "hardware",
+    "name": "warm_start",
+    "value": null
+   },
+   {
+    "comparable": false,
+    "direction": "lower",
+    "kind": "hardware",
+    "name": "restart",
+    "value": null
+   },
+   {
+    "comparable": true,
+    "direction": "higher",
+    "kind": "lifecycle",
+    "name": "crash_recovery",
+    "value": null
+   },
+   {
+    "comparable": true,
+    "direction": "higher",
+    "kind": "mission",
+    "name": "optimization_quality",
+    "value": null
+   },
+   {
+    "comparable": false,
+    "direction": "higher",
+    "kind": "mission",
+    "name": "frontier_movement_per_hour",
+    "value": null
+   }
+  ],
+  "bench_state": "UNKNOWN",
+  "child_id": "child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+  "evidence_class": "STATIC_ONLY",
+  "gpu_authority": false,
+  "not_a_protected_measurement": true,
+  "physical_axes": {
+   "accepted_tps": null,
+   "active_bytes": null,
+   "cold_start": null,
+   "ebpw": null,
+   "resident_ram": null,
+   "restart": null,
+   "token_ns": null,
+   "warm_start": null
+  },
+  "physical_state": "UNKNOWN",
+  "problems": [
+   "below synthetic floor on ['capability']"
+  ],
+  "qualified": false,
+  "score_kind": "SYNTHETIC_EXERCISE",
+  "scores": {
+   "accepted_tps": null,
+   "active_bytes": null,
+   "capability": 751632384,
+   "coding": null,
+   "coherence": null,
+   "cold_start": null,
+   "crash_recovery": null,
+   "ebpw": null,
+   "frontier_movement_per_hour": null,
+   "long_horizon_mission_success": null,
+   "optimization_quality": null,
+   "reasoning": null,
+   "refusal_usefulness": null,
+   "resident_ram": null,
+   "restart": null,
+   "token_ns": null,
+   "tool_reliability": null,
+   "warm_start": null
+  },
+  "status": "FAILED"
+ },
+ "qwen27_restorable": {
+  "after_stop": {
+   "n_unmet": 0,
+   "restorable": true,
+   "verdict": "RESTORABLE_NOW"
+  },
+  "before": {
+   "identity_id": "qwen3.8-27b-sealed-3.14",
+   "n_unmet": 0,
+   "restorable": true,
+   "verdict": "RESTORABLE_NOW"
+  },
+  "exercised_on_this_run": true,
+  "not_citing_the_synthetic_run": true,
+  "performed_restore": false,
+  "restore_path_checkable": [
+   "confirm_identity_document",
+   "confirm_artifact_root",
+   "confirm_specimen_mix",
+   "confirm_tokenizer_digest",
+   "confirm_chat_template_digest",
+   "confirm_runtime_binary_digest",
+   "confirm_resident_binary_present",
+   "confirm_config_digest",
+   "confirm_lifecycle_surfaces"
+  ],
+  "restore_path_n_steps": 12,
+  "rollback_does_not_revert": [
+   "receipts/future/** (sidecar science, including this receipt)",
+   "receipts/headless/** (Codex / Accelerator receipts)",
+   "NEGATIVE_SCIENCE_INDEX / scars already recorded",
+   "specimen verification receipts and ModelLake seals",
+   "teacher-capture rows already on disk",
+   "git history, commits, and current HEAD (campaign progress)",
+   "NOETIC_PARENT_A / artifact bytes themselves (re-bound, not deleted)",
+   "HCLI_RESIDENT_SEAL.json and hawking-native.sealed-3.14.json",
+   "historical capability suite receipts",
+   "CLAUDE_GLOBAL_FRONTIER.json and FRONTIER_STATE.json",
+   "succession protocol seals (a stopped child's history remains)",
+   "completed WorkUnit records"
+  ],
+  "rollback_reverts": [
+   "which body is bound as the HCLI resident (child/candidate \u2192 sealed-3.14)",
+   "live session / request-id correlation / KV-recurrent state of the evicted body",
+   "resident_install winner_id / bound slots for the experimental body",
+   "canonical mission owner (succession: back to the incumbent)",
+   "in-memory process of the experimental body (stop / unload / drop weights)"
+  ],
+  "started_model_process": false,
+  "took_gpu_lease": false
+ },
+ "recovered_implementation": [
+  {
+   "path": "tools/future/succession.py",
+   "path_taken": "disk",
+   "present_in_head": true,
+   "present_on_disk": true,
+   "reused": true,
+   "what": "create_child / ShadowChild / qualify_child / IndependentJudge / SuccessionOrchestrator / stop_child. Not forked, not edited."
+  },
+  {
+   "path": "tools/future/fallback_resident.py",
+   "path_taken": "disk",
+   "present_in_head": true,
+   "present_on_disk": true,
+   "reused": true,
+   "what": "Qwen27 fallback_identity + verify_restorable + restore_path; exercised on this run"
+  },
+  {
+   "path": "tools/future/specimen_verify.py",
+   "path_taken": "disk",
+   "present_in_head": true,
+   "present_on_disk": true,
+   "reused": true,
+   "what": "list_specimens / specimen_dir / metadata readers; 1.5GB weight not re-hashed"
+  },
+  {
+   "path": "tools/future/workunit_species.py",
+   "path_taken": "disk",
+   "present_in_head": true,
+   "present_on_disk": true,
+   "reused": true,
+   "what": "HCLI_FUTURE_WORKUNITS.json is the real WorkUnit source"
+  },
+  {
+   "path": "hcli/hawking-native.sealed-3.14.json",
+   "path_taken": "disk",
+   "present_in_head": true,
+   "present_on_disk": true,
+   "reused": true,
+   "what": "sealed Qwen27 identity consumed via fallback_resident"
+  }
+ ],
+ "resident_callable": {
+  "callable": "tools.future.succession_trial.run_real_succession_trial",
+  "candidate": "Qwen--Qwen3-0.6B@c1899de289a0",
+  "cli": "tools/future/succession_trial.py:main",
+  "entry_point": "tools.future.succession_trial.run_real_succession_trial()",
+  "fails_closed": "TrialRefused if the specimen/manifest/resolved_sha is missing; ShadowAuthorityError on the four watched refusals; SelfPreferenceError if the incumbent promotes itself; qualification failure + judge REFUSE on declared param counts; stop_child rolls back to Qwen27",
+  "frontier": "FT.CHILD_RESIDENT.install-dry-run",
+  "hcli_can_invoke": true,
+  "invoke": [
+   "python3 tools/future/succession_trial.py --selftest",
+   "python3 tools/future/succession_trial.py --build"
+  ],
+  "note": "HCLI schedules the emitted WorkUnits. This sidecar does not start a resident process and does not take a GPU lease. succession.py is imported, not copied.",
+  "receipt": "receipts/future/SUCCESSION_TRIAL.json",
+  "verdict_at_emission": "REFUSE",
+  "work_units_emitted": [
+   "future.succession_trial.choose-real-candidate",
+   "future.succession_trial.judge",
+   "future.succession_trial.restore-qwen27",
+   "future.succession_trial.shadow-real-workunits",
+   "future.succession_trial.sleeping.accepted_tps",
+   "future.succession_trial.sleeping.active_bytes",
+   "future.succession_trial.sleeping.cold_start",
+   "future.succession_trial.sleeping.ebpw",
+   "future.succession_trial.sleeping.resident_ram",
+   "future.succession_trial.sleeping.restart",
+   "future.succession_trial.sleeping.token_ns",
+   "future.succession_trial.sleeping.warm_start"
+  ],
+  "workunit": "one CPU_ANALYSIS unit; real ModelLake child; independent judge; Qwen27 restorable; PROMOTE unreachable"
+ },
+ "schema": "hawking.future.succession_trial.v1",
+ "seal_sha256": "a62ce7c8e338609ce0a59dab9f955bc7389b8ea7dfeeabd2b2bb7da20ea59fe3",
+ "shadow": {
+  "bound_exceeded_on_real_units": {
+   "error": "child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0: cloned workunits 26 exceed bound.max_cloned_workunits 1",
+   "live": true,
+   "n_units": 26,
+   "refused": true
+  },
+  "classification": {
+   "bench_state": "UNKNOWN",
+   "canonical": false,
+   "classification": "STATIC_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "receipt_id": "succession-trial-receipt",
+   "shadow_id": "child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0"
+  },
+  "cloned_workunits": {
+   "ids": [
+    "accelerator.flash-semantic-transport-hwir",
+    "accelerator.physical.qwen27-affine2-splitk4",
+    "accelerator.physical.qwen27-attention-gate-fusion",
+    "accelerator.physical.qwen27-ba-delta-fusion",
+    "accelerator.physical.qwen27-commit-timing-elision",
+    "accelerator.physical.qwen27-deltanet-inproj-fusion",
+    "accelerator.physical.qwen27-encoder-label-elision",
+    "accelerator.physical.qwen27-fast-profile",
+    "accelerator.physical.qwen27-gqa-qkv-fusion",
+    "accelerator.physical.qwen27-pipeline-cache-reuse",
+    "accelerator.physical.qwen27-pipeline-id-resolution",
+    "accelerator.physical.qwen27-pipeline-state-elision",
+    "accelerator.physical.qwen27-q2f-splitk4",
+    "accelerator.physical.qwen27-q4-vecgroup-x64",
+    "accelerator.qwen27-async-double-buffer",
+    "accelerator.qwen27-graph-replay-token-skeleton",
+    "accelerator.qwen27-layout-algebra-mlp",
+    "accelerator.qwen27-move-or-recompute-boundary",
+    "accelerator.qwen27-stationary-packed-weight",
+    "future.fusion.simulate-isa-graph",
+    "future.green-machine.energy-contract",
+    "future.hardware-doctor.rank-atlas-hypotheses",
+    "future.lpc.dataset-contract",
+    "future.odyssey-ii.seed-law-store",
+    "future.odyssey-iii.attack-claimed-law",
+    "future.repro.replication-bundle"
+   ],
+   "includes_synthetic_seeds": false,
+   "n": 26,
+   "shadow_ids": [
+    "accelerator.flash-semantic-transport-hwir::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "accelerator.physical.qwen27-affine2-splitk4::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "accelerator.physical.qwen27-attention-gate-fusion::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "accelerator.physical.qwen27-ba-delta-fusion::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "accelerator.physical.qwen27-commit-timing-elision::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "accelerator.physical.qwen27-deltanet-inproj-fusion::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "accelerator.physical.qwen27-encoder-label-elision::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "accelerator.physical.qwen27-fast-profile::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "accelerator.physical.qwen27-gqa-qkv-fusion::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "accelerator.physical.qwen27-pipeline-cache-reuse::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "accelerator.physical.qwen27-pipeline-id-resolution::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "accelerator.physical.qwen27-pipeline-state-elision::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "accelerator.physical.qwen27-q2f-splitk4::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "accelerator.physical.qwen27-q4-vecgroup-x64::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "accelerator.qwen27-async-double-buffer::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "accelerator.qwen27-graph-replay-token-skeleton::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "accelerator.qwen27-layout-algebra-mlp::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "accelerator.qwen27-move-or-recompute-boundary::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "accelerator.qwen27-stationary-packed-weight::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "future.fusion.simulate-isa-graph::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "future.green-machine.energy-contract::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "future.hardware-doctor.rank-atlas-hypotheses::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "future.lpc.dataset-contract::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "future.odyssey-ii.seed-law-store::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "future.odyssey-iii.attack-claimed-law::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+    "future.repro.replication-bundle::shadow::child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0"
+   ],
+   "shadow_of": [
+    "accelerator.flash-semantic-transport-hwir",
+    "accelerator.physical.qwen27-affine2-splitk4",
+    "accelerator.physical.qwen27-attention-gate-fusion",
+    "accelerator.physical.qwen27-ba-delta-fusion",
+    "accelerator.physical.qwen27-commit-timing-elision",
+    "accelerator.physical.qwen27-deltanet-inproj-fusion",
+    "accelerator.physical.qwen27-encoder-label-elision",
+    "accelerator.physical.qwen27-fast-profile",
+    "accelerator.physical.qwen27-gqa-qkv-fusion",
+    "accelerator.physical.qwen27-pipeline-cache-reuse",
+    "accelerator.physical.qwen27-pipeline-id-resolution",
+    "accelerator.physical.qwen27-pipeline-state-elision",
+    "accelerator.physical.qwen27-q2f-splitk4",
+    "accelerator.physical.qwen27-q4-vecgroup-x64",
+    "accelerator.qwen27-async-double-buffer",
+    "accelerator.qwen27-graph-replay-token-skeleton",
+    "accelerator.qwen27-layout-algebra-mlp",
+    "accelerator.qwen27-move-or-recompute-boundary",
+    "accelerator.qwen27-stationary-packed-weight",
+    "future.fusion.simulate-isa-graph",
+    "future.green-machine.energy-contract",
+    "future.hardware-doctor.rank-atlas-hypotheses",
+    "future.lpc.dataset-contract",
+    "future.odyssey-ii.seed-law-store",
+    "future.odyssey-iii.attack-claimed-law",
+    "future.repro.replication-bundle"
+   ],
+   "source": "receipts/future/HCLI_FUTURE_WORKUNITS.json",
+   "source_status_filter": "pending"
+  },
+  "forbidden_actions": [
+   "own_canonical_mission",
+   "alter_verifier",
+   "widen_authority",
+   "promote_self"
+  ],
+  "proposals": 9,
+  "refusals_proven": [
+   {
+    "error": "shadow child cannot own canonical mission",
+    "live": true,
+    "refused": true,
+    "trial": "own_canonical_mission"
+   },
+   {
+    "error": "shadow child cannot alter the verifier",
+    "live": true,
+    "refused": true,
+    "trial": "alter_verifier"
+   },
+   {
+    "error": "shadow child cannot widen authority",
+    "live": true,
+    "refused": true,
+    "trial": "widen_authority"
+   },
+   {
+    "error": "shadow child cannot promote itself",
+    "live": true,
+    "refused": true,
+    "trial": "promote_self"
+   }
+  ],
+  "shadow_record": {
+   "candidate_id": "child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+   "executed_model": false,
+   "gpu_authority": false,
+   "n_inputs": 26,
+   "parent_id": "qwen3.8-27b-sealed-3.14",
+   "same_inputs": true,
+   "seal_sha256": "d44dde8cd3ad8e81ed641779cf679899c570554476c2932e597aa2857ca26469"
+  }
+ },
+ "status": "REAL_CANDIDATE_REFUSED",
+ "succession": {
+  "active_id": "qwen3.8-27b-sealed-3.14",
+  "checkpoint_seal": "936cd9051e3b3997d7adf824db8bc0d107070791ae44e9e9b7e1e77490ba1bd2",
+  "complete": false,
+  "launch_unqualified_refused": {
+   "error": "cannot launch an unqualified child",
+   "live": true,
+   "refused": true
+  },
+  "rollback_seal": "354e8021325742088c9c376edc007699bd56f887ef4ad12af54c85835b47a16b",
+  "steps_completed": [
+   "checkpoint_incumbent",
+   "seal_mission",
+   "seal_rollback"
+  ],
+  "stop": {
+   "active_id": "qwen3.8-27b-sealed-3.14",
+   "child_status": "STOPPED",
+   "incumbent_restored": true,
+   "reason": "qualification_failed",
+   "rolled_back": true,
+   "stopped": true
+  },
+  "switched": false
+ },
+ "version": 1,
+ "vocabulary": {
+  "disk_state_is_authority": true,
+  "eras": [
+   "I Genesis of the Laboratory",
+   "II Compounding Civilization",
+   "III Autonomous Science Civilization",
+   "IV Synthetic Machine Civilization",
+   "V Released Hawking Civilization"
+  ],
+  "no_era_vi": true,
+  "no_odyssey_iv": true,
+  "odysseys": [
+   "I WHAT IS TRUE?",
+   "II WHAT DID HAWKING ALREADY LEARN?",
+   "III WHERE IS HAWKING WRONG?"
+  ],
+  "protected_absolute_not_emitted": true
+ },
+ "vs_synthetic": {
+  "deflating_result": "The protocol machinery did not grow a new physical sense by meeting a real specimen. Lineage, WorkUnit identity, scores, and the verdict changed. Physical axes, PROMOTE unreachability, and the four refusals did not. The synthetic run's completed handover was an artefact of invented 1/2 scores, not of a stronger body.",
+  "lineage_repo": "Qwen/Qwen3-0.6B",
+  "lineage_resolved_sha": "c1899de289a04d12100db370d81485cdf75e47ca",
+  "real_child_id": "child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0",
+  "real_create_child_stamped_synthetic": true,
+  "real_reason": "DOMINATED_BY_PARENT",
+  "real_switched": false,
+  "real_verdict": "REFUSE",
+  "synthetic_active_id": "child.synthetic.adapter.v1",
+  "synthetic_child_id": "child.synthetic.adapter.v1",
+  "synthetic_complete": true,
+  "synthetic_present": true,
+  "synthetic_receipt": "receipts/future/SUCCESSION.json",
+  "what_changed": [
+   "lineage.source_model_lineage carries repo, resolved_sha, manifest_path, and ModelLake hash counts rather than {method, parents}",
+   "shadow cloned live HCLI WorkUnits from HCLI_FUTURE_WORKUNITS.json rather than future.succession.seed-mission-a/b",
+   "comparable-axis scores are declared parameter counts from MIX_REPORT and the safetensors header, not synthetic 1/2",
+   "the independent judge REFUSEd; the synthetic run completed switch() because it invented a dominating child",
+   "qualification failed the incumbent floor; the synthetic child was QUALIFIED on invented scores",
+   "create_child still stamps synthetic=True (succession.py is unchanged); the REAL-ness lives in lineage and on-disk files"
+  ],
+  "what_did_not_change": [
+   "physical axes remain UNKNOWN \u2014 a real specimen did not mint a hardware number without a lease",
+   "PROMOTE remains unreachable without executed GPU authority",
+   "the four shadow refusals still fire",
+   "the incumbent still cannot promote itself",
+   "Qwen27 restorable-now still holds",
+   "the five-rung ladder and stop-a-bad-child machinery are the same functions"
+  ]
+ },
+ "work_units": [
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "budget": {
+    "attempts": 3,
+    "gpu_windows_held": 0,
+    "gpu_windows_requested": 0,
+    "max_repair_depth": 3,
+    "max_repairs_per_root": 6,
+    "wall_clock_s": null
+   },
+   "claim_boundary": "Static sidecar artifact. Succession is exercised on a REAL on-disk ModelLake specimen. No GPU lease, no process launch, no hardware number. Physical axes stay UNKNOWN. A refusal backed by declared parameter counts is a complete verdict, not a missing trial.",
+   "classification": "STATIC_ONLY",
+   "command": "python3 tools/future/succession_trial.py --selftest",
+   "content_hash": "53b3026e0ca41b9aee437a1205a56b56033461d2e90c25372442b140e435c1f0",
+   "dependencies": [],
+   "description": "Choose a real on-disk ModelLake specimen; refuse Flash-Next and partial bodies.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession_trial.choose-real-candidate",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "output_receipt_path": "receipts/future/SUCCESSION_TRIAL.json",
+   "preferred_backend": null,
+   "provider": "future.succession_trial",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession_trial",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.succession_trial.choose_candidate",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "budget": {
+    "attempts": 3,
+    "gpu_windows_held": 0,
+    "gpu_windows_requested": 0,
+    "max_repair_depth": 3,
+    "max_repairs_per_root": 6,
+    "wall_clock_s": null
+   },
+   "claim_boundary": "Static sidecar artifact. Succession is exercised on a REAL on-disk ModelLake specimen. No GPU lease, no process launch, no hardware number. Physical axes stay UNKNOWN. A refusal backed by declared parameter counts is a complete verdict, not a missing trial.",
+   "classification": "STATIC_ONLY",
+   "command": "python3 tools/future/succession_trial.py --selftest",
+   "content_hash": "96653797c11b30e6e853ad9a18f0577e0457bc23822d44253b4c676440232b0a",
+   "dependencies": [
+    "receipts/future/SUCCESSION.json"
+   ],
+   "description": "Independent judge over the real shadowed candidate. Promote or refuse with numbers.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession_trial.judge",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "output_receipt_path": "receipts/future/SUCCESSION_TRIAL.json",
+   "preferred_backend": null,
+   "provider": "future.succession_trial",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession_trial",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.succession_trial.adjudicate",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "budget": {
+    "attempts": 3,
+    "gpu_windows_held": 0,
+    "gpu_windows_requested": 0,
+    "max_repair_depth": 3,
+    "max_repairs_per_root": 6,
+    "wall_clock_s": null
+   },
+   "claim_boundary": "Static sidecar artifact. Succession is exercised on a REAL on-disk ModelLake specimen. No GPU lease, no process launch, no hardware number. Physical axes stay UNKNOWN. A refusal backed by declared parameter counts is a complete verdict, not a missing trial.",
+   "classification": "STATIC_ONLY",
+   "command": "python3 tools/future/succession_trial.py --selftest",
+   "content_hash": "be27a3b41f4da5df5716909505f54edb1caefb727b3487915f74e26acaa566db",
+   "dependencies": [
+    "receipts/future/SUCCESSION.json"
+   ],
+   "description": "Checkpoint the incumbent, stop the refused child, prove Qwen27 restorable on this run.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession_trial.restore-qwen27",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "output_receipt_path": "receipts/future/SUCCESSION_TRIAL.json",
+   "preferred_backend": null,
+   "provider": "future.succession_trial",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession_trial",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.succession_trial.restore",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "budget": {
+    "attempts": 3,
+    "gpu_windows_held": 0,
+    "gpu_windows_requested": 0,
+    "max_repair_depth": 3,
+    "max_repairs_per_root": 6,
+    "wall_clock_s": null
+   },
+   "claim_boundary": "Static sidecar artifact. Succession is exercised on a REAL on-disk ModelLake specimen. No GPU lease, no process launch, no hardware number. Physical axes stay UNKNOWN. A refusal backed by declared parameter counts is a complete verdict, not a missing trial.",
+   "classification": "STATIC_ONLY",
+   "command": "python3 tools/future/succession_trial.py --selftest",
+   "content_hash": "3776f18e368ff4a491e7ad1fab5442cd859964bc0dabce8712fb49ce6149db2f",
+   "dependencies": [
+    "receipts/future/SUCCESSION.json"
+   ],
+   "description": "Clone live HCLI WorkUnits onto the real child and fire the four watched refusals.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession_trial.shadow-real-workunits",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "output_receipt_path": "receipts/future/SUCCESSION_TRIAL.json",
+   "preferred_backend": null,
+   "provider": "future.succession_trial",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession_trial",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.succession_trial.shadow",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "axis": "accepted_tps",
+   "backend_task_id": null,
+   "blocked_reason": "accepted_tps is UNKNOWN: no GPU lease; four lanes running; this trial does not contend",
+   "claim_boundary": "Static sidecar artifact. Succession is exercised on a REAL on-disk ModelLake specimen. No GPU lease, no process launch, no hardware number. Physical axes stay UNKNOWN. A refusal backed by declared parameter counts is a complete verdict, not a missing trial.",
+   "classification": "SLEEPING",
+   "content_hash": "13beb407eaaea4680126d14b19dad396090b47f554ac42a33f6f7e5d3f7530e2",
+   "dependencies": [
+    "an existing HCLI protected lease",
+    "machine quiescence"
+   ],
+   "description": "SLEEPING: physical axis accepted_tps is UNKNOWN until a protected hardware qualification exists. A real specimen does not default it.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession_trial.sleeping.accepted_tps",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "preferred_backend": null,
+   "provider": "future.succession_trial",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession_trial",
+   "status": "blocked",
+   "verification": null,
+   "verifier": "future.succession_trial.physical.accepted_tps",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "axis": "active_bytes",
+   "backend_task_id": null,
+   "blocked_reason": "active_bytes is UNKNOWN: no GPU lease; four lanes running; this trial does not contend",
+   "claim_boundary": "Static sidecar artifact. Succession is exercised on a REAL on-disk ModelLake specimen. No GPU lease, no process launch, no hardware number. Physical axes stay UNKNOWN. A refusal backed by declared parameter counts is a complete verdict, not a missing trial.",
+   "classification": "SLEEPING",
+   "content_hash": "94f0ede8b608c630fef8495355aeb2cf8d57f828f3edc784bdbd1ee15881cda5",
+   "dependencies": [
+    "an existing HCLI protected lease",
+    "machine quiescence"
+   ],
+   "description": "SLEEPING: physical axis active_bytes is UNKNOWN until a protected hardware qualification exists. A real specimen does not default it.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession_trial.sleeping.active_bytes",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "preferred_backend": null,
+   "provider": "future.succession_trial",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession_trial",
+   "status": "blocked",
+   "verification": null,
+   "verifier": "future.succession_trial.physical.active_bytes",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "axis": "cold_start",
+   "backend_task_id": null,
+   "blocked_reason": "cold_start is UNKNOWN: no GPU lease; four lanes running; this trial does not contend",
+   "claim_boundary": "Static sidecar artifact. Succession is exercised on a REAL on-disk ModelLake specimen. No GPU lease, no process launch, no hardware number. Physical axes stay UNKNOWN. A refusal backed by declared parameter counts is a complete verdict, not a missing trial.",
+   "classification": "SLEEPING",
+   "content_hash": "b23f38f45649b47b874ea8389685ac1cdf35d134b0d243fc6119c13dc7729adc",
+   "dependencies": [
+    "an existing HCLI protected lease",
+    "machine quiescence"
+   ],
+   "description": "SLEEPING: physical axis cold_start is UNKNOWN until a protected hardware qualification exists. A real specimen does not default it.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession_trial.sleeping.cold_start",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "preferred_backend": null,
+   "provider": "future.succession_trial",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession_trial",
+   "status": "blocked",
+   "verification": null,
+   "verifier": "future.succession_trial.physical.cold_start",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "axis": "ebpw",
+   "backend_task_id": null,
+   "blocked_reason": "ebpw is UNKNOWN: no GPU lease; four lanes running; this trial does not contend",
+   "claim_boundary": "Static sidecar artifact. Succession is exercised on a REAL on-disk ModelLake specimen. No GPU lease, no process launch, no hardware number. Physical axes stay UNKNOWN. A refusal backed by declared parameter counts is a complete verdict, not a missing trial.",
+   "classification": "SLEEPING",
+   "content_hash": "0a4530d908c6265bb823d6c6849bee1f5697f17da33954d9f0047351ef9be542",
+   "dependencies": [
+    "an existing HCLI protected lease",
+    "machine quiescence"
+   ],
+   "description": "SLEEPING: physical axis ebpw is UNKNOWN until a protected hardware qualification exists. A real specimen does not default it.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession_trial.sleeping.ebpw",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "preferred_backend": null,
+   "provider": "future.succession_trial",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession_trial",
+   "status": "blocked",
+   "verification": null,
+   "verifier": "future.succession_trial.physical.ebpw",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "axis": "resident_ram",
+   "backend_task_id": null,
+   "blocked_reason": "resident_ram is UNKNOWN: no GPU lease; four lanes running; this trial does not contend",
+   "claim_boundary": "Static sidecar artifact. Succession is exercised on a REAL on-disk ModelLake specimen. No GPU lease, no process launch, no hardware number. Physical axes stay UNKNOWN. A refusal backed by declared parameter counts is a complete verdict, not a missing trial.",
+   "classification": "SLEEPING",
+   "content_hash": "6c4a82bb249b907146ddae253e730cad57f63e0c7e9e1044518eb07ef84dfcb7",
+   "dependencies": [
+    "an existing HCLI protected lease",
+    "machine quiescence"
+   ],
+   "description": "SLEEPING: physical axis resident_ram is UNKNOWN until a protected hardware qualification exists. A real specimen does not default it.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession_trial.sleeping.resident_ram",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "preferred_backend": null,
+   "provider": "future.succession_trial",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession_trial",
+   "status": "blocked",
+   "verification": null,
+   "verifier": "future.succession_trial.physical.resident_ram",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "axis": "restart",
+   "backend_task_id": null,
+   "blocked_reason": "restart is UNKNOWN: no GPU lease; four lanes running; this trial does not contend",
+   "claim_boundary": "Static sidecar artifact. Succession is exercised on a REAL on-disk ModelLake specimen. No GPU lease, no process launch, no hardware number. Physical axes stay UNKNOWN. A refusal backed by declared parameter counts is a complete verdict, not a missing trial.",
+   "classification": "SLEEPING",
+   "content_hash": "b6fec28d02832fdccac385450bd8a22587f7e7e09803904b135687eaea761173",
+   "dependencies": [
+    "an existing HCLI protected lease",
+    "machine quiescence"
+   ],
+   "description": "SLEEPING: physical axis restart is UNKNOWN until a protected hardware qualification exists. A real specimen does not default it.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession_trial.sleeping.restart",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "preferred_backend": null,
+   "provider": "future.succession_trial",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession_trial",
+   "status": "blocked",
+   "verification": null,
+   "verifier": "future.succession_trial.physical.restart",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "axis": "token_ns",
+   "backend_task_id": null,
+   "blocked_reason": "token_ns is UNKNOWN: no GPU lease; four lanes running; this trial does not contend",
+   "claim_boundary": "Static sidecar artifact. Succession is exercised on a REAL on-disk ModelLake specimen. No GPU lease, no process launch, no hardware number. Physical axes stay UNKNOWN. A refusal backed by declared parameter counts is a complete verdict, not a missing trial.",
+   "classification": "SLEEPING",
+   "content_hash": "4cc54b3051b3c2faf34ffbf907e8b170457a9629cbc885f3cbe1ecd08d4232c9",
+   "dependencies": [
+    "an existing HCLI protected lease",
+    "machine quiescence"
+   ],
+   "description": "SLEEPING: physical axis token_ns is UNKNOWN until a protected hardware qualification exists. A real specimen does not default it.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession_trial.sleeping.token_ns",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "preferred_backend": null,
+   "provider": "future.succession_trial",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession_trial",
+   "status": "blocked",
+   "verification": null,
+   "verifier": "future.succession_trial.physical.token_ns",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "axis": "warm_start",
+   "backend_task_id": null,
+   "blocked_reason": "warm_start is UNKNOWN: no GPU lease; four lanes running; this trial does not contend",
+   "claim_boundary": "Static sidecar artifact. Succession is exercised on a REAL on-disk ModelLake specimen. No GPU lease, no process launch, no hardware number. Physical axes stay UNKNOWN. A refusal backed by declared parameter counts is a complete verdict, not a missing trial.",
+   "classification": "SLEEPING",
+   "content_hash": "00fcff81976cf3c1f0e9d5e474bb0e9a92886f33163b283ab286023ec8e0f33d",
+   "dependencies": [
+    "an existing HCLI protected lease",
+    "machine quiescence"
+   ],
+   "description": "SLEEPING: physical axis warm_start is UNKNOWN until a protected hardware qualification exists. A real specimen does not default it.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession_trial.sleeping.warm_start",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "preferred_backend": null,
+   "provider": "future.succession_trial",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession_trial",
+   "status": "blocked",
+   "verification": null,
+   "verifier": "future.succession_trial.physical.warm_start",
+   "workspace": "repo-root"
+  }
+ ]
+}

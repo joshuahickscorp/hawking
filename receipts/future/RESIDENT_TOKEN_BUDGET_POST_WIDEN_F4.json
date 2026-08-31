@@ -1,0 +1,119 @@
+{
+ "ab": {
+  "baseline_ms_per_token": 28.3817,
+  "baseline_tps": 35.234,
+  "decode_steps": 48,
+  "delta_ms": 1.0921,
+  "delta_tps": 1.41,
+  "token_identical": true,
+  "widen_f4_ms_per_token": 27.2896,
+  "widen_f4_tps": 36.644
+ },
+ "binary": {
+  "profile": "release",
+  "why_not_release_fast": "release-fast is a correctness profile whose own Cargo.toml comment forbids benchmarking with it: TPS must come from release (lto=fat, codegen-units=1)"
+ },
+ "decode_gpu_ms_per_token": 26.5943,
+ "decode_wall_ms_per_token": 27.2896,
+ "decode_wall_tps": 36.644,
+ "evidence_class": "DIAGNOSTIC_RELATIVE",
+ "gpu_authority": true,
+ "host_gap_ms_per_token": 0.6953,
+ "measurement_provenance": {
+  "absolutes_are_measured_under_load": true,
+  "gpu_lane_lock_held": true,
+  "lane": "g075-profile",
+  "loadavg": "{ 5.31 5.47 6.06 }",
+  "measured_at": "2026-08-31T15:56:39Z",
+  "measured_at_source": "WRITE_TIME",
+  "why": "a hardware number that cannot be placed in time cannot be audited against a contention window"
+ },
+ "organs": {
+  "decode_gpu_ms_per_token": 26.5943,
+  "dispatches": 628,
+  "git_head": "9c43a81b19b1a7dac59935a256defedd86c4f083",
+  "n_reps": 7,
+  "n_tokens": 32,
+  "noop_floor_control": {
+   "dense_w_materialized": 0,
+   "dispatches": 0,
+   "gpu_ns_max": 250,
+   "gpu_ns_median": 125,
+   "gpu_ns_min": 41,
+   "gpu_ns_reps": [
+    250,
+    125,
+    41,
+    125,
+    125,
+    41
+   ],
+   "n_reps": 7,
+   "n_reps_below_timestamp_resolution": 1,
+   "n_reps_with_timestamp": 6,
+   "organ": "noop_empty",
+   "role": "no_op_control",
+   "wait_ns_median": 15917
+  },
+  "organ_ms_sum": 26.7013,
+  "rows": [
+   {
+    "dispatches": 1,
+    "gpu_ms": 0.0073,
+    "organ": "embedding"
+   },
+   {
+    "dispatches": 96,
+    "gpu_ms": 2.0356,
+    "organ": "gqa_attention"
+   },
+   {
+    "dispatches": 288,
+    "gpu_ms": 5.5971,
+    "organ": "deltanet"
+   },
+   {
+    "dispatches": 128,
+    "gpu_ms": 9.9154,
+    "organ": "mlp_gate_up"
+   },
+   {
+    "dispatches": 128,
+    "gpu_ms": 5.7319,
+    "organ": "mlp_down"
+   },
+   {
+    "dispatches": 64,
+    "gpu_ms": 2.0596,
+    "organ": "q4_remainder"
+   },
+   {
+    "dispatches": 2,
+    "gpu_ms": 1.0204,
+    "organ": "lm_head"
+   },
+   {
+    "dispatches": 1,
+    "gpu_ms": 0.334,
+    "organ": "sampling"
+   }
+  ],
+  "widen_f4_kernel_dispatched": true
+ },
+ "protected_window": {
+  "gpu_lane_lock_held": true,
+  "modellake_sigstopped": true,
+  "why": "absolutes move with load while ratios do not; this obligation asks for an absolute, so the five hf download processes were stopped for each measurement and resumed after"
+ },
+ "recorded_by": "tools/future/resident_reprofile.py",
+ "schema": "hawking.future.resident_reprofile.v1",
+ "seal_sha256": "a940bd287bcf9a7520aa25521113f79d4856eeba2c30256643fb88d96176e082",
+ "supersedes": {
+  "ms_removed": 1.4324,
+  "stale_ladder_ms": 28.722,
+  "why": "PATH_TO_71 and RESIDENT_71TPS_CAUSAL_BUDGET were arithmetic over 28.722 ms. Every rung must be recomputed from this."
+ },
+ "timing_label": "DIRTY_ENGINEERING",
+ "timing_label_reason": "GPU lane lock held and ModelLake SIGSTOPped for each window, but the crate source is dirty (DIRTY_SOURCE_SEAL) and other system lanes were live. Not offered as BASE_TRUE_TPS.",
+ "version": 1
+}

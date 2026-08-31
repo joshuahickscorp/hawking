@@ -8,6 +8,15 @@ and capability observations, never model content or credentials.
 """
 from __future__ import annotations
 
+import sys
+from pathlib import Path as _CausalityPath
+_CAUSALITY_ROOT = _CausalityPath(__file__).resolve().parents[2]
+if str(_CAUSALITY_ROOT) not in sys.path:
+    sys.path.insert(0, str(_CAUSALITY_ROOT))
+from tools.future import status_causality as sc
+
+import sys
+
 import argparse
 import json
 import os
@@ -41,6 +50,127 @@ _TOKEN_RE = re.compile(
 _ASSIGNMENT_RE = re.compile(
     r"(?i)(?:api[_-]?key|access[_-]?token|authorization|password|secret|private[_-]?key|bearer|token)\s*[:=]\s*[^\s,;]+"
 )
+
+
+FIVE_RECORDED_FIELDS: tuple[str, ...] = getattr(
+    sc,
+    "FIVE_RECORDED_FIELDS",
+    (
+        "probe_performed",
+        "direct_observation",
+        "interpretation",
+        "confidence",
+        "alternatives",
+    ),
+)
+
+
+def _bind_emit() -> None:
+    if hasattr(sc, "emit"):
+        return
+
+    def emit(
+        status: str,
+        *,
+        probe_performed: str = "",
+        direct_observation: Any = "",
+        interpretation: str = "",
+        probe_kind: str = "",
+        claim_kind: str | None = None,
+        falsifier: str = "",
+        source: str = "",
+    ) -> dict[str, Any]:
+        row: dict[str, Any] = {
+            "status": status,
+            "probe_performed": probe_performed,
+            "direct_observation": direct_observation,
+            "interpretation": interpretation or status,
+            "probe_kind": probe_kind,
+            "use_catalog": False,
+            "source": source or "<emit>",
+        }
+        if claim_kind:
+            row["claim_kind"] = claim_kind
+        if falsifier:
+            row["falsifier"] = falsifier
+        out = sc.challenge(row)
+        out["entry"] = "emit"
+        return out
+
+    sc.emit = emit  # type: ignore[attr-defined]
+
+
+_bind_emit()
+
+
+def records_five_fields(node: Any) -> bool:
+    fn = getattr(sc, "records_five_fields", None)
+    if callable(fn):
+        return bool(fn(node))
+    if not isinstance(node, dict):
+        return False
+    if not all(k in node for k in FIVE_RECORDED_FIELDS):
+        return False
+    if not str(node.get("probe_performed") or "").strip():
+        return False
+    if node.get("direct_observation") in (None, "", [], {}):
+        return False
+    if not str(node.get("interpretation") or "").strip():
+        return False
+    conf = node.get("confidence")
+    if not isinstance(conf, dict):
+        return False
+    if not {"would_raise", "would_lower", "level", "about"} <= set(conf):
+        return False
+    alts = node.get("alternatives")
+    return isinstance(alts, list) and bool(alts)
+
+
+def _record_gate_causality(
+    report: Dict[str, Any],
+    *,
+    probe_performed: str = "",
+    direct_observation: Any = "",
+    interpretation: str | None = None,
+    probe_kind: str = "",
+    claim_kind: str | None = None,
+    source: str = "",
+) -> dict[str, Any]:
+    """Stamp the five causality fields. Does not change status/qualification/checks.
+
+    An unsupplied observation is UNTESTED, never a restatement of PASSED/FAILED.
+    OVERREACHING is recorded beside the verdict; it does not override it.
+    """
+    status_before = report.get("status")
+    qual_before = report.get("qualification")
+    checks_before = dict(report["checks"]) if isinstance(report.get("checks"), dict) else report.get("checks")
+    status = str(report.get("status") or "")
+    unsupplied = direct_observation in (None, "", [], {})
+    rec = sc.emit(
+        status,
+        probe_performed=str(probe_performed or ""),
+        direct_observation="" if unsupplied else direct_observation,
+        interpretation=interpretation if interpretation is not None else status,
+        probe_kind="" if unsupplied else probe_kind,
+        claim_kind=None if unsupplied else claim_kind,
+        source=source,
+    )
+    for key in FIVE_RECORDED_FIELDS:
+        report[key] = rec[key]
+    report["causality_verdict"] = rec["verdict"]
+    report["falsifier"] = rec.get("falsifier")
+    if rec.get("probe_kind"):
+        report["probe_kind"] = rec["probe_kind"]
+    if rec.get("claim_kind") is not None:
+        report["claim_kind"] = rec["claim_kind"]
+    checks_after = dict(report["checks"]) if isinstance(report.get("checks"), dict) else report.get("checks")
+    if (
+        report.get("status") != status_before
+        or report.get("qualification") != qual_before
+        or checks_after != checks_before
+    ):
+        raise RuntimeError("status_causality.emit mutated the gate verdict")
+    return rec
 
 
 def _safe_json(value: Any) -> Any:
@@ -135,6 +265,64 @@ def _run(registry: Any, name: str, arguments: Dict[str, Any]) -> tuple[ToolResul
     result = registry.invoke(name, arguments)
     return result, _result_row(name, result)
 
+
+
+def causality_payload(report: Dict[str, Any]) -> Dict[str, Any]:
+    checks = report.get("checks") if isinstance(report.get("checks"), dict) else {}
+    calls = report.get("calls") or []
+    auth = report.get("auth") if isinstance(report.get("auth"), dict) else {}
+    unmet = [name for name, value in checks.items() if value is not True]
+    call_rows = []
+    for row in calls:
+        if not isinstance(row, dict):
+            continue
+        call_rows.append(
+            {
+                "tool": row.get("tool"),
+                "ok": row.get("ok"),
+                "failure_class": row.get("failure_class"),
+                "download_performed": row.get("download_performed"),
+                "atomic_publish": row.get("atomic_publish"),
+            }
+        )
+    if not checks and not calls:
+        return {
+            "probe_performed": "",
+            "direct_observation": "",
+            "interpretation": str(report.get("status") or ""),
+            "probe_kind": "",
+            "claim_kind": None,
+        }
+    status = str(report.get("status") or "")
+    return {
+        "probe_performed": (
+            "ToolRegistry research seam: web.search, official web.fetch, github.search, "
+            "github.fetch, huggingface.resolve, huggingface.fetch_file, "
+            "huggingface.download of one metadata file with expected_sha256; "
+            "credential-shaped-string scan of the receipt"
+        ),
+        "direct_observation": (
+            f"calls={call_rows}; resolved_revision={report.get('resolved_revision')!r}; "
+            f"auth={auth}; credentials_secret_free={report.get('credentials_secret_free')!r}; "
+            f"checks={{{', '.join(f'{k}={v!r}' for k, v in sorted(checks.items()))}}}; unmet={unmet!r}"
+        ),
+        "interpretation": (
+            "bounded public research tools returned source-backed metadata and the receipt was credential-free"
+            if status == "PASSED"
+            else f"research-tool checks unmet: {unmet or ['secret-shaped data']}"
+        ),
+        "probe_kind": sc.PROBE_MEASURED_FLAGS,
+        "claim_kind": sc.CLAIM_FIELD_VALUE if status == "PASSED" else sc.CLAIM_MEASURED_UNMET,
+    }
+
+
+def record_research_causality(report: Dict[str, Any], **kwargs: Any) -> dict[str, Any]:
+    payload = kwargs or causality_payload(report)
+    return _record_gate_causality(
+        report,
+        source="hcli/agentos/research.py::run_research_gate",
+        **payload,
+    )
 
 def run_research_gate(
     workspace: Optional[str | os.PathLike[str]] = None,
@@ -266,6 +454,8 @@ def run_research_gate(
         report["blocker"] = "credential-shaped data appeared in the research receipt"
     receipt = root / ".hcli" / "receipts" / "research-gate.json"
     report["receipt_path"] = str(receipt)
+    payload = causality_payload(report)
+    record_research_causality(report, **payload)
     atomic_write_json(receipt, report)
     if emit:
         destination = Path(emit).expanduser().resolve()
@@ -295,7 +485,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     return 0 if report.get("status") == "PASSED" else 1
 
 
-__all__ = ["SCHEMA", "run_research_gate", "main"]
+__all__ = ["SCHEMA", "causality_payload", "record_research_causality", "records_five_fields", "run_research_gate", "main"]
 
 
 if __name__ == "__main__":

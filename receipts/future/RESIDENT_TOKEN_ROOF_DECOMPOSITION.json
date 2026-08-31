@@ -1,0 +1,694 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T11:45:35Z",
+  "recorded_by": "tools/future/token_roof_decomposition.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "bytes": {
+  "auxiliary_bytes": 1069605696,
+  "auxiliary_source_field": "accounting.auxiliary_bytes",
+  "auxiliary_source_receipt": "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+  "broadcast_aux_on_critical_path": false,
+  "broadcast_aux_source_field": "stream_classes.broadcast_aux.on_critical_path",
+  "broadcast_aux_source_receipt": "receipts/future/ECONOMICS_CALIBRATION.json",
+  "bytes_per_token": 9878901136,
+  "campaign_byte_ms_at_clean_gemv_cited": 14.043,
+  "campaign_byte_ms_source": "receipts/future/RESIDENT_TOKEN_BUDGET.json",
+  "clean_roof_ms_on_bytes": 14.042503391613362,
+  "clean_roof_ms_on_useful_bytes": 12.522097285003554,
+  "removing_0p535_gb_made_things_slower": {
+   "bytes_removed": 534773760,
+   "incumbent_gb_s": 334.5682,
+   "incumbent_gpu_us": 249.75,
+   "native_gb_s": 269.7453,
+   "native_gpu_us": 278.791,
+   "source_receipt": "receipts/future/AUX_U8_NATIVE.json"
+  },
+  "useful_bytes_per_token": 8809295440,
+  "why_the_columns_are_different": "The broadcast aux stream (MLP scale/bias/header, 1069605696 bytes) is bytes that are not on the critical path. ECONOMICS_CALIBRATION billed a 50% aux drop at 0 ms/GB (within noise). AUX_U8_NATIVE then removed 534773760 bytes of aux and the kernel got SLOWER (incumbent 334.5682 GB/s in 249.75 us vs native 269.7453 GB/s in 278.791 us). Do not collapse the columns."
+ },
+ "causal_budget_66p54": {
+  "caveat": "MEASURED CLEAN KERNEL ROOF, NEVER guaranteed production bandwidth. addr_probe loads scales + packed codes and sinks them: NO nibble unpack, NO input-vector load, NO FMA. Kernel shape does not exist in production. Campaign 703.5 is the probe MAX (703.61), not the median (699.57).",
+  "class": "ROOF_ON_TODAYS_BYTES",
+  "clean_kernel_roof_caveat": "MEASURED CLEAN KERNEL ROOF, NEVER guaranteed production bandwidth. addr_probe loads scales + packed codes and sinks them: NO nibble unpack, NO input-vector load, NO FMA. Kernel shape does not exist in production. Campaign 703.5 is the probe MAX (703.61), not the median (699.57).",
+  "guaranteed_production_bandwidth": false,
+  "kind": "NOT_A_REACHABLE_TPS",
+  "ms": 15.028,
+  "no_input_vector_load": true,
+  "note": "Arithmetic: organ bytes at 703.5 GB/s plus the 0.989 ms host gap. A ceiling for a kernel that does not load the activation. ROOF_ANCHOR flags this rung wrong_roof_shape.",
+  "qualification": "NOT_QUALIFIED",
+  "quoted_from_two_numbers": 66.54,
+  "quoted_value": 66.54,
+  "rests_on_roof_id": "q4_single_gemv_addr_13p6gb_max",
+  "rung": "every organ at the clean GEMV roof 703.5 GB/s",
+  "source_field": "ladder[rung=every organ at the clean GEMV roof 703.5 GB/s].tps",
+  "source_receipt": "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json",
+  "the_two_numbers_that_matter_field": "roof_on_todays_bytes_tps",
+  "unit": "tokens_per_second_arithmetic",
+  "usable_as_production_streaming_roof": false
+ },
+ "cited_evidence_class": "SELF_MEASURED_DIRTY",
+ "claim_boundary": "Static sidecar assembled from committed receipts. No new GPU probe. Every GB/s, ms, dispatch, encoder, command-buffer and wait figure is copied from a named prior receipt or derived by arithmetic over those copies (DERIVED_FROM_CITED_RECEIPTS). 703 GB/s is recorded as a MEASURED CLEAN KERNEL ROOF with the no-input-vector-load caveat, never as guaranteed production bandwidth; the causal budget's 66.54 TPS rung rests on it and carries the same caveat. Bytes per token and useful bytes per token are different columns: broadcast aux is not on the critical path. Unrelated losses (decode arithmetic, addressing, the DeltaNet state stall, host ceremony) stay apart. evidence_class of the cited measurements is SELF_MEASURED_DIRTY; this sidecar takes no GPU lease and fabricates no hardware number. A TPS figure here is never labelled QUALIFIED.",
+ "clean_kernel_roof": {
+  "also_cited_from": [
+   "receipts/future/ROOF_ANCHOR.json",
+   "receipts/future/ADDRESSING_ATTRIBUTION.json",
+   "receipts/future/MLP_ALU_ROOFLINE.json"
+  ],
+  "campaign_label_gb_s": 703.5,
+  "clean_kernel_roof_caveat": "MEASURED CLEAN KERNEL ROOF, NEVER guaranteed production bandwidth. addr_probe loads scales + packed codes and sinks them: NO nibble unpack, NO input-vector load, NO FMA. Kernel shape does not exist in production. Campaign 703.5 is the probe MAX (703.61), not the median (699.57).",
+  "guaranteed_production_bandwidth": false,
+  "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+  "kind": "MEASURED_CLEAN_KERNEL_ROOF",
+  "max_gb_s": 703.6072736347875,
+  "median_gb_s": 699.5736545106142,
+  "min_gb_s": 693.1508595217028,
+  "no_input_vector_load": true,
+  "roof_id": "q4_single_gemv_addr_13p6gb_max",
+  "source_field": "q4_single_gemv_addr_probe[label=gemv_payload_13p612gb].spread.max",
+  "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+  "statistic": "max",
+  "usable_as_production_streaming_roof": false,
+  "what_was_measured": {
+   "activation_loaded": false,
+   "arithmetic_ran": false,
+   "bytes": 13611663360,
+   "dispatches": 1,
+   "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+   "note": "Loads scales + packed codes and sinks them. NO nibble unpack, NO input-vector load, NO FMA. Shader: crates/hawking-core/shaders/qwen_uniform_q4.metal. Median of the same probe is 699.5736545106142; min 693.1508595217028. Campaign 703.5 is this MAX rounded, not the median. ADDRESSING_GAP refused 703.5-as-median. Timing label GPU_PROTECTED_CPU_CONTENDED; clean_box false.",
+   "reps": 5,
+   "shape": "one concatenated Q4 GEMV at the geometry payload, addr_probe kernel",
+   "topology": "single_gemv"
+  }
+ },
+ "clean_kernel_roof_caveat": "MEASURED CLEAN KERNEL ROOF, NEVER guaranteed production bandwidth. addr_probe loads scales + packed codes and sinks them: NO nibble unpack, NO input-vector load, NO FMA. Kernel shape does not exist in production. Campaign 703.5 is the probe MAX (703.61), not the median (699.57).",
+ "evidence_class": "DERIVED_FROM_CITED_RECEIPTS",
+ "finding": "CLEAN ROOF 703.5 GB/s is a MEASURED CLEAN KERNEL ROOF (max 703.61, median 699.57, no input-vector load) \u2014 NEVER guaranteed production bandwidth; the 66.54 TPS rung rests on it and carries the same caveat. ADDRESSING drops 4.5739 ms / 172.85 GB/s to catalog 530.65 (401 vs 1 dispatch; topology + mixed organs; native 6.1936 ms on 13.612 GB). GEOMETRY drops 1.2446 ms / 33.25 GB/s to ARM A 497.4 WITH activation; occupancy contribution is 0 (FALSIFIED); catalog_full vs addr is 1.2599 ms native. REAL DECODE is MLP decode arithmetic 4.7895 ms (497.4 \u2192 329.6 on the same 83.56 MB; organ 15.541 vs 10.7515 ms); fold_addqx saved 3.9833 ms on the complete token and is NOT bit-identical. COMPLETE TOKEN incumbent 26.3026 ms GPU / 22.3192 fold_addqx, host ceremony 0.9894 ms (separate column), DeltaNet state-to-consume stall 0.1821 ms (named, not absorbed). UNATTRIBUTED 1.4699 ms. Bytes 9878901136 vs useful 8809295440: broadcast aux is not on the critical path; removing 0.535 GB made things SLOWER. No GPU INEFFICIENCY bucket.",
+ "forbidden_bucket": "GPU_INEFFICIENCY",
+ "forbidden_bucket_present": false,
+ "gpu_authority": false,
+ "guaranteed_production_bandwidth": false,
+ "host_vs_gpu": {
+  "gpu_ms": 26.302583,
+  "gpu_source_receipt": "receipts/future/FOLD_ADDQX_AB.json",
+  "host_bounds_the_entire_class": true,
+  "host_class": "CPU submission, command buffers, readbacks, synchronization, state movement, host transforms, reporting, allocation, lock contention",
+  "host_ms": 0.9894,
+  "host_source_receipt": "receipts/future/WALL_GPU_RECONCILIATION.json",
+  "wall_ms_derived": 27.291983
+ },
+ "no_input_vector_load": true,
+ "obligation": "RESIDENT_TOKEN_ROOF_DECOMPOSITION.json EXISTS AND NAMES EVERY LOSS. Each transition CLEAN ROOF -> ADDRESSING -> GEOMETRY -> REAL DECODE -> COMPLETE TOKEN carries its own MEASURED loss, with dispatch/encoder/command-buffer counts, waits, host and gpu time, bytes per token and USEFUL bytes per token tracked separately. UNRELATED LOSSES MAY NEVER BE COMBINED INTO 'GPU INEFFICIENCY', and an unattributed residue is reported as UNATTRIBUTED. 703 GB/s is recorded as a MEASURED CLEAN KERNEL ROOF, NEVER as guaranteed production bandwidth.",
+ "reconciliation": {
+  "complete_token": {
+   "fold_addqx_gpu_ms": 22.319249,
+   "incumbent_gpu_ms": 26.302583,
+   "organ_era_gpu_ms": 27.828,
+   "organ_era_is_a_different_run": true,
+   "organ_era_source_receipt": "receipts/future/ORGAN_BANDWIDTH.json",
+   "source_receipt": "receipts/future/FOLD_ADDQX_AB.json"
+  },
+  "gpu": {
+   "gap_ms": 0.0,
+   "parts_ms": {
+    "UNATTRIBUTED": 1.469902461198231,
+    "addressing": 4.573944251660226,
+    "clean_roof": 14.042503391613362,
+    "deltanet_state_to_consume_stall": 0.1821,
+    "geometry": 1.2446322441409663,
+    "real_decode": 4.789500651387213
+   },
+   "required": [
+    "clean_roof",
+    "addressing",
+    "geometry",
+    "real_decode",
+    "deltanet_state_to_consume_stall",
+    "UNATTRIBUTED"
+   ],
+   "sum_parts_ms": 26.302583,
+   "unattributed_ms": 1.469902461198231,
+   "unattributed_name": "UNATTRIBUTED",
+   "whole_ms": 26.302583,
+   "within_tolerance": true
+  },
+  "wall": {
+   "complete_token_gpu_ms": 26.302583,
+   "formula": "complete_token_gpu_ms + host_gap_ms",
+   "gap_ms": 0.0,
+   "host_ceremony_ms": 0.9894,
+   "host_source_receipt": "receipts/future/WALL_GPU_RECONCILIATION.json",
+   "sum_parts_ms": 27.291983,
+   "whole_kind": "DERIVED_FROM_CITED_RECEIPTS",
+   "whole_ms": 27.291983,
+   "within_tolerance": true
+  }
+ },
+ "recorded_by": "tools/future/token_roof_decomposition.py",
+ "refuted_as_the_mechanism": [
+  {
+   "id": "stream_count_at_fixed_bytes_per_thread",
+   "note": "4+2 shape 377.1 vs 2+2+2 308.3; merging further HURTS (pack_6_32=218.7).",
+   "source_receipt": "receipts/future/MLP_STREAM_COUNT.json",
+   "span": 1.2232,
+   "status": "REFUTED"
+  },
+  {
+   "id": "dependency_chains",
+   "note": "1-to-8 accumulators span 1.062, jumped=False. Not a dependency chain.",
+   "source_receipt": "receipts/future/MLP_ISSUE_RATE_LADDER.json",
+   "span": 1.062,
+   "status": "REFUTED"
+  },
+  {
+   "id": "register_pressure",
+   "note": "ws0 vs ws32 span 1.078. Not register pressure.",
+   "source_receipt": "receipts/future/MLP_ISSUE_RATE_LADDER.json",
+   "span": 1.0782,
+   "status": "REFUTED"
+  },
+  {
+   "id": "occupancy",
+   "note": "Raising occupancy makes things WORSE (tg1024 ~236 GB/s).",
+   "source_receipt": "receipts/future/MLP_ISSUE_RATE_LADDER.json",
+   "status": "REFUTED"
+  },
+  {
+   "id": "region_granularity",
+   "source_receipt": "receipts/future/MLP_REGION_FALSIFIER.json",
+   "status": "REFUTED"
+  },
+  {
+   "id": "catalog_addressing_as_host_indirection",
+   "source_receipt": "receipts/future/CATALOG_ADDRESSING.json",
+   "status": "REFUTED"
+  },
+  {
+   "id": "raw_dispatch_count",
+   "source_receipt": "receipts/future/CATALOG_ADDRESSING.json",
+   "status": "REFUTED"
+  }
+ ],
+ "schema": "hawking.future.token_roof_decomposition.v1",
+ "seal_sha256": "df3b501e832ec0d41f0214c11b3b04082d1e9126a834b27a8078822091e430f8",
+ "self_timing": {
+  "elapsed_ms": 3.1854170374572277,
+  "qualifies": "nothing",
+  "what": "python wall of static composition in this process"
+ },
+ "stages": [
+  {
+   "also_cited_from": [
+    "receipts/future/ROOF_ANCHOR.json",
+    "receipts/future/ADDRESSING_ATTRIBUTION.json",
+    "receipts/future/MLP_ALU_ROOFLINE.json"
+   ],
+   "bytes_per_token": 9878901136,
+   "campaign_label_gb_s": 703.5,
+   "clean_kernel_roof_caveat": "MEASURED CLEAN KERNEL ROOF, NEVER guaranteed production bandwidth. addr_probe loads scales + packed codes and sinks them: NO nibble unpack, NO input-vector load, NO FMA. Kernel shape does not exist in production. Campaign 703.5 is the probe MAX (703.61), not the median (699.57).",
+   "command_buffers": 1,
+   "dispatches": 1,
+   "encoders": 1,
+   "gb_s": 703.5,
+   "gb_s_measured_max": 703.6072736347875,
+   "gb_s_measured_median": 699.5736545106142,
+   "gpu_ms": 14.042503391613362,
+   "guaranteed_production_bandwidth": false,
+   "host_ms": 0.0,
+   "id": "CLEAN_ROOF",
+   "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+   "kind": "MEASURED_CLEAN_KERNEL_ROOF",
+   "loads_activation": false,
+   "max_gb_s": 703.6072736347875,
+   "median_gb_s": 699.5736545106142,
+   "min_gb_s": 693.1508595217028,
+   "ms_active_bytes": 14.042503391613362,
+   "ms_native_catalog_payload_max": 19.637375,
+   "ms_native_catalog_payload_median": 19.457084,
+   "ms_useful_bytes": 12.522097285003554,
+   "no_input_vector_load": true,
+   "roof_id": "q4_single_gemv_addr_13p6gb_max",
+   "source_field": "cited.single_gemv_addr",
+   "source_receipt": "receipts/future/CATALOG_ADDRESSING.json",
+   "statistic": "max",
+   "usable_as_production_streaming_roof": false,
+   "useful_bytes_per_token": 8809295440,
+   "what_was_measured": {
+    "activation_loaded": false,
+    "arithmetic_ran": false,
+    "bytes": 13611663360,
+    "dispatches": 1,
+    "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+    "note": "Loads scales + packed codes and sinks them. NO nibble unpack, NO input-vector load, NO FMA. Shader: crates/hawking-core/shaders/qwen_uniform_q4.metal. Median of the same probe is 699.5736545106142; min 693.1508595217028. Campaign 703.5 is this MAX rounded, not the median. ADDRESSING_GAP refused 703.5-as-median. Timing label GPU_PROTECTED_CPU_CONTENDED; clean_box false.",
+    "reps": 5,
+    "shape": "one concatenated Q4 GEMV at the geometry payload, addr_probe kernel",
+    "topology": "single_gemv"
+   }
+  },
+  {
+   "bytes_per_token": 9878901136,
+   "command_buffers": 1,
+   "dispatches": 401,
+   "encoders": {
+    "catalog_probe": 401,
+    "encoder_collapse_noop": 580,
+    "encoder_collapse_separated_gpu": false,
+    "encoder_collapse_serial": 1
+   },
+   "gb_s": 530.6544688491846,
+   "gpu_ms": 18.616447643273588,
+   "host_ms": 0.0,
+   "id": "ADDRESSING",
+   "loads_activation": false,
+   "ms_active_bytes": 18.616447643273588,
+   "ms_native_catalog_payload": 25.650709,
+   "note": "Same addr_probe kernel as the 703 figure, 401 production-shaped GEMVs. Still no activation load. First target on the 703-to-337 chain.",
+   "source_field": "cited.production_catalog_addr.median_gb_s",
+   "source_receipt": "receipts/future/CATALOG_ADDRESSING.json",
+   "useful_bytes_per_token": 8809295440
+  },
+  {
+   "bytes_per_token": 9878901136,
+   "catalog_full_gb_s": 505.8100047843556,
+   "command_buffers": 1,
+   "corroborated_by": {
+    "lm_head_gb_s": 497.4,
+    "source_receipt": "receipts/future/ORGAN_BANDWIDTH.json"
+   },
+   "dispatches": 3,
+   "encoders": 1,
+   "gb_s": 497.4,
+   "gpu_ms": 19.861079887414554,
+   "host_ms": 0.0,
+   "id": "GEOMETRY",
+   "kernel_geometry_verdict": "FALSIFIED",
+   "loads_activation": true,
+   "ms_active_bytes": 19.861079887414554,
+   "ms_native_catalog_full": 26.910625,
+   "note": "Production-shaped WITH the activation load: ARM A stripped MLP on 83558400 bytes, loads proven live. Independently the LM head's demonstrated production rate. KERNEL_GEOMETRY FALSIFIED occupancy/coalescing/tpr64 as the 530\u2192337 drop.",
+   "occupancy_is_the_530_to_337_loss": false,
+   "source_field": "mlp.arm_a_stripped.effective_gb_s",
+   "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+   "useful_bytes_per_token": 8809295440
+  },
+  {
+   "arithmetic_ran": true,
+   "bytes_per_token": 9878901136,
+   "command_buffers": 1,
+   "dispatches": {
+    "layer_probe": 3,
+    "organ": 192
+   },
+   "encoders": 1,
+   "gb_s": 329.6,
+   "gpu_ms": 15.541,
+   "host_ms": 0.0,
+   "id": "REAL_DECODE",
+   "loads_activation": true,
+   "ms_mlp_at_arm_a": 10.751499348612787,
+   "ms_organ_mlp": 15.541,
+   "note": "Production affine2-q2 decode arithmetic live on the same 83.56 MB as ARM A. Organ-scale GPU ms is ORGAN_BANDWIDTH mlp.gpu_ms. This is decode arithmetic, not addressing, not the DeltaNet stall, not host ceremony.",
+   "organ_mlp_gb_s": 344.1,
+   "source_field": "mlp.production.effective_gb_s",
+   "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+   "useful_bytes_per_token": 8809295440
+  },
+  {
+   "bytes_per_token": 9878901136,
+   "command_buffers": {
+    "complete_token": 1
+   },
+   "complete_token_saving_ms": 3.9833,
+   "dispatches": {
+    "fold_addqx_580_graph": 580,
+    "organ_trace": 628,
+    "sealed_fused_628_graph": 628
+   },
+   "encoders": {
+    "fold_addqx_580_graph": 580
+   },
+   "fold_addqx_gpu_ms": 22.319249,
+   "gb_s_derived_from_active_bytes": 375.58672986603636,
+   "gb_s_kind": "DERIVED_FROM_CITED_RECEIPTS",
+   "gpu_ms": 26.302583,
+   "host_ms": 0.9894,
+   "id": "COMPLETE_TOKEN",
+   "incumbent_is_post_widen_f4_baseline": true,
+   "not_a_new_measurement": true,
+   "note": "Post-widen_f4 incumbent complete-token GPU median. Host gap is tracked in the host column from WALL_GPU_RECONCILIATION, not folded into GPU time. 580-graph fused production path.",
+   "source_field": "complete_token.incumbent_ms",
+   "source_receipt": "receipts/future/FOLD_ADDQX_AB.json",
+   "useful_bytes_per_token": 8809295440,
+   "wall_ms_derived": 27.291983,
+   "wall_ms_kind": "DERIVED_FROM_CITED_RECEIPTS"
+  }
+ ],
+ "took_gpu_lease": false,
+ "tps_qualification": {
+  "any_tps_labelled_qualified": false,
+  "protected_window_required": true,
+  "reason": "Cited measurements are SELF_MEASURED_DIRTY. This sidecar fabricates no hardware number and labels no TPS QUALIFIED."
+ },
+ "transitions": [
+  {
+   "bytes_per_token": 9878901136,
+   "caveat": "MEASURED CLEAN KERNEL ROOF, NEVER guaranteed production bandwidth. addr_probe loads scales + packed codes and sinks them: NO nibble unpack, NO input-vector load, NO FMA. Kernel shape does not exist in production. Campaign 703.5 is the probe MAX (703.61), not the median (699.57).",
+   "clean_kernel_roof_caveat": "MEASURED CLEAN KERNEL ROOF, NEVER guaranteed production bandwidth. addr_probe loads scales + packed codes and sinks them: NO nibble unpack, NO input-vector load, NO FMA. Kernel shape does not exist in production. Campaign 703.5 is the probe MAX (703.61), not the median (699.57).",
+   "command_buffers": {
+    "from": 1,
+    "to": 1
+   },
+   "components": [
+    {
+     "falsified_as": "host catalog indirection",
+     "gb_s": 172.84553115081542,
+     "gpu_ms": 4.573944251660226,
+     "host_ms": 0.0,
+     "mechanism": "dispatch topology + mixed organ sizes",
+     "ms": 4.573944251660226,
+     "name": "addressing",
+     "source_receipt": "receipts/future/CATALOG_ADDRESSING.json"
+    }
+   ],
+   "dispatches": {
+    "from": 1,
+    "to": 401
+   },
+   "encoders": {
+    "encoder_collapse_noop": 580,
+    "encoder_collapse_separated_gpu": false,
+    "encoder_collapse_serial": 1,
+    "from": 1,
+    "to_catalog_probe": 401
+   },
+   "from_gb_s": 703.5,
+   "from_ms": 14.042503391613362,
+   "from_stage": "CLEAN_ROOF",
+   "gpu_ms": 4.573944251660226,
+   "guaranteed_production_bandwidth": false,
+   "host_ms": 0.0,
+   "id": "CLEAN_ROOF_TO_ADDRESSING",
+   "loss_gb_s": 172.84553115081542,
+   "loss_ms": 4.573944251660226,
+   "loss_name": "catalog_topology_mixed_organs",
+   "measured": true,
+   "native_measurement": {
+    "also": "receipts/future/ADDRESSING_ATTRIBUTION.json T2 / ADDRESSING_GAP",
+    "attributed_gb_s_median_to_median": 168.91918566142965,
+    "from_gb_s_max": 703.6072736347875,
+    "from_gb_s_median": 699.5736545106142,
+    "loss_ms_on_catalog_payload_max": 6.013334,
+    "loss_ms_on_catalog_payload_median": 6.193625000000001,
+    "payload_bytes": 13611663360,
+    "single_to_catalog_ns": 6193625,
+    "source_receipt": "receipts/future/CATALOG_ADDRESSING.json",
+    "to_gb_s_median": 530.6544688491846
+   },
+   "no_input_vector_load": true,
+   "source_field": "cited.single_gemv_addr -> cited.production_catalog_addr",
+   "source_receipt": "receipts/future/CATALOG_ADDRESSING.json",
+   "to_gb_s": 530.6544688491846,
+   "to_ms": 18.616447643273588,
+   "to_stage": "ADDRESSING",
+   "token_scale_formula": "implied_ms(active_bytes, 530.65) - implied_ms(active_bytes, 703.5)",
+   "usable_as_production_streaming_roof": false,
+   "useful_bytes_per_token": 8809295440,
+   "waits": {
+    "gpu_ms": 6.193625000000001,
+    "note": "MTLCommandBuffer GPUStartTime/GPUEndTime on the catalog addr_probe. Encoder collapse left GPU_NS overlapping; the tax is kernel launch / mixed organ sizes, not encoder begin/end and not host catalog walk. ns_per_extra_dispatch_catalog_vs_single=15484.0625.",
+    "wait_minus_gpu_ms": null,
+    "wait_ms": null
+   }
+  },
+  {
+   "bytes_per_token": 9878901136,
+   "command_buffers": {
+    "from": 1,
+    "to": 1
+   },
+   "components": [
+    {
+     "gb_s": 33.254468849184605,
+     "gpu_ms": 1.2446322441409663,
+     "host_ms": 0.0,
+     "ms": 1.2446322441409663,
+     "name": "activation_load_vs_addr_probe",
+     "native_catalog_full_vs_addr_ms": 1.259915999999997,
+     "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json"
+    },
+    {
+     "gb_s": 0.0,
+     "gpu_ms": 0.0,
+     "host_ms": 0.0,
+     "ms": 0.0,
+     "name": "occupancy_coalescing_tpr64",
+     "note": "raising occupancy is worse; not the 530\u2192337 drop",
+     "source_receipt": "receipts/future/KERNEL_GEOMETRY.json",
+     "status": "FALSIFIED"
+    }
+   ],
+   "dispatches": {
+    "from_catalog": 401,
+    "to_arm_a_layer": 3
+   },
+   "encoders": {
+    "from": 401,
+    "to": 1
+   },
+   "from_gb_s": 530.6544688491846,
+   "from_ms": 18.616447643273588,
+   "from_stage": "ADDRESSING",
+   "gpu_ms": 1.2446322441409663,
+   "host_ms": 0.0,
+   "id": "ADDRESSING_TO_GEOMETRY",
+   "loss_gb_s": 33.254468849184605,
+   "loss_ms": 1.2446322441409663,
+   "loss_name": "activation_load_production_shaped_roof",
+   "measured": true,
+   "native_measurement": {
+    "arm_a_gb_s": 497.4,
+    "arm_a_gpu_ms_layer": 0.168,
+    "arm_a_source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+    "catalog_addr_gb_s": 530.6544688491846,
+    "catalog_full_gb_s": 505.8100047843556,
+    "catalog_full_minus_addr_ms": 1.259915999999997,
+    "occupancy_contribution_ms": 0.0,
+    "occupancy_status": "FALSIFIED",
+    "source_receipt": "receipts/future/KERNEL_GEOMETRY.json",
+    "weight_free_dispatches_at_most_ms": 0.585604
+   },
+   "source_field": "verdict.decomposition.catalog_full vs catalog_addr; mlp.arm_a_stripped",
+   "source_receipt": "receipts/future/KERNEL_GEOMETRY.json",
+   "to_gb_s": 497.4,
+   "to_ms": 19.861079887414554,
+   "to_stage": "GEOMETRY",
+   "useful_bytes_per_token": 8809295440,
+   "waits": {
+    "gpu_ms": 1.259915999999997,
+    "note": "KERNEL_GEOMETRY: occupancy/coalescing/tpr64 FALSIFIED as the 530\u2192337 drop (verdict=FALSIFIED, geometry_is_the_530_to_337_loss=False). Raising occupancy makes things WORSE (issue-ladder tg1024). Weight-free dispatches at most 0.585604 ms \u2014 a bound, not this transition's loss. Native catalog_full vs catalog_addr is 1.259915999999997 ms on 13.612 GB (dequant + input + FMA).",
+    "wait_minus_gpu_ms": null,
+    "wait_ms": null
+   }
+  },
+  {
+   "bytes_per_token": 9878901136,
+   "command_buffers": {
+    "layer_probe": 1,
+    "organ_isolated": 1
+   },
+   "components": [
+    {
+     "demonstrated_removable_complete_token_ms": 3.9833,
+     "demonstrated_source": "receipts/future/FOLD_ADDQX_AB.json",
+     "gb_s": 167.79999999999995,
+     "gpu_ms": 4.789500651387213,
+     "host_ms": 0.0,
+     "ms": 4.789500651387213,
+     "name": "decode_arithmetic",
+     "organ": "mlp",
+     "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json"
+    }
+   ],
+   "dispatches": {
+    "complete_token_mlp_matvecs": 192,
+    "layer_probe": 3,
+    "organ": 192
+   },
+   "encoders": {
+    "layer_probe": 1,
+    "organ_isolated": 1
+   },
+   "from_gb_s": 497.4,
+   "from_ms": 10.751499348612787,
+   "from_stage": "GEOMETRY",
+   "gpu_ms": 4.789500651387213,
+   "host_ms": 0.0,
+   "id": "GEOMETRY_TO_REAL_DECODE",
+   "loss_gb_s": 167.79999999999995,
+   "loss_ms": 4.789500651387213,
+   "loss_name": "decode_arithmetic",
+   "measured": true,
+   "native_measurement": {
+    "arm_a_gb_s": 497.4,
+    "arm_a_over_production": 1.5089,
+    "fold_addqx_complete_token_saving_class": "approx_candidate",
+    "fold_addqx_complete_token_saving_ms": 3.9833,
+    "fold_addqx_faster_not_exact": true,
+    "fold_source_receipt": "receipts/future/FOLD_ADDQX_AB.json",
+    "layer_arm_a_ms": 0.168,
+    "layer_production_ms": 0.2535,
+    "organ_mlp_at_arm_a_ms": 10.751499348612787,
+    "organ_mlp_ms": 15.541,
+    "organ_source_receipt": "receipts/future/ORGAN_BANDWIDTH.json",
+    "production_gb_s": 329.6,
+    "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json"
+   },
+   "source_field": "mlp.arm_a_stripped vs mlp.production; ORGAN_BANDWIDTH mlp.gpu_ms",
+   "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+   "to_gb_s": 329.6,
+   "to_ms": 15.541,
+   "to_stage": "REAL_DECODE",
+   "useful_bytes_per_token": 8809295440,
+   "waits": {
+    "gpu_ms": 15.884583,
+    "note": "Isolated MLP matvecs on the fold_addqx A/B: wait_ns_median vs gpu_ns_median after wait. Complete-token timestamps are GPU start/end, never a CPU-wait proxy. This transition is decode arithmetic only; DeltaNet stall and host ceremony are not in here.",
+    "wait_minus_gpu_ms": 0.307709,
+    "wait_ms": 16.192292
+   }
+  },
+  {
+   "bytes_per_token": 9878901136,
+   "command_buffers": {
+    "complete_token": 1,
+    "deltanet_as_executed": 1
+   },
+   "components": [
+    {
+     "gb_s": null,
+     "gpu_ms": 0.1821,
+     "host_ms": 0.0,
+     "ms": 0.1821,
+     "name": "deltanet_state_to_consume_stall",
+     "note": "Named, not absorbed. State update must retire before gated_rmsnorm and out_proj.",
+     "organ_cb_ms": 8.1615,
+     "partition_sum_ms": 7.9794,
+     "residual_name": "organ_cb_slower_than_isolated_family_sum: the organ command buffer is slower than the sum of per-family CBs, so this is not isolated-CB commit tax (that would make the sum larger). Named candidate: dependency / serialization stalls inside the chained encode_deltanet graph (state update must retire before gated_rmsnorm and out_proj). Named, not absorbed.",
+     "source_receipt": "receipts/future/DELTANET_ORGAN_DECOMPOSE.json"
+    },
+    {
+     "gb_s": null,
+     "gpu_ms": 0.0,
+     "host_ms": 0.9894,
+     "ms": 0.9894,
+     "name": "host_ceremony",
+     "note": "CPU submission, command buffers, readbacks, synchronization, state movement, host transforms, reporting, allocation, lock contention TOGETHER. Not the unlock.",
+     "source_receipt": "receipts/future/WALL_GPU_RECONCILIATION.json"
+    },
+    {
+     "contains_epoch_gap": true,
+     "deltanet_other_vs_497p4_ms_organ_era": 2.090617925211097,
+     "gb_s": null,
+     "gpu_ms": 1.469902461198231,
+     "gqa_vs_497p4_ms_organ_era": 0.8150977885002011,
+     "host_ms": 0.0,
+     "ms": 1.469902461198231,
+     "name": "UNATTRIBUTED",
+     "note": "Residue after naming addressing, geometry/activation, MLP decode arithmetic, the DeltaNet state stall and host ceremony, projected onto the fold_addqx incumbent complete token. Contains organ-era GQA/DeltaNet-other vs 497.4 plus the epoch gap between ORGAN_BANDWIDTH 27.828 ms and FOLD_ADDQX_AB 26.302583 ms, which are different runs. Reported as UNATTRIBUTED, not smeared.",
+     "organ_coverage_unattributed_ms": 0.095,
+     "organ_era_token_gpu_ms": 27.828,
+     "source_receipt": "receipts/future/RESIDENT_TOKEN_ROOF_DECOMPOSITION.json"
+    }
+   ],
+   "dispatches": {
+    "complete_token": 580,
+    "deltanet_organ": 337,
+    "sealed_fused": 628
+   },
+   "encoders": {
+    "complete_token": 580,
+    "deltanet_as_executed": 337
+   },
+   "from_gb_s": 329.6,
+   "from_ms": 15.541,
+   "from_stage": "REAL_DECODE",
+   "gpu_ms": 1.652002461198231,
+   "host_ms": 0.9894,
+   "id": "REAL_DECODE_TO_COMPLETE_TOKEN",
+   "loss_gb_s": null,
+   "loss_ms": 2.641402461198231,
+   "loss_name": "token_assembly",
+   "measured": true,
+   "native_measurement": {
+    "complete_token_fold_addqx_ms": 22.319249,
+    "complete_token_incumbent_ms": 26.302583,
+    "deltanet_organ_cb_ms": 8.1615,
+    "deltanet_partition_sum_ms": 7.9794,
+    "deltanet_residual_ms": 0.1821,
+    "host_gap_ms": 0.9894,
+    "organ_era_is_a_different_run": true,
+    "organ_era_token_gpu_ms": 27.828,
+    "source_receipts": [
+     "receipts/future/FOLD_ADDQX_AB.json",
+     "receipts/future/DELTANET_ORGAN_DECOMPOSE.json",
+     "receipts/future/WALL_GPU_RECONCILIATION.json"
+    ]
+   },
+   "source_field": "complete_token.incumbent_ms; DELTANET_ORGAN_DECOMPOSE residual; WALL_GPU_RECONCILIATION host",
+   "source_receipt": "receipts/future/FOLD_ADDQX_AB.json",
+   "to_gb_s": 375.58672986603636,
+   "to_ms": 26.302583,
+   "to_stage": "COMPLETE_TOKEN",
+   "useful_bytes_per_token": 8809295440,
+   "waits": {
+    "gpu_ms": 28.054,
+    "note": "Host vs GPU are separate columns. WALL_GPU_RECONCILIATION bounds the entire host class at 0.9894 ms (three runs, GPU/wall ratio stable). That is NOT this GPU remainder. DeltaNet organ CB vs isolated-family sum is a GPU dependency stall, also not host.",
+    "wait_minus_gpu_ms": 0.9894,
+    "wait_ms": 29.0434
+   }
+  }
+ ],
+ "unattributed": {
+  "gpu_ms": 1.469902461198231,
+  "host_ms": 0.0,
+  "ms": 1.469902461198231,
+  "name": "UNATTRIBUTED",
+  "named_sum_ms": 24.832680538801768,
+  "note": "Residue after naming the four measured transitions' token-scale losses plus the DeltaNet state stall. Size is reported, not smeared into GPU INEFFICIENCY.",
+  "whole_ms": 26.302583
+ },
+ "unrelated_losses_kept_apart": {
+  "addressing": {
+   "ms": 4.573944251660226,
+   "name": "addressing",
+   "source_receipt": "receipts/future/CATALOG_ADDRESSING.json",
+   "transition": "CLEAN_ROOF_TO_ADDRESSING"
+  },
+  "decode_arithmetic": {
+   "also": "receipts/future/FOLD_ADDQX_AB.json",
+   "ms": 4.789500651387213,
+   "name": "decode_arithmetic",
+   "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+   "transition": "GEOMETRY_TO_REAL_DECODE"
+  },
+  "deltanet_state_to_consume_stall": {
+   "ms": 0.1821,
+   "name": "deltanet_state_to_consume_stall",
+   "source_receipt": "receipts/future/DELTANET_ORGAN_DECOMPOSE.json",
+   "transition": "REAL_DECODE_TO_COMPLETE_TOKEN"
+  },
+  "host_ceremony": {
+   "gpu_ms": 0.0,
+   "host_ms": 0.9894,
+   "ms": 0.9894,
+   "name": "host_ceremony",
+   "source_receipt": "receipts/future/WALL_GPU_RECONCILIATION.json",
+   "transition": "REAL_DECODE_TO_COMPLETE_TOKEN"
+  }
+ },
+ "usable_as_production_streaming_roof": false,
+ "version": 1
+}

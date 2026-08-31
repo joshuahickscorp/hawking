@@ -1,0 +1,273 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T17:28:13Z",
+  "recorded_by": "tools/future/terminal_speed_artifact.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "best_representation_and_its_evidence": {
+  "byte_evidence": "exact from 192 HGRAVF01 headers; reconciled or the module refuses",
+  "levers_priced": [
+   {
+    "bytes_eliminated_if_true": 534773760,
+    "gb": 0.534774,
+    "id": "quantize_aux_u8",
+    "ms_saved_at_measured_rate": 0.0,
+    "status": "OPEN",
+    "stream_class": "broadcast_aux"
+   },
+   {
+    "bytes_eliminated_if_true": 534773760,
+    "gb": 0.534774,
+    "id": "larger_group_size",
+    "ms_saved_at_measured_rate": 0.0,
+    "status": "OPEN",
+    "stream_class": "broadcast_aux"
+   },
+   {
+    "bytes_eliminated_if_true": 52032,
+    "gb": 5.2e-05,
+    "id": "pack_headers",
+    "ms_saved_at_measured_rate": 0.0,
+    "status": "OPEN",
+    "stream_class": "broadcast_aux"
+   }
+  ],
+  "measured_ms_per_gb_by_stream": {
+   "activation": 2.906132,
+   "broadcast_aux": 0.0,
+   "weight_codes": 0.547282
+  },
+  "reading": "Every open auxiliary lever prices at 0.0 ms and IMMATERIAL. The bytes are real and exactly counted; the time is not there. aux_keep_50 sits inside noise while codes_keep_50 does not, so the auxiliary arrays do not cost token time at this packing and removing them cannot buy any. group_size_256 and group_size_1024 are additionally capability-REFUTED on held-out fit by AUX_CAPABILITY_SCREEN. What IS priced is the code body: 0.547 ms/GB. All 4.28 GB of it is 2.34 ms, and 93.5% of it is independent information, so perfect entropy coding of what is stored buys 0.152 ms. That is the honest size of the representation lever on this body, and it is not close to the 13.2 ms that 71 TPS needs.",
+  "sources": [
+   "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+   "receipts/future/ECONOMICS_CALIBRATION.json"
+  ],
+  "time_evidence": "paired keep-fraction loads, ECONOMICS_CALIBRATION, SELF_MEASURED_DIRTY"
+ },
+ "causal_residual": {
+  "baseline_moved": {
+   "computed_against_ms": 29.0434,
+   "current_body_gpu_ms": 26.5943,
+   "current_body_ms": 27.2896,
+   "current_body_tps": 36.644,
+   "measured_by": "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json",
+   "ms_removed_since": 1.7538,
+   "what_is_still_from_the_old_census": "the PER-ORGAN ms in ORGANS are from the pre-widen_f4 region trace. The new census has eight rows (it separates mlp_gate_up from mlp_down and carries a q4_remainder and a sampling row) and does not map one-to-one onto the old four, so remapping it is a separate piece of work rather than a substitution. The organ SHARES remain the best available reading; the token TOTAL is now measured on the body that runs."
+  },
+  "byte_coverage": 0.99972,
+  "gpu_residual_is_named_not_mysterious": "norms, the embedding row, A_log and dt_bias - 0.028% of the token",
+  "gpu_residual_ms": 0.095,
+  "host_gap_is_a_subtraction_not_a_residual": "host_gap = wall - gpu by construction, so it absorbs every unmeasured host cost and cannot be a surprise. Do not report wall minus parts as the unexplained fraction; it is definitionally zero.",
+  "host_gap_ms": 0.9894,
+  "next_prey": "not the remainder. ORGAN_BANDWIDTH's own finding is THE_LOSS_IS_UNIFORM_NOT_LOCALIZED: MLP, DeltaNet and GQA sit between 341.9 and 360.0 GB/s, inside 5% of each other, against a 703.5 clean roof. There is no hot organ to attack. The loss is distributed in proportion to bytes, which is why byte elimination outranks execution tuning from here.",
+  "organ_ms_covered_in_receipt": 27.733,
+  "organ_ms_sum": 27.733,
+  "organs_explain_of_traced_gpu": 0.996586,
+  "trace_overhead_pct": 1.8,
+  "traced_gpu_ms": 27.828,
+  "traced_vs_untraced_ms": 0.226,
+  "untraced_gpu_ms": 28.054,
+  "wall_ms": 29.0434,
+  "why_that_gap_is_not_a_residual": "the organ parts come from a run with the region trace ON, which that receipt measures at 1.8% of GPU time with dispatches and greedy text identical. Comparing traced parts against an untraced total mixes runs; the difference is overhead and variation, not physics."
+ },
+ "citations_resolved": {
+  "clean_gemv_gb_s": 703.5,
+  "current_body_gpu_ms": 26.5943,
+  "current_body_wall_ms": 27.2896,
+  "demonstrated_gb_s": 497.4,
+  "entropy_floor_bytes": 277697891.2457967,
+  "group_size_1024_bytes": 1002700800.0,
+  "group_size_256_bytes": 802160640.0,
+  "host_gap_ms": 0.9894,
+  "host_gap_worth_tps": 1.214,
+  "organ_gpu_ms_covered": 27.733,
+  "quantize_aux_u8_bytes": 534773760.0,
+  "region_trace_overhead_pct": 1.8,
+  "traced_token_gpu_ms": 27.828,
+  "unattributed_gpu_ms": 0.095
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "dominant_remaining_costs": {
+  "host_gap_ms": 0.6953,
+  "measured_on": "widen_f4, release profile, ModelLake stopped, lane lock held",
+  "reading": "MLP is still the prey: gate_up plus down is 15.647 ms of a 26.594 ms GPU token. DeltaNet is second at 5.597. Nothing else clears 8%.",
+  "rows": [
+   {
+    "dispatches": 128,
+    "gpu_ms": 9.9154,
+    "organ": "mlp_gate_up",
+    "share_of_gpu": 0.3728
+   },
+   {
+    "dispatches": 128,
+    "gpu_ms": 5.7319,
+    "organ": "mlp_down",
+    "share_of_gpu": 0.2155
+   },
+   {
+    "dispatches": 288,
+    "gpu_ms": 5.5971,
+    "organ": "deltanet",
+    "share_of_gpu": 0.2105
+   },
+   {
+    "dispatches": 64,
+    "gpu_ms": 2.0596,
+    "organ": "q4_remainder",
+    "share_of_gpu": 0.0774
+   },
+   {
+    "dispatches": 96,
+    "gpu_ms": 2.0356,
+    "organ": "gqa_attention",
+    "share_of_gpu": 0.0765
+   },
+   {
+    "dispatches": 2,
+    "gpu_ms": 1.0204,
+    "organ": "lm_head",
+    "share_of_gpu": 0.0384
+   },
+   {
+    "dispatches": 1,
+    "gpu_ms": 0.334,
+    "organ": "sampling",
+    "share_of_gpu": 0.0126
+   },
+   {
+    "dispatches": 1,
+    "gpu_ms": 0.0073,
+    "organ": "embedding",
+    "share_of_gpu": 0.0003
+   }
+  ],
+  "source": "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json",
+  "token_gpu_ms": 26.5943,
+  "token_wall_ms": 27.2896
+ },
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "irreducible_current_information": {
+  "H_q_bits_of_2_stored": 1.87017973205819,
+  "auxiliary_bytes": {
+   "auxiliary_bytes": 1069605696,
+   "auxiliary_share_of_mlp": 0.20000870280054614,
+   "bias_bytes": 534773760,
+   "bias_share_of_auxiliary": 0.4999728049316596,
+   "code_bytes": 4278190080,
+   "group_size": 64,
+   "header_bytes": 58176,
+   "header_bytes_per_tensor": [
+    303
+   ],
+   "header_share_of_auxiliary": 5.439013668079793e-05,
+   "identity": {
+    "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+    "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+    "geometry": {
+     "hidden_size": 5120,
+     "intermediate_size": 17408,
+     "num_hidden_layers": 64
+    },
+    "model_id": "qwen3.8-27b-sealed-3.14",
+    "resident_identity": "sealed-3.14"
+   },
+   "incumbent_packing": {
+    "bias_dtype": "f16",
+    "bytes_per_group_aux": 4,
+    "family": "affine_q2_group64_ls",
+    "fit": "ls",
+    "reconstruction": "w = float(q) * scale + bias, q unsigned in {0,1,2,3}",
+    "representation": "affine_q2_group64_fp16_scale_bias",
+    "scale_dtype": "f16"
+   },
+   "n_groups": 267386880,
+   "n_parameters": 17112760320,
+   "n_tensors": 192,
+   "reconciled": true,
+   "scale_bytes": 534773760,
+   "scale_share_of_auxiliary": 0.4999728049316596,
+   "stored_bytes": 5347795776,
+   "target": 1069605696
+  },
+  "entropy_floor_recoverable_bytes": 277697891,
+  "independent_fraction": 0.935089866029095,
+  "mlp_code_bytes": 4278190080,
+  "reading": "The 4.28 GB code body is 93.5% independent information at these statistics: H(q) 1.870 of 2 stored bits, conditioning on the previous symbol buys 0.003, cross-layer MI is 1e-7. Perfect entropy coding of what is stored recovers 277.7 MB. That is not 'incompressible' - it is not conventionally compressible, and function replacement remains UNMEASURED on this object rather than refuted.",
+  "sources": [
+   "receipts/future/MLP_CODE_INFORMATION.json",
+   "receipts/future/MLP_AUXILIARY_INFORMATION.json"
+  ]
+ },
+ "next_hardware_requirement": {
+  "actual_read_bytes_per_token": "UNKNOWN",
+  "aggregate_gb_s_by_level": {
+   "1": 361.9,
+   "2": 454.8,
+   "3": 453.2
+  },
+  "byte_counter_available": false,
+  "clean_gemv_roof_gb_s": 703.5,
+  "concurrency_verdict": "CONCURRENCY_HELPS",
+  "lm_head_demonstrated_gb_s": 497.4,
+  "organ_gb_s_band": [
+   341.9,
+   360.0
+  ],
+  "reading": "The requirement is bandwidth, and the shape of it changed once concurrency was measured. WITHIN one session the loss is uniform - MLP, DeltaNet and GQA inside 5% of each other at 341.9-360.0 GB/s against a 703.5 roof, no hot organ to attack. But a single session is NOT what saturates this machine: two or three concurrent sessions aggregate to 449-580 GB/s, reaching and sometimes passing the LM head's demonstrated 497.4. So the memory system was never full at n=1, and ORGAN_BANDWIDTH's own open dependency-chain hypothesis - layer N+1 cannot start until layer N retires - is the mechanism. That does NOT lower the 71 bar: 71 is single-stream latency, and under concurrency each session gets SLOWER. What it changes is the diagnosis. The binding limit on one stream is not the memory system's capacity; it is the serial dependency between layers, and no amount of byte removal addresses that. Separately this device exposes NO counter reporting bytes moved - no MTLCounterSet, GPURawCounter, IOKit PerformanceStatistics or IOReport channel - so actual traffic is UNKNOWN from an unprivileged process and the catalog figure stays an accounting floor.",
+  "sources": [
+   "receipts/future/MEMORY_TRAFFIC_PROBE.json",
+   "receipts/future/ORGAN_BANDWIDTH.json",
+   "receipts/future/RESIDENT_CONCURRENCY_MEASURED.json"
+  ]
+ },
+ "next_model_body_alternative": {
+  "incumbent": "sealed-3.14 (Qwen3.8-Flash-Next)",
+  "reading": "Odyssey I is launched on a sealed specimen constellation, so the alternative is not hypothetical. Succession is explicitly NOT warranted on cognition grounds: CHOICE_JSON_PROBE showed a 0.6B failing the same clipped ask this 27B failed and both passing with the schema in view, so the incumbent's structured-output record was an artifact of the harness. A body change must be argued on bytes or bandwidth, not on the decision failures this campaign has been attributing to it.",
+  "source": "receipts/future/ODYSSEY_I_LAUNCH.json"
+ },
+ "prerequisites": [
+  {
+   "field": "coverage.gpu_ms_unattributed",
+   "id": "G038_per_region_attribution",
+   "met": true,
+   "receipt": "receipts/future/ORGAN_BANDWIDTH.json",
+   "value": 0.095,
+   "why": "a roof receipt that names the dominant remaining costs cannot leave GPU time unattributed and call the accounting complete. The answer is that the loss is NOT localised: MLP, DeltaNet and GQA sit inside 5% of each other against a 703.5 clean roof, so there is no hot organ and byte elimination outranks execution tuning."
+  },
+  {
+   "field": "contiguous.effective_gb_s",
+   "id": "G044_granularity_falsifier",
+   "met": true,
+   "receipt": "receipts/future/MLP_REGION_FALSIFIER.json",
+   "value": 332.2,
+   "why": "One representative MLP layer, contiguous, few fused regions, identical arithmetic, bit-identical output. Rising toward the LM head's 497.4 implicates fragmentation; staying near 350 kills it. Either answer changes what the binding limit IS."
+  },
+  {
+   "field": "decode_wall_ms_per_token",
+   "id": "G075_current_body_baseline",
+   "met": true,
+   "receipt": "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json",
+   "value": 27.2896,
+   "why": "deltanet_widen_f4 landed as a measured token-identical 1.0245 ms win, so every ladder rung is arithmetic over a body that no longer runs. A roof measured against a superseded baseline is not a roof."
+  }
+ ],
+ "recorded_by": "tools/future/terminal_speed_artifact.py",
+ "schema": "hawking.future.terminal_speed_artifact.v1",
+ "seal_sha256": "b15bee7e908524d6160b23168072722b0bc295879cb34f5d69cbd60b0a950834",
+ "target": {
+  "current_body_ms": 27.2896,
+  "measured_tps": 34.43,
+  "measured_wall_ms": 29.0434,
+  "reached": false,
+  "target_ms": 14.085,
+  "target_tps": 71.0,
+  "why_not_assumed": "reached is decided against the CURRENT body's measured complete token, never against a remembered one. While that is UNKNOWN the target can be claimed neither reached nor unreachable; now that it is measured, 71 TPS needs 14.085 ms and the body runs at 27.2896 ms."
+ },
+ "version": 1,
+ "which": "MAX_RESIDENT_PHYSICAL_ROOF.json"
+}

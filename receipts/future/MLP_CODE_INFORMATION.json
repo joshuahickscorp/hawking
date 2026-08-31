@@ -1,0 +1,3060 @@
+{
+ "accounting": {
+  "auxiliary_bytes": 1069605696,
+  "bias_bytes": 534773760,
+  "code_bits": 2,
+  "code_bytes": 4278190080,
+  "code_share_of_mlp": 0.7999912971994538,
+  "group_size": 64,
+  "header_bytes": 58176,
+  "identity": {
+   "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+   "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+   "geometry": {
+    "hidden_size": 5120,
+    "intermediate_size": 17408,
+    "num_hidden_layers": 64
+   },
+   "model_id": "qwen3.8-27b-sealed-3.14",
+   "resident_identity": "sealed-3.14"
+  },
+  "incumbent_packing": {
+   "alphabet": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "code_bits": 2,
+   "family": "affine_q2_group64_ls",
+   "reconstruction": "w = float(q) * scale + bias, q unsigned in {0,1,2,3}"
+  },
+  "n_groups": 267386880,
+  "n_parameters": 17112760320,
+  "n_tensors": 192,
+  "reconciled": true,
+  "scale_bytes": 534773760,
+  "stored_bytes": 5347795776,
+  "target": 4278190080
+ },
+ "answers": {
+  "are_some_rows_or_layers_lower_entropy": {
+   "H_q_all_tensors": {
+    "max": 1.873977371526143,
+    "mean": 1.8701622501900672,
+    "min": 1.8502978255791103,
+    "n": 192,
+    "std": 0.0028792911941391414
+   },
+   "H_q_later": {
+    "max": 1.873977371526143,
+    "mean": 1.8701149836430222,
+    "min": 1.8502978255791103,
+    "n": 189,
+    "std": 0.0028745662361823114
+   },
+   "H_q_layer0": {
+    "max": 1.873867859643535,
+    "mean": 1.8731400426538949,
+    "min": 1.8717295501869682,
+    "n": 3,
+    "std": 0.0009975390346505335
+   },
+   "answer": "NO at a scale that would change bits. Per-tensor H(q) std is ~0.003 bits; no sampled row has H<1.5; layer 0 is slightly *higher* entropy than later layers.",
+   "sample_rowH_min": {
+    "max": 1.8149337291752967,
+    "mean": 1.7576079604519788,
+    "min": 1.6809812294437108,
+    "n": 12,
+    "std": 0.03927324129534148
+   },
+   "status": "MEASURED_NEGATIVE"
+  },
+  "can_a_dictionary_or_block_generator_win": {
+   "answer": "NO. 16-byte groups are essentially unique; zlib ratio \u2248 0.95 tracks the Shannon histogram, not long repeats.",
+   "block_generator_status": "MEASURED_NEGATIVE",
+   "dictionary_status": "MEASURED_NEGATIVE",
+   "sample_unique_frac": {
+    "max": 1.0,
+    "mean": 0.9999922210094976,
+    "min": 0.9999719956341911,
+    "n": 12,
+    "std": 8.337100375434218e-06
+   },
+   "sample_zlib_ratio": {
+    "max": 0.9488043841193704,
+    "mean": 0.9464793186561732,
+    "min": 0.9373582727768842,
+    "n": 12,
+    "std": 0.0029438866245790536
+   }
+  },
+  "can_a_tiny_program_generate_the_codes": {
+   "answer": "NO. Neighbour MI is 0.002 bits and groups do not repeat. Generating the residual is storing q.",
+   "generated_programs": "MEASURED_NEGATIVE",
+   "generated_tensors": "REJECTED_DENSE_REMAT",
+   "generated_tensors_remat": "REJECTED_DENSE_REMAT"
+  },
+  "do_the_codes_share_across_layers_or_organs": {
+   "answer": "NO. Aligned-symbol mutual information is ~1e-5 bits across layers and ~1e-4 bits gate\u2194up. Match rates equal the independent baseline.",
+   "cross_layer": {
+    "mlp.down": {
+     "independent_match": {
+      "max": 0.3000617735656642,
+      "mean": 0.2938584506602712,
+      "min": 0.29263135693413916,
+      "n": 63,
+      "std": 0.0011490622407882743
+     },
+     "match": {
+      "max": 0.29761082144344553,
+      "mean": 0.293823467471909,
+      "min": 0.2927192575791303,
+      "n": 63,
+      "std": 0.0009204249565917046
+     },
+     "mi_bits": {
+      "max": 1.9633510058245118e-07,
+      "mean": 8.129240583519494e-08,
+      "min": 1.5564971789189486e-08,
+      "n": 63,
+      "std": 3.9494617750487706e-08
+     }
+    },
+    "mlp.gate": {
+     "independent_match": {
+      "max": 0.2950100194260691,
+      "mean": 0.2933189599727595,
+      "min": 0.29238874391376635,
+      "n": 63,
+      "std": 0.0006920708669339835
+     },
+     "match": {
+      "max": 0.29567099178538603,
+      "mean": 0.2943233806991221,
+      "min": 0.2927049749037799,
+      "n": 63,
+      "std": 0.0008651229323564565
+     },
+     "mi_bits": {
+      "max": 6.05058039212697e-05,
+      "mean": 1.3389218206245002e-05,
+      "min": 9.402717763068777e-07,
+      "n": 63,
+      "std": 1.40664498832161e-05
+     }
+    },
+    "mlp.up": {
+     "independent_match": {
+      "max": 0.2953650572327132,
+      "mean": 0.29376061816472776,
+      "min": 0.29263320231584805,
+      "n": 63,
+      "std": 0.0008072457075552923
+     },
+     "match": {
+      "max": 0.29649893816779643,
+      "mean": 0.2945498444230394,
+      "min": 0.29282547445858226,
+      "n": 63,
+      "std": 0.0011462213684574794
+     },
+     "mi_bits": {
+      "max": 3.0482933646362774e-05,
+      "mean": 1.2832936248962128e-05,
+      "min": 8.517047641083285e-07,
+      "n": 63,
+      "std": 9.764074961491484e-06
+     }
+    }
+   },
+   "gate_vs_up": {
+    "match": {
+     "max": 0.3030374526977539,
+     "mean": 0.2960363473962335,
+     "min": 0.2936393849989947,
+     "n": 64,
+     "std": 0.0015135965913151259
+    },
+    "mi_bits": {
+     "max": 0.0014802390351087787,
+     "mean": 0.00011402562728688608,
+     "min": 1.1192539133578964e-05,
+     "n": 64,
+     "std": 0.00019358490331440178
+    },
+    "n_layers": 64,
+    "note": "down has a transposed shape (5120 x 17408 vs 17408 x 5120); no elementwise code alignment."
+   },
+   "status": "MEASURED_NEGATIVE"
+  },
+  "how_much_of_the_code_body_is_independent": {
+   "H_q_bits": 1.87017973205819,
+   "H_q_given_prev_within_byte": 1.8680582965617971,
+   "answer": "93.5090% of the 4,278,190,080 code bytes is independent information at the measured i.i.d. Shannon bound (4000492189 bytes). Neighbours, layers, and gate/up/down add essentially nothing. The leftover 277697891 bytes (6.4910%) is the 4-level histogram bias (p\u22480.146/0.354/0.355/0.146), not sharing.",
+   "iid_redundant_bytes_rounded": 277697891,
+   "iid_shannon_bytes_rounded": 4000492189,
+   "independent_fraction": 0.935089866029095,
+   "mi_within_byte_bits": 0.0019509107280792906,
+   "p_q": [
+    0.14558220254439933,
+    0.3542769077946158,
+    0.3545904730464898,
+    0.14555041661449508
+   ],
+   "stored_code_bytes": 4278190080
+  },
+  "is_entropy_coding_a_4gb_lever": {
+   "answer": "NO. The lossless floor is still 4.00 GB. The 278 MB i.i.d. gap is a fused-decode micro-lever (OPEN, kernel UNMEASURED) and is below NNS-022's 0.9-of-uniform reopen.",
+   "bytes_eliminated_if_true": 277697891,
+   "nns022_reopen_fires": false,
+   "status": "OPEN"
+  },
+  "what_the_codes_do_not_measure": {
+   "answer": "shared_input_transforms and function_replacement are properties of F / of activations, not of q. They stay UNMEASURED on this object. Attractive is not supported.",
+   "function_replacement": "UNMEASURED",
+   "shared_input_transforms": "UNMEASURED"
+  }
+ },
+ "auxiliary_families_not_restated": [
+  "shared_scale_basis",
+  "per_tensor_curve_plus_residual",
+  "predict_scale_from_code_stats",
+  "low_rank_scale_matrix",
+  "parametric_scale_program",
+  "tie_bias_to_minus_half_codes",
+  "drop_bias",
+  "collapse_to_global_scale",
+  "cross_layer_scale_delta"
+ ],
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T05:43:14Z",
+  "recorded_by": "tools/future/mlp_code_information.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "candidate_counts": {
+  "already_falsified": 3,
+  "measured_negative": 9,
+  "n": 16,
+  "open": 1,
+  "rejected_dense_remat": 3,
+  "status_rejected_dense_remat": 1,
+  "unmeasured": 2
+ },
+ "candidates": [
+  {
+   "byte_model": "active \u2248 (bits/8)*17112760320 + group scale/bias. 1-bit codes would be 2139095040 code bytes vs incumbent 4278190080. Lossless 1-bit requires H(q) \u2264 1; measured H(q)=1.8702.",
+   "bytes_eliminated_if_true": 2139095040,
+   "cheapest_falsifier": "Already run: uniform Q2 MLP output rel-fro 0.578 vs q3 0.198 (NNS-029); 1.25-bpw binary body generation-incoherent, 0/4 healers (QN-BINARY-INJURY). STATIC on these arrays: H(q)=1.8702 > 1, so even a lossless 1-bit recoding of the stored q is information-theoretically impossible. Retry is not a new experiment.",
+   "citations": [
+    {
+     "claim_refuted": "That activation sparsity (~2\u00d7 MLP max) or uniform bit-descent below q3 is a clean path under the Qwen3.8 coherent floor.",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "Sparsity: a Doctor-holding skip pattern that does not compound over 64 layers. Bit-descent: a codec that actually hits the Shannon bound AND a generate gate at that distortion. Neither is a retry of q2 or of unstructured activation skip.",
+     "scar_id": "NNS-029",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b MLP (sparsity); whole artifact (bit-descent)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP 2-bit code body"
+    },
+    {
+     "claim_refuted": "the 1.25-bpw binary body is physically fast but generation-injured; 0 of 4 healing candidates reached coherent generation",
+     "kind": "MODEL_SPECIFIC",
+     "reopen_condition": "a healing scheme that restores coherent generation while the healed body stays faster than q2f_g64",
+     "scar_id": "QN-BINARY-INJURY",
+     "source_path": "tools/headless/negative_science.py",
+     "surface": "qwen3.8-27b mlp_gate_up+mlp_down (QN catalog; abliterated sibling of this parent)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP 2-bit code body"
+    }
+   ],
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "A native 1-bit GEMV consumes codes in-register (QN-BINARY kernel was competent). Unpack-to-Q4-then-generic-GEMV is a different lowering and is REJECTED_DENSE_REMAT.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "lower_bit_native",
+   "index_refusals": [],
+   "index_slugs": [
+    "uniform_q2",
+    "binary_quantization",
+    "ternary"
+   ],
+   "measured": {
+    "H_q_bits": 1.87017973205819,
+    "lossless_1bit_impossible": true
+   },
+   "mechanism": "Replace the incumbent 2-bit affine-Q2 codes with a native 1-bit / ternary / sign-code of the same weights. Not a new function for F; a thinner packing of the same q-object.",
+   "name": "lower-bit native representations of the same W",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "ALREADY_FALSIFIED",
+   "support": "SCAR"
+  },
+  {
+   "byte_model": "sum_rows bits_r * n_cols_r / 8. A win requires a proper subset of the 192 tensors (or their rows) with H(q) materially below 2. Measured per-tensor H(q) sits in [1.8502978255791103, 1.873977371526143] with std 0.0028792911941391414; sampled row-min is 1.6809812294437108.",
+   "bytes_eliminated_if_true": null,
+   "bytes_eliminated_if_true_note": "Exact only after a bit map. No row/tensor on these arrays is a 1-bit island, so the save from entropy-heterogeneity is ~0.",
+   "cheapest_falsifier": "STATIC, run here: every tensor's H(q) is in 1.850\u20131.874 bits; sampled per-row min is 1.6809812294437108 and frac of rows with H<1.5 is 0. There is no low-entropy island in the stored q to crush. A *capability* sensitivity map of F (requantize W, not recode q) is a different object; that is OPEN in the byte census and UNMEASURED here.",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Each island keeps a native kernel (incumbent already mixes Q2 and Q4). Unpacking crushed rows to dense W is REJECTED_DENSE_REMAT.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "heterogeneous_bit_allocation",
+   "index_refusals": [],
+   "index_slugs": [
+    "uniform_subbit_allocation"
+   ],
+   "measured": {
+    "H_q_all_tensors": {
+     "max": 1.873977371526143,
+     "mean": 1.8701622501900672,
+     "min": 1.8502978255791103,
+     "n": 192,
+     "std": 0.0028792911941391414
+    },
+    "sample_rowH_frac_lt_1_5": {
+     "max": 0.0,
+     "mean": 0.0,
+     "min": 0.0,
+     "n": 12,
+     "std": 0.0
+    },
+    "sample_rowH_min": {
+     "max": 1.8149337291752967,
+     "mean": 1.7576079604519788,
+     "min": 1.6809812294437108,
+     "n": 12,
+     "std": 0.03927324129534148
+    }
+   },
+   "mechanism": "Spend 2 bits only where the stored q has high entropy; crush low-entropy rows, organs, or layers to 1 bit. This is a map over the incumbent code stream, not a new sensitivity map of F.",
+   "name": "heterogeneous bits across rows / organs / depth of the code body",
+   "physical_primitive": "ConditionalPhysicalProgram",
+   "status": "MEASURED_NEGATIVE",
+   "support": "MEASURED"
+  },
+  {
+   "byte_model": "|\u03b8| + generator program, independent of 17112760320. A win requires |\u03b8| << 4278190080 AND production that never writes W.",
+   "bytes_eliminated_if_true": 4278190080,
+   "cheapest_falsifier": "STATIC: any plan whose native_execution_concept is 'emit W, then affine2 / generic GEMV' is REJECTED_DENSE_REMAT before a fit. Independently, these codes are not a tiny G: H(q)=1.8702, unique 16-byte groups \u2265 0.9999719956341911 of n_groups, neighbour MI 0.0020 bits. A G that emits this stream is storing it.",
+   "citations": [
+    {
+     "claim_refuted": "That low-rank + activation-aware correction of the residual beats q3's density-quality point (fewer active bytes at q3 quality, held-out).",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "A distilled/generated operator, trained to match the MLP function, achieves q3 quality at materially fewer active bytes held-out across layers, with Doctor holding. That experiment has not been run.",
+     "scar_id": "NNS-015",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b down_proj L31, real post_swiglu X",
+     "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP 2-bit code body"
+    }
+   ],
+   "dense_rematerialization": "REJECTED_DENSE_REMAT",
+   "dense_rematerialization_reason": "The cheap lowering is generate-then-ordinary-GEMV. That is dense rematerialization of W and is refused as a production path. A generator that is itself the matvec (no W) is generated_programs / function_replacement.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "generated_tensors",
+   "index_refusals": [],
+   "index_slugs": [
+    "generated_tied_params"
+   ],
+   "mechanism": "Store a small generator G(\u03b8, layer, organ) that writes W at use instead of storing the 2-bit codes.",
+   "name": "generated tensors (emit W, then GEMV)",
+   "note": "NNS-015's reopen is a distilled *operator* matching F (function_replacement), not generated W. generated_tied_params canonizes to cross_expert_structure (MoE); this body has no experts \u2014 that hit is a cousin.",
+   "physical_primitive": "MoveOrRecompute",
+   "status": "REJECTED_DENSE_REMAT",
+   "support": "MEASURED"
+  },
+  {
+   "byte_model": "O(degree + n_rows) plus residual. If the residual is the code body, zero bytes are eliminated. Incumbent 4278190080.",
+   "bytes_eliminated_if_true": 4278190080,
+   "cheapest_falsifier": "STATIC, run here: H(q|neighbour)=1.8681 vs H(q)=1.8702 (MI 0.0020 bits); unique 16-byte groups \u2265 0.9999719956341911; sampled mode mass \u2264 1.5e-05. A smooth / periodic / low-complexity program of index cannot be this stream. A program that memorizes q is not tiny.",
+   "dense_rematerialization": "DEPENDS_ON_LOWERING",
+   "dense_rematerialization_reason": "In-register evaluation is DIRECT_CONSUME / FusedDecodeCompute. The cheap lowering \u2014 run the program, write the incumbent 2-bit buffer, bind affine2 \u2014 eliminates zero active bytes.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "generated_programs",
+   "index_refusals": [],
+   "index_slugs": [
+    "generated_tied_params"
+   ],
+   "measured": {
+    "mi_within_byte_bits": 0.0019509107280792906,
+    "sample_group_mode_mass": {
+     "max": 1.5e-05,
+     "mean": 6.25e-06,
+     "min": 5e-06,
+     "n": 12,
+     "std": 2.9755951785595208e-06
+    },
+    "sample_unique_frac": {
+     "max": 1.0,
+     "mean": 0.9999922210094976,
+     "min": 0.9999719956341911,
+     "n": 12,
+     "std": 8.337100375434218e-06
+    }
+   },
+   "mechanism": "A tiny program of group/row/layer index emits q \u2208 {0,1,2,3} in-register. Residual stored only if needed. Distinct from generated_tensors (which write W).",
+   "name": "generated programs (emit q in-register)",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "MEASURED_NEGATIVE",
+   "support": "MEASURED"
+  },
+  {
+   "byte_model": "|B|*K + sum |C|. Incumbent 4278190080. A K=1 shared template is the same claim as 'codes repeat across layers'.",
+   "bytes_eliminated_if_true": 4278190080,
+   "cheapest_falsifier": "STATIC, run here: aligned-symbol I(q_l; q_{l+1}) is {'mlp.gate': 1.3389218206245002e-05, 'mlp.up': 1.2832936248962128e-05, 'mlp.down': 8.129240583519494e-08} bits; match rates {'mlp.gate': 0.2943233806991221, 'mlp.up': 0.2945498444230394, 'mlp.down': 0.293823467471909} equal the independent baseline {'mlp.gate': 0.2933189599727595, 'mlp.up': 0.29376061816472776, 'mlp.down': 0.2938584506602712}. Gate\u2194up I(q_g; q_u)=0.00011402562728688608 bits, match 0.2960363473962335. The codes do not share a basis. QN-SHARED-BASIS-DENSITY is a cousin on W, not this measurement.",
+   "citations": [
+    {
+     "claim_refuted": "the KERNEL is competent and the byte win does translate to nanoseconds, but no K below ~2.25 bpw composes coherently for the MLP: the local functional probe dies at held-out activation",
+     "kind": "MODEL_SPECIFIC",
+     "reopen_condition": "a shared-basis point that is coherent at held-out activation AND beats q2f on both density and COMPLETE_TOKEN_NS",
+     "scar_id": "QN-SHARED-BASIS-DENSITY",
+     "source_path": "tools/headless/negative_science.py",
+     "surface": "qwen3.8-27b mlp_gate_up+mlp_down (QN catalog; abliterated sibling of this parent)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP 2-bit code body"
+    }
+   ],
+   "cousin_not_this_object": true,
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Fused shared-basis matvec is a direct consumer (QN-SHARED-BASIS kernel was competent). Writing dense W is REJECTED_DENSE_REMAT.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "shared_code_bases",
+   "index_hits_are_cousins": true,
+   "index_refusals": [
+    {
+     "applies_to_this_object": false,
+     "claim_refuted": "held-out activation reconstruction fails; not coherent",
+     "hypothesis_family": "shared_basis",
+     "organ": "down",
+     "queried_organ": "gate",
+     "queried_slug": "shared_basis",
+     "reopen_condition": "a shared-basis point that is coherent at held-out activation AND beats",
+     "scar_id": "tools/headless/negative_science.py#QN-SHARED-BASIS-DENSITY",
+     "source_path": "tools/headless/negative_science.py",
+     "verdict": "NEGATIVE",
+     "why_not_this_object": "Index family matches a weight-space or codec scar on this parent. The object here is the 2-bit affine-Q2 code body, not W, not the f16 scale/bias, and not a different parent."
+    }
+   ],
+   "index_slugs": [
+    "shared_basis",
+    "qn_shared_k_hybrid"
+   ],
+   "measured": {
+    "cross_layer_match": {
+     "mlp.down": 0.293823467471909,
+     "mlp.gate": 0.2943233806991221,
+     "mlp.up": 0.2945498444230394
+    },
+    "cross_layer_mi_bits": {
+     "mlp.down": 8.129240583519494e-08,
+     "mlp.gate": 1.3389218206245002e-05,
+     "mlp.up": 1.2832936248962128e-05
+    },
+    "gate_up_match": 0.2960363473962335,
+    "gate_up_mi_bits": 0.00011402562728688608
+   },
+   "mechanism": "One (or K) shared code templates B with local coefficients, so q_{l,o} \u2248 B C_{l,o}. Would store B once plus small C instead of 192 independent 2-bit arrays. This body is dense SwiGLU, not MoE \u2014 'across experts' does not apply.",
+   "name": "shared bases across layers / organs of the code body",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "MEASURED_NEGATIVE",
+   "support": "MEASURED"
+  },
+  {
+   "byte_model": "per organ, r*(m+n)*code_bits/8. Gate/up are 17408\u00d75120; a rank that preserves H(q)=1.8702 bits/entry is not a save when neighbour MI is ~0.002 bits.",
+   "bytes_eliminated_if_true": null,
+   "bytes_eliminated_if_true_note": "Exact only after choosing r. The measured local MI says r that preserves q is not a byte win.",
+   "cheapest_falsifier": "STATIC, run here: neighbour MI of q is 0.0020 bits; H(byte)=7.4697 vs 4\u00b7H(q)=7.4807, so even 4-tuples are almost independent. A factorizable code matrix would show itself as local dependence. NNS-016 / QN-LOWRANK-HEALING are cousins on W, not a retry licence.",
+   "citations": [
+    {
+     "claim_refuted": "That weight-space low-rank / TT / Kronecker factorisation of a single expert tensor is a density win at the coherent point (layers \u2265 1).",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "L>=1: never at the coherent point. L0: already beating the incumbent \u2014 build the organ-and-layer-specific codec. On a new parent, check the Van Loan spectrum before assuming depth behaviour.",
+     "scar_id": "NNS-016",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b (weight-space SVD); qwen3-235b-a22b:F1 (Kronecker) gate/down; L0 is the exception",
+     "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP 2-bit code body"
+    },
+    {
+     "claim_refuted": "no distributed correction under the 1.0 bpw budget restored held-out activations on real X; even r=256 at 1.035 extra bpw pushed the body to 2.285 > 2.25 with rel_fro 0.4798",
+     "kind": "MODEL_SPECIFIC",
+     "reopen_condition": "a correction whose extra bpw keeps the body under 2.25 while rel_fro on real held-out X drops below the q2f baseline",
+     "scar_id": "QN-LOWRANK-HEALING",
+     "source_path": "tools/headless/negative_science.py",
+     "surface": "qwen3.8-27b mlp_gate_up+mlp_down (QN catalog; abliterated sibling of this parent)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP 2-bit code body"
+    }
+   ],
+   "cousin_not_this_object": true,
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Two skinny matvecs consume the factors directly. Materializing U@V into W or into q then running affine2 is REJECTED_DENSE_REMAT.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "factorized_programs",
+   "index_hits_are_cousins": true,
+   "index_refusals": [
+    {
+     "applies_to_this_object": false,
+     "claim_refuted": "held-out activation reconstruction fails",
+     "hypothesis_family": "low_rank",
+     "organ": "down",
+     "queried_organ": "gate",
+     "queried_slug": "low_rank",
+     "reopen_condition": "a correction whose extra bpw keeps the body under 2.25 while rel_fro",
+     "scar_id": "tools/headless/negative_science.py#QN-LOWRANK-HEALING",
+     "source_path": "tools/headless/negative_science.py",
+     "verdict": "NEGATIVE",
+     "why_not_this_object": "Index family matches a weight-space or codec scar on this parent. The object here is the 2-bit affine-Q2 code body, not W, not the f16 scale/bias, and not a different parent."
+    },
+    {
+     "applies_to_this_object": false,
+     "claim_refuted": "Qwen3.8 dense low-rank failure (legacy, retired patient)",
+     "hypothesis_family": "global_dense_lowrank",
+     "organ": "unrecorded",
+     "queried_organ": "mlp",
+     "queried_slug": "global_dense_lowrank",
+     "reopen_condition": "the new architecture invalidates the old premise (bible \u00a719)",
+     "scar_id": "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json#NS-global-dense-lowrank-qwen38",
+     "source_path": "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json",
+     "verdict": "DEAD on that dense body. Does NOT automatically kill cross-expert low-rank structure in MoE.",
+     "why_not_this_object": "Index family matches a weight-space or codec scar on this parent. The object here is the 2-bit affine-Q2 code body, not W, not the f16 scale/bias, and not a different parent."
+    }
+   ],
+   "index_slugs": [
+    "low_rank",
+    "kronecker",
+    "global_dense_lowrank"
+   ],
+   "measured": {
+    "H_byte_bits": 7.4696502672678555,
+    "H_byte_if_iid_q": 7.48071892823276,
+    "mi_within_byte_bits": 0.0019509107280792906
+   },
+   "mechanism": "q \u2248 UV over the integers / a small alphabet, consumed as two skinny matvecs. Distinct from W-space SVD (NNS-016).",
+   "name": "factorized programs (low-rank / Kronecker of the code matrix)",
+   "physical_primitive": "TiledProjection",
+   "status": "MEASURED_NEGATIVE",
+   "support": "MEASURED"
+  },
+  {
+   "byte_model": "n_groups * ceil(log2(K))/8 + K * 16. n_groups=267386880. A win requires K << n_groups.",
+   "bytes_eliminated_if_true": 4278190080,
+   "cheapest_falsifier": "STATIC, run here: unique 16-byte groups / n_groups \u2265 0.9999719956341911 on sampled layers (0, 21, 42, 63) \u00d7 3 organs; sampled mode mass \u2264 1.5e-05. The codebook *is* the array. NNS-017 is a cousin (PQ of raw frozen W), not this 16-byte q-group object.",
+   "citations": [
+    {
+     "claim_refuted": "That PQ/VQ coding of the RAW frozen weights is a route to one bit or below that preserves capability.",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "Never on raw frozen weights. A method that CHANGES the source is not this lever and is not blocked by this entry.",
+     "scar_id": "NNS-017",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3-235b:F1 (and F0 gpt-oss-120b uniform/treated) whole model; dominant_failure_organ = gate",
+     "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP 2-bit code body"
+    }
+   ],
+   "cousin_not_this_object": true,
+   "dense_rematerialization": "REJECTED_DENSE_REMAT",
+   "dense_rematerialization_reason": "The cheap post-hoc lowering expands indices into a dense W (or into the incumbent 2-bit buffer) and runs ordinary GEMV. A native codebook-in-register kernel is a different lowering and is still blocked here by uniqueness: K \u2248 n_groups.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "dictionary_of_code_blocks",
+   "index_refusals": [],
+   "index_slugs": [
+    "raw_weight_pq_vq",
+    "post_hoc_frozen_codec",
+    "learned_codebook"
+   ],
+   "measured": {
+    "sample_group_mode_mass": {
+     "max": 1.5e-05,
+     "mean": 6.25e-06,
+     "min": 5e-06,
+     "n": 12,
+     "std": 2.9755951785595208e-06
+    },
+    "sample_unique_frac": {
+     "max": 1.0,
+     "mean": 0.9999922210094976,
+     "min": 0.9999719956341911,
+     "n": 12,
+     "std": 8.337100375434218e-06
+    }
+   },
+   "mechanism": "Replace each group of 64 2-bit codes with an index into a codebook of observed 16-byte patterns. Native consume looks up a codeword; it does not store q.",
+   "name": "dictionary of 16-byte (64-code) groups",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "MEASURED_NEGATIVE",
+   "support": "MEASURED"
+  },
+  {
+   "byte_model": "M * (n_blocks * ceil(log2(K))/8 + K * d/M). For M=1, d=4 (the packed byte): K\u2264256, and measured H(byte)=7.4697 of 8 with occupancy 256/256. Entropy coding of those indices is entropy_coded_code_stream.",
+   "bytes_eliminated_if_true": 277697891,
+   "cheapest_falsifier": "STATIC, run here: H(byte)=7.4697 vs 4\u00b7H(q)=7.4807 (gap 0.0111 bits / 4-tuple); occupancy 256/256. Product structure beyond the 4-level histogram bias is not in the stream. NNS-017 / NNS-022 are cousins on PQ-of-W / rANS-of-PQ-indices.",
+   "citations": [
+    {
+     "claim_refuted": "That PQ/VQ coding of the RAW frozen weights is a route to one bit or below that preserves capability.",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "Never on raw frozen weights. A method that CHANGES the source is not this lever and is not blocked by this entry.",
+     "scar_id": "NNS-017",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3-235b:F1 (and F0 gpt-oss-120b uniform/treated) whole model; dominant_failure_organ = gate",
+     "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP 2-bit code body"
+    },
+    {
+     "claim_refuted": "That entropy coding of Lloyd-optimal PQ indices yields a 10\u201325% byte win, or that rANS on Qwen3.8 q3 symbols is an active-byte/TPS lever.",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "A future parent uses NON-Lloyd (biased or stratified) codebooks whose measured index entropy is \u2264 0.9 of uniform. rANS as a TPS lever additionally needs a native register-decodable path that changes active bytes/token.",
+     "scar_id": "NNS-022",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "gpt-oss-120b:F0 (PQ indices); qwen3.8 (q3 symbols / rANS catalog) codebook indices / q3 body",
+     "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP 2-bit code body"
+    }
+   ],
+   "cousin_not_this_object": true,
+   "dense_rematerialization": "REJECTED_DENSE_REMAT",
+   "dense_rematerialization_reason": "Same cheap lowering as dictionary_of_code_blocks: expand product codes to dense W (or to incumbent q), then ordinary GEMV.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "product_codebooks",
+   "index_refusals": [],
+   "index_slugs": [
+    "raw_weight_pq_vq",
+    "entropy_coded_pq"
+   ],
+   "measured": {
+    "H_byte_bits": 7.4696502672678555,
+    "H_byte_if_iid_q": 7.48071892823276,
+    "byte_occupied_of_256": 256
+   },
+   "mechanism": "A block of q is a tuple of codebook indices, reconstructed as a sum / concat of codewords. On this packing the natural 4-code block is the packed byte (256-ary).",
+   "name": "product codebooks of the 2-bit stream",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "MEASURED_NEGATIVE",
+   "support": "MEASURED"
+  },
+  {
+   "byte_model": "backbone_bytes + nnz*(index+value). A win requires the residual of a cheap backbone to be sparse. Sampled 16-byte mode mass \u2264 1.5e-05 \u2014 there is no dominant template.",
+   "bytes_eliminated_if_true": null,
+   "cheapest_falsifier": "STATIC, run here: no 16-byte group repeats enough to be a backbone (mode mass \u2264 1.5e-05, unique frac \u2265 0.9999719956341911). NNS-015 / QN-LOWRANK-HEALING killed the W-space version as a density win; they are cousins, not this q-residual.",
+   "citations": [
+    {
+     "claim_refuted": "That low-rank + activation-aware correction of the residual beats q3's density-quality point (fewer active bytes at q3 quality, held-out).",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "A distilled/generated operator, trained to match the MLP function, achieves q3 quality at materially fewer active bytes held-out across layers, with Doctor holding. That experiment has not been run.",
+     "scar_id": "NNS-015",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b down_proj L31, real post_swiglu X",
+     "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP 2-bit code body"
+    },
+    {
+     "claim_refuted": "That activation-aware functional low-rank (output-PCA / reduced rank on real post-SwiGLU X) beats q3 at matched bytes held-out.",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "A hybrid (low-rank prefix + exact/q3 residual) or a distilled operator showing a GENERALIZING matched-byte win over q3 across layers, with Doctor holding. Pure functional low-rank on this sample size is not that. (The hybrid was then tested: NNS-015.)",
+     "scar_id": "NNS-014",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b down_proj L31/L15 (and G034 gate/down L0/L31/L63)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP 2-bit code body"
+    }
+   ],
+   "cousin_not_this_object": true,
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Residual applied in the same kernel is a direct consumer. Reconstructing W_backbone + W_R as dense W is REJECTED_DENSE_REMAT.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "lowrank_plus_sparse_residual",
+   "index_hits_are_cousins": true,
+   "index_refusals": [
+    {
+     "applies_to_this_object": false,
+     "claim_refuted": "held-out activation reconstruction fails",
+     "hypothesis_family": "low_rank",
+     "organ": "down",
+     "queried_organ": "gate",
+     "queried_slug": "low_rank",
+     "reopen_condition": "a correction whose extra bpw keeps the body under 2.25 while rel_fro",
+     "scar_id": "tools/headless/negative_science.py#QN-LOWRANK-HEALING",
+     "source_path": "tools/headless/negative_science.py",
+     "verdict": "NEGATIVE",
+     "why_not_this_object": "Index family matches a weight-space or codec scar on this parent. The object here is the 2-bit affine-Q2 code body, not W, not the f16 scale/bias, and not a different parent."
+    }
+   ],
+   "index_slugs": [
+    "low_rank",
+    "residual_codebook"
+   ],
+   "measured": {
+    "sample_group_mode_mass": {
+     "max": 1.5e-05,
+     "mean": 6.25e-06,
+     "min": 5e-06,
+     "n": 12,
+     "std": 2.9755951785595208e-06
+    },
+    "sample_unique_frac": {
+     "max": 1.0,
+     "mean": 0.9999922210094976,
+     "min": 0.9999719956341911,
+     "n": 12,
+     "std": 8.337100375434218e-06
+    }
+   },
+   "mechanism": "Cheap backbone (a low-complexity q, or the incumbent) plus a sparse residual of groups/rows that restores q. y = backbone(x) + R(x) if consumed in function space; here the question is whether q itself is a sparse residual of a simple pattern.",
+   "name": "low-rank plus sparse residual of the code body",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "MEASURED_NEGATIVE",
+   "support": "MEASURED"
+  },
+  {
+   "byte_model": "n_groups * seed_bits/8 + program. A win requires seed_bits << 128 (the 16-byte group). Unique frac \u2265 0.9999719956341911 says the seed would have to be the group.",
+   "bytes_eliminated_if_true": 4278190080,
+   "cheapest_falsifier": "STATIC, run here: unique 16-byte groups / n_groups \u2265 0.9999719956341911; zlib ratio \u2248 0.9464793186561732 (no long repeats); neighbour MI 0.0020 bits. A block generator that is not a dictionary of the groups has nothing to generate from.",
+   "dense_rematerialization": "DEPENDS_ON_LOWERING",
+   "dense_rematerialization_reason": "In-register generation of a 64-code group is DIRECT_CONSUME. Writing the incumbent 2-bit buffer then binding affine2 is not an active-byte win.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "block_generators",
+   "index_refusals": [],
+   "index_slugs": [
+    "generated_tied_params"
+   ],
+   "measured": {
+    "sample_unique_frac": {
+     "max": 1.0,
+     "mean": 0.9999922210094976,
+     "min": 0.9999719956341911,
+     "n": 12,
+     "std": 8.337100375434218e-06
+    },
+    "sample_zlib_ratio": {
+     "max": 0.9488043841193704,
+     "mean": 0.9464793186561732,
+     "min": 0.9373582727768842,
+     "n": 12,
+     "std": 0.0029438866245790536
+    }
+   },
+   "mechanism": "A small family of programs emits each 16-byte group from a short seed (group index, row index, a few bits). Distinct from a stored dictionary: the codeword is computed, not looked up.",
+   "name": "block generators of 64-code groups",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "MEASURED_NEGATIVE",
+   "support": "MEASURED"
+  },
+  {
+   "byte_model": "q_0 + sum |\u0394_l|. Incumbent 4278190080. If \u0394 \u2248 q, zero save. Keeping one layer and predicting the rest would claim 4211343360 bytes eliminated.",
+   "bytes_eliminated_if_true": 4211343360,
+   "cheapest_falsifier": "STATIC, run here: I(q_l; q_{l+1}) is {'mlp.gate': 1.3389218206245002e-05, 'mlp.up': 1.2832936248962128e-05, 'mlp.down': 8.129240583519494e-08} bits; match {'mlp.gate': 0.2943233806991221, 'mlp.up': 0.2945498444230394, 'mlp.down': 0.293823467471909} vs independent baseline {'mlp.gate': 0.2933189599727595, 'mlp.up': 0.29376061816472776, 'mlp.down': 0.2938584506602712}. Residuals are the parent. The byte-census left this OPEN on W; the *codes* are now measured. Layer 0 is not a low-entropy exception in q (H_L0={meas.get('H_q_layer0')}).",
+   "citations": [
+    {
+     "claim_refuted": "That weight-space low-rank / TT / Kronecker factorisation of a single expert tensor is a density win at the coherent point (layers \u2265 1).",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "L>=1: never at the coherent point. L0: already beating the incumbent \u2014 build the organ-and-layer-specific codec. On a new parent, check the Van Loan spectrum before assuming depth behaviour.",
+     "scar_id": "NNS-016",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b (weight-space SVD); qwen3-235b-a22b:F1 (Kronecker) gate/down; L0 is the exception",
+     "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP 2-bit code body"
+    }
+   ],
+   "cousin_not_this_object": true,
+   "dense_rematerialization": "DEPENDS_ON_LOWERING",
+   "dense_rematerialization_reason": "Predicting q_l into the incumbent 2-bit buffer then running affine2 is not an active-byte win. Direct consume would evaluate P in-register. Predicting W_l is generated_tensors and REJECTED_DENSE_REMAT.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "cross_layer_code_prediction",
+   "index_refusals": [],
+   "index_slugs": [
+    "cross_expert_structure",
+    "cross_layer_weight_delta"
+   ],
+   "measured": {
+    "H_q_later": {
+     "max": 1.873977371526143,
+     "mean": 1.8701149836430222,
+     "min": 1.8502978255791103,
+     "n": 189,
+     "std": 0.0028745662361823114
+    },
+    "H_q_layer0": {
+     "max": 1.873867859643535,
+     "mean": 1.8731400426538949,
+     "min": 1.8717295501869682,
+     "n": 3,
+     "std": 0.0009975390346505335
+    },
+    "cross_layer": {
+     "mlp.down": {
+      "independent_match": {
+       "max": 0.3000617735656642,
+       "mean": 0.2938584506602712,
+       "min": 0.29263135693413916,
+       "n": 63,
+       "std": 0.0011490622407882743
+      },
+      "match": {
+       "max": 0.29761082144344553,
+       "mean": 0.293823467471909,
+       "min": 0.2927192575791303,
+       "n": 63,
+       "std": 0.0009204249565917046
+      },
+      "mi_bits": {
+       "max": 1.9633510058245118e-07,
+       "mean": 8.129240583519494e-08,
+       "min": 1.5564971789189486e-08,
+       "n": 63,
+       "std": 3.9494617750487706e-08
+      }
+     },
+     "mlp.gate": {
+      "independent_match": {
+       "max": 0.2950100194260691,
+       "mean": 0.2933189599727595,
+       "min": 0.29238874391376635,
+       "n": 63,
+       "std": 0.0006920708669339835
+      },
+      "match": {
+       "max": 0.29567099178538603,
+       "mean": 0.2943233806991221,
+       "min": 0.2927049749037799,
+       "n": 63,
+       "std": 0.0008651229323564565
+      },
+      "mi_bits": {
+       "max": 6.05058039212697e-05,
+       "mean": 1.3389218206245002e-05,
+       "min": 9.402717763068777e-07,
+       "n": 63,
+       "std": 1.40664498832161e-05
+      }
+     },
+     "mlp.up": {
+      "independent_match": {
+       "max": 0.2953650572327132,
+       "mean": 0.29376061816472776,
+       "min": 0.29263320231584805,
+       "n": 63,
+       "std": 0.0008072457075552923
+      },
+      "match": {
+       "max": 0.29649893816779643,
+       "mean": 0.2945498444230394,
+       "min": 0.29282547445858226,
+       "n": 63,
+       "std": 0.0011462213684574794
+      },
+      "mi_bits": {
+       "max": 3.0482933646362774e-05,
+       "mean": 1.2832936248962128e-05,
+       "min": 8.517047641083285e-07,
+       "n": 63,
+       "std": 9.764074961491484e-06
+      }
+     }
+    }
+   },
+   "mechanism": "q_l = P(q_{l-1}) + \u0394_l with P = identity or a small map. Store layer-0 codes plus residuals. A win requires H(\u0394) << H(q).",
+   "name": "cross-layer prediction of the 2-bit codes",
+   "note": "cross_expert_structure is a MoE scar. This body has no routed experts; that hit is a cousin. NNS-016's full-rank depth is the W-space cousin of this code-space measurement.",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "MEASURED_NEGATIVE",
+   "support": "MEASURED"
+  },
+  {
+   "byte_model": "island_frac * full + (1-island_frac) * bulk. A win requires island_frac small. Measured H(q) is homogeneous across all 192 tensors (std 0.0028792911941391414); there is no entropy-island to keep.",
+   "bytes_eliminated_if_true": null,
+   "cheapest_falsifier": "Already run as binary-body + high-precision islands (QN-BINARY-HEALING): injury is broad, not localized; 0/4 reached coherent generation. STATIC on these arrays: H(q) does not localize either (per-tensor std 0.0028792911941391414, sampled row-min 1.6809812294437108). Reopen needs a sensitivity map of F cheaper than just using the affine-Q2 body, not another entropy map of q.",
+   "citations": [
+    {
+     "claim_refuted": "the injury is broad, not localized: no small protected island cheaply restored it; 0/4 candidates reached coherent generation",
+     "kind": "MODEL_SPECIFIC",
+     "reopen_condition": "a sensitivity map that localizes the injury to a region small enough that protecting it costs less than the 2.25-bpw q2f body",
+     "scar_id": "QN-BINARY-HEALING",
+     "source_path": "tools/headless/negative_science.py",
+     "surface": "qwen3.8-27b mlp_gate_up+mlp_down (QN catalog; abliterated sibling of this parent)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP 2-bit code body"
+    },
+    {
+     "claim_refuted": "the 1.25-bpw binary body is physically fast but generation-injured; 0 of 4 healing candidates reached coherent generation",
+     "kind": "MODEL_SPECIFIC",
+     "reopen_condition": "a healing scheme that restores coherent generation while the healed body stays faster than q2f_g64",
+     "scar_id": "QN-BINARY-INJURY",
+     "source_path": "tools/headless/negative_science.py",
+     "surface": "qwen3.8-27b mlp_gate_up+mlp_down (QN catalog; abliterated sibling of this parent)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP 2-bit code body"
+    }
+   ],
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Island and bulk each have a native kernel. Healing that remats the binary body to dense W around the island is REJECTED_DENSE_REMAT.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "capability_sensitive_literal_islands",
+   "index_refusals": [],
+   "index_slugs": [
+    "protected_islands",
+    "qn_binary_healing"
+   ],
+   "measured": {
+    "H_q_all_tensors": {
+     "max": 1.873977371526143,
+     "mean": 1.8701622501900672,
+     "min": 1.8502978255791103,
+     "n": 192,
+     "std": 0.0028792911941391414
+    },
+    "sample_rowH_min": {
+     "max": 1.8149337291752967,
+     "mean": 1.7576079604519788,
+     "min": 1.6809812294437108,
+     "n": 12,
+     "std": 0.03927324129534148
+    }
+   },
+   "mechanism": "Keep a sensitivity-selected subset of rows/layers/organs as literal 2-bit (or higher) tensors; crush the rest. The island is the capability, the bulk is packing.",
+   "name": "capability-sensitive literal islands in the code body",
+   "physical_primitive": "ConditionalPhysicalProgram",
+   "status": "ALREADY_FALSIFIED",
+   "support": "SCAR"
+  },
+  {
+   "byte_model": "|V| (5120\u00d7r) + 64*3 of W' with inner dim r. Byte win iff r << 5120 AND the readouts stay cheaper than incumbent 4278190080 code bytes + aux.",
+   "bytes_eliminated_if_true": null,
+   "cheapest_falsifier": "Not a code-stream probe. CHEAP CPU: PCA / ridge V on real post-norm X pooled across a few layers; reconstruct gate and up held-out. If the r that meets incumbent rel-fro is \u2248 hidden, there is no shared input to store once. Do not cite QN-SHARED-BASIS (weight-space B, C) or the Flash L4 rival-codec screen as a kill of this object.",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "y = W'(V x) is two matvecs. Materializing W'V into W is REJECTED_DENSE_REMAT and would also erase the sharing.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "shared_input_transforms",
+   "index_hits_are_cousins": true,
+   "index_refusals": [
+    {
+     "applies_to_this_object": false,
+     "claim_refuted": "held-out activation reconstruction fails; not coherent",
+     "hypothesis_family": "shared_basis",
+     "organ": "down",
+     "queried_organ": "gate",
+     "queried_slug": "shared_basis",
+     "reopen_condition": "a shared-basis point that is coherent at held-out activation AND beats",
+     "scar_id": "tools/headless/negative_science.py#QN-SHARED-BASIS-DENSITY",
+     "source_path": "tools/headless/negative_science.py",
+     "verdict": "NEGATIVE",
+     "why_not_this_object": "Index family matches a weight-space or codec scar on this parent. The object here is the 2-bit affine-Q2 code body, not W, not the f16 scale/bias, and not a different parent."
+    }
+   ],
+   "index_slugs": [
+    "shared_basis"
+   ],
+   "mechanism": "One shared V on the MLP input, organ- or layer-local readout: y_{l,o} = W'_{l,o} (V x). This is a property of F, not of q. The code arrays cannot support or kill it.",
+   "name": "shared input transforms (activation-space V, local readout)",
+   "note": "Attractive in the byte census (OPEN) and still unmeasured on activations. High entropy of q is consistent with 'W is not a shared template' and does not speak to a shared V on X. Index slug shared_basis will fire QN-SHARED-BASIS; that scar is unconditioned weight-space sharing, a cousin.",
+   "physical_primitive": "TiledProjection",
+   "status": "UNMEASURED",
+   "support": "UNMEASURED"
+  },
+  {
+   "byte_model": "64 * (2*m*5120 + 5120*m) * incumbent_bpw/8. NNS-013: matching q3's held-out needs m ~ 10000\u201312000, at which bytes approach q3.",
+   "bytes_eliminated_if_true": null,
+   "cheapest_falsifier": "Already run as G3 / narrow shared grouped SwiGLU (NNS-013 property kill). The codes being high-entropy does not reopen it. Reopen is a full-width structured nonlinear (function_replacement), not a retry of m<17408, and not a recoding of these q.",
+   "citations": [
+    {
+     "claim_refuted": "That a narrow shared / grouped SwiGLU operator (m < 17408) can replace Qwen3.8's MLP at q3 quality and materially fewer active bytes, including after honest methodology.",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "A full-width structured nonlinear (G8 Monarch/butterfly) or a distilled operator trained to match F=down(silu(gate)*up) at q3 quality, held-out across families, with Doctor holding. Narrow m<17408 sharing is not that.",
+     "scar_id": "NNS-013",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b MLP (67\u201368% of GEMV bytes)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP 2-bit code body"
+    },
+    {
+     "claim_refuted": "That the G3 shared-operator headline 'beats q3 held-out 0.371 vs 0.401 at 24% of the bytes' is a measured successor.",
+     "kind": "ARTIFACT_OF_METHOD",
+     "reopen_condition": "The leaked 'beats q3' number stays dead. A full-width structured nonlinear (Monarch/butterfly, not a narrow bottleneck) is G8 and was listed still_untested \u2014 a new family, not a retry of m=6144.",
+     "scar_id": "NNS-012",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b dense MLP all 64 MLPs as one shared operator + FiLM",
+     "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP 2-bit code body"
+    }
+   ],
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "A narrower SwiGLU is a direct kernel. Expanding the latent to a 17408-wide dense W each token is REJECTED_DENSE_REMAT.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "latent_routed_accumulation",
+   "index_refusals": [],
+   "index_slugs": [],
+   "mechanism": "Accumulate the SwiGLU in a latent of width m << 17408, then expand once, or route a token-dependent subset of the 17408. F(x) \u2248 down_m(silu(gate_m(x)) * up_m(x)). This eliminates columns of q by not having them, not by coding them.",
+   "name": "latent routed accumulation (narrow / routed SwiGLU)",
+   "physical_primitive": "DirectRoutedAccumulate",
+   "status": "ALREADY_FALSIFIED",
+   "support": "SCAR"
+  },
+  {
+   "byte_model": "|program_l| * 64, independent of 17112760320. A win is |program| << 4278190080 at held-out F and at generate.",
+   "bytes_eliminated_if_true": 4278190080,
+   "cheapest_falsifier": "Not a code-stream probe. Do not retry m<17408 (NNS-013). CHEAP CPU: one full-width Monarch/butterfly (or a distilled operator) on a single layer's real post-norm X, held-out rel-fro vs affine-Q2, with a byte ledger that does not remat W. High H(q) says the *current packing* of F is close to incompressible; it does not say F cannot be a cheaper program. NNS-015's reopen is exactly this probe, and it has not been run.",
+   "citations": [
+    {
+     "claim_refuted": "That a narrow shared / grouped SwiGLU operator (m < 17408) can replace Qwen3.8's MLP at q3 quality and materially fewer active bytes, including after honest methodology.",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "A full-width structured nonlinear (G8 Monarch/butterfly) or a distilled operator trained to match F=down(silu(gate)*up) at q3 quality, held-out across families, with Doctor holding. Narrow m<17408 sharing is not that.",
+     "scar_id": "NNS-013",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b MLP (67\u201368% of GEMV bytes)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP 2-bit code body"
+    },
+    {
+     "claim_refuted": "That the G3 shared-operator headline 'beats q3 held-out 0.371 vs 0.401 at 24% of the bytes' is a measured successor.",
+     "kind": "ARTIFACT_OF_METHOD",
+     "reopen_condition": "The leaked 'beats q3' number stays dead. A full-width structured nonlinear (Monarch/butterfly, not a narrow bottleneck) is G8 and was listed still_untested \u2014 a new family, not a retry of m=6144.",
+     "scar_id": "NNS-012",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b dense MLP all 64 MLPs as one shared operator + FiLM",
+     "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP 2-bit code body"
+    },
+    {
+     "claim_refuted": "That low-rank + activation-aware correction of the residual beats q3's density-quality point (fewer active bytes at q3 quality, held-out).",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "A distilled/generated operator, trained to match the MLP function, achieves q3 quality at materially fewer active bytes held-out across layers, with Doctor holding. That experiment has not been run.",
+     "scar_id": "NNS-015",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b down_proj L31, real post_swiglu X",
+     "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP 2-bit code body"
+    }
+   ],
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "The program is the kernel. A replacement that emits W and runs GEMV is generated_tensors and REJECTED_DENSE_REMAT.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "function_replacement",
+   "index_refusals": [],
+   "index_slugs": [],
+   "mechanism": "Stop representing W / q. Represent F_l itself with a cheaper program: full-width structured nonlinear (Monarch, butterfly), a distilled small net, a kernel not equal to three affines. Narrow bottleneck replacement is latent_routed_accumulation (dead).",
+   "name": "function replacement (stop storing q; represent F)",
+   "note": "Attractive, not supported. The measured entropy floor is a statement about q, not about F. Narrow replacement is ALREADY_FALSIFIED (latent_routed_accumulation).",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "UNMEASURED",
+   "support": "UNMEASURED"
+  },
+  {
+   "byte_model": "n_params * H / 8. i.i.d. H=1.870180 bits \u2192 4000492189 bytes vs incumbent 4278190080. Markov-1 H=1.868058 bits, a 0.0021-bit improvement. zlib on sampled tensors reaches ratio \u2248 0.9464793186561732.",
+   "bytes_eliminated_if_true": 277697891,
+   "cheapest_falsifier": "STATIC, already run: the i.i.d. gap is 277697891 bytes (6.4910% of the code body), H(q)/2=0.9351 of uniform. NNS-022 reopen is \u2264 0.9 of uniform; it does not fire (fires=False). Neighbour conditioning adds 0.0020 bits, not a second lever. Kill as a *4.28 GB* attack: the floor is 4000492189 bytes, still 4.00 GB. Kill as a TPS lever without a native register-decodable path (NNS-022). Remain OPEN only as a fused-decode micro-lever of ~278 MB, capability UNMEASURED.",
+   "citations": [
+    {
+     "claim_refuted": "That entropy coding of Lloyd-optimal PQ indices yields a 10\u201325% byte win, or that rANS on Qwen3.8 q3 symbols is an active-byte/TPS lever.",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "A future parent uses NON-Lloyd (biased or stratified) codebooks whose measured index entropy is \u2264 0.9 of uniform. rANS as a TPS lever additionally needs a native register-decodable path that changes active bytes/token.",
+     "scar_id": "NNS-022",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "gpt-oss-120b:F0 (PQ indices); qwen3.8 (q3 symbols / rANS catalog) codebook indices / q3 body",
+     "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP 2-bit code body"
+    }
+   ],
+   "cousin_not_this_object": true,
+   "dense_rematerialization": "DEPENDS_ON_LOWERING",
+   "dense_rematerialization_reason": "A fused rANS/Huffman affine2 is DIRECT_CONSUME / FusedDecodeCompute and would actually drop active bytes. The cheap lowering \u2014 decode to the incumbent 2-bit buffer, bind affine2 \u2014 eliminates zero active bytes and is not this candidate.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "entropy_coded_code_stream",
+   "index_refusals": [],
+   "index_slugs": [
+    "entropy_coded_pq"
+   ],
+   "measured": {
+    "H_q_bits": 1.87017973205819,
+    "H_q_given_prev_within_byte": 1.8680582965617971,
+    "H_q_over_uniform": 0.935089866029095,
+    "iid_redundant_bytes_rounded": 277697891,
+    "independent_fraction": 0.935089866029095,
+    "mi_within_byte_bits": 0.0019509107280792906,
+    "nns022_reopen_fires": false,
+    "p_q": [
+     0.14558220254439933,
+     0.3542769077946158,
+     0.3545904730464898,
+     0.14555041661449508
+    ],
+    "sample_zlib_ratio": {
+     "max": 0.9488043841193704,
+     "mean": 0.9464793186561732,
+     "min": 0.9373582727768842,
+     "n": 12,
+     "std": 0.0029438866245790536
+    }
+   },
+   "mechanism": "The 4-ary histogram is not uniform (p\u2248[0.14558220254439933, 0.3542769077946158, 0.3545904730464898, 0.14555041661449508]). Store q with a Shannon / Huffman / rANS code of that histogram, optionally conditioned on the previous symbol. Affine2 would consume the entropy-coded stream in-register.",
+   "name": "entropy coding of the 2-bit code stream (the lossless floor)",
+   "note": "NNS-022 killed rANS on Lloyd-optimal *PQ indices* as an active-byte/TPS lever, reopen if index entropy \u2264 0.9 of uniform. These 2-bit affine codes are a different object (histogram bias from LS-on-roughly-Gaussian W, not a PQ codebook). Cited as a cousin so the 278 MB Shannon gap is not laundered as a TPS win, and so a 10\u201325% claim is not re-proposed.",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "OPEN",
+   "support": "SHANNON_GAP_MEASURED_KERNEL_UNMEASURED"
+  }
+ ],
+ "claim_boundary": "Static sidecar artifact. No hardware measurement and no generate gate. Numbers are catalog-header byte counts plus CPU statistics on the real HGRAVF01 2-bit code payloads of sealed-3.14 (not the f16 scale/bias, not a model of W). Shannon / conditional entropy / mutual information / zlib are lossless statements about the stored q \u2208 {0,1,2,3} stream. They are not capability. A candidate that only rematerializes a dense W, or that expands a compressed code stream back to the incumbent 2-bit buffer before the kernel, does not eliminate active bytes.",
+ "evidence_class": "STATIC_ONLY",
+ "floor": {
+  "context_adds_bits": 0.0019509107280792906,
+  "iid_redundant_bytes_rounded": 277697891,
+  "iid_shannon_bits_per_code": 1.87017973205819,
+  "iid_shannon_bytes_rounded": 4000492189,
+  "independent_fraction": 0.935089866029095,
+  "markov1_bits_per_code": 1.8680582965617971,
+  "stored_code_bytes": 4278190080,
+  "verdict": "4000492189 of 4278190080 bytes is independent information at the measured i.i.d. Shannon bound. Neighbours, layers, and gate/up/down add essentially nothing. The leftover 277697891 bytes is the 4-level histogram bias, not sharing."
+ },
+ "gaps_closed": [
+  "code bytes re-measured from 192 HGRAVF01 headers and from the bytes actually read, refused unless they sum to 4,278,190,080",
+  "entropy, conditional entropy, cross-layer MI, gate-up MI, unique 16-byte groups, per-row H, and zlib taken on the real code arrays",
+  "lossless information floor reported as bytes, not as a vibe",
+  "nine auxiliary scale/bias sharing families not restated",
+  "negative_index queried; W-space scars cited as cousins, not laundered as code-array kills except where the scar is this object"
+ ],
+ "gpu_authority": false,
+ "measurements": {
+  "H_byte_bits": 7.4696502672678555,
+  "H_byte_if_iid_q": 7.48071892823276,
+  "H_nibble_bits": 3.738409580942731,
+  "H_q_all_tensors": {
+   "max": 1.873977371526143,
+   "mean": 1.8701622501900672,
+   "min": 1.8502978255791103,
+   "n": 192,
+   "std": 0.0028792911941391414
+  },
+  "H_q_bits": 1.87017973205819,
+  "H_q_given_prev_within_byte": 1.8680582965617971,
+  "H_q_later": {
+   "max": 1.873977371526143,
+   "mean": 1.8701149836430222,
+   "min": 1.8502978255791103,
+   "n": 189,
+   "std": 0.0028745662361823114
+  },
+  "H_q_layer0": {
+   "max": 1.873867859643535,
+   "mean": 1.8731400426538949,
+   "min": 1.8717295501869682,
+   "n": 3,
+   "std": 0.0009975390346505335
+  },
+  "H_q_over_uniform": 0.935089866029095,
+  "alphabet": [
+   0,
+   1,
+   2,
+   3
+  ],
+  "by_organ": {
+   "mlp.down": {
+    "H_byte": {
+     "max": 7.482946479063298,
+     "mean": 7.466274898560122,
+     "min": 7.382556001288904,
+     "n": 64,
+     "std": 0.015692884593062516
+    },
+    "H_q": {
+     "max": 1.8732330611763028,
+     "mean": 1.8694962617622213,
+     "min": 1.8502978255791103,
+     "n": 64,
+     "std": 0.003525274359788163
+    },
+    "H_q_given_prev_within_byte": {
+     "max": 1.8715562881955121,
+     "mean": 1.8674471275245916,
+     "min": 1.8466554715457777,
+     "n": 64,
+     "std": 0.0038368211422874104
+    },
+    "n_tensors": 64,
+    "p_q": [
+     0.145372757841559,
+     0.35458562742261324,
+     0.3547936539439594,
+     0.14524796079186833
+    ],
+    "q_hist": [
+     829243054,
+     2022646285,
+     2023832921,
+     828531180
+    ]
+   },
+   "mlp.gate": {
+    "H_byte": {
+     "max": 7.486588129957669,
+     "mean": 7.473626503995828,
+     "min": 7.4482769100223365,
+     "n": 64,
+     "std": 0.009816933973844862
+    },
+    "H_q": {
+     "max": 1.873977371526143,
+     "mean": 1.871163145567315,
+     "min": 1.865920625163291,
+     "n": 64,
+     "std": 0.0021362090282606877
+    },
+    "H_q_given_prev_within_byte": {
+     "max": 1.872099739250718,
+     "mean": 1.8690543665797377,
+     "min": 1.8629603456173554,
+     "n": 64,
+     "std": 0.0023623361778163017
+    },
+    "n_tensors": 64,
+    "p_q": [
+     0.14587562539998222,
+     0.3537783508791643,
+     0.354313249798382,
+     0.14603277392247144
+    ],
+    "q_hist": [
+     832111538,
+     2018041375,
+     2021092574,
+     833007953
+    ]
+   },
+   "mlp.up": {
+    "H_byte": {
+     "max": 7.485862333015561,
+     "mean": 7.468644052419078,
+     "min": 7.44623967644009,
+     "n": 64,
+     "std": 0.010925699567536301
+    },
+    "H_q": {
+     "max": 1.873867859643535,
+     "mean": 1.8698273432406651,
+     "min": 1.8648264668269399,
+     "n": 64,
+     "std": 0.0025144602225448992
+    },
+    "H_q_given_prev_within_byte": {
+     "max": 1.8720452711469089,
+     "mean": 1.8675913516483518,
+     "min": 1.8621534745775536,
+     "n": 64,
+     "std": 0.002709589477496887
+    },
+    "n_tensors": 64,
+    "p_q": [
+     0.14549822439165677,
+     0.3544667450820698,
+     0.35466451539712796,
+     0.14537051512914545
+    ],
+    "q_hist": [
+     829958747,
+     2021968150,
+     2023096282,
+     829230261
+    ]
+   }
+  },
+  "byte_occupied_of_256": 256,
+  "code_bytes_read": 4278190080,
+  "cross_layer": {
+   "mlp.down": {
+    "independent_match": {
+     "max": 0.3000617735656642,
+     "mean": 0.2938584506602712,
+     "min": 0.29263135693413916,
+     "n": 63,
+     "std": 0.0011490622407882743
+    },
+    "match": {
+     "max": 0.29761082144344553,
+     "mean": 0.293823467471909,
+     "min": 0.2927192575791303,
+     "n": 63,
+     "std": 0.0009204249565917046
+    },
+    "mi_bits": {
+     "max": 1.9633510058245118e-07,
+     "mean": 8.129240583519494e-08,
+     "min": 1.5564971789189486e-08,
+     "n": 63,
+     "std": 3.9494617750487706e-08
+    }
+   },
+   "mlp.gate": {
+    "independent_match": {
+     "max": 0.2950100194260691,
+     "mean": 0.2933189599727595,
+     "min": 0.29238874391376635,
+     "n": 63,
+     "std": 0.0006920708669339835
+    },
+    "match": {
+     "max": 0.29567099178538603,
+     "mean": 0.2943233806991221,
+     "min": 0.2927049749037799,
+     "n": 63,
+     "std": 0.0008651229323564565
+    },
+    "mi_bits": {
+     "max": 6.05058039212697e-05,
+     "mean": 1.3389218206245002e-05,
+     "min": 9.402717763068777e-07,
+     "n": 63,
+     "std": 1.40664498832161e-05
+    }
+   },
+   "mlp.up": {
+    "independent_match": {
+     "max": 0.2953650572327132,
+     "mean": 0.29376061816472776,
+     "min": 0.29263320231584805,
+     "n": 63,
+     "std": 0.0008072457075552923
+    },
+    "match": {
+     "max": 0.29649893816779643,
+     "mean": 0.2945498444230394,
+     "min": 0.29282547445858226,
+     "n": 63,
+     "std": 0.0011462213684574794
+    },
+    "mi_bits": {
+     "max": 3.0482933646362774e-05,
+     "mean": 1.2832936248962128e-05,
+     "min": 8.517047641083285e-07,
+     "n": 63,
+     "std": 9.764074961491484e-06
+    }
+   }
+  },
+  "cross_tensor_gate_vs_up": {
+   "match": {
+    "max": 0.3030374526977539,
+    "mean": 0.2960363473962335,
+    "min": 0.2936393849989947,
+    "n": 64,
+    "std": 0.0015135965913151259
+   },
+   "mi_bits": {
+    "max": 0.0014802390351087787,
+    "mean": 0.00011402562728688608,
+    "min": 1.1192539133578964e-05,
+    "n": 64,
+    "std": 0.00019358490331440178
+   },
+   "n_layers": 64,
+   "note": "down has a transposed shape (5120 x 17408 vs 17408 x 5120); no elementwise code alignment."
+  },
+  "iid_redundant_bytes": 277697891.2457967,
+  "iid_redundant_bytes_rounded": 277697891,
+  "iid_shannon_bytes": 4000492188.7542033,
+  "iid_shannon_bytes_rounded": 4000492189,
+  "independent_fraction": 0.935089866029095,
+  "mi_within_byte_bits": 0.0019509107280792906,
+  "n_groups": 267386880,
+  "n_parameters": 17112760320,
+  "n_tensors_measured": 192,
+  "nibble_occupied_of_16": 16,
+  "nns022_reopen_fires": false,
+  "nns022_reopen_uniform_frac": 0.9,
+  "note": "H(q) is Shannon entropy of the 4-ary alphabet over every MLP code. H(byte) is entropy of the packed 8-bit words (four consecutive codes). Conditional entropy is H(q_i | q_{i-1}) inside a packed byte. Cross-layer / gate-up MI is of aligned 2-bit symbols. zlib is a stdlib compressor on the packed stream of sampled tensors, not a production path. Unique groups are exact 16-byte (64-code) patterns.",
+  "p_q": [
+   0.14558220254439933,
+   0.3542769077946158,
+   0.3545904730464898,
+   0.14555041661449508
+  ],
+  "per_tensor": [
+   {
+    "H_byte": 7.47653880328784,
+    "H_q": 1.8717295501869682,
+    "H_q_given_prev_within_byte": 1.8698076519594085,
+    "layer": 0,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.485346302193951,
+    "H_q": 1.8738227181311817,
+    "H_q_given_prev_within_byte": 1.872099269532311,
+    "layer": 0,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.485862333015561,
+    "H_q": 1.873867859643535,
+    "H_q_given_prev_within_byte": 1.8720452711469089,
+    "layer": 0,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.471615187779925,
+    "H_q": 1.8707446595629142,
+    "H_q_given_prev_within_byte": 1.8689075113286981,
+    "layer": 1,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.485901927025191,
+    "H_q": 1.8739446167887208,
+    "H_q_given_prev_within_byte": 1.872063165329078,
+    "layer": 1,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.483191682354178,
+    "H_q": 1.8732273362557699,
+    "H_q_given_prev_within_byte": 1.8713566943587632,
+    "layer": 1,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.479972400085936,
+    "H_q": 1.8725761198427495,
+    "H_q_given_prev_within_byte": 1.8707171488905336,
+    "layer": 2,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.486588129957669,
+    "H_q": 1.873977371526143,
+    "H_q_given_prev_within_byte": 1.872099739250718,
+    "layer": 2,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.482070105855389,
+    "H_q": 1.8729279122231786,
+    "H_q_given_prev_within_byte": 1.8710158432677426,
+    "layer": 2,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.482946479063298,
+    "H_q": 1.8732330611763028,
+    "H_q_given_prev_within_byte": 1.8715562881955121,
+    "layer": 3,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.4847558997829395,
+    "H_q": 1.873613129372985,
+    "H_q_given_prev_within_byte": 1.8718746715939514,
+    "layer": 3,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.483075573937121,
+    "H_q": 1.873154555650821,
+    "H_q_given_prev_within_byte": 1.8712167793324936,
+    "layer": 3,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.482149025503607,
+    "H_q": 1.8730692011522867,
+    "H_q_given_prev_within_byte": 1.871246347820621,
+    "layer": 4,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.482187813681936,
+    "H_q": 1.8730744091025269,
+    "H_q_given_prev_within_byte": 1.871269429715376,
+    "layer": 4,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.479464378811177,
+    "H_q": 1.872316663615404,
+    "H_q_given_prev_within_byte": 1.870388923287554,
+    "layer": 4,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.4792244242806145,
+    "H_q": 1.8724259177124987,
+    "H_q_given_prev_within_byte": 1.870457992447549,
+    "layer": 5,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.485807629989582,
+    "H_q": 1.8738221659064187,
+    "H_q_given_prev_within_byte": 1.872093778102166,
+    "layer": 5,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.481054021636319,
+    "H_q": 1.8726594944409647,
+    "H_q_given_prev_within_byte": 1.8707065285075895,
+    "layer": 5,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.46928145503186,
+    "H_q": 1.8705823633959144,
+    "H_q_given_prev_within_byte": 1.8680470472059916,
+    "layer": 6,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.481248735356951,
+    "H_q": 1.873030912232795,
+    "H_q_given_prev_within_byte": 1.8708906844728448,
+    "layer": 6,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.476016385018031,
+    "H_q": 1.8716311472486593,
+    "H_q_given_prev_within_byte": 1.8694154977955995,
+    "layer": 6,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.477844631557305,
+    "H_q": 1.8720646165620658,
+    "H_q_given_prev_within_byte": 1.870188096921048,
+    "layer": 7,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.483445712555595,
+    "H_q": 1.873235030509911,
+    "H_q_given_prev_within_byte": 1.8713276881068113,
+    "layer": 7,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.47852480628123,
+    "H_q": 1.872037171516458,
+    "H_q_given_prev_within_byte": 1.8700350197592566,
+    "layer": 7,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.48097801954701,
+    "H_q": 1.8727449677714811,
+    "H_q_given_prev_within_byte": 1.8709154327534225,
+    "layer": 8,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.484096582547871,
+    "H_q": 1.8733820177650977,
+    "H_q_given_prev_within_byte": 1.871563180260828,
+    "layer": 8,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.4800143122742755,
+    "H_q": 1.8723832221708956,
+    "H_q_given_prev_within_byte": 1.870374573834666,
+    "layer": 8,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.481209136119308,
+    "H_q": 1.8728588262068755,
+    "H_q_given_prev_within_byte": 1.8710958884458506,
+    "layer": 9,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.484327631195073,
+    "H_q": 1.8734466493260165,
+    "H_q_given_prev_within_byte": 1.8715819248776793,
+    "layer": 9,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.48133140834738,
+    "H_q": 1.8726893268987346,
+    "H_q_given_prev_within_byte": 1.870758103459581,
+    "layer": 9,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.478790025230774,
+    "H_q": 1.8723737707694859,
+    "H_q_given_prev_within_byte": 1.8703483701868513,
+    "layer": 10,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.481872268490285,
+    "H_q": 1.8729839644725543,
+    "H_q_given_prev_within_byte": 1.8709666261225282,
+    "layer": 10,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.479660735218666,
+    "H_q": 1.8723187848391878,
+    "H_q_given_prev_within_byte": 1.870400487710564,
+    "layer": 10,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.480311837054044,
+    "H_q": 1.87260255120117,
+    "H_q_given_prev_within_byte": 1.8709302811368496,
+    "layer": 11,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.484063672264538,
+    "H_q": 1.8733875415614354,
+    "H_q_given_prev_within_byte": 1.8715245604219102,
+    "layer": 11,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.4809049330078,
+    "H_q": 1.8726373585387472,
+    "H_q_given_prev_within_byte": 1.8707176776162093,
+    "layer": 11,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.478592636813412,
+    "H_q": 1.872217928065805,
+    "H_q_given_prev_within_byte": 1.8703208820635013,
+    "layer": 12,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.4833331632727,
+    "H_q": 1.8732650879239574,
+    "H_q_given_prev_within_byte": 1.8713208308806668,
+    "layer": 12,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.481706903737736,
+    "H_q": 1.8728157555319433,
+    "H_q_given_prev_within_byte": 1.8708714538894406,
+    "layer": 12,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.478583639018599,
+    "H_q": 1.872170550734408,
+    "H_q_given_prev_within_byte": 1.8704808713304721,
+    "layer": 13,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.484562249557007,
+    "H_q": 1.873531433639974,
+    "H_q_given_prev_within_byte": 1.8715810353068594,
+    "layer": 13,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.481949106983627,
+    "H_q": 1.872882281506381,
+    "H_q_given_prev_within_byte": 1.8709772754004708,
+    "layer": 13,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.477802412551705,
+    "H_q": 1.87195471350593,
+    "H_q_given_prev_within_byte": 1.8700067629237629,
+    "layer": 14,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.483972724048121,
+    "H_q": 1.8733774572578537,
+    "H_q_given_prev_within_byte": 1.8714938963077294,
+    "layer": 14,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.481901265815681,
+    "H_q": 1.872869598524161,
+    "H_q_given_prev_within_byte": 1.8709602536974692,
+    "layer": 14,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.476341356948872,
+    "H_q": 1.871665545294352,
+    "H_q_given_prev_within_byte": 1.8696305905268142,
+    "layer": 15,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.4843127496490585,
+    "H_q": 1.873465736736673,
+    "H_q_given_prev_within_byte": 1.87163249508307,
+    "layer": 15,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.481077334910781,
+    "H_q": 1.872670829835527,
+    "H_q_given_prev_within_byte": 1.8707792720201395,
+    "layer": 15,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.473338258974011,
+    "H_q": 1.871033213639457,
+    "H_q_given_prev_within_byte": 1.86924683100665,
+    "layer": 16,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.482439936436194,
+    "H_q": 1.8730921897037427,
+    "H_q_given_prev_within_byte": 1.8712253741535996,
+    "layer": 16,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.480279205985798,
+    "H_q": 1.8725234204052437,
+    "H_q_given_prev_within_byte": 1.8705139639717498,
+    "layer": 16,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.471302742914505,
+    "H_q": 1.8706500722789388,
+    "H_q_given_prev_within_byte": 1.8687020745626015,
+    "layer": 17,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.481820652331181,
+    "H_q": 1.8729899996668222,
+    "H_q_given_prev_within_byte": 1.870996222335417,
+    "layer": 17,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.478964302595932,
+    "H_q": 1.872245563417464,
+    "H_q_given_prev_within_byte": 1.8702183956462743,
+    "layer": 17,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.454529387654052,
+    "H_q": 1.8671785561282397,
+    "H_q_given_prev_within_byte": 1.8648398417757919,
+    "layer": 18,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.476554574227473,
+    "H_q": 1.8720921626143454,
+    "H_q_given_prev_within_byte": 1.8698051329415268,
+    "layer": 18,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.475019667850806,
+    "H_q": 1.87141862710175,
+    "H_q_given_prev_within_byte": 1.8692144316998034,
+    "layer": 18,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.467774252625852,
+    "H_q": 1.8698486527483469,
+    "H_q_given_prev_within_byte": 1.8680698945334495,
+    "layer": 19,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.482672244879469,
+    "H_q": 1.8731235173026477,
+    "H_q_given_prev_within_byte": 1.8712092164656575,
+    "layer": 19,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.476375727042944,
+    "H_q": 1.8715644634704693,
+    "H_q_given_prev_within_byte": 1.8694879471335857,
+    "layer": 19,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.472399132630409,
+    "H_q": 1.8708365823802415,
+    "H_q_given_prev_within_byte": 1.8690669292806712,
+    "layer": 20,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.483796721267202,
+    "H_q": 1.8733518735235841,
+    "H_q_given_prev_within_byte": 1.871459180121154,
+    "layer": 20,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.476410505677848,
+    "H_q": 1.8715457776476871,
+    "H_q_given_prev_within_byte": 1.8694526643752558,
+    "layer": 20,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.474882436922952,
+    "H_q": 1.87143535150344,
+    "H_q_given_prev_within_byte": 1.869708299581553,
+    "layer": 21,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.483659950843635,
+    "H_q": 1.8733002605224898,
+    "H_q_given_prev_within_byte": 1.871385374846782,
+    "layer": 21,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.476610696681103,
+    "H_q": 1.8716071929497176,
+    "H_q_given_prev_within_byte": 1.8695168887864266,
+    "layer": 21,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.469163391484159,
+    "H_q": 1.8704932271935042,
+    "H_q_given_prev_within_byte": 1.868352942145218,
+    "layer": 22,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.478607763279925,
+    "H_q": 1.8722143069544877,
+    "H_q_given_prev_within_byte": 1.8701341494368129,
+    "layer": 22,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.470209805052866,
+    "H_q": 1.8702243204251778,
+    "H_q_given_prev_within_byte": 1.8679652562649594,
+    "layer": 22,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.473833006411802,
+    "H_q": 1.8711203317605865,
+    "H_q_given_prev_within_byte": 1.8693507150321014,
+    "layer": 23,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.482170683481911,
+    "H_q": 1.8729361606920383,
+    "H_q_given_prev_within_byte": 1.870966230341261,
+    "layer": 23,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.470786860334977,
+    "H_q": 1.8702256385381615,
+    "H_q_given_prev_within_byte": 1.8680917590010269,
+    "layer": 23,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.4699712707772665,
+    "H_q": 1.8702770025446753,
+    "H_q_given_prev_within_byte": 1.8682913664971168,
+    "layer": 24,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.478562015276786,
+    "H_q": 1.872149348008178,
+    "H_q_given_prev_within_byte": 1.8700988234329834,
+    "layer": 24,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.464468079304217,
+    "H_q": 1.8687539733932423,
+    "H_q_given_prev_within_byte": 1.8664929655403433,
+    "layer": 24,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.4693340302278,
+    "H_q": 1.870159038615829,
+    "H_q_given_prev_within_byte": 1.8681868435415845,
+    "layer": 25,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.475662842318588,
+    "H_q": 1.8714622363502111,
+    "H_q_given_prev_within_byte": 1.8693439781102916,
+    "layer": 25,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.461366786972009,
+    "H_q": 1.8680108818158374,
+    "H_q_given_prev_within_byte": 1.8657734028116888,
+    "layer": 25,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.464119659507855,
+    "H_q": 1.86901315877499,
+    "H_q_given_prev_within_byte": 1.8668301330829538,
+    "layer": 26,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.470989244763534,
+    "H_q": 1.870476695180844,
+    "H_q_given_prev_within_byte": 1.8682436580405846,
+    "layer": 26,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.455539376646902,
+    "H_q": 1.8667622200634915,
+    "H_q_given_prev_within_byte": 1.8643353143657948,
+    "layer": 26,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.46510309071442,
+    "H_q": 1.8691887010540948,
+    "H_q_given_prev_within_byte": 1.8672628187194709,
+    "layer": 27,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.473010354179719,
+    "H_q": 1.8709139001306332,
+    "H_q_given_prev_within_byte": 1.8688511072570733,
+    "layer": 27,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.4582830836836465,
+    "H_q": 1.8674010171521684,
+    "H_q_given_prev_within_byte": 1.8650685226164647,
+    "layer": 27,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.462793550563875,
+    "H_q": 1.8686606134410169,
+    "H_q_given_prev_within_byte": 1.8666405563971458,
+    "layer": 28,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.469440565965378,
+    "H_q": 1.870104580053797,
+    "H_q_given_prev_within_byte": 1.8680656750770208,
+    "layer": 28,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.456992060041166,
+    "H_q": 1.8670635487952532,
+    "H_q_given_prev_within_byte": 1.8647241498292235,
+    "layer": 28,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.4641189471831435,
+    "H_q": 1.8689872692599379,
+    "H_q_given_prev_within_byte": 1.8669206011835322,
+    "layer": 29,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.4669151980597235,
+    "H_q": 1.869488074566807,
+    "H_q_given_prev_within_byte": 1.8673864728884624,
+    "layer": 29,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.457628859349381,
+    "H_q": 1.867220976633179,
+    "H_q_given_prev_within_byte": 1.8649043153487657,
+    "layer": 29,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.460761672713291,
+    "H_q": 1.8681766498692332,
+    "H_q_given_prev_within_byte": 1.8657061566999693,
+    "layer": 30,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.461731722180202,
+    "H_q": 1.868311286989456,
+    "H_q_given_prev_within_byte": 1.8661095169753437,
+    "layer": 30,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.453003363027544,
+    "H_q": 1.866175514547335,
+    "H_q_given_prev_within_byte": 1.863836367536338,
+    "layer": 30,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.4588193114969865,
+    "H_q": 1.8677754979112966,
+    "H_q_given_prev_within_byte": 1.8657394039748525,
+    "layer": 31,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.4609733205965645,
+    "H_q": 1.8681617723539965,
+    "H_q_given_prev_within_byte": 1.8659205182115788,
+    "layer": 31,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.452530075887941,
+    "H_q": 1.8660707926821751,
+    "H_q_given_prev_within_byte": 1.863691047983955,
+    "layer": 31,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.449399353687394,
+    "H_q": 1.865673809499975,
+    "H_q_given_prev_within_byte": 1.8632302969083574,
+    "layer": 32,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.457083935310203,
+    "H_q": 1.8673072948296179,
+    "H_q_given_prev_within_byte": 1.865001973219417,
+    "layer": 32,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.4488815268059945,
+    "H_q": 1.8652332750853768,
+    "H_q_given_prev_within_byte": 1.8628314942773774,
+    "layer": 32,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.448723378382873,
+    "H_q": 1.8656474655926347,
+    "H_q_given_prev_within_byte": 1.8631312451866888,
+    "layer": 33,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.45622367080328,
+    "H_q": 1.86728468102367,
+    "H_q_given_prev_within_byte": 1.8648228026270508,
+    "layer": 33,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.449807660820529,
+    "H_q": 1.8655597049874664,
+    "H_q_given_prev_within_byte": 1.862969105951209,
+    "layer": 33,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.427670012554547,
+    "H_q": 1.8612839841022506,
+    "H_q_given_prev_within_byte": 1.8581929442166218,
+    "layer": 34,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.4482769100223365,
+    "H_q": 1.865920625163291,
+    "H_q_given_prev_within_byte": 1.8629603456173554,
+    "layer": 34,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.44623967644009,
+    "H_q": 1.8648264668269399,
+    "H_q_given_prev_within_byte": 1.8621534745775536,
+    "layer": 34,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.4549234258385315,
+    "H_q": 1.8670309575359632,
+    "H_q_given_prev_within_byte": 1.8649995497688998,
+    "layer": 35,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.462886742389246,
+    "H_q": 1.868800646316247,
+    "H_q_given_prev_within_byte": 1.8664883263809429,
+    "layer": 35,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.4556492683589735,
+    "H_q": 1.8667913760192316,
+    "H_q_given_prev_within_byte": 1.8643321390858014,
+    "layer": 35,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.469293032431535,
+    "H_q": 1.8702356049839137,
+    "H_q_given_prev_within_byte": 1.8682365429622936,
+    "layer": 36,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.469688658865098,
+    "H_q": 1.8702487363144993,
+    "H_q_given_prev_within_byte": 1.8680507772493988,
+    "layer": 36,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.462106928229341,
+    "H_q": 1.868248372289278,
+    "H_q_given_prev_within_byte": 1.8658754227647227,
+    "layer": 36,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.476256348765852,
+    "H_q": 1.871770751183763,
+    "H_q_given_prev_within_byte": 1.8699943764812528,
+    "layer": 37,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.474928152895504,
+    "H_q": 1.8713724753397227,
+    "H_q_given_prev_within_byte": 1.8692662601135768,
+    "layer": 37,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.469056053113618,
+    "H_q": 1.8698710750588299,
+    "H_q_given_prev_within_byte": 1.8676966246131244,
+    "layer": 37,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.470943739856104,
+    "H_q": 1.8706447767676493,
+    "H_q_given_prev_within_byte": 1.8685271874234948,
+    "layer": 38,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.472898147029867,
+    "H_q": 1.8709887748369747,
+    "H_q_given_prev_within_byte": 1.8688390597676807,
+    "layer": 38,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.464839213152661,
+    "H_q": 1.8689275361064592,
+    "H_q_given_prev_within_byte": 1.8666369452156475,
+    "layer": 38,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.478907640252951,
+    "H_q": 1.87226545653873,
+    "H_q_given_prev_within_byte": 1.8706427585023575,
+    "layer": 39,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.479203264170924,
+    "H_q": 1.8723160470147326,
+    "H_q_given_prev_within_byte": 1.8702897572126709,
+    "layer": 39,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.4717326098100445,
+    "H_q": 1.870474095900334,
+    "H_q_given_prev_within_byte": 1.8683275860997628,
+    "layer": 39,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.475396996582289,
+    "H_q": 1.8714769801890068,
+    "H_q_given_prev_within_byte": 1.8696471764904594,
+    "layer": 40,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.4765935228499165,
+    "H_q": 1.8717414224458426,
+    "H_q_given_prev_within_byte": 1.8696447160754197,
+    "layer": 40,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.4640359951449575,
+    "H_q": 1.8687071878900663,
+    "H_q_given_prev_within_byte": 1.866474818571864,
+    "layer": 40,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.471256743200282,
+    "H_q": 1.8706109333840801,
+    "H_q_given_prev_within_byte": 1.8688247941275087,
+    "layer": 41,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.471903853761194,
+    "H_q": 1.8706570538644791,
+    "H_q_given_prev_within_byte": 1.8684991251837375,
+    "layer": 41,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.461120957950277,
+    "H_q": 1.868065834815252,
+    "H_q_given_prev_within_byte": 1.86570652709577,
+    "layer": 41,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.465592848999881,
+    "H_q": 1.869385532313385,
+    "H_q_given_prev_within_byte": 1.867008826577565,
+    "layer": 42,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.465098664346484,
+    "H_q": 1.8692961275669489,
+    "H_q_given_prev_within_byte": 1.8668472252617572,
+    "layer": 42,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.455568677366461,
+    "H_q": 1.8669206092781503,
+    "H_q_given_prev_within_byte": 1.8643663587867998,
+    "layer": 42,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.464108110251422,
+    "H_q": 1.8688574735286512,
+    "H_q_given_prev_within_byte": 1.8668863728554055,
+    "layer": 43,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.468161192925567,
+    "H_q": 1.869805018595319,
+    "H_q_given_prev_within_byte": 1.867641988105555,
+    "layer": 43,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.459173105420456,
+    "H_q": 1.867603237150895,
+    "H_q_given_prev_within_byte": 1.8652953005126982,
+    "layer": 43,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.462101069528239,
+    "H_q": 1.868430741298996,
+    "H_q_given_prev_within_byte": 1.8663955895472897,
+    "layer": 44,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.46411057602853,
+    "H_q": 1.8689028414331044,
+    "H_q_given_prev_within_byte": 1.8667222435968727,
+    "layer": 44,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.45702906266459,
+    "H_q": 1.867113651709614,
+    "H_q_given_prev_within_byte": 1.864744485234325,
+    "layer": 44,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.4637158048160455,
+    "H_q": 1.868826123075336,
+    "H_q_given_prev_within_byte": 1.8668000334993233,
+    "layer": 45,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.465609130122963,
+    "H_q": 1.869228232715169,
+    "H_q_given_prev_within_byte": 1.867106935350282,
+    "layer": 45,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.457914436901163,
+    "H_q": 1.867307214015813,
+    "H_q_given_prev_within_byte": 1.864904894224471,
+    "layer": 45,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.461690280479047,
+    "H_q": 1.8683641012219174,
+    "H_q_given_prev_within_byte": 1.866238411139993,
+    "layer": 46,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.464296605317832,
+    "H_q": 1.8689454454046586,
+    "H_q_given_prev_within_byte": 1.8667675583038026,
+    "layer": 46,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.4574675374887,
+    "H_q": 1.8672635115006655,
+    "H_q_given_prev_within_byte": 1.8649147058897857,
+    "layer": 46,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.458158515270095,
+    "H_q": 1.8675551120017488,
+    "H_q_given_prev_within_byte": 1.865727409150907,
+    "layer": 47,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.464293353193737,
+    "H_q": 1.868955694285189,
+    "H_q_given_prev_within_byte": 1.8667827087254207,
+    "layer": 47,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.457008580748431,
+    "H_q": 1.8671067592249795,
+    "H_q_given_prev_within_byte": 1.8647063628558802,
+    "layer": 47,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.451363453521418,
+    "H_q": 1.8661221572457987,
+    "H_q_given_prev_within_byte": 1.8638689687546999,
+    "layer": 48,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.460327222582601,
+    "H_q": 1.8681909703202741,
+    "H_q_given_prev_within_byte": 1.865721606851709,
+    "layer": 48,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.455252186615655,
+    "H_q": 1.8667765340232223,
+    "H_q_given_prev_within_byte": 1.8643191512707027,
+    "layer": 48,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.451696033510461,
+    "H_q": 1.8663071768823116,
+    "H_q_given_prev_within_byte": 1.8641726622296995,
+    "layer": 49,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.4591762077298025,
+    "H_q": 1.8681685096296925,
+    "H_q_given_prev_within_byte": 1.8656182911840369,
+    "layer": 49,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.455824008143823,
+    "H_q": 1.8669343115366739,
+    "H_q_given_prev_within_byte": 1.8643581274271654,
+    "layer": 49,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.431704272940868,
+    "H_q": 1.861890716591998,
+    "H_q_given_prev_within_byte": 1.8590616525107186,
+    "layer": 50,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.449559152627757,
+    "H_q": 1.866325816671716,
+    "H_q_given_prev_within_byte": 1.8633721409761452,
+    "layer": 50,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.451596358816031,
+    "H_q": 1.8661781257481258,
+    "H_q_given_prev_within_byte": 1.863354855389769,
+    "layer": 50,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.449165659355719,
+    "H_q": 1.8657560083657574,
+    "H_q_given_prev_within_byte": 1.8634137179266905,
+    "layer": 51,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.459893009134291,
+    "H_q": 1.8683312225825013,
+    "H_q_given_prev_within_byte": 1.8657493037283333,
+    "layer": 51,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.459631628915571,
+    "H_q": 1.8677992269901882,
+    "H_q_given_prev_within_byte": 1.8652299778021026,
+    "layer": 51,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.461421596562938,
+    "H_q": 1.8684602880363115,
+    "H_q_given_prev_within_byte": 1.8664609547878048,
+    "layer": 52,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.4652581790396155,
+    "H_q": 1.869496394106074,
+    "H_q_given_prev_within_byte": 1.867072752382019,
+    "layer": 52,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.463353797577418,
+    "H_q": 1.8686046273101573,
+    "H_q_given_prev_within_byte": 1.8661245673217,
+    "layer": 52,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.464605362407763,
+    "H_q": 1.869201070960121,
+    "H_q_given_prev_within_byte": 1.8672789282125895,
+    "layer": 53,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.469527333396881,
+    "H_q": 1.8704214502891827,
+    "H_q_given_prev_within_byte": 1.8681520737271449,
+    "layer": 53,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.46730701099556,
+    "H_q": 1.8695902192530724,
+    "H_q_given_prev_within_byte": 1.8671035378684664,
+    "layer": 53,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.457079079198998,
+    "H_q": 1.867520772443077,
+    "H_q_given_prev_within_byte": 1.8650447514655577,
+    "layer": 54,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.4673609301661035,
+    "H_q": 1.8699431920810785,
+    "H_q_given_prev_within_byte": 1.8676187755104547,
+    "layer": 54,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.464170154276004,
+    "H_q": 1.8688765788438246,
+    "H_q_given_prev_within_byte": 1.8664174732213419,
+    "layer": 54,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.471580693949287,
+    "H_q": 1.8706622649742108,
+    "H_q_given_prev_within_byte": 1.8686457402717929,
+    "layer": 55,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.476548815895782,
+    "H_q": 1.8718552736055156,
+    "H_q_given_prev_within_byte": 1.8698075346171632,
+    "layer": 55,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.474472839134658,
+    "H_q": 1.8711805948857774,
+    "H_q_given_prev_within_byte": 1.868962291492288,
+    "layer": 55,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.476730630592334,
+    "H_q": 1.8717980253983646,
+    "H_q_given_prev_within_byte": 1.8700856184627141,
+    "layer": 56,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.479565346425523,
+    "H_q": 1.8725120930880297,
+    "H_q_given_prev_within_byte": 1.8705357947018755,
+    "layer": 56,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.476155506337791,
+    "H_q": 1.8715626498868687,
+    "H_q_given_prev_within_byte": 1.8693778622565014,
+    "layer": 56,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.4795426534127945,
+    "H_q": 1.8724332796973429,
+    "H_q_given_prev_within_byte": 1.8706816210961574,
+    "layer": 57,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.480871218497528,
+    "H_q": 1.8728103115673727,
+    "H_q_given_prev_within_byte": 1.8709163520042147,
+    "layer": 57,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.476369964051333,
+    "H_q": 1.8715901157534378,
+    "H_q_given_prev_within_byte": 1.8693734324393825,
+    "layer": 57,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.478439369024656,
+    "H_q": 1.872190119399459,
+    "H_q_given_prev_within_byte": 1.8703636642549752,
+    "layer": 58,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.479284498505482,
+    "H_q": 1.872495984594976,
+    "H_q_given_prev_within_byte": 1.8705379359881003,
+    "layer": 58,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.474024727159531,
+    "H_q": 1.8710406171238794,
+    "H_q_given_prev_within_byte": 1.868837099109523,
+    "layer": 58,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.475539125527281,
+    "H_q": 1.8715205296262576,
+    "H_q_given_prev_within_byte": 1.8697323214316606,
+    "layer": 59,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.477564768157272,
+    "H_q": 1.872127796425967,
+    "H_q_given_prev_within_byte": 1.8701796693120927,
+    "layer": 59,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.475945839732696,
+    "H_q": 1.8715538772952838,
+    "H_q_given_prev_within_byte": 1.8692566607215224,
+    "layer": 59,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.471829808410181,
+    "H_q": 1.870660689134158,
+    "H_q_given_prev_within_byte": 1.8686607158409212,
+    "layer": 60,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.473122392977611,
+    "H_q": 1.8712141880820372,
+    "H_q_given_prev_within_byte": 1.8692844272902776,
+    "layer": 60,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.4762541751119755,
+    "H_q": 1.871622957670984,
+    "H_q_given_prev_within_byte": 1.8693325375175371,
+    "layer": 60,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.469223201263591,
+    "H_q": 1.8700643690687904,
+    "H_q_given_prev_within_byte": 1.8679729349241647,
+    "layer": 61,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.468547593049485,
+    "H_q": 1.870300812201009,
+    "H_q_given_prev_within_byte": 1.868256575658398,
+    "layer": 61,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.475711375298356,
+    "H_q": 1.8715467200210643,
+    "H_q_given_prev_within_byte": 1.8691647821190904,
+    "layer": 61,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.44655365330704,
+    "H_q": 1.8649673939160478,
+    "H_q_given_prev_within_byte": 1.8624603508679627,
+    "layer": 62,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.465930740300424,
+    "H_q": 1.8697587559305848,
+    "H_q_given_prev_within_byte": 1.867543513798415,
+    "layer": 62,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.475746631741104,
+    "H_q": 1.8716092902347148,
+    "H_q_given_prev_within_byte": 1.8692641543962787,
+    "layer": 62,
+    "organ": "mlp.up"
+   },
+   {
+    "H_byte": 7.382556001288904,
+    "H_q": 1.8502978255791103,
+    "H_q_given_prev_within_byte": 1.8466554715457777,
+    "layer": 63,
+    "organ": "mlp.down"
+   },
+   {
+    "H_byte": 7.463471485558134,
+    "H_q": 1.8691888211143635,
+    "H_q_given_prev_within_byte": 1.8667973045818118,
+    "layer": 63,
+    "organ": "mlp.gate"
+   },
+   {
+    "H_byte": 7.471498117157176,
+    "H_q": 1.8705603854872295,
+    "H_q_given_prev_within_byte": 1.868126701388252,
+    "layer": 63,
+    "organ": "mlp.up"
+   }
+  ],
+  "q_hist": [
+   2491313339,
+   6062655810,
+   6068021777,
+   2490769394
+  ],
+  "sample_block_and_row": [
+   {
+    "H_q_given_prev_across_byte": 1.870420466508786,
+    "layer": 0,
+    "mi_across_byte_bits": 0.0016199807867249214,
+    "n_groups": 1392640,
+    "organ": "mlp.down",
+    "rowH_frac_lt_1_5": 0.0,
+    "rowH_frac_lt_1_8": 0.0,
+    "rowH_max": 1.9258365289418153,
+    "rowH_mean": 1.8713948531517386,
+    "rowH_min": 1.8115318656448791,
+    "rowH_std": 0.0075204631170147735,
+    "sampled_mode_mass": 5e-06,
+    "sampled_n": 200000,
+    "sampled_unique": 200000,
+    "unique_frac": 0.9999978458180147,
+    "unique_groups": 1392637,
+    "zlib_bytes": 21117092,
+    "zlib_ratio": 0.947709566004136
+   },
+   {
+    "H_q_given_prev_across_byte": 1.8723051032585385,
+    "layer": 0,
+    "mi_across_byte_bits": 0.0014749349289542094,
+    "n_groups": 1392640,
+    "organ": "mlp.gate",
+    "rowH_frac_lt_1_5": 0.0,
+    "rowH_frac_lt_1_8": 0.001838235294117647,
+    "rowH_max": 1.9154189423233106,
+    "rowH_mean": 1.8727847942027327,
+    "rowH_min": 1.6809812294437108,
+    "rowH_std": 0.012794986128476656,
+    "sampled_mode_mass": 5e-06,
+    "sampled_n": 200000,
+    "sampled_unique": 200000,
+    "unique_frac": 1.0,
+    "unique_groups": 1392640,
+    "zlib_bytes": 21139849,
+    "zlib_ratio": 0.9487308726591223
+   },
+   {
+    "H_q_given_prev_across_byte": 1.8728995070929373,
+    "layer": 0,
+    "mi_across_byte_bits": 0.001440410798084339,
+    "n_groups": 1392640,
+    "organ": "mlp.up",
+    "rowH_frac_lt_1_5": 0.0,
+    "rowH_frac_lt_1_8": 0.00034466911764705885,
+    "rowH_max": 1.9107494003938728,
+    "rowH_mean": 1.8728897943966007,
+    "rowH_min": 1.7549740642583154,
+    "rowH_std": 0.011430537597321978,
+    "sampled_mode_mass": 5e-06,
+    "sampled_n": 200000,
+    "sampled_unique": 200000,
+    "unique_frac": 1.0,
+    "unique_groups": 1392640,
+    "zlib_bytes": 21141487,
+    "zlib_ratio": 0.9488043841193704
+   },
+   {
+    "H_q_given_prev_across_byte": 1.8692252752597551,
+    "layer": 21,
+    "mi_across_byte_bits": 0.0016586827864290003,
+    "n_groups": 1392640,
+    "organ": "mlp.down",
+    "rowH_frac_lt_1_5": 0.0,
+    "rowH_frac_lt_1_8": 0.0,
+    "rowH_max": 1.9150747365799476,
+    "rowH_mean": 1.8710917909350175,
+    "rowH_min": 1.8149337291752967,
+    "rowH_std": 0.007679621667060992,
+    "sampled_mode_mass": 5e-06,
+    "sampled_n": 200000,
+    "sampled_unique": 200000,
+    "unique_frac": 0.9999892290900735,
+    "unique_groups": 1392625,
+    "zlib_bytes": 21112772,
+    "zlib_ratio": 0.9475156896254595
+   },
+   {
+    "H_q_given_prev_across_byte": 1.872514529974824,
+    "layer": 21,
+    "mi_across_byte_bits": 0.0015032030004919162,
+    "n_groups": 1392640,
+    "organ": "mlp.gate",
+    "rowH_frac_lt_1_5": 0.0,
+    "rowH_frac_lt_1_8": 0.00034466911764705885,
+    "rowH_max": 1.9571224522136874,
+    "rowH_mean": 1.8723132238838287,
+    "rowH_min": 1.7699594019075626,
+    "rowH_std": 0.011451372359131351,
+    "sampled_mode_mass": 5e-06,
+    "sampled_n": 200000,
+    "sampled_unique": 200000,
+    "unique_frac": 1.0,
+    "unique_groups": 1392640,
+    "zlib_bytes": 21135386,
+    "zlib_ratio": 0.9485305786132813
+   },
+   {
+    "H_q_given_prev_across_byte": 1.8712033188587749,
+    "layer": 21,
+    "mi_across_byte_bits": 0.0015202112603555614,
+    "n_groups": 1392640,
+    "organ": "mlp.up",
+    "rowH_frac_lt_1_5": 0.0,
+    "rowH_frac_lt_1_8": 0.0,
+    "rowH_max": 1.9096112417158693,
+    "rowH_mean": 1.8706256173043345,
+    "rowH_min": 1.809920859332185,
+    "rowH_std": 0.011296994066626832,
+    "sampled_mode_mass": 5e-06,
+    "sampled_n": 200000,
+    "sampled_unique": 200000,
+    "unique_frac": 1.0,
+    "unique_groups": 1392640,
+    "zlib_bytes": 21117245,
+    "zlib_ratio": 0.9477164324592141
+   },
+   {
+    "H_q_given_prev_across_byte": 1.8683083051313945,
+    "layer": 42,
+    "mi_across_byte_bits": 0.0018589529348678386,
+    "n_groups": 1392640,
+    "organ": "mlp.down",
+    "rowH_frac_lt_1_5": 0.0,
+    "rowH_frac_lt_1_8": 0.0001953125,
+    "rowH_max": 1.8893763039775915,
+    "rowH_mean": 1.8690350590807376,
+    "rowH_min": 1.7451968565439264,
+    "rowH_std": 0.007916675793852596,
+    "sampled_mode_mass": 1.5e-05,
+    "sampled_n": 200000,
+    "sampled_unique": 199998,
+    "unique_frac": 0.9999834846047794,
+    "unique_groups": 1392617,
+    "zlib_bytes": 21088424,
+    "zlib_ratio": 0.9464229808134191
+   },
+   {
+    "H_q_given_prev_across_byte": 1.8683688987311537,
+    "layer": 42,
+    "mi_across_byte_bits": 0.0018630091829085864,
+    "n_groups": 1392640,
+    "organ": "mlp.gate",
+    "rowH_frac_lt_1_5": 0.0,
+    "rowH_frac_lt_1_8": 0.0016659007352941176,
+    "rowH_max": 1.9506912978006095,
+    "rowH_mean": 1.8681844514826802,
+    "rowH_min": 1.709203673902474,
+    "rowH_std": 0.013086872785585794,
+    "sampled_mode_mass": 5e-06,
+    "sampled_n": 200000,
+    "sampled_unique": 200000,
+    "unique_frac": 0.9999719956341911,
+    "unique_groups": 1392601,
+    "zlib_bytes": 21086862,
+    "zlib_ratio": 0.9463528801413144
+   },
+   {
+    "H_q_given_prev_across_byte": 1.8663029189583829,
+    "layer": 42,
+    "mi_across_byte_bits": 0.001863676512847079,
+    "n_groups": 1392640,
+    "organ": "mlp.up",
+    "rowH_frac_lt_1_5": 0.0,
+    "rowH_frac_lt_1_8": 0.0007467830882352941,
+    "rowH_max": 1.914303278809453,
+    "rowH_mean": 1.8658484244101083,
+    "rowH_min": 1.7410362078264494,
+    "rowH_std": 0.012544017914465987,
+    "sampled_mode_mass": 1e-05,
+    "sampled_n": 200000,
+    "sampled_unique": 199999,
+    "unique_frac": 0.999990665211397,
+    "unique_groups": 1392627,
+    "zlib_bytes": 21062898,
+    "zlib_ratio": 0.9452774047851562
+   },
+   {
+    "H_q_given_prev_across_byte": 1.8481734501167846,
+    "layer": 63,
+    "mi_across_byte_bits": 0.0029066010236380485,
+    "n_groups": 1392640,
+    "organ": "mlp.down",
+    "rowH_frac_lt_1_5": 0.0,
+    "rowH_frac_lt_1_8": 0.0044921875,
+    "rowH_max": 1.877059048094515,
+    "rowH_mean": 1.8498231109114271,
+    "rowH_min": 1.7314004653114496,
+    "rowH_std": 0.010936118953840942,
+    "sampled_mode_mass": 5e-06,
+    "sampled_n": 200000,
+    "sampled_unique": 200000,
+    "unique_frac": 0.9999863568474264,
+    "unique_groups": 1392621,
+    "zlib_bytes": 20886442,
+    "zlib_ratio": 0.9373582727768842
+   },
+   {
+    "H_q_given_prev_across_byte": 1.8672498376002296,
+    "layer": 63,
+    "mi_across_byte_bits": 0.002010308370761609,
+    "n_groups": 1392640,
+    "organ": "mlp.gate",
+    "rowH_frac_lt_1_5": 0.0,
+    "rowH_frac_lt_1_8": 0.000861672794117647,
+    "rowH_max": 1.9382282567850666,
+    "rowH_mean": 1.8680341922789871,
+    "rowH_min": 1.755409770706311,
+    "rowH_std": 0.013322833769273519,
+    "sampled_mode_mass": 5e-06,
+    "sampled_n": 200000,
+    "sampled_unique": 200000,
+    "unique_frac": 0.9999899471507353,
+    "unique_groups": 1392626,
+    "zlib_bytes": 21083054,
+    "zlib_ratio": 0.9461819817038143
+   },
+   {
+    "H_q_given_prev_across_byte": 1.8704275190497037,
+    "layer": 63,
+    "mi_across_byte_bits": 0.0016924821687043737,
+    "n_groups": 1392640,
+    "organ": "mlp.up",
+    "rowH_frac_lt_1_5": 0.0,
+    "rowH_frac_lt_1_8": 0.0008042279411764705,
+    "rowH_max": 1.917976753202483,
+    "rowH_mean": 1.8694973597365547,
+    "rowH_min": 1.7667474013711875,
+    "rowH_std": 0.01249917541254479,
+    "sampled_mode_mass": 5e-06,
+    "sampled_n": 200000,
+    "sampled_unique": 200000,
+    "unique_frac": 0.9999971277573529,
+    "unique_groups": 1392636,
+    "zlib_bytes": 21104641,
+    "zlib_ratio": 0.947150780172909
+   }
+  ],
+  "sample_group_mode_mass": {
+   "max": 1.5e-05,
+   "mean": 6.25e-06,
+   "min": 5e-06,
+   "n": 12,
+   "std": 2.9755951785595208e-06
+  },
+  "sample_layers": [
+   0,
+   21,
+   42,
+   63
+  ],
+  "sample_rowH_frac_lt_1_5": {
+   "max": 0.0,
+   "mean": 0.0,
+   "min": 0.0,
+   "n": 12,
+   "std": 0.0
+  },
+  "sample_rowH_min": {
+   "max": 1.8149337291752967,
+   "mean": 1.7576079604519788,
+   "min": 1.6809812294437108,
+   "n": 12,
+   "std": 0.03927324129534148
+  },
+  "sample_unique_frac": {
+   "max": 1.0,
+   "mean": 0.9999922210094976,
+   "min": 0.9999719956341911,
+   "n": 12,
+   "std": 8.337100375434218e-06
+  },
+  "sample_zlib_ratio": {
+   "max": 0.9488043841193704,
+   "mean": 0.9464793186561732,
+   "min": 0.9373582727768842,
+   "n": 12,
+   "std": 0.0029438866245790536
+  }
+ },
+ "negative_findings": [
+  "4.00 of 4.28 GB of q is independent at the i.i.d. Shannon bound",
+  "p(q) \u2248 (0.146, 0.354, 0.355, 0.146): a 4-level histogram bias, not uniform and not a shared template",
+  "neighbour MI \u2248 0.002 bits; Markov-1 is not a second lever",
+  "cross-layer MI \u2248 1e-5 bits; gate\u2194up MI \u2248 1e-4 bits; match = independent baseline",
+  "16-byte groups are essentially unique; there is no group dictionary",
+  "per-tensor H(q) std \u2248 0.003 bits; no entropy islands to crush",
+  "the only OPEN byte lever on this 4.28 GB is fused entropy coding of the 278 MB histogram gap, kernel UNMEASURED, NNS-022 cousin for TPS"
+ ],
+ "nomenclature": {
+  "already_falsified": "ALREADY_FALSIFIED",
+  "depends_on_lowering": "DEPENDS_ON_LOWERING",
+  "direct_consume": "DIRECT_CONSUME",
+  "measured_negative": "MEASURED_NEGATIVE",
+  "open": "OPEN",
+  "rejected_dense_remat": "REJECTED_DENSE_REMAT",
+  "static_only": "this sidecar. Models propose; protected deterministic evidence decides.",
+  "unmeasured": "UNMEASURED"
+ },
+ "open_byte_levers": [
+  {
+   "bytes_eliminated_if_true": 277697891,
+   "id": "entropy_coded_code_stream",
+   "status": "OPEN",
+   "support": "SHANNON_GAP_MEASURED_KERNEL_UNMEASURED"
+  }
+ ],
+ "purpose": "Measure how much of the 4,278,190,080 MLP 2-bit code bytes of sealed-3.14 is independent information, on the real HGRAVF01 code arrays, not in the abstract, and not by restating the auxiliary scale/bias sharing kills.",
+ "recovered_implementation": {
+  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "catalog_format": "HQ38M20 + HGRAVF01 affine_q2_group64_fp16_scale_bias",
+  "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+  "object": "2-bit code payload, not f16 scale/bias",
+  "reconstruction": "w = float(q)*scale + bias, q unsigned in {0,1,2,3}"
+ },
+ "schema": "hawking.future.mlp_code_information.v1",
+ "seal_sha256": "44eed560e3dc91c5bb1b14135d8094332132c2d2840566db855e2cbeb56d68d9",
+ "unmeasured_attractive": [
+  {
+   "id": "shared_input_transforms",
+   "status": "UNMEASURED",
+   "support": "UNMEASURED"
+  },
+  {
+   "id": "function_replacement",
+   "status": "UNMEASURED",
+   "support": "UNMEASURED"
+  }
+ ],
+ "version": 1,
+ "what_this_does_not_prove": [
+  "capability of a fused rANS/Huffman affine2 (no generate gate, no kernel)",
+  "capability of function_replacement or shared_input_transforms (UNMEASURED on this object)",
+  "physical EBPW of a different packing",
+  "actual_read_bytes_per_token (cache, contention)",
+  "that H(q)=1.87 bits is inaudible at generate if a bit is dropped"
+ ]
+}

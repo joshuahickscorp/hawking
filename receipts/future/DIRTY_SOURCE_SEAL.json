@@ -1,0 +1,631 @@
+{
+ "base_head": {
+  "sha": "163251f8a1f1b535b9d38b184c308808cef0719f",
+  "subject": "fix(gravity): the umbrella scar lived only in the receipt, so a rebuild deleted it"
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T16:36:26Z",
+  "recorded_by": "tools/future/dirty_source_seal.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "binary": {
+  "bytes": 5201584,
+  "matches_provenance_receipt": false,
+  "path": "workspace/ops/build/rust/release/examples/ascension_qwen38_resident",
+  "provenance_sha256": "39f3f28c0bf695f2f5c2e436bdb82a88f8406fb3f7a4b6f2588899350ebd78f8",
+  "sha256": "6a548bb54a092c77dcedbf15ead67120aa39b7961cfa5c0758a0af465936119d",
+  "source": "hashed_on_disk"
+ },
+ "claim_boundary": "A partition, a review, a crate patch, and the hashes of that patch, the measurement binary, the toolchain and the sealed fusion env. It asserts that the campaign source is uncommitted and labels the numbers DIRTY_SOURCE_DIAGNOSTIC. It does not promote them. It does not claim a hardware measurement. No receipt recorded elsewhere is retracted.",
+ "commit_plan": [
+  {
+   "builds_after": true,
+   "files": [
+    "crates/hawking-core/src/model/qwen_complete_binary/uniform_q4.rs",
+    "crates/hawking-core/src/model/qwen30_complete_runtime.rs",
+    "crates/hawking-core/examples/ascension_qwen30_complete_native_runtime.rs",
+    "crates/hawking-core/examples/ascension_qwen30_uniform_q4_tps_gates.rs"
+   ],
+   "land": true,
+   "message": "fix(qwen30): the uniform-Q4 admission was a Coder hardcode, and Base is a different rope",
+   "order": 1,
+   "partition": "P-Q30",
+   "split_hunks_of": []
+  },
+  {
+   "builds_after": true,
+   "files": [
+    "crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs"
+   ],
+   "land": true,
+   "message": "feat(qwen80): a mixed-dtype index is not a BF16 poison, and a range read does not load the shard",
+   "order": 2,
+   "partition": "P-Q80",
+   "split_hunks_of": []
+  },
+  {
+   "builds_after": true,
+   "files": [
+    "crates/hawking-core/src/metal/mod.rs"
+   ],
+   "land": true,
+   "message": "feat(metal): TokenPipelineCache so a token does not reacquire the pipeline lock",
+   "order": 3,
+   "partition": "P-CACHE",
+   "split_hunks_of": [
+    "crates/hawking-core/src/metal/mod.rs"
+   ],
+   "split_note": "Take only TokenPipelineCache, TokenPipelineHasher, new_token_pipeline_cache, new_with_pipeline_cache, take_pipeline_cache, bind_pipeline_if_changed, pipeline_for_id / pipeline_named, and dispatch_batch_*_with_pipeline_cache. Leave elision flags, flash name tests, and gravity name tests out."
+  },
+  {
+   "builds_after": true,
+   "files": [
+    "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+   ],
+   "land": true,
+   "message": "feat(qwen38): the resident session keeps the pipeline cache, and it can be opted out",
+   "order": 4,
+   "partition": "P-CACHE",
+   "split_hunks_of": [
+    "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+   ],
+   "split_note": "Session field pipeline_cache, pipeline_cache_reuse (HAWKING_METAL_PIPELINE_CACHE_REUSE), and the three new_with_pipeline_cache / take_pipeline_cache sites. Not FAST, not Q2F launch helpers, not byte accounting."
+  },
+  {
+   "builds_after": true,
+   "files": [
+    "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+    "crates/hawking-core/examples/ascension_qwen38_resident.rs"
+   ],
+   "land": true,
+   "message": "feat(qwen38): the example now says the packed bytes it bound, which is not a DRAM counter",
+   "order": 5,
+   "partition": "P-INSTRUMENT",
+   "split_hunks_of": [
+    "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+   ],
+   "split_note": "Active-weight accounting, Qwen38LayerNameCache and its test, resident_weight_bytes on the result structs, and the example JSON. Not FAST, not Q2F."
+  },
+  {
+   "builds_after": true,
+   "files": [
+    "crates/hawking-core/src/decode_family.rs",
+    "crates/hawking-core/shaders/gk_family.metal",
+    "crates/hawking-core/shaders/dsv4f_native_token_graph.metal"
+   ],
+   "land": true,
+   "message": "feat(decode-family): the FP4 gate-up SwiGLU worklist has a name, and the shader has a kernel",
+   "note": "FAMILY_KERNELS is iterated by an existing metal name test; names and shaders must land together or that test fails.",
+   "order": 6,
+   "partition": "P-WORKLIST",
+   "split_hunks_of": []
+  },
+  {
+   "builds_after": true,
+   "files": [
+    "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+    "crates/hawking-core/shaders/mha.metal",
+    "crates/hawking-core/src/kernels/mod.rs",
+    "crates/hawking-core/src/metal/mod.rs"
+   ],
+   "land": true,
+   "message": "feat(qwen38): FAST is an opt-in profile, and gated MHA stays behind it",
+   "order": 7,
+   "partition": "P-FAST",
+   "split_hunks_of": [
+    "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+    "crates/hawking-core/src/kernels/mod.rs",
+    "crates/hawking-core/src/metal/mod.rs"
+   ],
+   "split_note": "FAST/from_env_with_fast, serial encoder, attention-gate fuse, mha_decode_f32_qwen38_gated, its TCB wrapper, and qwen38_gated_mha_is_trace_named_and_compiled. Not Q2F geo rewrite, not elision, not flash name tests."
+  },
+  {
+   "builds_after": true,
+   "files": [
+    "crates/hawking-core/src/metal/mod.rs"
+   ],
+   "land": false,
+   "message": "HOLD feat(metal): encoder/pipeline/commit elision stays in the sealed patch until an opt-out A/B exists",
+   "order": 8,
+   "partition": "P-ELISION",
+   "split_hunks_of": [
+    "crates/hawking-core/src/metal/mod.rs"
+   ]
+  },
+  {
+   "builds_after": true,
+   "files": [
+    "crates/hawking-core/shaders/q80_mixed_decode.metal",
+    "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+   ],
+   "land": false,
+   "message": "HOLD feat(qwen38): additive Q2F kernels may land later; the rewrite of qwen_q2f_group64_matvec_geo_tpr64_tg128 does not",
+   "order": 9,
+   "partition": "P-Q2F",
+   "split_hunks_of": [
+    "crates/hawking-core/shaders/q80_mixed_decode.metal",
+    "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+   ]
+  },
+  {
+   "builds_after": true,
+   "depends_on": [
+    "P-CACHE",
+    "P-WORKLIST"
+   ],
+   "files": [
+    "crates/hawking-core/src/gravity_deepseek_v4_fullseq_attention_device.rs",
+    "crates/hawking-core/src/gravity_deepseek_v4_layer0_continuation.rs",
+    "crates/hawking-core/src/gravity_deepseek_v4_native_token_graph.rs",
+    "crates/hawking-core/src/gravity_deepseek_v4_p4b_device.rs",
+    "crates/hawking-core/src/gravity_deepseek_v4_p6_device.rs",
+    "crates/hawking-core/src/gravity_deepseek_v4_p7_device.rs",
+    "crates/hawking-core/src/gravity_deepseek_v4_streamed_native.rs",
+    "crates/hawking-core/examples/gravity_deepseek_v4_fullseq_capture.rs",
+    "crates/hawking-core/shaders/deepseek_v4_p7.metal",
+    "crates/hawking-core/shaders/moe.metal",
+    "crates/hawking-core/shaders/attn.metal"
+   ],
+   "land": false,
+   "message": "HOLD feat(gravity): DeepSeek V4 fused dispatch is a different campaign and is not this binary",
+   "order": 10,
+   "partition": "P-GRAVITY",
+   "split_hunks_of": []
+  },
+  {
+   "builds_after": true,
+   "files": [
+    "crates/hawking-core/shaders/qwen_next.metal",
+    "crates/hawking-core/shaders/matmul.metal",
+    "crates/hawking-core/src/kernels/mod.rs",
+    "crates/hawking-core/src/metal/mod.rs"
+   ],
+   "land": false,
+   "message": "HOLD feat(flash): Qwen-Next bf16 kernels stay sealed, not landed, until a human wants a specific one",
+   "order": 11,
+   "partition": "P-FLASH",
+   "split_hunks_of": [
+    "crates/hawking-core/src/kernels/mod.rs",
+    "crates/hawking-core/src/metal/mod.rs"
+   ]
+  },
+  {
+   "builds_after": true,
+   "files": [
+    "crates/hawking-core/examples/flash_fast_chain.rs",
+    "crates/hawking-core/examples/flash_full_attention_layer3.rs",
+    "crates/hawking-core/examples/flash_meta_teacher_trace.rs",
+    "crates/hawking-core/examples/flash_noetic_complete_layer0.rs",
+    "crates/hawking-core/examples/flash_source_bf16_chain.rs",
+    "crates/hawking-core/examples/flash_source_bf16_terminal.rs",
+    "crates/hawking-core/examples/flash_stateful_attention_probe.rs",
+    "crates/hawking-core/examples/flash_stateful_complete_token_session.rs",
+    "crates/hawking-core/examples/flash_stateful_cross_species_seam.rs",
+    "crates/hawking-core/examples/flash_stateful_layer3_layer4_bridge.rs",
+    "crates/hawking-core/examples/flash_stateful_linear_prefix_session.rs",
+    "crates/hawking-core/examples/flash_stateful_linear_probe.rs",
+    "crates/hawking-core/examples/flash_tokenizer_acceptance_contract.rs"
+   ],
+   "land": false,
+   "message": "HOLD chore(flash): thirteen untracked diagnostic examples stay in the patch, not in hawking-core/examples",
+   "order": 12,
+   "partition": "P-EXAMPLES",
+   "split_hunks_of": []
+  }
+ ],
+ "crate_source_is_dirty": true,
+ "dirty_crate_files": {
+  "modified": [
+   "crates/hawking-core/examples/ascension_qwen30_complete_native_runtime.rs",
+   "crates/hawking-core/examples/ascension_qwen30_uniform_q4_tps_gates.rs",
+   "crates/hawking-core/examples/ascension_qwen38_resident.rs",
+   "crates/hawking-core/examples/gravity_deepseek_v4_fullseq_capture.rs",
+   "crates/hawking-core/shaders/attn.metal",
+   "crates/hawking-core/shaders/deepseek_v4_p7.metal",
+   "crates/hawking-core/shaders/dsv4f_native_token_graph.metal",
+   "crates/hawking-core/shaders/gk_family.metal",
+   "crates/hawking-core/shaders/matmul.metal",
+   "crates/hawking-core/shaders/mha.metal",
+   "crates/hawking-core/shaders/moe.metal",
+   "crates/hawking-core/shaders/qwen_next.metal",
+   "crates/hawking-core/src/decode_family.rs",
+   "crates/hawking-core/src/gravity_deepseek_v4_fullseq_attention_device.rs",
+   "crates/hawking-core/src/gravity_deepseek_v4_layer0_continuation.rs",
+   "crates/hawking-core/src/gravity_deepseek_v4_native_token_graph.rs",
+   "crates/hawking-core/src/gravity_deepseek_v4_p4b_device.rs",
+   "crates/hawking-core/src/gravity_deepseek_v4_p6_device.rs",
+   "crates/hawking-core/src/gravity_deepseek_v4_p7_device.rs",
+   "crates/hawking-core/src/gravity_deepseek_v4_streamed_native.rs",
+   "crates/hawking-core/src/kernels/mod.rs",
+   "crates/hawking-core/src/metal/mod.rs",
+   "crates/hawking-core/src/model/qwen30_complete_runtime.rs",
+   "crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs",
+   "crates/hawking-core/src/model/qwen_complete_binary/uniform_q4.rs"
+  ],
+  "total": 38,
+  "untracked": [
+   "crates/hawking-core/examples/flash_fast_chain.rs",
+   "crates/hawking-core/examples/flash_full_attention_layer3.rs",
+   "crates/hawking-core/examples/flash_meta_teacher_trace.rs",
+   "crates/hawking-core/examples/flash_noetic_complete_layer0.rs",
+   "crates/hawking-core/examples/flash_source_bf16_chain.rs",
+   "crates/hawking-core/examples/flash_source_bf16_terminal.rs",
+   "crates/hawking-core/examples/flash_stateful_attention_probe.rs",
+   "crates/hawking-core/examples/flash_stateful_complete_token_session.rs",
+   "crates/hawking-core/examples/flash_stateful_cross_species_seam.rs",
+   "crates/hawking-core/examples/flash_stateful_layer3_layer4_bridge.rs",
+   "crates/hawking-core/examples/flash_stateful_linear_prefix_session.rs",
+   "crates/hawking-core/examples/flash_stateful_linear_probe.rs",
+   "crates/hawking-core/examples/flash_tokenizer_acceptance_contract.rs"
+  ]
+ },
+ "dirty_crate_root": "/Users/scammermike/Downloads/hawking",
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "the dirty crate work is a patch with a sha256, against a recorded base HEAD",
+  "the measurement binary digest and the rustc that built it are in the same seal as the fusion env",
+  "existing campaign receipts are labelled DIRTY_SOURCE_DIAGNOSTIC and cannot be labelled PROMOTED while the source is dirty",
+  "the patch reapplies to that HEAD in a scratch worktree"
+ ],
+ "gpu_authority": false,
+ "hold": [
+  "P-ELISION",
+  "P-Q2F",
+  "P-GRAVITY",
+  "P-FLASH",
+  "P-EXAMPLES"
+ ],
+ "land": [
+  "P-CACHE",
+  "P-INSTRUMENT",
+  "P-FAST",
+  "P-WORKLIST",
+  "P-Q30",
+  "P-Q80"
+ ],
+ "measurement_files": {
+  "files": [
+   {
+    "added": 26,
+    "path": "crates/hawking-core/examples/ascension_qwen38_resident.rs",
+    "removed": 0
+   },
+   {
+    "added": 1042,
+    "path": "crates/hawking-core/src/metal/mod.rs",
+    "removed": 110
+   }
+  ],
+  "uncommitted_lines_added": 1068,
+  "uncommitted_lines_removed": 110
+ },
+ "measurement_label": "DIRTY_SOURCE_DIAGNOSTIC",
+ "measurements": {
+  "receipts/future/BA_DELTA_AB.json": "DIRTY_SOURCE_DIAGNOSTIC",
+  "receipts/future/ORGAN_BANDWIDTH.json": "DIRTY_SOURCE_DIAGNOSTIC",
+  "receipts/future/RESIDENT_BINARY_DRIFT.json": "DIRTY_SOURCE_DIAGNOSTIC",
+  "receipts/future/RESIDENT_TOKEN_BUDGET.json": "DIRTY_SOURCE_DIAGNOSTIC"
+ },
+ "measurements_that_inherit_this": [
+  "receipts/future/RESIDENT_TOKEN_BUDGET.json",
+  "receipts/future/ORGAN_BANDWIDTH.json",
+  "receipts/future/BA_DELTA_AB.json",
+  "receipts/future/RESIDENT_BINARY_DRIFT.json"
+ ],
+ "negative_findings": [
+  "TokenPipelineCache has no unit test in metal/mod.rs",
+  "HAWKING_METAL_PIPELINE_CACHE_REUSE is default-on",
+  "q80_mixed_decode.metal rewrites an existing geo kernel",
+  "forty crate files are dirty; three of them produced the campaign binary; the rest is a different campaign"
+ ],
+ "partitions": [
+  {
+   "changes_production_default": true,
+   "correct": "Looks correct on reading: one admission per kernel name, stable IDs, Arc handles reused across command buffers. dispatch_batch_with_pipeline_cache is used by gravity P6, not dead; Qwen3.8 uses new_with_pipeline_cache instead.",
+   "dead_code": false,
+   "has_test": false,
+   "id": "P-CACHE",
+   "land": true,
+   "measurement_bearing": true,
+   "name": "TokenPipelineCache and batched dispatch reuse",
+   "touches": [
+    "crates/hawking-core/src/metal/mod.rs",
+    "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+   ],
+   "verdict": "LAND",
+   "what": "Resident pipeline-handle cache (name-to-id map + Arc vector), FNV-1a hasher, TokenCommandBuffer::new_with_pipeline_cache, take_pipeline_cache, bind_pipeline_if_changed, and the dispatch_batch_*_with_pipeline_cache helpers. The Qwen3.8 session keeps the cache across tokens. Default ON via HAWKING_METAL_PIPELINE_CACHE_REUSE env_opt_out.",
+   "why": "The campaign binary depends on this symbol (16 occurrences in the working tree, 0 in HEAD). The binary ran with fallbacks 0 and produced coherent text. An opt-out exists. There is no unit test of the cache itself; land it as the implementation the measurements used, and do not treat landing it as promoting the TPS numbers."
+  },
+  {
+   "changes_production_default": true,
+   "correct": "Plausible host-side skip; not GPU-math. Untested as a set.",
+   "dead_code": false,
+   "has_test": false,
+   "id": "P-ELISION",
+   "land": false,
+   "measurement_bearing": true,
+   "name": "Default-on Metal encoder/pipeline/commit elision",
+   "touches": [
+    "crates/hawking-core/src/metal/mod.rs"
+   ],
+   "verdict": "HOLD",
+   "what": "Skip ordinary encoder labels, skip re-setting pipeline state when the ID is unchanged, skip timing on untraced commit_and_wait, and resolve pipelines by admitted ID. Each is env_opt_out, so unset means ON.",
+   "why": "Default-on production change with no paired A/B of the elision flags themselves. The campaign likely ran with them on. Keep them in the sealed patch; do not land until an opt-out A/B exists."
+  },
+  {
+   "changes_production_default": true,
+   "correct": "The example honestly reports actual_read_bytes as NOT_MEASURED. bytes_per_row has a unit test. This is accounting, not a DRAM counter.",
+   "dead_code": false,
+   "has_test": true,
+   "id": "P-INSTRUMENT",
+   "land": true,
+   "measurement_bearing": true,
+   "name": "Active and resident weight-byte instrumentation",
+   "touches": [
+    "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+    "crates/hawking-core/examples/ascension_qwen38_resident.rs"
+   ],
+   "verdict": "LAND",
+   "what": "Per-token packed-weight byte accounting on the decode session, Qwen38LayerNameCache, and JSON fields on ascension_qwen38_resident (resident_weight_bytes, active_bytes_per_token, actual_read_bytes_status=NOT_MEASURED_NO_METAL_MEMORY_COUNTER).",
+   "why": "Small, named, tested at the row-size helper. It changes the example's JSON (serving API) but not the GPU graph. The campaign receipts read these fields."
+  },
+  {
+   "changes_production_default": false,
+   "correct": "Default-off. mlp_fusion_env_tests cover FAST on/off and the =1 means swiglu parser. Gated MHA has a compile-name test, not a numeric oracle.",
+   "dead_code": false,
+   "has_test": true,
+   "id": "P-FAST",
+   "land": true,
+   "measurement_bearing": false,
+   "name": "FAST profile, serial encoder, gated MHA",
+   "touches": [
+    "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+    "crates/hawking-core/shaders/mha.metal",
+    "crates/hawking-core/src/kernels/mod.rs",
+    "crates/hawking-core/src/metal/mod.rs"
+   ],
+   "verdict": "LAND",
+   "what": "HAWKING_QWEN38_FAST opt-in rebinds MLP/add-rmsnorm/BA-delta/GQA/DN defaults to the sealed fusion set, enables a serial token encoder, and fuses the per-head attention gate into MHA. FAST itself is env_on, default off.",
+   "why": "Opt-in profile with tests. Production without HAWKING_QWEN38_FAST keeps HEAD fusion defaults. Land as opt-in; do not make FAST the incumbent."
+  },
+  {
+   "changes_production_default": true,
+   "correct": "Additive kernels are candidates. The rewrite of the existing geo kernel is not certified here. The campaign unfused A/B (964 dispatches) may have run on the rewrite.",
+   "dead_code": false,
+   "has_test": false,
+   "id": "P-Q2F",
+   "land": false,
+   "measurement_bearing": true,
+   "name": "Q2F geo/splitk kernels, including a rewrite of an existing kernel",
+   "touches": [
+    "crates/hawking-core/shaders/q80_mixed_decode.metal",
+    "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+   ],
+   "verdict": "HOLD",
+   "what": "Additive q2f/affine splitk/pipe/swiglu kernels in q80_mixed_decode.metal plus decode launch helpers. The same file rewrites kernel void qwen_q2f_group64_matvec_geo_tpr64_tg128, which already exists at HEAD.",
+   "why": "Do not land a rewrite of a production kernel in the same breath as 15 new candidates. Split the additive hunks if a human wants them; hold the geo rewrite until an oracle matches HEAD. Keep it in the sealed patch."
+  },
+  {
+   "changes_production_default": false,
+   "correct": "Additive. FAMILY_KERNELS static-name tests will fail if names land without shaders, so they travel together.",
+   "dead_code": false,
+   "has_test": true,
+   "id": "P-WORKLIST",
+   "land": true,
+   "measurement_bearing": false,
+   "name": "FP4 gate-up SwiGLU worklist names and kernels",
+   "touches": [
+    "crates/hawking-core/src/decode_family.rs",
+    "crates/hawking-core/shaders/gk_family.metal",
+    "crates/hawking-core/shaders/dsv4f_native_token_graph.metal"
+   ],
+   "verdict": "LAND",
+   "what": "decode_family.rs names for gk_worklist_fp4_gate_up_swiglu_bf16{,_simd}, plus the matching kernels in gk_family.metal and dsv4f_native_token_graph.metal.",
+   "why": "Dormant unless a gravity/worklist path selects them. Metal static-name tests cover presence. Not on the Qwen3.8 resident measurement path."
+  },
+  {
+   "changes_production_default": true,
+   "correct": "The Coder hardcode was a real bug for Base (different rope). Unknown repositories still refuse. Tested.",
+   "dead_code": false,
+   "has_test": true,
+   "id": "P-Q30",
+   "land": true,
+   "measurement_bearing": false,
+   "name": "Qwen30 uniform-Q4 Base admission",
+   "touches": [
+    "crates/hawking-core/src/model/qwen_complete_binary/uniform_q4.rs",
+    "crates/hawking-core/src/model/qwen30_complete_runtime.rs",
+    "crates/hawking-core/examples/ascension_qwen30_complete_native_runtime.rs",
+    "crates/hawking-core/examples/ascension_qwen30_uniform_q4_tps_gates.rs"
+   ],
+   "verdict": "LAND",
+   "what": "Admit Qwen3-30B-A3B Base from the manifest repository instead of hardcoding Coder. Preflight for uniform-Q4 without executing a token. Gate example seals become env-overridable.",
+   "why": "Independent of the Qwen3.8 campaign. Correctness fix with a unit test. Changes Qwen30 Base admission, which is the point."
+  },
+  {
+   "changes_production_default": true,
+   "correct": "Range-read bounds-checks. Skipping non-BF16 is a behaviour change: mixed Flash-Next indexes now admit. A later read of a non-BF16 name still fails closed.",
+   "dead_code": false,
+   "has_test": false,
+   "id": "P-Q80",
+   "land": true,
+   "measurement_bearing": false,
+   "name": "Qwen80 source BF16 range-read and mixed-dtype index",
+   "touches": [
+    "crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs"
+   ],
+   "verdict": "LAND",
+   "what": "read_raw_range for a bounded tensor window. Skip non-BF16 control tensors at index time instead of poisoning admission. HAWKING_SOURCE_CACHE=1 opt-in, default off.",
+   "why": "Small, not on the Qwen3.8 resident path. The skip is intentional for Flash-Next control tensors. No new test for read_raw_range; still land, it is local and closed."
+  },
+  {
+   "changes_production_default": false,
+   "correct": "Too large to certify in this review. Some new budget/catalog tests exist.",
+   "dead_code": false,
+   "has_test": true,
+   "id": "P-GRAVITY",
+   "land": false,
+   "measurement_bearing": false,
+   "name": "DeepSeek V4 gravity fused dispatch (P6/P7/native graph)",
+   "touches": [
+    "crates/hawking-core/src/gravity_deepseek_v4_fullseq_attention_device.rs",
+    "crates/hawking-core/src/gravity_deepseek_v4_layer0_continuation.rs",
+    "crates/hawking-core/src/gravity_deepseek_v4_native_token_graph.rs",
+    "crates/hawking-core/src/gravity_deepseek_v4_p4b_device.rs",
+    "crates/hawking-core/src/gravity_deepseek_v4_p6_device.rs",
+    "crates/hawking-core/src/gravity_deepseek_v4_p7_device.rs",
+    "crates/hawking-core/src/gravity_deepseek_v4_streamed_native.rs",
+    "crates/hawking-core/examples/gravity_deepseek_v4_fullseq_capture.rs",
+    "crates/hawking-core/shaders/deepseek_v4_p7.metal",
+    "crates/hawking-core/shaders/moe.metal",
+    "crates/hawking-core/shaders/attn.metal"
+   ],
+   "verdict": "HOLD",
+   "what": "Native token graph controls, P6 fused gate-up/down/shared-fp8 dispatch, P7 MHC kernels, fullseq ordered encoder, streamed LM-head selection, plus shaders in deepseek_v4_p7.metal, moe.metal, attn.metal.",
+   "why": "Thousands of lines of a different model family. Not the source of the Qwen3.8 TPS numbers. Keep in the sealed patch; land as its own reviewed series, not this one."
+  },
+  {
+   "changes_production_default": false,
+   "correct": "Compile-name tests only. No numeric oracle in this tree.",
+   "dead_code": false,
+   "has_test": true,
+   "id": "P-FLASH",
+   "land": false,
+   "measurement_bearing": false,
+   "name": "Qwen-Next / Flash bf16 kernels and TCB wrappers",
+   "touches": [
+    "crates/hawking-core/shaders/qwen_next.metal",
+    "crates/hawking-core/shaders/matmul.metal",
+    "crates/hawking-core/src/kernels/mod.rs",
+    "crates/hawking-core/src/metal/mod.rs"
+   ],
+   "verdict": "HOLD",
+   "what": "qwen_next.metal and matmul.metal kernel dump, kernels/mod.rs TCB wrappers, and metal compile-name tests for flash compact-MoE, QKV-RoPE, router, hyperconnection.",
+   "why": "A metallib dump of a different species. Dormant for the resident Qwen3.8 path. Do not bulk-land. Name tests can travel with any kernel a human actually wants."
+  },
+  {
+   "changes_production_default": false,
+   "correct": "Unread as production code. They are examples.",
+   "dead_code": true,
+   "has_test": false,
+   "id": "P-EXAMPLES",
+   "land": false,
+   "measurement_bearing": false,
+   "name": "Untracked flash_* diagnostic examples",
+   "touches": [
+    "crates/hawking-core/examples/flash_fast_chain.rs",
+    "crates/hawking-core/examples/flash_full_attention_layer3.rs",
+    "crates/hawking-core/examples/flash_meta_teacher_trace.rs",
+    "crates/hawking-core/examples/flash_noetic_complete_layer0.rs",
+    "crates/hawking-core/examples/flash_source_bf16_chain.rs",
+    "crates/hawking-core/examples/flash_source_bf16_terminal.rs",
+    "crates/hawking-core/examples/flash_stateful_attention_probe.rs",
+    "crates/hawking-core/examples/flash_stateful_complete_token_session.rs",
+    "crates/hawking-core/examples/flash_stateful_cross_species_seam.rs",
+    "crates/hawking-core/examples/flash_stateful_layer3_layer4_bridge.rs",
+    "crates/hawking-core/examples/flash_stateful_linear_prefix_session.rs",
+    "crates/hawking-core/examples/flash_stateful_linear_probe.rs",
+    "crates/hawking-core/examples/flash_tokenizer_acceptance_contract.rs"
+   ],
+   "verdict": "HOLD",
+   "what": "Thirteen untracked hawking-core examples (flash_fast_chain, flash_noetic_complete_layer0, stateful probes, tokenizer contract, \u2026). Diagnostic harnesses, not the resident server.",
+   "why": "Do not land thirteen untracked diagnostic binaries into hawking-core/examples to close a provenance gap. They are in the sealed patch so they are not lost."
+  }
+ ],
+ "patch": {
+  "bytes": 1079622,
+  "n_files": 38,
+  "n_modified": 25,
+  "n_untracked": 13,
+  "path": "receipts/future/patches/dirty-crate-work.patch",
+  "sha256": "7630329f840b24d77a5ffc47408b6e483cb157cac6f1f59ee8f8212c2977ed19"
+ },
+ "promoted": false,
+ "recorded_by": "tools/future/dirty_source_seal.py",
+ "recovered_implementation": [
+  "tools/future/measurement_provenance.py named the gap and counted TokenPipelineCache 16 vs 0",
+  "tools/future/artifact_identity.py seals the fusion env and refuses a stale binary, not an uncommitted one",
+  "receipts/future/patches/n1-region-timing.crate.patch is the colliding independent implementation, preserved unapplied"
+ ],
+ "refuse_rule": "label_measurement RAISES PromotionRefused when the requested label is PROMOTED while crate source is dirty. Campaign measurements stay DIRTY_SOURCE_DIAGNOSTIC. This seal does not mint PROMOTED.",
+ "resident_callable": {
+  "apply": "tools.future.dirty_source_seal.apply_patch_to_scratch_worktree",
+  "entry_point": "tools.future.dirty_source_seal.build",
+  "fails_closed": "PromotionRefused; PatchApplyError",
+  "label": "tools.future.dirty_source_seal.label_measurement",
+  "patch": "receipts/future/patches/dirty-crate-work.patch",
+  "receipt": "receipts/future/DIRTY_SOURCE_SEAL.json"
+ },
+ "review_summary": {
+  "hold": "P-ELISION (default-on, untested as a set), P-Q2F (rewrite of an existing geo kernel), P-GRAVITY (different model, thousands of lines), P-FLASH (metallib dump), P-EXAMPLES (untracked diagnostic binaries).",
+  "land": "P-Q30, P-Q80, P-CACHE, P-INSTRUMENT, P-WORKLIST, P-FAST. P-CACHE changes production default (opt-out). Landing it does not promote the TPS numbers."
+ },
+ "schema": "hawking.future.dirty_source_seal.v1",
+ "seal_sha256": "898ae0235727ce0e456b19d4d671924304544726cec63f44fdb3800f5cd153db",
+ "sealed_fusion_env": {
+  "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+  "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+  "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+  "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+ },
+ "sealed_fusion_environment": {
+  "env_hash": "7f677c8208a879575c8c604f40c573da3d58fa314b6e58e48317ba384789771b",
+  "fusion_flags": {
+   "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+   "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+   "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+   "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+  },
+  "hawking_toggles": {
+   "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+   "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+   "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+   "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+  },
+  "incumbent_label": "sealed-3.14-production",
+  "is_sealed": true,
+  "measurement_mode": "DIAGNOSTIC_RELATIVE",
+  "n_fusion_flags": 4,
+  "n_hawking_toggles": 4,
+  "serving_mode": "resident"
+ },
+ "toolchain": {
+  "active_toolchain": "stable-aarch64-apple-darwin (default)",
+  "cargo": "cargo 1.94.1 (Homebrew)",
+  "commit_hash": "e408947bfd200af42db322daf0fadfe7e26d3bd1",
+  "host": "aarch64-apple-darwin",
+  "llvm": "21.1.8",
+  "release": "1.94.1",
+  "rustc": "1.94.1 (e408947bf 2026-03-25) (Homebrew)",
+  "rustc_vv": "rustc 1.94.1 (e408947bf 2026-03-25) (Homebrew)\nbinary: rustc\ncommit-hash: e408947bfd200af42db322daf0fadfe7e26d3bd1\ncommit-date: 2026-03-25\nhost: aarch64-apple-darwin\nrelease: 1.94.1\nLLVM version: 21.1.8",
+  "workspace_rust_version": "1.80"
+ },
+ "version": 1,
+ "why_artifact_identity_does_not_catch_it": "artifact_identity.py refuses a binary OLDER than the commit that introduced a field it reads. Here there is no such commit. The check passes because the source was never committed, which is the worse case, not the safe one.",
+ "witness": {
+  "conclusion": "the measurements depend on a symbol that exists only in the working tree",
+  "file": "crates/hawking-core/src/metal/mod.rs",
+  "occurrences_in_HEAD": 0,
+  "occurrences_in_working_tree": 16,
+  "symbol": "TokenPipelineCache"
+ },
+ "would_land": [
+  "P-CACHE",
+  "P-INSTRUMENT",
+  "P-FAST",
+  "P-WORKLIST",
+  "P-Q30",
+  "P-Q80"
+ ],
+ "would_not_land": [
+  "P-ELISION",
+  "P-Q2F",
+  "P-GRAVITY",
+  "P-FLASH",
+  "P-EXAMPLES"
+ ]
+}

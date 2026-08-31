@@ -3,10 +3,12 @@ from __future__ import annotations
 
 import inspect
 import json
+import pathlib
 
 import pytest
 
 from tools.future import contamination as C
+from tools.future import status_causality as sc
 from tools.future._common import HARDWARE_FIELDS, RECEIPTS
 
 
@@ -353,3 +355,74 @@ def test_gpu_process_list_is_enumeration_not_a_name_filter():
     assert "idle" not in names
     assert snap["gpu_processes"]["no_name_filter"] is True
     assert "modellake" not in json.dumps(snap["gpu_processes"]["attribution"])
+
+
+# ---------------------------------------------------------------------------
+# G007 consumer: build records the five causality fields.
+# ---------------------------------------------------------------------------
+
+
+def test_build_records_the_five_causality_fields():
+    """A coverage number no test defends will drift back to zero."""
+    out = C.build()
+    doc = json.loads(out.read_text())
+    assert C.records_five_fields(doc)
+    src = pathlib.Path(C.__file__).read_text()
+    assert "sc.emit(" in src
+    assert doc["contamination_class"] in C.CONTAMINATION_CLASSES
+    assert "snapshot" in doc["probe_performed"] or "classify_contamination" in doc["probe_performed"]
+    assert doc["direct_observation"] != doc["contamination_class"]
+    assert "contamination_class=" in doc["direct_observation"]
+    assert doc["causality_verdict"] in {sc.SUPPORTED, sc.OVERREACHING, sc.UNTESTED}
+
+
+def test_unsupplied_observation_records_untested_not_a_restatement():
+    result = {"contamination_class": "HEAVY", "contamination_reason": "rss"}
+    rec = C.record_contamination_causality(
+        result, probe_performed="", direct_observation=""
+    )
+    assert rec["verdict"] == sc.UNTESTED
+    assert rec["direct_observation"] in ("", None)
+    assert rec["direct_observation"] != "HEAVY"
+    assert "HEAVY" not in str(rec["direct_observation"] or "")
+    assert result["contamination_class"] == "HEAVY"
+    assert rec["interpretation"] != rec["direct_observation"]
+
+
+def test_overreaching_does_not_override_contamination_class(monkeypatch):
+    def overreach(status, **kwargs):
+        return {
+            "probe_performed": kwargs.get("probe_performed") or "p",
+            "direct_observation": kwargs.get("direct_observation") or "o",
+            "interpretation": kwargs.get("interpretation") or status,
+            "confidence": {
+                "level": "LOW",
+                "about": "a",
+                "would_raise": "b",
+                "would_lower": "c",
+            },
+            "alternatives": [
+                {
+                    "hypothetical": "h",
+                    "consistent_with_observation": True,
+                    "consistent_with_claim": False,
+                }
+            ],
+            "verdict": sc.OVERREACHING,
+            "falsifier": "f",
+            "probe_kind": sc.PROBE_MEASURED_FLAGS,
+            "claim_kind": sc.CLAIM_OBJECT_ABSENCE,
+        }
+
+    monkeypatch.setattr(C.sc, "emit", overreach)
+    out = C.build()
+    doc = json.loads(out.read_text())
+    assert doc["contamination_class"] in C.CONTAMINATION_CLASSES
+    assert doc["causality_verdict"] == sc.OVERREACHING
+
+
+def test_coverage_receipt_names_contamination_as_recording():
+    path = RECEIPTS / "STATUS_CAUSALITY_COVERAGE.json"
+    doc = json.loads(path.read_text())
+    assert "contamination" in doc["recording_five_fields"]
+    assert doc["n_gates"] == 18

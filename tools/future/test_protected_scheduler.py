@@ -16,6 +16,7 @@ import pytest
 from tools.future import protected_scheduler as ps
 from tools.future import protected_window as pw
 from tools.future import qualification_pipeline as qp
+from tools.future import status_causality as sc
 from tools.future._common import RECEIPTS, REPO, _assert_no_hardware_claims
 
 
@@ -631,3 +632,142 @@ def test_injected_unknown_contamination_is_unknown_not_quiescent():
     d = ps.decide(_gpu(), contamination={"contamination_class": "SPARKLY"}, lease=_lease(present=True))
     assert d["verdict"] == "BLOCKED_ON_PROTECTED_WINDOW"
     assert d["scheduler_capable"] is True
+
+
+# ---------------------------------------------------------------------------
+# G007 consumer: decide records the five causality fields.
+# CAPABLE / AVAILABLE stay separate; lease_ok does not return.
+# ---------------------------------------------------------------------------
+
+
+def test_decide_records_the_five_causality_fields():
+    """A coverage number no test defends will drift back to zero."""
+    d = ps.decide(
+        _gpu(),
+        contamination=_cont("HEAVY"),
+        lease=_lease(present=False),
+    )
+    assert ps.records_five_fields(d)
+    src = Path(ps.__file__).read_text()
+    assert "sc.emit(" in src
+    assert d["verdict"] == "BLOCKED_ON_PROTECTED_WINDOW"
+    assert d["scheduler_capable"] is True
+    assert d["window_available"] is False
+    assert "recognize" in d["probe_performed"]
+    assert d["direct_observation"] != d["verdict"]
+    assert "window_available=" in d["direct_observation"]
+    assert "scheduler_capable=" in d["direct_observation"]
+    assert d["causality_verdict"] in {sc.SUPPORTED, sc.OVERREACHING, sc.UNTESTED}
+
+
+def test_unsupplied_observation_records_untested_not_a_restatement():
+    result = {
+        "verdict": "RUNNABLE",
+        "scheduler_capable": True,
+        "window_available": True,
+    }
+    rec = ps.record_decision_causality(
+        result, probe_performed="", direct_observation=""
+    )
+    assert rec["verdict"] == sc.UNTESTED
+    assert rec["direct_observation"] in ("", None)
+    assert rec["direct_observation"] != "RUNNABLE"
+    assert "RUNNABLE" not in str(rec["direct_observation"] or "")
+    assert result["verdict"] == "RUNNABLE"
+    assert result["scheduler_capable"] is True
+    assert result["window_available"] is True
+    assert rec["interpretation"] != rec["direct_observation"]
+
+
+def test_overreaching_does_not_override_verdict_or_capable_available(monkeypatch):
+    def overreach(status, **kwargs):
+        return {
+            "probe_performed": kwargs.get("probe_performed") or "p",
+            "direct_observation": kwargs.get("direct_observation") or "o",
+            "interpretation": kwargs.get("interpretation") or status,
+            "confidence": {
+                "level": "LOW",
+                "about": "a",
+                "would_raise": "b",
+                "would_lower": "c",
+            },
+            "alternatives": [
+                {
+                    "hypothetical": "h",
+                    "consistent_with_observation": True,
+                    "consistent_with_claim": False,
+                }
+            ],
+            "verdict": sc.OVERREACHING,
+            "falsifier": "f",
+            "probe_kind": sc.PROBE_MEASURED_FLAGS,
+            "claim_kind": sc.CLAIM_OBJECT_ABSENCE,
+        }
+
+    monkeypatch.setattr(ps.sc, "emit", overreach)
+    d = ps.decide(
+        _gpu(),
+        contamination=_cont("QUIESCENT"),
+        lease=_lease(present=True, pids=[99]),
+    )
+    assert d["verdict"] == "RUNNABLE"
+    assert d["scheduler_capable"] is True
+    assert d["window_available"] is True
+    assert d["causality_verdict"] == sc.OVERREACHING
+
+
+def test_capable_available_separation_survives_causality_stamp():
+    """PROTECTED_SCHEDULER_CAPABLE and PROTECTED_WINDOW_AVAILABLE stay distinct.
+
+    decide() landed with that split and an AST-verified absence of lease_ok.
+    The causality stamp must not rejoin them.
+    """
+    src = Path(ps.__file__).read_text()
+    tree = ast.parse(src)
+    names = {n.id for n in ast.walk(tree) if isinstance(n, ast.Name)}
+    assert "lease_ok" not in names
+    d = ps.decide(
+        _gpu(),
+        contamination=_cont("HEAVY"),
+        lease=_lease(present=False),
+    )
+    assert d["scheduler_capable"] is True
+    assert d["window_available"] is False
+    assert d["scheduler_capable"] is not d["window_available"]
+    assert "lease_ok" not in d
+    report = ps.capability_report()
+    assert report["PROTECTED_SCHEDULER_CAPABLE"] is True
+    assert "PROTECTED_WINDOW_AVAILABLE" in report
+    assert report["PROTECTED_SCHEDULER_CAPABLE"] is not report["PROTECTED_WINDOW_AVAILABLE"] or report["PROTECTED_WINDOW_AVAILABLE"] is True
+    if report["PROTECTED_WINDOW_AVAILABLE"] is False:
+        assert report["PROTECTED_SCHEDULER_CAPABLE"] is True
+    assert ps.records_five_fields(d)
+
+
+def test_coverage_receipt_names_protected_scheduler_as_recording():
+    path = RECEIPTS / "STATUS_CAUSALITY_COVERAGE.json"
+    doc = json.loads(path.read_text())
+    assert "protected_scheduler" in doc["recording_five_fields"]
+    assert doc["n_gates"] == 18
+    for name in (
+        "resident_gate",
+        "native_gate",
+        "native_mission_gate",
+        "autonomy_gate",
+        "modellake_gate",
+        "vmcp_gate",
+        "recovery_gate",
+        "research_gate",
+    ):
+        assert name in doc["recording_five_fields"], f"{name} vanished from recording"
+        assert name not in doc["not_recording_five_fields"]
+    remainder = {row["name"]: row for row in doc["remainder"]}
+    assert "flash_meta_teacher_capture_boundary" in remainder
+    flash_meta = remainder["flash_meta_teacher_capture_boundary"]
+    why_fm = flash_meta["why_not_wired"].lower()
+    assert "rust" in why_fm
+    assert "python shim" in why_fm
+    assert doc["evidence_class"] == "STATIC_ONLY"
+    assert doc["gpu_authority"] is False
+    for banned in ("percent", "percentage", "coverage_pct", "pct"):
+        assert banned not in doc

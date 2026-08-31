@@ -1,0 +1,1384 @@
+{
+ "all_six_negative_controls_failed": true,
+ "automatic_failures": [],
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T09:54:32Z",
+  "recorded_by": "tools/future/improvement_trial.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "broken_harness_if_any_control_passes": true,
+ "claim_boundary": "STATIC_ONLY sidecar. No GPU lease and no hardware measurement. Cited GB/s and FMA/byte figures are copied as strings from landed receipts (MLP_ALU_ROOFLINE, ORGAN_BANDWIDTH, causal budget). They are not re-measured and are not claimed as this run's result. PASS is improved knowledge or improved executable, not a TPS increase. If this trial killed nothing and launched nothing the verdict is FAIL. If any of the six negative controls PASSes, the harness reports BROKEN_HARNESS rather than a green trial. FAIL ON DEGENERACY EVEN WHEN EVERY CONDITION IS NOMINALLY MET.",
+ "conditions": [
+  {
+   "cites": [],
+   "detail": "saw STATE_RECOVERED",
+   "id": "recover_live_state",
+   "met": true
+  },
+  {
+   "cites": [],
+   "detail": "saw CAUSAL_BUDGET_INSPECTED",
+   "id": "inspect_causal_budget",
+   "met": true
+  },
+  {
+   "cites": [],
+   "detail": "saw SCAR_QUERIED",
+   "id": "query_scars",
+   "met": true
+  },
+  {
+   "cites": [],
+   "detail": "saw OPTIONS_RANKED",
+   "id": "identify_top_options",
+   "met": true
+  },
+  {
+   "cites": [],
+   "detail": "saw FALSIFIER_GENERATED",
+   "id": "generate_cheapest_falsifiers",
+   "met": true
+  },
+  {
+   "cites": [],
+   "detail": "at least one WORK_LAUNCHED",
+   "id": "launch_non_conflicting",
+   "met": true
+  },
+  {
+   "cites": [],
+   "detail": "saw RESULT_INGESTED",
+   "id": "ingest_completed",
+   "met": true
+  },
+  {
+   "cites": [],
+   "detail": "killed 10 branch(es)",
+   "id": "kill_unsupported",
+   "met": true
+  },
+  {
+   "cites": [],
+   "detail": "saw OPTION_TREE_UPDATED",
+   "id": "update_option_tree",
+   "met": true
+  },
+  {
+   "cites": [],
+   "detail": "saw WORK_REFILLED",
+   "id": "refill_novel",
+   "met": true
+  },
+  {
+   "cites": [],
+   "detail": "saw NEXT_LEFT_RUNNING",
+   "id": "leave_next_running",
+   "met": true
+  },
+  {
+   "cites": [],
+   "detail": "durable option tree snapshot present",
+   "id": "durable_state_written",
+   "met": true
+  },
+  {
+   "cites": [
+    "receipts/future/MLP_REGION_FALSIFIER.json",
+    "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json",
+    "receipts/future/MLP_CODE_INFORMATION.json",
+    "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+    "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+    "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+    "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+    "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+   ],
+   "detail": "kills=10 reclassifications=10 mutations=1",
+   "id": "improved_knowledge_or_executable",
+   "met": true
+  },
+  {
+   "cites": [],
+   "detail": "killed=10 launched=2",
+   "id": "killed_or_launched",
+   "met": true
+  },
+  {
+   "cites": [],
+   "detail": "unique launches=2",
+   "id": "no_duplicate_workunits",
+   "met": true
+  },
+  {
+   "cites": [],
+   "detail": "no scar-dead family was launched",
+   "id": "no_repeated_scar",
+   "met": true
+  },
+  {
+   "cites": [],
+   "detail": "highest available payoff class was worked",
+   "id": "no_low_payoff_distraction",
+   "met": true
+  },
+  {
+   "cites": [],
+   "detail": "no majority-window handle block with other work runnable",
+   "id": "no_open_handle_wait",
+   "met": true
+  },
+  {
+   "cites": [],
+   "detail": "no unjustified gap >=60s while work remained",
+   "id": "no_unjustified_runnable_idle",
+   "met": true
+  },
+  {
+   "cites": [],
+   "detail": "no awaiting-instructions phrasing",
+   "id": "no_conversational_wait",
+   "met": true
+  },
+  {
+   "cites": [],
+   "detail": "no launch of a budget row superseded by ingested evidence",
+   "id": "no_stale_causal_model",
+   "met": true
+  },
+  {
+   "cites": [],
+   "detail": "no over-claim from a narrower probe",
+   "id": "no_misleading_narrow_probe",
+   "met": true
+  },
+  {
+   "cites": [],
+   "detail": "all named axes non-degenerate (n_axes=7)",
+   "id": "no_degeneracy",
+   "met": true
+  }
+ ],
+ "count_cannot_raise_headline_proof_ok": true,
+ "degeneracy": {
+  "cites": [],
+  "detail": "all named axes non-degenerate (n_axes=7)",
+  "met": true
+ },
+ "elapsed_s": 31,
+ "eras": [
+  "I Genesis of the Laboratory",
+  "II Compounding Civilization",
+  "III Autonomous Science Civilization",
+  "IV Synthetic Machine Civilization",
+  "V Released Hawking Civilization"
+ ],
+ "event_log": [
+  {
+   "cites": [
+    "receipts/future/MLP_ALU_ROOFLINE.json",
+    "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json",
+    "receipts/future/FRONTIER_STATE.json",
+    "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+    "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+    "receipts/future/MLP_REGION_FALSIFIER.json",
+    "receipts/future/ORGAN_BANDWIDTH.json",
+    "receipts/future/TPS_FALSIFICATIONS.json",
+    "receipts/future/PATH_TO_71.json",
+    "receipts/future/MLP_SHARED_PROGRAM.json",
+    "receipts/future/MLP_CODE_INFORMATION.json",
+    "receipts/future/WALL_GPU_RECONCILIATION.json",
+    "receipts/future/DELTANET_GENERATED_TRANSITION.json",
+    "receipts/future/REPRESENTATION_DECODE_FUSION.json"
+   ],
+   "kind": "STATE_RECOVERED",
+   "payload": {
+    "is_idle": false,
+    "n_live_options": 18,
+    "n_receipts": 14,
+    "task_sequence": null
+   },
+   "seq": 1,
+   "t_ns": 1000000000,
+   "t_s": 1
+  },
+  {
+   "kind": "FRONTIER_HAS_WORK",
+   "payload": {
+    "unit_ids": [
+     "reach_demonstrated_bandwidth_mlp",
+     "group_size_1024",
+     "group_size_256",
+     "reach_demonstrated_bandwidth_deltanet",
+     "quantize_aux_u8",
+     "reach_demonstrated_bandwidth_gqa",
+     "entropy_floor_of_mlp_codes",
+     "mlp_r_bottleneck.FACTORIZE_THE_FACTORS",
+     "mlp_r_bottleneck.DICTIONARY_PROGRAM",
+     "mlp_r_bottleneck.PRODUCT_DICTIONARY",
+     "mlp_r_bottleneck.CONDITIONAL_PROGRAM",
+     "mlp_r_bottleneck.GENERATED_BLOCK",
+     "mlp_r_bottleneck.NONLINEAR_GENERATOR",
+     "mlp_decode_fma_cheapening",
+     "deltanet_organ_vs_isolated_kernel",
+     "deltanet_big_kernel_is_organ_cost",
+     "dispatch_count_explains_organ_gap",
+     "odyssey_unmet.specimen_curriculum_ready"
+    ]
+   },
+   "seq": 2,
+   "t_ns": 1000000000,
+   "t_s": 1
+  },
+  {
+   "cites": [
+    "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json"
+   ],
+   "kind": "CAUSAL_BUDGET_INSPECTED",
+   "payload": {
+    "generation": 1,
+    "ids": [
+     "reach_demonstrated_bandwidth_mlp",
+     "group_size_1024",
+     "group_size_256",
+     "reach_demonstrated_bandwidth_deltanet",
+     "quantize_aux_u8",
+     "eliminate_all_host_gap",
+     "reach_demonstrated_bandwidth_gqa",
+     "entropy_floor_of_mlp_codes"
+    ],
+    "n_experiments": 8
+   },
+   "seq": 3,
+   "t_ns": 2000000000,
+   "t_s": 2
+  },
+  {
+   "cites": [
+    "receipts/future/MLP_ALU_ROOFLINE.json",
+    "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+    "receipts/future/MLP_REGION_FALSIFIER.json",
+    "receipts/future/MLP_SHARED_PROGRAM.json",
+    "receipts/future/ORGAN_BANDWIDTH.json",
+    "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json",
+    "receipts/future/TPS_FALSIFICATIONS.json"
+   ],
+   "kind": "SCAR_QUERIED",
+   "payload": {
+    "hits": [
+     "mlp_fused_regions_identical_arithmetic",
+     "causal_budget.eliminate_all_host_gap",
+     "mlp_nonlinear.FACTORIZE_THE_FACTORS",
+     "mlp_nonlinear.DICTIONARY_PROGRAM",
+     "mlp_nonlinear.PRODUCT_DICTIONARY",
+     "mlp_nonlinear.CONDITIONAL_PROGRAM",
+     "mlp_nonlinear.GENERATED_BLOCK",
+     "mlp_nonlinear.NONLINEAR_GENERATOR",
+     "DISPATCH_COUNT_DOES_NOT_EXPLAIN_THE_DIFFERENCE"
+    ],
+    "n_avoided": 9,
+    "n_families": 19,
+    "n_hits": 9
+   },
+   "seq": 4,
+   "t_ns": 3000000000,
+   "t_s": 3
+  },
+  {
+   "kind": "OPTIONS_RANKED",
+   "payload": {
+    "live_mass_ms": 22.547,
+    "n_live": 18,
+    "top": [
+     {
+      "family": "mlp_decode_fma_cheapening",
+      "id": "mlp_decode_fma_cheapening",
+      "payoff_ms": 4.79
+     },
+     {
+      "family": "reach_demonstrated_bandwidth_mlp",
+      "id": "reach_demonstrated_bandwidth_mlp",
+      "payoff_ms": 4.79
+     },
+     {
+      "family": "group_size_1024",
+      "id": "group_size_1024",
+      "payoff_ms": 2.914
+     },
+     {
+      "family": "group_size_256",
+      "id": "group_size_256",
+      "payoff_ms": 2.331
+     },
+     {
+      "family": "deltanet_organ_vs_isolated_kernel",
+      "id": "deltanet_organ_vs_isolated_kernel",
+      "payoff_ms": 2.273
+     },
+     {
+      "family": "reach_demonstrated_bandwidth_deltanet",
+      "id": "reach_demonstrated_bandwidth_deltanet",
+      "payoff_ms": 2.273
+     },
+     {
+      "family": "quantize_aux_u8",
+      "id": "quantize_aux_u8",
+      "payoff_ms": 1.554
+     },
+     {
+      "family": "reach_demonstrated_bandwidth_gqa",
+      "id": "reach_demonstrated_bandwidth_gqa",
+      "payoff_ms": 0.815
+     }
+    ]
+   },
+   "seq": 5,
+   "t_ns": 4000000000,
+   "t_s": 4
+  },
+  {
+   "cites": [
+    "receipts/future/MLP_ALU_ROOFLINE.json"
+   ],
+   "kind": "FALSIFIER_GENERATED",
+   "payload": {
+    "cost": "ONE_EXPERIMENT",
+    "falsifier": "STATIC plan of a cheaper decode (cited target decode-FMA per weight-byte 0.8835 vs production 1.3333). No GPU lease.",
+    "family": "mlp_decode_fma_cheapening",
+    "id": "mlp_decode_fma_cheapening",
+    "payoff_ms": 4.79
+   },
+   "seq": 6,
+   "t_ns": 4500000000,
+   "t_s": 4
+  },
+  {
+   "cites": [
+    "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json"
+   ],
+   "kind": "FALSIFIER_GENERATED",
+   "payload": {
+    "cost": "ONE_EXPERIMENT",
+    "falsifier": "one representative layer, contiguous, one/few fused regions, identical arithmetic",
+    "family": "reach_demonstrated_bandwidth_mlp",
+    "id": "reach_demonstrated_bandwidth_mlp",
+    "payoff_ms": 4.79
+   },
+   "seq": 7,
+   "t_ns": 5000000000,
+   "t_s": 5
+  },
+  {
+   "cites": [
+    "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json"
+   ],
+   "kind": "FALSIFIER_GENERATED",
+   "payload": {
+    "cost": "ONE_FIT_PLUS_A_CAPABILITY_SCREEN",
+    "falsifier": "held-out reconstruction plus organ error on a real layer",
+    "family": "group_size_1024",
+    "id": "group_size_1024",
+    "payoff_ms": 2.914
+   },
+   "seq": 8,
+   "t_ns": 5500000000,
+   "t_s": 5
+  },
+  {
+   "cites": [
+    "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json"
+   ],
+   "kind": "FALSIFIER_GENERATED",
+   "payload": {
+    "cost": "ONE_FIT_PLUS_A_CAPABILITY_SCREEN",
+    "falsifier": "held-out reconstruction plus organ error on a real layer",
+    "family": "group_size_256",
+    "id": "group_size_256",
+    "payoff_ms": 2.331
+   },
+   "seq": 9,
+   "t_ns": 6000000000,
+   "t_s": 6
+  },
+  {
+   "cites": [
+    "receipts/future/MLP_ALU_ROOFLINE.json"
+   ],
+   "kind": "RESULT_INGESTED",
+   "payload": {
+    "receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+    "what": "landed_receipt"
+   },
+   "seq": 10,
+   "t_ns": 7000000000,
+   "t_s": 7
+  },
+  {
+   "cites": [
+    "receipts/future/MLP_REGION_FALSIFIER.json"
+   ],
+   "kind": "RESULT_INGESTED",
+   "payload": {
+    "receipt": "receipts/future/MLP_REGION_FALSIFIER.json",
+    "what": "landed_receipt"
+   },
+   "seq": 11,
+   "t_ns": 8000000000,
+   "t_s": 8
+  },
+  {
+   "cites": [
+    "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+   ],
+   "kind": "RESULT_INGESTED",
+   "payload": {
+    "receipt": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+    "what": "landed_receipt"
+   },
+   "seq": 12,
+   "t_ns": 9000000000,
+   "t_s": 9
+  },
+  {
+   "cites": [
+    "receipts/future/ORGAN_BANDWIDTH.json"
+   ],
+   "kind": "RESULT_INGESTED",
+   "payload": {
+    "receipt": "receipts/future/ORGAN_BANDWIDTH.json",
+    "what": "landed_receipt"
+   },
+   "seq": 13,
+   "t_ns": 10000000000,
+   "t_s": 10
+  },
+  {
+   "cites": [
+    "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json"
+   ],
+   "kind": "RESULT_INGESTED",
+   "payload": {
+    "receipt": "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json",
+    "what": "landed_receipt"
+   },
+   "seq": 14,
+   "t_ns": 11000000000,
+   "t_s": 11
+  },
+  {
+   "cites": [
+    "receipts/future/ODYSSEY_LAUNCH_GATE.json"
+   ],
+   "kind": "RESULT_INGESTED",
+   "payload": {
+    "receipt": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+    "what": "landed_receipt"
+   },
+   "seq": 15,
+   "t_ns": 12000000000,
+   "t_s": 12
+  },
+  {
+   "cites": [
+    "receipts/future/TPS_FALSIFICATIONS.json"
+   ],
+   "kind": "RESULT_INGESTED",
+   "payload": {
+    "receipt": "receipts/future/TPS_FALSIFICATIONS.json",
+    "what": "landed_receipt"
+   },
+   "seq": 16,
+   "t_ns": 13000000000,
+   "t_s": 13
+  },
+  {
+   "cites": [
+    "receipts/future/PATH_TO_71.json"
+   ],
+   "kind": "RESULT_INGESTED",
+   "payload": {
+    "receipt": "receipts/future/PATH_TO_71.json",
+    "what": "landed_receipt"
+   },
+   "seq": 17,
+   "t_ns": 14000000000,
+   "t_s": 14
+  },
+  {
+   "cites": [
+    "receipts/future/MLP_SHARED_PROGRAM.json"
+   ],
+   "kind": "RESULT_INGESTED",
+   "payload": {
+    "receipt": "receipts/future/MLP_SHARED_PROGRAM.json",
+    "what": "landed_receipt"
+   },
+   "seq": 18,
+   "t_ns": 15000000000,
+   "t_s": 15
+  },
+  {
+   "cites": [
+    "receipts/future/MLP_REGION_FALSIFIER.json"
+   ],
+   "kind": "BRANCH_KILLED",
+   "payload": {
+    "cites": [
+     "receipts/future/MLP_REGION_FALSIFIER.json"
+    ],
+    "family": "reach_demonstrated_bandwidth_mlp",
+    "id": "reach_demonstrated_bandwidth_mlp",
+    "reason": "causal-budget falsifier was fused regions with identical arithmetic; MLP_REGION_FALSIFIER.json is GRANULARITY_REFUTED. ALU_ROOFLINE names arithmetic, not packing. Do not rescue a refuted layout lever.",
+    "terminal": "KILLED_ORACLE",
+    "warrant": "oracle"
+   },
+   "seq": 19,
+   "t_ns": 16000000000,
+   "t_s": 16
+  },
+  {
+   "cites": [
+    "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json",
+    "receipts/future/MLP_CODE_INFORMATION.json"
+   ],
+   "kind": "BRANCH_KILLED",
+   "payload": {
+    "cites": [
+     "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json",
+     "receipts/future/MLP_CODE_INFORMATION.json"
+    ],
+    "family": "entropy_floor_of_mlp_codes",
+    "id": "entropy_floor_of_mlp_codes",
+    "reason": "refuted_levers records AT_THE_FLOOR; OPEN on the ranked list is stale",
+    "terminal": "KILLED_ORACLE",
+    "warrant": "oracle"
+   },
+   "seq": 20,
+   "t_ns": 17000000000,
+   "t_s": 17
+  },
+  {
+   "cites": [
+    "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+   ],
+   "kind": "BRANCH_KILLED",
+   "payload": {
+    "cites": [
+     "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+    ],
+    "family": "FACTORIZE_THE_FACTORS",
+    "id": "mlp_r_bottleneck.FACTORIZE_THE_FACTORS",
+    "reason": "FACTORIZE_THE_FACTORS MEASURED_NEGATIVE: r-bottleneck, not a program for F",
+    "terminal": "KILLED_EXPERIMENT",
+    "warrant": "experiment"
+   },
+   "seq": 21,
+   "t_ns": 18000000000,
+   "t_s": 18
+  },
+  {
+   "cites": [
+    "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+   ],
+   "kind": "BRANCH_KILLED",
+   "payload": {
+    "cites": [
+     "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+    ],
+    "family": "DICTIONARY_PROGRAM",
+    "id": "mlp_r_bottleneck.DICTIONARY_PROGRAM",
+    "reason": "DICTIONARY_PROGRAM MEASURED_NEGATIVE: r-bottleneck, not a program for F",
+    "terminal": "KILLED_EXPERIMENT",
+    "warrant": "experiment"
+   },
+   "seq": 22,
+   "t_ns": 19000000000,
+   "t_s": 19
+  },
+  {
+   "cites": [
+    "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+   ],
+   "kind": "BRANCH_KILLED",
+   "payload": {
+    "cites": [
+     "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+    ],
+    "family": "PRODUCT_DICTIONARY",
+    "id": "mlp_r_bottleneck.PRODUCT_DICTIONARY",
+    "reason": "PRODUCT_DICTIONARY MEASURED_NEGATIVE: r-bottleneck, not a program for F",
+    "terminal": "KILLED_EXPERIMENT",
+    "warrant": "experiment"
+   },
+   "seq": 23,
+   "t_ns": 20000000000,
+   "t_s": 20
+  },
+  {
+   "cites": [
+    "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+   ],
+   "kind": "BRANCH_KILLED",
+   "payload": {
+    "cites": [
+     "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+    ],
+    "family": "CONDITIONAL_PROGRAM",
+    "id": "mlp_r_bottleneck.CONDITIONAL_PROGRAM",
+    "reason": "CONDITIONAL_PROGRAM MEASURED_NEGATIVE: r-bottleneck, not a program for F",
+    "terminal": "KILLED_EXPERIMENT",
+    "warrant": "experiment"
+   },
+   "seq": 24,
+   "t_ns": 21000000000,
+   "t_s": 21
+  },
+  {
+   "cites": [
+    "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+   ],
+   "kind": "BRANCH_KILLED",
+   "payload": {
+    "cites": [
+     "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+    ],
+    "family": "GENERATED_BLOCK",
+    "id": "mlp_r_bottleneck.GENERATED_BLOCK",
+    "reason": "GENERATED_BLOCK MEASURED_NEGATIVE: r-bottleneck, not a program for F",
+    "terminal": "KILLED_EXPERIMENT",
+    "warrant": "experiment"
+   },
+   "seq": 25,
+   "t_ns": 22000000000,
+   "t_s": 22
+  },
+  {
+   "cites": [
+    "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+   ],
+   "kind": "BRANCH_KILLED",
+   "payload": {
+    "cites": [
+     "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+    ],
+    "family": "NONLINEAR_GENERATOR",
+    "id": "mlp_r_bottleneck.NONLINEAR_GENERATOR",
+    "reason": "NONLINEAR_GENERATOR MEASURED_NEGATIVE: r-bottleneck, not a program for F",
+    "terminal": "KILLED_EXPERIMENT",
+    "warrant": "experiment"
+   },
+   "seq": 26,
+   "t_ns": 23000000000,
+   "t_s": 23
+  },
+  {
+   "cites": [
+    "receipts/future/ORGAN_BANDWIDTH.json"
+   ],
+   "kind": "BRANCH_KILLED",
+   "payload": {
+    "cites": [
+     "receipts/future/ORGAN_BANDWIDTH.json"
+    ],
+    "family": "dispatch_count",
+    "id": "dispatch_count_explains_organ_gap",
+    "reason": "least-squares per-dispatch cost is negative; the model is refuted",
+    "terminal": "KILLED_ORACLE",
+    "warrant": "oracle"
+   },
+   "seq": 27,
+   "t_ns": 24000000000,
+   "t_s": 24
+  },
+  {
+   "cites": [
+    "receipts/future/ORGAN_BANDWIDTH.json",
+    "receipts/future/MLP_ALU_ROOFLINE.json"
+   ],
+   "kind": "BRANCH_KILLED",
+   "payload": {
+    "cites": [
+     "receipts/future/ORGAN_BANDWIDTH.json",
+     "receipts/future/MLP_ALU_ROOFLINE.json"
+    ],
+    "family": "deltanet_big_kernel_is_organ_cost",
+    "id": "deltanet_big_kernel_is_organ_cost",
+    "reason": "cited organ GB/s is 360.0; cited isolated largest-kernel GB/s is 600.9. The big kernel is not the organ's cost.",
+    "terminal": "KILLED_ORACLE",
+    "warrant": "oracle"
+   },
+   "seq": 28,
+   "t_ns": 25000000000,
+   "t_s": 25
+  },
+  {
+   "kind": "WORK_GENERATED",
+   "payload": {
+    "candidate": {
+     "hypothesis_family": "mlp_decode_fma_cheapening",
+     "id": "WU.IMPROVEMENT.mlp_decode_fma_cheapening"
+    }
+   },
+   "seq": 29,
+   "t_ns": 25000000000,
+   "t_s": 25
+  },
+  {
+   "kind": "WORK_SCHEDULED",
+   "payload": {
+    "unit": {
+     "id": "WU.IMPROVEMENT.mlp_decode_fma_cheapening"
+    }
+   },
+   "seq": 30,
+   "t_ns": 25000000000,
+   "t_s": 25
+  },
+  {
+   "kind": "WORK_LAUNCHED",
+   "payload": {
+    "unit": {
+     "budget_generation": 0,
+     "classification": "STATIC_ONLY",
+     "conflict_group": "mlp",
+     "falsifier": "STATIC plan of a cheaper decode (cited target decode-FMA per weight-byte 0.8835 vs production 1.3333). No GPU lease.",
+     "family": "mlp_decode_fma_cheapening",
+     "id": "WU.IMPROVEMENT.mlp_decode_fma_cheapening",
+     "mechanism": "arithmetic / decode FMA per weight-byte",
+     "organ": "mlp",
+     "payoff_ms": 4.79,
+     "resource_class": "STATIC_ANALYSIS",
+     "superseded_by": []
+    }
+   },
+   "seq": 31,
+   "t_ns": 26000000000,
+   "t_s": 26
+  },
+  {
+   "kind": "WORK_GENERATED",
+   "payload": {
+    "candidate": {
+     "hypothesis_family": "deltanet_organ_vs_isolated_kernel",
+     "id": "WU.IMPROVEMENT.deltanet_organ_vs_isolated_kernel"
+    }
+   },
+   "seq": 32,
+   "t_ns": 26000000000,
+   "t_s": 26
+  },
+  {
+   "kind": "WORK_SCHEDULED",
+   "payload": {
+    "unit": {
+     "id": "WU.IMPROVEMENT.deltanet_organ_vs_isolated_kernel"
+    }
+   },
+   "seq": 33,
+   "t_ns": 26000000000,
+   "t_s": 26
+  },
+  {
+   "kind": "WORK_LAUNCHED",
+   "payload": {
+    "unit": {
+     "budget_generation": 0,
+     "classification": "STATIC_ONLY",
+     "conflict_group": "deltanet",
+     "falsifier": "STATIC reconciliation of organ-trace GB/s against the isolated largest kernel. The isolated kernel is not the organ cost.",
+     "family": "deltanet_organ_vs_isolated_kernel",
+     "id": "WU.IMPROVEMENT.deltanet_organ_vs_isolated_kernel",
+     "mechanism": "unexplained organ remainder after the big kernel",
+     "organ": "deltanet",
+     "payoff_ms": 2.273,
+     "resource_class": "STATIC_ANALYSIS",
+     "superseded_by": []
+    }
+   },
+   "seq": 34,
+   "t_ns": 27000000000,
+   "t_s": 27
+  },
+  {
+   "kind": "OPTION_TREE_UPDATED",
+   "payload": {
+    "generation": 10,
+    "live_mass_ms": 16.95,
+    "n_killed": 10,
+    "n_launched": 2,
+    "n_live": 8
+   },
+   "seq": 35,
+   "t_ns": 28000000000,
+   "t_s": 28
+  },
+  {
+   "kind": "WORK_REFILLED",
+   "payload": {
+    "queue_depth": 14,
+    "unit_ids": [
+     "FT.ACTIVE_BYTES.hbm-rank",
+     "FT.CHILD_RESIDENT.install-dry-run",
+     "FT.CONTEXT.disk-authority",
+     "FT.DECODING.cost-model",
+     "FT.FPGA.engine-sim",
+     "FT.GPU_KERNELS.static-warnings",
+     "group_size_1024",
+     "odyssey_unmet.specimen_curriculum_ready"
+    ]
+   },
+   "seq": 36,
+   "t_ns": 29000000000,
+   "t_s": 29
+  },
+  {
+   "kind": "NEXT_LEFT_RUNNING",
+   "payload": {
+    "n": 4,
+    "unit_ids": [
+     "mlp_decode_fma_cheapening",
+     "deltanet_organ_vs_isolated_kernel",
+     "WU.IMPROVEMENT.mlp_decode_fma_cheapening",
+     "WU.IMPROVEMENT.deltanet_organ_vs_isolated_kernel"
+    ]
+   },
+   "seq": 37,
+   "t_ns": 30000000000,
+   "t_s": 30
+  },
+  {
+   "kind": "DURABLE_STATE_WRITTEN",
+   "payload": {
+    "n_keys": 6
+   },
+   "seq": 38,
+   "t_ns": 31000000000,
+   "t_s": 31
+  }
+ ],
+ "evidence_class": "STATIC_ONLY",
+ "experiments_avoided_by_prior_evidence": [
+  {
+   "family": "reach_demonstrated_bandwidth_mlp",
+   "scar_id": "mlp_fused_regions_identical_arithmetic",
+   "source_path": "receipts/future/MLP_REGION_FALSIFIER.json"
+  },
+  {
+   "family": "eliminate_all_host_gap",
+   "scar_id": "causal_budget.eliminate_all_host_gap",
+   "source_path": "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json"
+  },
+  {
+   "family": "FACTORIZE_THE_FACTORS",
+   "scar_id": "mlp_nonlinear.FACTORIZE_THE_FACTORS",
+   "source_path": "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+  },
+  {
+   "family": "DICTIONARY_PROGRAM",
+   "scar_id": "mlp_nonlinear.DICTIONARY_PROGRAM",
+   "source_path": "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+  },
+  {
+   "family": "PRODUCT_DICTIONARY",
+   "scar_id": "mlp_nonlinear.PRODUCT_DICTIONARY",
+   "source_path": "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+  },
+  {
+   "family": "CONDITIONAL_PROGRAM",
+   "scar_id": "mlp_nonlinear.CONDITIONAL_PROGRAM",
+   "source_path": "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+  },
+  {
+   "family": "GENERATED_BLOCK",
+   "scar_id": "mlp_nonlinear.GENERATED_BLOCK",
+   "source_path": "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+  },
+  {
+   "family": "NONLINEAR_GENERATOR",
+   "scar_id": "mlp_nonlinear.NONLINEAR_GENERATOR",
+   "source_path": "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+  },
+  {
+   "family": "dispatch_count",
+   "scar_id": "DISPATCH_COUNT_DOES_NOT_EXPLAIN_THE_DIFFERENCE",
+   "source_path": "receipts/future/ORGAN_BANDWIDTH.json"
+  }
+ ],
+ "failed_on_degeneracy": false,
+ "gpu_authority": false,
+ "harness_integrity": "OK",
+ "head": "9d90b5de0bab6ea019717ba42128cd78ff94705f",
+ "killed": [
+  {
+   "cites": [
+    "receipts/future/MLP_REGION_FALSIFIER.json"
+   ],
+   "family": "reach_demonstrated_bandwidth_mlp",
+   "id": "reach_demonstrated_bandwidth_mlp",
+   "reason": "causal-budget falsifier was fused regions with identical arithmetic; MLP_REGION_FALSIFIER.json is GRANULARITY_REFUTED. ALU_ROOFLINE names arithmetic, not packing. Do not rescue a refuted layout lever.",
+   "terminal": "KILLED_ORACLE",
+   "warrant": "oracle"
+  },
+  {
+   "cites": [
+    "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json",
+    "receipts/future/MLP_CODE_INFORMATION.json"
+   ],
+   "family": "entropy_floor_of_mlp_codes",
+   "id": "entropy_floor_of_mlp_codes",
+   "reason": "refuted_levers records AT_THE_FLOOR; OPEN on the ranked list is stale",
+   "terminal": "KILLED_ORACLE",
+   "warrant": "oracle"
+  },
+  {
+   "cites": [
+    "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+   ],
+   "family": "FACTORIZE_THE_FACTORS",
+   "id": "mlp_r_bottleneck.FACTORIZE_THE_FACTORS",
+   "reason": "FACTORIZE_THE_FACTORS MEASURED_NEGATIVE: r-bottleneck, not a program for F",
+   "terminal": "KILLED_EXPERIMENT",
+   "warrant": "experiment"
+  },
+  {
+   "cites": [
+    "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+   ],
+   "family": "DICTIONARY_PROGRAM",
+   "id": "mlp_r_bottleneck.DICTIONARY_PROGRAM",
+   "reason": "DICTIONARY_PROGRAM MEASURED_NEGATIVE: r-bottleneck, not a program for F",
+   "terminal": "KILLED_EXPERIMENT",
+   "warrant": "experiment"
+  },
+  {
+   "cites": [
+    "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+   ],
+   "family": "PRODUCT_DICTIONARY",
+   "id": "mlp_r_bottleneck.PRODUCT_DICTIONARY",
+   "reason": "PRODUCT_DICTIONARY MEASURED_NEGATIVE: r-bottleneck, not a program for F",
+   "terminal": "KILLED_EXPERIMENT",
+   "warrant": "experiment"
+  },
+  {
+   "cites": [
+    "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+   ],
+   "family": "CONDITIONAL_PROGRAM",
+   "id": "mlp_r_bottleneck.CONDITIONAL_PROGRAM",
+   "reason": "CONDITIONAL_PROGRAM MEASURED_NEGATIVE: r-bottleneck, not a program for F",
+   "terminal": "KILLED_EXPERIMENT",
+   "warrant": "experiment"
+  },
+  {
+   "cites": [
+    "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+   ],
+   "family": "GENERATED_BLOCK",
+   "id": "mlp_r_bottleneck.GENERATED_BLOCK",
+   "reason": "GENERATED_BLOCK MEASURED_NEGATIVE: r-bottleneck, not a program for F",
+   "terminal": "KILLED_EXPERIMENT",
+   "warrant": "experiment"
+  },
+  {
+   "cites": [
+    "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+   ],
+   "family": "NONLINEAR_GENERATOR",
+   "id": "mlp_r_bottleneck.NONLINEAR_GENERATOR",
+   "reason": "NONLINEAR_GENERATOR MEASURED_NEGATIVE: r-bottleneck, not a program for F",
+   "terminal": "KILLED_EXPERIMENT",
+   "warrant": "experiment"
+  },
+  {
+   "cites": [
+    "receipts/future/ORGAN_BANDWIDTH.json"
+   ],
+   "family": "dispatch_count",
+   "id": "dispatch_count_explains_organ_gap",
+   "reason": "least-squares per-dispatch cost is negative; the model is refuted",
+   "terminal": "KILLED_ORACLE",
+   "warrant": "oracle"
+  },
+  {
+   "cites": [
+    "receipts/future/ORGAN_BANDWIDTH.json",
+    "receipts/future/MLP_ALU_ROOFLINE.json"
+   ],
+   "family": "deltanet_big_kernel_is_organ_cost",
+   "id": "deltanet_big_kernel_is_organ_cost",
+   "reason": "cited organ GB/s is 360.0; cited isolated largest-kernel GB/s is 600.9. The big kernel is not the organ's cost.",
+   "terminal": "KILLED_ORACLE",
+   "warrant": "oracle"
+  }
+ ],
+ "launched": [
+  {
+   "classification": "STATIC_ONLY",
+   "conflict_group": "mlp",
+   "falsifier": "STATIC plan of a cheaper decode (cited target decode-FMA per weight-byte 0.8835 vs production 1.3333). No GPU lease.",
+   "family": "mlp_decode_fma_cheapening",
+   "id": "WU.IMPROVEMENT.mlp_decode_fma_cheapening",
+   "mechanism": "arithmetic / decode FMA per weight-byte",
+   "organ": "mlp",
+   "payoff_ms": 4.79,
+   "resource_class": "STATIC_ANALYSIS"
+  },
+  {
+   "classification": "STATIC_ONLY",
+   "conflict_group": "deltanet",
+   "falsifier": "STATIC reconciliation of organ-trace GB/s against the isolated largest kernel. The isolated kernel is not the organ cost.",
+   "family": "deltanet_organ_vs_isolated_kernel",
+   "id": "WU.IMPROVEMENT.deltanet_organ_vs_isolated_kernel",
+   "mechanism": "unexplained organ remainder after the big kernel",
+   "organ": "deltanet",
+   "payoff_ms": 2.273,
+   "resource_class": "STATIC_ANALYSIS"
+  }
+ ],
+ "live_state": {
+  "deltanet_unexplained_cost": {
+   "cited_isolated_kernel_gb_s": "600.9",
+   "cited_kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+   "cited_organ_gb_s": "360.0",
+   "cited_verdict": "MIXED",
+   "kernel_source": "receipts/future/MLP_ALU_ROOFLINE.json",
+   "organ_source": "receipts/future/ORGAN_BANDWIDTH.json"
+  },
+  "evidence_class": "STATIC_ONLY",
+  "frontier": {
+   "is_idle": false,
+   "n_frontiers": 22,
+   "n_next_work": 32,
+   "n_sleeping": 14,
+   "source": "receipts/future/FRONTIER_STATE.json"
+  },
+  "gpu_authority": false,
+  "mlp_arithmetic_lever": {
+   "cited_decode_fma_per_weight_byte": "1.3333",
+   "cited_production_gb_s": "329.6",
+   "cited_stripped_gb_s": "497.4",
+   "cited_target_decode_fma_per_weight_byte": "0.8835",
+   "cited_verdict": "MIXED",
+   "do_not_promote_to_alu_bound": true,
+   "source": "receipts/future/MLP_ALU_ROOFLINE.json"
+  },
+  "mlp_r_bottleneck_families": {
+   "families": [
+    "FACTORIZE_THE_FACTORS",
+    "DICTIONARY_PROGRAM",
+    "PRODUCT_DICTIONARY",
+    "CONDITIONAL_PROGRAM",
+    "GENERATED_BLOCK",
+    "NONLINEAR_GENERATOR"
+   ],
+   "n": 6,
+   "source": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+   "status": "MEASURED_NEGATIVE"
+  },
+  "numbers_are_citations_not_measurements": true,
+  "odyssey_gate": {
+   "allowed": false,
+   "n_criteria": 16,
+   "n_met": 15,
+   "n_unmet": 1,
+   "source": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+   "unmet": [
+    "specimen_curriculum_ready"
+   ],
+   "verdict": "REFUSED"
+  }
+ },
+ "measurement_class": "STATIC_ONLY",
+ "metabolism_integration": {
+  "landed": true,
+  "local_protocol_names": [
+   "Option",
+   "OptionTree",
+   "WorkUnitRole",
+   "TerminalState"
+  ],
+  "module": "tools/future/improvement_metabolism.py",
+  "owned_by": "x1",
+  "protocol_used": "imported",
+  "seam": "This lane consumes OptionTree + TerminalState + WorkUnitRole. It does not author the causal option tree, frontier objects, or terminal-state vocabulary. When x1's module is absent the local protocol is the operational stand-in; when it lands, types are imported and local names remain the fallback.",
+  "this_lane_does_not_write": "tools/future/improvement_metabolism.py"
+ },
+ "n_killed": 10,
+ "n_launched": 2,
+ "negative_controls": {
+  "all_failed": true,
+  "controls": [
+   {
+    "automatic_failures": [
+     {
+      "detail": "same unit relaunched with no new information: ['WU.IMPROVEMENT.mlp_decode_fma_cheapening']",
+      "id": "duplicate_workunits"
+     },
+     {
+      "detail": "degenerate on ['workunit_ids']: degenerate on workunit_ids",
+      "id": "degeneracy"
+     }
+    ],
+    "control": "duplicate_workunits",
+    "elapsed_s": 19,
+    "failed": true,
+    "must_fail": true,
+    "n_killed": 2,
+    "n_launched": 3,
+    "reason": "no_duplicate_workunits; no_degeneracy",
+    "unmet": [
+     "no_duplicate_workunits",
+     "no_degeneracy"
+    ],
+    "verdict": "FAIL"
+   },
+   {
+    "automatic_failures": [
+     {
+      "detail": "relaunched scar-dead families: ['FACTORIZE_THE_FACTORS']",
+      "id": "dead_scar_repetition"
+     },
+     {
+      "detail": "worked payoff_ms=[0.0] while multi-ms available=[('reach_demonstrated_bandwidth_mlp', 4.79), ('group_size_1024', 2.914), ('reach_demonstrated_bandwidth_mlp', 4.79), ('group_size_1024', 2.914)]",
+      "id": "low_payoff_distraction"
+     },
+     {
+      "detail": "degenerate on ['scars']: degenerate on scars",
+      "id": "degeneracy"
+     }
+    ],
+    "control": "dead_scar_repetition",
+    "elapsed_s": 19,
+    "failed": true,
+    "must_fail": true,
+    "n_killed": 2,
+    "n_launched": 3,
+    "reason": "no_repeated_scar; no_low_payoff_distraction; no_degeneracy",
+    "unmet": [
+     "no_repeated_scar",
+     "no_low_payoff_distraction",
+     "no_degeneracy"
+    ],
+    "verdict": "FAIL"
+   },
+   {
+    "automatic_failures": [
+     {
+      "detail": "worked payoff_ms=[0.02] while multi-ms available=[('mlp_decode_fma_cheapening', 4.79), ('deltanet_organ_vs_isolated_kernel', 2.273), ('reach_demonstrated_bandwidth_mlp', 4.79), ('group_size_1024', 2.914)]",
+      "id": "low_payoff_distraction"
+     }
+    ],
+    "control": "low_payoff_distraction",
+    "elapsed_s": 17,
+    "failed": true,
+    "must_fail": true,
+    "n_killed": 2,
+    "n_launched": 1,
+    "reason": "no_low_payoff_distraction",
+    "unmet": [
+     "no_low_payoff_distraction"
+    ],
+    "verdict": "FAIL"
+   },
+   {
+    "automatic_failures": [
+     {
+      "detail": "WU.IMPROVEMENT.mlp_decode_fma_cheapening:477.0s with runnable=['deltanet_organ_vs_isolated_kernel', 'reach_demonstrated_bandwidth_mlp', 'mlp_r_bottleneck.FACTORIZE_THE_FACTORS', 'host_gap_rounding', 'group_size_1024']; silent 11->488s (477s) with in-flight=['WU.IMPROVEMENT.mlp_decode_fma_cheapening']",
+      "id": "open_handle_wait"
+     },
+     {
+      "detail": "11->488s (477s) leftover=['deltanet_organ_vs_isolated_kernel', 'reach_demonstrated_bandwidth_mlp', 'mlp_r_bottleneck.FACTORIZE_THE_FACTORS', 'host_gap_rounding', 'group_size_1024']",
+      "id": "unjustified_runnable_idle"
+     }
+    ],
+    "control": "open_handle_wait",
+    "elapsed_s": 494,
+    "failed": true,
+    "must_fail": true,
+    "n_killed": 2,
+    "n_launched": 1,
+    "reason": "no_open_handle_wait; no_unjustified_runnable_idle",
+    "unmet": [
+     "no_open_handle_wait",
+     "no_unjustified_runnable_idle"
+    ],
+    "verdict": "FAIL"
+   },
+   {
+    "automatic_failures": [
+     {
+      "detail": "relaunched scar-dead families: ['reach_demonstrated_bandwidth_mlp']",
+      "id": "dead_scar_repetition"
+     },
+     {
+      "detail": "WU.IMPROVEMENT.reach_demonstrated_bandwidth_mlp after ['receipts/future/MLP_REGION_FALSIFIER.json']",
+      "id": "stale_causal_model"
+     },
+     {
+      "detail": "degenerate on ['scars']: degenerate on scars",
+      "id": "degeneracy"
+     }
+    ],
+    "control": "stale_causal_model",
+    "elapsed_s": 16,
+    "failed": true,
+    "must_fail": true,
+    "n_killed": 1,
+    "n_launched": 1,
+    "reason": "no_repeated_scar; no_stale_causal_model; no_degeneracy",
+    "unmet": [
+     "no_repeated_scar",
+     "no_stale_causal_model",
+     "no_degeneracy"
+    ],
+    "verdict": "FAIL"
+   },
+   {
+    "automatic_failures": [
+     {
+      "detail": "claim='all organs are ALU_BOUND' from probe='MLP_ALU_ROOFLINE one representative layer, verdict MIXED'",
+      "id": "misleading_narrow_probe"
+     }
+    ],
+    "control": "misleading_narrow_probe",
+    "elapsed_s": 19,
+    "failed": true,
+    "must_fail": true,
+    "n_killed": 2,
+    "n_launched": 2,
+    "reason": "no_misleading_narrow_probe",
+    "unmet": [
+     "no_misleading_narrow_probe"
+    ],
+    "verdict": "FAIL"
+   }
+  ],
+  "n_controls": 6,
+  "n_fail": 6,
+  "n_pass": 0
+ },
+ "next_running": [
+  "mlp_decode_fma_cheapening",
+  "deltanet_organ_vs_isolated_kernel",
+  "WU.IMPROVEMENT.mlp_decode_fma_cheapening",
+  "WU.IMPROVEMENT.deltanet_organ_vs_isolated_kernel"
+ ],
+ "no_era_vi": true,
+ "no_odyssey_iv": true,
+ "nominal_conditions_met": true,
+ "odysseys": [
+  "I WHAT IS TRUE?",
+  "II WHAT DID HAWKING ALREADY LEARN?",
+  "III WHERE IS HAWKING WRONG?"
+ ],
+ "pass_is": "IMPROVED_KNOWLEDGE_OR_IMPROVED_EXECUTABLE",
+ "passing_skeleton_verdict": "PASS",
+ "reason": "improved knowledge or executable, and every conjunctive guard held",
+ "receipts_loaded": [
+  {
+   "path_taken": "disk:receipts/future/MLP_ALU_ROOFLINE.json",
+   "present": true,
+   "rel": "receipts/future/MLP_ALU_ROOFLINE.json"
+  },
+  {
+   "path_taken": "disk:receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json",
+   "present": true,
+   "rel": "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json"
+  },
+  {
+   "path_taken": "disk:receipts/future/FRONTIER_STATE.json",
+   "present": true,
+   "rel": "receipts/future/FRONTIER_STATE.json"
+  },
+  {
+   "path_taken": "disk:receipts/future/ODYSSEY_LAUNCH_GATE.json",
+   "present": true,
+   "rel": "receipts/future/ODYSSEY_LAUNCH_GATE.json"
+  },
+  {
+   "path_taken": "disk:receipts/future/MLP_NONLINEAR_PROGRAM.json",
+   "present": true,
+   "rel": "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+  },
+  {
+   "path_taken": "disk:receipts/future/MLP_REGION_FALSIFIER.json",
+   "present": true,
+   "rel": "receipts/future/MLP_REGION_FALSIFIER.json"
+  },
+  {
+   "path_taken": "disk:receipts/future/ORGAN_BANDWIDTH.json",
+   "present": true,
+   "rel": "receipts/future/ORGAN_BANDWIDTH.json"
+  },
+  {
+   "path_taken": "disk:receipts/future/TPS_FALSIFICATIONS.json",
+   "present": true,
+   "rel": "receipts/future/TPS_FALSIFICATIONS.json"
+  },
+  {
+   "path_taken": "disk:receipts/future/PATH_TO_71.json",
+   "present": true,
+   "rel": "receipts/future/PATH_TO_71.json"
+  },
+  {
+   "path_taken": "disk:receipts/future/MLP_SHARED_PROGRAM.json",
+   "present": true,
+   "rel": "receipts/future/MLP_SHARED_PROGRAM.json"
+  },
+  {
+   "path_taken": "disk:receipts/future/MLP_CODE_INFORMATION.json",
+   "present": true,
+   "rel": "receipts/future/MLP_CODE_INFORMATION.json"
+  },
+  {
+   "path_taken": "disk:receipts/future/WALL_GPU_RECONCILIATION.json",
+   "present": true,
+   "rel": "receipts/future/WALL_GPU_RECONCILIATION.json"
+  },
+  {
+   "path_taken": "disk:receipts/future/DELTANET_GENERATED_TRANSITION.json",
+   "present": true,
+   "rel": "receipts/future/DELTANET_GENERATED_TRANSITION.json"
+  },
+  {
+   "path_taken": "disk:receipts/future/REPRESENTATION_DECODE_FUSION.json",
+   "present": true,
+   "rel": "receipts/future/REPRESENTATION_DECODE_FUSION.json"
+  }
+ ],
+ "recorded_by": "tools/future/improvement_trial.py",
+ "required_acts": [
+  "recover_live_state",
+  "inspect_causal_budget",
+  "query_scars",
+  "identify_top_options",
+  "generate_cheapest_falsifiers",
+  "launch_non_conflicting",
+  "ingest_completed",
+  "kill_unsupported",
+  "update_option_tree",
+  "refill_novel",
+  "leave_next_running"
+ ],
+ "schema": "hawking.future.improvement_trial.v1",
+ "seal_sha256": "50fc624e8fca5f67dc41c4c7b40c278f86ef46ebca0e225e7f2cc541250c6f2e",
+ "six_negative_controls": [
+  "duplicate_workunits",
+  "dead_scar_repetition",
+  "low_payoff_distraction",
+  "open_handle_wait",
+  "stale_causal_model",
+  "misleading_narrow_probe"
+ ],
+ "timer_is_not_a_pass": true,
+ "tps_increase_required": false,
+ "trial": "HCLI_10M_IMPROVEMENT_TRIAL",
+ "trial_verdict_before_harness": "PASS",
+ "unmet": [],
+ "verdict": "PASS",
+ "version": 1,
+ "window_s": 600
+}

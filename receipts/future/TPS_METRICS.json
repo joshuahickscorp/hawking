@@ -1,0 +1,61 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T19:02:32Z",
+  "recorded_by": "tools/future/tps_metrics.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. It reads the two measured receipts and keeps their numbers in separate slots; it measures nothing itself. ACCEPTED_TOKEN_TPS is NOT_MEASURED and reported as null rather than as zero, because nothing has run. Numbers are CITED by receipt and field, never copied: a copied TPS is a second source of truth that goes stale silently.",
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "metrics": {
+  "ACCEPTED_TOKEN_TPS": {
+   "is_the_71_target": false,
+   "may_never_claim": "that it solved single-token latency. If it is ever measured, it is reported as ACCEPTED_TOKEN_TPS and never as progress toward 71.",
+   "status": "NOT_MEASURED",
+   "tps": null,
+   "values_are_cited_not_copied": true,
+   "why_it_exists": "speculative decoding, multi-token verification, a draft/resident pair or learned prediction heads can raise accepted throughput without touching single-token latency. A real Pareto frontier, priced on accepted tokens, verifier work, resident memory, rejection rate and HCLI mission latency."
+  },
+  "AGGREGATE_MULTISTREAM_TPS": {
+   "gb_s_by_level": {
+    "1": 361.9,
+    "2": 454.8,
+    "3": 453.2
+   },
+   "is_the_71_target": false,
+   "per_session_decode_tps": [
+    [
+     36.631
+    ],
+    [
+     23.369,
+     22.668
+    ],
+    [
+     15.305,
+     15.184,
+     15.385
+    ]
+   ],
+   "source": "receipts/future/RESIDENT_CONCURRENCY_MEASURED.json",
+   "values_are_cited_not_copied": true,
+   "why_not": "each session is SLOWER under concurrency - 23.1 and 22.6 against 36.6 - so this rises while the 71 metric falls. It is aggregate throughput across independent requests."
+  },
+  "GREEDY_SINGLE_TOKEN_LATENCY_TPS": {
+   "is_the_71_target": true,
+   "source": "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json",
+   "source_field": "decode_wall_ms_per_token",
+   "values_are_cited_not_copied": true
+  }
+ },
+ "schema": "hawking.future.tps_metrics.v1",
+ "seal_sha256": "9ca35e0fe4988d43ac44e716a881085629bca75c5a1e6ce45e604eed98cb5139",
+ "target_ms_per_token": 14.0845,
+ "target_tps": 71.0,
+ "the_71_metric": "GREEDY_SINGLE_TOKEN_LATENCY_TPS",
+ "version": 1
+}

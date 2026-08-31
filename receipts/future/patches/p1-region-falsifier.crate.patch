@@ -1,0 +1,1378 @@
+diff --git a/crates/hawking-core/examples/mlp_region_falsifier.rs b/crates/hawking-core/examples/mlp_region_falsifier.rs
+new file mode 100644
+index 000000000..c10ffa95c
+--- /dev/null
++++ b/crates/hawking-core/examples/mlp_region_falsifier.rs
+@@ -0,0 +1,193 @@
++//! THE granularity falsifier: one MLP layer, contiguous, few regions.
++//!
++//! Production scattered gate/up/down tensors versus the SAME kernels
++//! reading from one contiguous staging buffer inside one serial compute
++//! encoder. GPU time is `GPUEndTime - GPUStartTime` on the command buffer
++//! (the n1 region-timing approach). Numerical output must be bit-identical
++//! or the comparison is void.
++//!
++//! Does not mutate the production decode path.
++//!
++//! ```text
++//! cargo build --profile release -p hawking-core --example mlp_region_falsifier
++//! ./target/release/examples/mlp_region_falsifier \
++//!   --artifact-root ~/noetic/NOETIC_PARENT_A \
++//!   --out receipts/future/_MLP_REGION_FALSIFIER_raw.json
++//! ```
++
++use serde_json::{json, Value};
++use std::env;
++use std::fs;
++use std::path::PathBuf;
++use std::process;
++
++fn usage() -> &'static str {
++    "usage: mlp_region_falsifier --artifact-root DIR \
++        [--layer N] [--warmup N] [--reps N] [--out FILE]"
++}
++
++fn fail(message: impl std::fmt::Display) -> ! {
++    eprintln!("mlp_region_falsifier: {message}");
++    process::exit(2);
++}
++
++struct Args {
++    artifact_root: PathBuf,
++    layer: usize,
++    warmup: usize,
++    reps: usize,
++    out: Option<PathBuf>,
++}
++
++fn parse_args() -> Args {
++    let mut artifact_root = None;
++    let mut layer = 0usize;
++    let mut warmup = 5usize;
++    let mut reps = 11usize;
++    let mut out = None;
++    let mut args = env::args().skip(1);
++    while let Some(flag) = args.next() {
++        match flag.as_str() {
++            "--artifact-root" => {
++                artifact_root = Some(PathBuf::from(args.next().unwrap_or_else(|| fail(usage()))));
++            }
++            "--layer" => {
++                layer = args
++                    .next()
++                    .unwrap_or_else(|| fail(usage()))
++                    .parse()
++                    .unwrap_or_else(|_| fail("--layer"));
++            }
++            "--warmup" => {
++                warmup = args
++                    .next()
++                    .unwrap_or_else(|| fail(usage()))
++                    .parse()
++                    .unwrap_or_else(|_| fail("--warmup"));
++            }
++            "--reps" => {
++                reps = args
++                    .next()
++                    .unwrap_or_else(|| fail(usage()))
++                    .parse()
++                    .unwrap_or_else(|_| fail("--reps"));
++            }
++            "--out" => out = Some(PathBuf::from(args.next().unwrap_or_else(|| fail(usage())))),
++            other => fail(format!("unknown {other}; {}", usage())),
++        }
++    }
++    if reps == 0 {
++        fail("--reps must be > 0");
++    }
++    Args {
++        artifact_root: artifact_root.unwrap_or_else(|| fail(usage())),
++        layer,
++        warmup,
++        reps,
++        out,
++    }
++}
++
++fn git_head() -> String {
++    std::process::Command::new("git")
++        .args(["rev-parse", "HEAD"])
++        .output()
++        .ok()
++        .and_then(|o| String::from_utf8(o.stdout).ok())
++        .map(|s| s.trim().to_string())
++        .unwrap_or_default()
++}
++
++#[cfg(target_os = "macos")]
++fn run(args: Args) -> Value {
++    use hawking_core::model::qwen38_hybrid_decode::Qwen38HybridDecodeSession;
++
++    eprintln!(
++        "mlp_region_falsifier opening {} layer={} warmup={} reps={}",
++        args.artifact_root.display(),
++        args.layer,
++        args.warmup,
++        args.reps
++    );
++    let session = Qwen38HybridDecodeSession::open(&args.artifact_root, 8).unwrap_or_else(|e| fail(e));
++    let measured = session
++        .measure_mlp_region_falsifier(args.layer, args.warmup, args.reps)
++        .unwrap_or_else(|e| fail(e));
++    eprintln!(
++        "  production {:.1} GB/s  {} disp  {} enc  {} ns",
++        measured.production.effective_gb_s,
++        measured.production.dispatches,
++        measured.production.encoders,
++        measured.production.gpu_ns_median
++    );
++    eprintln!(
++        "  contiguous {:.1} GB/s  {} disp  {} enc  {} ns",
++        measured.contiguous.effective_gb_s,
++        measured.contiguous.dispatches,
++        measured.contiguous.encoders,
++        measured.contiguous.gpu_ns_median
++    );
++    eprintln!(
++        "  max_abs_diff={} bit_identical={}",
++        measured.max_abs_diff, measured.bit_identical
++    );
++    json!({
++        "schema": "hawking.future.mlp_region_falsifier.raw.v1",
++        "git_head": git_head(),
++        "artifact_root": args.artifact_root.display().to_string(),
++        "layer": measured.layer,
++        "kernel": measured.kernel,
++        "weight_bytes": measured.weight_bytes,
++        "catalog_bytes": measured.catalog_bytes,
++        "warmup": measured.warmup,
++        "reps": measured.reps,
++        "max_abs_diff": measured.max_abs_diff,
++        "max_abs_diff_gate": measured.max_abs_diff_gate,
++        "max_abs_diff_up": measured.max_abs_diff_up,
++        "max_abs_diff_act": measured.max_abs_diff_act,
++        "bit_identical": measured.bit_identical,
++        "subfactors_changed": measured.subfactors_changed,
++        "production": {
++            "label": measured.production.label,
++            "gpu_ns_median": measured.production.gpu_ns_median,
++            "gpu_ns_reps": measured.production.gpu_ns_reps,
++            "dispatches": measured.production.dispatches,
++            "encoders": measured.production.encoders,
++            "command_buffers": measured.production.command_buffers,
++            "effective_gb_s": measured.production.effective_gb_s,
++        },
++        "contiguous": {
++            "label": measured.contiguous.label,
++            "gpu_ns_median": measured.contiguous.gpu_ns_median,
++            "gpu_ns_reps": measured.contiguous.gpu_ns_reps,
++            "dispatches": measured.contiguous.dispatches,
++            "encoders": measured.contiguous.encoders,
++            "command_buffers": measured.contiguous.command_buffers,
++            "effective_gb_s": measured.contiguous.effective_gb_s,
++        },
++        "timing": "MTLCommandBuffer GPUStartTime/GPUEndTime",
++        "arithmetic": "F(x)=down(silu(gate(x))*up(x)) on a known x; identical kernels",
++    })
++}
++
++#[cfg(not(target_os = "macos"))]
++fn run(_args: Args) -> Value {
++    fail("mlp_region_falsifier is Metal-only")
++}
++
++fn main() {
++    let args = parse_args();
++    let out = args.out.clone();
++    let doc = run(args);
++    let text = serde_json::to_string_pretty(&doc).unwrap_or_else(|e| fail(e));
++    println!("{text}");
++    if let Some(path) = out {
++        if let Some(parent) = path.parent() {
++            if !parent.as_os_str().is_empty() {
++                fs::create_dir_all(parent).unwrap_or_else(|e| fail(e));
++            }
++        }
++        fs::write(&path, format!("{text}\n")).unwrap_or_else(|e| fail(e));
++        eprintln!("wrote {}", path.display());
++    }
++}
+diff --git a/crates/hawking-core/examples/q80_gk_simd_after_recon.rs b/crates/hawking-core/examples/q80_gk_simd_after_recon.rs
+index e01bb5936..4cd02ae8e 100644
+--- a/crates/hawking-core/examples/q80_gk_simd_after_recon.rs
++++ b/crates/hawking-core/examples/q80_gk_simd_after_recon.rs
+@@ -433,6 +433,14 @@ mod macos {
+                         }),
+                     );
+                 }
++                MixedPackedTensor::Affine(_) => {
++                    organ_receipts.insert(
++                        label.to_string(),
++                        json!({
++                            "skipped": "affine2/HGRAVF01 has no gk_*_simd equivalent on this probe"
++                        }),
++                    );
++                }
+             }
+         }
+ 
+diff --git a/crates/hawking-core/examples/q80_matvec_discriminator.rs b/crates/hawking-core/examples/q80_matvec_discriminator.rs
+index 955effdc8..30416d173 100644
+--- a/crates/hawking-core/examples/q80_matvec_discriminator.rs
++++ b/crates/hawking-core/examples/q80_matvec_discriminator.rs
+@@ -449,6 +449,12 @@ mod macos {
+                         json!({"skipped": "residual organ; binary half is the gate twin"}),
+                     );
+                 }
++                MixedPackedTensor::Affine(_) => {
++                    organ_receipts.insert(
++                        label.to_string(),
++                        json!({"skipped": "affine2/HGRAVF01 has no gk_* discriminator on this probe"}),
++                    );
++                }
+             }
+         }
+ 
+diff --git a/crates/hawking-core/src/model/qwen38_hybrid_decode.rs b/crates/hawking-core/src/model/qwen38_hybrid_decode.rs
+index db814f9df..fa335804f 100644
+--- a/crates/hawking-core/src/model/qwen38_hybrid_decode.rs
++++ b/crates/hawking-core/src/model/qwen38_hybrid_decode.rs
+@@ -446,6 +446,45 @@ pub struct Qwen38FusionParity {
+     pub dense_w_materialized: u64,
+ }
+ 
++/// Catalog stored bytes of one layer's (gate, up, down) on sealed-3.14.
++/// `receipts/future/MLP_BYTE_CENSUS.json` per-layer mlp.* organs, 27_853_103 each.
++pub const QWEN38_MLP_LAYER_CATALOG_BYTES: u64 = 27_853_103 * 3;
++
++/// One timed arm of the MLP region-granularity falsifier.
++#[derive(Clone, Debug, serde::Serialize)]
++pub struct Qwen38MlpRegionArm {
++    pub label: &'static str,
++    pub gpu_ns_median: u64,
++    pub gpu_ns_reps: Vec<u64>,
++    pub dispatches: u64,
++    pub encoders: u64,
++    pub command_buffers: u64,
++    pub effective_gb_s: f64,
++}
++
++/// One-layer MLP granularity falsifier.
++///
++/// Production scattered gate/up/down tensors versus the SAME kernels
++/// reading from one contiguous staging buffer inside one serial compute
++/// encoder. Does not change the default decode path.
++#[derive(Clone, Debug, serde::Serialize)]
++pub struct Qwen38MlpRegionFalsifier {
++    pub layer: usize,
++    pub kernel: String,
++    pub weight_bytes: u64,
++    pub catalog_bytes: u64,
++    pub production: Qwen38MlpRegionArm,
++    pub contiguous: Qwen38MlpRegionArm,
++    pub max_abs_diff: f32,
++    pub max_abs_diff_gate: f32,
++    pub max_abs_diff_up: f32,
++    pub max_abs_diff_act: f32,
++    pub bit_identical: bool,
++    pub subfactors_changed: &'static [&'static str],
++    pub warmup: usize,
++    pub reps: usize,
++}
++
+ fn mixed_error(message: impl Into<String>) -> Error {
+     Error::Model(format!("qwen38 mixed hybrid decode: {}", message.into()))
+ }
+@@ -1429,6 +1468,42 @@ mod device {
+         }
+     }
+ 
++    fn host_copy_buffer(src: &PinnedBuffer, dst: &PinnedBuffer, dst_off: u64) {
++        let n = src.length() as usize;
++        unsafe {
++            std::ptr::copy_nonoverlapping(
++                src.contents() as *const u8,
++                (dst.contents() as *mut u8).add(dst_off as usize),
++                n,
++            );
++        }
++    }
++
++    fn align_up(n: u64, align: u64) -> u64 {
++        debug_assert!(align.is_power_of_two());
++        (n + align - 1) & !(align - 1)
++    }
++
++    /// Offsets of one affine projection packed into a staging buffer.
++    struct PackedMlpProj {
++        codes_off: u64,
++        scales_off: u64,
++        biases_off: u64,
++        rows: u32,
++        cols: u32,
++        group_size: u32,
++        bits: u32,
++    }
++
++    struct PackedMlpLayer {
++        staging: PinnedBuffer,
++        gate: PackedMlpProj,
++        up: PackedMlpProj,
++        down: PackedMlpProj,
++        weight_bytes: u64,
++        kernel: &'static str,
++    }
++
+     struct Q4Weight {
+         rows: usize,
+         cols: usize,
+@@ -2657,6 +2732,24 @@ mod device {
+             set_u32(enc, 7, body.group_size);
+         }
+ 
++        fn encode_affine_args_at(
++            &self,
++            enc: &metal::ComputeCommandEncoderRef,
++            staging: &PinnedBuffer,
++            packed: &PackedMlpProj,
++            input: &PinnedBuffer,
++            output: &PinnedBuffer,
++        ) {
++            enc.set_buffer(0, Some(staging), packed.codes_off);
++            enc.set_buffer(1, Some(staging), packed.scales_off);
++            enc.set_buffer(2, Some(staging), packed.biases_off);
++            enc.set_buffer(3, Some(input), 0);
++            enc.set_buffer(4, Some(output), 0);
++            set_u32(enc, 5, packed.rows);
++            set_u32(enc, 6, packed.cols);
++            set_u32(enc, 7, packed.group_size);
++        }
++
+         fn encode_q2f_args(
+             &self,
+             enc: &metal::ComputeCommandEncoderRef,
+@@ -2734,6 +2827,38 @@ mod device {
+             )
+         }
+ 
++        fn dispatch_affine_at(
++            &self,
++            tcb: &mut TokenCommandBuffer<'_>,
++            packed: &PackedMlpProj,
++            staging: &PinnedBuffer,
++            input: &PinnedBuffer,
++            output: &PinnedBuffer,
++        ) -> Result<()> {
++            if packed.bits != 2 || !affine_group_size_supported(packed.group_size as usize) {
++                return Err(mixed_error(format!(
++                    "HGRAVF01 offset dispatch refuses bits={} group_size={}",
++                    packed.bits, packed.group_size
++                )));
++            }
++            if let Some((name, grid, tg)) = qwen38_affine_q2_launch(
++                self.affine2_geo,
++                packed.group_size,
++                packed.rows,
++                packed.cols,
++            ) {
++                return tcb.dispatch_threads(name, grid, tg, |enc| {
++                    self.encode_affine_args_at(enc, staging, packed, input, output)
++                });
++            }
++            tcb.dispatch_threads(
++                QWEN38_AFFINE_Q2_SERIAL,
++                (packed.rows, 1, 1),
++                (256, 1, 1),
++                |enc| self.encode_affine_args_at(enc, staging, packed, input, output),
++            )
++        }
++
+         fn dispatch_binary(
+             &self,
+             tcb: &mut TokenCommandBuffer<'_>,
+@@ -3765,6 +3890,286 @@ mod device {
+             })
+         }
+ 
++        fn pack_affine_proj(
++            body: &GpuAffine,
++            staging: &PinnedBuffer,
++            cursor: &mut u64,
++        ) -> Result<PackedMlpProj> {
++            const ALIGN: u64 = 256;
++            let biases = body.biases.as_ref().ok_or_else(|| {
++                mixed_error("mlp region falsifier refuses delta-only (q2f) MLP tensors")
++            })?;
++            let codes_off = align_up(*cursor, ALIGN);
++            host_copy_buffer(&body.codes, staging, codes_off);
++            *cursor = codes_off + body.codes.length();
++            let scales_off = align_up(*cursor, ALIGN);
++            host_copy_buffer(&body.scales, staging, scales_off);
++            *cursor = scales_off + body.scales.length();
++            let biases_off = align_up(*cursor, ALIGN);
++            host_copy_buffer(biases, staging, biases_off);
++            *cursor = biases_off + biases.length();
++            Ok(PackedMlpProj {
++                codes_off,
++                scales_off,
++                biases_off,
++                rows: body.rows,
++                cols: body.cols,
++                group_size: body.group_size,
++                bits: body.bits,
++            })
++        }
++
++        fn pack_mlp_layer(&self, layer: usize) -> Result<PackedMlpLayer> {
++            let gate_name = qwen38_layer_name(layer, "mlp.gate_proj.weight");
++            let up_name = qwen38_layer_name(layer, "mlp.up_proj.weight");
++            let down_name = qwen38_layer_name(layer, "mlp.down_proj.weight");
++            let require = |name: &str| -> Result<&GpuAffine> {
++                self.affine(name).ok_or_else(|| {
++                    mixed_error(format!("mlp region falsifier missing affine {name}"))
++                })
++            };
++            let affine_bytes = |body: &GpuAffine| {
++                body.codes.length()
++                    + body.scales.length()
++                    + body.biases.as_ref().map(|b| b.length()).unwrap_or(0)
++            };
++            let (weight_bytes, kernel) = {
++                let gate = require(&gate_name)?;
++                let up = require(&up_name)?;
++                let down = require(&down_name)?;
++                let bytes = affine_bytes(gate) + affine_bytes(up) + affine_bytes(down);
++                let kernel = qwen38_affine_q2_launch(
++                    self.affine2_geo,
++                    gate.group_size,
++                    gate.rows,
++                    gate.cols,
++                )
++                .map(|(name, _, _)| name)
++                .unwrap_or(QWEN38_AFFINE_Q2_SERIAL);
++                let _ = (up, down);
++                (bytes, kernel)
++            };
++            // Alignment padding between the nine packed arrays (256 B each).
++            let staging_cap = (weight_bytes as usize)
++                .saturating_add(256 * 12)
++                .max(256);
++            let staging = self.context.new_buffer_checked(staging_cap)?;
++            let mut cursor = 0u64;
++            let packed_gate = Self::pack_affine_proj(require(&gate_name)?, &staging, &mut cursor)?;
++            let packed_up = Self::pack_affine_proj(require(&up_name)?, &staging, &mut cursor)?;
++            let packed_down = Self::pack_affine_proj(require(&down_name)?, &staging, &mut cursor)?;
++            Ok(PackedMlpLayer {
++                staging,
++                gate: packed_gate,
++                up: packed_up,
++                down: packed_down,
++                weight_bytes,
++                kernel,
++            })
++        }
++
++        fn encode_mlp_layer_scattered(
++            &self,
++            tcb: &mut TokenCommandBuffer<'_>,
++            layer: usize,
++        ) -> Result<()> {
++            self.encode_named_matvec(
++                tcb,
++                &qwen38_layer_name(layer, "mlp.gate_proj.weight"),
++                &self.workspace.normalized,
++                &self.workspace.gate,
++            )?;
++            self.encode_named_matvec(
++                tcb,
++                &qwen38_layer_name(layer, "mlp.up_proj.weight"),
++                &self.workspace.normalized,
++                &self.workspace.up,
++            )?;
++            self.encode_silu(tcb)?;
++            self.encode_named_matvec(
++                tcb,
++                &qwen38_layer_name(layer, "mlp.down_proj.weight"),
++                &self.workspace.act,
++                &self.workspace.down,
++            )
++        }
++
++        fn encode_mlp_layer_contiguous(
++            &self,
++            tcb: &mut TokenCommandBuffer<'_>,
++            packed: &PackedMlpLayer,
++        ) -> Result<()> {
++            tcb.begin_serial_group()?;
++            tcb.use_resources_read_on_group(&[packed.staging.clone()])?;
++            self.dispatch_affine_at(
++                tcb,
++                &packed.gate,
++                &packed.staging,
++                &self.workspace.normalized,
++                &self.workspace.gate,
++            )?;
++            self.dispatch_affine_at(
++                tcb,
++                &packed.up,
++                &packed.staging,
++                &self.workspace.normalized,
++                &self.workspace.up,
++            )?;
++            self.encode_silu(tcb)?;
++            self.dispatch_affine_at(
++                tcb,
++                &packed.down,
++                &packed.staging,
++                &self.workspace.act,
++                &self.workspace.down,
++            )?;
++            tcb.end_serial_group()
++        }
++
++        fn require_gpu_ns(timing: &CommandBufferTiming, label: &str) -> Result<u64> {
++            timing.gpu_ns.ok_or_else(|| {
++                mixed_error(format!(
++                    "{label}: driver did not expose GPUEndTime-GPUStartTime"
++                ))
++            })
++        }
++
++        fn median_gpu_ns(values: &[u64]) -> Result<u64> {
++            if values.is_empty() {
++                return Err(mixed_error("mlp region falsifier: empty GPU sample"));
++            }
++            let mut sorted = values.to_vec();
++            sorted.sort_unstable();
++            Ok(sorted[sorted.len() / 2])
++        }
++
++        fn arm_from_samples(
++            label: &'static str,
++            samples: &[u64],
++            dispatches: u64,
++            encoders: u64,
++            command_buffers: u64,
++            weight_bytes: u64,
++        ) -> Result<Qwen38MlpRegionArm> {
++            let gpu_ns_median = Self::median_gpu_ns(samples)?;
++            let effective_gb_s = if gpu_ns_median == 0 {
++                0.0
++            } else {
++                weight_bytes as f64 / gpu_ns_median as f64
++            };
++            Ok(Qwen38MlpRegionArm {
++                label,
++                gpu_ns_median,
++                gpu_ns_reps: samples.to_vec(),
++                dispatches,
++                encoders,
++                command_buffers,
++                effective_gb_s,
++            })
++        }
++
++        /// One representative MLP layer: production scattered tensors vs the
++        /// same arithmetic from one contiguous staging buffer in one serial
++        /// compute region. Does not mutate fusion flags or the decode graph.
++        pub fn measure_mlp_region_falsifier(
++            &self,
++            layer: usize,
++            warmup: usize,
++            reps: usize,
++        ) -> Result<Qwen38MlpRegionFalsifier> {
++            if layer >= QWEN38_LAYERS {
++                return Err(mixed_error(format!(
++                    "mlp region falsifier layer {layer} is out of range"
++                )));
++            }
++            if reps == 0 {
++                return Err(mixed_error("mlp region falsifier --reps must be > 0"));
++            }
++            let n_hidden = QWEN38_HIDDEN;
++            let n_mid = QWEN38_INTERMEDIATE;
++            let mut x = vec![0.0f32; n_hidden];
++            for (i, v) in x.iter_mut().enumerate() {
++                *v = ((i % 17) as f32) * 0.01 - 0.08;
++            }
++            self.write_f32_workspace("normalized", &x)?;
++            let packed = self.pack_mlp_layer(layer)?;
++
++            let prod_parity = self.timed_cb(|tcb| self.encode_mlp_layer_scattered(tcb, layer))?;
++            let gate_p = self.read_f32_workspace("gate", n_mid)?;
++            let up_p = self.read_f32_workspace("up", n_mid)?;
++            let act_p = self.read_f32_workspace("act", n_mid)?;
++            let down_p = self.read_f32_workspace("down", n_hidden)?;
++
++            let cont_parity = self.timed_cb(|tcb| self.encode_mlp_layer_contiguous(tcb, &packed))?;
++            let gate_c = self.read_f32_workspace("gate", n_mid)?;
++            let up_c = self.read_f32_workspace("up", n_mid)?;
++            let act_c = self.read_f32_workspace("act", n_mid)?;
++            let down_c = self.read_f32_workspace("down", n_hidden)?;
++
++            let max_abs_diff_gate = Self::max_abs_diff(&gate_p, &gate_c);
++            let max_abs_diff_up = Self::max_abs_diff(&up_p, &up_c);
++            let max_abs_diff_act = Self::max_abs_diff(&act_p, &act_c);
++            let max_abs_diff_down = Self::max_abs_diff(&down_p, &down_c);
++            let max_abs_diff = max_abs_diff_gate
++                .max(max_abs_diff_up)
++                .max(max_abs_diff_act)
++                .max(max_abs_diff_down);
++            let bit_identical = max_abs_diff == 0.0;
++
++            for _ in 0..warmup {
++                let _ = self.timed_cb(|tcb| self.encode_mlp_layer_scattered(tcb, layer))?;
++                let _ = self.timed_cb(|tcb| self.encode_mlp_layer_contiguous(tcb, &packed))?;
++            }
++
++            let mut prod_ns = Vec::with_capacity(reps);
++            let mut cont_ns = Vec::with_capacity(reps);
++            let mut prod_meta = prod_parity;
++            let mut cont_meta = cont_parity;
++            for _ in 0..reps {
++                prod_meta = self.timed_cb(|tcb| self.encode_mlp_layer_scattered(tcb, layer))?;
++                prod_ns.push(Self::require_gpu_ns(&prod_meta, "production MLP layer")?);
++                cont_meta = self.timed_cb(|tcb| self.encode_mlp_layer_contiguous(tcb, &packed))?;
++                cont_ns.push(Self::require_gpu_ns(&cont_meta, "contiguous MLP layer")?);
++            }
++
++            let production = Self::arm_from_samples(
++                "production_scattered",
++                &prod_ns,
++                prod_meta.dispatches,
++                prod_meta.encoder_count,
++                prod_meta.command_buffers,
++                packed.weight_bytes,
++            )?;
++            let contiguous = Self::arm_from_samples(
++                "contiguous_serial_region",
++                &cont_ns,
++                cont_meta.dispatches,
++                cont_meta.encoder_count,
++                cont_meta.command_buffers,
++                packed.weight_bytes,
++            )?;
++
++            Ok(Qwen38MlpRegionFalsifier {
++                layer,
++                kernel: packed.kernel.to_owned(),
++                weight_bytes: packed.weight_bytes,
++                catalog_bytes: QWEN38_MLP_LAYER_CATALOG_BYTES,
++                production,
++                contiguous,
++                max_abs_diff,
++                max_abs_diff_gate,
++                max_abs_diff_up,
++                max_abs_diff_act,
++                bit_identical,
++                subfactors_changed: &[
++                    "contiguous_staging_buffer: gate/up/down codes+scales+biases packed into one MTLBuffer",
++                    "one_serial_compute_encoder: begin_serial_group covers gate+up+swiglu+down",
++                ],
++                warmup,
++                reps,
++            })
++        }
++
+         pub fn measure_qkv_fusion_parity(&self, layer: usize) -> Result<Qwen38FusionParity> {
+             let n_hidden = QWEN38_HIDDEN;
+             let q_n = QWEN38_GQA_HEADS * QWEN38_GQA_HEAD_DIM * 2;
+diff --git a/receipts/future/MLP_REGION_FALSIFIER.json b/receipts/future/MLP_REGION_FALSIFIER.json
+new file mode 100644
+index 000000000..444d9080a
+--- /dev/null
++++ b/receipts/future/MLP_REGION_FALSIFIER.json
+@@ -0,0 +1,82 @@
++{
++ "arithmetic": "F(x)=down(silu(gate(x))*up(x)) on a known x; identical kernels",
++ "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
++ "bit_identical": true,
++ "catalog_bytes": 83559309,
++ "claim_boundary": "One MLP layer on sealed-3.14, DIAGNOSTIC_RELATIVE. GPU time is MTLCommandBuffer GPUStartTime/GPUEndTime for an isolated command buffer that contains only that layer's gate+up+SwiGLU+down. Bytes are the GPU-resident codes+scales+biases of those three tensors (catalog stored bytes are recorded alongside; they differ by the 303-byte HGRAVF01 headers). Bandwidth is those bytes divided by GPU ns, so it inherits the perfect-locality assumption. The two arms share kernels and arithmetic; the contiguous arm packs the nine weight arrays into one staging buffer and runs them in one serial compute encoder. A verdict is emitted only when max_abs_diff is exactly 0. This does not change the production decode path.",
++ "clean_gemv_gb_s": 703.5,
++ "contiguous": {
++  "command_buffers": 1,
++  "dispatches": 4,
++  "effective_gb_s": 332.2,
++  "encoders": 1,
++  "gpu_ns_median": 251499,
++  "gpu_ns_reps": [
++   431124,
++   251249,
++   252500,
++   251208,
++   251499,
++   252083,
++   250541,
++   251875,
++   252208,
++   251124,
++   251208
++  ],
++  "label": "contiguous_serial_region",
++  "mb_per_dispatch": 20.9,
++  "share_of_clean_roof": 0.4723
++ },
++ "evidence_class": "DIAGNOSTIC_RELATIVE",
++ "finding": "One layer's MLP, packed into one staging buffer and executed in one serial compute region, stayed near the ~350 GB/s cluster. The granularity / fragmentation hypothesis is DEAD. Do not rescue it with more packing variants.",
++ "git_head": "1985e9f790eb74e8ca3ab6ab1f144ce5704892cc",
++ "gpu_authority": false,
++ "implicate_gb_s": 430.0,
++ "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
++ "layer": 0,
++ "lm_head_gb_s": 497.4,
++ "max_abs_diff": 0.0,
++ "max_abs_diff_act": 0.0,
++ "max_abs_diff_gate": 0.0,
++ "max_abs_diff_up": 0.0,
++ "production": {
++  "command_buffers": 1,
++  "dispatches": 4,
++  "effective_gb_s": 331.6,
++  "encoders": 4,
++  "gpu_ns_median": 251999,
++  "gpu_ns_reps": [
++   429958,
++   428833,
++   251375,
++   254375,
++   251125,
++   251999,
++   251541,
++   251749,
++   251291,
++   252500,
++   252249
++  ],
++  "label": "production_scattered",
++  "mb_per_dispatch": 20.9,
++  "share_of_clean_roof": 0.4713
++ },
++ "production_cluster_gb_s": 350.0,
++ "recorded_by": "tools/future/mlp_region_falsifier.py",
++ "refute_ceiling_gb_s": 400.0,
++ "reps": 11,
++ "schema": "hawking.future.mlp_region_falsifier.v1",
++ "source": "crates/hawking-core/examples/mlp_region_falsifier.rs via Qwen38HybridDecodeSession::measure_mlp_region_falsifier; region GPU timestamps (MTLCommandBuffer GPUStartTime/GPUEndTime)",
++ "subfactors_changed": [
++  "contiguous_staging_buffer: gate/up/down codes+scales+biases packed into one MTLBuffer",
++  "one_serial_compute_encoder: begin_serial_group covers gate+up+swiglu+down"
++ ],
++ "timing": "MTLCommandBuffer GPUStartTime/GPUEndTime",
++ "took_gpu_lease": false,
++ "verdict": "GRANULARITY_REFUTED",
++ "version": 1,
++ "warmup": 5,
++ "weight_bytes": 83558400
++}
+diff --git a/receipts/future/_MLP_REGION_FALSIFIER_raw.json b/receipts/future/_MLP_REGION_FALSIFIER_raw.json
+new file mode 100644
+index 000000000..c09c46510
+--- /dev/null
++++ b/receipts/future/_MLP_REGION_FALSIFIER_raw.json
+@@ -0,0 +1,64 @@
++{
++  "arithmetic": "F(x)=down(silu(gate(x))*up(x)) on a known x; identical kernels",
++  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
++  "bit_identical": true,
++  "catalog_bytes": 83559309,
++  "contiguous": {
++    "command_buffers": 1,
++    "dispatches": 4,
++    "effective_gb_s": 332.2414800854079,
++    "encoders": 1,
++    "gpu_ns_median": 251499,
++    "gpu_ns_reps": [
++      431124,
++      251249,
++      252500,
++      251208,
++      251499,
++      252083,
++      250541,
++      251875,
++      252208,
++      251124,
++      251208
++    ],
++    "label": "contiguous_serial_region"
++  },
++  "git_head": "1985e9f790eb74e8ca3ab6ab1f144ce5704892cc",
++  "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
++  "layer": 0,
++  "max_abs_diff": 0.0,
++  "max_abs_diff_act": 0.0,
++  "max_abs_diff_gate": 0.0,
++  "max_abs_diff_up": 0.0,
++  "production": {
++    "command_buffers": 1,
++    "dispatches": 4,
++    "effective_gb_s": 331.5822681836039,
++    "encoders": 4,
++    "gpu_ns_median": 251999,
++    "gpu_ns_reps": [
++      429958,
++      428833,
++      251375,
++      254375,
++      251125,
++      251999,
++      251541,
++      251749,
++      251291,
++      252500,
++      252249
++    ],
++    "label": "production_scattered"
++  },
++  "reps": 11,
++  "schema": "hawking.future.mlp_region_falsifier.raw.v1",
++  "subfactors_changed": [
++    "contiguous_staging_buffer: gate/up/down codes+scales+biases packed into one MTLBuffer",
++    "one_serial_compute_encoder: begin_serial_group covers gate+up+swiglu+down"
++  ],
++  "timing": "MTLCommandBuffer GPUStartTime/GPUEndTime",
++  "warmup": 5,
++  "weight_bytes": 83558400
++}
+diff --git a/tools/future/mlp_region_falsifier.py b/tools/future/mlp_region_falsifier.py
+new file mode 100644
+index 000000000..160e876b1
+--- /dev/null
++++ b/tools/future/mlp_region_falsifier.py
+@@ -0,0 +1,367 @@
++#!/usr/bin/env python3
++"""THE granularity falsifier: one MLP layer, contiguous, few regions.
++
++Organ bandwidth left bytes-per-dispatch standing after dispatch COUNT was
++refuted (b = -1.008 us). Three organs sit at ~350 GB/s; the LM head reaches
++497.4 GB/s on one contiguous 337.7 MB GEMV. This is the cheapest falsifier:
++
++    take one MLP layer
++    pack gate/up/down into one contiguous staging buffer
++    execute the SAME arithmetic in one serial compute region
++    measure GB/s against the production scattered tensors
++
++    If it rises past 430 GB/s: granularity is implicated.
++    If it stays near ~350 GB/s: the hypothesis is dead.
++    If the two arms are not bit-identical: refuse to emit a verdict.
++
++    python3 tools/future/mlp_region_falsifier.py --record
++    python3 tools/future/mlp_region_falsifier.py --from receipts/future/_MLP_REGION_FALSIFIER_raw.json --record
++    python3 -m pytest tools/future/test_mlp_region_falsifier.py -q
++
++evidence_class DIAGNOSTIC_RELATIVE. Does not change the production decode path.
++"""
++from __future__ import annotations
++
++import argparse
++import json
++import os
++import subprocess
++import sys
++from pathlib import Path
++from typing import Any, Mapping
++
++sys.path.insert(0, str(Path(__file__).resolve().parent))
++from _common import REPO  # noqa: E402
++
++
++RECEIPT = REPO / "receipts" / "future" / "MLP_REGION_FALSIFIER.json"
++RAW_DEFAULT = REPO / "receipts" / "future" / "_MLP_REGION_FALSIFIER_raw.json"
++SCHEMA = "hawking.future.mlp_region_falsifier.v1"
++VERSION = 1
++RECORDED_BY = "tools/future/mlp_region_falsifier.py"
++
++CLEAN_GEMV_GB_S = 703.5
++LM_HEAD_GB_S = 497.4
++# "materially toward the LM-head regime (say >430 GB/s)"
++IMPLICATE_GB_S = 430.0
++# "stays near ~350 GB/s"
++REFUTE_CEILING_GB_S = 400.0
++PRODUCTION_CLUSTER_GB_S = 350.0
++
++CATALOG_BYTES_PER_LAYER = 27_853_103 * 3  # MLP_BYTE_CENSUS one layer gate+up+down
++DEFAULT_LAYER = 0
++DEFAULT_ARTIFACT = Path("/Users/scammermike/noetic/NOETIC_PARENT_A")
++
++VERDICT_IMPLICATED = "GRANULARITY_IMPLICATED"
++VERDICT_REFUTED = "GRANULARITY_REFUTED"
++
++SUBFACTORS = (
++    "contiguous_staging_buffer: gate/up/down codes+scales+biases packed into one MTLBuffer",
++    "one_serial_compute_encoder: begin_serial_group covers gate+up+swiglu+down",
++)
++
++CLAIM_BOUNDARY = (
++    "One MLP layer on sealed-3.14, DIAGNOSTIC_RELATIVE. GPU time is "
++    "MTLCommandBuffer GPUStartTime/GPUEndTime for an isolated command buffer "
++    "that contains only that layer's gate+up+SwiGLU+down. Bytes are the GPU-"
++    "resident codes+scales+biases of those three tensors (catalog stored bytes "
++    "are recorded alongside; they differ by the 303-byte HGRAVF01 headers). "
++    "Bandwidth is those bytes divided by GPU ns, so it inherits the "
++    "perfect-locality assumption. The two arms share kernels and arithmetic; "
++    "the contiguous arm packs the nine weight arrays into one staging buffer "
++    "and runs them in one serial compute encoder. A verdict is emitted only "
++    "when max_abs_diff is exactly 0. This does not change the production "
++    "decode path."
++)
++
++
++class ArmsNotIdentical(Exception):
++    """Raised rather than emit a verdict over numerically divergent arms."""
++
++
++class InconclusiveBandwidth(Exception):
++    """Raised rather than force IMPLICATED/REFUTED on a mid-band result."""
++
++
++def effective_gb_s(weight_bytes: int, gpu_ns: int) -> float:
++    if gpu_ns <= 0:
++        raise ValueError("gpu_ns must be positive to form a bandwidth")
++    return weight_bytes / gpu_ns
++
++
++def judge(
++    production_gb_s: float,
++    contiguous_gb_s: float,
++    max_abs_diff: float,
++) -> str:
++    """Return GRANULARITY_IMPLICATED or GRANULARITY_REFUTED, or refuse."""
++    if max_abs_diff != 0.0:
++        raise ArmsNotIdentical(
++            f"refusing a verdict: arms are not bit-identical "
++            f"(max_abs_diff={max_abs_diff})"
++        )
++    if contiguous_gb_s >= IMPLICATE_GB_S:
++        return VERDICT_IMPLICATED
++    if contiguous_gb_s < REFUTE_CEILING_GB_S:
++        return VERDICT_REFUTED
++    raise InconclusiveBandwidth(
++        f"refusing a verdict: contiguous {contiguous_gb_s:.1f} GB/s sits "
++        f"between the ~350 cluster (refute below {REFUTE_CEILING_GB_S}) and "
++        f"the LM-head regime (implicate at {IMPLICATE_GB_S})"
++    )
++
++
++def _arm(raw: Mapping[str, Any], weight_bytes: int) -> dict[str, Any]:
++    gpu_ns = int(raw["gpu_ns_median"])
++    gb_s = effective_gb_s(weight_bytes, gpu_ns)
++    return {
++        "label": raw["label"],
++        "gpu_ns_median": gpu_ns,
++        "gpu_ns_reps": [int(x) for x in raw.get("gpu_ns_reps", [])],
++        "dispatches": int(raw["dispatches"]),
++        "encoders": int(raw["encoders"]),
++        "command_buffers": int(raw.get("command_buffers", 1)),
++        "effective_gb_s": round(gb_s, 1),
++        "share_of_clean_roof": round(gb_s / CLEAN_GEMV_GB_S, 4),
++        "mb_per_dispatch": round(weight_bytes / 1e6 / max(int(raw["dispatches"]), 1), 1),
++    }
++
++
++def measurement_from_raw(raw: Mapping[str, Any]) -> dict[str, Any]:
++    weight_bytes = int(raw["weight_bytes"])
++    max_abs_diff = float(raw["max_abs_diff"])
++    production = _arm(raw["production"], weight_bytes)
++    contiguous = _arm(raw["contiguous"], weight_bytes)
++    verdict = judge(
++        production["effective_gb_s"],
++        contiguous["effective_gb_s"],
++        max_abs_diff,
++    )
++    return {
++        "layer": int(raw["layer"]),
++        "kernel": raw["kernel"],
++        "weight_bytes": weight_bytes,
++        "catalog_bytes": int(raw.get("catalog_bytes", CATALOG_BYTES_PER_LAYER)),
++        "warmup": int(raw.get("warmup", 0)),
++        "reps": int(raw.get("reps", 0)),
++        "max_abs_diff": max_abs_diff,
++        "max_abs_diff_gate": float(raw.get("max_abs_diff_gate", max_abs_diff)),
++        "max_abs_diff_up": float(raw.get("max_abs_diff_up", max_abs_diff)),
++        "max_abs_diff_act": float(raw.get("max_abs_diff_act", max_abs_diff)),
++        "bit_identical": bool(raw.get("bit_identical", max_abs_diff == 0.0)),
++        "subfactors_changed": list(raw.get("subfactors_changed", SUBFACTORS)),
++        "production": production,
++        "contiguous": contiguous,
++        "verdict": verdict,
++        "git_head": raw.get("git_head", ""),
++        "artifact_root": raw.get("artifact_root", ""),
++        "timing": raw.get("timing", "MTLCommandBuffer GPUStartTime/GPUEndTime"),
++        "arithmetic": raw.get(
++            "arithmetic",
++            "F(x)=down(silu(gate(x))*up(x)) on a known x; identical kernels",
++        ),
++    }
++
++
++def build(measurement: Mapping[str, Any]) -> dict[str, Any]:
++    """Seal a receipt. Refuses a verdict if the arms diverge."""
++    if not measurement.get("bit_identical", False):
++        raise ArmsNotIdentical(
++            "refusing a verdict: arms are not bit-identical "
++            f"(max_abs_diff={measurement.get('max_abs_diff')})"
++        )
++    prod = measurement["production"]["effective_gb_s"]
++    cont = measurement["contiguous"]["effective_gb_s"]
++    verdict = judge(prod, cont, float(measurement["max_abs_diff"]))
++    finding = {
++        VERDICT_IMPLICATED: (
++            "One layer's MLP, packed into one staging buffer and executed in "
++            "one serial compute region, rose into the LM-head regime. Physical "
++            "region granularity / fragmentation is implicated. Subfactors "
++            "changed: contiguous staging of gate/up/down, and one serial "
++            "compute encoder. Stop there."
++        ),
++        VERDICT_REFUTED: (
++            "One layer's MLP, packed into one staging buffer and executed in "
++            "one serial compute region, stayed near the ~350 GB/s cluster. "
++            "The granularity / fragmentation hypothesis is DEAD. Do not "
++            "rescue it with more packing variants."
++        ),
++    }[verdict]
++    return {
++        "schema": SCHEMA,
++        "version": VERSION,
++        "recorded_by": RECORDED_BY,
++        "evidence_class": "DIAGNOSTIC_RELATIVE",
++        "gpu_authority": False,
++        "took_gpu_lease": False,
++        "source": (
++            "crates/hawking-core/examples/mlp_region_falsifier.rs via "
++            "Qwen38HybridDecodeSession::measure_mlp_region_falsifier; "
++            "region GPU timestamps (MTLCommandBuffer GPUStartTime/GPUEndTime)"
++        ),
++        "claim_boundary": CLAIM_BOUNDARY,
++        "clean_gemv_gb_s": CLEAN_GEMV_GB_S,
++        "lm_head_gb_s": LM_HEAD_GB_S,
++        "implicate_gb_s": IMPLICATE_GB_S,
++        "refute_ceiling_gb_s": REFUTE_CEILING_GB_S,
++        "production_cluster_gb_s": PRODUCTION_CLUSTER_GB_S,
++        "layer": measurement["layer"],
++        "kernel": measurement["kernel"],
++        "weight_bytes": measurement["weight_bytes"],
++        "catalog_bytes": measurement["catalog_bytes"],
++        "warmup": measurement["warmup"],
++        "reps": measurement["reps"],
++        "max_abs_diff": measurement["max_abs_diff"],
++        "max_abs_diff_gate": measurement.get("max_abs_diff_gate"),
++        "max_abs_diff_up": measurement.get("max_abs_diff_up"),
++        "max_abs_diff_act": measurement.get("max_abs_diff_act"),
++        "bit_identical": True,
++        "subfactors_changed": list(measurement.get("subfactors_changed", SUBFACTORS)),
++        "production": measurement["production"],
++        "contiguous": measurement["contiguous"],
++        "verdict": verdict,
++        "finding": finding,
++        "timing": measurement.get("timing"),
++        "arithmetic": measurement.get("arithmetic"),
++        "git_head": measurement.get("git_head", ""),
++        "artifact_root": measurement.get("artifact_root", ""),
++    }
++
++
++def record(measurement: Mapping[str, Any] | None = None, *, path: Path | None = None) -> Path:
++    if measurement is None:
++        raise ArmsNotIdentical("refusing to record a receipt without a measurement")
++    doc = build(measurement)
++    out = path or RECEIPT
++    out.parent.mkdir(parents=True, exist_ok=True)
++    out.write_text(json.dumps(doc, indent=1, sort_keys=True) + "\n")
++    return out
++
++
++def example_binaries() -> list[Path]:
++    names = ("mlp_region_falsifier",)
++    roots: list[Path] = []
++    env = os.environ.get("CARGO_TARGET_DIR")
++    if env:
++        roots.append(Path(env))
++    roots.extend(
++        [
++            REPO / "target",
++            REPO / "workspace" / "ops" / "build" / "rust",
++        ]
++    )
++    out: list[Path] = []
++    for root in roots:
++        for profile in ("release", "release-fast"):
++            for name in names:
++                p = root / profile / "examples" / name
++                if p.is_file():
++                    out.append(p)
++    return out
++
++
++def run_example(
++    artifact_root: Path,
++    *,
++    layer: int = DEFAULT_LAYER,
++    warmup: int = 5,
++    reps: int = 11,
++    out: Path | None = None,
++    binary: Path | None = None,
++) -> dict[str, Any]:
++    bins = [binary] if binary is not None else example_binaries()
++    if not bins:
++        raise FileNotFoundError(
++            "mlp_region_falsifier binary not found; build with "
++            "`cargo build --profile release -p hawking-core "
++            "--example mlp_region_falsifier`"
++        )
++    exe = bins[0]
++    out = out or RAW_DEFAULT
++    out.parent.mkdir(parents=True, exist_ok=True)
++    cmd = [
++        str(exe),
++        "--artifact-root",
++        str(artifact_root),
++        "--layer",
++        str(layer),
++        "--warmup",
++        str(warmup),
++        "--reps",
++        str(reps),
++        "--out",
++        str(out),
++    ]
++    proc = subprocess.run(cmd, cwd=REPO, capture_output=True, text=True, check=False)
++    if proc.returncode != 0:
++        raise RuntimeError(
++            f"{exe} exited {proc.returncode}\nstdout:\n{proc.stdout}\nstderr:\n{proc.stderr}"
++        )
++    return json.loads(out.read_text())
++
++
++def load_raw(path: Path) -> dict[str, Any]:
++    return json.loads(path.read_text())
++
++
++def main(argv: list[str] | None = None) -> int:
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--record", action="store_true", help="write the sealed receipt")
++    parser.add_argument("--from", dest="raw_path", default=None, help="raw example JSON")
++    parser.add_argument("--measure", action="store_true", help="run the Metal example")
++    parser.add_argument("--artifact-root", type=Path, default=DEFAULT_ARTIFACT)
++    parser.add_argument("--layer", type=int, default=DEFAULT_LAYER)
++    parser.add_argument("--warmup", type=int, default=5)
++    parser.add_argument("--reps", type=int, default=11)
++    parser.add_argument("--out", type=Path, default=None)
++    args = parser.parse_args(argv)
++
++    raw: dict[str, Any] | None = None
++    if args.measure:
++        raw = run_example(
++            args.artifact_root,
++            layer=args.layer,
++            warmup=args.warmup,
++            reps=args.reps,
++            out=RAW_DEFAULT,
++        )
++    elif args.raw_path:
++        raw = load_raw(Path(args.raw_path))
++    elif RAW_DEFAULT.is_file():
++        raw = load_raw(RAW_DEFAULT)
++
++    if raw is None:
++        print(
++            "no measurement: pass --from RAW.json, --measure, or write "
++            f"{RAW_DEFAULT}",
++            file=sys.stderr,
++        )
++        return 2
++
++    measured = measurement_from_raw(raw)
++    if args.record:
++        path = record(measured, path=args.out)
++        print(f"wrote {path} verdict={measured['verdict']}")
++    else:
++        prod = measured["production"]
++        cont = measured["contiguous"]
++        print(
++            f"layer {measured['layer']}  max_abs_diff={measured['max_abs_diff']}  "
++            f"verdict={measured['verdict']}"
++        )
++        print(
++            f"  production {prod['effective_gb_s']:.1f} GB/s  "
++            f"{prod['gpu_ns_median']} ns  {prod['dispatches']} disp  "
++            f"{prod['encoders']} enc"
++        )
++        print(
++            f"  contiguous {cont['effective_gb_s']:.1f} GB/s  "
++            f"{cont['gpu_ns_median']} ns  {cont['dispatches']} disp  "
++            f"{cont['encoders']} enc"
++        )
++    return 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+diff --git a/tools/future/test_mlp_region_falsifier.py b/tools/future/test_mlp_region_falsifier.py
+new file mode 100644
+index 000000000..1ed85b456
+--- /dev/null
++++ b/tools/future/test_mlp_region_falsifier.py
+@@ -0,0 +1,162 @@
++"""The granularity falsifier must refuse a verdict when the arms diverge."""
++from __future__ import annotations
++
++import json
++from pathlib import Path
++
++import pytest
++
++from tools.future import mlp_region_falsifier as mrf
++
++
++def _arm(gb_s: float, *, gpu_ns: int | None = None, dispatches: int = 4, encoders: int = 4) -> dict:
++    weight_bytes = mrf.CATALOG_BYTES_PER_LAYER
++    if gpu_ns is None:
++        gpu_ns = int(round(weight_bytes / gb_s))
++    return {
++        "label": "arm",
++        "gpu_ns_median": gpu_ns,
++        "gpu_ns_reps": [gpu_ns],
++        "dispatches": dispatches,
++        "encoders": encoders,
++        "command_buffers": 1,
++        "effective_gb_s": gb_s,
++    }
++
++
++def _raw(*, prod_gb_s: float = 344.1, cont_gb_s: float = 350.0, max_abs_diff: float = 0.0) -> dict:
++    weight_bytes = mrf.CATALOG_BYTES_PER_LAYER
++    prod_ns = int(round(weight_bytes / prod_gb_s))
++    cont_ns = int(round(weight_bytes / cont_gb_s))
++    return {
++        "schema": "hawking.future.mlp_region_falsifier.raw.v1",
++        "layer": 0,
++        "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
++        "weight_bytes": weight_bytes,
++        "catalog_bytes": weight_bytes,
++        "warmup": 5,
++        "reps": 11,
++        "max_abs_diff": max_abs_diff,
++        "max_abs_diff_gate": max_abs_diff,
++        "max_abs_diff_up": max_abs_diff,
++        "max_abs_diff_act": max_abs_diff,
++        "bit_identical": max_abs_diff == 0.0,
++        "subfactors_changed": list(mrf.SUBFACTORS),
++        "production": {
++            "label": "production_scattered",
++            "gpu_ns_median": prod_ns,
++            "gpu_ns_reps": [prod_ns],
++            "dispatches": 4,
++            "encoders": 4,
++            "command_buffers": 1,
++        },
++        "contiguous": {
++            "label": "contiguous_serial_region",
++            "gpu_ns_median": cont_ns,
++            "gpu_ns_reps": [cont_ns],
++            "dispatches": 4,
++            "encoders": 1,
++            "command_buffers": 1,
++        },
++        "timing": "MTLCommandBuffer GPUStartTime/GPUEndTime",
++        "arithmetic": "F(x)=down(silu(gate(x))*up(x))",
++    }
++
++
++def test_refuses_a_verdict_when_arms_are_not_bit_identical():
++    with pytest.raises(mrf.ArmsNotIdentical) as caught:
++        mrf.judge(344.1, 497.4, max_abs_diff=1.0)
++    assert "bit-identical" in str(caught.value)
++    with pytest.raises(mrf.ArmsNotIdentical):
++        mrf.measurement_from_raw(_raw(cont_gb_s=497.4, max_abs_diff=1e-6))
++    bad = mrf.measurement_from_raw(_raw(cont_gb_s=350.0, max_abs_diff=0.0))
++    bad["bit_identical"] = False
++    bad["max_abs_diff"] = 0.5
++    with pytest.raises(mrf.ArmsNotIdentical):
++        mrf.build(bad)
++
++
++def test_implicated_only_when_contiguous_enters_lm_head_regime():
++    assert mrf.judge(344.1, 431.0, 0.0) == mrf.VERDICT_IMPLICATED
++    assert mrf.judge(344.1, 497.4, 0.0) == mrf.VERDICT_IMPLICATED
++    doc = mrf.build(mrf.measurement_from_raw(_raw(prod_gb_s=344.1, cont_gb_s=497.4)))
++    assert doc["verdict"] == mrf.VERDICT_IMPLICATED
++    assert doc["contiguous"]["effective_gb_s"] >= mrf.IMPLICATE_GB_S
++    assert "implicated" in doc["finding"].lower()
++
++
++def test_refuted_when_contiguous_stays_near_350():
++    assert mrf.judge(344.1, 350.0, 0.0) == mrf.VERDICT_REFUTED
++    assert mrf.judge(344.1, 399.9, 0.0) == mrf.VERDICT_REFUTED
++    doc = mrf.build(mrf.measurement_from_raw(_raw(prod_gb_s=344.1, cont_gb_s=351.0)))
++    assert doc["verdict"] == mrf.VERDICT_REFUTED
++    assert doc["contiguous"]["effective_gb_s"] < mrf.REFUTE_CEILING_GB_S
++    assert "DEAD" in doc["finding"]
++
++
++def test_refuses_a_forced_binary_in_the_dead_band():
++    with pytest.raises(mrf.InconclusiveBandwidth) as caught:
++        mrf.judge(344.1, 415.0, 0.0)
++    assert "430" in str(caught.value)
++
++
++def test_gb_s_is_bytes_over_gpu_ns():
++    # 1 byte/ns = 1 GB/s under the 10^9 convention used by ORGAN_BANDWIDTH.
++    assert mrf.effective_gb_s(350_000_000, 1_000_000) == 350.0
++    weight = mrf.CATALOG_BYTES_PER_LAYER
++    ns = int(round(weight / 344.1))
++    got = mrf.effective_gb_s(weight, ns)
++    assert abs(got - 344.1) < 0.1
++
++
++def test_receipt_records_both_arms_and_the_identity_gate():
++    doc = mrf.build(mrf.measurement_from_raw(_raw(prod_gb_s=344.1, cont_gb_s=348.0)))
++    assert doc["schema"] == mrf.SCHEMA
++    assert doc["evidence_class"] == "DIAGNOSTIC_RELATIVE"
++    assert doc["verdict"] in (mrf.VERDICT_IMPLICATED, mrf.VERDICT_REFUTED)
++    assert "effective_gb_s" in doc["production"]
++    assert "effective_gb_s" in doc["contiguous"]
++    assert doc["bit_identical"] is True
++    assert doc["max_abs_diff"] == 0.0
++    assert doc["layer"] == 0
++    assert len(doc["subfactors_changed"]) >= 1
++    assert "perfect-locality" in doc["claim_boundary"]
++
++
++def test_record_writes_the_named_receipt(tmp_path: Path):
++    dest = tmp_path / "MLP_REGION_FALSIFIER.json"
++    measured = mrf.measurement_from_raw(_raw(prod_gb_s=344.1, cont_gb_s=349.0))
++    path = mrf.record(measured, path=dest)
++    assert path == dest
++    doc = json.loads(dest.read_text())
++    assert doc["verdict"] == mrf.VERDICT_REFUTED
++    assert doc["production"]["effective_gb_s"] == pytest.approx(344.1, abs=0.2)
++    assert doc["contiguous"]["effective_gb_s"] == pytest.approx(349.0, abs=0.2)
++
++
++def test_record_without_a_measurement_refuses():
++    with pytest.raises(mrf.ArmsNotIdentical):
++        mrf.record(None)
++
++
++def test_committed_receipt_if_present_is_a_real_verdict():
++    """Once recorded, the receipt must name both arms and a binary verdict."""
++    if not mrf.RECEIPT.is_file():
++        pytest.skip("receipt not recorded yet")
++    doc = json.loads(mrf.RECEIPT.read_text())
++    assert doc["schema"] == mrf.SCHEMA
++    assert doc["evidence_class"] == "DIAGNOSTIC_RELATIVE"
++    assert doc["verdict"] in (mrf.VERDICT_IMPLICATED, mrf.VERDICT_REFUTED)
++    assert doc["bit_identical"] is True
++    assert doc["max_abs_diff"] == 0.0
++    assert doc["production"]["effective_gb_s"] > 0
++    assert doc["contiguous"]["effective_gb_s"] > 0
++    # Re-judging the recorded numbers must not disagree with the seal.
++    assert (
++        mrf.judge(
++            doc["production"]["effective_gb_s"],
++            doc["contiguous"]["effective_gb_s"],
++            doc["max_abs_diff"],
++        )
++        == doc["verdict"]
++    )

@@ -1,0 +1,349 @@
+{
+ "anti_serialization": {
+  "all_met_allows_launch": true,
+  "deferable_unmet_cannot_block": true,
+  "deferable_unmet_ids": [
+   "transfer_substrate"
+  ],
+  "evidence_not_weakened": true,
+  "launch_critical_unmet_blocks": true,
+  "launch_critical_unmet_ids": [
+   "resident_autonomy_trial_pass"
+  ],
+  "required_before_nx_unmet_blocks_nx": true,
+  "required_before_nx_unmet_does_not_block_launch": true,
+  "required_before_promotion_unmet_blocks_promotion": true,
+  "required_before_promotion_unmet_does_not_block_launch": true,
+  "rule": "if task A does not require task B, A does not wait for B. DEFERABLE_PARALLEL cannot block launch. LAUNCH_CRITICAL can. REQUIRED_BEFORE_NX blocks NX, not launch. REQUIRED_BEFORE_PROMOTION blocks promotion, not launch."
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T12:12:47Z",
+  "recorded_by": "tools/future/sleeping_specimens.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. Pending acquisitions are SLEEPING WorkUnits. They do not block Odyssey I launch unless a first WorkGraph names that exact model. Classification is metadata about the launch-gate criteria; tools/future/odyssey_launch.py is not rewritten.",
+ "criterion_dependency_class": {
+  "adversary_substrate": "DEFERABLE_PARALLEL",
+  "crash_recovery": "LAUNCH_CRITICAL",
+  "dirty_measurement": "LAUNCH_CRITICAL",
+  "doctor_callable": "LAUNCH_CRITICAL",
+  "evidence_hierarchy": "LAUNCH_CRITICAL",
+  "gravity_callable": "LAUNCH_CRITICAL",
+  "modellake_identity": "LAUNCH_CRITICAL",
+  "negative_science": "LAUNCH_CRITICAL",
+  "nr_nx_path_callable": "REQUIRED_BEFORE_NX",
+  "protected_scheduling": "REQUIRED_BEFORE_PROMOTION",
+  "receipts": "LAUNCH_CRITICAL",
+  "resident_autonomy_trial_pass": "LAUNCH_CRITICAL",
+  "self_refill": "LAUNCH_CRITICAL",
+  "specimen_curriculum_ready": "LAUNCH_CRITICAL",
+  "transfer_substrate": "DEFERABLE_PARALLEL",
+  "workgraphs": "LAUNCH_CRITICAL"
+ },
+ "dependency_class_counts": {
+  "DEFERABLE_PARALLEL": 2,
+  "LAUNCH_CRITICAL": 12,
+  "REQUIRED_BEFORE_NX": 1,
+  "REQUIRED_BEFORE_PROMOTION": 1
+ },
+ "evidence_class": "STATIC_ONLY",
+ "first_workgraph_required_specimens": [
+  {
+   "repo": "Qwen/Qwen3-0.6B",
+   "revision": "c1899de289a04d12100db370d81485cdf75e47ca"
+  }
+ ],
+ "gaps_closed": [
+  "every pending acquisition is a SLEEPING_SPECIMEN_WU with ModelLake identity, revision, state, CANDIDATE roles, wake SEALED_SOURCE_READY",
+  "every launch-gate criterion carries a dependency class",
+  "DEFERABLE_PARALLEL cannot block launch; LAUNCH_CRITICAL can",
+  "a model download is DEFERABLE_PARALLEL unless a first WorkGraph names that exact model",
+  "classification is imported metadata; odyssey_launch criterion logic is untouched"
+ ],
+ "gate_consumes_dependency_class": false,
+ "gate_import_if_needed": "from tools.future.sleeping_specimens import CRITERION_DEPENDENCY_CLASS, launch_allowed_under_dependency_classes",
+ "gpu_authority": false,
+ "live_acquisition_classes": {
+  "Qwen--Qwen3-14B@40c069824f42": "DEFERABLE_PARALLEL",
+  "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b": "DEFERABLE_PARALLEL",
+  "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8": "DEFERABLE_PARALLEL",
+  "thinkingmachines--Inkling-Small@8cc5877b44d3": "DEFERABLE_PARALLEL",
+  "zai-org--GLM-5.3-Flash@04c4e9e95c5d": "DEFERABLE_PARALLEL"
+ },
+ "n_sleeping": 5,
+ "negative_findings": [
+  "the live gate still requires 16/16; GATE_CONSUMES_DEPENDENCY_CLASS is false until an explicit edit of launch_verdict",
+  "this lane does not kill, restart, or re-hash the live downloads",
+  "early metadata from partial/config.json is not a sealed specimen"
+ ],
+ "no_era_vi": true,
+ "no_odyssey_iv": true,
+ "odyssey_launch_criterion_logic_not_edited": true,
+ "proofs": {
+  "classes_are_the_four": true,
+  "deferable_cannot_block": true,
+  "every_criterion_classified": true,
+  "gate_not_re_run": true,
+  "gate_not_rewritten": true,
+  "launch_critical_can_block": true,
+  "n_criteria": 16,
+  "pending_are_deferable_unless_named_by_first_workgraph": true,
+  "three_live_downloads_sleep": true,
+  "wake_condition_is_sealed_source_ready": true,
+  "watcher_not_restarted": true
+ },
+ "purpose": "Pending ModelLake acquisitions sleep as SLEEPING_SPECIMEN_WU with wake condition SEALED_SOURCE_READY. Launch-gate criteria carry a dependency class so a model download cannot serialize Odyssey I.",
+ "recovered_implementation": [
+  "tools/odyssey/modellake_watch.py watcher_sample.active_jobs is the live pending set",
+  "workspace/campaign/odyssey/watch-manifests/<tag>.json pins repo/revision/expected",
+  "tools/future/odyssey_launch.py CRITERION_IDS (16) and emit_first_workgraphs specimen pin",
+  "tools/future/workunit_species.py emit_hcli_workunit; SLEEPING maps to status=sleeping",
+  "tools/future/wakeup.py SLEEPING vocabulary; this module's wake condition is SEALED_SOURCE_READY, not hardware qualification"
+ ],
+ "resident_callable": {
+  "entry_point": "tools.future.sleeping_specimens.pending_from_watcher_sample(sample)",
+  "fails_closed": "an unclassified criterion raises; DEFERABLE_PARALLEL blocking launch raises at build; a first-WorkGraph-required download classified DEFERABLE_PARALLEL raises at build",
+  "frontier": "FT.HCLI_SELF.sleeping-specimens",
+  "receipt": "receipts/future/SLEEPING_SPECIMENS.json",
+  "workunit": "one IO_HEAVY SLEEPING_SPECIMEN_WU per pending acquisition; wakes on SEALED_SOURCE_READY"
+ },
+ "schema": "hawking.future.sleeping_specimens.v1",
+ "seal_sha256": "da8feefdbdb3559734b9099a2506a8623481d2c31072479fead2089de44a3f39",
+ "sleeping_units": [
+  {
+   "acquisition_state": "active",
+   "blocked_reason": "SLEEPING_SPECIMEN_WU: Qwen--Qwen3-14B@40c069824f42 is active; wakes on SEALED_SOURCE_READY. Not a synthetic result.",
+   "classification": "SLEEPING",
+   "dependency_class": "DEFERABLE_PARALLEL",
+   "early_metadata": {
+    "architecture_family": "qwen3",
+    "architectures": [
+     "Qwen3ForCausalLM"
+    ],
+    "is_sealed_specimen": false,
+    "model_type": "qwen3",
+    "weights_opened": false
+   },
+   "expected_bytes": 29552613776,
+   "expected_role_candidates": [
+    {
+     "role": "mid_size_dense_compiler",
+     "status": "CANDIDATE",
+     "why": "hidden_size=5120 mid-size dense"
+    }
+   ],
+   "id": "odyssey-i.sleeping.Qwen--Qwen3-14B@40c069824f42",
+   "modellake_identity": {
+    "destination": "/Volumes/corpdrive/hawking-modellake/partial/Qwen--Qwen3-14B@40c069824f42",
+    "repo": "Qwen/Qwen3-14B",
+    "revision": "40c069824f4251a91eefaf281ebe4c544efd3e18",
+    "tag": "Qwen--Qwen3-14B@40c069824f42"
+   },
+   "pids": [
+    3668
+   ],
+   "required_by_first_workgraph": false,
+   "species": "SLEEPING_SPECIMEN_WU",
+   "status": "sleeping",
+   "target_revision": "40c069824f4251a91eefaf281ebe4c544efd3e18",
+   "wake_condition": "SEALED_SOURCE_READY"
+  },
+  {
+   "acquisition_state": "active",
+   "blocked_reason": "SLEEPING_SPECIMEN_WU: thinkingmachines--Inkling-Small@8cc5877b44d3 is active; wakes on SEALED_SOURCE_READY. Not a synthetic result.",
+   "classification": "SLEEPING",
+   "dependency_class": "DEFERABLE_PARALLEL",
+   "early_metadata": {
+    "architecture_family": "inkling_mm",
+    "architectures": [
+     "InklingForConditionalGeneration"
+    ],
+    "is_sealed_specimen": false,
+    "model_type": "inkling_mm_model",
+    "weights_opened": false
+   },
+   "expected_bytes": 531944668170,
+   "expected_role_candidates": [
+    {
+     "role": "multimodal_vl_candidate",
+     "status": "CANDIDATE",
+     "why": "config declares a vision tower or VL architecture"
+    },
+    {
+     "role": "moe_candidate",
+     "status": "CANDIDATE",
+     "why": "config/index names experts or a router"
+    },
+    {
+     "role": "heterogeneous_frontier_candidate",
+     "status": "CANDIDATE",
+     "why": "architecture_family=inkling_mm"
+    }
+   ],
+   "id": "odyssey-i.sleeping.thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "modellake_identity": {
+    "destination": "/Volumes/corpdrive/hawking-modellake/partial/thinkingmachines--Inkling-Small@8cc5877b44d3",
+    "repo": "thinkingmachines/Inkling-Small",
+    "revision": "8cc5877b44d343f88b92086aa1fb72897950f06a",
+    "tag": "thinkingmachines--Inkling-Small@8cc5877b44d3"
+   },
+   "pids": [
+    3667
+   ],
+   "required_by_first_workgraph": false,
+   "species": "SLEEPING_SPECIMEN_WU",
+   "status": "sleeping",
+   "target_revision": "8cc5877b44d343f88b92086aa1fb72897950f06a",
+   "wake_condition": "SEALED_SOURCE_READY"
+  },
+  {
+   "acquisition_state": "active",
+   "blocked_reason": "SLEEPING_SPECIMEN_WU: zai-org--GLM-5.3-Flash@04c4e9e95c5d is active; wakes on SEALED_SOURCE_READY. Not a synthetic result.",
+   "classification": "SLEEPING",
+   "dependency_class": "DEFERABLE_PARALLEL",
+   "early_metadata": {
+    "architecture_family": "glm",
+    "architectures": [
+     "Glm5NextForConditionalGeneration"
+    ],
+    "is_sealed_specimen": false,
+    "model_type": "glm5_next",
+    "weights_opened": false
+   },
+   "expected_bytes": 328366172315,
+   "expected_role_candidates": [
+    {
+     "role": "multimodal_vl_candidate",
+     "status": "CANDIDATE",
+     "why": "config declares a vision tower or VL architecture"
+    },
+    {
+     "role": "moe_candidate",
+     "status": "CANDIDATE",
+     "why": "config/index names experts or a router"
+    },
+    {
+     "role": "heterogeneous_frontier_candidate",
+     "status": "CANDIDATE",
+     "why": "architecture_family=glm"
+    }
+   ],
+   "id": "odyssey-i.sleeping.zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+   "modellake_identity": {
+    "destination": "/Volumes/corpdrive/hawking-modellake/partial/zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+    "repo": "zai-org/GLM-5.3-Flash",
+    "revision": "04c4e9e95c5da8862dced7e5056455116f83a7e0",
+    "tag": "zai-org--GLM-5.3-Flash@04c4e9e95c5d"
+   },
+   "pids": [
+    3666
+   ],
+   "required_by_first_workgraph": false,
+   "species": "SLEEPING_SPECIMEN_WU",
+   "status": "sleeping",
+   "target_revision": "04c4e9e95c5da8862dced7e5056455116f83a7e0",
+   "wake_condition": "SEALED_SOURCE_READY"
+  },
+  {
+   "acquisition_state": "absent",
+   "blocked_reason": "SLEEPING_SPECIMEN_WU: Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8 is absent; wakes on SEALED_SOURCE_READY. Not a synthetic result.",
+   "classification": "SLEEPING",
+   "dependency_class": "DEFERABLE_PARALLEL",
+   "early_metadata": {
+    "architecture_family": "qwen3_vl",
+    "architectures": [
+     "Qwen3VLForConditionalGeneration"
+    ],
+    "is_sealed_specimen": false,
+    "model_type": "qwen3_vl",
+    "weights_opened": false
+   },
+   "expected_bytes": 17545915883,
+   "expected_role_candidates": [
+    {
+     "role": "multimodal_vl_candidate",
+     "status": "CANDIDATE",
+     "why": "config declares a vision tower or VL architecture"
+    }
+   ],
+   "id": "odyssey-i.sleeping.Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
+   "modellake_identity": {
+    "destination": "/Volumes/corpdrive/hawking-modellake/partial/Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
+    "repo": "Qwen/Qwen3-VL-8B-Instruct",
+    "revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b",
+    "tag": "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8"
+   },
+   "pids": [],
+   "required_by_first_workgraph": false,
+   "species": "SLEEPING_SPECIMEN_WU",
+   "status": "sleeping",
+   "target_revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b",
+   "wake_condition": "SEALED_SOURCE_READY"
+  },
+  {
+   "acquisition_state": "absent",
+   "blocked_reason": "SLEEPING_SPECIMEN_WU: Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b is absent; wakes on SEALED_SOURCE_READY. Not a synthetic result.",
+   "classification": "SLEEPING",
+   "dependency_class": "DEFERABLE_PARALLEL",
+   "early_metadata": {
+    "architecture_family": "qwen3_moe",
+    "architectures": [
+     "Qwen3MoeForCausalLM"
+    ],
+    "is_sealed_specimen": false,
+    "model_type": "qwen3_moe",
+    "weights_opened": false
+   },
+   "expected_bytes": 61079826794,
+   "expected_role_candidates": [
+    {
+     "role": "moe_candidate",
+     "status": "CANDIDATE",
+     "why": "config/index names experts or a router"
+    }
+   ],
+   "id": "odyssey-i.sleeping.Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
+   "modellake_identity": {
+    "destination": "/Volumes/corpdrive/hawking-modellake/partial/Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
+    "repo": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+    "revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+    "tag": "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b"
+   },
+   "pids": [],
+   "required_by_first_workgraph": false,
+   "species": "SLEEPING_SPECIMEN_WU",
+   "status": "sleeping",
+   "target_revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+   "wake_condition": "SEALED_SOURCE_READY"
+  }
+ ],
+ "species": "SLEEPING_SPECIMEN_WU",
+ "version": 1,
+ "wake_condition": "SEALED_SOURCE_READY",
+ "watcher_probe": {
+  "active_jobs": [
+   "Qwen--Qwen3-14B@40c069824f42",
+   "thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "zai-org--GLM-5.3-Flash@04c4e9e95c5d"
+  ],
+  "did_not_kill_downloads": true,
+  "did_not_restart_watcher": true,
+  "found": true,
+  "p0_done": true,
+  "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/downloads/modellake-watch.jsonl",
+  "pending_jobs": [
+   "Qwen--Qwen3-14B@40c069824f42",
+   "thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+   "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
+   "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b"
+  ],
+  "read_only": true,
+  "source": "watcher_sample.active_jobs UNION recent download_started minus complete",
+  "ts": "2026-08-31T12:12:35.615341+00:00"
+ }
+}

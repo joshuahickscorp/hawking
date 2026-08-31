@@ -391,3 +391,312 @@ def test_contamination_classes_used_are_the_recovered_vocabulary():
         assert klass in C.CONTAMINATION_CLASSES
     assert aw.BLOCKED_CONTAMINATION == frozenset({"LIGHT", "HEAVY", "UNKNOWN"})
     assert "QUIESCENT" not in aw.BLOCKED_CONTAMINATION
+
+
+# ---------------------------------------------------------------------------
+# Procedure species: today's hand-composed treatment, frozen as HCLI units.
+# ---------------------------------------------------------------------------
+
+
+def test_seven_procedure_species_validate_through_wus():
+    assert aw.PROCEDURE_SPECIES == (
+        "ROOF_PROBE",
+        "PRODUCTION_GAP_ATTRIBUTION",
+        "ADDRESSING_AUDIT",
+        "GEOMETRY_SWEEP",
+        "CEREMONY_AUDIT",
+        "PARITY_PROOF",
+        "COMPLETE_TOKEN_REPROFILE",
+    )
+    catalog = aw.procedure_catalog()
+    assert list(catalog) == list(aw.PROCEDURE_SPECIES)
+    for sid in aw.PROCEDURE_SPECIES:
+        spec = catalog[sid]
+        assert spec["gpu_authority"] is False
+        assert spec["evidence_class"] == "STATIC_ONLY"
+        assert spec["does_not_execute"] is True
+        assert spec["executed"] is False
+        assert spec["input_receipts"]
+        assert spec["output_receipt"]
+        assert spec["acceptance"]
+        assert spec["refusals"]
+        assert spec["scar"]
+        assert spec["verifier"]
+        unit = aw.emit_procedure_unit(sid)
+        ws.validate_emitted_unit(unit)
+        assert unit["executed"] is False
+        assert unit["does_not_execute"] is True
+        assert unit["gpu_authority"] is False
+        assert unit["claim_boundary"]
+        assert "not execute" in unit["claim_boundary"].lower() or "EMITS" in unit["claim_boundary"]
+        via_emit_species = aw.emit_species(sid)
+        ws.validate_emitted_unit(via_emit_species)
+        assert via_emit_species["species"] == sid
+
+
+def test_procedure_gpu_species_sleeping_static_pending():
+    for sid in aw.PROCEDURE_SPECIES:
+        unit = aw.emit_procedure_unit(sid)
+        if aw.procedure_gpu_required(sid):
+            assert unit["status"] == cb.STATUS_SLEEPING, sid
+            assert unit["runnable"] is False, sid
+            assert unit["wake_condition"]
+            assert unit["gpu_authority_required"] is True
+        else:
+            assert sid == "PRODUCTION_GAP_ATTRIBUTION"
+            assert unit["gpu_authority_required"] is False
+            assert unit["status"] == "pending"
+            assert unit["runnable"] is True
+            assert unit["executed"] is False
+
+
+def test_roof_probe_refuses_unstated_roof():
+    """SCAR: a ceiling with an unstated roof produced 595.9, then 589.73."""
+    with pytest.raises(aw.UnstatedRoofRefused, match="unstated roof"):
+        aw.accept_roof_probe({"ceiling": 595.9})
+    with pytest.raises(aw.UnstatedRoofRefused, match="589.73"):
+        aw.accept_roof_probe({"roof_id": ""})
+    with pytest.raises(aw.UnstatedRoofRefused):
+        aw.accept_roof_probe({})
+    with pytest.raises(aw.UnstatedRoofRefused):
+        aw.accept_roof_probe({"roof_id": None, "roof_gb_s": 589.73})
+    ok = aw.accept_roof_probe({"roof_id": "mlp_arm_a_stripped_497p4", "roof_gb_s": 497.4})
+    assert ok["accepted"] is True
+    assert ok["named_roof"] is True
+
+
+def test_production_gap_refuses_addr_probe_without_activation():
+    """SCAR: 703.5 never loads the activation."""
+    with pytest.raises(aw.ActivationNotLoadedRefused, match="never loads the activation"):
+        aw.accept_production_gap_attribution(
+            {
+                "rungs": [
+                    {
+                        "id": "addr_probe",
+                        "gb_s": 703.5,
+                        "loads_activation": False,
+                        "as_production_ceiling": True,
+                    }
+                ]
+            }
+        )
+    with pytest.raises(aw.ActivationNotLoadedRefused, match="703.5"):
+        aw.accept_production_gap_attribution({"treat_addr_probe_as_production": True})
+    ok = aw.accept_production_gap_attribution(
+        {
+            "rungs": [
+                {
+                    "id": "addr_probe",
+                    "gb_s": 703.5,
+                    "loads_activation": False,
+                    "as_production_ceiling": False,
+                    "comparable_to_production_decode": False,
+                },
+                {
+                    "id": "arm_a",
+                    "gb_s": 497.4,
+                    "loads_activation": True,
+                    "as_production_ceiling": True,
+                },
+                {"id": "production_effective", "gb_s": 337.3, "loads_activation": True},
+            ]
+        }
+    )
+    assert ok["accepted"] is True
+    assert ok["addr_probe_is_not_production_ceiling"] is True
+
+
+def test_addressing_audit_refuses_stream_merge_promotion():
+    """SCAR: stream count REFUTED at fixed bytes/thread; merging further HURTS."""
+    with pytest.raises(aw.StreamMergePromotionRefused, match="merging further HURTS"):
+        aw.accept_addressing_audit(
+            {"promote_stream_merge": True, "bytes_per_thread_iteration_held": 38}
+        )
+    with pytest.raises(aw.StreamMergePromotionRefused, match="REFUTED"):
+        aw.accept_addressing_audit({"verdict": "STREAM_COUNT_BOUND"})
+    ok = aw.accept_addressing_audit(
+        {
+            "bytes_per_thread_iteration_held": 38,
+            "verdict": "MIXED",
+            "merge_hurts": True,
+            "stream_count_refuted": True,
+        }
+    )
+    assert ok["accepted"] is True
+    assert ok["merging_further_hurts"] is True
+    assert ok["stream_count_refuted"] is True
+
+
+def test_geometry_sweep_refuses_sweep_without_discriminators():
+    """SCAR: two slopes with a stall; NOT dependency, NOT register pressure, NOT occupancy."""
+    with pytest.raises(aw.SweepWithoutDiscriminatorsRefused, match="discriminators"):
+        aw.accept_geometry_sweep({"ladder": [1, 2, 3], "sweep_only": True})
+    with pytest.raises(aw.SweepWithoutDiscriminatorsRefused, match="dependency"):
+        aw.accept_geometry_sweep({"discriminators": {"register_pressure": 1.078, "occupancy": "worse"}})
+    with pytest.raises(aw.SweepWithoutDiscriminatorsRefused, match="raising it is worse"):
+        aw.accept_geometry_sweep({})
+    ok = aw.accept_geometry_sweep(
+        {
+            "discriminators": {
+                "dependency": 1.062,
+                "register_pressure": 1.078,
+                "occupancy": "raising_is_worse",
+            }
+        }
+    )
+    assert ok["accepted"] is True
+    assert ok["occupancy_raising_is_worse"] is True
+    assert set(ok["discriminators"]) == set(aw.GEOMETRY_DISCRIMINATORS)
+
+
+def test_ceremony_audit_returns_bounded_too_small_and_refuses_continue():
+    """SCAR: host class bounded at 0.989 ms; continuing to hunt it is refused."""
+    with pytest.raises(aw.CeremonyContinueRefused, match="unnamed"):
+        aw.accept_ceremony_audit({})
+    stopped = aw.accept_ceremony_audit({"host_gap_ms": 0.989})
+    assert stopped["verdict"] == aw.BOUNDED_TOO_SMALL
+    assert stopped["stop"] is True
+    with pytest.raises(aw.CeremonyContinueRefused, match="BOUNDED_TOO_SMALL"):
+        aw.accept_ceremony_audit({"host_gap_ms": 0.9894, "continue_after_bound": True})
+    with pytest.raises(aw.CeremonyContinueRefused, match="not the unlock"):
+        aw.accept_ceremony_audit({"host_gap_ms": 0.9894, "unlock": "host_ceremony"})
+
+
+def test_parity_proof_refuses_token_ids_alone():
+    """SCAR: token ids identical, 22309 of 69632 intermediate bytes NOT."""
+    with pytest.raises(aw.TokenIdOnlyParityRefused, match="necessary and not sufficient"):
+        aw.accept_parity_proof({"token_ids_identical": True, "parity": True})
+    with pytest.raises(aw.TokenIdOnlyParityRefused, match="22309"):
+        aw.accept_parity_proof({"token_ids_identical": True, "token_ids_only": True})
+    with pytest.raises(aw.TokenIdOnlyParityRefused):
+        aw.accept_parity_proof({"token_ids_identical": True, "parity_basis": "token_id_equality"})
+    well_formed_but_not_identical = aw.accept_parity_proof(
+        {
+            "token_ids_identical": True,
+            "n_mismatch_bytes": 22309,
+            "n_bytes_compared": 69632,
+            "arithmetic_exact": False,
+        }
+    )
+    assert well_formed_but_not_identical["accepted"] is True
+    assert well_formed_but_not_identical["parity"] is False
+    assert well_formed_but_not_identical["token_id_equality_is_not_sufficient"] is True
+    assert well_formed_but_not_identical["blocks_promotion_until_accepted"] is True
+
+
+def test_complete_token_reprofile_refuses_isolated_only():
+    """SCAR: a probe is not a token (0.7046 became 1.0245; 1.745 became 3.9833)."""
+    with pytest.raises(aw.IsolatedOnlyReprofileRefused, match="probe is not a token"):
+        aw.accept_complete_token_reprofile({"isolated_ms": 1.745, "kind": "isolated"})
+    with pytest.raises(aw.IsolatedOnlyReprofileRefused, match="1.745 became 3.9833"):
+        aw.accept_complete_token_reprofile({"projection_ms": 1.745})
+    with pytest.raises(aw.IsolatedOnlyReprofileRefused):
+        aw.accept_complete_token_reprofile({})
+    ok = aw.accept_complete_token_reprofile(
+        {
+            "complete_token_saving_ms": 3.9833,
+            "isolated_ms": 1.745,
+            "kind": "complete_token",
+        }
+    )
+    assert ok["accepted"] is True
+    assert ok["complete_token"] is True
+    assert ok["probe_is_not_a_token"] is True
+
+
+def test_reprofile_trigger_fires_on_live_stale_baseline():
+    """fold_addqx removed 3.98 ms; PATH_TO_71 TOKEN_MS 28.722 is stale vs 26.3026."""
+    live = aw.live_reprofile_trigger()
+    assert live["fires"] is True
+    assert live["species_to_emit"] == "COMPLETE_TOKEN_REPROFILE"
+    assert live["old_decomposition_valid"] is False
+    assert live["win_id"] == "fold_addqx"
+    assert live["win_ms"] == aw.CITED_FOLD_ADDQX_COMPLETE_SAVING_MS
+    assert live["baseline_token_ms"] == aw.CITED_PATH_TO_71_TOKEN_MS
+    assert live["incumbent_token_ms"] == aw.CITED_FOLD_ADDQX_INCUMBENT_MS
+    assert live["win_ms"] >= aw.LARGE_WIN_THRESHOLD_MS
+    assert live["baseline_token_ms"] > live["incumbent_token_ms"]
+    assert "stale" in live["reason"]
+    assert live["does_not_execute"] is True
+    quiet = aw.reprofile_trigger(
+        win_ms=0.2,
+        baseline_token_ms=28.722,
+        incumbent_token_ms=26.3026,
+        win_id="tiny",
+    )
+    assert quiet["fires"] is False
+    current = aw.reprofile_trigger(
+        win_ms=3.9833,
+        baseline_token_ms=26.3026,
+        incumbent_token_ms=26.3026,
+        win_id="fold_addqx",
+    )
+    assert current["fires"] is False
+
+
+def test_chain_emitted_for_live_frontier():
+    chain = aw.emit_procedure_chain()
+    assert chain["does_not_execute"] is True
+    assert chain["executed"] is False
+    assert [u["species"] for u in chain["units"]] == list(aw.PROCEDURE_SPECIES)
+    by_species = {u["species"]: u for u in chain["units"]}
+    roof = by_species["ROOF_PROBE"]
+    gap = by_species["PRODUCTION_GAP_ATTRIBUTION"]
+    assert roof["id"] in gap["dependencies"]
+    parity = by_species["PARITY_PROOF"]
+    assert parity["blocks_promotion_until_accepted"] is True
+    geo = by_species["GEOMETRY_SWEEP"]
+    ceremony = by_species["CEREMONY_AUDIT"]
+    assert geo["id"] in parity["dependencies"]
+    assert ceremony["id"] in parity["dependencies"]
+    reprofile = by_species["COMPLETE_TOKEN_REPROFILE"]
+    assert parity["id"] in reprofile["dependencies"]
+    assert chain["reprofile_trigger"]["fires"] is True
+    assert chain["live_frontier"]["win_id"] == "fold_addqx"
+    for unit in chain["units"]:
+        ws.validate_emitted_unit(unit)
+        assert unit["executed"] is False
+        assert unit["gpu_authority"] is False
+        if unit["gpu_authority_required"]:
+            assert unit["status"] == cb.STATUS_SLEEPING
+            assert unit["runnable"] is False
+
+
+def test_module_does_not_claim_to_execute():
+    assert aw.DOES_NOT_EXECUTE is True
+    src = Path(aw.__file__).read_text()
+    assert "EMITS WorkUnits" in src or "EMITS HCLI WorkUnits" in src
+    assert "does not execute them" in src.lower() or "Emitting them is not executing them" in src
+    chain = aw.emit_procedure_chain()
+    assert "Emitting them is not executing them" in chain["note"]
+    assert chain["claim_boundary"]
+    doc_boundary = aw.CLAIM_BOUNDARY.lower()
+    assert "emit" in doc_boundary
+    assert "does not execute" in doc_boundary
+
+
+def test_build_receipt_includes_procedure_chain_and_trigger():
+    out = aw.build()
+    doc = json.loads(out.read_text())
+    assert doc["does_not_execute"] is True
+    proc = doc["procedure"]
+    assert proc["does_not_execute"] is True
+    assert proc["executed"] is False
+    assert proc["species_ids"] == list(aw.PROCEDURE_SPECIES)
+    assert proc["reprofile_trigger"]["fires"] is True
+    assert proc["live_frontier"]["baseline_token_ms"] == 28.722
+    assert proc["live_frontier"]["incumbent_token_ms"] == 26.3026
+    assert proc["live_frontier"]["win_ms"] == 3.9833
+    roof_before_gap = False
+    for u in proc["chain"]["units"]:
+        if u["species"] == "PRODUCTION_GAP_ATTRIBUTION":
+            assert any("ROOF_PROBE" in d for d in u["dependencies"])
+            roof_before_gap = True
+        if u["species"] == "PARITY_PROOF":
+            assert u["blocks_promotion_until_accepted"] is True
+        if u["species"] == "COMPLETE_TOKEN_REPROFILE":
+            assert any("PARITY_PROOF" in d for d in u["dependencies"])
+        assert u["executed"] is False
+    assert roof_before_gap
+    _assert_no_hardware_claims(doc)
+    assert "does not run them" in " ".join(doc["negative_findings"])

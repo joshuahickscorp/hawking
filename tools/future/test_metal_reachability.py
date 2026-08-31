@@ -8,10 +8,12 @@ an overreaching correction would send someone to re-run a 256-row capture on
 the strength of a claim this module never established.
 """
 import json
+import pathlib
 
 import pytest
 
 from tools.future import metal_reachability as mr
+from tools.future import status_causality as sc
 from tools.future._common import REPO, RECEIPTS
 
 
@@ -125,3 +127,83 @@ def test_runtime_binding_verdict_is_reported_separately():
     assert v["runtime_binding"]["verdict"] in {
         "FALSIFIED_AS_A_HOST_PROPERTY", "CONFIRMED", "UNTESTED"
     }
+
+
+# ---------------------------------------------------------------------------
+# G007 consumer: verdict records the five causality fields.
+# ---------------------------------------------------------------------------
+
+
+def test_verdict_records_the_five_causality_fields():
+    """A coverage number no test defends will drift back to zero."""
+    r = mr.verdict({"system_default": "Apple M3 Ultra", "n_devices": 1})
+    assert mr.records_five_fields(r)
+    src = pathlib.Path(mr.__file__).read_text()
+    assert "sc.emit(" in src
+    assert r["verdict"] == "FALSIFIED_AS_A_HOST_PROPERTY"
+    assert r["probe_performed"]
+    assert "MTLCreateSystemDefaultDevice" in r["probe_performed"]
+    assert r["direct_observation"] != r["verdict"]
+    assert r["direct_observation"] != r["interpretation"]
+    assert "system_default=" in r["direct_observation"]
+    assert r["causality_verdict"] in {sc.SUPPORTED, sc.OVERREACHING, sc.UNTESTED}
+
+
+def test_unsupplied_observation_records_untested_not_a_restatement():
+    result = {"claim": mr.CLAIM, "verdict": "UNTESTED", "why": "probe skipped"}
+    rec = mr.record_verdict_causality(
+        result, probe_performed="", direct_observation=""
+    )
+    assert rec["verdict"] == sc.UNTESTED
+    assert rec["direct_observation"] in ("", None)
+    assert rec["direct_observation"] != "UNTESTED"
+    assert "UNTESTED" not in str(rec["direct_observation"] or "")
+    assert result["verdict"] == "UNTESTED"
+    assert rec["interpretation"] != rec["direct_observation"]
+
+
+def test_overreaching_does_not_override_metal_verdict(monkeypatch):
+    def overreach(status, **kwargs):
+        return {
+            "probe_performed": kwargs.get("probe_performed") or "p",
+            "direct_observation": kwargs.get("direct_observation") or "o",
+            "interpretation": kwargs.get("interpretation") or status,
+            "confidence": {
+                "level": "LOW",
+                "about": "a",
+                "would_raise": "b",
+                "would_lower": "c",
+            },
+            "alternatives": [
+                {
+                    "hypothetical": "h",
+                    "consistent_with_observation": True,
+                    "consistent_with_claim": False,
+                }
+            ],
+            "verdict": sc.OVERREACHING,
+            "falsifier": "f",
+            "probe_kind": sc.PROBE_ENUMERATION,
+            "claim_kind": sc.CLAIM_HOST_HARDWARE_ABSENCE,
+        }
+
+    monkeypatch.setattr(mr.sc, "emit", overreach)
+    r = mr.verdict({"system_default": "Apple M3 Ultra", "n_devices": 1})
+    assert r["verdict"] == "FALSIFIED_AS_A_HOST_PROPERTY"
+    assert r["causality_verdict"] == sc.OVERREACHING
+
+
+def test_unavailable_probe_observation_is_not_a_status_restatement():
+    r = mr.verdict(None, "swiftc is not on PATH")
+    assert r["verdict"] == "UNTESTED"
+    assert mr.records_five_fields(r)
+    assert r["direct_observation"] != "UNTESTED"
+    assert "probe_ran=False" in r["direct_observation"]
+    assert "swiftc" in r["direct_observation"]
+
+
+def test_coverage_receipt_names_metal_reachability_as_recording():
+    path = RECEIPTS / "STATUS_CAUSALITY_COVERAGE.json"
+    doc = json.loads(path.read_text())
+    assert "metal_reachability" in doc["recording_five_fields"]
+    assert doc["n_gates"] == 18

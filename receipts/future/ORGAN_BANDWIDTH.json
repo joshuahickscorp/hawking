@@ -1,0 +1,108 @@
+{
+ "claim_boundary": "One traced token on a CPU-contended box, with the trace itself costing 1.8% of GPU time. Byte shares are exact from the catalog census; the ms figures are DIAGNOSTIC_RELATIVE. Bandwidth here is bytes-the-catalog-says divided by time-the-GPU-took, so it inherits the perfect-locality assumption: if real traffic exceeds the catalog, these are underestimates. normalization, residual, low_bit_decode and routing are folded INTO the organ kernels by production fusion and were not independently sampled \u2014 the region trace cannot say how much of any organ's time is decode versus arithmetic versus streaming.",
+ "coverage": {
+  "byte_coverage": 0.99972,
+  "bytes_covered": 9876178280,
+  "gpu_ms_covered": 27.733,
+  "gpu_ms_unattributed": 0.095,
+  "uncovered_are": "norms, embedding row, A_log and dt_bias \u2014 0.028% of the token",
+  "uncovered_bytes": 2722856
+ },
+ "evidence_class": "DIAGNOSTIC_RELATIVE",
+ "findings": [
+  {
+   "consequence": "There is no hot organ. The 9.67 ms unexplained term in the token budget is not a gap between organs and not one slow organ; it is distributed across all of them in proportion to their bytes.",
+   "id": "THE_LOSS_IS_UNIFORM_NOT_LOCALIZED",
+   "what": "MLP, DeltaNet and GQA sit between 341.9 and 360.0 GB/s \u2014 inside 5% of each other \u2014 against a 703.5 GB/s clean roof"
+  },
+  {
+   "id": "THE_LM_HEAD_PROVES_THE_ROOF_IS_REACHABLE",
+   "what": "675,430,440 bytes in 2 dispatches reach 497.4 GB/s, 70.7% of the clean roof and 1.38x the fastest of the other three",
+   "why_it_matters": "Same box, same catalog, same low-bit representation, same build. Whatever holds the other three organs at ~350 GB/s is not a property of the machine or of the representation. This is an existence proof with 45% headroom in it."
+  },
+  {
+   "corroboration": "DeltaNet has the highest dispatch density of the three big organs (113.8 per GB against MLP's 35.9) and is the FASTEST of the three at 360 GB/s. If dispatch count set the rate, that ordering would be inverted.",
+   "id": "DISPATCH_COUNT_DOES_NOT_EXPLAIN_THE_DIFFERENCE",
+   "what": "A least-squares fit of t = a*bytes + b*dispatches over the four organs returns b = -1.008 us per dispatch. A negative per-dispatch cost is physically meaningless; the model is refuted, not fitted.",
+   "what_survives": "bytes per dispatch, not dispatch count: the LM head moves 337.7 MB per launch against 8.8 to 27.9 MB for the others. That is a hypothesis this measurement supports but does not establish."
+  }
+ ],
+ "gpu_authority": false,
+ "open_question": {
+  "candidates_not_yet_tested": [
+   "contiguity: the LM head streams one tensor; the others walk hundreds of per-layer tensors",
+   "dependency chain: layer N+1 cannot start until layer N retires, so the memory system never sees a deep queue",
+   "per-launch working set: 337 MB gives the prefetcher something to work with that 9 MB does not",
+   "low-bit decode ALU cost inside the organ kernels, which the region trace cannot separate from byte time"
+  ],
+  "cheapest_falsifier": "run the MLP of one layer as a single fused region over a contiguous staging buffer and measure its GB/s. If it stays at ~350 the cause is not contiguity.",
+  "question": "why do three organs stop at half the clean roof while a single large contiguous GEMV reaches 70%?"
+ },
+ "organs": [
+  {
+   "active_bytes": 5347795776,
+   "byte_share": 0.54134,
+   "dispatches": 192,
+   "dispatches_per_gb": 35.9,
+   "effective_gb_s": 344.1,
+   "gpu_ms": 15.541,
+   "mb_per_dispatch": 27.9,
+   "organ": "mlp",
+   "share_of_clean_roof": 0.4891,
+   "time_share": 0.55847
+  },
+  {
+   "active_bytes": 2961659904,
+   "byte_share": 0.2998,
+   "dispatches": 337,
+   "dispatches_per_gb": 113.8,
+   "effective_gb_s": 360.0,
+   "gpu_ms": 8.227,
+   "mb_per_dispatch": 8.8,
+   "organ": "deltanet",
+   "share_of_clean_roof": 0.5117,
+   "time_share": 0.29564
+  },
+  {
+   "active_bytes": 891292160,
+   "byte_share": 0.09022,
+   "dispatches": 96,
+   "dispatches_per_gb": 107.7,
+   "effective_gb_s": 341.9,
+   "gpu_ms": 2.607,
+   "mb_per_dispatch": 9.3,
+   "organ": "gqa",
+   "share_of_clean_roof": 0.486,
+   "time_share": 0.09368
+  },
+  {
+   "active_bytes": 675430440,
+   "byte_share": 0.06837,
+   "dispatches": 2,
+   "dispatches_per_gb": 3.0,
+   "effective_gb_s": 497.4,
+   "gpu_ms": 1.358,
+   "mb_per_dispatch": 337.7,
+   "organ": "lm_head",
+   "share_of_clean_roof": 0.707,
+   "time_share": 0.0488
+  }
+ ],
+ "recorded_by": "tools/future/organ_bandwidth.py",
+ "schema": "hawking.future.organ_bandwidth.v1",
+ "source": "region GPU timestamps (MTLCommandBuffer GPUStartTime/GPUEndTime), 130 samples, one representative decode token, joined to receipts/future/MLP_BYTE_CENSUS.json",
+ "token_gpu_ms": 27.828,
+ "took_gpu_lease": false,
+ "trace_overhead": {
+  "dispatches_identical": 628,
+  "flag": "HAWKING_QWEN38_REGION_TIMING=1, default OFF",
+  "gpu_ms_off": 27.2,
+  "gpu_ms_on": 27.696,
+  "gpu_overhead_pct": 1.8,
+  "greedy_text_identical": true,
+  "verdict": "under the 5% bar; the trace is production-shaped but not free",
+  "wall_tps_off": 35.319,
+  "wall_tps_on": 35.717
+ },
+ "version": 1
+}

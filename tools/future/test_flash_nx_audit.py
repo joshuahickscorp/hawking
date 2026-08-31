@@ -1,6 +1,8 @@
 import json
+import pathlib
 
 from tools.future import flash_nx_audit as audit
+from tools.future import status_causality as sc
 from tools.future._common import RECEIPTS, HardwareClaimError, write_receipt
 
 
@@ -282,3 +284,73 @@ def test_assembled_receipt_has_required_sections():
     assert doc["nx_completeness_checker"]["discriminator_holds"] is True
     assert doc["dependency_chain"]["dominant_count"] == doc["dependency_chain"]["blocked_count"] - 2
     assert doc["dependency_chain"]["blocked_count"] >= 14
+
+
+# ---------------------------------------------------------------------------
+# G007 consumer: build/assemble records the five causality fields.
+# ---------------------------------------------------------------------------
+
+
+def test_assemble_records_the_five_causality_fields():
+    """A coverage number no test defends will drift back to zero."""
+    doc = audit.assemble(_docs())
+    assert audit.records_five_fields(doc)
+    src = pathlib.Path(audit.__file__).read_text()
+    assert "sc.emit(" in src
+    assert doc["seven_all_met"] is False
+    assert doc["probe_performed"]
+    assert "seven_from_disk" in doc["probe_performed"]
+    assert doc["direct_observation"] != "seven_all_met_is_false"
+    assert "seven_all_met=" in doc["direct_observation"]
+    assert doc["causality_verdict"] in {sc.SUPPORTED, sc.OVERREACHING, sc.UNTESTED}
+
+
+def test_unsupplied_observation_records_untested_not_a_restatement():
+    result = {"seven_all_met": False, "schema": audit.SCHEMA}
+    rec = audit.record_audit_causality(
+        result, probe_performed="", direct_observation=""
+    )
+    assert rec["verdict"] == sc.UNTESTED
+    assert rec["direct_observation"] in ("", None)
+    assert rec["direct_observation"] != "seven_all_met_is_false"
+    assert "seven_all_met_is_false" not in str(rec["direct_observation"] or "")
+    assert result["seven_all_met"] is False
+    assert rec["interpretation"] != rec["direct_observation"]
+
+
+def test_overreaching_does_not_override_seven_all_met(monkeypatch):
+    def overreach(status, **kwargs):
+        return {
+            "probe_performed": kwargs.get("probe_performed") or "p",
+            "direct_observation": kwargs.get("direct_observation") or "o",
+            "interpretation": kwargs.get("interpretation") or status,
+            "confidence": {
+                "level": "LOW",
+                "about": "a",
+                "would_raise": "b",
+                "would_lower": "c",
+            },
+            "alternatives": [
+                {
+                    "hypothetical": "h",
+                    "consistent_with_observation": True,
+                    "consistent_with_claim": False,
+                }
+            ],
+            "verdict": sc.OVERREACHING,
+            "falsifier": "f",
+            "probe_kind": sc.PROBE_RECEIPT_FIELD,
+            "claim_kind": sc.CLAIM_OBJECT_ABSENCE,
+        }
+
+    monkeypatch.setattr(audit.sc, "emit", overreach)
+    doc = audit.assemble(_docs())
+    assert doc["seven_all_met"] is False
+    assert doc["causality_verdict"] == sc.OVERREACHING
+
+
+def test_coverage_receipt_names_flash_nx_audit_as_recording():
+    path = RECEIPTS / "STATUS_CAUSALITY_COVERAGE.json"
+    doc = json.loads(path.read_text())
+    assert "flash_nx_audit" in doc["recording_five_fields"]
+    assert doc["n_gates"] == 18

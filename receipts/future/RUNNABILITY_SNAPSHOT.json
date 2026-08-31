@@ -1,0 +1,34 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T19:13:18Z",
+  "recorded_by": "tools/future/runnability_snapshot.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. This defines and tests the snapshot; it does not retrofit one onto timelines recorded before it existed. Both 30m runs stay UNEVIDENCED on this axis, which is the honest verdict - neither can be convicted nor acquitted from what they recorded.",
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "indistinguishable_timelines": {
+  "archived_477s": {
+   "signal": "next_work_left t=88, exhausted True, n 0, ids []",
+   "truth": "the run ended with twelve frontiers holding novel work the driver had missed, so the claim was FALSE"
+  },
+  "conclusion": "identical signal, opposite meanings. `exhausted` is the driver's own claim and in one case it was wrong, so no judge keyed on it can separate them - a rule that acquits run three acquits the archived defect too, which the negative control demonstrated.",
+  "run_three_482s": {
+   "signal": "next_work_left t=81, exhausted True, n 0, ids []",
+   "truth": "the work found afterwards was created by the detached job the loop was waiting for; UNKNOWN whether anything was runnable at t=81"
+  },
+  "what_closes_it": "a per-frontier runnability snapshot taken AT the wait. Not another opinion about the timeline; a count taken at the instant in question."
+ },
+ "schema": "hawking.future.runnability_snapshot.v1",
+ "seal_sha256": "2e521470f20e702ef5d773aa618434f0d9aa975d2bc4e1e807826fcf4cde9ab8",
+ "verdicts": [
+  "WAIT_JUSTIFIED",
+  "IDLE_WITH_RUNNABLE_WORK",
+  "UNEVIDENCED"
+ ],
+ "version": 1
+}

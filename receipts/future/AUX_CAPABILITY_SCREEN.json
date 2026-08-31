@@ -1,0 +1,2501 @@
+{
+ "argmax_alone_is_not_parity": true,
+ "bars": {
+  "argmax_is_not_parity": true,
+  "logit_kl_nats": 0.1,
+  "organ_cosine": 0.99,
+  "organ_relfro": 0.2,
+  "top_k": 5,
+  "top_k_agreement": 0.8,
+  "weight_relfro": 0.05,
+  "weight_relfro_early_stop": 0.2
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T16:13:40Z",
+  "recorded_by": "tools/future/aux_capability_screen.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "byte_model": {
+  "formula": "aux(G) = 4*n_params/G + 58176",
+  "group_size_1024": {
+   "aux_bytes": 66904896,
+   "bytes_eliminated": 1002700800,
+   "curve_row": {
+    "auxiliary_bytes": 66904896,
+    "bytes_eliminated_vs_incumbent": 1002700800,
+    "capability": "UNMEASURED",
+    "code_bytes": 4278190080,
+    "group_size": 1024,
+    "header_bytes": 58176,
+    "incumbent": false,
+    "mlp_active_bytes": 4345094976,
+    "n_groups": 16711680,
+    "scale_bias_bytes": 66846720
+   }
+  },
+  "group_size_256": {
+   "aux_bytes": 267445056,
+   "bytes_eliminated": 802160640,
+   "curve_row": {
+    "auxiliary_bytes": 267445056,
+    "bytes_eliminated_vs_incumbent": 802160640,
+    "capability": "UNMEASURED",
+    "code_bytes": 4278190080,
+    "group_size": 256,
+    "header_bytes": 58176,
+    "incumbent": false,
+    "mlp_active_bytes": 4545635136,
+    "n_groups": 66846720,
+    "scale_bias_bytes": 267386880
+   }
+  },
+  "header_bytes": 58176,
+  "heterogeneous": {
+   "bytes_added_metadata": 56,
+   "bytes_removed": 1305600,
+   "candidate_aux_bytes": 1068300152,
+   "candidate_scale_bias_bytes": 1068241920,
+   "incumbent_aux_bytes": 1069605696,
+   "metadata_bytes": 56,
+   "mixed_incumbent_scale_bias_bytes": 5570560,
+   "mixed_scale_bias_bytes": 4264960,
+   "mixed_tensors": 1,
+   "n_runs": 4,
+   "net_bytes_saved": 1305544
+  },
+  "incumbent_aux_bytes": 1069605696,
+  "incumbent_group": 64,
+  "n_params": 17112760320,
+  "n_tensors": 192,
+  "quantize_aux_u8": {
+   "bytes_added_metadata": 1536,
+   "bytes_removed": 534773760,
+   "candidate_aux_scale_bias_bytes": 534775296,
+   "endpoint_bytes": 1536,
+   "incumbent_scale_bias_bytes": 1069547520,
+   "u8_payload_bytes": 534773760
+  },
+  "scored_by": "tools/future/executable_economics.py",
+  "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement and no generate gate. Auxiliary requant is a CPU LS refit of scale/zero (or a real u8 encode of the incumbent f16 aux) on sealed-3.14 HGRAVF01 tensors. Weight-space is reconstructed-W rel-fro vs the incumbent affine. Organ-space is held-out SwiGLU error on the real teacher corpus, split by prompt_id. Logit-space is KL and top-k agreement of the real LM head applied to last-layer organ outputs on held-out prompts; it is not a full-stack generate identity. Argmax agreement is recorded and is not parity. Byte figures come from tools/future/executable_economics.py. evidence_class is STATIC_ONLY. gpu_authority is false.",
+ "corpus": {
+  "dir": "/Users/scammermike/Downloads/hawking/workspace/ops/local/scratch/mlp_teacher_corpus",
+  "error": null,
+  "source": "receipts/future/MLP_TEACHER_CORPUS.json",
+  "split_unit": "prompt_id"
+ },
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "identity": {
+  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "geometry": {
+   "hidden_size": 5120,
+   "intermediate_size": 17408,
+   "num_hidden_layers": 64
+  },
+  "model_id": "qwen3.8-27b-sealed-3.14",
+  "resident_identity": "sealed-3.14"
+ },
+ "layers_screened": [
+  3,
+  31,
+  38,
+  63
+ ],
+ "levers": [
+  {
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_removed": 1002700800,
+   "capability": "FAILED_HELDOUT",
+   "consuming_primitive": "FusedDecodeCompute",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "early_stop_reason": null,
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 344.1,
+     "bandwidth_gb_s_range": [
+      344.1,
+      376.7
+     ],
+     "bandwidth_is_assumption": false,
+     "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+     "bandwidth_regime": "affine_q2_family",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "dispatch_us_nominal": 6.25,
+     "flop_ms_range": [
+      0.0,
+      0.0
+     ],
+     "organ_average_gb_s": 344.1,
+     "stream_billing_gb_s": 0.0,
+     "stream_class": "broadcast_aux",
+     "stream_on_critical_path": false
+    },
+    "byte_model_incomplete": false,
+    "bytes_added": {
+     "embeddings": 0,
+     "generator": 0,
+     "metadata": 0,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 0,
+    "bytes_removed": 1002700800,
+    "capability": null,
+    "consuming_primitive": "FusedDecodeCompute",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "group_size_1024",
+    "live": true,
+    "name": "group_size_1024",
+    "net_bytes": -1002700800,
+    "note": null,
+    "organ": "mlp",
+    "predicted_ms_delta": 0.0,
+    "predicted_ms_delta_range": [
+     0.0,
+     0.0
+    ],
+    "predicted_ms_saved": 0.0,
+    "predicted_token_ms": 28.722,
+    "predicted_token_ms_range": [
+     28.722,
+     28.722
+    ],
+    "predicted_tps": 34.817,
+    "predicted_tps_range": [
+     34.817,
+     34.817
+    ],
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": false,
+     "high_information_falsifier": false,
+     "plausible_ms_saved": 0.0,
+     "reusable_family": true
+    },
+    "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+    "status": "OPEN",
+    "stream_class": "broadcast_aux",
+    "terms": {
+     "byte_added_ms": 0.0,
+     "byte_ms_delta": 0.0,
+     "byte_removed_ms": 0.0,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "MATERIAL",
+    "verdict_reasons": [
+     "reusable_representation_family"
+    ]
+   },
+   "evidence_tier": "REFUTED",
+   "evidence_tier_was": "PROSPECTIVE_ECONOMIC",
+   "generate_gate": "UNMEASURED",
+   "id": "group_size_1024",
+   "kind": "group_size",
+   "logit_space": {
+    "argmax_agreement": 0.4375,
+    "argmax_is_not_parity": true,
+    "failed": true,
+    "kind": "lm_head_on_last_layer_organ_output",
+    "kl_bar": 0.1,
+    "kl_nats": 1.2263871335745304,
+    "layer": 63,
+    "n_hold_available": 2511,
+    "n_rows": 16,
+    "not_full_stack_generate": true,
+    "note": "LM head is the sealed HQ30UQ4 table. Inputs are last-layer organ outputs on prompt-split hold rows, not the residual stream. Full-stack generate identity is UNMEASURED (no GPU lease). Argmax is not parity.",
+    "parity_quantities": [
+     "kl_nats",
+     "top_k_agreement"
+    ],
+    "skipped": false,
+    "split": "hold",
+    "split_unit": "prompt_id",
+    "top_k": 5,
+    "top_k_agreement": 0.5125,
+    "top_k_bar": 0.8
+   },
+   "organ_space": {
+    "corpus_dir": "/Users/scammermike/Downloads/hawking/workspace/ops/local/scratch/mlp_teacher_corpus",
+    "cosine_bar": 0.99,
+    "cosine_mean": 0.9368017052494072,
+    "failed": true,
+    "note": "Held-out by prompt_id on the real teacher corpus. Y is incumbent F(X)=down(silu(gate(X))*up(X)); Y_hat is the same organ after the auxiliary requant.",
+    "per_layer": [
+     {
+      "cosine": 0.9506016405667754,
+      "failed": true,
+      "layer": 3,
+      "n_hold_available": 2511,
+      "n_hold_prompts": 1,
+      "n_hold_used": 83,
+      "relfro": 0.3321010285654109,
+      "split": "hold",
+      "split_unit": "prompt_id"
+     },
+     {
+      "cosine": 0.9176283842065172,
+      "failed": true,
+      "layer": 31,
+      "n_hold_available": 2511,
+      "n_hold_prompts": 1,
+      "n_hold_used": 526,
+      "relfro": 0.39979337181230623,
+      "split": "hold",
+      "split_unit": "prompt_id"
+     },
+     {
+      "cosine": 0.9257226053519955,
+      "failed": true,
+      "layer": 38,
+      "n_hold_available": 2511,
+      "n_hold_prompts": 1,
+      "n_hold_used": 71,
+      "relfro": 0.38480039746577466,
+      "split": "hold",
+      "split_unit": "prompt_id"
+     },
+     {
+      "cosine": 0.9532541908723409,
+      "failed": true,
+      "layer": 63,
+      "n_hold_available": 2511,
+      "n_hold_prompts": 3,
+      "n_hold_used": 192,
+      "relfro": 0.3415725487780297,
+      "split": "hold",
+      "split_unit": "prompt_id"
+     }
+    ],
+    "relfro_bar": 0.2,
+    "relfro_mean": 0.36456683665538037,
+    "skipped": false
+   },
+   "sensitivity_concentration": {
+    "concentrates_in_sensitive": false,
+    "could_take_relfro_mean": 0.26967638614527667,
+    "must_keep_relfro_mean": 0.2706220476543439,
+    "n_could_take": 1,
+    "n_must_keep": 3,
+    "why": "must-keep mean rel-fro 0.270622 vs could-take 0.269676; injury is not concentrated on the high-sensitivity slices"
+   },
+   "status": "REFUTED",
+   "weight_space": {
+    "bar": 0.05,
+    "early_stop_bar": 0.2,
+    "failed": true,
+    "n_layers": 4,
+    "note": "Rel-fro of reconstructed W vs incumbent affine-Q2 G=64. Group-size levers are a real LS refit at the new G, not an analytic bound. u8 keeps the 2-bit codes and requants aux.",
+    "per_layer": [
+     {
+      "failed": true,
+      "layer": 3,
+      "organs": {
+       "mlp.down": {
+        "failed": true,
+        "fit": {
+         "group_size": 1024,
+         "kind": "group_size",
+         "n_groups": 87040,
+         "n_iters": 4
+        },
+        "relfro": 0.2638886457905064,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         5120,
+         17408
+        ],
+        "slices": []
+       },
+       "mlp.gate": {
+        "failed": true,
+        "fit": {
+         "group_size": 1024,
+         "kind": "group_size",
+         "n_groups": 87040,
+         "n_iters": 4
+        },
+        "relfro": 0.26271609753242803,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       },
+       "mlp.up": {
+        "failed": true,
+        "fit": {
+         "group_size": 1024,
+         "kind": "group_size",
+         "n_groups": 87040,
+         "n_iters": 4
+        },
+        "relfro": 0.26247792183820196,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       }
+      },
+      "relfro_down": 0.2638886457905064,
+      "relfro_gate": 0.26271609753242803,
+      "relfro_mean": 0.26302755505371217,
+      "relfro_up": 0.26247792183820196
+     },
+     {
+      "failed": true,
+      "layer": 31,
+      "organs": {
+       "mlp.down": {
+        "failed": true,
+        "fit": {
+         "group_size": 1024,
+         "kind": "group_size",
+         "n_groups": 87040,
+         "n_iters": 4
+        },
+        "relfro": 0.2679396323223837,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         5120,
+         17408
+        ],
+        "slices": []
+       },
+       "mlp.gate": {
+        "failed": true,
+        "fit": {
+         "group_size": 1024,
+         "kind": "group_size",
+         "n_groups": 87040,
+         "n_iters": 4
+        },
+        "relfro": 0.26772874125611273,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       },
+       "mlp.up": {
+        "failed": true,
+        "fit": {
+         "group_size": 1024,
+         "kind": "group_size",
+         "n_groups": 87040,
+         "n_iters": 4
+        },
+        "relfro": 0.2687390413826475,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       }
+      },
+      "relfro_down": 0.2679396323223837,
+      "relfro_gate": 0.26772874125611273,
+      "relfro_mean": 0.268135804987048,
+      "relfro_up": 0.2687390413826475
+     },
+     {
+      "failed": true,
+      "layer": 38,
+      "organs": {
+       "mlp.down": {
+        "failed": true,
+        "fit": {
+         "group_size": 1024,
+         "kind": "group_size",
+         "n_groups": 87040,
+         "n_iters": 4
+        },
+        "relfro": 0.26650373647788383,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         5120,
+         17408
+        ],
+        "slices": []
+       },
+       "mlp.gate": {
+        "failed": true,
+        "fit": {
+         "group_size": 1024,
+         "kind": "group_size",
+         "n_groups": 87040,
+         "n_iters": 4
+        },
+        "relfro": 0.26647835573878387,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       },
+       "mlp.up": {
+        "failed": true,
+        "fit": {
+         "group_size": 1024,
+         "kind": "group_size",
+         "n_groups": 87040,
+         "n_iters": 4
+        },
+        "relfro": 0.2662747648025841,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       }
+      },
+      "relfro_down": 0.26650373647788383,
+      "relfro_gate": 0.26647835573878387,
+      "relfro_mean": 0.2664189523397506,
+      "relfro_up": 0.2662747648025841
+     },
+     {
+      "failed": true,
+      "layer": 63,
+      "organs": {
+       "mlp.down": {
+        "failed": true,
+        "fit": {
+         "group_size": 1024,
+         "kind": "group_size",
+         "n_groups": 87040,
+         "n_iters": 4
+        },
+        "relfro": 0.28473859904780163,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         5120,
+         17408
+        ],
+        "slices": []
+       },
+       "mlp.gate": {
+        "failed": true,
+        "fit": {
+         "group_size": 1024,
+         "kind": "group_size",
+         "n_groups": 87040,
+         "n_iters": 4
+        },
+        "relfro": 0.27038789756370946,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": 0.26967638614527667,
+         "must_keep_relfro_mean": 0.2706220476543439,
+         "n_could_take": 1,
+         "n_must_keep": 3,
+         "why": "must-keep mean rel-fro 0.270622 vs could-take 0.269676; injury is not concentrated on the high-sensitivity slices"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": [
+         {
+          "region_id": "L63.mlp.gate.channel.rows_0_4352",
+          "relfro": 0.2698750622821285,
+          "row0": 0,
+          "row1": 4352,
+          "sensitivity": "MUST_KEEP"
+         },
+         {
+          "region_id": "L63.mlp.gate.channel.rows_4352_8704",
+          "relfro": 0.27050071758794286,
+          "row0": 4352,
+          "row1": 8704,
+          "sensitivity": "MUST_KEEP"
+         },
+         {
+          "region_id": "L63.mlp.gate.channel.rows_8704_13056",
+          "relfro": 0.2714903630929603,
+          "row0": 8704,
+          "row1": 13056,
+          "sensitivity": "MUST_KEEP"
+         },
+         {
+          "region_id": "L63.mlp.gate.channel.rows_13056_17408",
+          "relfro": 0.26967638614527667,
+          "row0": 13056,
+          "row1": 17408,
+          "sensitivity": "COULD_TAKE"
+         }
+        ]
+       },
+       "mlp.up": {
+        "failed": true,
+        "fit": {
+         "group_size": 1024,
+         "kind": "group_size",
+         "n_groups": 87040,
+         "n_iters": 4
+        },
+        "relfro": 0.2654620027578703,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       }
+      },
+      "relfro_down": 0.28473859904780163,
+      "relfro_gate": 0.27038789756370946,
+      "relfro_mean": 0.2735294997897938,
+      "relfro_up": 0.2654620027578703
+     }
+    ],
+    "relfro_mean": 0.2677779530425761,
+    "sensitivity": {
+     "concentrates_in_sensitive": false,
+     "could_take_relfro_mean": 0.26967638614527667,
+     "must_keep_relfro_mean": 0.2706220476543439,
+     "n_could_take": 1,
+     "n_must_keep": 3,
+     "why": "must-keep mean rel-fro 0.270622 vs could-take 0.269676; injury is not concentrated on the high-sensitivity slices"
+    }
+   }
+  },
+  {
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_removed": 802160640,
+   "capability": "FAILED_HELDOUT",
+   "consuming_primitive": "FusedDecodeCompute",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "early_stop_reason": null,
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 344.1,
+     "bandwidth_gb_s_range": [
+      344.1,
+      376.7
+     ],
+     "bandwidth_is_assumption": false,
+     "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+     "bandwidth_regime": "affine_q2_family",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "dispatch_us_nominal": 6.25,
+     "flop_ms_range": [
+      0.0,
+      0.0
+     ],
+     "organ_average_gb_s": 344.1,
+     "stream_billing_gb_s": 0.0,
+     "stream_class": "broadcast_aux",
+     "stream_on_critical_path": false
+    },
+    "byte_model_incomplete": false,
+    "bytes_added": {
+     "embeddings": 0,
+     "generator": 0,
+     "metadata": 0,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 0,
+    "bytes_removed": 802160640,
+    "capability": null,
+    "consuming_primitive": "FusedDecodeCompute",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "group_size_256",
+    "live": true,
+    "name": "group_size_256",
+    "net_bytes": -802160640,
+    "note": null,
+    "organ": "mlp",
+    "predicted_ms_delta": 0.0,
+    "predicted_ms_delta_range": [
+     0.0,
+     0.0
+    ],
+    "predicted_ms_saved": 0.0,
+    "predicted_token_ms": 28.722,
+    "predicted_token_ms_range": [
+     28.722,
+     28.722
+    ],
+    "predicted_tps": 34.817,
+    "predicted_tps_range": [
+     34.817,
+     34.817
+    ],
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": false,
+     "high_information_falsifier": false,
+     "plausible_ms_saved": 0.0,
+     "reusable_family": true
+    },
+    "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+    "status": "OPEN",
+    "stream_class": "broadcast_aux",
+    "terms": {
+     "byte_added_ms": 0.0,
+     "byte_ms_delta": 0.0,
+     "byte_removed_ms": 0.0,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "MATERIAL",
+    "verdict_reasons": [
+     "reusable_representation_family"
+    ]
+   },
+   "evidence_tier": "REFUTED",
+   "evidence_tier_was": "PROSPECTIVE_ECONOMIC",
+   "generate_gate": "UNMEASURED",
+   "id": "group_size_256",
+   "kind": "group_size",
+   "logit_space": {
+    "argmax_agreement": 0.625,
+    "argmax_is_not_parity": true,
+    "failed": true,
+    "kind": "lm_head_on_last_layer_organ_output",
+    "kl_bar": 0.1,
+    "kl_nats": 0.6208869185211433,
+    "layer": 63,
+    "n_hold_available": 2511,
+    "n_rows": 16,
+    "not_full_stack_generate": true,
+    "note": "LM head is the sealed HQ30UQ4 table. Inputs are last-layer organ outputs on prompt-split hold rows, not the residual stream. Full-stack generate identity is UNMEASURED (no GPU lease). Argmax is not parity.",
+    "parity_quantities": [
+     "kl_nats",
+     "top_k_agreement"
+    ],
+    "skipped": false,
+    "split": "hold",
+    "split_unit": "prompt_id",
+    "top_k": 5,
+    "top_k_agreement": 0.5875,
+    "top_k_bar": 0.8
+   },
+   "organ_space": {
+    "corpus_dir": "/Users/scammermike/Downloads/hawking/workspace/ops/local/scratch/mlp_teacher_corpus",
+    "cosine_bar": 0.99,
+    "cosine_mean": 0.9533040382252174,
+    "failed": true,
+    "note": "Held-out by prompt_id on the real teacher corpus. Y is incumbent F(X)=down(silu(gate(X))*up(X)); Y_hat is the same organ after the auxiliary requant.",
+    "per_layer": [
+     {
+      "cosine": 0.9624157599522168,
+      "failed": true,
+      "layer": 3,
+      "n_hold_available": 2511,
+      "n_hold_prompts": 1,
+      "n_hold_used": 83,
+      "relfro": 0.2874884187572892,
+      "split": "hold",
+      "split_unit": "prompt_id"
+     },
+     {
+      "cosine": 0.9377162118309046,
+      "failed": true,
+      "layer": 31,
+      "n_hold_available": 2511,
+      "n_hold_prompts": 1,
+      "n_hold_used": 526,
+      "relfro": 0.34938752091866976,
+      "split": "hold",
+      "split_unit": "prompt_id"
+     },
+     {
+      "cosine": 0.9458353566789929,
+      "failed": true,
+      "layer": 38,
+      "n_hold_available": 2511,
+      "n_hold_prompts": 1,
+      "n_hold_used": 71,
+      "relfro": 0.3295792113105208,
+      "split": "hold",
+      "split_unit": "prompt_id"
+     },
+     {
+      "cosine": 0.9672488244387552,
+      "failed": true,
+      "layer": 63,
+      "n_hold_available": 2511,
+      "n_hold_prompts": 3,
+      "n_hold_used": 192,
+      "relfro": 0.28631118951023726,
+      "split": "hold",
+      "split_unit": "prompt_id"
+     }
+    ],
+    "relfro_bar": 0.2,
+    "relfro_mean": 0.3131915851241793,
+    "skipped": false
+   },
+   "sensitivity_concentration": {
+    "concentrates_in_sensitive": false,
+    "could_take_relfro_mean": 0.23707566289826007,
+    "must_keep_relfro_mean": 0.23806704447940716,
+    "n_could_take": 1,
+    "n_must_keep": 3,
+    "why": "must-keep mean rel-fro 0.238067 vs could-take 0.237076; injury is not concentrated on the high-sensitivity slices"
+   },
+   "status": "REFUTED",
+   "weight_space": {
+    "bar": 0.05,
+    "early_stop_bar": 0.2,
+    "failed": true,
+    "n_layers": 4,
+    "note": "Rel-fro of reconstructed W vs incumbent affine-Q2 G=64. Group-size levers are a real LS refit at the new G, not an analytic bound. u8 keeps the 2-bit codes and requants aux.",
+    "per_layer": [
+     {
+      "failed": true,
+      "layer": 3,
+      "organs": {
+       "mlp.down": {
+        "failed": true,
+        "fit": {
+         "group_size": 256,
+         "kind": "group_size",
+         "n_groups": 348160,
+         "n_iters": 4
+        },
+        "relfro": 0.2317167486554724,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         5120,
+         17408
+        ],
+        "slices": []
+       },
+       "mlp.gate": {
+        "failed": true,
+        "fit": {
+         "group_size": 256,
+         "kind": "group_size",
+         "n_groups": 348160,
+         "n_iters": 4
+        },
+        "relfro": 0.23080022105291065,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       },
+       "mlp.up": {
+        "failed": true,
+        "fit": {
+         "group_size": 256,
+         "kind": "group_size",
+         "n_groups": 348160,
+         "n_iters": 4
+        },
+        "relfro": 0.23052840809341235,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       }
+      },
+      "relfro_down": 0.2317167486554724,
+      "relfro_gate": 0.23080022105291065,
+      "relfro_mean": 0.2310151259339318,
+      "relfro_up": 0.23052840809341235
+     },
+     {
+      "failed": true,
+      "layer": 31,
+      "organs": {
+       "mlp.down": {
+        "failed": true,
+        "fit": {
+         "group_size": 256,
+         "kind": "group_size",
+         "n_groups": 348160,
+         "n_iters": 4
+        },
+        "relfro": 0.23532069039899192,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         5120,
+         17408
+        ],
+        "slices": []
+       },
+       "mlp.gate": {
+        "failed": true,
+        "fit": {
+         "group_size": 256,
+         "kind": "group_size",
+         "n_groups": 348160,
+         "n_iters": 4
+        },
+        "relfro": 0.23513777648626832,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       },
+       "mlp.up": {
+        "failed": true,
+        "fit": {
+         "group_size": 256,
+         "kind": "group_size",
+         "n_groups": 348160,
+         "n_iters": 4
+        },
+        "relfro": 0.23591580810875715,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       }
+      },
+      "relfro_down": 0.23532069039899192,
+      "relfro_gate": 0.23513777648626832,
+      "relfro_mean": 0.23545809166467246,
+      "relfro_up": 0.23591580810875715
+     },
+     {
+      "failed": true,
+      "layer": 38,
+      "organs": {
+       "mlp.down": {
+        "failed": true,
+        "fit": {
+         "group_size": 256,
+         "kind": "group_size",
+         "n_groups": 348160,
+         "n_iters": 4
+        },
+        "relfro": 0.2340781046304388,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         5120,
+         17408
+        ],
+        "slices": []
+       },
+       "mlp.gate": {
+        "failed": true,
+        "fit": {
+         "group_size": 256,
+         "kind": "group_size",
+         "n_groups": 348160,
+         "n_iters": 4
+        },
+        "relfro": 0.23405809373719702,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       },
+       "mlp.up": {
+        "failed": true,
+        "fit": {
+         "group_size": 256,
+         "kind": "group_size",
+         "n_groups": 348160,
+         "n_iters": 4
+        },
+        "relfro": 0.2338266840850786,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       }
+      },
+      "relfro_down": 0.2340781046304388,
+      "relfro_gate": 0.23405809373719702,
+      "relfro_mean": 0.23398762748423815,
+      "relfro_up": 0.2338266840850786
+     },
+     {
+      "failed": true,
+      "layer": 63,
+      "organs": {
+       "mlp.down": {
+        "failed": true,
+        "fit": {
+         "group_size": 256,
+         "kind": "group_size",
+         "n_groups": 348160,
+         "n_iters": 4
+        },
+        "relfro": 0.2495939332432948,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         5120,
+         17408
+        ],
+        "slices": []
+       },
+       "mlp.gate": {
+        "failed": true,
+        "fit": {
+         "group_size": 256,
+         "kind": "group_size",
+         "n_groups": 348160,
+         "n_iters": 4
+        },
+        "relfro": 0.23782320383405153,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": 0.23707566289826007,
+         "must_keep_relfro_mean": 0.23806704447940716,
+         "n_could_take": 1,
+         "n_must_keep": 3,
+         "why": "must-keep mean rel-fro 0.238067 vs could-take 0.237076; injury is not concentrated on the high-sensitivity slices"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": [
+         {
+          "region_id": "L63.mlp.gate.channel.rows_0_4352",
+          "relfro": 0.23718199577672297,
+          "row0": 0,
+          "row1": 4352,
+          "sensitivity": "MUST_KEEP"
+         },
+         {
+          "region_id": "L63.mlp.gate.channel.rows_4352_8704",
+          "relfro": 0.23813194001999802,
+          "row0": 4352,
+          "row1": 8704,
+          "sensitivity": "MUST_KEEP"
+         },
+         {
+          "region_id": "L63.mlp.gate.channel.rows_8704_13056",
+          "relfro": 0.23888719764150046,
+          "row0": 8704,
+          "row1": 13056,
+          "sensitivity": "MUST_KEEP"
+         },
+         {
+          "region_id": "L63.mlp.gate.channel.rows_13056_17408",
+          "relfro": 0.23707566289826007,
+          "row0": 13056,
+          "row1": 17408,
+          "sensitivity": "COULD_TAKE"
+         }
+        ]
+       },
+       "mlp.up": {
+        "failed": true,
+        "fit": {
+         "group_size": 256,
+         "kind": "group_size",
+         "n_groups": 348160,
+         "n_iters": 4
+        },
+        "relfro": 0.2331282569127803,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       }
+      },
+      "relfro_down": 0.2495939332432948,
+      "relfro_gate": 0.23782320383405153,
+      "relfro_mean": 0.24018179799670888,
+      "relfro_up": 0.2331282569127803
+     }
+    ],
+    "relfro_mean": 0.23516066076988784,
+    "sensitivity": {
+     "concentrates_in_sensitive": false,
+     "could_take_relfro_mean": 0.23707566289826007,
+     "must_keep_relfro_mean": 0.23806704447940716,
+     "n_could_take": 1,
+     "n_must_keep": 3,
+     "why": "must-keep mean rel-fro 0.238067 vs could-take 0.237076; injury is not concentrated on the high-sensitivity slices"
+    }
+   }
+  },
+  {
+   "bytes_added": {
+    "metadata": 1536
+   },
+   "bytes_removed": 534773760,
+   "capability": "MEASURED_ON_HELDOUT",
+   "consuming_primitive": "FusedDecodeCompute",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "early_stop_reason": null,
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 344.1,
+     "bandwidth_gb_s_range": [
+      344.1,
+      376.7
+     ],
+     "bandwidth_is_assumption": false,
+     "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+     "bandwidth_regime": "affine_q2_family",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "dispatch_us_nominal": 6.25,
+     "flop_ms_range": [
+      0.0,
+      0.0
+     ],
+     "organ_average_gb_s": 344.1,
+     "stream_billing_gb_s": 0.0,
+     "stream_class": "broadcast_aux",
+     "stream_on_critical_path": false
+    },
+    "byte_model_incomplete": false,
+    "bytes_added": {
+     "embeddings": 0,
+     "generator": 0,
+     "metadata": 1536,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 1536,
+    "bytes_removed": 534773760,
+    "capability": null,
+    "consuming_primitive": "FusedDecodeCompute",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "quantize_aux_u8",
+    "live": true,
+    "name": "quantize_aux_u8",
+    "net_bytes": -534772224,
+    "note": null,
+    "organ": "mlp",
+    "predicted_ms_delta": 0.0,
+    "predicted_ms_delta_range": [
+     0.0,
+     0.0
+    ],
+    "predicted_ms_saved": 0.0,
+    "predicted_token_ms": 28.722,
+    "predicted_token_ms_range": [
+     28.722,
+     28.722
+    ],
+    "predicted_tps": 34.817,
+    "predicted_tps_range": [
+     34.817,
+     34.817
+    ],
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": false,
+     "high_information_falsifier": false,
+     "plausible_ms_saved": 0.0,
+     "reusable_family": true
+    },
+    "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+    "status": "OPEN",
+    "stream_class": "broadcast_aux",
+    "terms": {
+     "byte_added_ms": 0.0,
+     "byte_ms_delta": 0.0,
+     "byte_removed_ms": 0.0,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "MATERIAL",
+    "verdict_reasons": [
+     "reusable_representation_family"
+    ]
+   },
+   "evidence_tier": "FITTED_HELDOUT",
+   "evidence_tier_was": "PROSPECTIVE_ECONOMIC",
+   "generate_gate": "UNMEASURED",
+   "id": "quantize_aux_u8",
+   "kind": "u8",
+   "logit_space": {
+    "argmax_agreement": 1.0,
+    "argmax_is_not_parity": true,
+    "failed": false,
+    "kind": "lm_head_on_last_layer_organ_output",
+    "kl_bar": 0.1,
+    "kl_nats": 0.0033654539143456084,
+    "layer": 63,
+    "n_hold_available": 2511,
+    "n_rows": 16,
+    "not_full_stack_generate": true,
+    "note": "LM head is the sealed HQ30UQ4 table. Inputs are last-layer organ outputs on prompt-split hold rows, not the residual stream. Full-stack generate identity is UNMEASURED (no GPU lease). Argmax is not parity.",
+    "parity_quantities": [
+     "kl_nats",
+     "top_k_agreement"
+    ],
+    "skipped": false,
+    "split": "hold",
+    "split_unit": "prompt_id",
+    "top_k": 5,
+    "top_k_agreement": 0.95,
+    "top_k_bar": 0.8
+   },
+   "organ_space": {
+    "corpus_dir": "/Users/scammermike/Downloads/hawking/workspace/ops/local/scratch/mlp_teacher_corpus",
+    "cosine_bar": 0.99,
+    "cosine_mean": 0.998450457881851,
+    "failed": false,
+    "note": "Held-out by prompt_id on the real teacher corpus. Y is incumbent F(X)=down(silu(gate(X))*up(X)); Y_hat is the same organ after the auxiliary requant.",
+    "per_layer": [
+     {
+      "cosine": 0.9981680122708242,
+      "failed": false,
+      "layer": 3,
+      "n_hold_available": 2511,
+      "n_hold_prompts": 1,
+      "n_hold_used": 83,
+      "relfro": 0.06057541463154903,
+      "split": "hold",
+      "split_unit": "prompt_id"
+     },
+     {
+      "cosine": 0.9979150610606163,
+      "failed": false,
+      "layer": 31,
+      "n_hold_available": 2511,
+      "n_hold_prompts": 1,
+      "n_hold_used": 526,
+      "relfro": 0.06467233589472214,
+      "split": "hold",
+      "split_unit": "prompt_id"
+     },
+     {
+      "cosine": 0.9983246947873072,
+      "failed": false,
+      "layer": 38,
+      "n_hold_available": 2511,
+      "n_hold_prompts": 1,
+      "n_hold_used": 71,
+      "relfro": 0.05798899302220819,
+      "split": "hold",
+      "split_unit": "prompt_id"
+     },
+     {
+      "cosine": 0.9993940634086566,
+      "failed": false,
+      "layer": 63,
+      "n_hold_available": 2511,
+      "n_hold_prompts": 3,
+      "n_hold_used": 192,
+      "relfro": 0.034872798303535686,
+      "split": "hold",
+      "split_unit": "prompt_id"
+     }
+    ],
+    "relfro_bar": 0.2,
+    "relfro_mean": 0.05452738546300376,
+    "skipped": false
+   },
+   "sensitivity_concentration": {
+    "concentrates_in_sensitive": false,
+    "could_take_relfro_mean": 0.032139697589130205,
+    "must_keep_relfro_mean": 0.033185868748864124,
+    "n_could_take": 1,
+    "n_must_keep": 3,
+    "why": "must-keep mean rel-fro 0.0331859 vs could-take 0.0321397; injury is not concentrated on the high-sensitivity slices"
+   },
+   "status": "OPEN",
+   "weight_space": {
+    "bar": 0.05,
+    "early_stop_bar": 0.2,
+    "failed": false,
+    "n_layers": 4,
+    "note": "Rel-fro of reconstructed W vs incumbent affine-Q2 G=64. Group-size levers are a real LS refit at the new G, not an analytic bound. u8 keeps the 2-bit codes and requants aux.",
+    "per_layer": [
+     {
+      "failed": false,
+      "layer": 3,
+      "organs": {
+       "mlp.down": {
+        "failed": true,
+        "fit": {
+         "bias_max": 0.0014429092407226562,
+         "bias_min": -0.6044921875,
+         "endpoint_bytes": 8,
+         "kind": "u8",
+         "n_u8_bias": 1392640,
+         "n_u8_scale": 1392640,
+         "scale_lmax": -1.1973217943268557,
+         "scale_lmin": -5.264354781578675
+        },
+        "relfro": 0.06688257316763825,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         5120,
+         17408
+        ],
+        "slices": []
+       },
+       "mlp.gate": {
+        "failed": false,
+        "fit": {
+         "bias_max": -0.0010957717895507812,
+         "bias_min": -0.1705322265625,
+         "endpoint_bytes": 8,
+         "kind": "u8",
+         "n_u8_bias": 1392640,
+         "n_u8_scale": 1392640,
+         "scale_lmax": -2.474221749687984,
+         "scale_lmin": -5.050100177681711
+        },
+        "relfro": 0.019323855232326534,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       },
+       "mlp.up": {
+        "failed": false,
+        "fit": {
+         "bias_max": 0.00138092041015625,
+         "bias_min": -0.13671875,
+         "endpoint_bytes": 8,
+         "kind": "u8",
+         "n_u8_bias": 1392640,
+         "n_u8_scale": 1392640,
+         "scale_lmax": -2.9011103632232236,
+         "scale_lmin": -5.128061719151423
+        },
+        "relfro": 0.01610786672148858,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       }
+      },
+      "relfro_down": 0.06688257316763825,
+      "relfro_gate": 0.019323855232326534,
+      "relfro_mean": 0.03410476504048445,
+      "relfro_up": 0.01610786672148858
+     },
+     {
+      "failed": false,
+      "layer": 31,
+      "organs": {
+       "mlp.down": {
+        "failed": true,
+        "fit": {
+         "bias_max": 0.0014286041259765625,
+         "bias_min": -0.63671875,
+         "endpoint_bytes": 8,
+         "kind": "u8",
+         "n_u8_bias": 1392640,
+         "n_u8_scale": 1392640,
+         "scale_lmax": -1.5452580371452325,
+         "scale_lmin": -6.09737453010159
+        },
+        "relfro": 0.06786393430813067,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         5120,
+         17408
+        ],
+        "slices": []
+       },
+       "mlp.gate": {
+        "failed": false,
+        "fit": {
+         "bias_max": 0.0004591941833496094,
+         "bias_min": -0.197265625,
+         "endpoint_bytes": 8,
+         "kind": "u8",
+         "n_u8_bias": 1392640,
+         "n_u8_scale": 1392640,
+         "scale_lmax": -2.342049976579501,
+         "scale_lmin": -5.301159536454794
+        },
+        "relfro": 0.02283634782895225,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       },
+       "mlp.up": {
+        "failed": false,
+        "fit": {
+         "bias_max": -0.00038170814514160156,
+         "bias_min": -0.1287841796875,
+         "endpoint_bytes": 8,
+         "kind": "u8",
+         "n_u8_bias": 1392640,
+         "n_u8_scale": 1392640,
+         "scale_lmax": -2.743712798737927,
+         "scale_lmin": -5.126775545340679
+        },
+        "relfro": 0.014354236736481042,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       }
+      },
+      "relfro_down": 0.06786393430813067,
+      "relfro_gate": 0.02283634782895225,
+      "relfro_mean": 0.03501817295785466,
+      "relfro_up": 0.014354236736481042
+     },
+     {
+      "failed": false,
+      "layer": 38,
+      "organs": {
+       "mlp.down": {
+        "failed": true,
+        "fit": {
+         "bias_max": 0.0020809173583984375,
+         "bias_min": -0.515625,
+         "endpoint_bytes": 8,
+         "kind": "u8",
+         "n_u8_bias": 1392640,
+         "n_u8_scale": 1392640,
+         "scale_lmax": -1.3612207235677747,
+         "scale_lmin": -5.793914282423948
+        },
+        "relfro": 0.057476976666042276,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         5120,
+         17408
+        ],
+        "slices": []
+       },
+       "mlp.gate": {
+        "failed": false,
+        "fit": {
+         "bias_max": 0.0013113021850585938,
+         "bias_min": -0.252197265625,
+         "endpoint_bytes": 8,
+         "kind": "u8",
+         "n_u8_bias": 1392640,
+         "n_u8_scale": 1392640,
+         "scale_lmax": -1.9158489699921584,
+         "scale_lmin": -5.4582474510098145
+        },
+        "relfro": 0.026699494198905833,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       },
+       "mlp.up": {
+        "failed": false,
+        "fit": {
+         "bias_max": 0.0012645721435546875,
+         "bias_min": -0.1591796875,
+         "endpoint_bytes": 8,
+         "kind": "u8",
+         "n_u8_bias": 1392640,
+         "n_u8_scale": 1392640,
+         "scale_lmax": -2.7590094641134004,
+         "scale_lmin": -5.232421734475666
+        },
+        "relfro": 0.018333497556125747,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       }
+      },
+      "relfro_down": 0.057476976666042276,
+      "relfro_gate": 0.026699494198905833,
+      "relfro_mean": 0.034169989473691285,
+      "relfro_up": 0.018333497556125747
+     },
+     {
+      "failed": false,
+      "layer": 63,
+      "organs": {
+       "mlp.down": {
+        "failed": false,
+        "fit": {
+         "bias_max": 0.002521514892578125,
+         "bias_min": -0.418212890625,
+         "endpoint_bytes": 8,
+         "kind": "u8",
+         "n_u8_bias": 1392640,
+         "n_u8_scale": 1392640,
+         "scale_lmax": -1.6194981126039307,
+         "scale_lmin": -5.362693140512981
+        },
+        "relfro": 0.04443043767937101,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         5120,
+         17408
+        ],
+        "slices": []
+       },
+       "mlp.gate": {
+        "failed": false,
+        "fit": {
+         "bias_max": 0.002910614013671875,
+         "bias_min": -0.361328125,
+         "endpoint_bytes": 8,
+         "kind": "u8",
+         "n_u8_bias": 1392640,
+         "n_u8_scale": 1392640,
+         "scale_lmax": -2.1208130035358725,
+         "scale_lmin": -5.469048636127162
+        },
+        "relfro": 0.03290572729777579,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": 0.032139697589130205,
+         "must_keep_relfro_mean": 0.033185868748864124,
+         "n_could_take": 1,
+         "n_must_keep": 3,
+         "why": "must-keep mean rel-fro 0.0331859 vs could-take 0.0321397; injury is not concentrated on the high-sensitivity slices"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": [
+         {
+          "region_id": "L63.mlp.gate.channel.rows_0_4352",
+          "relfro": 0.03388221333696124,
+          "row0": 0,
+          "row1": 4352,
+          "sensitivity": "MUST_KEEP"
+         },
+         {
+          "region_id": "L63.mlp.gate.channel.rows_4352_8704",
+          "relfro": 0.032882668348378497,
+          "row0": 4352,
+          "row1": 8704,
+          "sensitivity": "MUST_KEEP"
+         },
+         {
+          "region_id": "L63.mlp.gate.channel.rows_8704_13056",
+          "relfro": 0.032792724561252644,
+          "row0": 8704,
+          "row1": 13056,
+          "sensitivity": "MUST_KEEP"
+         },
+         {
+          "region_id": "L63.mlp.gate.channel.rows_13056_17408",
+          "relfro": 0.032139697589130205,
+          "row0": 13056,
+          "row1": 17408,
+          "sensitivity": "COULD_TAKE"
+         }
+        ]
+       },
+       "mlp.up": {
+        "failed": false,
+        "fit": {
+         "bias_max": 0.0014142990112304688,
+         "bias_min": -0.2578125,
+         "endpoint_bytes": 8,
+         "kind": "u8",
+         "n_u8_bias": 1392640,
+         "n_u8_scale": 1392640,
+         "scale_lmax": -2.1859963466061565,
+         "scale_lmin": -5.5163015209777075
+        },
+        "relfro": 0.024837724056364908,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       }
+      },
+      "relfro_down": 0.04443043767937101,
+      "relfro_gate": 0.03290572729777579,
+      "relfro_mean": 0.03405796301117057,
+      "relfro_up": 0.024837724056364908
+     }
+    ],
+    "relfro_mean": 0.03433772262080024,
+    "sensitivity": {
+     "concentrates_in_sensitive": false,
+     "could_take_relfro_mean": 0.032139697589130205,
+     "must_keep_relfro_mean": 0.033185868748864124,
+     "n_could_take": 1,
+     "n_must_keep": 3,
+     "why": "must-keep mean rel-fro 0.0331859 vs could-take 0.0321397; injury is not concentrated on the high-sensitivity slices"
+    }
+   }
+  },
+  {
+   "bytes_added": {
+    "metadata": 56
+   },
+   "bytes_removed": 1305600,
+   "capability": "MEASURED_ON_HELDOUT",
+   "consuming_primitive": "FusedDecodeCompute",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "early_stop_reason": null,
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 344.1,
+     "bandwidth_gb_s_range": [
+      344.1,
+      376.7
+     ],
+     "bandwidth_is_assumption": false,
+     "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+     "bandwidth_regime": "affine_q2_family",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "dispatch_us_nominal": 6.25,
+     "flop_ms_range": [
+      0.0,
+      0.0
+     ],
+     "organ_average_gb_s": 344.1,
+     "stream_billing_gb_s": 0.0,
+     "stream_class": "broadcast_aux",
+     "stream_on_critical_path": false
+    },
+    "byte_model_incomplete": false,
+    "bytes_added": {
+     "embeddings": 0,
+     "generator": 0,
+     "metadata": 56,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 56,
+    "bytes_removed": 1305600,
+    "capability": null,
+    "consuming_primitive": "FusedDecodeCompute",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "group_size_1024_heterogeneous",
+    "live": true,
+    "name": "group_size_1024_heterogeneous",
+    "net_bytes": -1305544,
+    "note": null,
+    "organ": "mlp",
+    "predicted_ms_delta": 0.0,
+    "predicted_ms_delta_range": [
+     0.0,
+     0.0
+    ],
+    "predicted_ms_saved": 0.0,
+    "predicted_token_ms": 28.722,
+    "predicted_token_ms_range": [
+     28.722,
+     28.722
+    ],
+    "predicted_tps": 34.817,
+    "predicted_tps_range": [
+     34.817,
+     34.817
+    ],
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": false,
+     "high_information_falsifier": false,
+     "plausible_ms_saved": 0.0,
+     "reusable_family": true
+    },
+    "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+    "status": "OPEN",
+    "stream_class": "broadcast_aux",
+    "terms": {
+     "byte_added_ms": 0.0,
+     "byte_ms_delta": 0.0,
+     "byte_removed_ms": 0.0,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "MATERIAL",
+    "verdict_reasons": [
+     "reusable_representation_family"
+    ]
+   },
+   "evidence_tier": "FITTED_HELDOUT",
+   "evidence_tier_was": "PROSPECTIVE_ECONOMIC",
+   "generate_gate": "UNMEASURED",
+   "heterogeneous": {
+    "allocator": "CAPABILITY_INFORMATION_MAP.allocation",
+    "byte_model": {
+     "bytes_added_metadata": 56,
+     "bytes_removed": 1305600,
+     "candidate_aux_bytes": 1068300152,
+     "candidate_scale_bias_bytes": 1068241920,
+     "incumbent_aux_bytes": 1069605696,
+     "metadata_bytes": 56,
+     "mixed_incumbent_scale_bias_bytes": 5570560,
+     "mixed_scale_bias_bytes": 4264960,
+     "mixed_tensors": 1,
+     "n_runs": 4,
+     "net_bytes_saved": 1305544
+    },
+    "coarse_group": 1024,
+    "incumbent_group": 64,
+    "note": "First use of the sensitivity map as an allocator: G=1024 only on MLP slices the map marked supported, G=64 on must-keep and on every unmeasured tensor. Variable-G metadata is billed in bytes_added.metadata.",
+    "runs": [
+     {
+      "group_size": 64,
+      "layer": 63,
+      "n_cols": 5120,
+      "n_rows": 4352,
+      "organ": "mlp.gate",
+      "region_id": "L63.mlp.gate.channel.rows_0_4352",
+      "row0": 0,
+      "row1": 4352,
+      "sensitivity": "MUST_KEEP",
+      "why": "capability map marked this region must-keep"
+     },
+     {
+      "group_size": 64,
+      "layer": 63,
+      "n_cols": 5120,
+      "n_rows": 4352,
+      "organ": "mlp.gate",
+      "region_id": "L63.mlp.gate.channel.rows_4352_8704",
+      "row0": 4352,
+      "row1": 8704,
+      "sensitivity": "MUST_KEEP",
+      "why": "capability map marked this region must-keep"
+     },
+     {
+      "group_size": 64,
+      "layer": 63,
+      "n_cols": 5120,
+      "n_rows": 4352,
+      "organ": "mlp.gate",
+      "region_id": "L63.mlp.gate.channel.rows_8704_13056",
+      "row0": 8704,
+      "row1": 13056,
+      "sensitivity": "MUST_KEEP",
+      "why": "capability map marked this region must-keep"
+     },
+     {
+      "group_size": 1024,
+      "layer": 63,
+      "n_cols": 5120,
+      "n_rows": 4352,
+      "organ": "mlp.gate",
+      "region_id": "L63.mlp.gate.channel.rows_13056_17408",
+      "row0": 13056,
+      "row1": 17408,
+      "sensitivity": "COULD_TAKE",
+      "why": "capability map supported a bit drop here"
+     }
+    ],
+    "unmeasured_keeps_incumbent": true
+   },
+   "id": "group_size_1024_heterogeneous",
+   "kind": "heterogeneous",
+   "logit_space": {
+    "argmax_agreement": 1.0,
+    "argmax_is_not_parity": true,
+    "failed": false,
+    "kind": "lm_head_on_last_layer_organ_output",
+    "kl_bar": 0.1,
+    "kl_nats": 0.006345347497257387,
+    "layer": 63,
+    "n_hold_available": 2511,
+    "n_rows": 16,
+    "not_full_stack_generate": true,
+    "note": "LM head is the sealed HQ30UQ4 table. Inputs are last-layer organ outputs on prompt-split hold rows, not the residual stream. Full-stack generate identity is UNMEASURED (no GPU lease). Argmax is not parity.",
+    "parity_quantities": [
+     "kl_nats",
+     "top_k_agreement"
+    ],
+    "skipped": false,
+    "split": "hold",
+    "split_unit": "prompt_id",
+    "top_k": 5,
+    "top_k_agreement": 0.975,
+    "top_k_bar": 0.8
+   },
+   "organ_space": {
+    "corpus_dir": "/Users/scammermike/Downloads/hawking/workspace/ops/local/scratch/mlp_teacher_corpus",
+    "cosine_bar": 0.99,
+    "cosine_mean": 0.9997421575240896,
+    "failed": false,
+    "note": "Held-out by prompt_id on the real teacher corpus. Y is incumbent F(X)=down(silu(gate(X))*up(X)); Y_hat is the same organ after the auxiliary requant.",
+    "per_layer": [
+     {
+      "cosine": 1.0,
+      "failed": false,
+      "layer": 3,
+      "n_hold_available": 2511,
+      "n_hold_prompts": 1,
+      "n_hold_used": 83,
+      "relfro": 0.0,
+      "split": "hold",
+      "split_unit": "prompt_id"
+     },
+     {
+      "cosine": 1.0,
+      "failed": false,
+      "layer": 31,
+      "n_hold_available": 2511,
+      "n_hold_prompts": 1,
+      "n_hold_used": 526,
+      "relfro": 0.0,
+      "split": "hold",
+      "split_unit": "prompt_id"
+     },
+     {
+      "cosine": 1.0,
+      "failed": false,
+      "layer": 38,
+      "n_hold_available": 2511,
+      "n_hold_prompts": 1,
+      "n_hold_used": 71,
+      "relfro": 0.0,
+      "split": "hold",
+      "split_unit": "prompt_id"
+     },
+     {
+      "cosine": 0.9989686300963584,
+      "failed": false,
+      "layer": 63,
+      "n_hold_available": 2511,
+      "n_hold_prompts": 3,
+      "n_hold_used": 192,
+      "relfro": 0.045963634438277806,
+      "split": "hold",
+      "split_unit": "prompt_id"
+     }
+    ],
+    "relfro_bar": 0.2,
+    "relfro_mean": 0.011490908609569452,
+    "skipped": false
+   },
+   "sensitivity_concentration": {
+    "concentrates_in_sensitive": false,
+    "could_take_relfro_mean": 0.26967638614527667,
+    "must_keep_relfro_mean": 0.0,
+    "n_could_take": 1,
+    "n_must_keep": 3,
+    "why": "must-keep mean rel-fro 0 vs could-take 0.269676; injury is not concentrated on the high-sensitivity slices"
+   },
+   "status": "OPEN",
+   "weight_space": {
+    "bar": 0.05,
+    "early_stop_bar": 0.2,
+    "failed": false,
+    "n_layers": 4,
+    "note": "Rel-fro of reconstructed W vs incumbent affine-Q2 G=64. Group-size levers are a real LS refit at the new G, not an analytic bound. u8 keeps the 2-bit codes and requants aux.",
+    "per_layer": [
+     {
+      "failed": false,
+      "layer": 3,
+      "organs": {
+       "mlp.down": {
+        "failed": false,
+        "fit": {
+         "kind": "heterogeneous",
+         "n_rows": 5120,
+         "n_rows_coarsened": 0,
+         "n_runs": 1
+        },
+        "relfro": 0.0,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         5120,
+         17408
+        ],
+        "slices": []
+       },
+       "mlp.gate": {
+        "failed": false,
+        "fit": {
+         "kind": "heterogeneous",
+         "n_rows": 17408,
+         "n_rows_coarsened": 0,
+         "n_runs": 1
+        },
+        "relfro": 0.0,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       },
+       "mlp.up": {
+        "failed": false,
+        "fit": {
+         "kind": "heterogeneous",
+         "n_rows": 17408,
+         "n_rows_coarsened": 0,
+         "n_runs": 1
+        },
+        "relfro": 0.0,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       }
+      },
+      "relfro_down": 0.0,
+      "relfro_gate": 0.0,
+      "relfro_mean": 0.0,
+      "relfro_up": 0.0
+     },
+     {
+      "failed": false,
+      "layer": 31,
+      "organs": {
+       "mlp.down": {
+        "failed": false,
+        "fit": {
+         "kind": "heterogeneous",
+         "n_rows": 5120,
+         "n_rows_coarsened": 0,
+         "n_runs": 1
+        },
+        "relfro": 0.0,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         5120,
+         17408
+        ],
+        "slices": []
+       },
+       "mlp.gate": {
+        "failed": false,
+        "fit": {
+         "kind": "heterogeneous",
+         "n_rows": 17408,
+         "n_rows_coarsened": 0,
+         "n_runs": 1
+        },
+        "relfro": 0.0,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       },
+       "mlp.up": {
+        "failed": false,
+        "fit": {
+         "kind": "heterogeneous",
+         "n_rows": 17408,
+         "n_rows_coarsened": 0,
+         "n_runs": 1
+        },
+        "relfro": 0.0,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       }
+      },
+      "relfro_down": 0.0,
+      "relfro_gate": 0.0,
+      "relfro_mean": 0.0,
+      "relfro_up": 0.0
+     },
+     {
+      "failed": false,
+      "layer": 38,
+      "organs": {
+       "mlp.down": {
+        "failed": false,
+        "fit": {
+         "kind": "heterogeneous",
+         "n_rows": 5120,
+         "n_rows_coarsened": 0,
+         "n_runs": 1
+        },
+        "relfro": 0.0,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         5120,
+         17408
+        ],
+        "slices": []
+       },
+       "mlp.gate": {
+        "failed": false,
+        "fit": {
+         "kind": "heterogeneous",
+         "n_rows": 17408,
+         "n_rows_coarsened": 0,
+         "n_runs": 1
+        },
+        "relfro": 0.0,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       },
+       "mlp.up": {
+        "failed": false,
+        "fit": {
+         "kind": "heterogeneous",
+         "n_rows": 17408,
+         "n_rows_coarsened": 0,
+         "n_runs": 1
+        },
+        "relfro": 0.0,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       }
+      },
+      "relfro_down": 0.0,
+      "relfro_gate": 0.0,
+      "relfro_mean": 0.0,
+      "relfro_up": 0.0
+     },
+     {
+      "failed": false,
+      "layer": 63,
+      "organs": {
+       "mlp.down": {
+        "failed": false,
+        "fit": {
+         "kind": "heterogeneous",
+         "n_rows": 5120,
+         "n_rows_coarsened": 0,
+         "n_runs": 1
+        },
+        "relfro": 0.0,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         5120,
+         17408
+        ],
+        "slices": []
+       },
+       "mlp.gate": {
+        "failed": true,
+        "fit": {
+         "kind": "heterogeneous",
+         "n_rows": 17408,
+         "n_rows_coarsened": 4352,
+         "n_runs": 4
+        },
+        "relfro": 0.13812883525381228,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": 0.26967638614527667,
+         "must_keep_relfro_mean": 0.0,
+         "n_could_take": 1,
+         "n_must_keep": 3,
+         "why": "must-keep mean rel-fro 0 vs could-take 0.269676; injury is not concentrated on the high-sensitivity slices"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": [
+         {
+          "region_id": "L63.mlp.gate.channel.rows_0_4352",
+          "relfro": 0.0,
+          "row0": 0,
+          "row1": 4352,
+          "sensitivity": "MUST_KEEP"
+         },
+         {
+          "region_id": "L63.mlp.gate.channel.rows_4352_8704",
+          "relfro": 0.0,
+          "row0": 4352,
+          "row1": 8704,
+          "sensitivity": "MUST_KEEP"
+         },
+         {
+          "region_id": "L63.mlp.gate.channel.rows_8704_13056",
+          "relfro": 0.0,
+          "row0": 8704,
+          "row1": 13056,
+          "sensitivity": "MUST_KEEP"
+         },
+         {
+          "region_id": "L63.mlp.gate.channel.rows_13056_17408",
+          "relfro": 0.26967638614527667,
+          "row0": 13056,
+          "row1": 17408,
+          "sensitivity": "COULD_TAKE"
+         }
+        ]
+       },
+       "mlp.up": {
+        "failed": false,
+        "fit": {
+         "kind": "heterogeneous",
+         "n_rows": 17408,
+         "n_rows_coarsened": 0,
+         "n_runs": 1
+        },
+        "relfro": 0.0,
+        "sensitivity": {
+         "concentrates_in_sensitive": false,
+         "could_take_relfro_mean": null,
+         "must_keep_relfro_mean": null,
+         "n_could_take": 0,
+         "n_must_keep": 0,
+         "why": "no paired must-keep / could-take W-space measurements"
+        },
+        "shape": [
+         17408,
+         5120
+        ],
+        "slices": []
+       }
+      },
+      "relfro_down": 0.0,
+      "relfro_gate": 0.13812883525381228,
+      "relfro_mean": 0.046042945084604096,
+      "relfro_up": 0.0
+     }
+    ],
+    "relfro_mean": 0.011510736271151024,
+    "sensitivity": {
+     "concentrates_in_sensitive": false,
+     "could_take_relfro_mean": 0.26967638614527667,
+     "must_keep_relfro_mean": 0.0,
+     "n_could_take": 1,
+     "n_must_keep": 3,
+     "why": "must-keep mean rel-fro 0 vs could-take 0.269676; injury is not concentrated on the high-sensitivity slices"
+    }
+   }
+  }
+ ],
+ "mlp_byte_census_where": {
+  "auxiliary_bytes": 1069605696,
+  "code_bytes": 4278190080,
+  "mlp_active_bytes": 5347795776,
+  "note": "The 1.07 GB is the sum of 192 HGRAVF01 scale+bias+header parts on mlp.gate/up/down, reconciled by mlp_auxiliary_information.accounting.",
+  "organs": [
+   "mlp.gate",
+   "mlp.up",
+   "mlp.down"
+  ],
+  "source": "receipts/future/MLP_BYTE_CENSUS.json"
+ },
+ "n_fitted_heldout": 2,
+ "n_refuted": 2,
+ "overlap_relations": [
+  {
+   "a": "group_size_256",
+   "b": "group_size_1024",
+   "relation": "MUTUALLY_EXCLUSIVE",
+   "why": "Two points on the same aux(G)=4*n_params/G+58176 curve. A tensor has one group size; the saves are not additive."
+  },
+  {
+   "a": "quantize_aux_u8",
+   "b": "group_size_1024",
+   "relation": "OVERLAPPING",
+   "why": "Both attack the same 1.07 GB of f16 scale/bias. PATH_TO_71 already records they must not be summed."
+  },
+  {
+   "a": "quantize_aux_u8",
+   "b": "group_size_256",
+   "relation": "OVERLAPPING",
+   "why": "Same 1.07 GB auxiliary as group_size_256."
+  },
+  {
+   "a": "quantize_aux_u8",
+   "b": "group_size_1024",
+   "relation": "INTERACTING",
+   "why": "u8-at-G=1024 is a different packing, not the sum of the two byte claims. Composing them without a new fit is forbidden."
+  },
+  {
+   "a": "group_size_1024_heterogeneous",
+   "b": "group_size_1024",
+   "relation": "SUBSUMED",
+   "why": "Heterogeneous G=1024 is a restricted allocation of the same lever: coarse G only on map-supported slices. Its bytes are a subset of uniform G=1024."
+  },
+  {
+   "a": "group_size_1024_heterogeneous",
+   "b": "quantize_aux_u8",
+   "relation": "OVERLAPPING",
+   "why": "Heterogeneous G still rewrites the same scale/bias arrays u8 would quantize."
+  }
+ ],
+ "overlap_vocab": [
+  "INDEPENDENT",
+  "OVERLAPPING",
+  "SUBSUMED",
+  "MUTUALLY_EXCLUSIVE",
+  "INTERACTING",
+  "UNKNOWN"
+ ],
+ "purpose": "Capability screen for the three OPEN auxiliary byte levers on the 1.07 GB of MLP scale/bias/header, plus a heterogeneous allocator that is the first use of the sensitivity map as a byte-placement rule rather than a byte claim.",
+ "recorded_by": "tools/future/aux_capability_screen.py",
+ "schema": "hawking.future.aux_capability_screen.v1",
+ "seal_sha256": "423b2b444fd7fb4abdda3c6b11093e3ff312dd7ecc4d4d0ec1862bbe0395ac3f",
+ "sources": [
+  "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+  "receipts/future/CAPABILITY_INFORMATION_MAP.json",
+  "receipts/future/MLP_BYTE_CENSUS.json",
+  "receipts/future/MLP_TEACHER_CORPUS.json",
+  "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json",
+  "receipts/future/PATH_TO_71.json"
+ ],
+ "version": 1,
+ "what_this_does_not_prove": [
+  "generate identity (no GPU lease, no resident generate gate)",
+  "full-stack logits under a perturbation of every layer at once",
+  "that a FITTED_HELDOUT lever is QUALIFIED on the resident",
+  "physical EBPW of a different packing"
+ ]
+}

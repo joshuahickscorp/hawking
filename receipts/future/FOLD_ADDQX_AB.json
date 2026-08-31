@@ -1,0 +1,306 @@
+{
+ "absolute_ms_are_measured_under_load": true,
+ "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+ "bit_identical_is_non_negotiable": true,
+ "cited_diagnostic": {
+  "arm_a_gb_s": 497.4,
+  "fold_addqx_gb_s": 370.9,
+  "note": "one-layer probe, 3 geo_tpr64 dispatches. Projection is arithmetic over MLP 15.541 ms of a 28.722 ms token, not a resident measurement. DIRTY_DIAGNOSTIC until this A/B.",
+  "production_gb_s": 329.6,
+  "projection_token_ms": 1.745,
+  "ratio": 1.1265,
+  "source": "receipts/future/MLP_DECODE_CHEAPEN.json"
+ },
+ "claim_boundary": "One-process complete-token A/B of the post-widen_f4 incumbent (GateUpSwiglu, FUSE_GQA_QKV, FUSE_DN_INPROJ, FUSE_ADD_RMSNORM, dn_state=widen_f4, affine2 geo=tpr64) against fold_addqx on the real encode_mlp path. GPU time is MTLCommandBuffer GPUStartTime/GPUEndTime. Complete-token ms is the median of per-generated-token GPU timestamps. Absolute ms are measured-under-load; the A/B ratio is back-to-back in the same process. The incumbent arm IS the new post-widen_f4 baseline (PATH_TO_71 28.722 ms is stale; DELTANET_WIDEN_AB's 26.382 ms is the previous measurement of this arm). Parity is token-id equality with fallbacks 0 AND a byte comparison proving bit-identity; argmax agreement is not parity; citing MLP_DECODE_CHEAPEN is not the identity proof. If the cited 1.745 ms projection does not appear in the complete token, the receipt names where it went. evidence_class SELF_MEASURED_DIRTY. No TPS is labelled QUALIFIED. A protected window is still required.",
+ "complete_token": {
+  "cited_widen_f4_token_ms": 26.382083,
+  "fold_addqx_dispatches_last": 580,
+  "fold_addqx_gpu_ns_median": 22319249,
+  "fold_addqx_ms": 22.319249,
+  "fold_addqx_reps": [
+   22322416,
+   22303375,
+   22304416,
+   22319249,
+   22330125,
+   22315583,
+   22320874
+  ],
+  "incumbent_dispatches_last": 580,
+  "incumbent_gpu_ns_median": 26302583,
+  "incumbent_is_post_widen_f4_baseline": true,
+  "incumbent_ms": 26.302583,
+  "incumbent_reps": [
+   26303875,
+   26302583,
+   26285000,
+   26292374,
+   26302291,
+   26325374,
+   26328875
+  ],
+  "stale_path_to_71_token_ms": 28.722
+ },
+ "concurrent_load": {
+  "loadavg": "{ 9.20 7.55 6.52 }",
+  "note": "absolute ms are measured-under-load; the A/B ratio is back-to-back in this process",
+  "uptime": "7:12  up 5 days, 11:10, 3 users, load averages: 9.20 7.55 6.52"
+ },
+ "concurrent_load_start": {
+  "loadavg": "{ 7.87 7.13 6.33 }",
+  "note": "absolute ms are measured-under-load; the A/B ratio is back-to-back in this process",
+  "uptime": "7:12  up 5 days, 11:09, 3 users, load averages: 7.87 7.13 6.33"
+ },
+ "dense_w_materialized": 0,
+ "evidence_class": "SELF_MEASURED_DIRTY",
+ "expected_dispatches": {
+  "fold_addqx": 580,
+  "incumbent": 580
+ },
+ "finding": "Complete-token A/B, post-widen_f4 incumbent vs fold_addqx, token ids match but arithmetic is not byte-identical (approx_candidate). Incumbent (new baseline) 26.3026 ms vs fold_addqx 22.3192 ms (saved 3.9833 ms). Isolated MLP full 15.2545 vs 11.3093 (saved 3.9452 ms; cited projection 1.745 ms). The organ-level decode saving reached the complete token (3.9833 ms vs isolated 3.9452 ms) but did not reproduce the cited 1.745 ms one-layer projection. The complete token saved 3.9833 ms, 2.2383 ms more than the 1.745 ms 3-GEMV unfused one-layer projection. The fused GateUpSwiglu 580-graph is not the probe. That is the result this A/B exists to catch. FASTER-BUT-NOT-EXACT: this saving is a different class and is not blended into the bit-identical verdict. Materiality bar 1.0 ms: clears. SELF_MEASURED_DIRTY; no TPS QUALIFIED.",
+ "findings": [
+  {
+   "id": "PRODUCTION_LAUNCHED_FOLD_ADDQX",
+   "what": "candidate histogram counted 4160 qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_fold_addqx dispatches; incumbent counted 4160 qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+   "why_it_matters": "the 1.127x diagnostic was a probe beside production; this A/B is the production encode path"
+  },
+  {
+   "argmax_is_not_parity": true,
+   "arithmetic_exact": false,
+   "cited_probe_is_not_the_identity_proof": true,
+   "fallbacks": 0,
+   "id": "TOKEN_IDENTITY",
+   "parity": false,
+   "token_ids_identical": true,
+   "what": "NOT bit-identical at the token; see parity"
+  },
+  {
+   "id": "INCUMBENT_IS_POST_WIDEN_F4_BASELINE",
+   "what": "incumbent complete-token 26.3026 ms is the new post-widen_f4 baseline. PATH_TO_71 28.722 ms is stale. DELTANET_WIDEN_AB cited 26.382083 ms (saved 1.0245 ms) and nothing had re-profiled since."
+  },
+  {
+   "cited_projection_ms": 1.745,
+   "class": "approx_candidate",
+   "clears_materiality": true,
+   "complete_token_saving_ms": 3.9833,
+   "faster_not_exact": true,
+   "id": "ORGAN_SAVING_VS_COMPLETE_TOKEN",
+   "isolated_mlp_full_saving_ms": 3.9452,
+   "reached_the_token": true,
+   "reproduced_1p745_projection": false,
+   "what": "The organ-level decode saving reached the complete token (3.9833 ms vs isolated 3.9452 ms) but did not reproduce the cited 1.745 ms one-layer projection. The complete token saved 3.9833 ms, 2.2383 ms more than the 1.745 ms 3-GEMV unfused one-layer projection. The fused GateUpSwiglu 580-graph is not the probe. That is the result this A/B exists to catch. FASTER-BUT-NOT-EXACT: this saving is a different class and is not blended into the bit-identical verdict."
+  }
+ ],
+ "git_head": "973e790fa77733120188db335108a0cb2cbdec34",
+ "gpu_authority": false,
+ "gpu_lane_lock_waited_for": {
+  "acquired_at": "2026-08-31T10:42:03Z",
+  "child": "ascension_qwen38_resident",
+  "child_pid": 98739,
+  "contended": false,
+  "duration_s": 1800,
+  "holder": "tools/future/model_bearing_torture.py",
+  "holder_exited": "2026-08-31T11:12:19Z",
+  "lock_path": "/tmp/hawking-gpu-lane.lock",
+  "lock_protocol": "JSON file (not mkdir)",
+  "park_start": "2026-08-31T10:51:33Z",
+  "parked": true,
+  "pid": 98726
+ },
+ "incumbent_is_post_widen_f4_baseline": true,
+ "isolated_mlp": {
+  "matvecs": {
+   "fold_addqx": {
+    "dense_w_materialized": 0,
+    "dispatches": 192,
+    "gpu_ns_max": 13599708,
+    "gpu_ns_median": 13519458,
+    "gpu_ns_min": 13502666,
+    "gpu_ns_reps": [
+     13599708,
+     13580333,
+     13502666,
+     13506499,
+     13519458,
+     13517124,
+     13573625
+    ],
+    "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+    "n_reps": 7,
+    "name": "mlp_matvecs_fold_addqx",
+    "wait_ns_median": 13845583
+   },
+   "incumbent": {
+    "dense_w_materialized": 0,
+    "dispatches": 192,
+    "gpu_ns_max": 15931250,
+    "gpu_ns_median": 15884583,
+    "gpu_ns_min": 15764000,
+    "gpu_ns_reps": [
+     15764000,
+     15797000,
+     15789250,
+     15898958,
+     15908541,
+     15931250,
+     15884583
+    ],
+    "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+    "n_reps": 7,
+    "name": "mlp_matvecs_incumbent",
+    "wait_ns_median": 16192292
+   }
+  },
+  "mlp_full_fold_addqx_dispatches": 192,
+  "mlp_full_fold_addqx_gpu_ns": 11309291,
+  "mlp_full_fold_addqx_ms": 11.309291,
+  "mlp_full_incumbent_dispatches": 192,
+  "mlp_full_incumbent_gpu_ns": 15254500,
+  "mlp_full_incumbent_ms": 15.2545
+ },
+ "launched": {
+  "dn_state": "qwen38_gated_delta_decode_vi_simd_ba_f4",
+  "fold_addqx_histogram_count": 4160,
+  "fold_addqx_swiglu": "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_fold_addqx",
+  "incumbent_histogram_count": 4160,
+  "incumbent_swiglu": "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128"
+ },
+ "layer0_byte_compare": {
+  "bit_identical": false,
+  "compared_against": "production geo_tpr64 named-matvec output buffers on the live session, same x",
+  "down": {
+   "bit_identical": false,
+   "candidate_fnv1a64": "51a5ad48eb3f8827",
+   "candidate_len": 20480,
+   "compared_against": "layer-0 mlp.down_proj output buffer after named matvec; not the probe",
+   "first_mismatch_index": 0,
+   "incumbent_fnv1a64": "7e3bfcc809abe5bd",
+   "incumbent_len": 20480,
+   "n_bytes_compared": 20480,
+   "n_mismatch_bytes": 6534
+  },
+  "gate": {
+   "bit_identical": false,
+   "candidate_fnv1a64": "a20de1f877751619",
+   "candidate_len": 69632,
+   "compared_against": "layer-0 mlp.gate_proj output buffer after named matvec; not the probe",
+   "first_mismatch_index": 0,
+   "incumbent_fnv1a64": "042a66aaba16bde2",
+   "incumbent_len": 69632,
+   "n_bytes_compared": 69632,
+   "n_mismatch_bytes": 22309
+  },
+  "layer": 0,
+  "n_floats_down": 5120,
+  "n_floats_gate_up": 17408,
+  "note": "Token-level arithmetic identity is this byte comparison plus token-id bytes. Citing MLP_DECODE_CHEAPEN is refused as the identity proof.",
+  "up": {
+   "bit_identical": false,
+   "candidate_fnv1a64": "935234b01026c15f",
+   "candidate_len": 69632,
+   "compared_against": "layer-0 mlp.up_proj output buffer after named matvec; not the probe",
+   "first_mismatch_index": 0,
+   "incumbent_fnv1a64": "5832105d3d17136f",
+   "incumbent_len": 69632,
+   "n_bytes_compared": 69632,
+   "n_mismatch_bytes": 22320
+  }
+ },
+ "lever": "HAWKING_AFFINE2_GEO=fold_addqx / apply_affine2_geo(FoldAddqx)",
+ "lever_semantics": "launches fold_addqx siblings of production geo_tpr64 on the real encode_mlp / fused gate_up_swiglu path. Default production stays tpr64 unpack8. Reversible: unset the lever.",
+ "max_new_tokens": 32,
+ "parity": {
+  "argmax_agreement": null,
+  "argmax_agreement_ignored": false,
+  "argmax_is_not_parity": true,
+  "arithmetic_exact": false,
+  "candidate_len": 32,
+  "cited_probe_is_not_the_identity_proof": true,
+  "fallbacks": 0,
+  "first_divergence": null,
+  "incumbent_len": 32,
+  "layer0_byte_compare": {
+   "bit_identical": false,
+   "compared_against": "production geo_tpr64 named-matvec output buffers on the live session, same x",
+   "first_mismatch_index": null,
+   "label": "layer0_named_matvec",
+   "n_bytes_compared": 159744,
+   "n_mismatch_bytes": 51163
+  },
+  "parity": false,
+  "parity_basis": "token_id_equality_and_byte_identity",
+  "runs_compared": 14,
+  "token_id_byte_compare": {
+   "bit_identical": true,
+   "compared_against": "complete-token new_token_ids as little-endian u32 bytes; not the probe",
+   "first_mismatch_index": null,
+   "label": "token_ids",
+   "n_bytes_compared": 128,
+   "n_mismatch_bytes": 0
+  },
+  "token_ids_identical": true,
+  "tokens_compared": 32,
+  "within_arm_identical": {
+   "fold_addqx": true,
+   "incumbent": true
+  }
+ },
+ "production_fusions": {
+  "affine2_geo_candidate": "fold_addqx",
+  "affine2_geo_incumbent": "tpr64",
+  "dn_state_kernel": "widen_f4",
+  "fuse_add_rmsnorm": true,
+  "fuse_ba_delta": false,
+  "fuse_dn_inproj": true,
+  "fuse_gqa_qkv": true,
+  "mlp": "GateUpSwiglu"
+ },
+ "production_kernel_swap": {
+  "default_unchanged": true,
+  "required": true,
+  "selector": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs Affine2Geo::FoldAddqx",
+  "shaders": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+  "why": "fold_addqx lived only in decode_cheapen_mlp.metal as a probe. A complete-token A/B cannot launch a kernel production cannot bind. Minimal reversible sibling of geo_tpr64, same occupancy and binds, default off \u2014 same shape as widen_f4."
+ },
+ "recorded_by": "tools/future/fold_addqx_ab.py",
+ "reps": 7,
+ "saving": {
+  "cited_projection_ms": 1.745,
+  "class": "approx_candidate",
+  "clears_materiality": true,
+  "complete_token_fold_addqx_ms": 22.3192,
+  "complete_token_incumbent_ms": 26.3026,
+  "complete_token_saving_ms": 3.9833,
+  "displaced_ms": -0.0381,
+  "faster_not_exact": true,
+  "isolated_mlp_full_fold_addqx_ms": 11.3093,
+  "isolated_mlp_full_incumbent_ms": 15.2545,
+  "isolated_mlp_full_saving_ms": 3.9452,
+  "isolated_mlp_matvecs_saving_ms": 2.3651,
+  "materiality_bar_ms": 1.0,
+  "reached_the_token": true,
+  "reproduced_1p745_projection": false,
+  "where": "The organ-level decode saving reached the complete token (3.9833 ms vs isolated 3.9452 ms) but did not reproduce the cited 1.745 ms one-layer projection. The complete token saved 3.9833 ms, 2.2383 ms more than the 1.745 ms 3-GEMV unfused one-layer projection. The fused GateUpSwiglu 580-graph is not the probe. That is the result this A/B exists to catch. FASTER-BUT-NOT-EXACT: this saving is a different class and is not blended into the bit-identical verdict."
+ },
+ "schema": "hawking.future.fold_addqx_ab.v1",
+ "sealed_env": {
+  "HAWKING_QWEN38_DN_STATE": "widen_f4",
+  "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+  "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+  "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+  "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+ },
+ "session_open_s": 5.938340166,
+ "source": "crates/hawking-core/examples/fold_addqx_token_ab.rs; production encode_mlp on sealed-3.14 post-widen_f4 580-graph; incumbent tpr64 vs HAWKING_AFFINE2_GEO=fold_addqx back-to-back in one process",
+ "timing": "MTLCommandBuffer GPUStartTime/GPUEndTime",
+ "took_gpu_lease": true,
+ "tps_qualification": {
+  "any_tps_labelled_qualified": false,
+  "protected_window_required": true,
+  "reason": "SELF_MEASURED_DIRTY on a contaminated host qualifies nothing."
+ },
+ "version": 1,
+ "warmup": 1,
+ "widen_f4_cited_saving_ms": 1.0245,
+ "widen_f4_cited_token_ms": 26.382083
+}

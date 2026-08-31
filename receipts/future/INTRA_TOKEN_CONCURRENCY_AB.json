@@ -1,0 +1,47 @@
+{
+ "ab": {
+  "concurrent_ms_per_token": 27.1358,
+  "decode_steps": 48,
+  "delta_ms": 0.0465,
+  "delta_pct": 0.171,
+  "gpu_median_concurrent_ms": 26.2458,
+  "gpu_median_delta_us": -0.62,
+  "gpu_median_serial_ms": 26.2452,
+  "run_to_run_bar_ms": 0.15,
+  "serial_ms_per_token": 27.1824,
+  "token_identical": true,
+  "verdict": "NO_MEASURABLE_EFFECT",
+  "why": "delta 0.0465 ms is inside the 0.15 ms run-to-run spread this harness shows between equivalent configurations, and the GPU medians differ by microseconds. Reporting it as a speedup would be reading noise."
+ },
+ "claim_boundary": "One paired A/B on the sealed production path, same bytes, same arithmetic, same representation, token-identical over 48 decode steps. Contaminated window, so the RATIO is the result and the absolute ms are not promotable. It varies encoder topology within one command queue and says nothing about multiple queues.",
+ "evidence_class": "DIAGNOSTIC_RELATIVE",
+ "gpu_authority": true,
+ "knob": "HAWKING_QWEN38_CONCURRENT",
+ "measurement_provenance": {
+  "absolutes_are_measured_under_load": true,
+  "gpu_lane_lock_held": false,
+  "lane": "g083-concurrency-ab",
+  "loadavg": "{ 6.60 7.36 8.19 }",
+  "measured_at": "2026-08-31T20:03:56Z",
+  "measured_at_source": "WRITE_TIME",
+  "why": "a hardware number that cannot be placed in time cannot be audited against a contention window"
+ },
+ "mechanism": "begin_concurrent_group / end_concurrent_group around independent matvec pairs, instead of a serial encoder",
+ "reading": {
+  "evidence_class_note": "this is a paired RATIO under a contaminated window (load 8.8), which S025 \u00a742 explicitly permits: absolutes move with load, ratios do not. It is not offered as a protected absolute and the ms figures are not promotable.",
+  "outcome": "confirmed, from an independent direction",
+  "predicted_by": "receipts/future/SINGLE_TOKEN_PARALLEL_SLACK.json",
+  "prediction": "the token is a chain and its independent operations are ALREADY FUSED - gate/up/swiglu in one kernel, q/k/v in one - so a concurrent encoder group has nothing left to wrap",
+  "what_it_does_not_kill": [
+   "occupancy: the kernels may still launch too little parallel work",
+   "memory-level parallelism: threads may hold too few loads in flight",
+   "the instruction dependency chain inside the decode loop",
+   "separate command QUEUES, which this probe did not vary - it varied the encoder topology within one queue"
+  ],
+  "what_it_kills": "the last dispatch-grain hope. If wrapping independent pairs in a Metal concurrent group changes nothing, the missing capacity G009 measured is not reachable by scheduling this token differently."
+ },
+ "recorded_by": "tools/future/intra_token_concurrency_ab.py",
+ "schema": "hawking.future.intra_token_concurrency_ab.v1",
+ "seal_sha256": "a8241c67a4456a513c224ed33a2119622cab904c8eef622ce6c082c52fbf8384",
+ "version": 1
+}

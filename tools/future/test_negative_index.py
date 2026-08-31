@@ -173,3 +173,35 @@ def test_receipt_has_no_hardware_numeric_claims():
 
     walk(doc)
     assert doc["evidence_class"] == "STATIC_ONLY"
+
+
+def test_general_physical_scars_refuse_whatever_model_is_named():
+    """A law about method does not stop being true because a parent is named.
+
+    The seven campaign scars are process defects, not model findings. Gating
+    them on an exact model match made every one of them unreachable from a
+    model-specific proposal -- silently, which is the same narrow-probe defect
+    they record.
+    """
+    from tools.future.negative_index import refuse_if_dead
+    for family in (
+        "prefill_over_generated_token_denominator",
+        "adjacency_is_not_overlap",
+        "priority_zero_falsy_or_default",
+        "event_timestamp_unit_mismatch",
+        "source_instrumented_runtime_binary_stale",
+        "environment_mismatch_unfused_vs_sealed",
+        "shared_index_bare_commit_sweeps_foreign_stage",
+    ):
+        for model in ("qwen3.8-27b", "glm-5.2", "deepseek-v4-flash", None):
+            r = refuse_if_dead({"model": model, "hypothesis_family": family})
+            assert r and r.get("refused"), f"{family} allowed for model={model}"
+
+
+def test_model_specific_scars_still_do_not_prune_a_different_parent():
+    """The widening must not have broken the rule it was carved out of."""
+    from tools.future.negative_index import refuse_if_dead
+    family = "catalog_addressing_not_primary_703_530_cause"   # qwen3.8-27b only
+    assert refuse_if_dead({"model": "qwen3.8-27b", "hypothesis_family": family})
+    assert refuse_if_dead({"model": "glm-5.2", "hypothesis_family": family}) is None
+    assert refuse_if_dead({"model": "gpt-oss-120b", "hypothesis_family": family}) is None

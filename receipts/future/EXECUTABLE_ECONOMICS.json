@@ -1,0 +1,4640 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T09:58:50Z",
+  "recorded_by": "tools/future/executable_economics.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "calibration": {
+  "finding": "Paired A/B on Apple M3 Ultra layer 3, loadavg { 7.53 6.09 6.14 }. weight_codes 50% drop -18292 ns for 33423360 unique bytes (ON the critical path, 0.547282 ms/GB, billing 1827.21 GB/s unique). broadcast_aux 50% drop -126 ns for 8355840 unique bytes (within_noise=True; NOT billed at the organ average). activation 50% drop -25959 ns for 55296 unique x bytes (probe_on_critical_path=True; catalog state/activation bills at the organ average 344.1 GB/s because the unique-x rate does not transfer to 100 MB+ tensors). A candidate that does not declare a stream class is refused.",
+  "layer": 3,
+  "loadavg": "{ 7.53 6.09 6.14 }",
+  "metal_device": "Apple M3 Ultra",
+  "schema": "hawking.future.economics_calibration.v1",
+  "stream_classes": {
+   "activation": {
+    "billing_gb_s": 344.1,
+    "catalog_billing": "organ_average",
+    "ms_per_gb_saved": 2.906132,
+    "on_critical_path": true,
+    "paired_dt_ns_at_50pct": -25959,
+    "primary_rung": "x_keep_50",
+    "probe_on_critical_path": true
+   },
+   "broadcast_aux": {
+    "billing_gb_s": null,
+    "catalog_billing": "measured_or_zero",
+    "ms_per_gb_saved": 0.0,
+    "on_critical_path": false,
+    "paired_dt_ns_at_50pct": -126,
+    "primary_rung": "aux_keep_50",
+    "probe_on_critical_path": false
+   },
+   "weight_codes": {
+    "billing_gb_s": 1827.21,
+    "catalog_billing": "measured_or_zero",
+    "ms_per_gb_saved": 0.547282,
+    "on_critical_path": true,
+    "paired_dt_ns_at_50pct": -18292,
+    "primary_rung": "codes_keep_50",
+    "probe_on_critical_path": true
+   }
+  }
+ },
+ "candidates_ranked": [
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 360.0,
+    "bandwidth_gb_s_range": [
+     360.0,
+     497.4
+    ],
+    "bandwidth_is_assumption": true,
+    "bandwidth_note": "nominal is the production DeltaNet organ rate (Q4). The high end is the LM head's demonstrated 497.4, also Q4, which DeltaNet has not been shown to reach. Including 497.4 in the range is an ASSUMPTION, not a prediction.",
+    "bandwidth_regime": "production_deltanet",
+    "dispatch_class": "deltanet_ba",
+    "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 2.884,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 360.0,
+    "stream_billing_gb_s": 344.1,
+    "stream_class": "activation",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 2094532440,
+   "capability": null,
+   "consuming_primitive": "TiledProjection",
+   "delta_from_legacy_ms_saved": 0.2688,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "shared_transforms_across_layers",
+   "legacy_organ_average_ms_saved": 5.8181,
+   "live": false,
+   "name": "share qkvz / out across the 48 DN layers",
+   "net_bytes": -2094532440,
+   "note": null,
+   "organ": "deltanet",
+   "predicted_ms_delta": -6.087,
+   "predicted_ms_delta_range": [
+    -6.087,
+    -6.087
+   ],
+   "predicted_ms_saved": 6.087,
+   "predicted_token_ms": 22.635,
+   "predicted_token_ms_range": [
+    22.635,
+    22.635
+   ],
+   "predicted_tps": 44.179,
+   "predicted_tps_range": [
+    44.179,
+    44.179
+   ],
+   "rank": 1,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": true,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 6.087,
+    "reusable_family": false
+   },
+   "source": "receipts/future/DELTANET_REPRESENTATION.json",
+   "status": "MEASURED_NEGATIVE",
+   "stream_class": "activation",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": -6.087,
+    "byte_removed_ms": -6.087,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:MEASURED_NEGATIVE"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 4278190080,
+   "capability": null,
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -10.0916,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "block_generators",
+   "legacy_organ_average_ms_saved": 12.433,
+   "live": false,
+   "name": "block generators of 64-code groups",
+   "net_bytes": -4278190080,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": -2.3414,
+   "predicted_ms_delta_range": [
+    -2.3893,
+    -1.664
+   ],
+   "predicted_ms_saved": 2.3414,
+   "predicted_token_ms": 26.3806,
+   "predicted_token_ms_range": [
+    26.3327,
+    27.058
+   ],
+   "predicted_tps": 37.907,
+   "predicted_tps_range": [
+    36.958,
+    37.976
+   ],
+   "rank": 2,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": true,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 2.3893,
+    "reusable_family": false
+   },
+   "source": "receipts/future/MLP_CODE_INFORMATION.json",
+   "status": "MEASURED_NEGATIVE",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": -2.3414,
+    "byte_removed_ms": -2.3414,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:MEASURED_NEGATIVE"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 4278190080,
+   "capability": null,
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -10.0916,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "dictionary_of_code_blocks",
+   "legacy_organ_average_ms_saved": 12.433,
+   "live": false,
+   "name": "dictionary of 16-byte (64-code) groups",
+   "net_bytes": -4278190080,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": -2.3414,
+   "predicted_ms_delta_range": [
+    -2.3893,
+    -1.664
+   ],
+   "predicted_ms_saved": 2.3414,
+   "predicted_token_ms": 26.3806,
+   "predicted_token_ms_range": [
+    26.3327,
+    27.058
+   ],
+   "predicted_tps": 37.907,
+   "predicted_tps_range": [
+    36.958,
+    37.976
+   ],
+   "rank": 3,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": true,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 2.3893,
+    "reusable_family": false
+   },
+   "source": "receipts/future/MLP_CODE_INFORMATION.json",
+   "status": "MEASURED_NEGATIVE",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": -2.3414,
+    "byte_removed_ms": -2.3414,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:MEASURED_NEGATIVE"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 4278190080,
+   "capability": null,
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -10.0916,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "function_replacement",
+   "legacy_organ_average_ms_saved": 12.433,
+   "live": true,
+   "name": "function replacement (stop storing q; represent F)",
+   "net_bytes": -4278190080,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": -2.3414,
+   "predicted_ms_delta_range": [
+    -2.3893,
+    -1.664
+   ],
+   "predicted_ms_saved": 2.3414,
+   "predicted_token_ms": 26.3806,
+   "predicted_token_ms_range": [
+    26.3327,
+    27.058
+   ],
+   "predicted_tps": 37.907,
+   "predicted_tps_range": [
+    36.958,
+    37.976
+   ],
+   "rank": 4,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": true,
+    "high_information_falsifier": true,
+    "plausible_ms_saved": 2.3893,
+    "reusable_family": true
+   },
+   "source": "receipts/future/MLP_CODE_INFORMATION.json",
+   "status": "UNMEASURED",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": -2.3414,
+    "byte_removed_ms": -2.3414,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "MATERIAL",
+   "verdict_reasons": [
+    "clears_s020_section_20_time_bar",
+    "reusable_representation_family",
+    "high_information_falsifier"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 4278190080,
+   "capability": null,
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -10.0916,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "generated_programs",
+   "legacy_organ_average_ms_saved": 12.433,
+   "live": false,
+   "name": "generated programs (emit q in-register)",
+   "net_bytes": -4278190080,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": -2.3414,
+   "predicted_ms_delta_range": [
+    -2.3893,
+    -1.664
+   ],
+   "predicted_ms_saved": 2.3414,
+   "predicted_token_ms": 26.3806,
+   "predicted_token_ms_range": [
+    26.3327,
+    27.058
+   ],
+   "predicted_tps": 37.907,
+   "predicted_tps_range": [
+    36.958,
+    37.976
+   ],
+   "rank": 5,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": true,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 2.3893,
+    "reusable_family": true
+   },
+   "source": "receipts/future/MLP_CODE_INFORMATION.json",
+   "status": "MEASURED_NEGATIVE",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": -2.3414,
+    "byte_removed_ms": -2.3414,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:MEASURED_NEGATIVE"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 4278190080,
+   "capability": null,
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -10.0916,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "shared_code_bases",
+   "legacy_organ_average_ms_saved": 12.433,
+   "live": false,
+   "name": "shared bases across layers / organs of the code body",
+   "net_bytes": -4278190080,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": -2.3414,
+   "predicted_ms_delta_range": [
+    -2.3893,
+    -1.664
+   ],
+   "predicted_ms_saved": 2.3414,
+   "predicted_token_ms": 26.3806,
+   "predicted_token_ms_range": [
+    26.3327,
+    27.058
+   ],
+   "predicted_tps": 37.907,
+   "predicted_tps_range": [
+    36.958,
+    37.976
+   ],
+   "rank": 6,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": true,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 2.3893,
+    "reusable_family": false
+   },
+   "source": "receipts/future/MLP_CODE_INFORMATION.json",
+   "status": "MEASURED_NEGATIVE",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": -2.3414,
+    "byte_removed_ms": -2.3414,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:MEASURED_NEGATIVE"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 4211343360,
+   "capability": null,
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -9.9339,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "cross_layer_code_prediction",
+   "legacy_organ_average_ms_saved": 12.2387,
+   "live": false,
+   "name": "cross-layer prediction of the 2-bit codes",
+   "net_bytes": -4211343360,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": -2.3048,
+   "predicted_ms_delta_range": [
+    -2.352,
+    -1.638
+   ],
+   "predicted_ms_saved": 2.3048,
+   "predicted_token_ms": 26.4172,
+   "predicted_token_ms_range": [
+    26.37,
+    27.084
+   ],
+   "predicted_tps": 37.854,
+   "predicted_tps_range": [
+    36.922,
+    37.922
+   ],
+   "rank": 7,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": true,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 2.352,
+    "reusable_family": false
+   },
+   "source": "receipts/future/MLP_CODE_INFORMATION.json",
+   "status": "MEASURED_NEGATIVE",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": -2.3048,
+    "byte_removed_ms": -2.3048,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:MEASURED_NEGATIVE"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 376.7,
+    "bandwidth_gb_s_range": [
+     374.4,
+     376.7
+    ],
+    "bandwidth_is_assumption": true,
+    "bandwidth_note": "the affine-Q2 family ceiling. Concatenating to the LM head's 337.7 MB working set still sits here, not at 497.4.",
+    "bandwidth_regime": "affine_q2_saturated",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 376.7,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 0,
+   "capability": "REFUTED_AS_497_PATH",
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": 0.0,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "dispatch_size_concat_to_lm_head_mb",
+   "legacy_organ_average_ms_saved": 1.3446,
+   "live": false,
+   "name": "concatenate affine-Q2 working set to the LM head's 337.7 MB in hope of 497.4 GB/s",
+   "net_bytes": 0,
+   "note": "The sweep reached 374 GB/s at 338 MB and 377 GB/s at 700 MB, not 497. Layer-N+1 dependency means production cannot take the isolated concat. Scored at the measured affine-Q2 ceiling so the leftover 344->377 is not re-proposed as 497.",
+   "organ": "mlp",
+   "predicted_ms_delta": -1.3446,
+   "predicted_ms_delta_range": [
+    -1.3446,
+    -1.2574
+   ],
+   "predicted_ms_saved": 1.3446,
+   "predicted_token_ms": 27.3774,
+   "predicted_token_ms_range": [
+    27.3774,
+    27.4646
+   ],
+   "predicted_tps": 36.526,
+   "predicted_tps_range": [
+    36.41,
+    36.526
+   ],
+   "rank": 8,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": true,
+    "high_information_falsifier": true,
+    "plausible_ms_saved": 1.3446,
+    "reusable_family": false
+   },
+   "source": "receipts/future/DISPATCH_SIZE_SWEEP.json",
+   "status": "PER_DISPATCH_SIZE_REFUTED",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": -1.3446,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:PER_DISPATCH_SIZE_REFUTED"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 350.0,
+    "bandwidth_gb_s_range": [
+     223.4,
+     497.4
+    ],
+    "bandwidth_is_assumption": true,
+    "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+    "bandwidth_regime": "unknown_new_representation",
+    "dispatch_class": "deltanet_ba",
+    "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 2.884,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 360.0,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 2139096960,
+   "capability": null,
+   "consuming_primitive": null,
+   "delta_from_legacy_ms_saved": -4.7712,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "generated_coefficients",
+   "legacy_organ_average_ms_saved": 5.9419,
+   "live": true,
+   "name": "tiny program emits qkvz / out coefficients",
+   "net_bytes": -2139096960,
+   "note": null,
+   "organ": "deltanet",
+   "predicted_ms_delta": -1.1707,
+   "predicted_ms_delta_range": [
+    -1.1947,
+    -0.832
+   ],
+   "predicted_ms_saved": 1.1707,
+   "predicted_token_ms": 27.5513,
+   "predicted_token_ms_range": [
+    27.5273,
+    27.89
+   ],
+   "predicted_tps": 36.296,
+   "predicted_tps_range": [
+    35.855,
+    36.328
+   ],
+   "rank": 9,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": true,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 1.1947,
+    "reusable_family": true
+   },
+   "source": "receipts/future/DELTANET_REPRESENTATION.json",
+   "status": "OPEN",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": -1.1707,
+    "byte_removed_ms": -1.1707,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "MATERIAL",
+   "verdict_reasons": [
+    "clears_s020_section_20_time_bar",
+    "reusable_representation_family"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 2139095040,
+   "capability": null,
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -5.0458,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "lower_bit_native",
+   "legacy_organ_average_ms_saved": 6.2165,
+   "live": false,
+   "name": "lower-bit native representations of the same W",
+   "net_bytes": -2139095040,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": -1.1707,
+   "predicted_ms_delta_range": [
+    -1.1947,
+    -0.832
+   ],
+   "predicted_ms_saved": 1.1707,
+   "predicted_token_ms": 27.5513,
+   "predicted_token_ms_range": [
+    27.5273,
+    27.89
+   ],
+   "predicted_tps": 36.296,
+   "predicted_tps_range": [
+    35.855,
+    36.328
+   ],
+   "rank": 10,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": true,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 1.1947,
+    "reusable_family": true
+   },
+   "source": "receipts/future/MLP_CODE_INFORMATION.json",
+   "status": "ALREADY_FALSIFIED",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": -1.1707,
+    "byte_removed_ms": -1.1707,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:ALREADY_FALSIFIED"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 360.0,
+    "bandwidth_gb_s_range": [
+     360.0,
+     497.4
+    ],
+    "bandwidth_is_assumption": true,
+    "bandwidth_note": "nominal is the production DeltaNet organ rate (Q4). The high end is the LM head's demonstrated 497.4, also Q4, which DeltaNet has not been shown to reach. Including 497.4 in the range is an ASSUMPTION, not a prediction.",
+    "bandwidth_regime": "production_deltanet",
+    "dispatch_class": "deltanet_ba",
+    "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 2.884,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 360.0,
+    "stream_billing_gb_s": 344.1,
+    "stream_class": "activation",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 150994944,
+   "capability": "UNMEASURED",
+   "consuming_primitive": "LocalStateMachine",
+   "delta_from_legacy_ms_saved": 0.0194,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "recurrent_state_replacement",
+   "legacy_organ_average_ms_saved": 0.4194,
+   "live": true,
+   "name": "replace gated-delta with a cheaper state machine",
+   "net_bytes": -150994944,
+   "note": null,
+   "organ": "deltanet",
+   "predicted_ms_delta": -0.4388,
+   "predicted_ms_delta_range": [
+    -0.4388,
+    -0.4388
+   ],
+   "predicted_ms_saved": 0.4388,
+   "predicted_token_ms": 28.2832,
+   "predicted_token_ms_range": [
+    28.2832,
+    28.2832
+   ],
+   "predicted_tps": 35.357,
+   "predicted_tps_range": [
+    35.357,
+    35.357
+   ],
+   "rank": 11,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": true,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.4388,
+    "reusable_family": true
+   },
+   "source": "receipts/future/DELTANET_REPRESENTATION.json",
+   "status": "OPEN",
+   "stream_class": "activation",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": -0.4388,
+    "byte_removed_ms": -0.4388,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "MATERIAL",
+   "verdict_reasons": [
+    "clears_s020_section_20_time_bar",
+    "reusable_representation_family"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 360.0,
+    "bandwidth_gb_s_range": [
+     360.0,
+     497.4
+    ],
+    "bandwidth_is_assumption": true,
+    "bandwidth_note": "nominal is the production DeltaNet organ rate (Q4). The high end is the LM head's demonstrated 497.4, also Q4, which DeltaNet has not been shown to reach. Including 497.4 in the range is an ASSUMPTION, not a prediction.",
+    "bandwidth_regime": "production_deltanet",
+    "dispatch_class": "deltanet_ba",
+    "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 2.884,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 360.0,
+    "stream_billing_gb_s": 344.1,
+    "stream_class": "activation",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 149815296,
+   "capability": "UNMEASURED",
+   "consuming_primitive": "LocalStateMachine",
+   "delta_from_legacy_ms_saved": 0.0192,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "structured_transition_state",
+   "legacy_organ_average_ms_saved": 0.4162,
+   "live": true,
+   "name": "further-structure S (diagonal, low-rank, DPLR)",
+   "net_bytes": -149815296,
+   "note": null,
+   "organ": "deltanet",
+   "predicted_ms_delta": -0.4354,
+   "predicted_ms_delta_range": [
+    -0.4354,
+    -0.4354
+   ],
+   "predicted_ms_saved": 0.4354,
+   "predicted_token_ms": 28.2866,
+   "predicted_token_ms_range": [
+    28.2866,
+    28.2866
+   ],
+   "predicted_tps": 35.352,
+   "predicted_tps_range": [
+    35.352,
+    35.352
+   ],
+   "rank": 12,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": true,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.4354,
+    "reusable_family": true
+   },
+   "source": "receipts/future/DELTANET_REPRESENTATION.json",
+   "status": "OPEN",
+   "stream_class": "activation",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": -0.4354,
+    "byte_removed_ms": -0.4354,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "MATERIAL",
+   "verdict_reasons": [
+    "clears_s020_section_20_time_bar",
+    "reusable_representation_family"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 360.0,
+    "bandwidth_gb_s_range": [
+     360.0,
+     497.4
+    ],
+    "bandwidth_is_assumption": true,
+    "bandwidth_note": "nominal is the production DeltaNet organ rate (Q4). The high end is the LM head's demonstrated 497.4, also Q4, which DeltaNet has not been shown to reach. Including 497.4 in the range is an ASSUMPTION, not a prediction.",
+    "bandwidth_regime": "production_deltanet",
+    "dispatch_class": "deltanet_ba",
+    "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 2.884,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 360.0,
+    "stream_billing_gb_s": 344.1,
+    "stream_class": "activation",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 147849216,
+   "capability": null,
+   "consuming_primitive": "LocalStateMachine",
+   "delta_from_legacy_ms_saved": 0.019,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "share_or_merge_state_across_depth",
+   "legacy_organ_average_ms_saved": 0.4107,
+   "live": false,
+   "name": "merge / share rec_state or KV across DN layers",
+   "net_bytes": -147849216,
+   "note": null,
+   "organ": "deltanet",
+   "predicted_ms_delta": -0.4297,
+   "predicted_ms_delta_range": [
+    -0.4297,
+    -0.4297
+   ],
+   "predicted_ms_saved": 0.4297,
+   "predicted_token_ms": 28.2923,
+   "predicted_token_ms_range": [
+    28.2923,
+    28.2923
+   ],
+   "predicted_tps": 35.345,
+   "predicted_tps_range": [
+    35.345,
+    35.345
+   ],
+   "rank": 13,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": true,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.4297,
+    "reusable_family": false
+   },
+   "source": "receipts/future/DELTANET_REPRESENTATION.json",
+   "status": "ALREADY_FALSIFIED",
+   "stream_class": "activation",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": -0.4297,
+    "byte_removed_ms": -0.4297,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:ALREADY_FALSIFIED"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 360.0,
+    "bandwidth_gb_s_range": [
+     360.0,
+     497.4
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "nominal is the production DeltaNet organ rate (Q4). The high end is the LM head's demonstrated 497.4, also Q4, which DeltaNet has not been shown to reach. Including 497.4 in the range is an ASSUMPTION, not a prediction.",
+    "bandwidth_regime": "production_deltanet",
+    "dispatch_class": "deltanet_ba",
+    "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 2.884,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 360.0,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 503316480,
+   "capability": "UNMEASURED",
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -1.1226,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "lower_bit_uniform_qkvz",
+   "legacy_organ_average_ms_saved": 1.3981,
+   "live": true,
+   "name": "uniform bit-descent of the fused qkvz Q4",
+   "net_bytes": -503316480,
+   "note": null,
+   "organ": "deltanet",
+   "predicted_ms_delta": -0.2755,
+   "predicted_ms_delta_range": [
+    -0.2811,
+    -0.1958
+   ],
+   "predicted_ms_saved": 0.2755,
+   "predicted_token_ms": 28.4465,
+   "predicted_token_ms_range": [
+    28.4409,
+    28.5262
+   ],
+   "predicted_tps": 35.154,
+   "predicted_tps_range": [
+    35.055,
+    35.161
+   ],
+   "rank": 14,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.2811,
+    "reusable_family": true
+   },
+   "source": "receipts/future/DELTANET_REPRESENTATION.json",
+   "status": "OPEN",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": -0.2755,
+    "byte_removed_ms": -0.2755,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "MATERIAL",
+   "verdict_reasons": [
+    "reusable_representation_family"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 360.0,
+    "bandwidth_gb_s_range": [
+     360.0,
+     497.4
+    ],
+    "bandwidth_is_assumption": true,
+    "bandwidth_note": "nominal is the production DeltaNet organ rate (Q4). The high end is the LM head's demonstrated 497.4, also Q4, which DeltaNet has not been shown to reach. Including 497.4 in the range is an ASSUMPTION, not a prediction.",
+    "bandwidth_regime": "production_deltanet",
+    "dispatch_class": "deltanet_ba",
+    "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 2.884,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 360.0,
+    "stream_billing_gb_s": 344.1,
+    "stream_class": "activation",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 75497472,
+   "capability": "UNMEASURED",
+   "consuming_primitive": "LocalStateMachine",
+   "delta_from_legacy_ms_saved": 0.0097,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "lower_bit_recurrent_state",
+   "legacy_organ_average_ms_saved": 0.2097,
+   "live": true,
+   "name": "store / traffic rec_state at fewer than 32 bits",
+   "net_bytes": -75497472,
+   "note": null,
+   "organ": "deltanet",
+   "predicted_ms_delta": -0.2194,
+   "predicted_ms_delta_range": [
+    -0.2194,
+    -0.2194
+   ],
+   "predicted_ms_saved": 0.2194,
+   "predicted_token_ms": 28.5026,
+   "predicted_token_ms_range": [
+    28.5026,
+    28.5026
+   ],
+   "predicted_tps": 35.085,
+   "predicted_tps_range": [
+    35.085,
+    35.085
+   ],
+   "rank": 15,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.2194,
+    "reusable_family": true
+   },
+   "source": "receipts/future/DELTANET_REPRESENTATION.json",
+   "status": "OPEN",
+   "stream_class": "activation",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": -0.2194,
+    "byte_removed_ms": -0.2194,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "MATERIAL",
+   "verdict_reasons": [
+    "reusable_representation_family"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 277697891,
+   "capability": null,
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -0.655,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "entropy_coded_code_stream",
+   "legacy_organ_average_ms_saved": 0.807,
+   "live": true,
+   "name": "entropy coding of the 2-bit code stream (the lossless floor)",
+   "net_bytes": -277697891,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": -0.152,
+   "predicted_ms_delta_range": [
+    -0.1551,
+    -0.108
+   ],
+   "predicted_ms_saved": 0.152,
+   "predicted_token_ms": 28.57,
+   "predicted_token_ms_range": [
+    28.5669,
+    28.614
+   ],
+   "predicted_tps": 35.002,
+   "predicted_tps_range": [
+    34.948,
+    35.006
+   ],
+   "rank": 16,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": true,
+    "plausible_ms_saved": 0.1551,
+    "reusable_family": true
+   },
+   "source": "receipts/future/MLP_CODE_INFORMATION.json",
+   "status": "OPEN",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": -0.152,
+    "byte_removed_ms": -0.152,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "MATERIAL",
+   "verdict_reasons": [
+    "reusable_representation_family",
+    "high_information_falsifier"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 277697891,
+   "capability": null,
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -0.655,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "product_codebooks",
+   "legacy_organ_average_ms_saved": 0.807,
+   "live": false,
+   "name": "product codebooks of the 2-bit stream",
+   "net_bytes": -277697891,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": -0.152,
+   "predicted_ms_delta_range": [
+    -0.1551,
+    -0.108
+   ],
+   "predicted_ms_saved": 0.152,
+   "predicted_token_ms": 28.57,
+   "predicted_token_ms_range": [
+    28.5669,
+    28.614
+   ],
+   "predicted_tps": 35.002,
+   "predicted_tps_range": [
+    34.948,
+    35.006
+   ],
+   "rank": 17,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.1551,
+    "reusable_family": false
+   },
+   "source": "receipts/future/MLP_CODE_INFORMATION.json",
+   "status": "MEASURED_NEGATIVE",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": -0.152,
+    "byte_removed_ms": -0.152,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:MEASURED_NEGATIVE"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 360.0,
+    "bandwidth_gb_s_range": [
+     360.0,
+     497.4
+    ],
+    "bandwidth_is_assumption": true,
+    "bandwidth_note": "nominal is the production DeltaNet organ rate (Q4). The high end is the LM head's demonstrated 497.4, also Q4, which DeltaNet has not been shown to reach. Including 497.4 in the range is an ASSUMPTION, not a prediction.",
+    "bandwidth_regime": "production_deltanet",
+    "dispatch_class": "deltanet_ba",
+    "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 2.884,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 360.0,
+    "stream_billing_gb_s": 344.1,
+    "stream_class": "activation",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 0,
+   "capability": null,
+   "consuming_primitive": "LocalStateMachine",
+   "delta_from_legacy_ms_saved": 0.0,
+   "dispatch_delta": -48.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "fused_update_consume",
+   "legacy_organ_average_ms_saved": 0.1384,
+   "live": true,
+   "name": "fold ba_to_decay into gated-delta (already in tree)",
+   "net_bytes": 0,
+   "note": null,
+   "organ": "deltanet",
+   "predicted_ms_delta": -0.1384,
+   "predicted_ms_delta_range": [
+    -0.1384,
+    -0.1384
+   ],
+   "predicted_ms_saved": 0.1384,
+   "predicted_token_ms": 28.5836,
+   "predicted_token_ms_range": [
+    28.5836,
+    28.5836
+   ],
+   "predicted_tps": 34.985,
+   "predicted_tps_range": [
+    34.985,
+    34.985
+   ],
+   "rank": 18,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.1384,
+    "reusable_family": false
+   },
+   "source": "receipts/future/DELTANET_REPRESENTATION.json",
+   "status": "EXISTING_LEVER",
+   "stream_class": "activation",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": -0.1384,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": []
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 360.0,
+    "bandwidth_gb_s_range": [
+     360.0,
+     497.4
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "nominal is the production DeltaNet organ rate (Q4). The high end is the LM head's demonstrated 497.4, also Q4, which DeltaNet has not been shown to reach. Including 497.4 in the range is an ASSUMPTION, not a prediction.",
+    "bandwidth_regime": "production_deltanet",
+    "dispatch_class": "deltanet_ba",
+    "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 2.884,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 360.0,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 188743680,
+   "capability": "UNMEASURED",
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -0.421,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "heterogeneous_qkvz_bits",
+   "legacy_organ_average_ms_saved": 0.5243,
+   "live": true,
+   "name": "heterogeneous bit allocation across q, k, v, z",
+   "net_bytes": -188743680,
+   "note": null,
+   "organ": "deltanet",
+   "predicted_ms_delta": -0.1033,
+   "predicted_ms_delta_range": [
+    -0.1054,
+    -0.0734
+   ],
+   "predicted_ms_saved": 0.1033,
+   "predicted_token_ms": 28.6187,
+   "predicted_token_ms_range": [
+    28.6166,
+    28.6486
+   ],
+   "predicted_tps": 34.942,
+   "predicted_tps_range": [
+    34.906,
+    34.945
+   ],
+   "rank": 19,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": true,
+    "plausible_ms_saved": 0.1054,
+    "reusable_family": true
+   },
+   "source": "receipts/future/DELTANET_REPRESENTATION.json",
+   "status": "OPEN",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": -0.1033,
+    "byte_removed_ms": -0.1033,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "MATERIAL",
+   "verdict_reasons": [
+    "reusable_representation_family",
+    "high_information_falsifier"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 360.0,
+    "bandwidth_gb_s_range": [
+     360.0,
+     497.4
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "nominal is the production DeltaNet organ rate (Q4). The high end is the LM head's demonstrated 497.4, also Q4, which DeltaNet has not been shown to reach. Including 497.4 in the range is an ASSUMPTION, not a prediction.",
+    "bandwidth_regime": "production_deltanet",
+    "dispatch_class": "deltanet_ba",
+    "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 2.884,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 360.0,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 188743680,
+   "capability": "UNMEASURED",
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -0.421,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "lower_bit_out_proj",
+   "legacy_organ_average_ms_saved": 0.5243,
+   "live": true,
+   "name": "uniform bit-descent of linear_out (8.12% of the token)",
+   "net_bytes": -188743680,
+   "note": null,
+   "organ": "deltanet",
+   "predicted_ms_delta": -0.1033,
+   "predicted_ms_delta_range": [
+    -0.1054,
+    -0.0734
+   ],
+   "predicted_ms_saved": 0.1033,
+   "predicted_token_ms": 28.6187,
+   "predicted_token_ms_range": [
+    28.6166,
+    28.6486
+   ],
+   "predicted_tps": 34.942,
+   "predicted_tps_range": [
+    34.906,
+    34.945
+   ],
+   "rank": 20,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.1054,
+    "reusable_family": true
+   },
+   "source": "receipts/future/DELTANET_REPRESENTATION.json",
+   "status": "OPEN",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": -0.1033,
+    "byte_removed_ms": -0.1033,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "MATERIAL",
+   "verdict_reasons": [
+    "reusable_representation_family"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 360.0,
+    "bandwidth_gb_s_range": [
+     360.0,
+     497.4
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "nominal is the production DeltaNet organ rate (Q4). The high end is the LM head's demonstrated 497.4, also Q4, which DeltaNet has not been shown to reach. Including 497.4 in the range is an ASSUMPTION, not a prediction.",
+    "bandwidth_regime": "production_deltanet",
+    "dispatch_class": "deltanet_ba",
+    "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 2.884,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 360.0,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 86876160,
+   "capability": "UNMEASURED",
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -0.1938,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "larger_q4_group",
+   "legacy_organ_average_ms_saved": 0.2413,
+   "live": true,
+   "name": "larger HQ30UQ4 group size (byte curve exact; capability not)",
+   "net_bytes": -86876160,
+   "note": null,
+   "organ": "deltanet",
+   "predicted_ms_delta": -0.0475,
+   "predicted_ms_delta_range": [
+    -0.0485,
+    -0.0338
+   ],
+   "predicted_ms_saved": 0.0475,
+   "predicted_token_ms": 28.6745,
+   "predicted_token_ms_range": [
+    28.6735,
+    28.6882
+   ],
+   "predicted_tps": 34.874,
+   "predicted_tps_range": [
+    34.858,
+    34.875
+   ],
+   "rank": 21,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0485,
+    "reusable_family": true
+   },
+   "source": "receipts/future/DELTANET_REPRESENTATION.json",
+   "status": "OPEN",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": -0.0475,
+    "byte_removed_ms": -0.0475,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "MATERIAL",
+   "verdict_reasons": [
+    "reusable_representation_family"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 360.0,
+    "bandwidth_gb_s_range": [
+     360.0,
+     497.4
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "nominal is the production DeltaNet organ rate (Q4). The high end is the LM head's demonstrated 497.4, also Q4, which DeltaNet has not been shown to reach. Including 497.4 in the range is an ASSUMPTION, not a prediction.",
+    "bandwidth_regime": "production_deltanet",
+    "dispatch_class": "deltanet_ba",
+    "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 2.884,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 360.0,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 3932160,
+   "capability": "UNMEASURED",
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -0.0088,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "conv1d_lower_bit",
+   "legacy_organ_average_ms_saved": 0.0109,
+   "live": true,
+   "name": "store depthwise conv1d as f16 (or Q8) instead of f32",
+   "net_bytes": -3932160,
+   "note": null,
+   "organ": "deltanet",
+   "predicted_ms_delta": -0.0022,
+   "predicted_ms_delta_range": [
+    -0.0022,
+    -0.0015
+   ],
+   "predicted_ms_saved": 0.0022,
+   "predicted_token_ms": 28.7198,
+   "predicted_token_ms_range": [
+    28.7198,
+    28.7205
+   ],
+   "predicted_tps": 34.819,
+   "predicted_tps_range": [
+    34.818,
+    34.819
+   ],
+   "rank": 22,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0022,
+    "reusable_family": false
+   },
+   "source": "receipts/future/DELTANET_REPRESENTATION.json",
+   "status": "OPEN",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": -0.0022,
+    "byte_removed_ms": -0.0022,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": []
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": true,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": true,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 0,
+   "capability": null,
+   "consuming_primitive": "ConditionalPhysicalProgram",
+   "delta_from_legacy_ms_saved": 0.0,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "capability_sensitive_literal_islands",
+   "legacy_organ_average_ms_saved": 0.0,
+   "live": false,
+   "name": "capability-sensitive literal islands in the code body",
+   "net_bytes": 0,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 23,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": false
+   },
+   "source": "receipts/future/MLP_CODE_INFORMATION.json",
+   "status": "ALREADY_FALSIFIED",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:ALREADY_FALSIFIED"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 0.0,
+    "stream_class": "broadcast_aux",
+    "stream_on_critical_path": false
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 1069546752,
+   "capability": null,
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -3.1082,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "collapse_to_global_scale",
+   "legacy_organ_average_ms_saved": 3.1082,
+   "live": false,
+   "name": "one scale (and optional bias) per tensor",
+   "net_bytes": -1069546752,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 24,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": false
+   },
+   "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+   "status": "MEASURED_NEGATIVE",
+   "stream_class": "broadcast_aux",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:MEASURED_NEGATIVE"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 0.0,
+    "stream_class": "broadcast_aux",
+    "stream_on_critical_path": false
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 526417920,
+   "capability": null,
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -1.5298,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "cross_layer_scale_delta",
+   "legacy_organ_average_ms_saved": 1.5298,
+   "live": false,
+   "name": "store layer-0 scales plus per-layer residuals",
+   "net_bytes": -526417920,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 25,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": false
+   },
+   "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+   "status": "MEASURED_NEGATIVE",
+   "stream_class": "broadcast_aux",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:MEASURED_NEGATIVE"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 360.0,
+    "bandwidth_gb_s_range": [
+     360.0,
+     497.4
+    ],
+    "bandwidth_is_assumption": true,
+    "bandwidth_note": "nominal is the production DeltaNet organ rate (Q4). The high end is the LM head's demonstrated 497.4, also Q4, which DeltaNet has not been shown to reach. Including 497.4 in the range is an ASSUMPTION, not a prediction.",
+    "bandwidth_regime": "production_deltanet",
+    "dispatch_class": "deltanet_ba",
+    "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 2.884,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 360.0,
+    "stream_billing_gb_s": 344.1,
+    "stream_class": "activation",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 0,
+   "capability": null,
+   "consuming_primitive": "LocalStateMachine",
+   "delta_from_legacy_ms_saved": 0.0,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "direct_state_machine",
+   "legacy_organ_average_ms_saved": 0.0,
+   "live": true,
+   "name": "keep conv_state and rec_state valid in a persistent region",
+   "net_bytes": 0,
+   "note": null,
+   "organ": "deltanet",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 26,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": true,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": true
+   },
+   "source": "receipts/future/DELTANET_REPRESENTATION.json",
+   "status": "OPEN",
+   "stream_class": "activation",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "MATERIAL",
+   "verdict_reasons": [
+    "reusable_representation_family",
+    "high_information_falsifier"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 0.0,
+    "stream_class": "broadcast_aux",
+    "stream_on_critical_path": false
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 534773760,
+   "capability": null,
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -1.5541,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "drop_bias",
+   "legacy_organ_average_ms_saved": 1.5541,
+   "live": false,
+   "name": "drop the affine offset entirely",
+   "net_bytes": -534773760,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 27,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": false
+   },
+   "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+   "status": "MEASURED_NEGATIVE",
+   "stream_class": "broadcast_aux",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:MEASURED_NEGATIVE"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": true,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": true,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 0,
+   "capability": null,
+   "consuming_primitive": "TiledProjection",
+   "delta_from_legacy_ms_saved": 0.0,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "factorized_programs",
+   "legacy_organ_average_ms_saved": 0.0,
+   "live": false,
+   "name": "factorized programs (low-rank / Kronecker of the code matrix)",
+   "net_bytes": 0,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 28,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": true
+   },
+   "source": "receipts/future/MLP_CODE_INFORMATION.json",
+   "status": "MEASURED_NEGATIVE",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:MEASURED_NEGATIVE"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 360.0,
+    "bandwidth_gb_s_range": [
+     360.0,
+     497.4
+    ],
+    "bandwidth_is_assumption": true,
+    "bandwidth_note": "nominal is the production DeltaNet organ rate (Q4). The high end is the LM head's demonstrated 497.4, also Q4, which DeltaNet has not been shown to reach. Including 497.4 in the range is an ASSUMPTION, not a prediction.",
+    "bandwidth_regime": "production_deltanet",
+    "dispatch_class": "deltanet_ba",
+    "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 2.884,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 360.0,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": true,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 0,
+   "capability": "UNMEASURED",
+   "consuming_primitive": "TiledProjection",
+   "delta_from_legacy_ms_saved": 0.0,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "factorized_qkvz",
+   "legacy_organ_average_ms_saved": 0.0,
+   "live": true,
+   "name": "low-rank / SVD / two skinny matvecs of qkvz",
+   "net_bytes": 0,
+   "note": null,
+   "organ": "deltanet",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 29,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": true
+   },
+   "source": "receipts/future/DELTANET_REPRESENTATION.json",
+   "status": "OPEN",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "MATERIAL",
+   "verdict_reasons": [
+    "reusable_representation_family"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 360.0,
+    "bandwidth_gb_s_range": [
+     360.0,
+     497.4
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "nominal is the production DeltaNet organ rate (Q4). The high end is the LM head's demonstrated 497.4, also Q4, which DeltaNet has not been shown to reach. Including 497.4 in the range is an ASSUMPTION, not a prediction.",
+    "bandwidth_regime": "production_deltanet",
+    "dispatch_class": "deltanet_ba",
+    "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 2.884,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 360.0,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 0,
+   "capability": null,
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": 0.0,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "gravity_family_on_dn_weights",
+   "legacy_organ_average_ms_saved": 0.0,
+   "live": false,
+   "name": "HGRAVB01 / R02 / S01 (or Q80 mixed bundle) on DeltaNet in/out",
+   "net_bytes": 0,
+   "note": null,
+   "organ": "deltanet",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 30,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": false
+   },
+   "source": "receipts/future/DELTANET_REPRESENTATION.json",
+   "status": "ALREADY_FALSIFIED",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:ALREADY_FALSIFIED"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 0.0,
+    "stream_class": "broadcast_aux",
+    "stream_on_critical_path": false
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 1002700800,
+   "capability": "FAILED_HELDOUT",
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -2.914,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "group_size_1024",
+   "legacy_organ_average_ms_saved": 2.914,
+   "live": false,
+   "name": "MLP affine-Q2 group size 1024 (byte curve exact; capability REFUTED)",
+   "net_bytes": -1002700800,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 31,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": true
+   },
+   "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+   "status": "GRANULARITY_REFUTED",
+   "stream_class": "broadcast_aux",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:GRANULARITY_REFUTED"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 0.0,
+    "stream_class": "broadcast_aux",
+    "stream_on_critical_path": false
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 802160640,
+   "capability": "FAILED_HELDOUT",
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -2.3312,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "group_size_256",
+   "legacy_organ_average_ms_saved": 2.3312,
+   "live": false,
+   "name": "MLP affine-Q2 group size 256 (byte curve exact; capability REFUTED)",
+   "net_bytes": -802160640,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 32,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": true
+   },
+   "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+   "status": "GRANULARITY_REFUTED",
+   "stream_class": "broadcast_aux",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:GRANULARITY_REFUTED"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 0.0,
+    "stream_class": "broadcast_aux",
+    "stream_on_critical_path": false
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 935854080,
+   "capability": "UNMEASURED",
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -2.7197,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "group_size_512",
+   "legacy_organ_average_ms_saved": 2.7197,
+   "live": true,
+   "name": "MLP affine-Q2 group size 512 (byte curve exact; capability UNMEASURED)",
+   "net_bytes": -935854080,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 33,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": true
+   },
+   "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+   "status": "OPEN",
+   "stream_class": "broadcast_aux",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "MATERIAL",
+   "verdict_reasons": [
+    "reusable_representation_family"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": true,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": true,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 0,
+   "capability": null,
+   "consuming_primitive": "ConditionalPhysicalProgram",
+   "delta_from_legacy_ms_saved": 0.0,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "heterogeneous_bit_allocation",
+   "legacy_organ_average_ms_saved": 0.0,
+   "live": false,
+   "name": "heterogeneous bits across rows / organs / depth of the code body",
+   "net_bytes": 0,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 34,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": true
+   },
+   "source": "receipts/future/MLP_CODE_INFORMATION.json",
+   "status": "MEASURED_NEGATIVE",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:MEASURED_NEGATIVE"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 0.0,
+    "stream_class": "broadcast_aux",
+    "stream_on_critical_path": false
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 534773760,
+   "capability": "UNMEASURED",
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -1.5541,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "larger_group_size",
+   "legacy_organ_average_ms_saved": 1.5541,
+   "live": true,
+   "name": "change group size (byte curve is exact; capability is not)",
+   "net_bytes": -534773760,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 35,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": true
+   },
+   "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+   "status": "OPEN",
+   "stream_class": "broadcast_aux",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "MATERIAL",
+   "verdict_reasons": [
+    "reusable_representation_family"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": true,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 344.1,
+    "stream_class": "activation",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": true,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 0,
+   "capability": null,
+   "consuming_primitive": "DirectRoutedAccumulate",
+   "delta_from_legacy_ms_saved": 0.0,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "latent_routed_accumulation",
+   "legacy_organ_average_ms_saved": 0.0,
+   "live": false,
+   "name": "latent routed accumulation (narrow / routed SwiGLU)",
+   "net_bytes": 0,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 36,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": false
+   },
+   "source": "receipts/future/MLP_CODE_INFORMATION.json",
+   "status": "ALREADY_FALSIFIED",
+   "stream_class": "activation",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:ALREADY_FALSIFIED"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 0.0,
+    "stream_class": "broadcast_aux",
+    "stream_on_critical_path": false
+   },
+   "byte_model_incomplete": true,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 0,
+   "capability": null,
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": 0.0,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "low_rank_scale_matrix",
+   "legacy_organ_average_ms_saved": 0.0,
+   "live": false,
+   "name": "low-rank factorization of the group \u00d7 row scale matrix",
+   "net_bytes": 0,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 37,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": false
+   },
+   "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+   "status": "MEASURED_NEGATIVE",
+   "stream_class": "broadcast_aux",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:MEASURED_NEGATIVE"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": true,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 0,
+   "capability": null,
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": 0.0,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "lowrank_plus_sparse_residual",
+   "legacy_organ_average_ms_saved": 0.0,
+   "live": false,
+   "name": "low-rank plus sparse residual of the code body",
+   "net_bytes": 0,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 38,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": false
+   },
+   "source": "receipts/future/MLP_CODE_INFORMATION.json",
+   "status": "MEASURED_NEGATIVE",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:MEASURED_NEGATIVE"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 0.0,
+    "stream_class": "broadcast_aux",
+    "stream_on_critical_path": false
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 52032,
+   "capability": null,
+   "consuming_primitive": "LayoutTransform",
+   "delta_from_legacy_ms_saved": -0.0002,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "pack_headers",
+   "legacy_organ_average_ms_saved": 0.0002,
+   "live": true,
+   "name": "pack the 303-byte JSON headers harder",
+   "net_bytes": -52032,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 39,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": false
+   },
+   "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+   "status": "OPEN",
+   "stream_class": "broadcast_aux",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": []
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 0.0,
+    "stream_class": "broadcast_aux",
+    "stream_on_critical_path": false
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 534773760,
+   "capability": null,
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -1.5541,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "parametric_scale_program",
+   "legacy_organ_average_ms_saved": 1.5541,
+   "live": false,
+   "name": "tiny program / fitted curve generates scales",
+   "net_bytes": -534773760,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 40,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": false
+   },
+   "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+   "status": "MEASURED_NEGATIVE",
+   "stream_class": "broadcast_aux",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:MEASURED_NEGATIVE"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 0.0,
+    "stream_class": "broadcast_aux",
+    "stream_on_critical_path": false
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 534773760,
+   "capability": null,
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -1.5541,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "per_tensor_curve_plus_residual",
+   "legacy_organ_average_ms_saved": 1.5541,
+   "live": false,
+   "name": "per-tensor scale curve plus residual",
+   "net_bytes": -534773760,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 41,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": false
+   },
+   "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+   "status": "MEASURED_NEGATIVE",
+   "stream_class": "broadcast_aux",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:MEASURED_NEGATIVE"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 0.0,
+    "stream_class": "broadcast_aux",
+    "stream_on_critical_path": false
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 534773760,
+   "capability": null,
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -1.5541,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "predict_scale_from_code_stats",
+   "legacy_organ_average_ms_saved": 1.5541,
+   "live": false,
+   "name": "predict scale/bias from 2-bit code statistics",
+   "net_bytes": -534773760,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 42,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": false
+   },
+   "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+   "status": "MEASURED_NEGATIVE",
+   "stream_class": "broadcast_aux",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:MEASURED_NEGATIVE"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 0.0,
+    "stream_class": "broadcast_aux",
+    "stream_on_critical_path": false
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 534773760,
+   "capability": null,
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -1.5541,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "quantize_aux_u8",
+   "legacy_organ_average_ms_saved": 1.5541,
+   "live": true,
+   "name": "store scale/bias as u8 (log or linear) plus two endpoints",
+   "net_bytes": -534773760,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 43,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": true
+   },
+   "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+   "status": "OPEN",
+   "stream_class": "broadcast_aux",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "MATERIAL",
+   "verdict_reasons": [
+    "reusable_representation_family"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": true,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 344.1,
+    "stream_class": "activation",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": true,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 0,
+   "capability": null,
+   "consuming_primitive": "TiledProjection",
+   "delta_from_legacy_ms_saved": 0.0,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "shared_input_transforms",
+   "legacy_organ_average_ms_saved": 0.0,
+   "live": true,
+   "name": "shared input transforms (activation-space V, local readout)",
+   "net_bytes": 0,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 44,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": true,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": true
+   },
+   "source": "receipts/future/MLP_CODE_INFORMATION.json",
+   "status": "UNMEASURED",
+   "stream_class": "activation",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "MATERIAL",
+   "verdict_reasons": [
+    "reusable_representation_family",
+    "high_information_falsifier"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 0.0,
+    "stream_class": "broadcast_aux",
+    "stream_on_critical_path": false
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 534773760,
+   "capability": null,
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -1.5541,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "shared_scale_basis",
+   "legacy_organ_average_ms_saved": 1.5541,
+   "live": false,
+   "name": "shared scale basis across tensors / layers",
+   "net_bytes": -534773760,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 45,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": false
+   },
+   "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+   "status": "MEASURED_NEGATIVE",
+   "stream_class": "broadcast_aux",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:MEASURED_NEGATIVE"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 223.4,
+    "bandwidth_gb_s_range": [
+     223.4,
+     325.9
+    ],
+    "bandwidth_is_assumption": true,
+    "bandwidth_note": "affine-Q2 launches around 5 MB. The surviving dispatch-size lever is this amortization to >= 20 MB, not the 350->497 gap.",
+    "bandwidth_regime": "affine_q2_unamortized",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 0,
+   "capability": "MEASURED_ON_AFFINE_Q2",
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": 0.0,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "surviving_dispatch_size_amortize_sub20mb",
+   "legacy_organ_average_ms_saved": 0.0,
+   "live": true,
+   "name": "amortize affine-Q2 launches from ~5 MB (223 GB/s) to >= 20 MB (326 GB/s); the only size effect the sweep left standing",
+   "net_bytes": 0,
+   "note": "Production organs already average >= 8.8 MB/dispatch and sit in the 342-360 cluster, so this is not a save on today's graph. It is a constraint on new representations: do not shard into 5 MB launches of this kernel family. MATERIAL as a reusable family / high-information falsifier, not as a 1% token-time lever on the current token.",
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 46,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": true,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": true
+   },
+   "source": "receipts/future/DISPATCH_SIZE_SWEEP.json",
+   "status": "OPEN",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "MATERIAL",
+   "verdict_reasons": [
+    "reusable_representation_family",
+    "high_information_falsifier"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 0.0,
+    "stream_class": "broadcast_aux",
+    "stream_on_critical_path": false
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 0,
+   "bytes_removed": 534773760,
+   "capability": null,
+   "consuming_primitive": "FusedDecodeCompute",
+   "delta_from_legacy_ms_saved": -1.5541,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "tie_bias_to_minus_half_codes",
+   "legacy_organ_average_ms_saved": 1.5541,
+   "live": false,
+   "name": "tie bias = -1.5 * scale (unsigned-q centering)",
+   "net_bytes": -534773760,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": 0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.817,
+   "predicted_tps_range": [
+    34.817,
+    34.817
+   ],
+   "rank": 47,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": false
+   },
+   "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+   "status": "MEASURED_NEGATIVE",
+   "stream_class": "broadcast_aux",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:MEASURED_NEGATIVE"
+   ]
+  },
+  {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": true,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true
+   },
+   "byte_model_incomplete": false,
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 34225520640,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0
+   },
+   "bytes_added_total": 34225520640,
+   "bytes_removed": 4278190080,
+   "capability": null,
+   "consuming_primitive": "MoveOrRecompute",
+   "delta_from_legacy_ms_saved": 0.0,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "generated_tensors",
+   "legacy_organ_average_ms_saved": -15.541,
+   "live": false,
+   "name": "generated tensors (emit W, then GEMV)",
+   "net_bytes": 29947330560,
+   "note": null,
+   "organ": "mlp",
+   "predicted_ms_delta": 15.541,
+   "predicted_ms_delta_range": [
+    11.648,
+    16.7252
+   ],
+   "predicted_ms_saved": -15.541,
+   "predicted_token_ms": 44.263,
+   "predicted_token_ms_range": [
+    40.37,
+    45.4472
+   ],
+   "predicted_tps": 22.592,
+   "predicted_tps_range": [
+    22.004,
+    24.771
+   ],
+   "rank": 48,
+   "s020_section_20": {
+    "bar_ms": 0.2872,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": false
+   },
+   "source": "receipts/future/MLP_CODE_INFORMATION.json",
+   "status": "REJECTED_DENSE_REMAT",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 18.731,
+    "byte_ms_delta": 15.541,
+    "byte_removed_ms": -2.3414,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:REJECTED_DENSE_REMAT"
+   ]
+  }
+ ],
+ "claim_boundary": "Static sidecar artifact. Predicted ms/token and predicted TPS are arithmetic over cited organ times, cited byte shares, cited dispatch-class costs, a declared stream class, and the measured per-stream marginal rate in ECONOMICS_CALIBRATION.json. They are not a protected measurement and not a promise that a fit will hold capability. Unique bytes of broadcast_aux are not billed at the organ average: that was the AUX_U8_LUT overcredit. A new representation is not assumed to run at the affine-Q2 saturation (~377 GB/s), the LM-head demonstrated 497.4 GB/s, or the clean GEMV roof 703.5 GB/s. evidence_class is STATIC_ONLY. gpu_authority is false. The calibration receipt is SELF_MEASURED_DIRTY with loadavg recorded.",
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "guards": {
+  "aux_u8_lut_predicted_not_a_win": true,
+  "bytes_removed_without_bytes_added_refused": true,
+  "mlp_full_removal_byte_ms": -15.5414,
+  "mlp_full_removal_flop_ms_at_100": 0.1161,
+  "mlp_full_removal_scores_both_terms": true,
+  "stream_class_undeclared_refused": true
+ },
+ "live_immaterial_ranked": [
+  "fused_update_consume",
+  "conv1d_lower_bit",
+  "pack_headers"
+ ],
+ "live_material_ranked": [
+  "function_replacement",
+  "generated_coefficients",
+  "recurrent_state_replacement",
+  "structured_transition_state",
+  "lower_bit_uniform_qkvz",
+  "lower_bit_recurrent_state",
+  "entropy_coded_code_stream",
+  "heterogeneous_qkvz_bits",
+  "lower_bit_out_proj",
+  "larger_q4_group",
+  "direct_state_machine",
+  "factorized_qkvz",
+  "group_size_512",
+  "larger_group_size",
+  "quantize_aux_u8",
+  "shared_input_transforms",
+  "surviving_dispatch_size_amortize_sub20mb"
+ ],
+ "measured_constants_cited": {
+  "affine_q2_gb_s_at_20mb": 325.9,
+  "affine_q2_gb_s_at_338mb": 374.4,
+  "affine_q2_gb_s_at_5mb": 223.4,
+  "affine_q2_gb_s_at_700mb": 376.7,
+  "affine_q2_saturated_gb_s": 376.7,
+  "clean_gemv_gb_s": 703.5,
+  "effective_flop_s_mlp_dressed": 2202272739205.971,
+  "gpu_ms": 27.733,
+  "gpu_reduction_for_71_at_current_executor": 0.5278,
+  "host_ms": 0.989,
+  "lm_head_gb_s": 497.4,
+  "marginal_dispatch_us_deltanet_ba": 2.884,
+  "marginal_dispatch_us_mlp_gqa_norm": 6.25,
+  "mlp_code_independent_fraction": 0.93509,
+  "mlp_output_elements": 2555904,
+  "organs": [
+   {
+    "bytes": 5347795776,
+    "dispatches": 192,
+    "gb_s": 344.1,
+    "ms": 15.541,
+    "organ": "mlp"
+   },
+   {
+    "bytes": 2961659904,
+    "dispatches": 337,
+    "gb_s": 360.0,
+    "ms": 8.227,
+    "organ": "deltanet"
+   },
+   {
+    "bytes": 891292160,
+    "dispatches": 96,
+    "gb_s": 341.9,
+    "ms": 2.607,
+    "organ": "gqa"
+   },
+   {
+    "bytes": 675430440,
+    "dispatches": 2,
+    "gb_s": 497.4,
+    "ms": 1.358,
+    "organ": "lm_head"
+   }
+  ],
+  "token_ms": 28.722,
+  "tps_71_needs_gpu_ms": 13.096,
+  "tps_71_needs_token_ms": 14.085
+ },
+ "model": {
+  "bandwidth_regimes": {
+   "affine_q2_family": {
+    "assumption": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "gb_s_hi": 376.7,
+    "gb_s_lo": 344.1,
+    "gb_s_nominal": 344.1,
+    "measured": true
+   },
+   "affine_q2_saturated": {
+    "assumption": "the affine-Q2 family ceiling. Concatenating to the LM head's 337.7 MB working set still sits here, not at 497.4.",
+    "gb_s_hi": 376.7,
+    "gb_s_lo": 374.4,
+    "gb_s_nominal": 376.7,
+    "measured": true
+   },
+   "affine_q2_unamortized": {
+    "assumption": "affine-Q2 launches around 5 MB. The surviving dispatch-size lever is this amortization to >= 20 MB, not the 350->497 gap.",
+    "gb_s_hi": 325.9,
+    "gb_s_lo": 223.4,
+    "gb_s_nominal": 223.4,
+    "measured": true
+   },
+   "clean_gemv_roof": {
+    "assumption": "ASSUMPTION. Clean single-GEMV roof, not a packed-representation rate. Beating the LM head as well. Not a prediction.",
+    "gb_s_hi": 703.5,
+    "gb_s_lo": 703.5,
+    "gb_s_nominal": 703.5,
+    "measured": true
+   },
+   "lm_head_demonstrated": {
+    "assumption": "ASSUMPTION if applied to any organ other than the LM head. No other organ has been shown to reach 497.4 GB/s. Affine-Q2 saturates at 376.7.",
+    "gb_s_hi": 497.4,
+    "gb_s_lo": 497.4,
+    "gb_s_nominal": 497.4,
+    "measured": true
+   },
+   "organ_cluster": {
+    "assumption": "MLP, DeltaNet and GQA sit inside 5% of each other",
+    "gb_s_hi": 360.0,
+    "gb_s_lo": 341.9,
+    "gb_s_nominal": 350.0,
+    "measured": true
+   },
+   "production_deltanet": {
+    "assumption": "nominal is the production DeltaNet organ rate (Q4). The high end is the LM head's demonstrated 497.4, also Q4, which DeltaNet has not been shown to reach. Including 497.4 in the range is an ASSUMPTION, not a prediction.",
+    "gb_s_hi": 497.4,
+    "gb_s_lo": 360.0,
+    "gb_s_nominal": 360.0,
+    "measured": true
+   },
+   "production_gqa": {
+    "assumption": "nominal is production GQA. High end is the LM-head demonstrated rate; GQA has not been shown to reach it.",
+    "gb_s_hi": 497.4,
+    "gb_s_lo": 341.9,
+    "gb_s_nominal": 341.9,
+    "measured": true
+   },
+   "production_lm_head": {
+    "assumption": "the one organ that has been shown to reach 497.4 GB/s",
+    "gb_s_hi": 497.4,
+    "gb_s_lo": 497.4,
+    "gb_s_nominal": 497.4,
+    "measured": true
+   },
+   "production_mlp": {
+    "assumption": "nominal is the production MLP organ rate. The high end is the affine-Q2 size-curve saturation, which isolated launches reach and production has not. Not 497.4, not 703.5.",
+    "gb_s_hi": 376.7,
+    "gb_s_lo": 344.1,
+    "gb_s_nominal": 344.1,
+    "measured": true
+   },
+   "unknown_new_representation": {
+    "assumption": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+    "gb_s_hi": 497.4,
+    "gb_s_lo": 223.4,
+    "gb_s_nominal": 350.0,
+    "measured": false
+   }
+  },
+  "bytes_added_fields": [
+   "generator",
+   "embeddings",
+   "residuals",
+   "metadata",
+   "state"
+  ],
+  "calibration_receipt": "receipts/future/ECONOMICS_CALIBRATION.json",
+  "dispatch_classes": {
+   "deltanet_ba": {
+    "source": "receipts/future/BA_DELTA_AB.json derived.us_per_removed_dispatch",
+    "us": 2.884
+   },
+   "mlp_gqa_norm_fusion": {
+    "source": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "us": 6.25
+   }
+  },
+  "flop_exposed_multiplier": 4.0,
+  "formula": "predicted_token_ms = cited_token_ms + ms(net_bytes, stream_class_rate) + extra_flops * n_output_elements / EFFECTIVE_FLOP_S * 1000 + dispatch_delta * class_us / 1000; net_bytes = bytes_added.total - bytes_removed; stream_class_rate is the calibrated unique-byte marginal of the declared stream (0 if that stream is not on the critical path); retime_organ still uses the named regime; the regime is an ASSUMPTION with a range",
+  "primary_marginal_is_50pct_drop": true,
+  "refuses": [
+   "bytes_removed without bytes_added",
+   "stream_class undeclared (no default to the organ average)",
+   "unknown stream_class"
+  ],
+  "stream_classes": {
+   "activation": {
+    "billing_gb_s": 344.1,
+    "billing_gb_s_hi": 344.1,
+    "billing_gb_s_lo": 344.1,
+    "billing_gb_s_measured": 2.13,
+    "catalog_billing": "organ_average",
+    "ms_per_gb_saved": 2.906132,
+    "ms_per_gb_saved_measured": 469.455295,
+    "name": "activation",
+    "on_critical_path": true,
+    "paired_dt_ns_at_50pct": -25959,
+    "paired_noise_floor_ns": 2000.0,
+    "primary_rung": "x_keep_50",
+    "probe_on_critical_path": true,
+    "samples": [
+     {
+      "drop_pct": 25,
+      "gpu_ns_median": 185583,
+      "id": "x_keep_75",
+      "keep_pct": 75,
+      "paired_dt_ns": -14500,
+      "paired_dt_ns_mad": 791,
+      "unique_bytes_dropped": 27648
+     },
+     {
+      "drop_pct": 50,
+      "gpu_ns_median": 173833,
+      "id": "x_keep_50",
+      "keep_pct": 50,
+      "paired_dt_ns": -25959,
+      "paired_dt_ns_mad": 791,
+      "unique_bytes_dropped": 55296
+     },
+     {
+      "drop_pct": 75,
+      "gpu_ns_median": 164291,
+      "id": "x_keep_25",
+      "keep_pct": 25,
+      "paired_dt_ns": -35874,
+      "paired_dt_ns_mad": 1876,
+      "unique_bytes_dropped": 82944
+     },
+     {
+      "drop_pct": 100,
+      "gpu_ns_median": 156291,
+      "id": "x_keep_0",
+      "keep_pct": 0,
+      "paired_dt_ns": -44167,
+      "paired_dt_ns_mad": 375,
+      "unique_bytes_dropped": 110592
+     }
+    ],
+    "unique_bytes_dropped_at_50pct": 55296,
+    "within_noise_at_50pct": false
+   },
+   "broadcast_aux": {
+    "billing_gb_s": null,
+    "billing_gb_s_hi": null,
+    "billing_gb_s_lo": null,
+    "billing_gb_s_measured": null,
+    "catalog_billing": "measured_or_zero",
+    "ms_per_gb_saved": 0.0,
+    "ms_per_gb_saved_measured": 0.0,
+    "name": "broadcast_aux",
+    "on_critical_path": false,
+    "paired_dt_ns_at_50pct": -126,
+    "paired_noise_floor_ns": 2666.0,
+    "primary_rung": "aux_keep_50",
+    "probe_on_critical_path": false,
+    "samples": [
+     {
+      "drop_pct": 25,
+      "gpu_ns_median": 198749,
+      "id": "aux_keep_75",
+      "keep_pct": 75,
+      "paired_dt_ns": -2500,
+      "paired_dt_ns_mad": 1376,
+      "unique_bytes_dropped": 4177920
+     },
+     {
+      "drop_pct": 50,
+      "gpu_ns_median": 200458,
+      "id": "aux_keep_50",
+      "keep_pct": 50,
+      "paired_dt_ns": -126,
+      "paired_dt_ns_mad": 1333,
+      "unique_bytes_dropped": 8355840
+     },
+     {
+      "drop_pct": 75,
+      "gpu_ns_median": 195583,
+      "id": "aux_keep_25",
+      "keep_pct": 25,
+      "paired_dt_ns": -5000,
+      "paired_dt_ns_mad": 1416,
+      "unique_bytes_dropped": 12533760
+     },
+     {
+      "drop_pct": 100,
+      "gpu_ns_median": 190375,
+      "id": "aux_keep_0",
+      "keep_pct": 0,
+      "paired_dt_ns": -9499,
+      "paired_dt_ns_mad": 500,
+      "unique_bytes_dropped": 16711680
+     }
+    ],
+    "unique_bytes_dropped_at_50pct": 8355840,
+    "within_noise_at_50pct": true
+   },
+   "weight_codes": {
+    "billing_gb_s": 1827.21,
+    "billing_gb_s_hi": 2571.03,
+    "billing_gb_s_lo": 1790.55,
+    "billing_gb_s_measured": 1827.21,
+    "catalog_billing": "measured_or_zero",
+    "ms_per_gb_saved": 0.547282,
+    "ms_per_gb_saved_measured": 0.547282,
+    "name": "weight_codes",
+    "on_critical_path": true,
+    "paired_dt_ns_at_50pct": -18292,
+    "paired_noise_floor_ns": 2834.0,
+    "primary_rung": "codes_keep_50",
+    "probe_on_critical_path": true,
+    "samples": [
+     {
+      "drop_pct": 25,
+      "gpu_ns_median": 194708,
+      "id": "codes_keep_75",
+      "keep_pct": 75,
+      "paired_dt_ns": -6500,
+      "paired_dt_ns_mad": 1334,
+      "unique_bytes_dropped": 16711680
+     },
+     {
+      "drop_pct": 50,
+      "gpu_ns_median": 183500,
+      "id": "codes_keep_50",
+      "keep_pct": 50,
+      "paired_dt_ns": -18292,
+      "paired_dt_ns_mad": 1417,
+      "unique_bytes_dropped": 33423360
+     },
+     {
+      "drop_pct": 75,
+      "gpu_ns_median": 172708,
+      "id": "codes_keep_25",
+      "keep_pct": 25,
+      "paired_dt_ns": -27916,
+      "paired_dt_ns_mad": 1666,
+      "unique_bytes_dropped": 50135040
+     },
+     {
+      "drop_pct": 100,
+      "gpu_ns_median": 161041,
+      "id": "codes_keep_0",
+      "keep_pct": 0,
+      "paired_dt_ns": -37333,
+      "paired_dt_ns_mad": 1250,
+      "unique_bytes_dropped": 66846720
+     }
+    ],
+    "unique_bytes_dropped_at_50pct": 33423360,
+    "within_noise_at_50pct": false
+   }
+  }
+ },
+ "n_candidates": 48,
+ "n_dead": 28,
+ "n_live_immaterial": 3,
+ "n_live_material": 17,
+ "recorded_by": "tools/future/executable_economics.py",
+ "retrodictions": [
+  {
+   "bytes_removed": 0,
+   "how_scored": "dispatch_delta=-48 at deltanet_ba 2.884 us; bytes_removed=0",
+   "id": "DELTANET_WIDEN_AB",
+   "measured_is_win": true,
+   "measured_ms_delta": -1.0245,
+   "note": "The win is a kernel/layout change (widen_f4) plus a 48-launch fold, not a unique-byte removal. Sign agrees (a win); the byte model does not claim the 1.0245 ms.",
+   "predicted_is_win": true,
+   "predicted_ms_delta": -0.1384,
+   "predicted_ms_saved": 0.1384,
+   "residual_ms": 0.8861,
+   "source": "receipts/future/DELTANET_WIDEN_AB.json",
+   "stream_class": "activation"
+  },
+  {
+   "bytes_removed": 0,
+   "how_scored": "bytes_removed=0, extra_flops=0, stream_class=weight_codes",
+   "id": "MLP_DECODE_CHEAPEN",
+   "measured_gb_s": {
+    "fold_addqx": 370.9,
+    "production": 329.2
+   },
+   "measured_is_win": true,
+   "measured_ms_delta": -1.745,
+   "note": "fold_addqx is a decode-arithmetic cheapening (329.2 -> 370.9 GB/s, bit-identical). The byte model predicting 0 is correct for THIS defect: no unique bytes moved.",
+   "predicted_is_win": false,
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_saved": 0.0,
+   "residual_ms": 1.745,
+   "source": "receipts/future/MLP_DECODE_CHEAPEN.json",
+   "stream_class": "weight_codes"
+  },
+  {
+   "bytes_removed": 534773760,
+   "how_scored": "bytes_removed=534773760 broadcast_aux, bytes_added.metadata=393216, extra_flops=0",
+   "id": "AUX_U8_LUT",
+   "legacy_organ_average_ms_saved": 1.553,
+   "legacy_predicted_is_win": true,
+   "measured_is_win": false,
+   "measured_ms_delta": 0.5041,
+   "must_predict_not_a_win": true,
+   "note": "The case that matters. Old organ-average billed 1.5530 ms saved. Stream-class bills -0.0000 ms. Measured is slower (+0.504 ms token projection). Predicted is not a win.",
+   "predicted_is_win": false,
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_saved": 0.0,
+   "residual_ms": -0.5041,
+   "source": "receipts/future/AUX_U8_LUT.json",
+   "stream_class": "broadcast_aux"
+  },
+  {
+   "delta_from_legacy_ms_saved": -1.5541,
+   "how_scored": "recorded catalog candidate, stream_class=broadcast_aux",
+   "id": "quantize_aux_u8_catalog",
+   "legacy_organ_average_ms_saved": 1.5541,
+   "note": "live catalog row, same stream as AUX_U8_LUT",
+   "predicted_ms_saved": 0.0,
+   "stream_class": "broadcast_aux"
+  },
+  {
+   "delta_from_legacy_ms_saved": -0.655,
+   "how_scored": "recorded catalog candidate, stream_class=weight_codes (mlp_entropy_floor)",
+   "id": "entropy_coded_code_stream",
+   "legacy_organ_average_ms_saved": 0.807,
+   "note": "0.278 GB of binding code bytes; should remain a real save",
+   "predicted_ms_saved": 0.152,
+   "stream_class": "weight_codes"
+  },
+  {
+   "delta_from_legacy_ms_saved": -2.914,
+   "how_scored": "recorded catalog candidate, stream_class=broadcast_aux, status GRANULARITY_REFUTED",
+   "id": "group_size_1024",
+   "legacy_organ_average_ms_saved": 2.914,
+   "live": false,
+   "note": "capability already REFUTED; byte claim re-priced for a consistent record",
+   "predicted_ms_saved": 0.0,
+   "stream_class": "broadcast_aux"
+  },
+  {
+   "delta_from_legacy_ms_saved": -2.3312,
+   "how_scored": "recorded catalog candidate, stream_class=broadcast_aux, status GRANULARITY_REFUTED",
+   "id": "group_size_256",
+   "legacy_organ_average_ms_saved": 2.3312,
+   "live": false,
+   "note": "capability already REFUTED; byte claim re-priced for a consistent record",
+   "predicted_ms_saved": 0.0,
+   "stream_class": "broadcast_aux"
+  }
+ ],
+ "s020_section_20_bar": {
+  "bar_ms": 0.2872,
+  "cited_token_ms": 28.722,
+  "frac_of_complete_token_time": 0.01,
+  "or_high_information_falsifier": true,
+  "or_reusable_representation_family": true,
+  "verbatim": "a candidate deserves substantial work if it plausibly removes >= 1% of complete token time, or creates a reusable representation family, or provides a high-information falsifier"
+ },
+ "schema": "hawking.future.executable_economics.v2",
+ "seal_sha256": "78127a242e3af855bb7659c06800de8929d694c37a77f62c0515b38953c3ec93",
+ "sources": [
+  "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+  "receipts/future/MLP_CODE_INFORMATION.json",
+  "receipts/future/DELTANET_REPRESENTATION.json",
+  "receipts/future/DISPATCH_SIZE_SWEEP.json",
+  "receipts/future/BA_DELTA_AB.json",
+  "receipts/future/ECONOMICS_CALIBRATION.json",
+  "receipts/future/AUX_U8_LUT.json",
+  "receipts/future/DELTANET_WIDEN_AB.json",
+  "receipts/future/MLP_DECODE_CHEAPEN.json",
+  "receipts/future/AUX_CAPABILITY_SCREEN.json"
+ ],
+ "top_live_material": [
+  {
+   "id": "function_replacement",
+   "predicted_ms_saved": 2.3414,
+   "predicted_tps": 37.907,
+   "status": "UNMEASURED",
+   "verdict_reasons": [
+    "clears_s020_section_20_time_bar",
+    "reusable_representation_family",
+    "high_information_falsifier"
+   ]
+  },
+  {
+   "id": "generated_coefficients",
+   "predicted_ms_saved": 1.1707,
+   "predicted_tps": 36.296,
+   "status": "OPEN",
+   "verdict_reasons": [
+    "clears_s020_section_20_time_bar",
+    "reusable_representation_family"
+   ]
+  },
+  {
+   "id": "recurrent_state_replacement",
+   "predicted_ms_saved": 0.4388,
+   "predicted_tps": 35.357,
+   "status": "OPEN",
+   "verdict_reasons": [
+    "clears_s020_section_20_time_bar",
+    "reusable_representation_family"
+   ]
+  },
+  {
+   "id": "structured_transition_state",
+   "predicted_ms_saved": 0.4354,
+   "predicted_tps": 35.352,
+   "status": "OPEN",
+   "verdict_reasons": [
+    "clears_s020_section_20_time_bar",
+    "reusable_representation_family"
+   ]
+  },
+  {
+   "id": "lower_bit_uniform_qkvz",
+   "predicted_ms_saved": 0.2755,
+   "predicted_tps": 35.154,
+   "status": "OPEN",
+   "verdict_reasons": [
+    "reusable_representation_family"
+   ]
+  },
+  {
+   "id": "lower_bit_recurrent_state",
+   "predicted_ms_saved": 0.2194,
+   "predicted_tps": 35.085,
+   "status": "OPEN",
+   "verdict_reasons": [
+    "reusable_representation_family"
+   ]
+  },
+  {
+   "id": "entropy_coded_code_stream",
+   "predicted_ms_saved": 0.152,
+   "predicted_tps": 35.002,
+   "status": "OPEN",
+   "verdict_reasons": [
+    "reusable_representation_family",
+    "high_information_falsifier"
+   ]
+  },
+  {
+   "id": "heterogeneous_qkvz_bits",
+   "predicted_ms_saved": 0.1033,
+   "predicted_tps": 34.942,
+   "status": "OPEN",
+   "verdict_reasons": [
+    "reusable_representation_family",
+    "high_information_falsifier"
+   ]
+  },
+  {
+   "id": "lower_bit_out_proj",
+   "predicted_ms_saved": 0.1033,
+   "predicted_tps": 34.942,
+   "status": "OPEN",
+   "verdict_reasons": [
+    "reusable_representation_family"
+   ]
+  },
+  {
+   "id": "larger_q4_group",
+   "predicted_ms_saved": 0.0475,
+   "predicted_tps": 34.874,
+   "status": "OPEN",
+   "verdict_reasons": [
+    "reusable_representation_family"
+   ]
+  },
+  {
+   "id": "direct_state_machine",
+   "predicted_ms_saved": 0.0,
+   "predicted_tps": 34.817,
+   "status": "OPEN",
+   "verdict_reasons": [
+    "reusable_representation_family",
+    "high_information_falsifier"
+   ]
+  },
+  {
+   "id": "factorized_qkvz",
+   "predicted_ms_saved": 0.0,
+   "predicted_tps": 34.817,
+   "status": "OPEN",
+   "verdict_reasons": [
+    "reusable_representation_family"
+   ]
+  }
+ ],
+ "version": 2,
+ "what_the_model_cannot_know": [
+  "whether a new representation runs in the affine-Q2 family, the LM-head Q4 regime, or somewhere off both curves \u2014 that is an ASSUMPTION with a range",
+  "capability: no generate gate lives here. A MATERIAL byte lever can still be generation-incoherent",
+  "actual_read_bytes_per_token: the catalog sum is not what the GPU read (no Metal memory counter on this box)",
+  "extra decode ALU of a codec that is not the incumbent: the FLOP term is GEMV-dressed, range [0, 4x]",
+  "whether remaining bytes keep the organ's measured rate or retiming the whole organ is the right counterfactual \u2014 retime_organ is an explicit switch",
+  "host work a new generator might add; the host gap is a floor, not a claim that host stays 0.989 ms",
+  "DeltaNet recurrent-state unique-byte traffic: the activation class is calibrated on MLP x, and catalog-scale state bills at the organ average rather than at the unique-x 2 GB/s number"
+ ]
+}

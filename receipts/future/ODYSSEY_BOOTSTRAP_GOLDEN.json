@@ -1,0 +1,1839 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T10:37:15Z",
+  "recorded_by": "tools/future/bootstrap_golden.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. This receipt pins the source-and-receipt identity of the Odyssey I launch commit; it does not claim a running daemon, a GPU lease, or reconstitutable NX weights. Not a development freeze.",
+ "commit": {
+  "commit_object_sha256": "30c500b076d94ae8d5c94ccfeda4aa79c7dc2f16470ce942329cfa9dd656b71e",
+  "committed_at": "2026-08-31T06:13:56-04:00",
+  "parents": [
+   "607b235241e7a9b0d1f5d052364d6e5436f21aaa"
+  ],
+  "sha": "973e790fa77733120188db335108a0cb2cbdec34",
+  "subject": "odyssey(I): LAUNCHED \u2014 16/16, phase_transition STARTED, and the identity guard is why it can be trusted",
+  "tree": "bf2c7f2240354f04bb1d6db441cf226f2f28569f"
+ },
+ "compare_entry": "tools.future.bootstrap_golden.compare_to_golden(doc) \u2014 reports STILL_THIS_GOLDEN / HEAD_MOVED / RECEIPT_TAMPERED / IDENTITY_DRIFT; never raises to block a descendant",
+ "components": [
+  {
+   "commit_object_bytes": 4700,
+   "commit_object_sha256": "30c500b076d94ae8d5c94ccfeda4aa79c7dc2f16470ce942329cfa9dd656b71e",
+   "committed_at": "2026-08-31T06:13:56-04:00",
+   "expected_tree": "bf2c7f2240354f04bb1d6db441cf226f2f28569f",
+   "id": "git_commit",
+   "note": "This is the commit that introduced ODYSSEY_I_LAUNCH.json, not whatever happens to be the tip of odyssey-i later. The gate receipt's recorded `head` is the parent (607b23524): it was generated, then committed as this sha.",
+   "obligation": "exact git commit",
+   "parents": [
+    "607b235241e7a9b0d1f5d052364d6e5436f21aaa"
+   ],
+   "pins": [
+    {
+     "bytes": 4700,
+     "git_blob": null,
+     "path": "git:commit:973e790fa77733120188db335108a0cb2cbdec34",
+     "reason": null,
+     "sha256": "30c500b076d94ae8d5c94ccfeda4aa79c7dc2f16470ce942329cfa9dd656b71e",
+     "source": "git:cat-file:-p:973e790fa77733120188db335108a0cb2cbdec34",
+     "status": "PRESENT"
+    }
+   ],
+   "sha": "973e790fa77733120188db335108a0cb2cbdec34",
+   "status": "PRESENT",
+   "subject": "odyssey(I): LAUNCHED \u2014 16/16, phase_transition STARTED, and the identity guard is why it can be trusted",
+   "tree": "bf2c7f2240354f04bb1d6db441cf226f2f28569f",
+   "tree_matches_expected": true
+  },
+  {
+   "daemon_contract": "tools.future.super_resident.SandboxDaemon",
+   "does_not_start_a_model": true,
+   "engine": "hcli/engine.py",
+   "entry": "hcli/__main__.py -> hcli.cli.main",
+   "id": "hcli_daemon",
+   "n_absent": 0,
+   "n_pins": 6,
+   "n_present": 6,
+   "obligation": "HCLI daemon",
+   "pins": [
+    {
+     "bytes": 86,
+     "git_blob": "06f109bc37ffd353449dd238013b222b0f0a0542",
+     "path": "hcli/__main__.py",
+     "reason": null,
+     "sha256": "5e6030836f3887617683db2e78ed3b28aed2f9a96f389b6bd9202e707ea538d6",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:hcli/__main__.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 8676,
+     "git_blob": "74f06b4465933c74568896de448cf872cdecc574",
+     "path": "hcli/cli.py",
+     "reason": null,
+     "sha256": "6e844517b60245b1bc3dbdff2fe9c6a967606933696c6694744118f2b86ef4b1",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:hcli/cli.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 121460,
+     "git_blob": "2d872c3bdf551995d63e980dc5ec80250e2fe1eb",
+     "path": "hcli/engine.py",
+     "reason": null,
+     "sha256": "74d58119f135e9ce97c8118ada1a6671d31af184ce0156cbc5087ca1c0ac157d",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:hcli/engine.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 16287,
+     "git_blob": "bbc3a08f6d549361d784b5f90a88b32b8efe3d01",
+     "path": "hcli/agentos/background.py",
+     "reason": null,
+     "sha256": "c23c44febfc594ba694b5c1f75bf31107cff3394efeb0b8ed30b468df7b8f51c",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:hcli/agentos/background.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 67886,
+     "git_blob": "4b7b1d1d929282baf6514885aa23c5b6be0f7a1e",
+     "path": "tools/future/super_resident.py",
+     "reason": null,
+     "sha256": "5e471eb6faaa3bd1c0efd34cfcad573cd562e7272acfd4535d65e914b5d54b51",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/future/super_resident.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 42227,
+     "git_blob": "d3e3e742b2a49929401be07836798ff8ad42ffd8",
+     "path": "receipts/future/SUPER_RESIDENT_FLOOR.json",
+     "reason": null,
+     "sha256": "d21495b0a9ef6ba3bd67a32bc5253aa9a487839b93152ba30823fc183c991779",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:receipts/future/SUPER_RESIDENT_FLOOR.json",
+     "status": "PRESENT"
+    }
+   ],
+   "reason": null,
+   "status": "PRESENT"
+  },
+  {
+   "id": "supervisor",
+   "n_absent": 0,
+   "n_pins": 2,
+   "n_present": 2,
+   "obligation": "supervisor",
+   "pins": [
+    {
+     "bytes": 89452,
+     "git_blob": "e189ab8ea60302ec665d57384e0c6cdd63c7f2a4",
+     "path": "tools/future/resident_supervisor.py",
+     "reason": null,
+     "sha256": "0214b9463108f004acc68a91b2d6913142310427b11116c3c2cce3e52aa0bf1f",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/future/resident_supervisor.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 12821,
+     "git_blob": "b67b8dbe1d9fdc953b105c788e15c01e88319fd0",
+     "path": "receipts/future/RESIDENT_SUPERVISOR.json",
+     "reason": null,
+     "sha256": "38dc1714d507f4c664571fc10772499e9766388b08f943037d7f8f5ea489c265",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:receipts/future/RESIDENT_SUPERVISOR.json",
+     "status": "PRESENT"
+    }
+   ],
+   "reason": null,
+   "status": "PRESENT"
+  },
+  {
+   "id": "resident_nx",
+   "incumbent_id": "qwen3.8-27b-sealed-3.14",
+   "live_boundary": "hcli/agentos/resident_gate.py",
+   "n_absent": 0,
+   "n_pins": 6,
+   "n_present": 6,
+   "nx_weights": "NX weight bytes live outside git (artifact_root /Users/scammermike/noetic/NOETIC_PARENT_A). This golden pins identity documents, not the weight files.",
+   "obligation": "resident NX",
+   "pins": [
+    {
+     "bytes": 82039,
+     "git_blob": "4202cd153b36f6bfa936d8f2a6c82a72643446d6",
+     "path": "tools/future/resident_identity.py",
+     "reason": null,
+     "sha256": "b54516473af5466eb4bad27c1abbbd89570cd50d673ff42fb1cc3ac78744d4c4",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/future/resident_identity.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 121846,
+     "git_blob": "7ba86661d28081f038c8122c6fb44c104fe7ca98",
+     "path": "receipts/future/RESIDENT_IDENTITY.json",
+     "reason": null,
+     "sha256": "fb8bedfaa25c66c19450a78755e142fce9b3c33ea767962e5dd1771757942798",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:receipts/future/RESIDENT_IDENTITY.json",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 2094,
+     "git_blob": "f166f242b82f4fbccfdc085227e4f9d03c606cce",
+     "path": "hcli/hawking-native.sealed-3.14.json",
+     "reason": null,
+     "sha256": "d0ccab6562eebde05f81fbc9e7d40698f4aa9a83ae8e19606a7372a1f3abb7ce",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:hcli/hawking-native.sealed-3.14.json",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 10145,
+     "git_blob": "349d6a6375a2eb0cffb4f26a875b5fbf7f1e3d89",
+     "path": "hcli/agentos/resident_gate.py",
+     "reason": null,
+     "sha256": "91ecf19d5e33f1df83c50172cdd21d461d9a7f166cdd3233a762358880539ba8",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:hcli/agentos/resident_gate.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 27466,
+     "git_blob": "517a11a597892782626723e6516c2291dfc026c4",
+     "path": "hcli/agentos/qwen27_runtime_identity.py",
+     "reason": null,
+     "sha256": "ac80407f602b02d2bd78d395d0038e3b6b7f5bf302a05c612feb8d18bcbba2d9",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:hcli/agentos/qwen27_runtime_identity.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 58126,
+     "git_blob": "2132a1e39930784863c142d55825c48beb056fbc",
+     "path": "hcli/hawking_native.py",
+     "reason": null,
+     "sha256": "e6d8c8ae71eb0458e5b51c7f9d050b425e2b0c62064aa349b14c12f3806a63d0",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:hcli/hawking_native.py",
+     "status": "PRESENT"
+    }
+   ],
+   "reason": null,
+   "residency_status": "CURRENT_NONFINAL_HCLI_WORKER",
+   "resident_py": "ABSENT",
+   "status": "PRESENT"
+  },
+  {
+   "id": "fallback_identity",
+   "n_absent": 0,
+   "n_pins": 2,
+   "n_present": 2,
+   "obligation": "fallback identity",
+   "pins": [
+    {
+     "bytes": 51808,
+     "git_blob": "1d521f754d2be340e0f8825dcc3b68f4e4c97c2e",
+     "path": "tools/future/fallback_resident.py",
+     "reason": null,
+     "sha256": "5ecd7c25ede15535a7b5cc35e4252930de6ff87c45d1f8079705bd0342538962",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/future/fallback_resident.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 31113,
+     "git_blob": "3a6e045e693c7ad4242c9a864748106df8a6177a",
+     "path": "receipts/future/FALLBACK_RESIDENT.json",
+     "reason": null,
+     "sha256": "c391ac1136572910629975202f822a27bd51d3a56e7d3c3d0c92d42d85d635f7",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:receipts/future/FALLBACK_RESIDENT.json",
+     "status": "PRESENT"
+    }
+   ],
+   "reason": null,
+   "status": "PRESENT"
+  },
+  {
+   "id": "sandbox_policy",
+   "n_absent": 0,
+   "n_pins": 2,
+   "n_present": 2,
+   "obligation": "sandbox policy",
+   "pins": [
+    {
+     "bytes": 60895,
+     "git_blob": "c588d8122c21c708a09e0475f79a62927e4c5e52",
+     "path": "tools/future/sandbox.py",
+     "reason": null,
+     "sha256": "77f6daf592bf40ae323a1e74f8b7b825c174548d1bad560b319d5ee873099024",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/future/sandbox.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 23711,
+     "git_blob": "60f7beda4cb871b6ef866ed0bccd76579e379c32",
+     "path": "receipts/future/RESIDENT_SANDBOX.json",
+     "reason": null,
+     "sha256": "86c1ccc2331d745a4b4df8ce6a54428d4aca65ad9e8e6fd502dac8ce75ec18aa",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:receipts/future/RESIDENT_SANDBOX.json",
+     "status": "PRESENT"
+    }
+   ],
+   "reason": null,
+   "status": "PRESENT"
+  },
+  {
+   "id": "workunit_schemas",
+   "n_absent": 0,
+   "n_pins": 3,
+   "n_present": 3,
+   "obligation": "WorkUnit schemas",
+   "pins": [
+    {
+     "bytes": 20857,
+     "git_blob": "ee62f0980320d8ca6203fe8187c542e24eb36397",
+     "path": "hcli/workunit.py",
+     "reason": null,
+     "sha256": "680db5ea165a3db7287ba16ca95cd17b9eba57ccee10e58e9b2780daf4838da1",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:hcli/workunit.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 72338,
+     "git_blob": "61566f15c08c41c4345603fe9f0a82af09d7b7c6",
+     "path": "tools/future/workunit_species.py",
+     "reason": null,
+     "sha256": "4a1c3ea2205f46eecde21764f52265f8314cfeddc32dda27d7f9d9241437477c",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/future/workunit_species.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 176503,
+     "git_blob": "e36d50cd6d77f6e01230e46515305e66bd259503",
+     "path": "receipts/future/HCLI_FUTURE_WORKUNITS.json",
+     "reason": null,
+     "sha256": "e2028c656406956ece35f1a580182b44f8208d5a40da688db3369ceef9585b3e",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:receipts/future/HCLI_FUTURE_WORKUNITS.json",
+     "status": "PRESENT"
+    }
+   ],
+   "reason": null,
+   "schema_authority": "hcli/workunit.py WorkUnit dataclass is the HCLI field set; tools/future/workunit_species.py SPECIES_IDS are the ten future-work species emitted into that field set",
+   "species_ids": {
+    "ids": [
+     "accelerator_candidate_qualification",
+     "architecture_transfer",
+     "odyssey_ii_transfer_experiment",
+     "odyssey_iii_adversarial_experiment",
+     "fpga_simulation",
+     "hardware_doctor_experiment",
+     "learned_compiler_experiment",
+     "fusion_simulation",
+     "independent_reproduction",
+     "green_machine_measurement"
+    ],
+    "n": 10,
+    "parsed": true
+   },
+   "status": "PRESENT"
+  },
+  {
+   "id": "resource_registry",
+   "n_absent": 0,
+   "n_pins": 1,
+   "n_present": 1,
+   "obligation": "resource registry",
+   "pins": [
+    {
+     "bytes": 39381,
+     "git_blob": "3330d053012bca827816b6347ca57a37a3e26393",
+     "path": "hcli/resources.py",
+     "reason": null,
+     "sha256": "06463291917d3eadf5b8f60f155df8114322a4d177097bbab6852f8524f170e3",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:hcli/resources.py",
+     "status": "PRESENT"
+    }
+   ],
+   "reason": null,
+   "status": "PRESENT"
+  },
+  {
+   "id": "evidence_dag",
+   "n_absent": 0,
+   "n_pins": 2,
+   "n_present": 2,
+   "obligation": "evidence DAG",
+   "pins": [
+    {
+     "bytes": 110370,
+     "git_blob": "82eb6ac897c8a805723a8f5c3bfdd223083d2e5e",
+     "path": "tools/future/evidence_dag.py",
+     "reason": null,
+     "sha256": "22df790695b89ae17b62f557ff8d62751af98bbd3ff75ab24a07602378a801c2",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/future/evidence_dag.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 32123,
+     "git_blob": "f730fd7b897b0febf7b727fa105d6e1bfb06d006",
+     "path": "receipts/future/EVIDENCE_DAG.json",
+     "reason": null,
+     "sha256": "6be6a83f2fa7109434a70b48cbefc0955c469aa1d2853d6febedde9473628d98",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:receipts/future/EVIDENCE_DAG.json",
+     "status": "PRESENT"
+    }
+   ],
+   "reason": null,
+   "status": "PRESENT"
+  },
+  {
+   "id": "verifier",
+   "n_absent": 0,
+   "n_pins": 1,
+   "n_present": 1,
+   "obligation": "verifier",
+   "pins": [
+    {
+     "bytes": 40430,
+     "git_blob": "494a9cde2d62a0f8bf0e99befecd88f0c17a75b1",
+     "path": "hcli/verifier_pipeline.py",
+     "reason": null,
+     "sha256": "390c3f0bcb771a40128cfd76c244b4d89d16d890b8a29ddd2f9a4e4a86cd4be7",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:hcli/verifier_pipeline.py",
+     "status": "PRESENT"
+    }
+   ],
+   "reason": null,
+   "status": "PRESENT"
+  },
+  {
+   "id": "tool_registry",
+   "n_absent": 0,
+   "n_pins": 1,
+   "n_present": 1,
+   "obligation": "tool registry",
+   "pins": [
+    {
+     "bytes": 74061,
+     "git_blob": "5761abc699a44994934d94687d409110926e1d04",
+     "path": "hcli/tool_registry.py",
+     "reason": null,
+     "sha256": "c56aace5905183b250751d57e57d52d483a0b363118101fb4c555fd535050823",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:hcli/tool_registry.py",
+     "status": "PRESENT"
+    }
+   ],
+   "reason": null,
+   "status": "PRESENT"
+  },
+  {
+   "id": "subagent_interfaces",
+   "n_absent": 0,
+   "n_pins": 2,
+   "n_present": 2,
+   "obligation": "subagent interfaces",
+   "pins": [
+    {
+     "bytes": 6130,
+     "git_blob": "cba56dc2712103215a5bc8477ae8629f96d099d8",
+     "path": "crates/hide-kernel/src/subagent.rs",
+     "reason": null,
+     "sha256": "c7ffc0f5652466dc6a171b711eb12baeb1b696fbfd723eb1f73d745a37de8176",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:crates/hide-kernel/src/subagent.rs",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 59897,
+     "git_blob": "dc01235962cd3f0eeac3f3dd0f154759d3cfe62c",
+     "path": "hcli/delegate.py",
+     "reason": null,
+     "sha256": "6ee51b63f22e9c9e88d781b38e396256e0e51c00cc63c7778293a956368d0ee7",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:hcli/delegate.py",
+     "status": "PRESENT"
+    }
+   ],
+   "reason": null,
+   "status": "PRESENT"
+  },
+  {
+   "id": "restart_path",
+   "n_absent": 0,
+   "n_pins": 4,
+   "n_present": 4,
+   "obligation": "restart path",
+   "pins": [
+    {
+     "bytes": 70932,
+     "git_blob": "e43fae2996425aaa6de57c6362f7dd4e87876a29",
+     "path": "tools/future/restart_supervisor.py",
+     "reason": null,
+     "sha256": "de5cfd902fff364723c2e1e8dc34c8bef645ef68bae04bcef5de0b327305ba6f",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/future/restart_supervisor.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 15875,
+     "git_blob": "cd64cf23d5ef8fe37240725b268babe1bf1f83ff",
+     "path": "receipts/future/RESTART_SUPERVISOR.json",
+     "reason": null,
+     "sha256": "52f7c3a49451daf783ca865eb8fff828fdb55a8005c9b9611caeae3b5ce6f544",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:receipts/future/RESTART_SUPERVISOR.json",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 14973,
+     "git_blob": "73e83e2f02e01d2077f00f906780769faa33a3b9",
+     "path": "hcli/agentos/recovery.py",
+     "reason": null,
+     "sha256": "8ca7496241796db09fed2fbb75f5c44f72b1b26ef18ef29df2726cd3e431a79f",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:hcli/agentos/recovery.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 73033,
+     "git_blob": "3d9f10830944fc48bc6443c04d6821a4f650c1d2",
+     "path": "hcli/agentos/checkpoint.py",
+     "reason": null,
+     "sha256": "62e6eea7cccbe0ef361732672670acf19f26db7ef91f9273cc062ca6e3b31c1d",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:hcli/agentos/checkpoint.py",
+     "status": "PRESENT"
+    }
+   ],
+   "reason": null,
+   "status": "PRESENT"
+  },
+  {
+   "id": "launch_gate",
+   "n_absent": 0,
+   "n_pins": 7,
+   "n_present": 7,
+   "obligation": "launch gate",
+   "pins": [
+    {
+     "bytes": 125211,
+     "git_blob": "1e422fffcbc34335cc7d731edabcf8706137171c",
+     "path": "tools/future/odyssey_launch.py",
+     "reason": null,
+     "sha256": "0500044d233552ce12dc0c8d75359dec3ec3dc0067152f21a82dbdb3d15f3e34",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/future/odyssey_launch.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 42640,
+     "git_blob": "9c737a697cbe1cbd3e4b04ce2bce261839184cf6",
+     "path": "tools/future/specimen_curriculum.py",
+     "reason": null,
+     "sha256": "11c50ed5c06323d6d1fe97e7ed98d7124b5cc52b179e312f88f6d9b384632562",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/future/specimen_curriculum.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 242239,
+     "git_blob": "082f1e560f5db67146afe1728518e5bee1290fb5",
+     "path": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+     "reason": null,
+     "sha256": "93cbd0ce6ba5a63e0cef65fab1ca9d247b4741c93c634de81e308b12448ed21f",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:receipts/future/ODYSSEY_LAUNCH_GATE.json",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 70623,
+     "git_blob": "684399eec4f2b55b26f98264c6348c6c5b9d7457",
+     "path": "receipts/future/ODYSSEY_I_LAUNCH.json",
+     "reason": null,
+     "sha256": "dc605578fddbea696a83ded4719281b26d105ab4049ebb5a4f821e6f12cea95a",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:receipts/future/ODYSSEY_I_LAUNCH.json",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 9632,
+     "git_blob": "32986240bd2ae875034ad9ebc20ef393fa9a0024",
+     "path": "tools/odyssey/decoding_gravity.py",
+     "reason": null,
+     "sha256": "072fb88908d982d4f6f2394e9eea6e1667bd8c7a16f717e3dbb1d02451ee00e3",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/odyssey/decoding_gravity.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 10469,
+     "git_blob": "0bb83a8269ea5905359b61ddc05b40a49b4ce9c1",
+     "path": "tools/odyssey/state_gravity.py",
+     "reason": null,
+     "sha256": "cf0f303d05b8ad6c28037482c21f545b79078abf644f8d4919b9c38be2088878",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/odyssey/state_gravity.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 329,
+     "git_blob": "d5914375295ea54edb83fa9b165a2f79ef850910",
+     "path": "hcli/gravity/__init__.py",
+     "reason": null,
+     "sha256": "a4263a8f6f4e89cb9e920078a1837dfe8798e64dfebdfbbe8ccace9f80daed86",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:hcli/gravity/__init__.py",
+     "status": "PRESENT"
+    }
+   ],
+   "reason": null,
+   "status": "PRESENT"
+  },
+  {
+   "id": "tests",
+   "n_absent": 0,
+   "n_pins": 11,
+   "n_present": 11,
+   "obligation": "tests",
+   "pins": [
+    {
+     "bytes": 54257,
+     "git_blob": "1de38b82fe3c6f0c51d40faacc12c578ebc15800",
+     "path": "tools/future/test_odyssey_launch.py",
+     "reason": null,
+     "sha256": "f0410f3951d0322f35a7a735a3fb7e3a6dff00faca17603da418661db3933e23",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/future/test_odyssey_launch.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 18424,
+     "git_blob": "ca5a03926853d9c0d4e7dff2712f06c0f383a840",
+     "path": "tools/future/test_resident_identity.py",
+     "reason": null,
+     "sha256": "40f19b2b68d8e3a37e40d5b1090cb13feb21b8d4d60a161d8a09b97e5998382c",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/future/test_resident_identity.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 13944,
+     "git_blob": "2cfd1afb37df583a88b21d44744b5a21d287f445",
+     "path": "tools/future/test_sandbox.py",
+     "reason": null,
+     "sha256": "affba8c5637d763815858dfd41cd0486afcc37472525ad17aee12726d469ec2e",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/future/test_sandbox.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 16498,
+     "git_blob": "ee73d73692d36914cb9ac25ffc254aaae0fcb801",
+     "path": "tools/future/test_fallback_resident.py",
+     "reason": null,
+     "sha256": "e71c155d7f08170fb944d732f36ab782117baddd05d6669dbb28c262969a44ee",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/future/test_fallback_resident.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 19363,
+     "git_blob": "8e274c95e3f0b42ff3e2dae2dcf56e20f8bf73b8",
+     "path": "tools/future/test_restart_supervisor.py",
+     "reason": null,
+     "sha256": "577bd482a0ec02423db31fa18232ec4a501996b442d4fd6653430e6fda604919",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/future/test_restart_supervisor.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 25947,
+     "git_blob": "84cfd0200b65140a95ef15a494eee049652f3061",
+     "path": "tools/future/test_evidence_dag.py",
+     "reason": null,
+     "sha256": "1c1a095e782fbb7728a2159eb8e0e64b8af82932dfdb937ccf92ab1bca71f942",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/future/test_evidence_dag.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 22757,
+     "git_blob": "b795723cd51bfd5484d3009e77100a5ff171e875",
+     "path": "tools/future/test_resident_supervisor.py",
+     "reason": null,
+     "sha256": "9572ea78b5ce011c9b7e33fd2cdec0385b12f09bc4c84b39e0eae34cc38bbe55",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/future/test_resident_supervisor.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 8629,
+     "git_blob": "06c017e0203ff2ed3865d00d8815b7f88aa542e2",
+     "path": "tools/future/test_workunit_species.py",
+     "reason": null,
+     "sha256": "7522830c8e3b353a34777e3ac58ba17391f2ad4dbd8870aaf2ad68e170a75387",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/future/test_workunit_species.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 13887,
+     "git_blob": "840871487ba52cd6de7000e25ed680eaf468ab0f",
+     "path": "tools/future/test_super_resident.py",
+     "reason": null,
+     "sha256": "8c6b243d9986766059ebf31893c1b9832556716b7b250bc2afcc3a46f9e1486a",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/future/test_super_resident.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 16902,
+     "git_blob": "16d4072f9ea2222099e9c48530d34088f61605c9",
+     "path": "tools/future/test_concurrency_doctor.py",
+     "reason": null,
+     "sha256": "1b08908f4815e7111ee8170f46646b528fe36f6b5f1552a4a01fd8653aede00b",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/future/test_concurrency_doctor.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 26197,
+     "git_blob": "dcb336787411c3b30e2cb629fc53a149068a7937",
+     "path": "tools/future/test_autonomy_run.py",
+     "reason": null,
+     "sha256": "b03e3ea47eac2aba4450605a73f2e255561dd7e2180eae9e4715f9e7a7893de9",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/future/test_autonomy_run.py",
+     "status": "PRESENT"
+    }
+   ],
+   "reason": null,
+   "status": "PRESENT"
+  },
+  {
+   "id": "trial_receipts",
+   "n_absent": 0,
+   "n_pins": 7,
+   "n_present": 7,
+   "named": [
+    "receipts/future/DETACHED_WORK_TRIAL.json",
+    "receipts/future/MUTATION_TRIAL.json",
+    "receipts/future/SUCCESSION_TRIAL.json",
+    "receipts/future/IMPROVEMENT_TRIAL.json",
+    "receipts/future/AUTONOMY_DEGENERACY.json",
+    "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+    "receipts/future/ODYSSEY_I_LAUNCH.json"
+   ],
+   "obligation": "trial receipts",
+   "pins": [
+    {
+     "bytes": 104149,
+     "git_blob": "9ac21a7d434773b4f8515792265955631db39f8f",
+     "path": "receipts/future/DETACHED_WORK_TRIAL.json",
+     "reason": null,
+     "sha256": "b5dddc8a95a318b5f028a2cfa9a25ed5a1de64b3fd91437ef1ae8f91a816a0a9",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:receipts/future/DETACHED_WORK_TRIAL.json",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 19908,
+     "git_blob": "d19ec95c20dc949e158e614f2e882c26eb801cac",
+     "path": "receipts/future/MUTATION_TRIAL.json",
+     "reason": null,
+     "sha256": "5b112fcb9ef0379f6941b175bc8deae3de7be45be283196df0dff7d3afbee2aa",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:receipts/future/MUTATION_TRIAL.json",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 51807,
+     "git_blob": "a4955805324e9575b7948549ec9decdbcbcbb2c2",
+     "path": "receipts/future/SUCCESSION_TRIAL.json",
+     "reason": null,
+     "sha256": "4c5801eddd207a6591f1af4e01f1b0c45dac946ae236e9e6c71c546febc4a7a9",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:receipts/future/SUCCESSION_TRIAL.json",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 37826,
+     "git_blob": "48c326bf4e183f1f520a497abf97abb2e4a73413",
+     "path": "receipts/future/IMPROVEMENT_TRIAL.json",
+     "reason": null,
+     "sha256": "f63dc5cde83e16bcfc6f05c6bf5fbed5acff4444da97d82324cd848e5f2b1ffd",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:receipts/future/IMPROVEMENT_TRIAL.json",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 18087,
+     "git_blob": "6d2f84850a6824d84abc2be0e3ace1a0cbfdc4fd",
+     "path": "receipts/future/AUTONOMY_DEGENERACY.json",
+     "reason": null,
+     "sha256": "74f4a8d92af51bf05a52e39b8c164d0afdaa88101781e1b43195ac7bf2fbdac6",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:receipts/future/AUTONOMY_DEGENERACY.json",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 242239,
+     "git_blob": "082f1e560f5db67146afe1728518e5bee1290fb5",
+     "path": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+     "reason": null,
+     "sha256": "93cbd0ce6ba5a63e0cef65fab1ca9d247b4741c93c634de81e308b12448ed21f",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:receipts/future/ODYSSEY_LAUNCH_GATE.json",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 70623,
+     "git_blob": "684399eec4f2b55b26f98264c6348c6c5b9d7457",
+     "path": "receipts/future/ODYSSEY_I_LAUNCH.json",
+     "reason": null,
+     "sha256": "dc605578fddbea696a83ded4719281b26d105ab4049ebb5a4f821e6f12cea95a",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:receipts/future/ODYSSEY_I_LAUNCH.json",
+     "status": "PRESENT"
+    }
+   ],
+   "reason": null,
+   "receipts": [
+    {
+     "bytes": 104149,
+     "git_blob": "9ac21a7d434773b4f8515792265955631db39f8f",
+     "head_recorded": "5090dcf7dcb5e7d887af4a4586d966e7625f2064",
+     "path": "receipts/future/DETACHED_WORK_TRIAL.json",
+     "receipt_status": null,
+     "schema": "hawking.future.detached_trial.v1",
+     "seal_sha256": "357d969f4ef804b246792bbd4e8f24e9c05ebe791a60f0ee542b224218e20984",
+     "seal_verifies": true,
+     "sha256": "b5dddc8a95a318b5f028a2cfa9a25ed5a1de64b3fd91437ef1ae8f91a816a0a9",
+     "status": "PRESENT",
+     "verdict": "PASS"
+    },
+    {
+     "bytes": 19908,
+     "git_blob": "d19ec95c20dc949e158e614f2e882c26eb801cac",
+     "head_recorded": null,
+     "path": "receipts/future/MUTATION_TRIAL.json",
+     "receipt_status": null,
+     "schema": "hawking.future.mutation_trial.v1",
+     "seal_sha256": "886ffec13a6acc19ac55dbdf754d84447b81cdb8b76850f42a9d81eb5a908cce",
+     "seal_verifies": true,
+     "sha256": "5b112fcb9ef0379f6941b175bc8deae3de7be45be283196df0dff7d3afbee2aa",
+     "status": "PRESENT",
+     "verdict": "PASS"
+    },
+    {
+     "bytes": 51807,
+     "git_blob": "a4955805324e9575b7948549ec9decdbcbcbb2c2",
+     "head_recorded": "023420e5926e1d744f4d632b481660bcaec90ace",
+     "path": "receipts/future/SUCCESSION_TRIAL.json",
+     "receipt_status": "REAL_CANDIDATE_REFUSED",
+     "schema": "hawking.future.succession_trial.v1",
+     "seal_sha256": "a62ce7c8e338609ce0a59dab9f955bc7389b8ea7dfeeabd2b2bb7da20ea59fe3",
+     "seal_verifies": true,
+     "sha256": "4c5801eddd207a6591f1af4e01f1b0c45dac946ae236e9e6c71c546febc4a7a9",
+     "status": "PRESENT",
+     "verdict": null
+    },
+    {
+     "bytes": 37826,
+     "git_blob": "48c326bf4e183f1f520a497abf97abb2e4a73413",
+     "head_recorded": "9d90b5de0bab6ea019717ba42128cd78ff94705f",
+     "path": "receipts/future/IMPROVEMENT_TRIAL.json",
+     "receipt_status": null,
+     "schema": "hawking.future.improvement_trial.v1",
+     "seal_sha256": "50fc624e8fca5f67dc41c4c7b40c278f86ef46ebca0e225e7f2cc541250c6f2e",
+     "seal_verifies": true,
+     "sha256": "f63dc5cde83e16bcfc6f05c6bf5fbed5acff4444da97d82324cd848e5f2b1ffd",
+     "status": "PRESENT",
+     "verdict": "PASS"
+    },
+    {
+     "bytes": 18087,
+     "git_blob": "6d2f84850a6824d84abc2be0e3ace1a0cbfdc4fd",
+     "head_recorded": "9d90b5de0bab6ea019717ba42128cd78ff94705f",
+     "path": "receipts/future/AUTONOMY_DEGENERACY.json",
+     "receipt_status": null,
+     "schema": "hawking.future.autonomy_degeneracy.v1",
+     "seal_sha256": "af4bd3090c178377277e068be0b46c7759c9f0b02722c43d42f236fc1b4a0f63",
+     "seal_verifies": true,
+     "sha256": "74f4a8d92af51bf05a52e39b8c164d0afdaa88101781e1b43195ac7bf2fbdac6",
+     "status": "PRESENT",
+     "verdict": "PASS"
+    },
+    {
+     "bytes": 242239,
+     "git_blob": "082f1e560f5db67146afe1728518e5bee1290fb5",
+     "head_recorded": "607b235241e7a9b0d1f5d052364d6e5436f21aaa",
+     "path": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+     "receipt_status": null,
+     "schema": "hawking.future.odyssey_launch.v1",
+     "seal_sha256": "16a8a80e34d5d431d1ad2b3556e2a603a34bbc5bbfd85f049ca69ae69f7e9b70",
+     "seal_verifies": true,
+     "sha256": "93cbd0ce6ba5a63e0cef65fab1ca9d247b4741c93c634de81e308b12448ed21f",
+     "status": "PRESENT",
+     "verdict": {
+      "allowed": true,
+      "n_met": 16,
+      "n_unmet": 0,
+      "verdict": "LAUNCH"
+     }
+    },
+    {
+     "bytes": 70623,
+     "git_blob": "684399eec4f2b55b26f98264c6348c6c5b9d7457",
+     "head_recorded": null,
+     "path": "receipts/future/ODYSSEY_I_LAUNCH.json",
+     "receipt_status": null,
+     "schema": "hawking.future.odyssey_i_launch.v1",
+     "seal_sha256": "93fc95b7112fc8f2f02ee8f194a1d90bb761bfe7f3ad20500e2b1ae82a121d13",
+     "seal_verifies": true,
+     "sha256": "dc605578fddbea696a83ded4719281b26d105ab4049ebb5a4f821e6f12cea95a",
+     "status": "PRESENT",
+     "verdict": {
+      "allowed": true,
+      "n_met": 16,
+      "n_unmet": 0,
+      "verdict": "LAUNCH"
+     }
+    }
+   ],
+   "status": "PRESENT"
+  },
+  {
+   "id": "timeline_seals",
+   "n_absent": 0,
+   "n_pins": 3,
+   "n_present": 3,
+   "named": [
+    "receipts/future/AUTONOMY_TIMELINE_15m.json",
+    "receipts/future/AUTONOMY_TIMELINE_30m.json",
+    "receipts/future/AUTONOMY_TIMELINE_1h.json"
+   ],
+   "obligation": "timeline seals",
+   "pins": [
+    {
+     "bytes": 202112,
+     "git_blob": "b21607167c13a775dc2a9a8d690df63613ef08f2",
+     "path": "receipts/future/AUTONOMY_TIMELINE_15m.json",
+     "reason": null,
+     "sha256": "74ef02fca4bf584ad077e5ddc745aa6cbb80aecac06c7806d29d8cc39c24e2c9",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:receipts/future/AUTONOMY_TIMELINE_15m.json",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 599532,
+     "git_blob": "a7871638256da1ead539f5f5734a699a0aeefc38",
+     "path": "receipts/future/AUTONOMY_TIMELINE_30m.json",
+     "reason": null,
+     "sha256": "e973d68d6e94f144b778684e048aa88d5f82cb4738ac6642372c0edf4a4e2467",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:receipts/future/AUTONOMY_TIMELINE_30m.json",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 654162,
+     "git_blob": "0943f1c409eb67ec86b4ecd0f51e2695ae0bf677",
+     "path": "receipts/future/AUTONOMY_TIMELINE_1h.json",
+     "reason": null,
+     "sha256": "72f00ec20f958aa83f30e2346839ddbeb4e5e31679f91235eb8775952bd7f011",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:receipts/future/AUTONOMY_TIMELINE_1h.json",
+     "status": "PRESENT"
+    }
+   ],
+   "reason": null,
+   "receipts": [
+    {
+     "bytes": 202112,
+     "git_blob": "b21607167c13a775dc2a9a8d690df63613ef08f2",
+     "head_recorded": null,
+     "path": "receipts/future/AUTONOMY_TIMELINE_15m.json",
+     "receipt_status": null,
+     "schema": null,
+     "seal_absent_reason": "AUTONOMY_TIMELINE_15m.json carries no seal_sha256 field; 30m and 1h do. The file content hash is the pin.",
+     "seal_sha256": null,
+     "seal_verifies": false,
+     "sha256": "74ef02fca4bf584ad077e5ddc745aa6cbb80aecac06c7806d29d8cc39c24e2c9",
+     "status": "PRESENT",
+     "verdict": null
+    },
+    {
+     "bytes": 599532,
+     "git_blob": "a7871638256da1ead539f5f5734a699a0aeefc38",
+     "head_recorded": null,
+     "path": "receipts/future/AUTONOMY_TIMELINE_30m.json",
+     "receipt_status": null,
+     "schema": null,
+     "seal_sha256": "d3de702262435600d81a3b12c9787e2f1da1e32e0a143aed726e459deaf62df5",
+     "seal_verifies": true,
+     "sha256": "e973d68d6e94f144b778684e048aa88d5f82cb4738ac6642372c0edf4a4e2467",
+     "status": "PRESENT",
+     "verdict": null
+    },
+    {
+     "bytes": 654162,
+     "git_blob": "0943f1c409eb67ec86b4ecd0f51e2695ae0bf677",
+     "head_recorded": null,
+     "path": "receipts/future/AUTONOMY_TIMELINE_1h.json",
+     "receipt_status": null,
+     "schema": null,
+     "seal_sha256": "fc89eaaf6db4db8176802579508c5a29376402cb5b9cf38eedbc38ca7d9f2708",
+     "seal_verifies": true,
+     "sha256": "72f00ec20f958aa83f30e2346839ddbeb4e5e31679f91235eb8775952bd7f011",
+     "status": "PRESENT",
+     "verdict": null
+    }
+   ],
+   "status": "PRESENT"
+  },
+  {
+   "expected_absent": true,
+   "id": "hcli_agentos_resident_py",
+   "live_boundary": "hcli/agentos/resident_gate.py",
+   "n_absent": 1,
+   "n_pins": 1,
+   "n_present": 0,
+   "obligation": "hcli/agentos/resident.py (expected absent)",
+   "pins": [
+    {
+     "bytes": null,
+     "git_blob": null,
+     "path": "hcli/agentos/resident.py",
+     "reason": "not in git tree 973e790fa777 \u2014 sparse miss is not this; ls-tree at the pinned commit is empty",
+     "sha256": null,
+     "source": "git:ls-tree:973e790fa77733120188db335108a0cb2cbdec34:hcli/agentos/resident.py",
+     "status": "ABSENT"
+    }
+   ],
+   "reason": "hcli/agentos/resident.py is not in git at the launch commit. hcli/agentos/resident_gate.py is the live boundary (schema hcli.agentos.resident_gate.v1).",
+   "status": "ABSENT"
+  },
+  {
+   "id": "concurrency_doctor",
+   "n_absent": 0,
+   "n_pins": 2,
+   "n_present": 2,
+   "obligation": "concurrency doctor (SLEEPING by design)",
+   "pins": [
+    {
+     "bytes": 49885,
+     "git_blob": "ec87ce8178cbde5a3f3336257233e2dd7aea97f8",
+     "path": "tools/future/concurrency_doctor.py",
+     "reason": null,
+     "sha256": "7168e9fa6de419ef0fc206756f9dbd62a0c8111ea21847ea7cb87543dba56810",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/future/concurrency_doctor.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 24828,
+     "git_blob": "7f8dc82f51b0fca37941994801a9646dc25e1035",
+     "path": "receipts/future/RESIDENT_CONCURRENCY_DOCTOR.json",
+     "reason": null,
+     "sha256": "254985db001604a004bd0f4291efd15fdb681b6dffa208d48c0cdc8706a09c8b",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:receipts/future/RESIDENT_CONCURRENCY_DOCTOR.json",
+     "status": "PRESENT"
+    }
+   ],
+   "reason": null,
+   "receipt": {
+    "experiment_state": "SLEEPING",
+    "is_a_measurement": false,
+    "parsed": true,
+    "schema": "hawking.future.concurrency_doctor.v1",
+    "seal_sha256": "382faa6944dd07c3723ef55241016077a4cb0f543f4d84b35a1fba5790ad0e86",
+    "seal_verifies": true,
+    "sleeping_by_design": true,
+    "wake_condition": "declared resident PRESENT, protected GPU lease held, quiescence QUIESCENT. This sidecar has no GPU lease; SLEEPING is the honest state."
+   },
+   "status": "PRESENT"
+  },
+  {
+   "id": "autonomy_run_safe_capabilities",
+   "n_absent": 0,
+   "n_pins": 2,
+   "n_present": 2,
+   "note": "SAFE_CAPABILITIES at the launch commit omits mutation_engine by design. mutation_engine.py is pinned so the omission is a hash, not a memory.",
+   "obligation": "autonomy_run SAFE_CAPABILITIES (omits mutation_engine)",
+   "pins": [
+    {
+     "bytes": 79921,
+     "git_blob": "cab86def0395092ce72c2ca4f7e81a9319b813eb",
+     "path": "tools/future/autonomy_run.py",
+     "reason": null,
+     "sha256": "541ac50bafcb9c6a92db979470177dfa6a9408c70573a3aa8f069232456c0ae1",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/future/autonomy_run.py",
+     "status": "PRESENT"
+    },
+    {
+     "bytes": 43215,
+     "git_blob": "bdd9b691d139850ed80b28b826a35979badd0ded",
+     "path": "tools/future/mutation_engine.py",
+     "reason": null,
+     "sha256": "f64dad5ad9943dc5ac34c8ba9e559859c33724d51d38dc6adebf3086aa6abd82",
+     "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/future/mutation_engine.py",
+     "status": "PRESENT"
+    }
+   ],
+   "reason": null,
+   "safe_capabilities": {
+    "mutation_tokens_present": [],
+    "n_safe_capabilities": 58,
+    "names": [
+     "freshness.py",
+     "evidence_snapshot.py",
+     "codex_ingest.py",
+     "negative_index.py",
+     "hbm_doctor.py",
+     "router_science.py",
+     "ngram_school.py",
+     "expert_bank_school.py",
+     "moe_physical_school.py",
+     "hardware_doctor.py",
+     "fpga_engines.py",
+     "cuda_lowbit_hypotheses.py",
+     "flash_schools.py",
+     "p6_projection.py",
+     "decode_civilization.py",
+     "static_skeleton.py",
+     "hwir.py",
+     "resident_api.py",
+     "orchestration.py",
+     "global_frontier.py",
+     "flash_nx_audit.py",
+     "candidate_planner.py",
+     "workunit_species.py",
+     "static_kernel_verify.py",
+     "tournament.py",
+     "super_resident.py",
+     "odyssey_launch.py",
+     "meta_ready.py",
+     "teacher_corpus.py",
+     "ebpw_categories.py",
+     "physical_primitives.py",
+     "fpga_fidelity.py",
+     "device_ascension_pipeline.py",
+     "green_machine.py",
+     "repro_science.py",
+     "evidence_dag.py",
+     "scar_scheduling.py",
+     "dirty_measure.py",
+     "protected_window.py",
+     "sandbox.py",
+     "resident_identity.py",
+     "frontiers.py",
+     "succession.py",
+     "tabula.py",
+     "debugger.py",
+     "codex_behaviors.py",
+     "workgraph.py",
+     "detached.py",
+     "wakeup.py",
+     "abi_verdicts.py",
+     "devplatform.py",
+     "hmf_objects.py",
+     "fusion_sim.py",
+     "lpc_dataset.py",
+     "turnaround.py",
+     "qwen27_profile_schema.py",
+     "flash_nr_complete.py",
+     "git_lock_doctor.py"
+    ],
+    "omits_mutation_engine": true,
+    "omitted_tokens_checked": [
+     "mutation_engine.py",
+     "mutation_engine",
+     "mutation_trial.py"
+    ],
+    "parsed": true
+   },
+   "status": "PRESENT"
+  }
+ ],
+ "eras": [
+  "I Genesis of the Laboratory",
+  "II Compounding Civilization",
+  "III Autonomous Science Civilization",
+  "IV Synthetic Machine Civilization",
+  "V Released Hawking Civilization"
+ ],
+ "gaps_closed": [
+  "exact launch commit pinned, not the tip of a branch",
+  "launch receipt seal_sha256 pinned beside that commit",
+  "every obligation component is a path plus a content hash, or ABSENT with a reason",
+  "hcli/agentos/resident.py recorded ABSENT rather than omitted",
+  "concurrency doctor recorded SLEEPING rather than invented as running",
+  "SAFE_CAPABILITIES omission of mutation_engine recorded as a parsed fact",
+  "recovery verification actually ran, including blob reconstitution",
+  "supersession is a stored digest plus a written successor procedure"
+ ],
+ "gate_receipt": {
+  "head_recorded": "607b235241e7a9b0d1f5d052364d6e5436f21aaa",
+  "path": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+  "recorded_head": "607b235241e7a9b0d1f5d052364d6e5436f21aaa",
+  "recorded_head_is_parent": true,
+  "schema": "hawking.future.odyssey_launch.v1",
+  "seal_sha256": "16a8a80e34d5d431d1ad2b3556e2a603a34bbc5bbfd85f049ca69ae69f7e9b70",
+  "seal_verifies": true,
+  "status": null,
+  "verdict": {
+   "allowed": true,
+   "n_met": 16,
+   "n_unmet": 0,
+   "verdict": "LAUNCH"
+  },
+  "why_recorded_head_is_not_the_launch_commit": "ODYSSEY_LAUNCH_GATE.json was generated on parent 607b23524 and committed as 973e790fa together with ODYSSEY_I_LAUNCH.json. The launching sha is 973e790fa, not the receipt's `head` field."
+ },
+ "golden_digest": "34ac188fd6af85f1a7d504066fff00381f2f81beb8da4c0a721e47cb84db4ea0",
+ "golden_identity": {
+  "components": [
+   {
+    "id": "git_commit",
+    "pins": [
+     {
+      "path": "git:commit:973e790fa77733120188db335108a0cb2cbdec34",
+      "sha256": "30c500b076d94ae8d5c94ccfeda4aa79c7dc2f16470ce942329cfa9dd656b71e",
+      "status": "PRESENT"
+     }
+    ],
+    "status": "PRESENT"
+   },
+   {
+    "id": "hcli_daemon",
+    "pins": [
+     {
+      "path": "hcli/__main__.py",
+      "sha256": "5e6030836f3887617683db2e78ed3b28aed2f9a96f389b6bd9202e707ea538d6",
+      "status": "PRESENT"
+     },
+     {
+      "path": "hcli/cli.py",
+      "sha256": "6e844517b60245b1bc3dbdff2fe9c6a967606933696c6694744118f2b86ef4b1",
+      "status": "PRESENT"
+     },
+     {
+      "path": "hcli/engine.py",
+      "sha256": "74d58119f135e9ce97c8118ada1a6671d31af184ce0156cbc5087ca1c0ac157d",
+      "status": "PRESENT"
+     },
+     {
+      "path": "hcli/agentos/background.py",
+      "sha256": "c23c44febfc594ba694b5c1f75bf31107cff3394efeb0b8ed30b468df7b8f51c",
+      "status": "PRESENT"
+     },
+     {
+      "path": "tools/future/super_resident.py",
+      "sha256": "5e471eb6faaa3bd1c0efd34cfcad573cd562e7272acfd4535d65e914b5d54b51",
+      "status": "PRESENT"
+     },
+     {
+      "path": "receipts/future/SUPER_RESIDENT_FLOOR.json",
+      "sha256": "d21495b0a9ef6ba3bd67a32bc5253aa9a487839b93152ba30823fc183c991779",
+      "status": "PRESENT"
+     }
+    ],
+    "status": "PRESENT"
+   },
+   {
+    "id": "supervisor",
+    "pins": [
+     {
+      "path": "tools/future/resident_supervisor.py",
+      "sha256": "0214b9463108f004acc68a91b2d6913142310427b11116c3c2cce3e52aa0bf1f",
+      "status": "PRESENT"
+     },
+     {
+      "path": "receipts/future/RESIDENT_SUPERVISOR.json",
+      "sha256": "38dc1714d507f4c664571fc10772499e9766388b08f943037d7f8f5ea489c265",
+      "status": "PRESENT"
+     }
+    ],
+    "status": "PRESENT"
+   },
+   {
+    "id": "resident_nx",
+    "pins": [
+     {
+      "path": "tools/future/resident_identity.py",
+      "sha256": "b54516473af5466eb4bad27c1abbbd89570cd50d673ff42fb1cc3ac78744d4c4",
+      "status": "PRESENT"
+     },
+     {
+      "path": "receipts/future/RESIDENT_IDENTITY.json",
+      "sha256": "fb8bedfaa25c66c19450a78755e142fce9b3c33ea767962e5dd1771757942798",
+      "status": "PRESENT"
+     },
+     {
+      "path": "hcli/hawking-native.sealed-3.14.json",
+      "sha256": "d0ccab6562eebde05f81fbc9e7d40698f4aa9a83ae8e19606a7372a1f3abb7ce",
+      "status": "PRESENT"
+     },
+     {
+      "path": "hcli/agentos/resident_gate.py",
+      "sha256": "91ecf19d5e33f1df83c50172cdd21d461d9a7f166cdd3233a762358880539ba8",
+      "status": "PRESENT"
+     },
+     {
+      "path": "hcli/agentos/qwen27_runtime_identity.py",
+      "sha256": "ac80407f602b02d2bd78d395d0038e3b6b7f5bf302a05c612feb8d18bcbba2d9",
+      "status": "PRESENT"
+     },
+     {
+      "path": "hcli/hawking_native.py",
+      "sha256": "e6d8c8ae71eb0458e5b51c7f9d050b425e2b0c62064aa349b14c12f3806a63d0",
+      "status": "PRESENT"
+     }
+    ],
+    "status": "PRESENT"
+   },
+   {
+    "id": "fallback_identity",
+    "pins": [
+     {
+      "path": "tools/future/fallback_resident.py",
+      "sha256": "5ecd7c25ede15535a7b5cc35e4252930de6ff87c45d1f8079705bd0342538962",
+      "status": "PRESENT"
+     },
+     {
+      "path": "receipts/future/FALLBACK_RESIDENT.json",
+      "sha256": "c391ac1136572910629975202f822a27bd51d3a56e7d3c3d0c92d42d85d635f7",
+      "status": "PRESENT"
+     }
+    ],
+    "status": "PRESENT"
+   },
+   {
+    "id": "sandbox_policy",
+    "pins": [
+     {
+      "path": "tools/future/sandbox.py",
+      "sha256": "77f6daf592bf40ae323a1e74f8b7b825c174548d1bad560b319d5ee873099024",
+      "status": "PRESENT"
+     },
+     {
+      "path": "receipts/future/RESIDENT_SANDBOX.json",
+      "sha256": "86c1ccc2331d745a4b4df8ce6a54428d4aca65ad9e8e6fd502dac8ce75ec18aa",
+      "status": "PRESENT"
+     }
+    ],
+    "status": "PRESENT"
+   },
+   {
+    "id": "workunit_schemas",
+    "pins": [
+     {
+      "path": "hcli/workunit.py",
+      "sha256": "680db5ea165a3db7287ba16ca95cd17b9eba57ccee10e58e9b2780daf4838da1",
+      "status": "PRESENT"
+     },
+     {
+      "path": "tools/future/workunit_species.py",
+      "sha256": "4a1c3ea2205f46eecde21764f52265f8314cfeddc32dda27d7f9d9241437477c",
+      "status": "PRESENT"
+     },
+     {
+      "path": "receipts/future/HCLI_FUTURE_WORKUNITS.json",
+      "sha256": "e2028c656406956ece35f1a580182b44f8208d5a40da688db3369ceef9585b3e",
+      "status": "PRESENT"
+     }
+    ],
+    "status": "PRESENT"
+   },
+   {
+    "id": "resource_registry",
+    "pins": [
+     {
+      "path": "hcli/resources.py",
+      "sha256": "06463291917d3eadf5b8f60f155df8114322a4d177097bbab6852f8524f170e3",
+      "status": "PRESENT"
+     }
+    ],
+    "status": "PRESENT"
+   },
+   {
+    "id": "evidence_dag",
+    "pins": [
+     {
+      "path": "tools/future/evidence_dag.py",
+      "sha256": "22df790695b89ae17b62f557ff8d62751af98bbd3ff75ab24a07602378a801c2",
+      "status": "PRESENT"
+     },
+     {
+      "path": "receipts/future/EVIDENCE_DAG.json",
+      "sha256": "6be6a83f2fa7109434a70b48cbefc0955c469aa1d2853d6febedde9473628d98",
+      "status": "PRESENT"
+     }
+    ],
+    "status": "PRESENT"
+   },
+   {
+    "id": "verifier",
+    "pins": [
+     {
+      "path": "hcli/verifier_pipeline.py",
+      "sha256": "390c3f0bcb771a40128cfd76c244b4d89d16d890b8a29ddd2f9a4e4a86cd4be7",
+      "status": "PRESENT"
+     }
+    ],
+    "status": "PRESENT"
+   },
+   {
+    "id": "tool_registry",
+    "pins": [
+     {
+      "path": "hcli/tool_registry.py",
+      "sha256": "c56aace5905183b250751d57e57d52d483a0b363118101fb4c555fd535050823",
+      "status": "PRESENT"
+     }
+    ],
+    "status": "PRESENT"
+   },
+   {
+    "id": "subagent_interfaces",
+    "pins": [
+     {
+      "path": "crates/hide-kernel/src/subagent.rs",
+      "sha256": "c7ffc0f5652466dc6a171b711eb12baeb1b696fbfd723eb1f73d745a37de8176",
+      "status": "PRESENT"
+     },
+     {
+      "path": "hcli/delegate.py",
+      "sha256": "6ee51b63f22e9c9e88d781b38e396256e0e51c00cc63c7778293a956368d0ee7",
+      "status": "PRESENT"
+     }
+    ],
+    "status": "PRESENT"
+   },
+   {
+    "id": "restart_path",
+    "pins": [
+     {
+      "path": "tools/future/restart_supervisor.py",
+      "sha256": "de5cfd902fff364723c2e1e8dc34c8bef645ef68bae04bcef5de0b327305ba6f",
+      "status": "PRESENT"
+     },
+     {
+      "path": "receipts/future/RESTART_SUPERVISOR.json",
+      "sha256": "52f7c3a49451daf783ca865eb8fff828fdb55a8005c9b9611caeae3b5ce6f544",
+      "status": "PRESENT"
+     },
+     {
+      "path": "hcli/agentos/recovery.py",
+      "sha256": "8ca7496241796db09fed2fbb75f5c44f72b1b26ef18ef29df2726cd3e431a79f",
+      "status": "PRESENT"
+     },
+     {
+      "path": "hcli/agentos/checkpoint.py",
+      "sha256": "62e6eea7cccbe0ef361732672670acf19f26db7ef91f9273cc062ca6e3b31c1d",
+      "status": "PRESENT"
+     }
+    ],
+    "status": "PRESENT"
+   },
+   {
+    "id": "launch_gate",
+    "pins": [
+     {
+      "path": "tools/future/odyssey_launch.py",
+      "sha256": "0500044d233552ce12dc0c8d75359dec3ec3dc0067152f21a82dbdb3d15f3e34",
+      "status": "PRESENT"
+     },
+     {
+      "path": "tools/future/specimen_curriculum.py",
+      "sha256": "11c50ed5c06323d6d1fe97e7ed98d7124b5cc52b179e312f88f6d9b384632562",
+      "status": "PRESENT"
+     },
+     {
+      "path": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+      "sha256": "93cbd0ce6ba5a63e0cef65fab1ca9d247b4741c93c634de81e308b12448ed21f",
+      "status": "PRESENT"
+     },
+     {
+      "path": "receipts/future/ODYSSEY_I_LAUNCH.json",
+      "sha256": "dc605578fddbea696a83ded4719281b26d105ab4049ebb5a4f821e6f12cea95a",
+      "status": "PRESENT"
+     },
+     {
+      "path": "tools/odyssey/decoding_gravity.py",
+      "sha256": "072fb88908d982d4f6f2394e9eea6e1667bd8c7a16f717e3dbb1d02451ee00e3",
+      "status": "PRESENT"
+     },
+     {
+      "path": "tools/odyssey/state_gravity.py",
+      "sha256": "cf0f303d05b8ad6c28037482c21f545b79078abf644f8d4919b9c38be2088878",
+      "status": "PRESENT"
+     },
+     {
+      "path": "hcli/gravity/__init__.py",
+      "sha256": "a4263a8f6f4e89cb9e920078a1837dfe8798e64dfebdfbbe8ccace9f80daed86",
+      "status": "PRESENT"
+     }
+    ],
+    "status": "PRESENT"
+   },
+   {
+    "id": "tests",
+    "pins": [
+     {
+      "path": "tools/future/test_odyssey_launch.py",
+      "sha256": "f0410f3951d0322f35a7a735a3fb7e3a6dff00faca17603da418661db3933e23",
+      "status": "PRESENT"
+     },
+     {
+      "path": "tools/future/test_resident_identity.py",
+      "sha256": "40f19b2b68d8e3a37e40d5b1090cb13feb21b8d4d60a161d8a09b97e5998382c",
+      "status": "PRESENT"
+     },
+     {
+      "path": "tools/future/test_sandbox.py",
+      "sha256": "affba8c5637d763815858dfd41cd0486afcc37472525ad17aee12726d469ec2e",
+      "status": "PRESENT"
+     },
+     {
+      "path": "tools/future/test_fallback_resident.py",
+      "sha256": "e71c155d7f08170fb944d732f36ab782117baddd05d6669dbb28c262969a44ee",
+      "status": "PRESENT"
+     },
+     {
+      "path": "tools/future/test_restart_supervisor.py",
+      "sha256": "577bd482a0ec02423db31fa18232ec4a501996b442d4fd6653430e6fda604919",
+      "status": "PRESENT"
+     },
+     {
+      "path": "tools/future/test_evidence_dag.py",
+      "sha256": "1c1a095e782fbb7728a2159eb8e0e64b8af82932dfdb937ccf92ab1bca71f942",
+      "status": "PRESENT"
+     },
+     {
+      "path": "tools/future/test_resident_supervisor.py",
+      "sha256": "9572ea78b5ce011c9b7e33fd2cdec0385b12f09bc4c84b39e0eae34cc38bbe55",
+      "status": "PRESENT"
+     },
+     {
+      "path": "tools/future/test_workunit_species.py",
+      "sha256": "7522830c8e3b353a34777e3ac58ba17391f2ad4dbd8870aaf2ad68e170a75387",
+      "status": "PRESENT"
+     },
+     {
+      "path": "tools/future/test_super_resident.py",
+      "sha256": "8c6b243d9986766059ebf31893c1b9832556716b7b250bc2afcc3a46f9e1486a",
+      "status": "PRESENT"
+     },
+     {
+      "path": "tools/future/test_concurrency_doctor.py",
+      "sha256": "1b08908f4815e7111ee8170f46646b528fe36f6b5f1552a4a01fd8653aede00b",
+      "status": "PRESENT"
+     },
+     {
+      "path": "tools/future/test_autonomy_run.py",
+      "sha256": "b03e3ea47eac2aba4450605a73f2e255561dd7e2180eae9e4715f9e7a7893de9",
+      "status": "PRESENT"
+     }
+    ],
+    "status": "PRESENT"
+   },
+   {
+    "id": "trial_receipts",
+    "pins": [
+     {
+      "path": "receipts/future/DETACHED_WORK_TRIAL.json",
+      "sha256": "b5dddc8a95a318b5f028a2cfa9a25ed5a1de64b3fd91437ef1ae8f91a816a0a9",
+      "status": "PRESENT"
+     },
+     {
+      "path": "receipts/future/MUTATION_TRIAL.json",
+      "sha256": "5b112fcb9ef0379f6941b175bc8deae3de7be45be283196df0dff7d3afbee2aa",
+      "status": "PRESENT"
+     },
+     {
+      "path": "receipts/future/SUCCESSION_TRIAL.json",
+      "sha256": "4c5801eddd207a6591f1af4e01f1b0c45dac946ae236e9e6c71c546febc4a7a9",
+      "status": "PRESENT"
+     },
+     {
+      "path": "receipts/future/IMPROVEMENT_TRIAL.json",
+      "sha256": "f63dc5cde83e16bcfc6f05c6bf5fbed5acff4444da97d82324cd848e5f2b1ffd",
+      "status": "PRESENT"
+     },
+     {
+      "path": "receipts/future/AUTONOMY_DEGENERACY.json",
+      "sha256": "74f4a8d92af51bf05a52e39b8c164d0afdaa88101781e1b43195ac7bf2fbdac6",
+      "status": "PRESENT"
+     },
+     {
+      "path": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+      "sha256": "93cbd0ce6ba5a63e0cef65fab1ca9d247b4741c93c634de81e308b12448ed21f",
+      "status": "PRESENT"
+     },
+     {
+      "path": "receipts/future/ODYSSEY_I_LAUNCH.json",
+      "sha256": "dc605578fddbea696a83ded4719281b26d105ab4049ebb5a4f821e6f12cea95a",
+      "status": "PRESENT"
+     }
+    ],
+    "status": "PRESENT"
+   },
+   {
+    "id": "timeline_seals",
+    "pins": [
+     {
+      "path": "receipts/future/AUTONOMY_TIMELINE_15m.json",
+      "sha256": "74ef02fca4bf584ad077e5ddc745aa6cbb80aecac06c7806d29d8cc39c24e2c9",
+      "status": "PRESENT"
+     },
+     {
+      "path": "receipts/future/AUTONOMY_TIMELINE_30m.json",
+      "sha256": "e973d68d6e94f144b778684e048aa88d5f82cb4738ac6642372c0edf4a4e2467",
+      "status": "PRESENT"
+     },
+     {
+      "path": "receipts/future/AUTONOMY_TIMELINE_1h.json",
+      "sha256": "72f00ec20f958aa83f30e2346839ddbeb4e5e31679f91235eb8775952bd7f011",
+      "status": "PRESENT"
+     }
+    ],
+    "status": "PRESENT"
+   },
+   {
+    "id": "hcli_agentos_resident_py",
+    "pins": [
+     {
+      "path": "hcli/agentos/resident.py",
+      "sha256": null,
+      "status": "ABSENT"
+     }
+    ],
+    "status": "ABSENT"
+   },
+   {
+    "id": "concurrency_doctor",
+    "pins": [
+     {
+      "path": "tools/future/concurrency_doctor.py",
+      "sha256": "7168e9fa6de419ef0fc206756f9dbd62a0c8111ea21847ea7cb87543dba56810",
+      "status": "PRESENT"
+     },
+     {
+      "path": "receipts/future/RESIDENT_CONCURRENCY_DOCTOR.json",
+      "sha256": "254985db001604a004bd0f4291efd15fdb681b6dffa208d48c0cdc8706a09c8b",
+      "status": "PRESENT"
+     }
+    ],
+    "status": "PRESENT"
+   },
+   {
+    "id": "autonomy_run_safe_capabilities",
+    "pins": [
+     {
+      "path": "tools/future/autonomy_run.py",
+      "sha256": "541ac50bafcb9c6a92db979470177dfa6a9408c70573a3aa8f069232456c0ae1",
+      "status": "PRESENT"
+     },
+     {
+      "path": "tools/future/mutation_engine.py",
+      "sha256": "f64dad5ad9943dc5ac34c8ba9e559859c33724d51d38dc6adebf3086aa6abd82",
+      "status": "PRESENT"
+     }
+    ],
+    "status": "PRESENT"
+   }
+  ],
+  "launch_commit": "973e790fa77733120188db335108a0cb2cbdec34",
+  "launch_seal_sha256": "93fc95b7112fc8f2f02ee8f194a1d90bb761bfe7f3ad20500e2b1ae82a121d13",
+  "tree": "bf2c7f2240354f04bb1d6db441cf226f2f28569f"
+ },
+ "gpu_authority": false,
+ "head_at_seal": "d428db20cb37272772d9646ab15c795b891c90c0",
+ "honest_extra_ids": [
+  "hcli_agentos_resident_py",
+  "concurrency_doctor",
+  "autonomy_run_safe_capabilities"
+ ],
+ "honest_state": {
+  "autonomy_run_omits_mutation_engine": true,
+  "concurrency_doctor_sleeping_by_design": true,
+  "hcli_agentos_resident_py": "hcli/agentos/resident.py is not in git at the launch commit. hcli/agentos/resident_gate.py is the live boundary (schema hcli.agentos.resident_gate.v1).",
+  "resident_gate_is_the_live_boundary": true
+ },
+ "launch_receipt": {
+  "bytes": 70623,
+  "path": "receipts/future/ODYSSEY_I_LAUNCH.json",
+  "phase_transition": "STARTED",
+  "pinned_together": true,
+  "schema": "hawking.future.odyssey_i_launch.v1",
+  "seal_sha256": "93fc95b7112fc8f2f02ee8f194a1d90bb761bfe7f3ad20500e2b1ae82a121d13",
+  "verdict": {
+   "allowed": true,
+   "met": [
+    "resident_autonomy_trial_pass",
+    "specimen_curriculum_ready",
+    "modellake_identity",
+    "doctor_callable",
+    "gravity_callable",
+    "nr_nx_path_callable",
+    "evidence_hierarchy",
+    "negative_science",
+    "workgraphs",
+    "self_refill",
+    "dirty_measurement",
+    "protected_scheduling",
+    "transfer_substrate",
+    "adversary_substrate",
+    "crash_recovery",
+    "receipts"
+   ],
+   "n_criteria": 16,
+   "n_met": 16,
+   "n_unmet": 0,
+   "rule": "every unmet criterion is named; the first failure does not hide the rest",
+   "unmet": [],
+   "verdict": "LAUNCH"
+  }
+ },
+ "measurement_class": "STATIC_ONLY",
+ "negative_findings": [
+  "evaluate_launch_criteria() was not re-run: those evaluators rewrite sibling receipts outside this module's write scope",
+  "AUTONOMY_TIMELINE_15m.json has no seal_sha256; content hash is the pin",
+  "NX weights are outside git and are not reconstituted here",
+  "this receipt does not freeze descendants"
+ ],
+ "no_era_vi": true,
+ "no_odyssey_iv": true,
+ "not_a_development_freeze": true,
+ "obligation_ids": [
+  "git_commit",
+  "hcli_daemon",
+  "supervisor",
+  "resident_nx",
+  "fallback_identity",
+  "sandbox_policy",
+  "workunit_schemas",
+  "resource_registry",
+  "evidence_dag",
+  "verifier",
+  "tool_registry",
+  "subagent_interfaces",
+  "restart_path",
+  "launch_gate",
+  "tests",
+  "trial_receipts",
+  "timeline_seals"
+ ],
+ "odyssey": "I WHAT IS TRUE?",
+ "odysseys": [
+  "I WHAT IS TRUE?",
+  "II WHAT DID HAWKING ALREADY LEARN?",
+  "III WHERE IS HAWKING WRONG?"
+ ],
+ "predecessor_commit": null,
+ "predecessor_golden_digest": null,
+ "purpose": "Known-good recovery point for the only proven Odyssey I launch state. Descendants continue; this pin must not be casually overwritten.",
+ "recovery": {
+  "commit_exists": true,
+  "commit_object_type": "commit",
+  "gate_receipt": {
+   "head_recorded_is_parent": "607b235241e7a9b0d1f5d052364d6e5436f21aaa",
+   "n_met": 16,
+   "n_unmet": 0,
+   "ok": true,
+   "path": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+   "seal_ok": true,
+   "seal_sha256": "16a8a80e34d5d431d1ad2b3556e2a603a34bbc5bbfd85f049ca69ae69f7e9b70",
+   "verdict": "LAUNCH"
+  },
+  "gate_reeval": {
+   "commit": "973e790fa77733120188db335108a0cb2cbdec34",
+   "met": [
+    "resident_autonomy_trial_pass",
+    "specimen_curriculum_ready",
+    "modellake_identity",
+    "doctor_callable",
+    "gravity_callable",
+    "nr_nx_path_callable",
+    "evidence_hierarchy",
+    "negative_science",
+    "workgraphs",
+    "self_refill",
+    "dirty_measurement",
+    "protected_scheduling",
+    "transfer_substrate",
+    "adversary_substrate",
+    "crash_recovery",
+    "receipts"
+   ],
+   "method": "sealed_receipt_at_pin",
+   "n_criteria": 16,
+   "n_met": 16,
+   "n_unmet": 0,
+   "odyssey_i_launch_written": true,
+   "ok": true,
+   "phase_transition": "STARTED",
+   "seal_ok": true,
+   "unmet": [],
+   "verdict": "LAUNCH",
+   "why_not_rerun_evaluators": "odyssey_launch.evaluate_launch_criteria() is not a pure function: dirty_measure / evidence_dag / workgraph evaluators rewrite their receipts. This golden's write scope is ODYSSEY_BOOTSTRAP_GOLDEN.json only, so recovery re-evaluates the sealed 16/16 at the pin rather than re-running those evaluators.",
+   "wrote_receipts": false
+  },
+  "gravity_blobs_at_pin": [
+   {
+    "bytes": 9632,
+    "git_blob": "32986240bd2ae875034ad9ebc20ef393fa9a0024",
+    "path": "tools/odyssey/decoding_gravity.py",
+    "reason": null,
+    "sha256": "072fb88908d982d4f6f2394e9eea6e1667bd8c7a16f717e3dbb1d02451ee00e3",
+    "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/odyssey/decoding_gravity.py",
+    "status": "PRESENT"
+   },
+   {
+    "bytes": 10469,
+    "git_blob": "0bb83a8269ea5905359b61ddc05b40a49b4ce9c1",
+    "path": "tools/odyssey/state_gravity.py",
+    "reason": null,
+    "sha256": "cf0f303d05b8ad6c28037482c21f545b79078abf644f8d4919b9c38be2088878",
+    "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:tools/odyssey/state_gravity.py",
+    "status": "PRESENT"
+   },
+   {
+    "bytes": 329,
+    "git_blob": "d5914375295ea54edb83fa9b165a2f79ef850910",
+    "path": "hcli/gravity/__init__.py",
+    "reason": null,
+    "sha256": "a4263a8f6f4e89cb9e920078a1837dfe8798e64dfebdfbbe8ccace9f80daed86",
+    "source": "git:cat-file:973e790fa77733120188db335108a0cb2cbdec34:hcli/gravity/__init__.py",
+    "status": "PRESENT"
+   }
+  ],
+  "gravity_owned_present_in_git": true,
+  "launch_receipt": {
+   "n_met": 16,
+   "n_unmet": 0,
+   "ok": true,
+   "path": "receipts/future/ODYSSEY_I_LAUNCH.json",
+   "phase_transition": "STARTED",
+   "seal_is_the_launch_seal": true,
+   "seal_ok": true,
+   "seal_sha256": "93fc95b7112fc8f2f02ee8f194a1d90bb761bfe7f3ad20500e2b1ae82a121d13",
+   "verdict": "LAUNCH"
+  },
+  "not_proven": [
+   "full working-tree checkout of the repository (sparse worktree; ~43GB tree)",
+   "re-running odyssey_launch.evaluate_launch_criteria() (those evaluators rewrite sibling receipts; write scope is this golden receipt only)",
+   "actually invoking Gravity / Doctor against parent weights",
+   "HCLI daemon process running, or SandboxDaemon ticking as a service",
+   "resident_supervisor loop running independently of a prompt",
+   "restart_supervisor actually execing a resident binary",
+   "NX weight files at artifact_root (outside git)",
+   "that a dirty primary working tree equals this pin (hcli/gravity/__init__.py on the primary checkout drifted vs the commit blob)",
+   "hardware, GPU lease, TPS, or any PROTECTED_ABSOLUTE number"
+  ],
+  "ok": true,
+  "proven": [
+   "pinned commit exists as a git object and its tree is bf2c7f2240354f04bb1d6db441cf226f2f28569f",
+   "every PRESENT component blob reconstitutes from git cat-file with a matching sha256",
+   "receipts/future/ODYSSEY_I_LAUNCH.json at the pin seals to 93fc95b7112fc8f2f02ee8f194a1d90bb761bfe7f3ad20500e2b1ae82a121d13 with verdict=LAUNCH n_met=16 n_unmet=0 phase_transition=STARTED",
+   "receipts/future/ODYSSEY_LAUNCH_GATE.json at the pin is LAUNCH 16/16 (recorded head is the parent commit, because the receipt was generated then committed)",
+   "launch gate re-evaluated from that sealed receipt to 16/16 with every criterion.met true",
+   "Gravity owned source blobs exist at the pin even though this worktree did not materialize them"
+  ],
+  "ran": true,
+  "reconstitution": {
+   "failed": [],
+   "method": "git cat-file blob <commit>:<path> into a TemporaryDirectory, sha256 the written file, compare to the pin",
+   "n_failed": 0,
+   "n_present_pins": 64,
+   "n_reconstituted": 64,
+   "ok": true
+  },
+  "steps": [
+   "git cat-file -t of the pinned commit",
+   "git rev-parse <commit>^{tree}",
+   "reconstitute every PRESENT pin into a temp tree and re-hash",
+   "recompute ODYSSEY_I_LAUNCH.json seal_sha256 from git bytes",
+   "recompute ODYSSEY_LAUNCH_GATE.json seal and 16/16",
+   "re-evaluate the launch gate from the sealed ODYSSEY_LAUNCH_GATE.json at the pin (every criterion.met, n_met=16); evaluators not re-run"
+  ],
+  "tree": "bf2c7f2240354f04bb1d6db441cf226f2f28569f",
+  "tree_matches": true
+ },
+ "schema": "hawking.future.odyssey_bootstrap_golden.v1",
+ "seal_sha256": "968f5431726b4ad330324436077ca75115c0134e39b49c3008900ec7b8f1c133",
+ "successor": {
+  "blocking_a_descendant_is_forbidden": true,
+  "casual_overwrite_is_detectable": true,
+  "descendants_may_land": true,
+  "detect_how": "Recompute golden_digest over {launch_commit, tree, launch_seal_sha256, per-component path+sha256}. If receipts/future/ODYSSEY_BOOTSTRAP_GOLDEN.json is rewritten and that digest changes without a predecessor_golden_digest field pointing at this one, the overwrite is casual. The receipt's own seal_sha256 failing to recompute is the same class of event. compare_to_golden() reports; it does not block.",
+  "mint_a_successor": [
+   "A later commit produces its own ODYSSEY_I_LAUNCH.json with verdict=LAUNCH, n_met=16, n_unmet=0, phase_transition=STARTED, and a seal_sha256 that verifies.",
+   "That launch receipt's seal is not this golden's 93fc95b7112fc8f2\u2026 \u2014 it is a new launch, not a rewrite of 973e790fa's receipt.",
+   "Run python3 tools/future/bootstrap_golden.py --seal --successor-of <this golden_digest> against THAT commit. The successor records predecessor_commit=973e790fa77733120188db335108a0cb2cbdec34 and predecessor_golden_digest=<this digest>.",
+   "Commit the new ODYSSEY_BOOTSTRAP_GOLDEN.json. Do not amend 973e790fa. Do not rewrite this receipt in place.",
+   "compare_to_golden on the old receipt then reports SUPERSEDED because a successor names it; the old receipt stays readable."
+  ],
+  "not_a_freeze": true,
+  "this_receipt_is_not_rewritten_by_a_successor": true
+ },
+ "version": 1
+}

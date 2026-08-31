@@ -1,0 +1,3038 @@
+{
+ "accounting": {
+  "adjacent_not_in_2gb": {
+   "by_organ": {
+    "norms.linear_attn": {
+     "bits": 32,
+     "n_tensors": 48,
+     "representation": "f32v2_le",
+     "stored_bytes": 24960
+    },
+    "state.A_log": {
+     "bits": 32,
+     "n_tensors": 48,
+     "representation": "f32v2_le",
+     "stored_bytes": 9600
+    },
+    "state.dt_bias": {
+     "bits": 32,
+     "n_tensors": 48,
+     "representation": "f32v2_le",
+     "stored_bytes": 9600
+    }
+   },
+   "in_2gb_bar": false,
+   "note": "A_log, dt_bias and linear_attn.norm are DeltaNet parameters in HQ38M20 and ARE counted in the whole-token census under state.* / norms.*. They are not in the 2,961,659,904 organ bar this module reconciles. Recorded so the 2.96 GB is not mistaken for 'every DeltaNet catalog byte'.",
+   "stored_bytes": 44160
+  },
+  "auxiliary_bytes": 173758464,
+  "auxiliary_share": 0.05866928331822397,
+  "bias_bytes": 0,
+  "by_organ": {
+   "attention.linear_ba": {
+    "bias_bytes": 0,
+    "code_bytes": 11796480,
+    "derived_bpw": 4.250651041666667,
+    "elements": 23592960,
+    "header_bytes": 1920,
+    "n_tensors": 48,
+    "scale_bytes": 737280,
+    "share_of_deltanet": 0.004232653446491066,
+    "share_of_token": 0.0012689346545152024,
+    "stored_bytes": 12535680
+   },
+   "attention.linear_conv1d": {
+    "bias_bytes": 0,
+    "code_bytes": 7864320,
+    "derived_bpw": 32.0015625,
+    "elements": 1966080,
+    "header_bytes": 384,
+    "n_tensors": 48,
+    "scale_bytes": 0,
+    "share_of_deltanet": 0.0026555054445576206,
+    "share_of_token": 0.0007961112163922762,
+    "stored_bytes": 7864704
+   },
+   "attention.linear_out": {
+    "bias_bytes": 0,
+    "code_bytes": 754974720,
+    "derived_bpw": 4.250010172526042,
+    "elements": 1509949440,
+    "header_bytes": 1920,
+    "n_tensors": 48,
+    "scale_bytes": 47185920,
+    "share_of_deltanet": 0.2708489786138524,
+    "share_of_token": 0.08119957361217184,
+    "stored_bytes": 802162560
+   },
+   "attention.linear_qkvz": {
+    "bias_bytes": 0,
+    "code_bytes": 2013265920,
+    "derived_bpw": 4.250003814697266,
+    "elements": 4026531840,
+    "header_bytes": 1920,
+    "n_tensors": 48,
+    "scale_bytes": 125829120,
+    "share_of_deltanet": 0.722262862495099,
+    "share_of_token": 0.2165318723764582,
+    "stored_bytes": 2139096960
+   }
+  },
+  "code_bytes": 2787901440,
+  "code_share": 0.941330716681776,
+  "geometry_state": {
+   "bits": 32,
+   "conv_state": {
+    "consumed_by": "qwen38_qkvz_rearrange_conv_l2_f32; z does not enter conv",
+    "elements_per_layer": 30720,
+    "layout": "conv_channels x (kernel-1)",
+    "resident_bytes": 5898240,
+    "rw_bytes_per_token": 11796480
+   },
+   "dtype": "f32",
+   "in_2gb_bar": false,
+   "in_catalog": false,
+   "n_layers": 48,
+   "reason": "HQ38M20 describes packed weights only. State bytes are exact from Qwen38DeltaNetLayout and are reported so a packing attack on W is not confused with a packing attack on S.",
+   "recurrent_state": {
+    "consumed_by": "qwen38_gated_delta_decode_vi_simd: every element is read and written every token",
+    "elements_per_layer": 786432,
+    "layout": "value_heads x key_head_dim x value_head_dim",
+    "resident_bytes": 150994944,
+    "rw_bytes_per_token": 301989888
+   },
+   "resident_bytes": 156893184,
+   "rw_bytes_per_token": 313786368
+  },
+  "header_bytes": 6144,
+  "header_share": 2.074512334013082e-06,
+  "identity": {
+   "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+   "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+   "geometry": {
+    "conv_channels": 10240,
+    "conv_kernel": 4,
+    "hidden_size": 5120,
+    "key_head_dim": 128,
+    "key_heads": 16,
+    "n_deltanet_layers": 48,
+    "qkvz_layout": "per_key_head_Q128_K128_V384_Z384",
+    "qkvz_rows": 16384,
+    "value_head_dim": 128,
+    "value_heads": 48
+   },
+   "model_id": "qwen3.8-27b-sealed-3.14",
+   "resident_identity": "sealed-3.14"
+  },
+  "incumbent_packing": {
+   "bias": "none on HQ30UQ4; conv1d is unscaled f32",
+   "conv1d": "f32v2_le",
+   "kernel_q4": "qwen_uniform_q4_* / geo_tpr64",
+   "kernel_state": "qwen38_gated_delta_decode_vi_simd (FUSE_BA_DELTA folds ba_to_decay)",
+   "q4_code_bits": 4,
+   "q4_derived_bpw": 4.250008287659123,
+   "q4_elements": 5560074240,
+   "q4_group_size": 64,
+   "q4_stored_bytes": 2953795200,
+   "qkvz_ba_out": "hq30uq4_uniform_q4_group64_signed_nibble_f16_scale"
+  },
+  "n_tensors": 192,
+  "per_layer": [
+   {
+    "kind": "linear_attention",
+    "layer": 0,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 1,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 2,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 4,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 5,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 6,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 8,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 9,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 10,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 12,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 13,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 14,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 16,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 17,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 18,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 20,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 21,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 22,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 24,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 25,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 26,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 28,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 29,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 30,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 32,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 33,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 34,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 36,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 37,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 38,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 40,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 41,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 42,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 44,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 45,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 46,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 48,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 49,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 50,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 52,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 53,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 54,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 56,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 57,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 58,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 60,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 61,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   },
+   {
+    "kind": "linear_attention",
+    "layer": 62,
+    "organs": {
+     "attention.linear_ba": {
+      "bits": 4,
+      "code_bytes": 245760,
+      "header_bytes": 40,
+      "organ": "attention.linear_ba",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 15360,
+      "stored_bytes": 261160
+     },
+     "attention.linear_conv1d": {
+      "bits": 32,
+      "code_bytes": 163840,
+      "header_bytes": 8,
+      "organ": "attention.linear_conv1d",
+      "representation": "f32v2_le",
+      "scale_bytes": 0,
+      "stored_bytes": 163848
+     },
+     "attention.linear_out": {
+      "bits": 4,
+      "code_bytes": 15728640,
+      "header_bytes": 40,
+      "organ": "attention.linear_out",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 983040,
+      "stored_bytes": 16711720
+     },
+     "attention.linear_qkvz": {
+      "bits": 4,
+      "code_bytes": 41943040,
+      "header_bytes": 40,
+      "organ": "attention.linear_qkvz",
+      "representation": "hq30uq4_uniform_q4",
+      "scale_bytes": 2621440,
+      "stored_bytes": 44564520
+     }
+    },
+    "stored_bytes": 61701248
+   }
+  ],
+  "qkvz_subblocks": {
+   "header": {
+    "code_bytes": 0,
+    "groups": 0,
+    "header_bytes": 1920,
+    "n_layers": 48,
+    "payload_bytes": 0,
+    "rows": 0,
+    "scale_bytes": 0
+   },
+   "k": {
+    "bytes_per_layer": 5570560,
+    "code_bytes": 251658240,
+    "groups": 7864320,
+    "n_layers": 48,
+    "payload_bytes": 267386880,
+    "row_share_of_qkvz": 0.125,
+    "rows": 2048,
+    "scale_bytes": 15728640
+   },
+   "q": {
+    "bytes_per_layer": 5570560,
+    "code_bytes": 251658240,
+    "groups": 7864320,
+    "n_layers": 48,
+    "payload_bytes": 267386880,
+    "row_share_of_qkvz": 0.125,
+    "rows": 2048,
+    "scale_bytes": 15728640
+   },
+   "v": {
+    "bytes_per_layer": 16711680,
+    "code_bytes": 754974720,
+    "groups": 23592960,
+    "n_layers": 48,
+    "payload_bytes": 802160640,
+    "row_share_of_qkvz": 0.375,
+    "rows": 6144,
+    "scale_bytes": 47185920
+   },
+   "z": {
+    "bytes_per_layer": 16711680,
+    "code_bytes": 754974720,
+    "groups": 23592960,
+    "n_layers": 48,
+    "payload_bytes": 802160640,
+    "row_share_of_qkvz": 0.375,
+    "rows": 6144,
+    "scale_bytes": 47185920
+   }
+  },
+  "reconciled": true,
+  "scale_bytes": 173752320,
+  "scale_share": 0.05866720880588996,
+  "share_of_token": 0.29979649185953755,
+  "stored_bytes": 2961659904,
+  "target": 2961659904
+ },
+ "answers": {
+  "can_transforms_be_shared_across_layers": {
+   "answer": "Not from the Q4 scale field: consecutive-layer Pearson of per-row mean scales is ~0. Sharing W itself is unmeasured on this organ and is a cousin of QN-SHARED-BASIS (MLP) and QN-HEAD-REDUNDANCY (GQA).",
+   "status": "MEASURED_NEGATIVE"
+  },
+  "do_qkvz_subblocks_deserve_equal_precision": {
+   "answer": "NO as a default. They feed different operators. z never enters gated-delta or conv; q is a readout of S; k is the rank-1 projector and write key; v is the write value. Weight-space Q3 rel-fro is similar on all four \u2014 that is packing uniformity, not sensitivity. Heterogeneous allocation is available as a row-range native GEMV because rearrange already splits the four activations.",
+   "available": true,
+   "linear_qkvz_share_of_token": 0.2165318723764582,
+   "status": "OPEN",
+   "weight_space_q3_relfro": {
+    "k": 0.22209192894471874,
+    "q": 0.21936738049434745,
+    "v": 0.21843929918563484,
+    "z": 0.21733466871171325
+   },
+   "z_enters_gated_delta": false
+  },
+  "is_there_an_existing_fuse_of_update_and_consume": {
+   "answer": "Yes. FUSE_BA_DELTA folds ba_to_decay into gated-delta, 48 launches, token-identical, zero catalog bytes. Cited from BA_DELTA_AB, not re-measured.",
+   "bytes_eliminated_if_true": 0,
+   "status": "EXISTING_LEVER"
+  },
+  "what_are_the_bytes": {
+   "answer": "2,961,659,904 catalog bytes: HQ30UQ4 group-64 on qkvz/ba/out (4 code bits + f16 scale per 64 weights, no bias) plus f32v2 depthwise conv1d. Most of it is codes, not headers.",
+   "bias_bytes": 0,
+   "code_bytes": 2787901440,
+   "header_bytes": 6144,
+   "reconciled": true,
+   "scale_bytes": 173752320,
+   "stored_bytes": 2961659904
+  },
+  "what_does_the_recurrent_state_need": {
+   "answer": "A 128x128 f32 matrix per value head, updated by a rank-1 gated delta every token, O(1) in sequence length. Depth-merging that S is already falsified (QN-STATE-MERGING). Lower-bit S, a structured (diagonal/low-rank) S, or a different mixer are OPEN and are not catalog bytes.",
+   "resident_bytes": 156893184,
+   "rw_bytes_per_token": 313786368,
+   "share_or_merge_status": "ALREADY_FALSIFIED"
+  }
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T05:43:18Z",
+  "recorded_by": "tools/future/deltanet_representation.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "candidate_counts": {
+  "already_falsified": 2,
+  "existing_lever": 1,
+  "measured_negative": 1,
+  "n": 15,
+  "open": 11,
+  "rejected_dense_remat": 1
+ },
+ "candidates": [
+  {
+   "byte_model": "qkvz codes 2013265920 across q/k=251658240 each, v/z=754974720 each. Q3 codes save 1/4 of the crushed block: q or k 62914560, v or z 188743680. Scales stay f16 per group unless a refit drops them too. Header 40 B/tensor is not split.",
+   "bytes_eliminated_breakdown": {
+    "k_codes_to_3bit": 62914560,
+    "note": "z_codes_to_3bit is the listed bytes_eliminated_if_true because z is the only block that cannot corrupt rec_state. That is a consume-path ranking, not a generate gate. Crushing v instead saves the same number of bytes and would rewrite S.",
+    "q_and_k_to_3bit": 125829120,
+    "q_codes_to_3bit": 62914560,
+    "v_codes_to_3bit": 188743680,
+    "z_codes_to_3bit": 188743680
+   },
+   "bytes_eliminated_if_true": 188743680,
+   "capability": "UNMEASURED",
+   "cheapest_falsifier": "STATIC, already run: weight-space nibble-drop Q3 rel-fro is q=0.21936738049434745, k=0.22209192894471874, v=0.21843929918563484, z=0.21733466871171325 \u2014 packing uniformity, not operator ranking. CHEAP CPU next: decode one DN layer's real post-norm x, keep three blocks at Q4, drop one to Q3 (refit scales on that range), report rec_out rel-fro AND rec_state rel-fro. z-only Q3 must leave rec_state bit-identical if the shader binding is honest. If the four injuries are equal on rec_out, heterogeneous bits die as a byte-weighted idea. Do not unpack to dense W. Do not skip the rec_state comparison.",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "A native row-range Q4/Q3 GEMV consumes packed codes. Splitting the fused tensor, writing four dense W, and running ordinary GEMV is REJECTED_DENSE_REMAT and also adds launches.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "heterogeneous_qkvz_bits",
+   "index_refusals": [],
+   "index_slugs": [
+    "uniform_subbit_allocation"
+   ],
+   "measured": {
+    "row_share": {
+     "k": 0.125,
+     "q": 0.125,
+     "v": 0.375,
+     "z": 0.375
+    },
+    "scale_l2_energy_share_mean": {
+     "k": 0.1299799631346926,
+     "q": 0.12981050394253912,
+     "v": 0.39323652295499145,
+     "z": 0.3469730099677768
+    },
+    "weight_space_q3_relfro": {
+     "k": 0.22209192894471874,
+     "q": 0.21936738049434745,
+     "v": 0.21843929918563484,
+     "z": 0.21733466871171325
+    },
+    "z_enters_conv": false,
+    "z_enters_gated_delta": false
+   },
+   "mechanism": "linear_qkvz is one HQ30UQ4 GEMV over a fused 16384-row tensor. The consume path already splits those rows: z never enters gated-delta or conv; q is a readout of S; k is the rank-1 projector and write key; v is the write value. Spend 4-bit codes only on the ranges the state machine needs, and a narrower code on the rest, decoded in-register by a row-range Q4/Q3 matvec. Do not unpack to dense W.",
+   "name": "heterogeneous bit allocation across q, k, v, z",
+   "note": "The incumbent fused GEMV is an equal-precision default. The consume kernels are not. W-space similarity is recorded so nobody claims the arrays 'look different enough' to skip the function-space probe.",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "OPEN"
+  },
+  {
+   "byte_model": "qkvz codes 2013265920. Uniform Q3 saves 1/4 of those codes (503316480); uniform Q2 saves half. Scales remain unless G changes.",
+   "bytes_eliminated_if_true": 503316480,
+   "capability": "UNMEASURED",
+   "cheapest_falsifier": "NNS-029 killed uniform bit-descent below q3 as a clean path on the whole Qwen3.8 artifact and uniform Q2 on this MLP. That is a cousin of a *whole-body* plan, not a measured DN-only Q3. CHEAP CPU: one-layer Q3 refit of qkvz on real x vs incumbent Q4 rec_out. If rel-fro sits in the NNS-029 Q2 band (~0.58 vs q3 0.20 on MLP W), stop before a generate. A retry of HGRAVB01/R02/S01 on this organ is gravity_family_on_dn_weights, already falsified.",
+   "citations": [
+    {
+     "claim_refuted": "That activation sparsity (~2\u00d7 MLP max) or uniform bit-descent below q3 is a clean path under the Qwen3.8 coherent floor.",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "Sparsity: a Doctor-holding skip pattern that does not compound over 64 layers. Bit-descent: a codec that actually hits the Shannon bound AND a generate gate at that distortion. Neither is a retry of q2 or of unstructured activation skip.",
+     "scar_id": "NNS-029",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b MLP (sparsity); whole artifact (bit-descent)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet HQ30UQ4"
+    }
+   ],
+   "cousin_not_this_object": true,
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "qwen_uniform_q4 already dequants in-register. A Q3 sibling is the same primitive. Unpack-to-f16-then-GEMV is REJECTED_DENSE_REMAT.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "lower_bit_uniform_qkvz",
+   "index_refusals": [],
+   "index_slugs": [
+    "uniform_q2",
+    "uniform_q3"
+   ],
+   "mechanism": "Replace HQ30UQ4 group-64 on all 16384 rows with uniform Q3 or Q2 of the same W, still consumed by a native GEMV.",
+   "name": "uniform bit-descent of the fused qkvz Q4",
+   "note": "NNS-029 organ is MLP (sparsity) and whole artifact (bit-descent). Cited so a uniform Q2 of the *body* is not re-proposed as a DN idea. DN-only native Q3 remains OPEN.",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "OPEN"
+  },
+  {
+   "byte_model": "out stored 802162560. Q3 codes save 1/4 of out code bytes 188743680.",
+   "bytes_eliminated_if_true": 188743680,
+   "capability": "UNMEASURED",
+   "cheapest_falsifier": "CHEAP CPU: Q3 refit of one out_proj on real gated x vs Q4. NNS-019 already killed Gravity families on DeltaNet out at the Q4-equivalent cosine bar; a NEW Q3 family is the reopen, not HGRAVB01.",
+   "citations": [
+    {
+     "claim_refuted": "That existing Gravity expert families (HGRAVB01 / HGRAVR02 / HGRAVS01, or the Q80 mixed gate/up/down bundle) transfer to attention at Q4-equivalent quality.",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "A NEW attention codec family, scored on real BF16 X, clearing mean-row output cosine \u2265 0.990 vs BF16 AND a multi-prompt generate identity gate. lm_head additionally needs top-1 agreement; cosine 0.99 is not token identity.",
+     "scar_id": "NNS-019",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b and qwen3-80b attention GEMVs Q/K/V/O, DeltaNet in/out, lm_head extra (top-1 \u2260 cosine)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet HQ30UQ4"
+    }
+   ],
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Native Q3 GEMV. No dense W.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "lower_bit_out_proj",
+   "index_refusals": [],
+   "index_slugs": [
+    "uniform_q3"
+   ],
+   "mechanism": "linear_out is HQ30UQ4 [5120, 6144], consumed after gated RMSNorm as a single GEMV into residual-add. Same packing as qkvz, different operator (no recurrent state).",
+   "name": "uniform bit-descent of linear_out (8.12% of the token)",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "OPEN"
+  },
+  {
+   "byte_model": "Whatever that family stores vs 2.94 GB of qkvz+out. Irrelevant: the quality bar already failed.",
+   "bytes_eliminated_if_true": 0,
+   "cheapest_falsifier": "Already run: NNS-019, scope explicitly 'Q/K/V/O, DeltaNet in/out'. Reopen is a NEW attention codec family on real BF16 X, mean-row cosine \u2265 0.990 AND a multi-prompt generate gate. Not another HGRAVB01/R02/S01 transfer.",
+   "citations": [
+    {
+     "claim_refuted": "That existing Gravity expert families (HGRAVB01 / HGRAVR02 / HGRAVS01, or the Q80 mixed gate/up/down bundle) transfer to attention at Q4-equivalent quality.",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "A NEW attention codec family, scored on real BF16 X, clearing mean-row output cosine \u2265 0.990 vs BF16 AND a multi-prompt generate identity gate. lm_head additionally needs top-1 agreement; cosine 0.99 is not token identity.",
+     "scar_id": "NNS-019",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b and qwen3-80b attention GEMVs Q/K/V/O, DeltaNet in/out, lm_head extra (top-1 \u2260 cosine)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet HQ30UQ4"
+    }
+   ],
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Gravity kernels consume packed codes. The kill is capability, not remat.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "gravity_family_on_dn_weights",
+   "index_refusals": [],
+   "index_slugs": [
+    "hgravb01",
+    "hgravr02",
+    "hgravs01"
+   ],
+   "mechanism": "Replace HQ30UQ4 qkvz/out with an existing Gravity expert family scored as if Q4-equivalent.",
+   "name": "HGRAVB01 / R02 / S01 (or Q80 mixed bundle) on DeltaNet in/out",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "ALREADY_FALSIFIED"
+  },
+  {
+   "byte_model": "Q4 elements 5560074240. scale(G)=2*5560074240/G. Incumbent G=64 \u2192 173752320. G=128 \u2192 86876160 (save 86876160); G=256 \u2192 43438080; G=1024 \u2192 10859520. Codes 2780037120 unchanged. Headers 6144 unchanged.",
+   "bytes_eliminated_breakdown": {
+    "G1024": 162892800,
+    "G128": 86876160,
+    "G256": 130314240
+   },
+   "bytes_eliminated_if_true": 86876160,
+   "capability": "UNMEASURED",
+   "cheapest_falsifier": "CHEAP CPU: LS-refit one qkvz and one out_proj at G=128 from incumbent reconstruction (weaker) or parent bf16 (honest). If W rel-fro jumps like the nibble-drop Q2 band (~0.55), G dies without a generate.",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Same Q4 kernel, different G. Not a dense W.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "larger_q4_group",
+   "index_refusals": [],
+   "index_slugs": [
+    "uniform_q4"
+   ],
+   "mechanism": "Auxiliary Q4 bytes are f16 scale per group. Codes are 4 bits per weight regardless of G. gcd(5120, 6144)=1024, so G in {128,256,512,1024} tiles qkvz, ba and out. Parser already admits G=128.",
+   "name": "larger HQ30UQ4 group size (byte curve exact; capability not)",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "OPEN"
+  },
+  {
+   "byte_model": "48 independent qkvz = 2139096960. One copy plus 47 residual maps. A win requires the residual to be cheap. Cross-layer Pearson of per-row mean Q4 scales is ~0, so the cheap identity residual is the parent.",
+   "bytes_eliminated_if_true": 2094532440,
+   "cheapest_falsifier": "STATIC, run here: consecutive-layer Pearson of per-row mean qkvz scales is q=-0.000992898443605045, k=0.011046600548227854, v=0.0025959050713501904, z=0.007668376395994996. Unconditioned sharing of the scale field is not in the arrays. Cousin, not a launder: QN-SHARED-BASIS-DENSITY killed shared W on this MLP; QN-HEAD-REDUNDANCY killed shared GQA heads (near-orthogonal). Neither is a DN-head cosine; do not reopen as if this measurement were that scar.",
+   "citations": [
+    {
+     "claim_refuted": "no K below ~2.25 bpw composes coherently for the MLP: the local functional probe dies at held-out activation",
+     "kind": "MODEL_SPECIFIC",
+     "reopen_condition": "a shared-basis point that is coherent at held-out activation AND beats q2f on both density and COMPLETE_TOKEN_NS",
+     "scar_id": "QN-SHARED-BASIS-DENSITY",
+     "source_path": "tools/headless/negative_science.py",
+     "surface": "qwen3.8-27b-abliterated mlp_gate_up+mlp_down",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet"
+    },
+    {
+     "claim_refuted": "Q heads mean cosine 0.0438 and K/V/O similarly near-orthogonal, so there is no shared-head structure to exploit",
+     "kind": "MODEL_SPECIFIC",
+     "reopen_condition": "an organ or model where head cosine similarity is high enough that sharing costs less capability than the bits it saves",
+     "scar_id": "QN-HEAD-REDUNDANCY",
+     "source_path": "tools/headless/negative_science.py",
+     "surface": "qwen3.8-27b-abliterated gqa_attention",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet"
+    }
+   ],
+   "cousin_not_this_object": true,
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "y = C_l (T x) is two GEMVs. Materializing W_l = C_l T then running incumbent Q4 is REJECTED_DENSE_REMAT and not an active-byte win.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "shared_transforms_across_layers",
+   "index_refusals": [],
+   "index_slugs": [
+    "shared_basis",
+    "head_sharing"
+   ],
+   "measured": {
+    "cross_layer_per_row_mean_scale_pearson": {
+     "k": {
+      "max": 0.19531108677841194,
+      "mean": 0.011046600548227854,
+      "min": -0.14773839803254357,
+      "n_pairs": 47
+     },
+     "q": {
+      "max": 0.15586888203088117,
+      "mean": -0.000992898443605045,
+      "min": -0.12600228728497842,
+      "n_pairs": 47
+     },
+     "v": {
+      "max": 0.16694114982799116,
+      "mean": 0.0025959050713501904,
+      "min": -0.07553814992211409,
+      "n_pairs": 47
+     },
+     "z": {
+      "max": 0.10574225798858183,
+      "mean": 0.007668376395994996,
+      "min": -0.11264490491353982,
+      "n_pairs": 47
+     }
+    }
+   },
+   "mechanism": "One (or K) shared W with per-layer coefficients, or a shared input transform T then small per-layer maps. Would store T once instead of 48 copies of 44.6 MB qkvz.",
+   "name": "share qkvz / out across the 48 DN layers",
+   "physical_primitive": "TiledProjection",
+   "status": "MEASURED_NEGATIVE"
+  },
+  {
+   "byte_model": "|\u03b8| + program, independent of 2139096960. A win requires |\u03b8| << 2139096960 AND production that never writes W.",
+   "bytes_eliminated_if_true": 2139096960,
+   "cheapest_falsifier": "STATIC: any plan whose native_execution_concept is 'emit W, then qwen_uniform_q4' is REJECTED_DENSE_REMAT before a fit.",
+   "dense_rematerialization": "REJECTED_DENSE_REMAT",
+   "dense_rematerialization_reason": "The cheap lowering is generate-then-ordinary-Q4-GEMV. That is dense rematerialization of W. A generator that IS the matvec (no W) is recurrent_state_replacement / function replacement, a different candidate.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "generated_coefficients",
+   "index_refusals": [],
+   "index_slugs": [
+    "generated_tied_params"
+   ],
+   "mechanism": "Store a generator G(\u03b8, layer, block) that emits W at use. Elimination of independent storage of 48 fused QKVZ maps.",
+   "name": "tiny program emits qkvz / out coefficients",
+   "physical_primitive": null,
+   "status": "OPEN"
+  },
+  {
+   "byte_model": "r*(16384+5120)*bytes_per. Incumbent 2139096960 at ~4.25 bpw. A coherent r on this MLP needed 92\u201395% of ranks (NNS-016); DN qkvz spectrum is UNMEASURED.",
+   "bytes_eliminated_if_true": null,
+   "bytes_eliminated_if_true_note": "Exact only after choosing r. Not claimed.",
+   "capability": "UNMEASURED",
+   "cheapest_falsifier": "CHEAP CPU: randomized SVD of one reconstructed qkvz (16384x5120 from HQ30UQ4, ~320 MB f32) report energy vs rank. If 99% energy needs >80% of ranks, the family dies the same way NNS-016 died on this parent's MLP. Do not quote the MLP spectrum as this matrix. Do not write U@V as production W.",
+   "citations": [
+    {
+     "claim_refuted": "That weight-space low-rank / TT / Kronecker factorisation of a single expert tensor is a density win at the coherent point (layers \u2265 1).",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "L>=1: never at the coherent point. L0: already beating the incumbent \u2014 build the organ-and-layer-specific codec. On a new parent, check the Van Loan spectrum before assuming depth behaviour.",
+     "scar_id": "NNS-016",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b (weight-space SVD); qwen3-235b-a22b:F1 (Kronecker) gate/down; L0 is the exception",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet HQ30UQ4"
+    }
+   ],
+   "cousin_not_this_object": true,
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Two skinny matvecs consume the factors. Materializing U@V into W then Q4 is REJECTED_DENSE_REMAT.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "factorized_qkvz",
+   "index_refusals": [],
+   "index_slugs": [
+    "low_rank",
+    "kronecker"
+   ],
+   "mechanism": "W_qkvz \u2248 U V with rank r << min(16384, 5120). y = U (V x). Same family as NNS-016, different matrix.",
+   "name": "low-rank / SVD / two skinny matvecs of qkvz",
+   "physical_primitive": "TiledProjection",
+   "status": "OPEN"
+  },
+  {
+   "byte_model": "payload 7864320 f32. f16 payload 3932160 + 48*8 headers. Save 3932160.",
+   "bytes_eliminated_if_true": 3932160,
+   "capability": "UNMEASURED",
+   "cheapest_falsifier": "CHEAP CPU: f16 round-trip of one conv1d vs f32 on real qkv activations; report conv output rel-fro. This cannot move the token by itself (0.08% of the 2.96 GB).",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "rearrange already loads conv_w as f32. An f16 load widened in-register is the same kernel. Expanding f16 to an f32 buffer is not an active-byte win.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "conv1d_lower_bit",
+   "index_refusals": [],
+   "index_slugs": [],
+   "mechanism": "conv1d is f32v2 [10240, 4, 1], consumed inside rearrange. z does not enter. 7.86 MB of the 2.96 GB.",
+   "name": "store depthwise conv1d as f16 (or Q8) instead of f32",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "OPEN"
+  },
+  {
+   "byte_model": "resident 150994944 f32. f16 resident 75497472, save 75497472 resident and 150994944 RW/token. Not counted in the 2.96 GB bar.",
+   "bytes_eliminated_are": "geometry_derived_state_not_catalog",
+   "bytes_eliminated_if_true": 75497472,
+   "capability": "UNMEASURED",
+   "cheapest_falsifier": "CHEAP CPU: run the python gated-delta step on one layer with S rounded to f16 vs f32 across a 128-token prompt; report h and S rel-fro. GPU A/B of a vi_simd_f16 sibling is a later lease. STATIC_ONLY: named, not run.",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "vi_simd already holds S in registers for the update. An f16 load is the same LocalStateMachine. Materializing f32 S from a codec every token is not an active-byte win.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "lower_bit_recurrent_state",
+   "index_refusals": [],
+   "index_slugs": [
+    "resident_state"
+   ],
+   "mechanism": "S is f32, 48 x 128 x 128 per layer, read and written every token by gated-delta. Not a catalog tensor. A fused kernel that keeps S as f16 (or f8) in UMA, widening in register, cuts resident and RW bytes. The F4 kernel in tree is a compute-width change, not a storage change.",
+   "name": "store / traffic rec_state at fewer than 32 bits",
+   "physical_primitive": "LocalStateMachine",
+   "status": "OPEN"
+  },
+  {
+   "byte_model": "Incumbent S 150994944 f32. Diagonal would be 1179648 and is a different mixer.",
+   "bytes_eliminated_are": "geometry_derived_state_not_catalog",
+   "bytes_eliminated_if_true": 149815296,
+   "capability": "UNMEASURED",
+   "cheapest_falsifier": "STATIC: rank(S) after a long prompt is the cheap probe \u2014 if S is full-rank in practice, a rank-r store is a different model, not a compression of this one. Do not quote Mamba as this mixer.",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "A diagonal/low-rank S is consumed by a different state kernel. Expanding it to a dense 128x128 then running vi_simd is not an active-byte win.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "structured_transition_state",
+   "index_refusals": [],
+   "index_slugs": [
+    "state_merging"
+   ],
+   "mechanism": "The update is already structured: S := (I - beta k k^T)(decay S) + beta k v^T. Replacing the 128x128 S with a diagonal, a rank-r factor, or a DPLR SSM changes the operator. It is not a packing of the present S.",
+   "name": "further-structure S (diagonal, low-rank, DPLR)",
+   "physical_primitive": "LocalStateMachine",
+   "status": "OPEN"
+  },
+  {
+   "byte_model": "Would drop S (150994944 resident) and possibly reshape qkvz (2139096960) if q/k dims change. Not a packing of the present 2.96 GB.",
+   "bytes_eliminated_are": "geometry_derived_state_not_catalog",
+   "bytes_eliminated_if_true": 150994944,
+   "capability": "UNMEASURED",
+   "cheapest_falsifier": "This is an architecture change. The cheapest honest probe is not a codec sweep: it is whether a vector-state mixer at matched qkvz bytes holds greedy identity on this parent. Do not launder QN-STATE-MERGING (depth merge of the present S) as this candidate.",
+   "dense_rematerialization": "DEPENDS_ON_LOWERING",
+   "dense_rematerialization_reason": "A native new mixer is DIRECT_CONSUME. A lowering that emulates DeltaNet by writing dense S from a compressed code every token eliminates zero active bytes of S.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "recurrent_state_replacement",
+   "index_refusals": [],
+   "index_slugs": [
+    "qn_state_merging"
+   ],
+   "mechanism": "Stop storing 128x128 S per value head. Use a different O(1) mixer (diagonal SSM, linear attention with a vector state, or a windowed recompute). This is function replacement of DeltaNet, not a codec of W_qkvz.",
+   "name": "replace gated-delta with a cheaper state machine",
+   "physical_primitive": "LocalStateMachine",
+   "status": "OPEN"
+  },
+  {
+   "byte_model": "resident S 150994944. Sharing across 48 layers would drop 47/48 of it.",
+   "bytes_eliminated_are": "geometry_derived_state_not_catalog",
+   "bytes_eliminated_if_true": 147849216,
+   "cheapest_falsifier": "Already run: QN-STATE-MERGING on this parent (kv_state+deltanet_state), depth-state and KV merging negative under the tested conditions. Reopen is a different state topology or a longer-context regime, not a retry of shared S across these 48 layers.",
+   "citations": [
+    {
+     "claim_refuted": "depth-state and KV merging measured negative on this Qwen under the tested conditions",
+     "kind": "MODEL_SPECIFIC",
+     "reopen_condition": "a state topology (recurrent, latent-attention, or a longer-context regime) where merged state preserves capability",
+     "scar_id": "QN-STATE-MERGING",
+     "source_path": "tools/headless/negative_science.py",
+     "surface": "qwen3.8-27b-abliterated kv_state+deltanet_state",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet"
+    }
+   ],
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "One S buffer, same kernel, different slot.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "share_or_merge_state_across_depth",
+   "index_refusals": [],
+   "index_slugs": [
+    "state_merging",
+    "qn_state_merging"
+   ],
+   "mechanism": "One S (or a tied S) for several of the 48 DN layers, or a shared KV across GQA depth. Cuts resident state, not W.",
+   "name": "merge / share rec_state or KV across DN layers",
+   "physical_primitive": "LocalStateMachine",
+   "status": "ALREADY_FALSIFIED"
+  },
+  {
+   "byte_model": "catalog bytes unchanged (2961659904). Launch count 337 \u2192 48 in the motif census if one region per DN layer. Not a 2.96 GB lever.",
+   "bytes_eliminated_if_true": 0,
+   "cheapest_falsifier": "The inner cut already in tree: FUSE_BA_DELTA removes 48 of the 337. BA_DELTA_AB is the token-identical A/B of that cut (named, not re-run here; this module is STATIC_ONLY). If 48 fewer launches do not save on the order of that receipt's class, a 7-kernel region is the wrong bet.",
+   "citations": [
+    {
+     "claim_refuted": "",
+     "kind": "EXISTING_JUDGMENT",
+     "reopen_condition": "",
+     "scar_id": "dn_layer_state_machine",
+     "source_path": "receipts/future/DISPATCH_MOTIFS.json",
+     "surface": "sealed-3.14 337 DN launches",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet HQ30UQ4"
+    }
+   ],
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "No W is written. Occupancy of the existing kernels.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "direct_state_machine",
+   "index_refusals": [],
+   "index_slugs": [
+    "resident_state",
+    "megakernel"
+   ],
+   "mechanism": "The DN layer is already a 7-launch sequence with resident S. A PersistentPhysicalRegion / LocalStateMachine keeps those buffers bound and occupies the GPU across tokens instead of re-encoding 337 launches. This removes launches, not catalog bytes. DISPATCH_MOTIFS already judged YES_STATE_MACHINE.",
+   "name": "keep conv_state and rec_state valid in a persistent region",
+   "physical_primitive": "LocalStateMachine",
+   "status": "OPEN"
+  },
+  {
+   "byte_model": "Zero catalog bytes. Decay/beta workspace is no longer a stored round-trip; A_log and dt_bias (200 B each per layer) are still read.",
+   "bytes_eliminated_if_true": 0,
+   "cheapest_falsifier": "Already run: receipts/future/BA_DELTA_AB.json. 628\u2192580 dispatches, token ids identical, zero fallbacks. STATIC_ONLY here: cited, not re-measured. Enabling it in the sealed profile is an ops act, not a new representation.",
+   "citations": [
+    {
+     "claim_refuted": "",
+     "kind": "EXISTING_LEVER",
+     "reopen_condition": "",
+     "scar_id": "BA_DELTA_AB",
+     "source_path": "receipts/future/BA_DELTA_AB.json",
+     "surface": "HAWKING_QWEN38_FUSE_BA_DELTA=1 on sealed-3.14",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet HQ30UQ4"
+    }
+   ],
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Same arithmetic, one kernel, no W.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "fused_update_consume",
+   "index_refusals": [],
+   "index_slugs": [],
+   "mechanism": "HAWKING_QWEN38_FUSE_BA_DELTA=1 binds qwen38_gated_delta_decode_vi_simd_ba, computing decay/beta in-register from ba + A_log + dt_bias. 48 launches on the 628 graph. Token-identical. Default Off.",
+   "name": "fold ba_to_decay into gated-delta (already in tree)",
+   "physical_primitive": "LocalStateMachine",
+   "status": "EXISTING_LEVER"
+  }
+ ],
+ "claim_boundary": "Static sidecar artifact. No hardware measurement and no generate gate. The 2,961,659,904 figure is catalog stored bytes of the four DeltaNet weight organs a decode token reads (linear_qkvz, linear_out, linear_ba, linear_conv1d). Codes/scale/header splits are HQ30UQ4 and f32v2 headers. q/k/v/z byte splits are row ranges of the fused QKVZ layout (per key-head Q128,K128,V384,Z384). Recurrent state and conv_state are geometry-derived f32 traffic, not HQ38M20, and are not added to the 2.96 GB bar. Weight-space requant rel-fro is incumbent-nibble drop, not a refit and not capability. A candidate that rematerializes dense W does not eliminate active bytes.",
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "per-tensor DeltaNet bytes summed from HQ30UQ4/f32v2 headers and refused unless they equal 2,961,659,904",
+  "codes vs scale vs header split; bias is zero on HQ30UQ4",
+  "q/k/v/z row ranges of the fused QKVZ cover 16384 rows and reconcile to linear_qkvz",
+  "z is source-true not-in-gated-delta; heterogeneous bits are available as a row-range GEMV",
+  "weight-space Q3 rel-fro measured on all four blocks so equal packing is not mistaken for equal sensitivity",
+  "geometry rec/conv state reported separately and not added to the 2.96 GB bar",
+  "negative_index queried; NNS-019 / QN-STATE-MERGING cited on this organ; MLP/GQA scars marked cousins"
+ ],
+ "gpu_authority": false,
+ "independent_information": {
+  "equal_precision_default": {
+   "heterogeneous_allocation_available": true,
+   "incumbent_does": "one HQ30UQ4 GEMV over the fused 16384-row tensor",
+   "justified_by_consume": false,
+   "justified_by_weight_space_relfro": "weight-space Q3/Q2 rel-fro is similar across q/k/v/z; that is packing uniformity, not operator sensitivity",
+   "physical_primitive": "FusedDecodeCompute",
+   "why_available": "qwen38_qkvz_rearrange_conv_l2_f32 already splits the GEMV output into q, k, v, z buffers. A row-range bit-width Q4 matvec (or a split decode that does not write dense W) can spend bits differently per range. Four independent tensors without a fused kernel would add dispatches and is a different candidate."
+  },
+  "operator": "S_t = (I - beta k k^T) (decay * S_{t-1}) + beta k v^T; h_t = S_t^T q; gated = RMSNorm(h) * silu(z). decay, beta come from in_proj_ba + A_log + dt_bias.",
+  "roles": {
+   "k": {
+    "enters_conv": true,
+    "enters_gated_delta": true,
+    "enters_state_update": true,
+    "role": "rank-1 projector (I - beta k k^T) AND the write key k v^T",
+    "rows": 2048,
+    "sensitivity_implication": "k appears twice in the update. Equal W-space distortion with q/v/z is not a reason to give k equal bits."
+   },
+   "q": {
+    "enters_conv": true,
+    "enters_gated_delta": true,
+    "enters_state_update": false,
+    "role": "readout: h = S^T q",
+    "rows": 2048,
+    "sensitivity_implication": "Injuring q injures h without rewriting S. Next token still sees an intact S."
+   },
+   "v": {
+    "enters_conv": true,
+    "enters_gated_delta": true,
+    "enters_state_update": true,
+    "role": "write value: beta k v^T",
+    "rows": 6144,
+    "sensitivity_implication": "Injuring v writes a wrong column into S."
+   },
+   "z": {
+    "enters_conv": false,
+    "enters_gated_delta": false,
+    "enters_state_update": false,
+    "role": "output gate after RMSNorm(h); never bound to gated-delta",
+    "rows": 6144,
+    "sensitivity_implication": "Lowering z bits cannot corrupt rec_state. This is source-true, not a measurement. z is 37.5% of linear_qkvz rows."
+   }
+  },
+  "source": "crates/hawking-core/shaders/qwen38_device_activations.metal qwen38_gated_delta_decode_vi / qwen38_gated_delta_decode_vi_simd",
+  "state_rank_growth": "The update is rank-1 per token after a scalar decay. S is a 128x128 matrix per value head (48 heads). It is not a diagonal SSM. 786432 f32 cells per layer are independently addressed."
+ },
+ "measurements": {
+  "by_subblock": {
+   "k": {
+    "mean_abs_scale": 0.006096253773042311,
+    "n_tensors": 48,
+    "requant_relfro_vs_incumbent_q4": {
+     "global_scale": 0.2147196651862705,
+     "q1": 2.2298254328326705,
+     "q2": 0.5634133772163068,
+     "q3": 0.22209192894471874
+    },
+    "rows": 2048,
+    "scale_l2_energy_mean": 6.452157388130824,
+    "scale_shannon_bits": 7.20135818007,
+    "scale_unique_f16_mean": 467.125,
+    "std_scale": 0.0014612968103998962
+   },
+   "q": {
+    "mean_abs_scale": 0.006100492648935567,
+    "n_tensors": 48,
+    "requant_relfro_vs_incumbent_q4": {
+     "global_scale": 0.21420024649054814,
+     "q1": 2.186601011485275,
+     "q2": 0.5529530675413831,
+     "q3": 0.21936738049434745
+    },
+    "rows": 2048,
+    "scale_l2_energy_mean": 6.4409062167008715,
+    "scale_shannon_bits": 7.177748357584011,
+    "scale_unique_f16_mean": 422.0625,
+    "std_scale": 0.0014114631994743831
+   },
+   "v": {
+    "mean_abs_scale": 0.00616433559722888,
+    "n_tensors": 48,
+    "requant_relfro_vs_incumbent_q4": {
+     "global_scale": 0.20466858749952932,
+     "q1": 2.171060774228071,
+     "q2": 0.5498205405455588,
+     "q3": 0.21843929918563484
+    },
+    "rows": 6144,
+    "scale_l2_energy_mean": 19.518114646275837,
+    "scale_shannon_bits": 7.101200628284722,
+    "scale_unique_f16_mean": 409.3125,
+    "std_scale": 0.0012847498849926826
+   },
+   "z": {
+    "mean_abs_scale": 0.005780065577710047,
+    "n_tensors": 48,
+    "requant_relfro_vs_incumbent_q4": {
+     "global_scale": 0.20018643498741884,
+     "q1": 2.1544593293365497,
+     "q2": 0.545192669744404,
+     "q3": 0.21733466871171325
+    },
+    "rows": 6144,
+    "scale_l2_energy_mean": 17.205319503943127,
+    "scale_shannon_bits": 7.154365625829469,
+    "scale_unique_f16_mean": 473.6041666666667,
+    "std_scale": 0.0012358758782890316
+   }
+  },
+  "cross_block_layer_mean_scale_pearson": {
+   "k_vs_q": 0.8043321798590687,
+   "k_vs_v": 0.7834954990953457,
+   "k_vs_z": -0.2513523287523701,
+   "q_vs_v": 0.7140189993076117,
+   "q_vs_z": -0.5566595136813757,
+   "v_vs_z": -0.1260185219570847
+  },
+  "cross_layer_per_row_mean_scale_pearson": {
+   "k": {
+    "max": 0.19531108677841194,
+    "mean": 0.011046600548227854,
+    "min": -0.14773839803254357,
+    "n_pairs": 47
+   },
+   "q": {
+    "max": 0.15586888203088117,
+    "mean": -0.000992898443605045,
+    "min": -0.12600228728497842,
+    "n_pairs": 47
+   },
+   "v": {
+    "max": 0.16694114982799116,
+    "mean": 0.0025959050713501904,
+    "min": -0.07553814992211409,
+    "n_pairs": 47
+   },
+   "z": {
+    "max": 0.10574225798858183,
+    "mean": 0.007668376395994996,
+    "min": -0.11264490491353982,
+    "n_pairs": 47
+   }
+  },
+  "n_tensors_measured": 48,
+  "note": "Shannon is over f16 bit patterns of per-group scales. Requant rel-fro drops incumbent signed nibbles onto 2^b levels with the same scale; it is not a Q3 refit and not a generate gate. Energy share tracking row share means the four blocks are packed similarly, not that they are equally sensitive as operators.",
+  "reconstruction_groups_per_tensor": 8192,
+  "row_share": {
+   "k": 0.125,
+   "q": 0.125,
+   "v": 0.375,
+   "z": 0.375
+  },
+  "sample_layers": [
+   0,
+   5,
+   21,
+   32,
+   42,
+   61
+  ],
+  "scale_l2_energy_share_mean": {
+   "k": 0.1299799631346926,
+   "q": 0.12981050394253912,
+   "v": 0.39323652295499145,
+   "z": 0.3469730099677768
+  }
+ },
+ "negative_findings": [
+  "linear_qkvz is 21.65% of the token and is one fused Q4 GEMV, not four tensors",
+  "q/k/v/z W-space Q3 rel-fro is ~0.22 on all four; packing does not pick a winner",
+  "cross-layer Pearson of qkvz per-row mean scales is ~0; sharing W from the scale field is measured negative",
+  "Gravity families on DeltaNet in/out are NNS-019 dead",
+  "depth-merging rec_state is QN-STATE-MERGING dead",
+  "FUSE_BA_DELTA already folds update+consume for decay/beta; it eliminates launches, not the 2.96 GB",
+  "headers are 6,144 bytes of the 2.96 GB \u2014 not the prize"
+ ],
+ "nomenclature": {
+  "already_falsified": "ALREADY_FALSIFIED",
+  "depends_on_lowering": "DEPENDS_ON_LOWERING",
+  "direct_consume": "DIRECT_CONSUME",
+  "existing_lever": "EXISTING_LEVER",
+  "measured_negative": "MEASURED_NEGATIVE",
+  "open": "OPEN",
+  "rejected_dense_remat": "REJECTED_DENSE_REMAT",
+  "static_only": "this sidecar. Models propose; protected deterministic evidence decides."
+ },
+ "open_byte_levers": [
+  {
+   "bytes_eliminated_if_true": 188743680,
+   "id": "heterogeneous_qkvz_bits",
+   "status": "OPEN"
+  },
+  {
+   "bytes_eliminated_if_true": 503316480,
+   "id": "lower_bit_uniform_qkvz",
+   "status": "OPEN"
+  },
+  {
+   "bytes_eliminated_if_true": 188743680,
+   "id": "lower_bit_out_proj",
+   "status": "OPEN"
+  },
+  {
+   "bytes_eliminated_if_true": 86876160,
+   "id": "larger_q4_group",
+   "status": "OPEN"
+  },
+  {
+   "bytes_eliminated_if_true": 2139096960,
+   "id": "generated_coefficients",
+   "status": "OPEN"
+  },
+  {
+   "bytes_eliminated_if_true": 3932160,
+   "id": "conv1d_lower_bit",
+   "status": "OPEN"
+  },
+  {
+   "bytes_eliminated_if_true": 75497472,
+   "id": "lower_bit_recurrent_state",
+   "status": "OPEN"
+  },
+  {
+   "bytes_eliminated_if_true": 149815296,
+   "id": "structured_transition_state",
+   "status": "OPEN"
+  },
+  {
+   "bytes_eliminated_if_true": 150994944,
+   "id": "recurrent_state_replacement",
+   "status": "OPEN"
+  }
+ ],
+ "purpose": "Exact per-tensor DeltaNet census of sealed-3.14 (codes vs scale/bias/header), a q/k/v/z split of linear_qkvz, and an elimination catalog that does not assume those four blocks deserve equal precision.",
+ "recovered_implementation": {
+  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "catalog_format": "HQ38M20 + HQ30UQ4 (qkvz/ba/out) + f32v2 (conv1d)",
+  "gated_delta": "S := (I - beta k k^T)(decay S) + beta k v^T; h := S^T q",
+  "qkvz_layout": "per_key_head_Q128_K128_V384_Z384",
+  "z_binding": "gated RMSNorm only; not gated-delta"
+ },
+ "schema": "hawking.future.deltanet_representation.v1",
+ "seal_sha256": "7bdfcab34d9c96264cf9f14d65b9724150ca4ed0ea7a3d3921fed51febb76acf",
+ "version": 1,
+ "what_this_does_not_prove": [
+  "capability of Q3 on any qkvz range (no generate gate)",
+  "that weight-space rel-fro ranks gated-delta sensitivity",
+  "physical EBPW of a different packing",
+  "actual_read_bytes_per_token (cache, contention)",
+  "that FUSE_BA_DELTA's TPS delta is a hardware claim of this receipt"
+ ]
+}

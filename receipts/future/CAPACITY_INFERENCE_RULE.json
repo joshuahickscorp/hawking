@@ -1,0 +1,68 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T19:20:02Z",
+  "recorded_by": "tools/future/capacity_inference_rule.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. The rule fires from a landed receipt and generates QUESTIONS; it measures nothing and answers nothing. It refuses to fire when the workloads were not doing comparable work, because more aggregate throughput from different work is not underutilisation.",
+ "evidence_class": "STATIC_ONLY",
+ "experiment_policy": {
+  "cost_of_not_having_it": "three schools were killed one at a time before the control that reframes all of them was run",
+  "policy": "before spending hours polishing static streaming, ask whether N independent copies expose more capacity. The cross-stream probe is cheap, it is a control rather than a candidate, and it would have reordered this entire sequence.",
+  "sequence_taken": [
+   "bandwidth looked low",
+   "contiguity killed (MLP_REGION_FALSIFIER, 331.6 -> 332.2 GB/s)",
+   "dispatch count killed (DISPATCH_CEREMONY)",
+   "bytes-per-dispatch killed (DISPATCH_SIZE_SWEEP)",
+   "concurrency exposed capacity (RESIDENT_CONCURRENCY_MEASURED)"
+  ]
+ },
+ "fired_on_g009": {
+  "bar": 1.05,
+  "does_not_name_a_cause": "the rule produces COMPETING explanations. Naming the winner before measuring is the error the capacity tree exists to prevent, and 'concurrency helped so it must be serial dependency' is that error.",
+  "fired": true,
+  "generated_questions": [
+   {
+    "class": "dependency",
+    "discriminator": "is the workload a chain? build the single-token dependency DAG and count edges that are not true data dependencies",
+    "status": "GENERATED"
+   },
+   {
+    "class": "occupancy",
+    "discriminator": "does the kernel launch enough parallel work? sweep threadgroup and grid at fixed bytes and fixed arithmetic",
+    "status": "GENERATED"
+   },
+   {
+    "class": "latency_hiding",
+    "discriminator": "is latency exposed rather than hidden? this is the PARENT of the others and must be split, never answered",
+    "status": "GENERATED"
+   },
+   {
+    "class": "memory_level_parallelism",
+    "discriminator": "how many independent loads is each thread holding? deepen per-thread load pipelining at identical bytes",
+    "status": "GENERATED"
+   },
+   {
+    "class": "scheduler_topology",
+    "discriminator": "does submission serialise? same work across two command queues versus one, output bit-identical",
+    "status": "GENERATED"
+   }
+  ],
+  "inference": "SINGLE_WORKLOAD_UNDERUTILIZATION",
+  "ratios": {
+   "1": 1.0,
+   "2": 1.2568,
+   "3": 1.2523
+  },
+  "why": "n=2 reaches 1.26x the n=1 aggregate, above the 1.05 bar, at comparable semantics"
+ },
+ "gpu_authority": false,
+ "law": "When N independent workloads materially increase aggregate physical throughput while individual workload semantics stay comparable, infer SINGLE_WORKLOAD_UNDERUTILIZATION and generate discriminators for dependency, occupancy, latency hiding, memory-level parallelism and scheduler topology.",
+ "schema": "hawking.future.capacity_inference_rule.v1",
+ "seal_sha256": "b0fe31db3889c5b8c8fb85969ea78104894314d4fe29d88689371f7c68e6d4b6",
+ "version": 1
+}

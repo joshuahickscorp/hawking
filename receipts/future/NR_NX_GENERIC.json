@@ -1,6 +1,6 @@
 {
  "FLASH_NX_READY": false,
- "GENERIC_NR_NX_PIPELINE_CALLABLE": false,
+ "GENERIC_NR_NX_PIPELINE_CALLABLE": true,
  "adaptation": {
   "architectures": [
    "Qwen3ForCausalLM"
@@ -146,7 +146,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T22:21:50Z",
+  "recorded_at": "2026-08-31T09:55:35Z",
   "recorded_by": "tools/future/nr_nx_generic.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -154,10 +154,10 @@
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "compiler_entry_points": {
   "ArchitectureRecognizer": "tools/odyssey/arch_recognizer.py:recognize",
-  "DeviceCompiler": "NO CALLABLE; tools/odyssey/noetic_compiler.py BLOCKED map",
+  "DeviceCompiler": "tools.future.device_compiler.lower_plan (MTLComputePipelineState + MTLBinaryArchive shader_hash + entry_point; placeholder refused)",
   "Doctor": "parameterized _doctor_stats; doctor_tournament.probes() not called (PARENT hardcoded)",
-  "KernelPlanner": "receipts/headless/KERNEL_LIBRARY.json (no specimen field)",
-  "NoeticExecutable": "tools/headless/first_noetic_executable.py (Qwen38 27B only)",
+  "KernelPlanner": "tools.future.nr_nx_generic.plan_kernels_for_specimen (PLAN-THEN-COMPILE; name is not a compiled kernel)",
+  "NoeticExecutable": "tools.future.nx_packer.pack (generic; first_noetic_executable.py is not executed)",
   "OrganGraph": "tools/odyssey/physical_graph_compiler.py:organ_graph",
   "PhysicalGraphCompiler": "parameterized gate_up_swiglu + compiler main() still hardcoded",
   "RepresentationPlanner": "tools.headless.representation_library.seed (rehearse not called)",
@@ -170,18 +170,8 @@
  },
  "evidence_class": "STATIC_ONLY",
  "facts_are_independent": true,
- "first_failing_stage": {
-  "error": null,
-  "stage": "KernelPlanner",
-  "status": "FAILED",
-  "why": "KERNEL_LIBRARY.json was read and compared to this specimen's organs. role intersection=['gqa_attention', 'mlp_down', 'mlp_gate_up']. None of the 16 role-matched kernels carry this specimen's id or shapes. A shared organ name is not a compiled kernel for this body. specimen_field=None"
- },
- "first_nx_lower_failure": {
-  "error": "no_entry_point",
-  "stage": "DeviceCompiler",
-  "status": "BLOCKED",
-  "why": "no DeviceCompiler callable exists in tools/odyssey or hcli. noetic_compiler.BLOCKED['DeviceCompiler'] is a hardcoded note for the Qwen3-30B-A3B pipeline, not a drive of this specimen. Native GGUF match arms are ['llama', 'llama', 'llama2', 'llama3', 'llama3.1', 'llama3.2', 'mistral', 'deepseek2', 'deepseek-v2', 'deepseek2-lite', 'qwen2', 'qwen2.5', 'qwen', 'qwen2moe', 'qwen3moe', 'qwen-moe', 'rwkv7', 'rwkv-7']; qwen3 dense is absent (qwen3moe is a different family). adapted family='dense_swiglu_transformer'"
- },
+ "first_failing_stage": null,
+ "first_nx_lower_failure": null,
  "flash": {
   "FLASH_NX_READY": false,
   "failed_requirements": [
@@ -206,11 +196,15 @@
   "Doctor CPU preconditions run on this specimen's tensors; compiler PARENT probes are overlap evidence only",
   "PhysicalGraphCompiler SwiGLU collapse runs on dense single-shard names; compiler main() remains hardcoded and is recorded as such",
   "RepresentationPlanner seeds from representation_library on local organs; rehearse() is not called (it would fetch)",
-  "GENERIC_NR_NX_PIPELINE_CALLABLE stays False: no packed NX was produced"
+  "KernelPlanner emits a NATIVE_UNMEASURED plan for an unseen body (PLAN-THEN-COMPILE); a shared organ name is still not a compiled kernel",
+  "DeviceCompiler lowers that plan through tools.future.device_compiler.lower_plan; a placeholder claiming compiled identity is refused",
+  "NoeticExecutable packs a source-independent NX from the DeviceCompiler fragment via tools.future.nx_packer.pack; a renamed source pointer is refused"
  ],
  "gpu_authority": false,
  "is_a_measurement": false,
- "launch_criterion_still_flash_specific": "odyssey_launch._eval_nr_nx keys nr_nx_path_callable on GENERIC_NR_NX_PIPELINE_CALLABLE from this module. FLASH_NX_READY is a separate field. Parameterizing tensor names closed the Doctor/PGC naming miss; it did not pack an NX. The generic path is still not callable, so the launch criterion stays unmet for a precise remaining reason, not the original hardcoded-name reason",
+ "kernel_planner_route": "PLAN-THEN-COMPILE",
+ "kernel_planner_route_why": "PLAN-THEN-COMPILE: library specimen_field=None; 0/17 kernels carry a present compiled_identity; 0/17 carry a specimen id; 0/17 declare a parametric shape range; declared specialized_cols=[5120, 17408]; this specimen's organ extents=[1024, 2048, 3072, 151936]; shape overlap=[]. Kernels in this library are parent-shape specializations or have no declared shape contract, and none are compiled. The generic pipeline emits a NATIVE_UNMEASURED plan for an unseen body rather than claiming a compiled kernel exists.",
+ "launch_criterion_still_flash_specific": "odyssey_launch._eval_nr_nx keys nr_nx_path_callable on GENERIC_NR_NX_PIPELINE_CALLABLE from this module. FLASH_NX_READY is a separate field. PLAN-THEN-COMPILE closed the KernelPlanner stall by emitting a NATIVE_UNMEASURED plan for an unseen body without treating a shared organ name as a compiled kernel. DeviceCompiler now lowers that plan via tools.future.device_compiler.lower_plan (MTLComputePipelineState + MTLBinaryArchive shader_hash + entry_point, placeholders refused). NoeticExecutable now packs via tools.future.nx_packer.pack. FLASH_NX_READY stays independent.",
  "measurement_class": "STATIC_ONLY",
  "native_engine": {
   "architectures": [
@@ -241,41 +235,194 @@
   "path": "crates/hawking-core/src/model/mod.rs"
  },
  "negative_findings": [
-  "GENERIC_NR_NX_PIPELINE_CALLABLE is False: DeviceCompiler has no callable and no packed NX exists",
+  "GENERIC_NR_NX_PIPELINE_CALLABLE is the live pipeline result, not FLASH_NX_READY",
   "FLASH_NX_READY is False; FLASH_COMPLETE_V0.nx remains a metadata seal of a different model",
   "doctor_tournament.probes() is still hardcoded to Qwen3.8-27B PARENT; it was not called",
   "physical_graph_compiler.main() still requires model.safetensors.index.json, an X_layer capture, and MoE expert tensors",
-  "KERNEL_LIBRARY.json has no specimen field; role-name overlap is not a kernel for this body",
-  "native engine match arms include qwen2 and qwen3moe, not dense qwen3, not falcon_h1",
-  "no generic NX packer; first_noetic_executable is a 27B mix",
+  "KERNEL_LIBRARY.json has no specimen field and 0 present compiled_identity values; role-name overlap is still not a compiled kernel for this body, now recorded as NATIVE_UNMEASURED rather than stalling the planner",
+  "native engine match arms include qwen2 and qwen3moe, not dense qwen3, not falcon_h1; QWEN3_DENSE_GGUF_MATCH_ARM_ABSENT is a named blocker, dense was not mapped onto qwen3moe",
+  "first_noetic_executable.py remains a 27B mix and is not executed on this path",
   "no physical EBPW was written"
  ],
  "next_workunits": [
   {
-   "id": "WU.CPU.nr-nx-generic.device-compiler-entry",
-   "owner": "Codex (native reader + DeviceCompiler are Codex-owned)",
+   "id": "WU.CPU.nr-nx-generic.generic-nx-packer",
+   "owner": "Codex (native reader + generic NX packer are Codex-owned)",
    "schedule": "CPU_NEXT",
-   "wake": "a DeviceCompiler callable that accepts the adapted family, then a generic NX packer"
+   "wake": "a generic NX packer that accepts the DeviceCompiler NX fragment and the adapted family, without treating qwen3 dense as qwen3moe"
   },
   {
    "id": "future.nr-nx-generic.sleep.nx-lower",
    "schedule": "SLEEPING",
    "wake_unmet": [
-    "native_engine_match_arm_includes_this_family",
-    "device_compiler_entry_point_exists",
-    "generic_packer_accepts_this_specimen",
-    "packed_source_independent_nx_on_disk"
+    "native_engine_match_arm_includes_this_family"
    ]
   }
  ],
+ "packed_nx_identity": {
+  "billing": {
+   "generators": {
+    "bytes": 0,
+    "n_parts": 1,
+    "parts": [
+     "parts/generators/ABSENT"
+    ],
+    "runtime_required": false
+   },
+   "metadata": {
+    "bytes": 10697,
+    "n_parts": 3,
+    "parts": [
+     "parts/metadata/tokenizer_config.json",
+     "parts/metadata/config.json",
+     "parts/metadata/generation_config.json"
+    ],
+    "runtime_required": true
+   },
+   "model_specific_code": {
+    "bytes": 101024,
+    "n_parts": 6,
+    "parts": [
+     "parts/model_specific_code/embed.762d07047de9d713.mtlarchive",
+     "parts/model_specific_code/gqa_attention.4db31146e49c1ed3.mtlarchive",
+     "parts/model_specific_code/lm_head.e8463decefa97cf0.mtlarchive",
+     "parts/model_specific_code/mlp_down.78d8cb856a6d8e6e.mtlarchive",
+     "parts/model_specific_code/mlp_gate_up.9a2e9787c132ef32.mtlarchive",
+     "parts/model_specific_code/rmsnorm.f76e5d8e8d84e03b.mtlarchive"
+    ],
+    "runtime_required": true
+   },
+   "nr": {
+    "bytes": 0,
+    "n_parts": 1,
+    "parts": [
+     "parts/nr/ABSENT"
+    ],
+    "runtime_required": false
+   },
+   "representation": {
+    "bytes": 1503300328,
+    "n_parts": 1,
+    "parts": [
+     "parts/representation/model.safetensors"
+    ],
+    "runtime_required": true
+   },
+   "residuals": {
+    "bytes": 0,
+    "n_parts": 1,
+    "parts": [
+     "parts/residuals/ABSENT"
+    ],
+    "runtime_required": false
+   },
+   "state_auxiliaries": {
+    "bytes": 0,
+    "n_parts": 1,
+    "parts": [
+     "parts/state_auxiliaries/ABSENT"
+    ],
+    "runtime_required": false
+   },
+   "tables": {
+    "bytes": 15871340,
+    "n_parts": 3,
+    "parts": [
+     "parts/tables/tokenizer.json",
+     "parts/tables/merges.txt",
+     "parts/tables/vocab.json"
+    ],
+    "runtime_required": true
+   }
+  },
+  "closure_sha256": "36e5555e200eadb47f10b3d1f70623a74818faac39588f854b77f19352fb6122",
+  "compiled_organs": [
+   "embed",
+   "gqa_attention",
+   "lm_head",
+   "mlp_down",
+   "mlp_gate_up",
+   "rmsnorm"
+  ],
+  "did_not_execute_first_noetic_executable": true,
+  "did_not_hardlink": true,
+  "family": "dense_swiglu_transformer",
+  "manifest_path": "/Users/scammermike/Downloads/hawking/artifacts/nx/Qwen--Qwen3-0.6B@c1899de289a0/MANIFEST.json",
+  "n_compiled_organs": 6,
+  "nr_runtime_referenced": false,
+  "nx_path": "/Users/scammermike/Downloads/hawking/artifacts/nx/Qwen--Qwen3-0.6B@c1899de289a0/packed.nx.json",
+  "part_hashes": {
+   "parts/metadata/config.json": "660db3b73d788119c04535e48cf9be5f55bc3100841a718637ae695b442f27dd",
+   "parts/metadata/generation_config.json": "2325da0f15bb848e018c5ae071b7943332e9f871d6b60e2ed22ca97d4cb993d2",
+   "parts/metadata/tokenizer_config.json": "d5d09f07b48c3086c508b30d1c9114bd1189145b74e982a265350c923acd8101",
+   "parts/model_specific_code/embed.762d07047de9d713.mtlarchive": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb",
+   "parts/model_specific_code/gqa_attention.4db31146e49c1ed3.mtlarchive": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f",
+   "parts/model_specific_code/lm_head.e8463decefa97cf0.mtlarchive": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025",
+   "parts/model_specific_code/mlp_down.78d8cb856a6d8e6e.mtlarchive": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980",
+   "parts/model_specific_code/mlp_gate_up.9a2e9787c132ef32.mtlarchive": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3",
+   "parts/model_specific_code/rmsnorm.f76e5d8e8d84e03b.mtlarchive": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426",
+   "parts/representation/model.safetensors": "f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b",
+   "parts/tables/merges.txt": "8831e4f1a044471340f7c0a83d7bd71306a5b867e95fd870f74d0c5308a904d5",
+   "parts/tables/tokenizer.json": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+   "parts/tables/vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910"
+  },
+  "root": "/Users/scammermike/Downloads/hawking/artifacts/nx/Qwen--Qwen3-0.6B@c1899de289a0",
+  "runtime_needs": [
+   {
+    "bytes": 1503300328,
+    "need": "representation",
+    "present": true
+   },
+   {
+    "bytes": 101024,
+    "need": "model_specific_code",
+    "present": true
+   },
+   {
+    "bytes": 10697,
+    "need": "metadata",
+    "present": true
+   },
+   {
+    "bytes": 15871340,
+    "need": "tables",
+    "present": true
+   },
+   {
+    "bytes": 0,
+    "need": "generators",
+    "present": false
+   },
+   {
+    "bytes": 0,
+    "need": "residuals",
+    "present": false
+   },
+   {
+    "bytes": 0,
+    "need": "state_auxiliaries",
+    "present": false
+   },
+   {
+    "bytes": 0,
+    "need": "nr",
+    "present": false
+   }
+  ],
+  "source_independent": true,
+  "specimen_id": "Qwen--Qwen3-0.6B@c1899de289a0",
+  "status": "SOURCE_INDEPENDENT_COMPLETE",
+  "total_bytes": 1519283389
+ },
+ "packed_path": "/Users/scammermike/Downloads/hawking/artifacts/nx/Qwen--Qwen3-0.6B@c1899de289a0/packed.nx.json",
  "physical_ebpw": null,
  "physical_ebpw_written": false,
  "preflight": {
   "adaptation_family": "dense_swiglu_transformer",
-  "first_failing_stage": "KernelPlanner",
+  "first_failing_stage": null,
   "id": "Qwen--Qwen3-0.6B@c1899de289a0",
-  "missing_input": "KERNEL_LIBRARY has no specimen field and no shape-matched kernels for this specimen",
-  "ok": false,
+  "missing_input": null,
+  "ok": true,
   "pipeline_can_start": true,
   "probe_ok": true,
   "stage_preview": [
@@ -320,37 +467,37 @@
     "stage": "PhysicalGraphCompiler"
    },
    {
-    "missing_input": "KERNEL_LIBRARY has no specimen field and no shape-matched kernels for this specimen",
-    "ready": false,
+    "missing_input": null,
+    "ready": true,
     "stage": "KernelPlanner"
    },
    {
-    "missing_input": "no DeviceCompiler callable; native GGUF match arms ['llama', 'llama', 'llama2', 'llama3', 'llama3.1', 'llama3.2', 'mistral', 'deepseek2', 'deepseek-v2', 'deepseek2-lite', 'qwen2', 'qwen2.5', 'qwen', 'qwen2moe', 'qwen3moe', 'qwen-moe', 'rwkv7', 'rwkv-7'] do not make a safetensors packer",
-    "ready": false,
+    "missing_input": null,
+    "ready": true,
     "stage": "DeviceCompiler"
    },
    {
-    "missing_input": "no generic NX packer; first_noetic_executable.py is Qwen3.8-27B-specific",
-    "ready": false,
+    "missing_input": null,
+    "ready": true,
     "stage": "NoeticExecutable"
    },
    {
-    "missing_input": "no packed NX body",
-    "ready": false,
+    "missing_input": null,
+    "ready": true,
     "stage": "SourceIndependence"
    },
    {
-    "missing_input": "no packed NX body",
-    "ready": false,
+    "missing_input": null,
+    "ready": true,
     "stage": "ExecutableDependencyAccounting"
    },
    {
-    "missing_input": "no packed NX body",
-    "ready": false,
+    "missing_input": null,
+    "ready": true,
     "stage": "Verifier"
    }
   ],
-  "why": "KernelPlanner: KERNEL_LIBRARY has no specimen field and no shape-matched kernels for this specimen"
+  "why": "every stage has its input"
  },
  "probe": {
   "id": "Qwen--Qwen3-0.6B@c1899de289a0",
@@ -364,7 +511,9 @@
  },
  "purpose": "Parameterize the NR\u2192NX compiler stages from a specimen's own config and tensor index, drive them on the cheapest whole-tree-verified body adapt() accepts, and keep GENERIC_NR_NX_PIPELINE_CALLABLE separate from FLASH_NX_READY",
  "recovered_implementation": [
-  "tools/future/nr_nx_generic.py \u2014 EXTENDED: probe_specimen/adapt/callable_on/run; previous stage driver kept and parameterized",
+  "tools/future/nr_nx_generic.py \u2014 EXTENDED: DeviceCompiler + generic nx_packer.pack on the live specimen",
+  "tools/future/nx_packer.py \u2014 generic source-independent NX packer; refusals raise",
+  "tools/future/device_compiler.py \u2014 DeviceCompiler: plan in, MTLComputePipelineState + shader_hash + entry_point out; placeholders refused",
   "tools/future/nr_nx_path.py \u2014 seven-requirement map, SLEEPING units, physical_ebpw refusal; EXTENDED, not forked",
   "tools/future/flash_nx_audit.py \u2014 check_nx, evidence_path, METADATA_ONLY, synthetic_promotable_nx",
   "tools/future/flash_nr_complete.py \u2014 composition NR is not serialized_nr_information",
@@ -374,7 +523,7 @@
   "tools/odyssey/physical_graph_compiler.py \u2014 organ_graph + silu invoked; main() still MoE-hardcoded",
   "tools/odyssey/doctor_tournament.py \u2014 algorithm reused on adapted names; probes() not called",
   "tools/headless/representation_library.py \u2014 seed() invoked on this specimen's organs",
-  "tools/odyssey/noetic_compiler.py \u2014 BLOCKED map cited as a note, not as a drive of this specimen",
+  "tools/odyssey/noetic_compiler.py \u2014 BLOCKED map cited as a note, not as a drive of this specimen; DeviceCompiler is tools.future.device_compiler",
   "crates/hawking-core/src/model/mod.rs \u2014 shipping GGUF match arms",
   "tools/future/odyssey_launch.py _eval_nr_nx \u2014 reads GENERIC_NR_NX_PIPELINE_CALLABLE, not rewritten",
   "tools/future/workunit_species.py emit_hcli_workunit \u2014 SLEEPING unit, never pending"
@@ -384,15 +533,15 @@
   "fails_closed": "absent specimen/config/index is REFUSED; a stage that cannot run is FAILED/BLOCKED by name, never SKIPPED; adapt() does not branch on specimen id; source independence fails on a source-tree read; GENERIC_NR_NX_PIPELINE_CALLABLE cannot be True if any stage was skipped or no packed NX exists; physical_ebpw cannot be written",
   "frontier": "FT.MODEL_EXECUTION.complete-token",
   "receipt": "receipts/future/NR_NX_GENERIC.json",
-  "workunit": "one CPU_ANALYSIS unit; probe+adapt+drive compiler stages on a real specimen; no GPU authority; no packer; no minted NX"
+  "workunit": "one CPU_ANALYSIS unit; probe+adapt+drive compiler stages and pack a source-independent NX on a real specimen; no GPU authority"
  },
  "schema": "hawking.future.nr_nx_generic.v1",
- "seal_sha256": "60a8266fe9d894be3a82377026bb692cac535e70c9d375afd5e66cab85099a8e",
+ "seal_sha256": "2ef2d99df3bf289020471fb273102ee57d70da520c42a38e784b4084addeaedc",
  "sleeping_workunit": {
-  "blocked_reason": "NX_LOWER blocked at stage DeviceCompiler: no_entry_point",
+  "blocked_reason": "NX_LOWER blocked at stage None: None",
   "classification": "SLEEPING",
-  "exact_error": "no_entry_point",
-  "first_failing_stage": "DeviceCompiler",
+  "exact_error": null,
+  "first_failing_stage": null,
   "id": "future.nr-nx-generic.sleep.nx-lower",
   "resource_class": "COMPILE",
   "status": "sleeping",
@@ -410,26 +559,23 @@
     "id": "native_engine_match_arm_includes_this_family"
    },
    {
-    "evidence": "no DeviceCompiler callable; noetic_compiler.BLOCKED is a note, not a driver",
-    "holds": false,
+    "evidence": "tools.future.device_compiler.lower_plan is the DeviceCompiler callable",
+    "holds": true,
     "id": "device_compiler_entry_point_exists"
    },
    {
-    "evidence": "first_noetic_executable.py is Qwen3.8-27B-specific",
-    "holds": false,
+    "evidence": "tools.future.nx_packer.pack accepted this specimen",
+    "holds": true,
     "id": "generic_packer_accepts_this_specimen"
    },
    {
-    "evidence": "no NX body was packed for this specimen; a metadata seal of another model is not this path",
-    "holds": false,
+    "evidence": "source-independent packed NX is on disk",
+    "holds": true,
     "id": "packed_source_independent_nx_on_disk"
    }
   ],
   "wake_unmet": [
-   "native_engine_match_arm_includes_this_family",
-   "device_compiler_entry_point_exists",
-   "generic_packer_accepts_this_specimen",
-   "packed_source_independent_nx_on_disk"
+   "native_engine_match_arm_includes_this_family"
   ]
  },
  "sparse_sys_path_added": [],
@@ -605,15 +751,8 @@
    },
    {
     "chosen": false,
-    "family": "moe_swiglu_transformer",
     "id": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
-    "mlp_kind": "moe",
-    "n_tensors": 18867,
-    "names_via": "model.safetensors.index.json",
-    "not_chosen_because": null,
-    "pipeline_can_start": true,
-    "present": true,
-    "verified": true
+    "not_chosen_because": "not whole-tree verified"
    }
   ],
   "bytes_hashed": 1519209243,
@@ -642,7 +781,7 @@
   "verification_status": "WHOLE_TREE_VERIFIED",
   "verification_via": "/Users/scammermike/Downloads/hawking/receipts/future/SPECIMEN_VERIFICATION.json",
   "why_chosen": "first cheapness-ordered candidate whose adapt() derived a SwiGLU collapse and a probe plan from this specimen's own index (family=dense_swiglu_transformer, mlp=dense, n_tensors=311, via=model.safetensors header)",
-  "why_not_later_candidates": "later candidates were not needed; adapt() already accepted a cheaper body. tiiuae--Falcon-H1-7B-Instruct@41e72f27effb: not reached; Qwen--Qwen3-30B-A3B@ad44e777bcd1: not reached"
+  "why_not_later_candidates": "later candidates were not needed; adapt() already accepted a cheaper body. tiiuae--Falcon-H1-7B-Instruct@41e72f27effb: not reached; Qwen--Qwen3-30B-A3B@ad44e777bcd1: not whole-tree verified"
  },
  "stages": [
   {
@@ -675,22 +814,15 @@
      },
      {
       "chosen": false,
-      "family": "moe_swiglu_transformer",
       "id": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
-      "mlp_kind": "moe",
-      "n_tensors": 18867,
-      "names_via": "model.safetensors.index.json",
-      "not_chosen_because": null,
-      "pipeline_can_start": true,
-      "present": true,
-      "verified": true
+      "not_chosen_because": "not whole-tree verified"
      }
     ],
     "bytes_hashed": 1519209243,
     "family": "dense_swiglu_transformer",
     "id": "Qwen--Qwen3-0.6B@c1899de289a0",
     "repo": "Qwen/Qwen3-0.6B",
-    "why_not_later_candidates": "later candidates were not needed; adapt() already accepted a cheaper body. tiiuae--Falcon-H1-7B-Instruct@41e72f27effb: not reached; Qwen--Qwen3-30B-A3B@ad44e777bcd1: not reached"
+    "why_not_later_candidates": "later candidates were not needed; adapt() already accepted a cheaper body. tiiuae--Falcon-H1-7B-Instruct@41e72f27effb: not reached; Qwen--Qwen3-30B-A3B@ad44e777bcd1: not whole-tree verified"
    },
    "invoked": true,
    "stage": "SpecimenSelect",
@@ -1484,6 +1616,7 @@
   {
    "error": null,
    "evidence": {
+    "claim_boundary": "COMPILE_TIME_SCIENCE_ONLY kernel plan. NATIVE_UNMEASURED is not a compiled kernel, not a hardware measurement, not physical EBPW.",
     "intersection": [
      "gqa_attention",
      "mlp_down",
@@ -1495,443 +1628,414 @@
      "mlp_down",
      "mlp_gate_up"
     ],
+    "n_compiled": 0,
     "n_kernels": 17,
+    "n_name_is_not_a_compiled_kernel": 3,
+    "n_native_unmeasured": 6,
+    "name_is_not_a_compiled_kernel": true,
     "names_this_specimen": false,
+    "organ_shapes": {
+     "embed": {
+      "cols": 1024,
+      "extents": [
+       151936,
+       1024
+      ],
+      "from": "vocab_size x hidden_size",
+      "rows": 151936
+     },
+     "gqa_attention": {
+      "cols": 1024,
+      "extents": [
+       2048,
+       1024,
+       1024
+      ],
+      "from": "num_attention_heads*head_dim x hidden_size",
+      "head_dim": 128,
+      "kv_rows": 1024,
+      "q_rows": 2048
+     },
+     "lm_head": {
+      "cols": 1024,
+      "extents": [
+       151936,
+       1024
+      ],
+      "from": "vocab_size x hidden_size",
+      "rows": 151936
+     },
+     "mlp_down": {
+      "cols": 3072,
+      "extents": [
+       1024,
+       3072
+      ],
+      "from": "hidden_size x intermediate_size",
+      "rows": 1024
+     },
+     "mlp_gate_up": {
+      "cols": 1024,
+      "extents": [
+       3072,
+       1024
+      ],
+      "from": "intermediate_size x hidden_size",
+      "rows": 3072
+     },
+     "rmsnorm": {
+      "cols": 1024,
+      "extents": [
+       1024
+      ],
+      "from": "hidden_size"
+     }
+    },
     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/KERNEL_LIBRARY.json",
-    "role_matched_kernels": [
+    "plan": [
      {
-      "kernel_identity": "q2f_group64_matvec",
-      "machine_identity": {
-       "chipset": "Apple M3 Ultra",
-       "command": "NOETIC_PARENT_A.MachineGenome",
-       "device_measured_sustained_gb_s": {
-        "absent_reason": null,
-        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
-        "kind": "CITED",
-        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
-        "source": "receipts/headless/BANDWIDTH_ROOF.json",
-        "unit": "GB/s",
-        "value": 778.8
-       },
-       "gpu_cores": 60,
-       "metal_family": "Metal 4",
-       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
-        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
-        "parent_machinegenome_measured_roof_gb_s": 595.9,
-        "source": "receipts/headless/NOETIC_PARENT_A.json"
-       },
-       "source": "receipts/headless/NOETIC_PARENT_A.json",
-       "unified_memory_bytes": 103079215104
+      "compiled_kernel_ids": [],
+      "n_compiled_for_this_body": 0,
+      "n_role_matched": 0,
+      "name_is_not_a_compiled_kernel": false,
+      "occupying": {
+       "compiled_kernel": null,
+       "kind": "NATIVE_UNMEASURED",
+       "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
       },
-      "organ_identity": "mlp_down",
-      "representation_identity": "q2_affine"
+      "organ": "embed",
+      "refusals": [],
+      "role_matched_kernel_ids": [],
+      "specimen_shape": {
+       "cols": 1024,
+       "extents": [
+        151936,
+        1024
+       ],
+       "from": "vocab_size x hidden_size",
+       "rows": 151936
+      },
+      "status": "NATIVE_UNMEASURED",
+      "why": "A shared organ name is not a compiled kernel for this body. 0 role-matched kernel(s) for 'embed'; 0 compiled for this body. Plan occupies NATIVE_UNMEASURED rather than claiming a compiled kernel."
      },
      {
-      "kernel_identity": "q2f_group64_matvec_geo_tpr64_tg128",
-      "machine_identity": {
-       "chipset": "Apple M3 Ultra",
-       "command": "NOETIC_PARENT_A.MachineGenome",
-       "device_measured_sustained_gb_s": {
-        "absent_reason": null,
-        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
-        "kind": "CITED",
-        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
-        "source": "receipts/headless/BANDWIDTH_ROOF.json",
-        "unit": "GB/s",
-        "value": 778.8
-       },
-       "gpu_cores": 60,
-       "metal_family": "Metal 4",
-       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
-        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
-        "parent_machinegenome_measured_roof_gb_s": 595.9,
-        "source": "receipts/headless/NOETIC_PARENT_A.json"
-       },
-       "source": "receipts/headless/NOETIC_PARENT_A.json",
-       "unified_memory_bytes": 103079215104
+      "compiled_kernel_ids": [],
+      "n_compiled_for_this_body": 0,
+      "n_role_matched": 1,
+      "name_is_not_a_compiled_kernel": true,
+      "occupying": {
+       "compiled_kernel": null,
+       "kind": "NATIVE_UNMEASURED",
+       "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
       },
-      "organ_identity": "mlp_down",
-      "representation_identity": "q2_affine"
+      "organ": "gqa_attention",
+      "refusals": [
+       "A shared organ name is not a compiled kernel for this body. specimen_id_match=False shape_constraints_satisfied=False compiled_identity_present=False specialized_cols=None organ_extents=[1024, 2048] kernel_specimen=None"
+      ],
+      "role_matched_kernel_ids": [
+       "qwen80_add_residual_rmsnorm_tg"
+      ],
+      "specimen_shape": {
+       "cols": 1024,
+       "extents": [
+        2048,
+        1024,
+        1024
+       ],
+       "from": "num_attention_heads*head_dim x hidden_size",
+       "head_dim": 128,
+       "kv_rows": 1024,
+       "q_rows": 2048
+      },
+      "status": "NATIVE_UNMEASURED",
+      "why": "A shared organ name is not a compiled kernel for this body. 1 role-matched kernel(s) for 'gqa_attention'; 0 compiled for this body. Plan occupies NATIVE_UNMEASURED rather than claiming a compiled kernel."
      },
      {
-      "kernel_identity": "affine2_group32_matvec_geo_tpr64_tg128",
-      "machine_identity": {
-       "chipset": "Apple M3 Ultra",
-       "command": "NOETIC_PARENT_A.MachineGenome",
-       "device_measured_sustained_gb_s": {
-        "absent_reason": null,
-        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
-        "kind": "CITED",
-        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
-        "source": "receipts/headless/BANDWIDTH_ROOF.json",
-        "unit": "GB/s",
-        "value": 778.8
-       },
-       "gpu_cores": 60,
-       "metal_family": "Metal 4",
-       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
-        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
-        "parent_machinegenome_measured_roof_gb_s": 595.9,
-        "source": "receipts/headless/NOETIC_PARENT_A.json"
-       },
-       "source": "receipts/headless/NOETIC_PARENT_A.json",
-       "unified_memory_bytes": 103079215104
+      "compiled_kernel_ids": [],
+      "n_compiled_for_this_body": 0,
+      "n_role_matched": 0,
+      "name_is_not_a_compiled_kernel": false,
+      "occupying": {
+       "compiled_kernel": null,
+       "kind": "NATIVE_UNMEASURED",
+       "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
       },
-      "organ_identity": "mlp_down",
-      "representation_identity": "q2_affine"
+      "organ": "lm_head",
+      "refusals": [],
+      "role_matched_kernel_ids": [],
+      "specimen_shape": {
+       "cols": 1024,
+       "extents": [
+        151936,
+        1024
+       ],
+       "from": "vocab_size x hidden_size",
+       "rows": 151936
+      },
+      "status": "NATIVE_UNMEASURED",
+      "why": "A shared organ name is not a compiled kernel for this body. 0 role-matched kernel(s) for 'lm_head'; 0 compiled for this body. Plan occupies NATIVE_UNMEASURED rather than claiming a compiled kernel."
      },
      {
-      "kernel_identity": "affine2_group64_matvec_geo_tpr64_tg128",
-      "machine_identity": {
-       "chipset": "Apple M3 Ultra",
-       "command": "NOETIC_PARENT_A.MachineGenome",
-       "device_measured_sustained_gb_s": {
-        "absent_reason": null,
-        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
-        "kind": "CITED",
-        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
-        "source": "receipts/headless/BANDWIDTH_ROOF.json",
-        "unit": "GB/s",
-        "value": 778.8
-       },
-       "gpu_cores": 60,
-       "metal_family": "Metal 4",
-       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
-        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
-        "parent_machinegenome_measured_roof_gb_s": 595.9,
-        "source": "receipts/headless/NOETIC_PARENT_A.json"
-       },
-       "source": "receipts/headless/NOETIC_PARENT_A.json",
-       "unified_memory_bytes": 103079215104
+      "compiled_kernel_ids": [],
+      "n_compiled_for_this_body": 0,
+      "n_role_matched": 11,
+      "name_is_not_a_compiled_kernel": true,
+      "occupying": {
+       "compiled_kernel": null,
+       "kind": "NATIVE_UNMEASURED",
+       "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
       },
-      "organ_identity": "mlp_down",
-      "representation_identity": "q2_affine"
+      "organ": "mlp_down",
+      "refusals": [
+       "A shared organ name is not a compiled kernel for this body. specimen_id_match=False shape_constraints_satisfied=False compiled_identity_present=False specialized_cols=None organ_extents=[1024, 3072] kernel_specimen=None",
+       "A shared organ name is not a compiled kernel for this body. specimen_id_match=False shape_constraints_satisfied=False compiled_identity_present=False specialized_cols=None organ_extents=[1024, 3072] kernel_specimen=None",
+       "A shared organ name is not a compiled kernel for this body. specimen_id_match=False shape_constraints_satisfied=False compiled_identity_present=False specialized_cols=None organ_extents=[1024, 3072] kernel_specimen=None",
+       "A shared organ name is not a compiled kernel for this body. specimen_id_match=False shape_constraints_satisfied=False compiled_identity_present=False specialized_cols=None organ_extents=[1024, 3072] kernel_specimen=None",
+       "A shared organ name is not a compiled kernel for this body. specimen_id_match=False shape_constraints_satisfied=False compiled_identity_present=False specialized_cols=None organ_extents=[1024, 3072] kernel_specimen=None",
+       "A shared organ name is not a compiled kernel for this body. specimen_id_match=False shape_constraints_satisfied=False compiled_identity_present=False specialized_cols=5120 organ_extents=[1024, 3072] kernel_specimen=None",
+       "A shared organ name is not a compiled kernel for this body. specimen_id_match=False shape_constraints_satisfied=False compiled_identity_present=False specialized_cols=5120 organ_extents=[1024, 3072] kernel_specimen=None",
+       "A shared organ name is not a compiled kernel for this body. specimen_id_match=False shape_constraints_satisfied=False compiled_identity_present=False specialized_cols=5120 organ_extents=[1024, 3072] kernel_specimen=None",
+       "A shared organ name is not a compiled kernel for this body. specimen_id_match=False shape_constraints_satisfied=False compiled_identity_present=False specialized_cols=None organ_extents=[1024, 3072] kernel_specimen=None",
+       "A shared organ name is not a compiled kernel for this body. specimen_id_match=False shape_constraints_satisfied=False compiled_identity_present=False specialized_cols=5120 organ_extents=[1024, 3072] kernel_specimen=None",
+       "A shared organ name is not a compiled kernel for this body. specimen_id_match=False shape_constraints_satisfied=False compiled_identity_present=False specialized_cols=5120 organ_extents=[1024, 3072] kernel_specimen=None"
+      ],
+      "role_matched_kernel_ids": [
+       "q2f_group64_matvec",
+       "q2f_group64_matvec_geo_tpr64_tg128",
+       "affine2_group32_matvec_geo_tpr64_tg128",
+       "affine2_group64_matvec_geo_tpr64_tg128",
+       "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+       "ternary_5in8_g64_matvec_geo_c5120_tpr64_tg128",
+       "binary_g64_matvec_geo_c5120_tpr64_tg128",
+       "shared_binary_k2_group_dots_c5120_g64_tpr64_tg128",
+       "shared_binary_k2_scale_contract_gpr80",
+       "binary_sparse_fused_geo_c5120_tpr64_tg128",
+       "q2f_g64_matvec_geo_c5120_tpr64_tg128"
+      ],
+      "specimen_shape": {
+       "cols": 3072,
+       "extents": [
+        1024,
+        3072
+       ],
+       "from": "hidden_size x intermediate_size",
+       "rows": 1024
+      },
+      "status": "NATIVE_UNMEASURED",
+      "why": "A shared organ name is not a compiled kernel for this body. 11 role-matched kernel(s) for 'mlp_down'; 0 compiled for this body. Plan occupies NATIVE_UNMEASURED rather than claiming a compiled kernel."
      },
      {
-      "kernel_identity": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
-      "machine_identity": {
-       "chipset": "Apple M3 Ultra",
-       "command": "NOETIC_PARENT_A.MachineGenome",
-       "device_measured_sustained_gb_s": {
-        "absent_reason": null,
-        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
-        "kind": "CITED",
-        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
-        "source": "receipts/headless/BANDWIDTH_ROOF.json",
-        "unit": "GB/s",
-        "value": 778.8
-       },
-       "gpu_cores": 60,
-       "metal_family": "Metal 4",
-       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
-        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
-        "parent_machinegenome_measured_roof_gb_s": 595.9,
-        "source": "receipts/headless/NOETIC_PARENT_A.json"
-       },
-       "source": "receipts/headless/NOETIC_PARENT_A.json",
-       "unified_memory_bytes": 103079215104
+      "compiled_kernel_ids": [],
+      "n_compiled_for_this_body": 0,
+      "n_role_matched": 4,
+      "name_is_not_a_compiled_kernel": true,
+      "occupying": {
+       "compiled_kernel": null,
+       "kind": "NATIVE_UNMEASURED",
+       "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
       },
-      "organ_identity": "mlp_down",
-      "representation_identity": "q2_affine"
+      "organ": "mlp_gate_up",
+      "refusals": [
+       "A shared organ name is not a compiled kernel for this body. specimen_id_match=False shape_constraints_satisfied=False compiled_identity_present=False specialized_cols=None organ_extents=[1024, 3072] kernel_specimen=None",
+       "A shared organ name is not a compiled kernel for this body. specimen_id_match=False shape_constraints_satisfied=False compiled_identity_present=False specialized_cols=None organ_extents=[1024, 3072] kernel_specimen=None",
+       "A shared organ name is not a compiled kernel for this body. specimen_id_match=False shape_constraints_satisfied=False compiled_identity_present=False specialized_cols=None organ_extents=[1024, 3072] kernel_specimen=None",
+       "A shared organ name is not a compiled kernel for this body. specimen_id_match=False shape_constraints_satisfied=False compiled_identity_present=False specialized_cols=17408 organ_extents=[1024, 3072] kernel_specimen=None"
+      ],
+      "role_matched_kernel_ids": [
+       "q2f_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+       "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+       "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+       "ternary_5in8_g64_matvec_geo_c17408_tpr64_tg128"
+      ],
+      "specimen_shape": {
+       "cols": 1024,
+       "extents": [
+        3072,
+        1024
+       ],
+       "from": "intermediate_size x hidden_size",
+       "rows": 3072
+      },
+      "status": "NATIVE_UNMEASURED",
+      "why": "A shared organ name is not a compiled kernel for this body. 4 role-matched kernel(s) for 'mlp_gate_up'; 0 compiled for this body. Plan occupies NATIVE_UNMEASURED rather than claiming a compiled kernel."
      },
      {
-      "kernel_identity": "qwen80_add_residual_rmsnorm_tg",
-      "machine_identity": {
-       "chipset": "Apple M3 Ultra",
-       "command": "NOETIC_PARENT_A.MachineGenome",
-       "device_measured_sustained_gb_s": {
-        "absent_reason": null,
-        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
-        "kind": "CITED",
-        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
-        "source": "receipts/headless/BANDWIDTH_ROOF.json",
-        "unit": "GB/s",
-        "value": 778.8
-       },
-       "gpu_cores": 60,
-       "metal_family": "Metal 4",
-       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
-        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
-        "parent_machinegenome_measured_roof_gb_s": 595.9,
-        "source": "receipts/headless/NOETIC_PARENT_A.json"
-       },
-       "source": "receipts/headless/NOETIC_PARENT_A.json",
-       "unified_memory_bytes": 103079215104
+      "compiled_kernel_ids": [],
+      "n_compiled_for_this_body": 0,
+      "n_role_matched": 0,
+      "name_is_not_a_compiled_kernel": false,
+      "occupying": {
+       "compiled_kernel": null,
+       "kind": "NATIVE_UNMEASURED",
+       "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
       },
-      "organ_identity": "gqa_attention",
-      "representation_identity": "q4_control"
-     },
-     {
-      "kernel_identity": "q2f_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
-      "machine_identity": {
-       "chipset": "Apple M3 Ultra",
-       "command": "NOETIC_PARENT_A.MachineGenome",
-       "device_measured_sustained_gb_s": {
-        "absent_reason": null,
-        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
-        "kind": "CITED",
-        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
-        "source": "receipts/headless/BANDWIDTH_ROOF.json",
-        "unit": "GB/s",
-        "value": 778.8
-       },
-       "gpu_cores": 60,
-       "metal_family": "Metal 4",
-       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
-        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
-        "parent_machinegenome_measured_roof_gb_s": 595.9,
-        "source": "receipts/headless/NOETIC_PARENT_A.json"
-       },
-       "source": "receipts/headless/NOETIC_PARENT_A.json",
-       "unified_memory_bytes": 103079215104
+      "organ": "rmsnorm",
+      "refusals": [],
+      "role_matched_kernel_ids": [],
+      "specimen_shape": {
+       "cols": 1024,
+       "extents": [
+        1024
+       ],
+       "from": "hidden_size"
       },
-      "organ_identity": "mlp_gate_up",
-      "representation_identity": "q2_affine"
-     },
-     {
-      "kernel_identity": "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
-      "machine_identity": {
-       "chipset": "Apple M3 Ultra",
-       "command": "NOETIC_PARENT_A.MachineGenome",
-       "device_measured_sustained_gb_s": {
-        "absent_reason": null,
-        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
-        "kind": "CITED",
-        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
-        "source": "receipts/headless/BANDWIDTH_ROOF.json",
-        "unit": "GB/s",
-        "value": 778.8
-       },
-       "gpu_cores": 60,
-       "metal_family": "Metal 4",
-       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
-        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
-        "parent_machinegenome_measured_roof_gb_s": 595.9,
-        "source": "receipts/headless/NOETIC_PARENT_A.json"
-       },
-       "source": "receipts/headless/NOETIC_PARENT_A.json",
-       "unified_memory_bytes": 103079215104
-      },
-      "organ_identity": "mlp_gate_up",
-      "representation_identity": "q2_affine"
-     },
-     {
-      "kernel_identity": "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
-      "machine_identity": {
-       "chipset": "Apple M3 Ultra",
-       "command": "NOETIC_PARENT_A.MachineGenome",
-       "device_measured_sustained_gb_s": {
-        "absent_reason": null,
-        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
-        "kind": "CITED",
-        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
-        "source": "receipts/headless/BANDWIDTH_ROOF.json",
-        "unit": "GB/s",
-        "value": 778.8
-       },
-       "gpu_cores": 60,
-       "metal_family": "Metal 4",
-       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
-        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
-        "parent_machinegenome_measured_roof_gb_s": 595.9,
-        "source": "receipts/headless/NOETIC_PARENT_A.json"
-       },
-       "source": "receipts/headless/NOETIC_PARENT_A.json",
-       "unified_memory_bytes": 103079215104
-      },
-      "organ_identity": "mlp_gate_up",
-      "representation_identity": "q2_affine"
-     },
-     {
-      "kernel_identity": "ternary_5in8_g64_matvec_geo_c5120_tpr64_tg128",
-      "machine_identity": {
-       "chipset": "Apple M3 Ultra",
-       "command": "NOETIC_PARENT_A.MachineGenome",
-       "device_measured_sustained_gb_s": {
-        "absent_reason": null,
-        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
-        "kind": "CITED",
-        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
-        "source": "receipts/headless/BANDWIDTH_ROOF.json",
-        "unit": "GB/s",
-        "value": 778.8
-       },
-       "gpu_cores": 60,
-       "metal_family": "Metal 4",
-       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
-        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
-        "parent_machinegenome_measured_roof_gb_s": 595.9,
-        "source": "receipts/headless/NOETIC_PARENT_A.json"
-       },
-       "source": "receipts/headless/NOETIC_PARENT_A.json",
-       "unified_memory_bytes": 103079215104
-      },
-      "organ_identity": "mlp_down",
-      "representation_identity": "ternary"
-     },
-     {
-      "kernel_identity": "ternary_5in8_g64_matvec_geo_c17408_tpr64_tg128",
-      "machine_identity": {
-       "chipset": "Apple M3 Ultra",
-       "command": "NOETIC_PARENT_A.MachineGenome",
-       "device_measured_sustained_gb_s": {
-        "absent_reason": null,
-        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
-        "kind": "CITED",
-        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
-        "source": "receipts/headless/BANDWIDTH_ROOF.json",
-        "unit": "GB/s",
-        "value": 778.8
-       },
-       "gpu_cores": 60,
-       "metal_family": "Metal 4",
-       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
-        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
-        "parent_machinegenome_measured_roof_gb_s": 595.9,
-        "source": "receipts/headless/NOETIC_PARENT_A.json"
-       },
-       "source": "receipts/headless/NOETIC_PARENT_A.json",
-       "unified_memory_bytes": 103079215104
-      },
-      "organ_identity": "mlp_gate_up",
-      "representation_identity": "ternary"
-     },
-     {
-      "kernel_identity": "binary_g64_matvec_geo_c5120_tpr64_tg128",
-      "machine_identity": {
-       "chipset": "Apple M3 Ultra",
-       "command": "NOETIC_PARENT_A.MachineGenome",
-       "device_measured_sustained_gb_s": {
-        "absent_reason": null,
-        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
-        "kind": "CITED",
-        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
-        "source": "receipts/headless/BANDWIDTH_ROOF.json",
-        "unit": "GB/s",
-        "value": 778.8
-       },
-       "gpu_cores": 60,
-       "metal_family": "Metal 4",
-       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
-        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
-        "parent_machinegenome_measured_roof_gb_s": 595.9,
-        "source": "receipts/headless/NOETIC_PARENT_A.json"
-       },
-       "source": "receipts/headless/NOETIC_PARENT_A.json",
-       "unified_memory_bytes": 103079215104
-      },
-      "organ_identity": "mlp_down",
-      "representation_identity": "binary"
-     },
-     {
-      "kernel_identity": "shared_binary_k2_group_dots_c5120_g64_tpr64_tg128",
-      "machine_identity": {
-       "chipset": "Apple M3 Ultra",
-       "command": "NOETIC_PARENT_A.MachineGenome",
-       "device_measured_sustained_gb_s": {
-        "absent_reason": null,
-        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
-        "kind": "CITED",
-        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
-        "source": "receipts/headless/BANDWIDTH_ROOF.json",
-        "unit": "GB/s",
-        "value": 778.8
-       },
-       "gpu_cores": 60,
-       "metal_family": "Metal 4",
-       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
-        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
-        "parent_machinegenome_measured_roof_gb_s": 595.9,
-        "source": "receipts/headless/NOETIC_PARENT_A.json"
-       },
-       "source": "receipts/headless/NOETIC_PARENT_A.json",
-       "unified_memory_bytes": 103079215104
-      },
-      "organ_identity": "mlp_down",
-      "representation_identity": "shared_basis"
-     },
-     {
-      "kernel_identity": "shared_binary_k2_scale_contract_gpr80",
-      "machine_identity": {
-       "chipset": "Apple M3 Ultra",
-       "command": "NOETIC_PARENT_A.MachineGenome",
-       "device_measured_sustained_gb_s": {
-        "absent_reason": null,
-        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
-        "kind": "CITED",
-        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
-        "source": "receipts/headless/BANDWIDTH_ROOF.json",
-        "unit": "GB/s",
-        "value": 778.8
-       },
-       "gpu_cores": 60,
-       "metal_family": "Metal 4",
-       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
-        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
-        "parent_machinegenome_measured_roof_gb_s": 595.9,
-        "source": "receipts/headless/NOETIC_PARENT_A.json"
-       },
-       "source": "receipts/headless/NOETIC_PARENT_A.json",
-       "unified_memory_bytes": 103079215104
-      },
-      "organ_identity": "mlp_down",
-      "representation_identity": "shared_basis"
-     },
-     {
-      "kernel_identity": "binary_sparse_fused_geo_c5120_tpr64_tg128",
-      "machine_identity": {
-       "chipset": "Apple M3 Ultra",
-       "command": "NOETIC_PARENT_A.MachineGenome",
-       "device_measured_sustained_gb_s": {
-        "absent_reason": null,
-        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
-        "kind": "CITED",
-        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
-        "source": "receipts/headless/BANDWIDTH_ROOF.json",
-        "unit": "GB/s",
-        "value": 778.8
-       },
-       "gpu_cores": 60,
-       "metal_family": "Metal 4",
-       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
-        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
-        "parent_machinegenome_measured_roof_gb_s": 595.9,
-        "source": "receipts/headless/NOETIC_PARENT_A.json"
-       },
-       "source": "receipts/headless/NOETIC_PARENT_A.json",
-       "unified_memory_bytes": 103079215104
-      },
-      "organ_identity": "mlp_down",
-      "representation_identity": "binary_sparse_residual"
-     },
-     {
-      "kernel_identity": "q2f_g64_matvec_geo_c5120_tpr64_tg128",
-      "machine_identity": {
-       "chipset": "Apple M3 Ultra",
-       "command": "NOETIC_PARENT_A.MachineGenome",
-       "device_measured_sustained_gb_s": {
-        "absent_reason": null,
-        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
-        "kind": "CITED",
-        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
-        "source": "receipts/headless/BANDWIDTH_ROOF.json",
-        "unit": "GB/s",
-        "value": 778.8
-       },
-       "gpu_cores": 60,
-       "metal_family": "Metal 4",
-       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
-        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
-        "parent_machinegenome_measured_roof_gb_s": 595.9,
-        "source": "receipts/headless/NOETIC_PARENT_A.json"
-       },
-       "source": "receipts/headless/NOETIC_PARENT_A.json",
-       "unified_memory_bytes": 103079215104
-      },
-      "organ_identity": "mlp_down",
-      "representation_identity": "q2_affine"
+      "status": "NATIVE_UNMEASURED",
+      "why": "A shared organ name is not a compiled kernel for this body. 0 role-matched kernel(s) for 'rmsnorm'; 0 compiled for this body. Plan occupies NATIVE_UNMEASURED rather than claiming a compiled kernel."
      }
     ],
+    "role_matched_kernels": [
+     {
+      "compiled_identity_kind": "ABSENT",
+      "kernel_identity": "q2f_group64_matvec",
+      "kernel_specimen": null,
+      "organ_identity": "mlp_down",
+      "representation_identity": "q2_affine",
+      "specialized_cols": null
+     },
+     {
+      "compiled_identity_kind": "ABSENT",
+      "kernel_identity": "q2f_group64_matvec_geo_tpr64_tg128",
+      "kernel_specimen": null,
+      "organ_identity": "mlp_down",
+      "representation_identity": "q2_affine",
+      "specialized_cols": null
+     },
+     {
+      "compiled_identity_kind": "ABSENT",
+      "kernel_identity": "affine2_group32_matvec_geo_tpr64_tg128",
+      "kernel_specimen": null,
+      "organ_identity": "mlp_down",
+      "representation_identity": "q2_affine",
+      "specialized_cols": null
+     },
+     {
+      "compiled_identity_kind": "ABSENT",
+      "kernel_identity": "affine2_group64_matvec_geo_tpr64_tg128",
+      "kernel_specimen": null,
+      "organ_identity": "mlp_down",
+      "representation_identity": "q2_affine",
+      "specialized_cols": null
+     },
+     {
+      "compiled_identity_kind": "ABSENT",
+      "kernel_identity": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+      "kernel_specimen": null,
+      "organ_identity": "mlp_down",
+      "representation_identity": "q2_affine",
+      "specialized_cols": null
+     },
+     {
+      "compiled_identity_kind": "ABSENT",
+      "kernel_identity": "qwen80_add_residual_rmsnorm_tg",
+      "kernel_specimen": null,
+      "organ_identity": "gqa_attention",
+      "representation_identity": "q4_control",
+      "specialized_cols": null
+     },
+     {
+      "compiled_identity_kind": "ABSENT",
+      "kernel_identity": "q2f_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+      "kernel_specimen": null,
+      "organ_identity": "mlp_gate_up",
+      "representation_identity": "q2_affine",
+      "specialized_cols": null
+     },
+     {
+      "compiled_identity_kind": "ABSENT",
+      "kernel_identity": "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+      "kernel_specimen": null,
+      "organ_identity": "mlp_gate_up",
+      "representation_identity": "q2_affine",
+      "specialized_cols": null
+     },
+     {
+      "compiled_identity_kind": "ABSENT",
+      "kernel_identity": "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+      "kernel_specimen": null,
+      "organ_identity": "mlp_gate_up",
+      "representation_identity": "q2_affine",
+      "specialized_cols": null
+     },
+     {
+      "compiled_identity_kind": "ABSENT",
+      "kernel_identity": "ternary_5in8_g64_matvec_geo_c5120_tpr64_tg128",
+      "kernel_specimen": null,
+      "organ_identity": "mlp_down",
+      "representation_identity": "ternary",
+      "specialized_cols": 5120
+     },
+     {
+      "compiled_identity_kind": "ABSENT",
+      "kernel_identity": "ternary_5in8_g64_matvec_geo_c17408_tpr64_tg128",
+      "kernel_specimen": null,
+      "organ_identity": "mlp_gate_up",
+      "representation_identity": "ternary",
+      "specialized_cols": 17408
+     },
+     {
+      "compiled_identity_kind": "ABSENT",
+      "kernel_identity": "binary_g64_matvec_geo_c5120_tpr64_tg128",
+      "kernel_specimen": null,
+      "organ_identity": "mlp_down",
+      "representation_identity": "binary",
+      "specialized_cols": 5120
+     },
+     {
+      "compiled_identity_kind": "ABSENT",
+      "kernel_identity": "shared_binary_k2_group_dots_c5120_g64_tpr64_tg128",
+      "kernel_specimen": null,
+      "organ_identity": "mlp_down",
+      "representation_identity": "shared_basis",
+      "specialized_cols": 5120
+     },
+     {
+      "compiled_identity_kind": "ABSENT",
+      "kernel_identity": "shared_binary_k2_scale_contract_gpr80",
+      "kernel_specimen": null,
+      "organ_identity": "mlp_down",
+      "representation_identity": "shared_basis",
+      "specialized_cols": null
+     },
+     {
+      "compiled_identity_kind": "ABSENT",
+      "kernel_identity": "binary_sparse_fused_geo_c5120_tpr64_tg128",
+      "kernel_specimen": null,
+      "organ_identity": "mlp_down",
+      "representation_identity": "binary_sparse_residual",
+      "specialized_cols": 5120
+     },
+     {
+      "compiled_identity_kind": "ABSENT",
+      "kernel_identity": "q2f_g64_matvec_geo_c5120_tpr64_tg128",
+      "kernel_specimen": null,
+      "organ_identity": "mlp_down",
+      "representation_identity": "q2_affine",
+      "specialized_cols": 5120
+     }
+    ],
+    "route": "PLAN-THEN-COMPILE",
+    "route_evidence": {
+     "declared_specialized_cols": [
+      5120,
+      17408
+     ],
+     "library_specimen_field": null,
+     "n_compiled_identity_present": 0,
+     "n_kernels": 17,
+     "n_parametric_range_declared": 0,
+     "n_specimen_bound": 0,
+     "route": "PLAN-THEN-COMPILE",
+     "shape_overlap": [],
+     "specimen_extents": [
+      1024,
+      2048,
+      3072,
+      151936
+     ],
+     "specimen_id": "Qwen--Qwen3-0.6B@c1899de289a0",
+     "why": "PLAN-THEN-COMPILE: library specimen_field=None; 0/17 kernels carry a present compiled_identity; 0/17 carry a specimen id; 0/17 declare a parametric shape range; declared specialized_cols=[5120, 17408]; this specimen's organ extents=[1024, 2048, 3072, 151936]; shape overlap=[]. Kernels in this library are parent-shape specializations or have no declared shape contract, and none are compiled. The generic pipeline emits a NATIVE_UNMEASURED plan for an unseen body rather than claiming a compiled kernel exists."
+    },
+    "route_why": "PLAN-THEN-COMPILE: library specimen_field=None; 0/17 kernels carry a present compiled_identity; 0/17 carry a specimen id; 0/17 declare a parametric shape range; declared specialized_cols=[5120, 17408]; this specimen's organ extents=[1024, 2048, 3072, 151936]; shape overlap=[]. Kernels in this library are parent-shape specializations or have no declared shape contract, and none are compiled. The generic pipeline emits a NATIVE_UNMEASURED plan for an unseen body rather than claiming a compiled kernel exists.",
     "specimen_field": null,
     "specimen_organs": [
      "embed",
@@ -1944,19 +2048,80 @@
    },
    "invoked": true,
    "stage": "KernelPlanner",
-   "status": "FAILED",
-   "why": "KERNEL_LIBRARY.json was read and compared to this specimen's organs. role intersection=['gqa_attention', 'mlp_down', 'mlp_gate_up']. None of the 16 role-matched kernels carry this specimen's id or shapes. A shared organ name is not a compiled kernel for this body. specimen_field=None"
+   "status": "PASSED",
+   "why": "PLAN-THEN-COMPILE: KERNEL_LIBRARY.json was read and a kernel plan was emitted for this unseen body ('Qwen--Qwen3-0.6B@c1899de289a0'). role intersection=['gqa_attention', 'mlp_down', 'mlp_gate_up']. 16 role-matched kernels; 0 compiled for this body; 6 organ(s) occupy NATIVE_UNMEASURED. A shared organ name is not a compiled kernel for this body. specimen_field=None. PLAN-THEN-COMPILE: library specimen_field=None; 0/17 kernels carry a present compiled_identity; 0/17 carry a specimen id; 0/17 declare a parametric shape range; declared specialized_cols=[5120, 17408]; this specimen's organ extents=[1024, 2048, 3072, 151936]; shape overlap=[]. Kernels in this library are parent-shape specializations or have no declared shape contract, and none are compiled. The generic pipeline emits a NATIVE_UNMEASURED plan for an unseen body rather than claiming a compiled kernel exists."
   },
   {
-   "error": "no_entry_point",
+   "error": null,
    "evidence": {
     "adapted_family": "dense_swiglu_transformer",
+    "capture_dir": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-rdvccbmc",
+    "captured_archives": {
+     "embed": {
+      "bytes": 15888,
+      "entry_point": "organ_embed_gather",
+      "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-rdvccbmc/embed.mtlarchive",
+      "sha256": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb",
+      "source_sha256": "7e7a44804195f31e0aefe0043f2552f1f342bed6df45a9fc99394024caa8be70"
+     },
+     "gqa_attention": {
+      "bytes": 19952,
+      "entry_point": "organ_gqa_decode",
+      "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-rdvccbmc/gqa_attention.mtlarchive",
+      "sha256": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f",
+      "source_sha256": "9f56e1b18596b19d855ad1b3464ea4b08e01b4ccf7c71d7f172c9e51eab82d27"
+     },
+     "lm_head": {
+      "bytes": 15888,
+      "entry_point": "organ_lm_head_gemv",
+      "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-rdvccbmc/lm_head.mtlarchive",
+      "sha256": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025",
+      "source_sha256": "8c619792891a89b97076db8f257e3f40c1ba1328f5f2a1f24518b50787c7d3cf"
+     },
+     "mlp_down": {
+      "bytes": 15888,
+      "entry_point": "organ_mlp_down_gemv",
+      "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-rdvccbmc/mlp_down.mtlarchive",
+      "sha256": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980",
+      "source_sha256": "6387c6788565c447920734ffe9dce54e4eefa90762717a3853838aecc0e3a544"
+     },
+     "mlp_gate_up": {
+      "bytes": 16928,
+      "entry_point": "organ_mlp_gate_up_swiglu",
+      "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-rdvccbmc/mlp_gate_up.mtlarchive",
+      "sha256": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3",
+      "source_sha256": "44c2825d006d200f87d4e28afe8634e571d81e689b01b07fda307551d19f6a5f"
+     },
+     "rmsnorm": {
+      "bytes": 16480,
+      "entry_point": "organ_rmsnorm",
+      "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-rdvccbmc/rmsnorm.mtlarchive",
+      "sha256": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426",
+      "source_sha256": "25aef5898db60554a1301771bb9f26882f02ad88ba3028a885b69b822a05cf1e"
+     }
+    },
+    "claim_boundary": "COMPILE_TIME_SCIENCE_ONLY DeviceCompiler lowering. NATIVE_UNMEASURED is not a compiled kernel, not a hardware measurement, not physical EBPW, not a packed NX.",
     "copied_as_this_specimen": false,
-    "entry_points_searched": [
-     "tools/odyssey/noetic_compiler.py (BLOCKED map, not a compiler)",
-     "crates/hawking-core/src/model/mod.rs",
-     "hcli/agentos/flash_executable.py (Flash scaffold, Codex-owned)"
-    ],
+    "created_command_queue": false,
+    "dispatched": false,
+    "entry_point": "tools.future.device_compiler.lower_plan",
+    "kernel_plan_n_compiled": 0,
+    "kernel_plan_n_native_unmeasured": 6,
+    "kernel_plan_n_organs": 6,
+    "kernel_plan_received": true,
+    "kernel_plan_route": "PLAN-THEN-COMPILE",
+    "metal": {
+     "backend": "live_metal",
+     "created_command_queue": false,
+     "device": "Apple M3 Ultra",
+     "dispatched": false,
+     "error": null,
+     "n_devices": 1,
+     "ok": true
+    },
+    "n_compiled": 6,
+    "n_native_unmeasured": 0,
+    "n_placeholder_refused": 0,
     "native": {
      "architectures": [
       "llama",
@@ -1985,41 +2150,1205 @@
      "path": "crates/hawking-core/src/model/mod.rs"
     },
     "noetic_compiler_blocked_why": "the DeviceCompiler emits a Metal genome for an architecture the runtime can read. crates/hawking-core has a qwen38 reader and no qwen3_moe reader, so there is nothing to compile a device genome against for this specimen.",
-    "noetic_compiler_missing_capability": "a qwen3_moe artifact reader in the native runtime"
+    "nx_compiled_organs": [
+     "embed",
+     "gqa_attention",
+     "lm_head",
+     "mlp_down",
+     "mlp_gate_up",
+     "rmsnorm"
+    ],
+    "nx_fragment": {
+     "claim_boundary": "compiled Metal pipelines for organs that lowered; not a packed NX; not source-independent; not a hardware measurement",
+     "compiled_organs": [
+      "embed",
+      "gqa_attention",
+      "lm_head",
+      "mlp_down",
+      "mlp_gate_up",
+      "rmsnorm"
+     ],
+     "family": "dense_swiglu_transformer",
+     "native_kernel": {
+      "n_compiled": 6,
+      "organs": [
+       "embed",
+       "gqa_attention",
+       "lm_head",
+       "mlp_down",
+       "mlp_gate_up",
+       "rmsnorm"
+      ],
+      "status": "BOUND"
+     },
+     "physical_program": {
+      "kernels": [
+       {
+        "compiled_identity": {
+         "archive_bytes": 15888,
+         "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-vhqvuyy_/embed.mtlarchive",
+         "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
+         "device": null,
+         "entry_point": "organ_embed_gather",
+         "kind": "METAL_PIPELINE",
+         "pipeline": {
+          "created": true,
+          "created_command_queue": false,
+          "dispatched": false,
+          "function_found": true,
+          "max_total_threads_per_threadgroup": 1024,
+          "object": "MTLComputePipelineState",
+          "thread_execution_width": 32
+         },
+         "shader_hash": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb",
+         "source_sha256": "7e7a44804195f31e0aefe0043f2552f1f342bed6df45a9fc99394024caa8be70",
+         "unit": "mtl_binary_archive_sha256",
+         "value": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb"
+        },
+        "entry_point": "organ_embed_gather",
+        "occupying": {
+         "compiled_kernel": "organ_embed_gather",
+         "kind": "COMPILED",
+         "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+        },
+        "organ": "embed",
+        "shader_hash": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb",
+        "status": "COMPILED",
+        "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_embed_gather; shader_hash=762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb. embedding gather table 151936x1024"
+       },
+       {
+        "compiled_identity": {
+         "archive_bytes": 19952,
+         "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-vhqvuyy_/gqa_attention.mtlarchive",
+         "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
+         "device": null,
+         "entry_point": "organ_gqa_decode",
+         "kind": "METAL_PIPELINE",
+         "pipeline": {
+          "created": true,
+          "created_command_queue": false,
+          "dispatched": false,
+          "function_found": true,
+          "max_total_threads_per_threadgroup": 1024,
+          "object": "MTLComputePipelineState",
+          "thread_execution_width": 32
+         },
+         "shader_hash": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f",
+         "source_sha256": "9f56e1b18596b19d855ad1b3464ea4b08e01b4ccf7c71d7f172c9e51eab82d27",
+         "unit": "mtl_binary_archive_sha256",
+         "value": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f"
+        },
+        "entry_point": "organ_gqa_decode",
+        "occupying": {
+         "compiled_kernel": "organ_gqa_decode",
+         "kind": "COMPILED",
+         "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+        },
+        "organ": "gqa_attention",
+        "shader_hash": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f",
+        "status": "COMPILED",
+        "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_gqa_decode; shader_hash=4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f. GQA decode n_q=16 n_kv=8 head_dim=128"
+       },
+       {
+        "compiled_identity": {
+         "archive_bytes": 15888,
+         "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-vhqvuyy_/lm_head.mtlarchive",
+         "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
+         "device": null,
+         "entry_point": "organ_lm_head_gemv",
+         "kind": "METAL_PIPELINE",
+         "pipeline": {
+          "created": true,
+          "created_command_queue": false,
+          "dispatched": false,
+          "function_found": true,
+          "max_total_threads_per_threadgroup": 1024,
+          "object": "MTLComputePipelineState",
+          "thread_execution_width": 32
+         },
+         "shader_hash": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025",
+         "source_sha256": "8c619792891a89b97076db8f257e3f40c1ba1328f5f2a1f24518b50787c7d3cf",
+         "unit": "mtl_binary_archive_sha256",
+         "value": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025"
+        },
+        "entry_point": "organ_lm_head_gemv",
+        "occupying": {
+         "compiled_kernel": "organ_lm_head_gemv",
+         "kind": "COMPILED",
+         "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+        },
+        "organ": "lm_head",
+        "shader_hash": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025",
+        "status": "COMPILED",
+        "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_lm_head_gemv; shader_hash=e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025. native f32 GEMV for lm_head at 151936x1024"
+       },
+       {
+        "compiled_identity": {
+         "archive_bytes": 15888,
+         "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-vhqvuyy_/mlp_down.mtlarchive",
+         "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
+         "device": null,
+         "entry_point": "organ_mlp_down_gemv",
+         "kind": "METAL_PIPELINE",
+         "pipeline": {
+          "created": true,
+          "created_command_queue": false,
+          "dispatched": false,
+          "function_found": true,
+          "max_total_threads_per_threadgroup": 1024,
+          "object": "MTLComputePipelineState",
+          "thread_execution_width": 32
+         },
+         "shader_hash": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980",
+         "source_sha256": "6387c6788565c447920734ffe9dce54e4eefa90762717a3853838aecc0e3a544",
+         "unit": "mtl_binary_archive_sha256",
+         "value": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980"
+        },
+        "entry_point": "organ_mlp_down_gemv",
+        "occupying": {
+         "compiled_kernel": "organ_mlp_down_gemv",
+         "kind": "COMPILED",
+         "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+        },
+        "organ": "mlp_down",
+        "shader_hash": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980",
+        "status": "COMPILED",
+        "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_mlp_down_gemv; shader_hash=78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980. native f32 GEMV for mlp_down at 1024x3072"
+       },
+       {
+        "compiled_identity": {
+         "archive_bytes": 16928,
+         "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-vhqvuyy_/mlp_gate_up.mtlarchive",
+         "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
+         "device": null,
+         "entry_point": "organ_mlp_gate_up_swiglu",
+         "kind": "METAL_PIPELINE",
+         "pipeline": {
+          "created": true,
+          "created_command_queue": false,
+          "dispatched": false,
+          "function_found": true,
+          "max_total_threads_per_threadgroup": 1024,
+          "object": "MTLComputePipelineState",
+          "thread_execution_width": 32
+         },
+         "shader_hash": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3",
+         "source_sha256": "44c2825d006d200f87d4e28afe8634e571d81e689b01b07fda307551d19f6a5f",
+         "unit": "mtl_binary_archive_sha256",
+         "value": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3"
+        },
+        "entry_point": "organ_mlp_gate_up_swiglu",
+        "occupying": {
+         "compiled_kernel": "organ_mlp_gate_up_swiglu",
+         "kind": "COMPILED",
+         "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+        },
+        "organ": "mlp_gate_up",
+        "shader_hash": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3",
+        "status": "COMPILED",
+        "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_mlp_gate_up_swiglu; shader_hash=9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3. fused gate-up SwiGLU GEMV for mlp_gate_up at 3072x1024"
+       },
+       {
+        "compiled_identity": {
+         "archive_bytes": 16480,
+         "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-vhqvuyy_/rmsnorm.mtlarchive",
+         "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
+         "device": null,
+         "entry_point": "organ_rmsnorm",
+         "kind": "METAL_PIPELINE",
+         "pipeline": {
+          "created": true,
+          "created_command_queue": false,
+          "dispatched": false,
+          "function_found": true,
+          "max_total_threads_per_threadgroup": 1024,
+          "object": "MTLComputePipelineState",
+          "thread_execution_width": 32
+         },
+         "shader_hash": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426",
+         "source_sha256": "25aef5898db60554a1301771bb9f26882f02ad88ba3028a885b69b822a05cf1e",
+         "unit": "mtl_binary_archive_sha256",
+         "value": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426"
+        },
+        "entry_point": "organ_rmsnorm",
+        "occupying": {
+         "compiled_kernel": "organ_rmsnorm",
+         "kind": "COMPILED",
+         "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+        },
+        "organ": "rmsnorm",
+        "shader_hash": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426",
+        "status": "COMPILED",
+        "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_rmsnorm; shader_hash=f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426. RMSNorm over hidden=1024"
+       }
+      ],
+      "n_compiled": 6,
+      "n_planned": 0
+     },
+     "planned_organs": [],
+     "qwen3_dense_gguf_blocker": {
+      "applies_to_this_specimen": true,
+      "architectures": [
+       "llama",
+       "llama",
+       "llama2",
+       "llama3",
+       "llama3.1",
+       "llama3.2",
+       "mistral",
+       "deepseek2",
+       "deepseek-v2",
+       "deepseek2-lite",
+       "qwen2",
+       "qwen2.5",
+       "qwen",
+       "qwen2moe",
+       "qwen3moe",
+       "qwen-moe",
+       "rwkv7",
+       "rwkv-7"
+      ],
+      "did_not_map_dense_onto_moe_arm": true,
+      "did_not_map_dense_onto_qwen2_arm": true,
+      "evidence": [
+       "crates/hawking-core/src/model/mod.rs match arch.as_str() lists qwen2|qwen2.5|qwen and qwen2moe|qwen3moe|qwen-moe; there is no qwen3",
+       "crates/hawking-core/src/model/qwen_dense.rs loads attn_q.weight and optional attn_q.bias; it does not load attn_q_norm.weight / attn_k_norm.weight (Qwen3 QK-RMSNorm)",
+       "llama.cpp / GGUF architecture string for dense Qwen3 is 'qwen3'; qwen3moe is LLM_ARCH_QWEN3MOE, a different family"
+      ],
+      "family": "dense_swiglu_transformer",
+      "holds": true,
+      "id": "QWEN3_DENSE_GGUF_MATCH_ARM_ABSENT",
+      "includes_qwen2": true,
+      "includes_qwen3_dense": false,
+      "includes_qwen3moe": true,
+      "model_type": "qwen3",
+      "qwen3moe_is_different_family": true,
+      "why": "QWEN3_DENSE_GGUF_MATCH_ARM_ABSENT: native GGUF match arms=['llama', 'llama', 'llama2', 'llama3', 'llama3.1', 'llama3.2', 'mistral', 'deepseek2', 'deepseek-v2', 'deepseek2-lite', 'qwen2', 'qwen2.5', 'qwen', 'qwen2moe', 'qwen3moe', 'qwen-moe', 'rwkv7', 'rwkv-7']. qwen3 dense is absent (there is no 'qwen3' arm). qwen3moe is a different family (routed MoE) and was not used as a stand-in. qwen2 is a different architecture: QwenDense::load reads attn_q/k/v/output plus optional qkv bias and does not load attn_q_norm/attn_k_norm; Qwen3 dense applies QK-RMSNorm before RoPE, so aliasing 'qwen3' onto the qwen2 arm would skip a real operator. The arm is not added from this sidecar (the native loader is out of write scope); the gap is recorded rather than silently mapped."
+     },
+     "serialized_artifact": null,
+     "source_independent": false,
+     "specimen_id": "Qwen--Qwen3-0.6B@c1899de289a0",
+     "status": "COMPILED_KERNELS_NOT_PACKED"
+    },
+    "nx_planned_organs": [],
+    "plan": [
+     {
+      "compiled_identity": {
+       "archive_bytes": 15888,
+       "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-vhqvuyy_/embed.mtlarchive",
+       "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
+       "device": null,
+       "entry_point": "organ_embed_gather",
+       "kind": "METAL_PIPELINE",
+       "pipeline": {
+        "created": true,
+        "created_command_queue": false,
+        "dispatched": false,
+        "function_found": true,
+        "max_total_threads_per_threadgroup": 1024,
+        "object": "MTLComputePipelineState",
+        "thread_execution_width": 32
+       },
+       "shader_hash": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb",
+       "source_sha256": "7e7a44804195f31e0aefe0043f2552f1f342bed6df45a9fc99394024caa8be70",
+       "unit": "mtl_binary_archive_sha256",
+       "value": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb"
+      },
+      "entry_point": "organ_embed_gather",
+      "extents": [
+       151936,
+       1024
+      ],
+      "name_is_not_a_compiled_kernel": false,
+      "occupying": {
+       "compiled_kernel": "organ_embed_gather",
+       "kind": "COMPILED",
+       "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+      },
+      "organ": "embed",
+      "shader_hash": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb",
+      "specimen_shape": {
+       "cols": 1024,
+       "extents": [
+        151936,
+        1024
+       ],
+       "from": "vocab_size x hidden_size",
+       "rows": 151936
+      },
+      "status": "COMPILED",
+      "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_embed_gather; shader_hash=762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb. embedding gather table 151936x1024"
+     },
+     {
+      "compiled_identity": {
+       "archive_bytes": 19952,
+       "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-vhqvuyy_/gqa_attention.mtlarchive",
+       "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
+       "device": null,
+       "entry_point": "organ_gqa_decode",
+       "kind": "METAL_PIPELINE",
+       "pipeline": {
+        "created": true,
+        "created_command_queue": false,
+        "dispatched": false,
+        "function_found": true,
+        "max_total_threads_per_threadgroup": 1024,
+        "object": "MTLComputePipelineState",
+        "thread_execution_width": 32
+       },
+       "shader_hash": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f",
+       "source_sha256": "9f56e1b18596b19d855ad1b3464ea4b08e01b4ccf7c71d7f172c9e51eab82d27",
+       "unit": "mtl_binary_archive_sha256",
+       "value": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f"
+      },
+      "entry_point": "organ_gqa_decode",
+      "extents": [
+       16,
+       8,
+       128
+      ],
+      "name_is_not_a_compiled_kernel": false,
+      "occupying": {
+       "compiled_kernel": "organ_gqa_decode",
+       "kind": "COMPILED",
+       "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+      },
+      "organ": "gqa_attention",
+      "shader_hash": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f",
+      "specimen_shape": {
+       "cols": 1024,
+       "extents": [
+        2048,
+        1024,
+        1024
+       ],
+       "from": "num_attention_heads*head_dim x hidden_size",
+       "head_dim": 128,
+       "kv_rows": 1024,
+       "q_rows": 2048
+      },
+      "status": "COMPILED",
+      "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_gqa_decode; shader_hash=4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f. GQA decode n_q=16 n_kv=8 head_dim=128"
+     },
+     {
+      "compiled_identity": {
+       "archive_bytes": 15888,
+       "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-vhqvuyy_/lm_head.mtlarchive",
+       "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
+       "device": null,
+       "entry_point": "organ_lm_head_gemv",
+       "kind": "METAL_PIPELINE",
+       "pipeline": {
+        "created": true,
+        "created_command_queue": false,
+        "dispatched": false,
+        "function_found": true,
+        "max_total_threads_per_threadgroup": 1024,
+        "object": "MTLComputePipelineState",
+        "thread_execution_width": 32
+       },
+       "shader_hash": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025",
+       "source_sha256": "8c619792891a89b97076db8f257e3f40c1ba1328f5f2a1f24518b50787c7d3cf",
+       "unit": "mtl_binary_archive_sha256",
+       "value": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025"
+      },
+      "entry_point": "organ_lm_head_gemv",
+      "extents": [
+       151936,
+       1024
+      ],
+      "name_is_not_a_compiled_kernel": false,
+      "occupying": {
+       "compiled_kernel": "organ_lm_head_gemv",
+       "kind": "COMPILED",
+       "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+      },
+      "organ": "lm_head",
+      "shader_hash": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025",
+      "specimen_shape": {
+       "cols": 1024,
+       "extents": [
+        151936,
+        1024
+       ],
+       "from": "vocab_size x hidden_size",
+       "rows": 151936
+      },
+      "status": "COMPILED",
+      "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_lm_head_gemv; shader_hash=e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025. native f32 GEMV for lm_head at 151936x1024"
+     },
+     {
+      "compiled_identity": {
+       "archive_bytes": 15888,
+       "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-vhqvuyy_/mlp_down.mtlarchive",
+       "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
+       "device": null,
+       "entry_point": "organ_mlp_down_gemv",
+       "kind": "METAL_PIPELINE",
+       "pipeline": {
+        "created": true,
+        "created_command_queue": false,
+        "dispatched": false,
+        "function_found": true,
+        "max_total_threads_per_threadgroup": 1024,
+        "object": "MTLComputePipelineState",
+        "thread_execution_width": 32
+       },
+       "shader_hash": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980",
+       "source_sha256": "6387c6788565c447920734ffe9dce54e4eefa90762717a3853838aecc0e3a544",
+       "unit": "mtl_binary_archive_sha256",
+       "value": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980"
+      },
+      "entry_point": "organ_mlp_down_gemv",
+      "extents": [
+       1024,
+       3072
+      ],
+      "name_is_not_a_compiled_kernel": false,
+      "occupying": {
+       "compiled_kernel": "organ_mlp_down_gemv",
+       "kind": "COMPILED",
+       "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+      },
+      "organ": "mlp_down",
+      "shader_hash": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980",
+      "specimen_shape": {
+       "cols": 3072,
+       "extents": [
+        1024,
+        3072
+       ],
+       "from": "hidden_size x intermediate_size",
+       "rows": 1024
+      },
+      "status": "COMPILED",
+      "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_mlp_down_gemv; shader_hash=78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980. native f32 GEMV for mlp_down at 1024x3072"
+     },
+     {
+      "compiled_identity": {
+       "archive_bytes": 16928,
+       "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-vhqvuyy_/mlp_gate_up.mtlarchive",
+       "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
+       "device": null,
+       "entry_point": "organ_mlp_gate_up_swiglu",
+       "kind": "METAL_PIPELINE",
+       "pipeline": {
+        "created": true,
+        "created_command_queue": false,
+        "dispatched": false,
+        "function_found": true,
+        "max_total_threads_per_threadgroup": 1024,
+        "object": "MTLComputePipelineState",
+        "thread_execution_width": 32
+       },
+       "shader_hash": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3",
+       "source_sha256": "44c2825d006d200f87d4e28afe8634e571d81e689b01b07fda307551d19f6a5f",
+       "unit": "mtl_binary_archive_sha256",
+       "value": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3"
+      },
+      "entry_point": "organ_mlp_gate_up_swiglu",
+      "extents": [
+       3072,
+       1024
+      ],
+      "name_is_not_a_compiled_kernel": false,
+      "occupying": {
+       "compiled_kernel": "organ_mlp_gate_up_swiglu",
+       "kind": "COMPILED",
+       "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+      },
+      "organ": "mlp_gate_up",
+      "shader_hash": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3",
+      "specimen_shape": {
+       "cols": 1024,
+       "extents": [
+        3072,
+        1024
+       ],
+       "from": "intermediate_size x hidden_size",
+       "rows": 3072
+      },
+      "status": "COMPILED",
+      "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_mlp_gate_up_swiglu; shader_hash=9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3. fused gate-up SwiGLU GEMV for mlp_gate_up at 3072x1024"
+     },
+     {
+      "compiled_identity": {
+       "archive_bytes": 16480,
+       "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-vhqvuyy_/rmsnorm.mtlarchive",
+       "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
+       "device": null,
+       "entry_point": "organ_rmsnorm",
+       "kind": "METAL_PIPELINE",
+       "pipeline": {
+        "created": true,
+        "created_command_queue": false,
+        "dispatched": false,
+        "function_found": true,
+        "max_total_threads_per_threadgroup": 1024,
+        "object": "MTLComputePipelineState",
+        "thread_execution_width": 32
+       },
+       "shader_hash": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426",
+       "source_sha256": "25aef5898db60554a1301771bb9f26882f02ad88ba3028a885b69b822a05cf1e",
+       "unit": "mtl_binary_archive_sha256",
+       "value": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426"
+      },
+      "entry_point": "organ_rmsnorm",
+      "extents": [
+       1024
+      ],
+      "name_is_not_a_compiled_kernel": false,
+      "occupying": {
+       "compiled_kernel": "organ_rmsnorm",
+       "kind": "COMPILED",
+       "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+      },
+      "organ": "rmsnorm",
+      "shader_hash": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426",
+      "specimen_shape": {
+       "cols": 1024,
+       "extents": [
+        1024
+       ],
+       "from": "hidden_size"
+      },
+      "status": "COMPILED",
+      "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_rmsnorm; shader_hash=f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426. RMSNorm over hidden=1024"
+     }
+    ],
+    "qwen3_dense_gguf_blocker": {
+     "applies_to_this_specimen": true,
+     "architectures": [
+      "llama",
+      "llama",
+      "llama2",
+      "llama3",
+      "llama3.1",
+      "llama3.2",
+      "mistral",
+      "deepseek2",
+      "deepseek-v2",
+      "deepseek2-lite",
+      "qwen2",
+      "qwen2.5",
+      "qwen",
+      "qwen2moe",
+      "qwen3moe",
+      "qwen-moe",
+      "rwkv7",
+      "rwkv-7"
+     ],
+     "did_not_map_dense_onto_moe_arm": true,
+     "did_not_map_dense_onto_qwen2_arm": true,
+     "evidence": [
+      "crates/hawking-core/src/model/mod.rs match arch.as_str() lists qwen2|qwen2.5|qwen and qwen2moe|qwen3moe|qwen-moe; there is no qwen3",
+      "crates/hawking-core/src/model/qwen_dense.rs loads attn_q.weight and optional attn_q.bias; it does not load attn_q_norm.weight / attn_k_norm.weight (Qwen3 QK-RMSNorm)",
+      "llama.cpp / GGUF architecture string for dense Qwen3 is 'qwen3'; qwen3moe is LLM_ARCH_QWEN3MOE, a different family"
+     ],
+     "family": "dense_swiglu_transformer",
+     "holds": true,
+     "id": "QWEN3_DENSE_GGUF_MATCH_ARM_ABSENT",
+     "includes_qwen2": true,
+     "includes_qwen3_dense": false,
+     "includes_qwen3moe": true,
+     "model_type": "qwen3",
+     "qwen3moe_is_different_family": true,
+     "why": "QWEN3_DENSE_GGUF_MATCH_ARM_ABSENT: native GGUF match arms=['llama', 'llama', 'llama2', 'llama3', 'llama3.1', 'llama3.2', 'mistral', 'deepseek2', 'deepseek-v2', 'deepseek2-lite', 'qwen2', 'qwen2.5', 'qwen', 'qwen2moe', 'qwen3moe', 'qwen-moe', 'rwkv7', 'rwkv-7']. qwen3 dense is absent (there is no 'qwen3' arm). qwen3moe is a different family (routed MoE) and was not used as a stand-in. qwen2 is a different architecture: QwenDense::load reads attn_q/k/v/output plus optional qkv bias and does not load attn_q_norm/attn_k_norm; Qwen3 dense applies QK-RMSNorm before RoPE, so aliasing 'qwen3' onto the qwen2 arm would skip a real operator. The arm is not added from this sidecar (the native loader is out of write scope); the gap is recorded rather than silently mapped."
+    }
    },
    "invoked": true,
    "stage": "DeviceCompiler",
-   "status": "BLOCKED",
-   "why": "no DeviceCompiler callable exists in tools/odyssey or hcli. noetic_compiler.BLOCKED['DeviceCompiler'] is a hardcoded note for the Qwen3-30B-A3B pipeline, not a drive of this specimen. Native GGUF match arms are ['llama', 'llama', 'llama2', 'llama3', 'llama3.1', 'llama3.2', 'mistral', 'deepseek2', 'deepseek-v2', 'deepseek2-lite', 'qwen2', 'qwen2.5', 'qwen', 'qwen2moe', 'qwen3moe', 'qwen-moe', 'rwkv7', 'rwkv-7']; qwen3 dense is absent (qwen3moe is a different family). adapted family='dense_swiglu_transformer'"
+   "status": "PASSED",
+   "why": "DeviceCompiler lowered 6/6 organ(s) to MTLComputePipelineState with shader_hash (MTLBinaryArchive) and entry_point. 0 remain NATIVE_UNMEASURED. placeholder_refused=0. qwen3 dense GGUF match arm is absent (qwen3moe is a different family; dense was not mapped onto the moe arm). adapted family='dense_swiglu_transformer'. The NX fragment carries compiled vs planned so a later stage can tell them apart. This is not a packed NX."
   },
   {
-   "error": "no_generic_packer",
+   "error": null,
    "evidence": {
     "did_not_execute_first_noetic_executable": true,
+    "did_not_hardlink": true,
     "did_not_load_27b": true,
-    "did_not_mint_nx": true,
+    "did_not_mint_nx": false,
+    "identity": {
+     "billing": {
+      "generators": {
+       "bytes": 0,
+       "n_parts": 1,
+       "parts": [
+        "parts/generators/ABSENT"
+       ],
+       "runtime_required": false
+      },
+      "metadata": {
+       "bytes": 10697,
+       "n_parts": 3,
+       "parts": [
+        "parts/metadata/tokenizer_config.json",
+        "parts/metadata/config.json",
+        "parts/metadata/generation_config.json"
+       ],
+       "runtime_required": true
+      },
+      "model_specific_code": {
+       "bytes": 101024,
+       "n_parts": 6,
+       "parts": [
+        "parts/model_specific_code/embed.762d07047de9d713.mtlarchive",
+        "parts/model_specific_code/gqa_attention.4db31146e49c1ed3.mtlarchive",
+        "parts/model_specific_code/lm_head.e8463decefa97cf0.mtlarchive",
+        "parts/model_specific_code/mlp_down.78d8cb856a6d8e6e.mtlarchive",
+        "parts/model_specific_code/mlp_gate_up.9a2e9787c132ef32.mtlarchive",
+        "parts/model_specific_code/rmsnorm.f76e5d8e8d84e03b.mtlarchive"
+       ],
+       "runtime_required": true
+      },
+      "nr": {
+       "bytes": 0,
+       "n_parts": 1,
+       "parts": [
+        "parts/nr/ABSENT"
+       ],
+       "runtime_required": false
+      },
+      "representation": {
+       "bytes": 1503300328,
+       "n_parts": 1,
+       "parts": [
+        "parts/representation/model.safetensors"
+       ],
+       "runtime_required": true
+      },
+      "residuals": {
+       "bytes": 0,
+       "n_parts": 1,
+       "parts": [
+        "parts/residuals/ABSENT"
+       ],
+       "runtime_required": false
+      },
+      "state_auxiliaries": {
+       "bytes": 0,
+       "n_parts": 1,
+       "parts": [
+        "parts/state_auxiliaries/ABSENT"
+       ],
+       "runtime_required": false
+      },
+      "tables": {
+       "bytes": 15871340,
+       "n_parts": 3,
+       "parts": [
+        "parts/tables/tokenizer.json",
+        "parts/tables/merges.txt",
+        "parts/tables/vocab.json"
+       ],
+       "runtime_required": true
+      }
+     },
+     "closure_sha256": "36e5555e200eadb47f10b3d1f70623a74818faac39588f854b77f19352fb6122",
+     "compiled_organs": [
+      "embed",
+      "gqa_attention",
+      "lm_head",
+      "mlp_down",
+      "mlp_gate_up",
+      "rmsnorm"
+     ],
+     "did_not_execute_first_noetic_executable": true,
+     "did_not_hardlink": true,
+     "family": "dense_swiglu_transformer",
+     "manifest_path": "/Users/scammermike/Downloads/hawking/artifacts/nx/Qwen--Qwen3-0.6B@c1899de289a0/MANIFEST.json",
+     "n_compiled_organs": 6,
+     "nr_runtime_referenced": false,
+     "nx_path": "/Users/scammermike/Downloads/hawking/artifacts/nx/Qwen--Qwen3-0.6B@c1899de289a0/packed.nx.json",
+     "part_hashes": {
+      "parts/metadata/config.json": "660db3b73d788119c04535e48cf9be5f55bc3100841a718637ae695b442f27dd",
+      "parts/metadata/generation_config.json": "2325da0f15bb848e018c5ae071b7943332e9f871d6b60e2ed22ca97d4cb993d2",
+      "parts/metadata/tokenizer_config.json": "d5d09f07b48c3086c508b30d1c9114bd1189145b74e982a265350c923acd8101",
+      "parts/model_specific_code/embed.762d07047de9d713.mtlarchive": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb",
+      "parts/model_specific_code/gqa_attention.4db31146e49c1ed3.mtlarchive": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f",
+      "parts/model_specific_code/lm_head.e8463decefa97cf0.mtlarchive": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025",
+      "parts/model_specific_code/mlp_down.78d8cb856a6d8e6e.mtlarchive": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980",
+      "parts/model_specific_code/mlp_gate_up.9a2e9787c132ef32.mtlarchive": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3",
+      "parts/model_specific_code/rmsnorm.f76e5d8e8d84e03b.mtlarchive": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426",
+      "parts/representation/model.safetensors": "f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b",
+      "parts/tables/merges.txt": "8831e4f1a044471340f7c0a83d7bd71306a5b867e95fd870f74d0c5308a904d5",
+      "parts/tables/tokenizer.json": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+      "parts/tables/vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910"
+     },
+     "root": "/Users/scammermike/Downloads/hawking/artifacts/nx/Qwen--Qwen3-0.6B@c1899de289a0",
+     "runtime_needs": [
+      {
+       "bytes": 1503300328,
+       "need": "representation",
+       "present": true
+      },
+      {
+       "bytes": 101024,
+       "need": "model_specific_code",
+       "present": true
+      },
+      {
+       "bytes": 10697,
+       "need": "metadata",
+       "present": true
+      },
+      {
+       "bytes": 15871340,
+       "need": "tables",
+       "present": true
+      },
+      {
+       "bytes": 0,
+       "need": "generators",
+       "present": false
+      },
+      {
+       "bytes": 0,
+       "need": "residuals",
+       "present": false
+      },
+      {
+       "bytes": 0,
+       "need": "state_auxiliaries",
+       "present": false
+      },
+      {
+       "bytes": 0,
+       "need": "nr",
+       "present": false
+      }
+     ],
+     "source_independent": true,
+     "specimen_id": "Qwen--Qwen3-0.6B@c1899de289a0",
+     "status": "SOURCE_INDEPENDENT_COMPLETE",
+     "total_bytes": 1519283389
+    },
+    "legacy_producer_not_executed": "tools/headless/first_noetic_executable.py",
+    "n_compiled_on_fragment": 6,
+    "n_planned_on_fragment": 0,
+    "nx_compiled_organs": [
+     "embed",
+     "gqa_attention",
+     "lm_head",
+     "mlp_down",
+     "mlp_gate_up",
+     "rmsnorm"
+    ],
+    "nx_fragment_received": true,
+    "nx_planned_organs": [],
+    "packed_path": "/Users/scammermike/Downloads/hawking/artifacts/nx/Qwen--Qwen3-0.6B@c1899de289a0/packed.nx.json",
     "parent_line": "PARENT_BF16 = Path(",
-    "producer": "tools/headless/first_noetic_executable.py",
+    "producer": "tools.future.nx_packer.pack",
     "producer_in_git": true,
     "producer_on_disk": true,
+    "root": "/Users/scammermike/Downloads/hawking/artifacts/nx/Qwen--Qwen3-0.6B@c1899de289a0",
     "specimen": "Qwen--Qwen3-0.6B@c1899de289a0"
    },
    "invoked": true,
+   "packed_nx": {
+    "byte_ledger": {
+     "all_required_bytes_included": true,
+     "categories": {
+      "generators": {
+       "bytes": 0,
+       "n_parts": 1,
+       "parts": [
+        "parts/generators/ABSENT"
+       ],
+       "runtime_required": false
+      },
+      "metadata": {
+       "bytes": 10697,
+       "n_parts": 3,
+       "parts": [
+        "parts/metadata/tokenizer_config.json",
+        "parts/metadata/config.json",
+        "parts/metadata/generation_config.json"
+       ],
+       "runtime_required": true
+      },
+      "model_specific_code": {
+       "bytes": 101024,
+       "n_parts": 6,
+       "parts": [
+        "parts/model_specific_code/embed.762d07047de9d713.mtlarchive",
+        "parts/model_specific_code/gqa_attention.4db31146e49c1ed3.mtlarchive",
+        "parts/model_specific_code/lm_head.e8463decefa97cf0.mtlarchive",
+        "parts/model_specific_code/mlp_down.78d8cb856a6d8e6e.mtlarchive",
+        "parts/model_specific_code/mlp_gate_up.9a2e9787c132ef32.mtlarchive",
+        "parts/model_specific_code/rmsnorm.f76e5d8e8d84e03b.mtlarchive"
+       ],
+       "runtime_required": true
+      },
+      "nr": {
+       "bytes": 0,
+       "n_parts": 1,
+       "parts": [
+        "parts/nr/ABSENT"
+       ],
+       "runtime_required": false
+      },
+      "representation": {
+       "bytes": 1503300328,
+       "n_parts": 1,
+       "parts": [
+        "parts/representation/model.safetensors"
+       ],
+       "runtime_required": true
+      },
+      "residuals": {
+       "bytes": 0,
+       "n_parts": 1,
+       "parts": [
+        "parts/residuals/ABSENT"
+       ],
+       "runtime_required": false
+      },
+      "state_auxiliaries": {
+       "bytes": 0,
+       "n_parts": 1,
+       "parts": [
+        "parts/state_auxiliaries/ABSENT"
+       ],
+       "runtime_required": false
+      },
+      "tables": {
+       "bytes": 15871340,
+       "n_parts": 3,
+       "parts": [
+        "parts/tables/tokenizer.json",
+        "parts/tables/merges.txt",
+        "parts/tables/vocab.json"
+       ],
+       "runtime_required": true
+      }
+     },
+     "complete_system": true,
+     "parts_sum_bytes": 1519283389,
+     "reconciles": true,
+     "status": "CLOSED",
+     "total_bytes": 1519283389
+    },
+    "claim_boundary": "source-independent packed NX. bytes are copies, not hardlinks. not a hardware measurement. not physical EBPW. not accepted generation.",
+    "compiled_organs": [
+     "embed",
+     "gqa_attention",
+     "lm_head",
+     "mlp_down",
+     "mlp_gate_up",
+     "rmsnorm"
+    ],
+    "fallback": {
+     "dense_rematerialization": false,
+     "fallback_count": 0
+    },
+    "family": "dense_swiglu_transformer",
+    "manifest": "MANIFEST.json",
+    "native_kernel": {
+     "catalog_sha256": "8adf8198bc0da62764a282ff05a0c5bffea153c9cc54a23843706677c03a9854",
+     "kind": "METAL_PIPELINE_CATALOG",
+     "n_compiled": 6,
+     "organs": [
+      "embed",
+      "gqa_attention",
+      "lm_head",
+      "mlp_down",
+      "mlp_gate_up",
+      "rmsnorm"
+     ],
+     "status": "BOUND"
+    },
+    "nx_kind": "hawking.nos.generic_noetic_executable",
+    "physical_loader": {
+     "catalog": "MANIFEST.json",
+     "kind": "packed_nx_catalog",
+     "path": "/Users/scammermike/Downloads/hawking/artifacts/nx/Qwen--Qwen3-0.6B@c1899de289a0/MANIFEST.json",
+     "sha256": "d734bc4b222ebd6379b7706c6b289934aa1658a03b1dbee7b16d7292c0ea0341",
+     "source_independent": true,
+     "status": "BUILT"
+    },
+    "physical_program": {
+     "kernels": [
+      {
+       "compiled_identity": {
+        "archive_bytes": 15888,
+        "archive_path": "parts/model_specific_code/embed.762d07047de9d713.mtlarchive",
+        "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
+        "device": null,
+        "entry_point": "organ_embed_gather",
+        "kind": "METAL_PIPELINE",
+        "pipeline": {
+         "created": true,
+         "created_command_queue": false,
+         "dispatched": false,
+         "function_found": true,
+         "max_total_threads_per_threadgroup": 1024,
+         "object": "MTLComputePipelineState",
+         "thread_execution_width": 32
+        },
+        "shader_hash": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb",
+        "source_sha256": "7e7a44804195f31e0aefe0043f2552f1f342bed6df45a9fc99394024caa8be70",
+        "unit": "mtl_binary_archive_sha256",
+        "value": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb"
+       },
+       "entry_point": "organ_embed_gather",
+       "occupying": {
+        "compiled_kernel": "organ_embed_gather",
+        "kind": "COMPILED",
+        "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+       },
+       "organ": "embed",
+       "shader_hash": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb",
+       "status": "COMPILED",
+       "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_embed_gather; shader_hash=762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb. embedding gather table 151936x1024"
+      },
+      {
+       "compiled_identity": {
+        "archive_bytes": 19952,
+        "archive_path": "parts/model_specific_code/gqa_attention.4db31146e49c1ed3.mtlarchive",
+        "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
+        "device": null,
+        "entry_point": "organ_gqa_decode",
+        "kind": "METAL_PIPELINE",
+        "pipeline": {
+         "created": true,
+         "created_command_queue": false,
+         "dispatched": false,
+         "function_found": true,
+         "max_total_threads_per_threadgroup": 1024,
+         "object": "MTLComputePipelineState",
+         "thread_execution_width": 32
+        },
+        "shader_hash": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f",
+        "source_sha256": "9f56e1b18596b19d855ad1b3464ea4b08e01b4ccf7c71d7f172c9e51eab82d27",
+        "unit": "mtl_binary_archive_sha256",
+        "value": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f"
+       },
+       "entry_point": "organ_gqa_decode",
+       "occupying": {
+        "compiled_kernel": "organ_gqa_decode",
+        "kind": "COMPILED",
+        "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+       },
+       "organ": "gqa_attention",
+       "shader_hash": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f",
+       "status": "COMPILED",
+       "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_gqa_decode; shader_hash=4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f. GQA decode n_q=16 n_kv=8 head_dim=128"
+      },
+      {
+       "compiled_identity": {
+        "archive_bytes": 15888,
+        "archive_path": "parts/model_specific_code/lm_head.e8463decefa97cf0.mtlarchive",
+        "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
+        "device": null,
+        "entry_point": "organ_lm_head_gemv",
+        "kind": "METAL_PIPELINE",
+        "pipeline": {
+         "created": true,
+         "created_command_queue": false,
+         "dispatched": false,
+         "function_found": true,
+         "max_total_threads_per_threadgroup": 1024,
+         "object": "MTLComputePipelineState",
+         "thread_execution_width": 32
+        },
+        "shader_hash": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025",
+        "source_sha256": "8c619792891a89b97076db8f257e3f40c1ba1328f5f2a1f24518b50787c7d3cf",
+        "unit": "mtl_binary_archive_sha256",
+        "value": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025"
+       },
+       "entry_point": "organ_lm_head_gemv",
+       "occupying": {
+        "compiled_kernel": "organ_lm_head_gemv",
+        "kind": "COMPILED",
+        "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+       },
+       "organ": "lm_head",
+       "shader_hash": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025",
+       "status": "COMPILED",
+       "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_lm_head_gemv; shader_hash=e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025. native f32 GEMV for lm_head at 151936x1024"
+      },
+      {
+       "compiled_identity": {
+        "archive_bytes": 15888,
+        "archive_path": "parts/model_specific_code/mlp_down.78d8cb856a6d8e6e.mtlarchive",
+        "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
+        "device": null,
+        "entry_point": "organ_mlp_down_gemv",
+        "kind": "METAL_PIPELINE",
+        "pipeline": {
+         "created": true,
+         "created_command_queue": false,
+         "dispatched": false,
+         "function_found": true,
+         "max_total_threads_per_threadgroup": 1024,
+         "object": "MTLComputePipelineState",
+         "thread_execution_width": 32
+        },
+        "shader_hash": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980",
+        "source_sha256": "6387c6788565c447920734ffe9dce54e4eefa90762717a3853838aecc0e3a544",
+        "unit": "mtl_binary_archive_sha256",
+        "value": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980"
+       },
+       "entry_point": "organ_mlp_down_gemv",
+       "occupying": {
+        "compiled_kernel": "organ_mlp_down_gemv",
+        "kind": "COMPILED",
+        "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+       },
+       "organ": "mlp_down",
+       "shader_hash": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980",
+       "status": "COMPILED",
+       "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_mlp_down_gemv; shader_hash=78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980. native f32 GEMV for mlp_down at 1024x3072"
+      },
+      {
+       "compiled_identity": {
+        "archive_bytes": 16928,
+        "archive_path": "parts/model_specific_code/mlp_gate_up.9a2e9787c132ef32.mtlarchive",
+        "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
+        "device": null,
+        "entry_point": "organ_mlp_gate_up_swiglu",
+        "kind": "METAL_PIPELINE",
+        "pipeline": {
+         "created": true,
+         "created_command_queue": false,
+         "dispatched": false,
+         "function_found": true,
+         "max_total_threads_per_threadgroup": 1024,
+         "object": "MTLComputePipelineState",
+         "thread_execution_width": 32
+        },
+        "shader_hash": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3",
+        "source_sha256": "44c2825d006d200f87d4e28afe8634e571d81e689b01b07fda307551d19f6a5f",
+        "unit": "mtl_binary_archive_sha256",
+        "value": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3"
+       },
+       "entry_point": "organ_mlp_gate_up_swiglu",
+       "occupying": {
+        "compiled_kernel": "organ_mlp_gate_up_swiglu",
+        "kind": "COMPILED",
+        "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+       },
+       "organ": "mlp_gate_up",
+       "shader_hash": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3",
+       "status": "COMPILED",
+       "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_mlp_gate_up_swiglu; shader_hash=9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3. fused gate-up SwiGLU GEMV for mlp_gate_up at 3072x1024"
+      },
+      {
+       "compiled_identity": {
+        "archive_bytes": 16480,
+        "archive_path": "parts/model_specific_code/rmsnorm.f76e5d8e8d84e03b.mtlarchive",
+        "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
+        "device": null,
+        "entry_point": "organ_rmsnorm",
+        "kind": "METAL_PIPELINE",
+        "pipeline": {
+         "created": true,
+         "created_command_queue": false,
+         "dispatched": false,
+         "function_found": true,
+         "max_total_threads_per_threadgroup": 1024,
+         "object": "MTLComputePipelineState",
+         "thread_execution_width": 32
+        },
+        "shader_hash": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426",
+        "source_sha256": "25aef5898db60554a1301771bb9f26882f02ad88ba3028a885b69b822a05cf1e",
+        "unit": "mtl_binary_archive_sha256",
+        "value": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426"
+       },
+       "entry_point": "organ_rmsnorm",
+       "occupying": {
+        "compiled_kernel": "organ_rmsnorm",
+        "kind": "COMPILED",
+        "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+       },
+       "organ": "rmsnorm",
+       "shader_hash": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426",
+       "status": "COMPILED",
+       "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_rmsnorm; shader_hash=f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426. RMSNorm over hidden=1024"
+      }
+     ],
+     "n_compiled": 6,
+     "n_planned": 0,
+     "source_binding": null
+    },
+    "reproducibility": {
+     "byte_reproducible": true,
+     "closure_sha256": "36e5555e200eadb47f10b3d1f70623a74818faac39588f854b77f19352fb6122",
+     "status": "PASSED"
+    },
+    "root": "/Users/scammermike/Downloads/hawking/artifacts/nx/Qwen--Qwen3-0.6B@c1899de289a0",
+    "runtime_needs": [
+     {
+      "bytes": 1503300328,
+      "need": "representation",
+      "present": true
+     },
+     {
+      "bytes": 101024,
+      "need": "model_specific_code",
+      "present": true
+     },
+     {
+      "bytes": 10697,
+      "need": "metadata",
+      "present": true
+     },
+     {
+      "bytes": 15871340,
+      "need": "tables",
+      "present": true
+     },
+     {
+      "bytes": 0,
+      "need": "generators",
+      "present": false
+     },
+     {
+      "bytes": 0,
+      "need": "residuals",
+      "present": false
+     },
+     {
+      "bytes": 0,
+      "need": "state_auxiliaries",
+      "present": false
+     },
+     {
+      "bytes": 0,
+      "need": "nr",
+      "present": false
+     }
+    ],
+    "schema": "hawking.future.packed_nx.v1",
+    "serialized_artifact": {
+     "path": "/Users/scammermike/Downloads/hawking/artifacts/nx/Qwen--Qwen3-0.6B@c1899de289a0/packed.nx.json",
+     "self_contained": true,
+     "sha256": "36e5555e200eadb47f10b3d1f70623a74818faac39588f854b77f19352fb6122",
+     "status": "BUILT"
+    },
+    "source_independent": true,
+    "specimen_id": "Qwen--Qwen3-0.6B@c1899de289a0",
+    "status": "SOURCE_INDEPENDENT_COMPLETE"
+   },
+   "packed_path": "/Users/scammermike/Downloads/hawking/artifacts/nx/Qwen--Qwen3-0.6B@c1899de289a0/packed.nx.json",
    "stage": "NoeticExecutable",
-   "status": "BLOCKED",
-   "why": "the only packed-NX producer in git is tools/headless/first_noetic_executable.py, which hardlinks a Qwen3.8-27B uniform-q4 catalog and is not this specimen (Qwen--Qwen3-0.6B@c1899de289a0). No generic DeviceCompiler\u2192NX entry exists. No packed NX was minted here: a renamed source pointer is not an NX"
+   "status": "PASSED",
+   "why": "generic packer minted a source-independent packed NX at /Users/scammermike/Downloads/hawking/artifacts/nx/Qwen--Qwen3-0.6B@c1899de289a0 with 6 compiled organ(s), total_bytes=1519283389, closure_sha256=36e5555e200eadb47f10b3d1f70623a74818faac39588f854b77f19352fb6122. Did not execute first_noetic_executable.py; did not hardlink the source."
   },
   {
    "error": null,
    "evidence": {
     "hits": [],
-    "ok": false,
-    "why": "no NX document; absence is not source independence"
+    "ok": true,
+    "source_independent_flag": true,
+    "status": "SOURCE_INDEPENDENT_COMPLETE",
+    "why": "source-independent packed body"
    },
    "invoked": true,
    "stage": "SourceIndependence",
-   "status": "FAILED",
-   "why": "no NX document; absence is not source independence"
+   "status": "PASSED",
+   "why": "source-independent packed body"
   },
   {
    "error": null,
@@ -2027,137 +3356,62 @@
     "dependencies": [
      {
       "need": "serialized_nx_body",
-      "present": false
+      "present": true
      },
      {
       "need": "physical_loader",
-      "present": false
+      "present": true
      },
      {
       "need": "native_kernel_catalog",
-      "present": false
+      "present": true
      },
      {
       "need": "byte_ledger_closed",
-      "present": false
+      "present": true
      },
      {
       "need": "runtime_genome_digests",
-      "present": false
+      "present": true
      }
     ],
-    "missing": [
-     "serialized_nx_body",
-     "physical_loader",
-     "native_kernel_catalog",
-     "byte_ledger_closed",
-     "runtime_genome_digests"
-    ],
-    "packed_nx_present": false
+    "missing": [],
+    "packed_nx_present": true
    },
    "invoked": true,
    "stage": "ExecutableDependencyAccounting",
-   "status": "FAILED",
-   "why": "accounted the executable dependencies a lowered NX would have to carry; missing=['serialized_nx_body', 'physical_loader', 'native_kernel_catalog', 'byte_ledger_closed', 'runtime_genome_digests']"
+   "status": "PASSED",
+   "why": "accounted the executable dependencies a lowered NX would have to carry; missing=[]"
   },
   {
    "error": null,
    "evidence": {
     "failed_requirements": [
-     "complete_byte_ledger",
-     "self_contained_dependencies",
      "accepted_generation",
      "capability",
-     "reproducibility",
-     "protected_performance",
-     "no_forbidden_fallback"
+     "protected_performance"
     ],
+    "packer_owned_ok": true,
     "promotable": false,
     "reasons": [
-     "complete_byte_ledger: no complete-system byte ledger on the NX (cited byte_ledger=None)",
-     "self_contained_dependencies: missing serialized artifact and/or source-independent loader/kernel; source-bound executors are not a self-contained NX (cited serialized_artifact=None)",
      "accepted_generation: no multi-token accepted generation; a single terminal argmax is not accepted generation (cited qualification.accepted_multitoken_tps=None)",
      "capability: no capability suite result on the NX (cited capability=None)",
-     "reproducibility: no executable closure hash; metadata hashes of source files are not byte reproducibility (cited reproducibility=None)",
-     "protected_performance: no PROTECTED_ABSOLUTE complete-token measurement (cited bench.state=None)",
-     "no_forbidden_fallback: fallback_count is undisclosed; missing is not zero (cited fallback_count={'fallback_count': None, 'dense_rematerialization': None, 'source_independent': None})"
+     "protected_performance: no PROTECTED_ABSOLUTE complete-token measurement (cited bench.state=None)"
     ],
-    "requirements": {
-     "accepted_generation": {
-      "cited_field": "qualification.accepted_multitoken_tps",
-      "cited_value": null,
-      "ok": false,
-      "requirement": "accepted_generation",
-      "state": "NOT_MET",
-      "why": "no multi-token accepted generation; a single terminal argmax is not accepted generation"
-     },
-     "capability": {
-      "cited_field": "capability",
-      "cited_value": null,
-      "ok": false,
-      "requirement": "capability",
-      "state": "NOT_MET",
-      "why": "no capability suite result on the NX"
-     },
-     "complete_byte_ledger": {
-      "cited_field": "byte_ledger",
-      "cited_value": null,
-      "ok": false,
-      "requirement": "complete_byte_ledger",
-      "state": "NOT_MET",
-      "why": "no complete-system byte ledger on the NX"
-     },
-     "no_forbidden_fallback": {
-      "cited_field": "fallback_count",
-      "cited_value": {
-       "dense_rematerialization": null,
-       "fallback_count": null,
-       "source_independent": null
-      },
-      "ok": false,
-      "requirement": "no_forbidden_fallback",
-      "state": "NOT_MET",
-      "why": "fallback_count is undisclosed; missing is not zero"
-     },
-     "protected_performance": {
-      "cited_field": "bench.state",
-      "cited_value": null,
-      "ok": false,
-      "requirement": "protected_performance",
-      "state": "NOT_MET",
-      "why": "no PROTECTED_ABSOLUTE complete-token measurement"
-     },
-     "reproducibility": {
-      "cited_field": "reproducibility",
-      "cited_value": null,
-      "ok": false,
-      "requirement": "reproducibility",
-      "state": "NOT_MET",
-      "why": "no executable closure hash; metadata hashes of source files are not byte reproducibility"
-     },
-     "self_contained_dependencies": {
-      "cited_field": "serialized_artifact",
-      "cited_value": null,
-      "ok": false,
-      "requirement": "self_contained_dependencies",
-      "state": "NOT_MET",
-      "why": "missing serialized artifact and/or source-independent loader/kernel; source-bound executors are not a self-contained NX"
-     }
-    },
-    "status": null
+    "status": "SOURCE_INDEPENDENT_COMPLETE"
    },
    "invoked": true,
    "stage": "Verifier",
-   "status": "FAILED",
-   "why": "invoked flash_nx_audit.check_nx; there is no NX document to verify"
+   "status": "PASSED",
+   "why": "invoked tools.future.flash_nx_audit.check_nx (the landed seven-requirement verifier); promotable=False (Flash-genome bar, independent). packer-owned source-independent closed-ledger NX=yes"
   }
  ],
  "version": 1,
  "what_this_cannot_establish": [
-  "a packed source-independent NX for this specimen, Falcon-H1, Qwen3-30B-A3B, or Flash",
+  "a packed source-independent NX for Falcon-H1, Qwen3-30B-A3B, or Flash (this packer is specimen-generic; those bodies were not the live drive)",
   "that editing tools/odyssey/physical_graph_compiler.py to accept dense names would be accepted by Codex",
   "that adding a qwen3 GGUF match arm would load this safetensors specimen",
   "protected complete-token performance or physical EBPW",
-  "that Odyssey I can launch; nr_nx_path_callable stays unmet until a real NX exists"
+  "protected complete-token performance; FLASH_NX_READY; accepted generation on this NX"
  ]
 }

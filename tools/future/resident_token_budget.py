@@ -267,7 +267,16 @@ def budget() -> dict[str, Any]:
                 "marginal_us": d["measured_marginal_dispatch_us"],
                 "caveat": "the marginal cost is measured over the 336 dispatches "
                           "fusion removed; extrapolating it to all 628 assumes "
-                          "the remaining ones cost the same, which is not proven",
+                          "the remaining ones cost the same",
+                "and_that_assumption_is_now_REFUTED": (
+                    "receipts/future/BA_DELTA_AB.json measured a second class. "
+                    "FUSE_BA_DELTA removes 48 DeltaNet launches at about 2.9 us "
+                    "each, against 6.25 us for the MLP/GQA/norm class. There is "
+                    "no single marginal dispatch cost, so the dispatch term is a "
+                    "RANGE, not the 3.93 ms point estimate above."
+                ),
+                "range_ms_at_2_9_to_6_25_us": [round(628 * 2.884 / 1000, 3),
+                                               round(628 * 6.25 / 1000, 3)],
                 "overlaps": "sits inside gpu_time_total, not beside it",
             },
             "weight_bytes_time": {
@@ -278,6 +287,16 @@ def budget() -> dict[str, Any]:
                                     "NOT_MEASURED_NO_METAL_MEMORY_COUNTER; "
                                     "active_bytes_per_token is the catalog sum, "
                                     "not what the GPU read",
+                "and_it_cannot_be_measured_here": (
+                    "receipts/future/MEMORY_TRAFFIC_PROBE.json enumerated every "
+                    "counter surface on this M3 Ultra. MTLDevice.counterSets is "
+                    "['timestamp'] alone; stageutilization and statistic are "
+                    "absent from the device; dispatch-boundary sampling resolves "
+                    "to [0,0]; GPURawCounter fails to instantiate without the "
+                    "Instruments entitlement. Nothing reports DRAM bytes to an "
+                    "ordinary Metal process, so this bound cannot be confirmed "
+                    "OR refuted from inside the process. It stays a bound."
+                ),
                 "overlaps": "sits inside gpu_time_total",
             },
             "mlp_bytes_time": {"status": "UNKNOWN",

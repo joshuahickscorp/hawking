@@ -1,0 +1,1190 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T10:22:28Z",
+  "recorded_by": "tools/future/power_torture.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "cognition": {
+  "asked": false,
+  "provider_source": null,
+  "state": "UNAVAILABLE",
+  "unavailable": true,
+  "why": "tools.future.resident_provider is importable but missing ['ask', 'sessions', 'health', 'stop', 'restart']; refusing to treat a partial surface as a resident"
+ },
+ "correct_refusal_counts_as_exercised": true,
+ "correct_refusals": [
+  "CONCURRENCY"
+ ],
+ "credit_rules": {
+  "catalog_refill_of_already_offered_ids_counts": false,
+  "correct_refusal_counts_as_exercised": true,
+  "module_build_is_not_behaviour": true,
+  "mutation_without_rollback_counts": false,
+  "runner_summary_is_not_the_judge": true,
+  "skipped_do_not_count_toward_pass": true,
+  "untested_status_challenge_counts": false
+ },
+ "degeneracy": {
+  "axis_table": [
+   {
+    "axis": "rejections",
+    "consecutive_emissions_identical": true,
+    "degenerate": false,
+    "fail_eligible": true,
+    "largest_repeat_run": 2,
+    "reason": "rejections unique=1 total=2 under thresholds",
+    "total": 2,
+    "unique": 1
+   },
+   {
+    "axis": "refills",
+    "consecutive_emissions_identical": false,
+    "degenerate": false,
+    "fail_eligible": true,
+    "largest_repeat_run": 1,
+    "reason": "refills unique_sets=2 total=2 consecutive_identical=0",
+    "total": 2,
+    "unique": 2
+   },
+   {
+    "axis": "ingestion",
+    "consecutive_emissions_identical": false,
+    "degenerate": false,
+    "fail_eligible": true,
+    "largest_repeat_run": 1,
+    "reason": "ingestion unique=1 total=1 max_item_count=1 <= 4",
+    "total": 1,
+    "unique": 1
+   },
+   {
+    "axis": "launches",
+    "consecutive_emissions_identical": false,
+    "degenerate": false,
+    "fail_eligible": true,
+    "largest_repeat_run": 1,
+    "reason": "launches labelled; argv0=0 unlabelled=0 unique_work_labels=2/2",
+    "total": 2,
+    "unique": 2
+   },
+   {
+    "axis": "workunit_ids",
+    "consecutive_emissions_identical": false,
+    "degenerate": false,
+    "fail_eligible": true,
+    "largest_repeat_run": 1,
+    "reason": "WorkUnit ids unique=2 total=2",
+    "total": 2,
+    "unique": 2
+   },
+   {
+    "axis": "decisions",
+    "consecutive_emissions_identical": false,
+    "degenerate": false,
+    "fail_eligible": true,
+    "largest_repeat_run": 1,
+    "reason": "decisions unique=4 total=4 under thresholds",
+    "total": 4,
+    "unique": 4
+   },
+   {
+    "axis": "scars",
+    "consecutive_emissions_identical": true,
+    "degenerate": false,
+    "fail_eligible": true,
+    "largest_repeat_run": 2,
+    "reason": "scars unique=1 total=2 dead_relaunches=0",
+    "total": 2,
+    "unique": 1
+   },
+   {
+    "axis": "kind:blocked_resource_reroute",
+    "consecutive_emissions_identical": false,
+    "degenerate": false,
+    "fail_eligible": false,
+    "largest_repeat_run": 1,
+    "reason": "carried by the timeline; reported distinct-vs-repeated; not a named fail axis (mission-state writes and similar healthy repetition live here)",
+    "total": 1,
+    "unique": 1
+   },
+   {
+    "axis": "kind:cognition_state",
+    "consecutive_emissions_identical": false,
+    "degenerate": false,
+    "fail_eligible": false,
+    "largest_repeat_run": 1,
+    "reason": "carried by the timeline; reported distinct-vs-repeated; not a named fail axis (mission-state writes and similar healthy repetition live here)",
+    "total": 1,
+    "unique": 1
+   },
+   {
+    "axis": "kind:concurrency_doctor_decided",
+    "consecutive_emissions_identical": false,
+    "degenerate": false,
+    "fail_eligible": false,
+    "largest_repeat_run": 1,
+    "reason": "carried by the timeline; reported distinct-vs-repeated; not a named fail axis (mission-state writes and similar healthy repetition live here)",
+    "total": 1,
+    "unique": 1
+   },
+   {
+    "axis": "kind:detached_started",
+    "consecutive_emissions_identical": false,
+    "degenerate": false,
+    "fail_eligible": false,
+    "largest_repeat_run": 1,
+    "reason": "carried by the timeline; reported distinct-vs-repeated; not a named fail axis (mission-state writes and similar healthy repetition live here)",
+    "total": 1,
+    "unique": 1
+   },
+   {
+    "axis": "kind:gpu_lane_lock_parked",
+    "consecutive_emissions_identical": false,
+    "degenerate": false,
+    "fail_eligible": false,
+    "largest_repeat_run": 1,
+    "reason": "carried by the timeline; reported distinct-vs-repeated; not a named fail axis (mission-state writes and similar healthy repetition live here)",
+    "total": 1,
+    "unique": 1
+   },
+   {
+    "axis": "kind:mutation_applied",
+    "consecutive_emissions_identical": false,
+    "degenerate": false,
+    "fail_eligible": false,
+    "largest_repeat_run": 1,
+    "reason": "carried by the timeline; reported distinct-vs-repeated; not a named fail axis (mission-state writes and similar healthy repetition live here)",
+    "total": 1,
+    "unique": 1
+   },
+   {
+    "axis": "kind:mutation_rolled_back",
+    "consecutive_emissions_identical": false,
+    "degenerate": false,
+    "fail_eligible": false,
+    "largest_repeat_run": 1,
+    "reason": "carried by the timeline; reported distinct-vs-repeated; not a named fail axis (mission-state writes and similar healthy repetition live here)",
+    "total": 1,
+    "unique": 1
+   },
+   {
+    "axis": "kind:nr_nx_stage",
+    "consecutive_emissions_identical": false,
+    "degenerate": false,
+    "fail_eligible": false,
+    "largest_repeat_run": 1,
+    "reason": "carried by the timeline; reported distinct-vs-repeated; not a named fail axis (mission-state writes and similar healthy repetition live here)",
+    "total": 1,
+    "unique": 1
+   },
+   {
+    "axis": "kind:replan_emitted",
+    "consecutive_emissions_identical": false,
+    "degenerate": false,
+    "fail_eligible": false,
+    "largest_repeat_run": 1,
+    "reason": "carried by the timeline; reported distinct-vs-repeated; not a named fail axis (mission-state writes and similar healthy repetition live here)",
+    "total": 4,
+    "unique": 4
+   },
+   {
+    "axis": "kind:restatement_refused",
+    "consecutive_emissions_identical": false,
+    "degenerate": false,
+    "fail_eligible": false,
+    "largest_repeat_run": 1,
+    "reason": "carried by the timeline; reported distinct-vs-repeated; not a named fail axis (mission-state writes and similar healthy repetition live here)",
+    "total": 1,
+    "unique": 1
+   },
+   {
+    "axis": "kind:status_challenged",
+    "consecutive_emissions_identical": false,
+    "degenerate": false,
+    "fail_eligible": false,
+    "largest_repeat_run": 1,
+    "reason": "carried by the timeline; reported distinct-vs-repeated; not a named fail axis (mission-state writes and similar healthy repetition live here)",
+    "total": 1,
+    "unique": 1
+   },
+   {
+    "axis": "kind:subagent_state_persisted",
+    "consecutive_emissions_identical": false,
+    "degenerate": false,
+    "fail_eligible": false,
+    "largest_repeat_run": 1,
+    "reason": "carried by the timeline; reported distinct-vs-repeated; not a named fail axis (mission-state writes and similar healthy repetition live here)",
+    "total": 1,
+    "unique": 1
+   },
+   {
+    "axis": "kind:substrate_hashed",
+    "consecutive_emissions_identical": false,
+    "degenerate": false,
+    "fail_eligible": false,
+    "largest_repeat_run": 1,
+    "reason": "carried by the timeline; reported distinct-vs-repeated; not a named fail axis (mission-state writes and similar healthy repetition live here)",
+    "total": 2,
+    "unique": 2
+   },
+   {
+    "axis": "kind:tabula_callable",
+    "consecutive_emissions_identical": false,
+    "degenerate": false,
+    "fail_eligible": false,
+    "largest_repeat_run": 1,
+    "reason": "carried by the timeline; reported distinct-vs-repeated; not a named fail axis (mission-state writes and similar healthy repetition live here)",
+    "total": 1,
+    "unique": 1
+   },
+   {
+    "axis": "kind:workunit_progressed",
+    "consecutive_emissions_identical": false,
+    "degenerate": false,
+    "fail_eligible": false,
+    "largest_repeat_run": 1,
+    "reason": "carried by the timeline; reported distinct-vs-repeated; not a named fail axis (mission-state writes and similar healthy repetition live here)",
+    "total": 1,
+    "unique": 1
+   },
+   {
+    "axis": "kind:workunit_sleeping",
+    "consecutive_emissions_identical": false,
+    "degenerate": false,
+    "fail_eligible": false,
+    "largest_repeat_run": 1,
+    "reason": "carried by the timeline; reported distinct-vs-repeated; not a named fail axis (mission-state writes and similar healthy repetition live here)",
+    "total": 1,
+    "unique": 1
+   }
+  ],
+  "degenerate_axes": [],
+  "instrument": "tools.future.autonomy_degeneracy.measure",
+  "instrument_path": "/Users/scammermike/Downloads/hawking/tools/future/autonomy_degeneracy.py",
+  "n_argv0_labelled": 0,
+  "n_unlabelled": 0,
+  "named_axes": [
+   "rejections",
+   "refills",
+   "ingestion",
+   "launches",
+   "workunit_ids",
+   "decisions",
+   "scars"
+  ],
+  "reason": "every named axis is non-degenerate under the stated thresholds",
+  "verdict": "PASS"
+ },
+ "duration_s_budget": 1800,
+ "elapsed_s": 4.003138065338135,
+ "evidence_class": "STATIC_ONLY",
+ "exercised": [
+  "NO_WAIT",
+  "REAL_REFILL",
+  "REAL_INGESTION",
+  "SCAR_PRUNING",
+  "STATUS_CAUSALITY",
+  "PROTECTED_PARKING",
+  "GENERIC_NR_NX",
+  "MUTATION",
+  "SUBAGENT_STATE",
+  "CONCURRENCY",
+  "FRONTIER_INVALIDATION",
+  "REPLAN",
+  "BLOCKED_RESOURCE_REROUTE",
+  "TABULA"
+ ],
+ "failed": [],
+ "gpu_authority": false,
+ "gpu_lane_lock": {
+  "contended": false,
+  "kind": "absent",
+  "owner": null,
+  "parked": false,
+  "path": "/tmp/hawking-gpu-lane.lock",
+  "pid": null,
+  "pid_alive": null,
+  "present": false,
+  "waited_for": null
+ },
+ "integration_ok": true,
+ "judge": {
+  "append_only": true,
+  "claimed_sha256": "f4fe2dba98f6dd3fbb3e161dc2a35e1617f03818ca81961d3628d74b65e8c94f",
+  "correct_refusal_counts_as_exercised": true,
+  "correct_refusals": [
+   "CONCURRENCY"
+  ],
+  "events_sha256": "f4fe2dba98f6dd3fbb3e161dc2a35e1617f03818ca81961d3628d74b65e8c94f",
+  "evidence_class": "STATIC_ONLY",
+  "exercised": [
+   "NO_WAIT",
+   "REAL_REFILL",
+   "REAL_INGESTION",
+   "SCAR_PRUNING",
+   "STATUS_CAUSALITY",
+   "PROTECTED_PARKING",
+   "GENERIC_NR_NX",
+   "MUTATION",
+   "SUBAGENT_STATE",
+   "CONCURRENCY",
+   "FRONTIER_INVALIDATION",
+   "REPLAN",
+   "BLOCKED_RESOURCE_REROUTE",
+   "TABULA"
+  ],
+  "failed": [],
+  "gpu_authority": false,
+  "ignored": [
+   "runner_summary",
+   "powers",
+   "proofs",
+   "summary"
+  ],
+  "n_correct_refusals": 1,
+  "n_events": 27,
+  "n_exercised": 14,
+  "n_failed": 0,
+  "n_omitted": 0,
+  "n_skipped": 0,
+  "omitted": [],
+  "powers": {
+   "BLOCKED_RESOURCE_REROUTE": {
+    "correct_refusal": false,
+    "kind": "blocked_resource_reroute",
+    "power": "BLOCKED_RESOURCE_REROUTE",
+    "seq": 13,
+    "status": "EXERCISED",
+    "why": "protected unit parked; continue_with returned 32 CPU units"
+   },
+   "CONCURRENCY": {
+    "correct_refusal": true,
+    "kind": "concurrency_doctor_decided",
+    "power": "CONCURRENCY",
+    "seq": 18,
+    "status": "EXERCISED_REFUSAL",
+    "why": "doctor REFUSED a verdict without observations and is SLEEPING with blocked_reason=\"resident presence is 'UNDECLARED', not PRESENT; will not invent a pid from the largest RSS neighbour; sidecar has no GPU authority and will not take a lease; no protected GPU lease is held; quiescence is 'UNKNOWN', not QUIESCENT; a DIAGNOSTIC_RELATIVE number on a busy machine is not this experiment; this sidecar is structurally unable to execute the protected ladder; a process with PROTECTED_ABSOLUTE authority must run observe() on hardware\"; that is the exercise"
+   },
+   "FRONTIER_INVALIDATION": {
+    "correct_refusal": false,
+    "kind": "restatement_refused",
+    "power": "FRONTIER_INVALIDATION",
+    "seq": 19,
+    "status": "EXERCISED",
+    "why": "REFUSED WU.TORTURE.invalidate.gate_up.shared_input_latent: restatement of killed family shared_input_latent_plus_expert_local_output_readout (receipts/future/RIVAL_CODEC_SCREEN.json): nearby restatement of shared_input_latent_plus_expert_local_output_readout on layer_4.routed_experts.gate_up_proj (split=None); more ranks of a killed family on the exhausted surface are refused. The scar does not generalise, and this candidate did not leave the surface."
+   },
+   "GENERIC_NR_NX": {
+    "correct_refusal": false,
+    "kind": "nr_nx_stage",
+    "power": "GENERIC_NR_NX",
+    "seq": 14,
+    "status": "EXERCISED",
+    "why": "every named stage ran and PASSED"
+   },
+   "MUTATION": {
+    "correct_refusal": false,
+    "kind": "mutation_rolled_back",
+    "power": "MUTATION",
+    "seq": 16,
+    "status": "EXERCISED",
+    "why": null
+   },
+   "NO_WAIT": {
+    "correct_refusal": false,
+    "kind": "WORK_LAUNCHED",
+    "power": "NO_WAIT",
+    "seq": 5,
+    "status": "EXERCISED",
+    "why": "detached pid 72371 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
+   },
+   "PROTECTED_PARKING": {
+    "correct_refusal": false,
+    "kind": "workunit_sleeping",
+    "power": "PROTECTED_PARKING",
+    "seq": 12,
+    "status": "EXERCISED",
+    "why": "GPU_EXCLUSIVE parked BLOCKED_ON_PROTECTED_WINDOW; scheduler stays CAPABLE"
+   },
+   "REAL_INGESTION": {
+    "correct_refusal": false,
+    "kind": "RESULT_INGESTED",
+    "power": "REAL_INGESTION",
+    "seq": 8,
+    "status": "EXERCISED",
+    "why": "ok"
+   },
+   "REAL_REFILL": {
+    "correct_refusal": false,
+    "kind": "WORK_REFILLED",
+    "power": "REAL_REFILL",
+    "seq": 7,
+    "status": "EXERCISED",
+    "why": "second refill set differs from the first; consecutive identical sets are the 1h scar"
+   },
+   "REPLAN": {
+    "correct_refusal": false,
+    "kind": "replan_emitted",
+    "power": "REPLAN",
+    "seq": 23,
+    "status": "EXERCISED",
+    "why": "result flash_meta_replan changes what runs next"
+   },
+   "SCAR_PRUNING": {
+    "correct_refusal": false,
+    "kind": "NEGATIVE_SCIENCE_REFUSAL",
+    "power": "SCAR_PRUNING",
+    "seq": 10,
+    "status": "EXERCISED",
+    "why": null
+   },
+   "STATUS_CAUSALITY": {
+    "correct_refusal": false,
+    "kind": "status_challenged",
+    "power": "STATUS_CAUSALITY",
+    "seq": 11,
+    "status": "EXERCISED",
+    "why": "challenged 'BLOCKED_NO_METAL_GPU' with probe_kind='process_error'; verdict=OVERREACHING"
+   },
+   "SUBAGENT_STATE": {
+    "correct_refusal": false,
+    "kind": "subagent_state_persisted",
+    "power": "SUBAGENT_STATE",
+    "seq": 17,
+    "status": "EXERCISED",
+    "why": "two WorkGraph documents, distinct unit sets, reload preserved identity and did not leak state"
+   },
+   "TABULA": {
+    "correct_refusal": false,
+    "kind": "tabula_callable",
+    "power": "TABULA",
+    "seq": 24,
+    "status": "EXERCISED",
+    "why": "Tabula floor is callable: recover, evaluate, rank, catalog, resident_callable; apply_to_weights is WeightsFrozen (the floor, not a stubbed model); zero-refusal scoring is refused"
+   }
+  },
+  "read": "timeline.events",
+  "seal_ok": true,
+  "skipped": [],
+  "skipped_do_not_count_toward_pass": true,
+  "timestamps_monotonic": true,
+  "verdict": "PASS",
+  "why": "14 exercised (including 1 correct refusals), 0 skipped"
+ },
+ "n_correct_refusals": 1,
+ "n_exercised": 14,
+ "n_failed": 0,
+ "n_skipped": 0,
+ "obligation": "30-MINUTE POWER TORTURE PASSED. A frozen build exercises EVERY POWER that landed after the 1h trial and was therefore untested by it. PASS means NEW POWER INTEGRATION, and explicitly NOT resident cognition.",
+ "pass_does_not_mean": "resident_cognition",
+ "pass_means": "NEW_POWER_INTEGRATION",
+ "powers": {
+  "BLOCKED_RESOURCE_REROUTE": {
+   "correct_refusal": false,
+   "counts_toward_pass": true,
+   "evidence": {
+    "n_continued": 32,
+    "unit_ids": [
+     "FT.ACTIVE_BYTES.hbm-rank",
+     "FT.CHILD_RESIDENT.install-dry-run",
+     "FT.CONTEXT.disk-authority",
+     "FT.DECODING.cost-model",
+     "FT.FPGA.engine-sim",
+     "FT.GPU_KERNELS.static-warnings",
+     "FT.HCLI_SELF.emit-workunits",
+     "FT.MODEL_CAPABILITY.hard-gates.drive-tools",
+     "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+     "FT.ODYSSEY_ADVERSARY.attacks",
+     "FT.ODYSSEY_TRANSFER.re-earn",
+     "FT.PHYSICAL_GRAPH.p6-projection",
+     "FT.STATE.coverage-audit",
+     "FT.TOOLS.freshness",
+     "FT.TOOLS.propagate-skips",
+     "FT.TPS.accepted-token-cost",
+     "FT.VERIFICATION.negative-index",
+     "FT.VERIFICATION.repro",
+     "FT.ANE.preboard",
+     "FT.ARCHITECTURE_REPATRIATION.compile-specs",
+     "FT.CHILD_RESIDENT.optimizer",
+     "FT.EXPERIMENT_TURNAROUND.refresh",
+     "FT.FPGA.hardware-doctor",
+     "FT.LATENCY.cpu-turnaround",
+     "FT.MEMORY.hbm",
+     "FT.MEMORY.hmf",
+     "FT.MODEL_CAPABILITY.tournament-refuse",
+     "FT.MODEL_EXECUTION.fusion-sim",
+     "FT.MODEL_EXECUTION.static-skeleton",
+     "FT.MODEL_REPRESENTATION.ngram-school",
+     "FT.PHYSICAL_GRAPH.hwir-lower",
+     "FT.TOOLS.frontiers-refill"
+    ]
+   },
+   "exercised": true,
+   "failed": false,
+   "power": "BLOCKED_RESOURCE_REROUTE",
+   "skipped": false,
+   "status": "EXERCISED",
+   "why": "resource blocked; 32 CPU units scheduled instead of idling"
+  },
+  "CONCURRENCY": {
+   "correct_refusal": true,
+   "counts_toward_pass": true,
+   "evidence": {
+    "blocked_reason": "resident presence is 'UNDECLARED', not PRESENT; will not invent a pid from the largest RSS neighbour; sidecar has no GPU authority and will not take a lease; no protected GPU lease is held; quiescence is 'UNKNOWN', not QUIESCENT; a DIAGNOSTIC_RELATIVE number on a busy machine is not this experiment; this sidecar is structurally unable to execute the protected ladder; a process with PROTECTED_ABSOLUTE authority must run observe() on hardware",
+    "experiment_state": "SLEEPING",
+    "ladder": [
+     1,
+     2,
+     3,
+     4
+    ],
+    "verdict_refuse_why": "no observations; refusing a verdict rather than defaulting to CONCURRENCY_HELPS",
+    "verdict_refused": true
+   },
+   "exercised": true,
+   "failed": false,
+   "power": "CONCURRENCY",
+   "skipped": false,
+   "status": "EXERCISED_REFUSAL",
+   "why": "correct refusal: SLEEPING with a named blocked_reason; CONCURRENCY_HELPS is not a default. Exercised, not skipped."
+  },
+  "FRONTIER_INVALIDATION": {
+   "correct_refusal": false,
+   "counts_toward_pass": true,
+   "evidence": {
+    "error": "REFUSED WU.TORTURE.invalidate.gate_up.shared_input_latent: restatement of killed family shared_input_latent_plus_expert_local_output_readout (receipts/future/RIVAL_CODEC_SCREEN.json): nearby restatement of shared_input_latent_plus_expert_local_output_readout on layer_4.routed_experts.gate_up_proj (split=None); more ranks of a killed family on the exhausted surface are refused. The scar does not generalise, and this candidate did not leave the surface.",
+    "next_school": "NGRAM"
+   },
+   "exercised": true,
+   "failed": false,
+   "power": "FRONTIER_INVALIDATION",
+   "skipped": false,
+   "status": "EXERCISED",
+   "why": "queued restatement refused; next school is NGRAM"
+  },
+  "GENERIC_NR_NX": {
+   "correct_refusal": false,
+   "counts_toward_pass": true,
+   "evidence": {
+    "callable": true
+   },
+   "exercised": true,
+   "failed": false,
+   "power": "GENERIC_NR_NX",
+   "skipped": false,
+   "status": "EXERCISED",
+   "why": "every named NR\u2192NX stage ran and PASSED"
+  },
+  "MUTATION": {
+   "correct_refusal": false,
+   "counts_toward_pass": true,
+   "evidence": {
+    "gpu_lane_lock": {
+     "contended": false,
+     "kind": "absent",
+     "owner": null,
+     "parked": false,
+     "path": "/tmp/hawking-gpu-lane.lock",
+     "pid": null,
+     "pid_alive": null,
+     "present": false,
+     "waited_for": null
+    },
+    "mutation_class": "PIPELINE_SELF",
+    "mutation_id": "MUT.PIPELINE_SELF.FT_HCLI_SELF_emit-workunits.1"
+   },
+   "exercised": true,
+   "failed": false,
+   "power": "MUTATION",
+   "skipped": false,
+   "status": "EXERCISED",
+   "why": "PIPELINE_SELF proposal applied and rolled back byte-identical (MUT.PIPELINE_SELF.FT_HCLI_SELF_emit-workunits.1). GPU classes parked: GPU lane lock inspected; mutation trial GPU classes not contended"
+  },
+  "NO_WAIT": {
+   "correct_refusal": false,
+   "counts_toward_pass": true,
+   "evidence": {
+    "detector_verdict": "NO_WAIT_OK",
+    "fast_finished_at": 1788171745.795875,
+    "fast_ingest": "ingested",
+    "pid": 72371,
+    "runnable_while_open": "RUNNABLE",
+    "slow_launched_at": 1788171745.4641302
+   },
+   "exercised": true,
+   "failed": false,
+   "power": "NO_WAIT",
+   "skipped": false,
+   "status": "EXERCISED",
+   "why": "detached pid 72371 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
+  },
+  "PROTECTED_PARKING": {
+   "correct_refusal": false,
+   "counts_toward_pass": true,
+   "evidence": {
+    "PROTECTED_SCHEDULER_CAPABLE": true,
+    "PROTECTED_WINDOW_AVAILABLE": false,
+    "n_continued": 32,
+    "verdict": "BLOCKED_ON_PROTECTED_WINDOW",
+    "wake_condition": {
+     "all_of": [
+      "contamination_class == QUIESCENT (CONTAMINATION_SCIENCE receipt, never coerced)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)"
+     ],
+     "never": [
+      "fabricated or simulated lease presented as live",
+      "fcntl.flock / lockf / os.O_EXCL on a bench lock",
+      "quiesce standing workers to forge a quiet machine",
+      "synthetic QUIESCENT",
+      "mark the scheduler incapable because the window is busy"
+     ]
+    }
+   },
+   "exercised": true,
+   "failed": false,
+   "power": "PROTECTED_PARKING",
+   "skipped": false,
+   "status": "EXERCISED",
+   "why": "CAPABLE true, AVAILABLE false, BLOCKED_ON_PROTECTED_WINDOW with a wake condition"
+  },
+  "REAL_INGESTION": {
+   "correct_refusal": false,
+   "counts_toward_pass": true,
+   "evidence": {
+    "cites": [
+     "receipts/future/STATUS_CAUSALITY_CHALLENGE.json",
+     "receipts/future/DETACHED_WORK_TRIAL.json",
+     "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/pytest-of-scammermike/pytest-1741/power_torture_run0/nowait/results/fast.json"
+    ]
+   },
+   "exercised": true,
+   "failed": false,
+   "power": "REAL_INGESTION",
+   "skipped": false,
+   "status": "EXERCISED",
+   "why": "RESULT_INGESTED cites real receipt paths once each; an ingest without citations is not an ingest"
+  },
+  "REAL_REFILL": {
+   "correct_refusal": false,
+   "counts_toward_pass": true,
+   "evidence": {
+    "catalog_refill_is_replay": true,
+    "fresh": [
+     "WU.TORTURE.replan.ngram_product_codebook",
+     "WU.TORTURE.replan.next_organ.NGRAM"
+    ],
+    "n_fresh": 2
+   },
+   "exercised": true,
+   "failed": false,
+   "power": "REAL_REFILL",
+   "skipped": false,
+   "status": "EXERCISED",
+   "why": "replan_after_scar_and_invalidation returned 2 id(s) not already offered"
+  },
+  "REPLAN": {
+   "correct_refusal": false,
+   "counts_toward_pass": true,
+   "evidence": {
+    "n": 4,
+    "next_capture": "the next teacher rows go to surfaces that have never been measured, not to another rank sweep of layer_4.routed_experts.gate_up_proj"
+   },
+   "exercised": true,
+   "failed": false,
+   "power": "REPLAN",
+   "skipped": false,
+   "status": "EXERCISED",
+   "why": "4 results change what runs next"
+  },
+  "SCAR_PRUNING": {
+   "correct_refusal": false,
+   "counts_toward_pass": true,
+   "evidence": {
+    "dead_decision": "REFUSED",
+    "live_decision": "ADMITTED",
+    "scar_id": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-010",
+    "source_path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json"
+   },
+   "exercised": true,
+   "failed": false,
+   "power": "SCAR_PRUNING",
+   "skipped": false,
+   "status": "EXERCISED",
+   "why": "scar receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-010 refused the dead family; live replacement admitted"
+  },
+  "STATUS_CAUSALITY": {
+   "correct_refusal": false,
+   "counts_toward_pass": true,
+   "evidence": {
+    "emit_entry": "emit",
+    "n_gates_named_gap": 11,
+    "n_gates_recording": 7,
+    "probe_kind": "process_error",
+    "verdict": "OVERREACHING"
+   },
+   "exercised": true,
+   "failed": false,
+   "power": "STATUS_CAUSALITY",
+   "skipped": false,
+   "status": "EXERCISED",
+   "why": "challenged 'BLOCKED_NO_METAL_GPU' with probe_kind='process_error'; verdict=OVERREACHING"
+  },
+  "SUBAGENT_STATE": {
+   "correct_refusal": false,
+   "counts_toward_pass": true,
+   "evidence": {
+    "disjoint": true,
+    "n_states": 2
+   },
+   "exercised": true,
+   "failed": false,
+   "power": "SUBAGENT_STATE",
+   "skipped": false,
+   "status": "EXERCISED",
+   "why": "two WorkGraph documents, distinct unit sets, reload preserved identity and did not leak state"
+  },
+  "TABULA": {
+   "correct_refusal": false,
+   "counts_toward_pass": true,
+   "evidence": {
+    "callable": true,
+    "entry_point": "python3 tools/future/tabula.py --build",
+    "evaluate_outcome": "PASS",
+    "weights_frozen": true
+   },
+   "exercised": true,
+   "failed": false,
+   "power": "TABULA",
+   "skipped": false,
+   "status": "EXERCISED",
+   "why": "Tabula callability on the independent-evaluation floor; fitting sleeps. apply_to_weights correctly refused (No weights are modified here. This host has no GPU and the specimens are hundreds of gigabytes. Build the contracts, the scorer and the lineage; the fitting is a SLEEPING WorkUnit.)."
+  }
+ },
+ "purpose": "30-minute power torture on a frozen build. Judged independently from the sealed timeline against a substrate verified unchanged.",
+ "resident_model_attached": false,
+ "schema": "hawking.future.power_torture.v2",
+ "seal_sha256": "c4aa2f1f57a55272c72a9f61348bf6dcf7a561e01969315f49fc6f6d0202730e",
+ "skipped": [],
+ "skipped_do_not_count_toward_pass": true,
+ "substrate": {
+  "after_digest": "56834d7c5cabad6e9fb0083125007f342a754812331d44528c3d47761b362318",
+  "before_digest": "56834d7c5cabad6e9fb0083125007f342a754812331d44528c3d47761b362318",
+  "equal": true,
+  "files": [
+   {
+    "bytes": 0,
+    "path": "tools/future/__init__.py",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 5334,
+    "path": "tools/future/_common.py",
+    "sha256": "cacc92109ffa1f0d8f78a966a9797056286e984266b163808d739374412ceb23",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 58577,
+    "path": "tools/future/abliteration.py",
+    "sha256": "b0619aba83c3b69239fbc6e8282c4bfcd4a8240f30ada55b366f5b5e787c70d1",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 32273,
+    "path": "tools/future/adaptive_verification.py",
+    "sha256": "6db3478ce56548080923b0a000d37a9eb506459accf3d3b1e9849880eab1b246",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 50093,
+    "path": "tools/future/autonomy_degeneracy.py",
+    "sha256": "bc73cf009b12a53b3c5de52b8efefdfba1d2a760b18023cad13748adcc802dda",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 79921,
+    "path": "tools/future/autonomy_run.py",
+    "sha256": "541ac50bafcb9c6a92db979470177dfa6a9408c70573a3aa8f069232456c0ae1",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 123461,
+    "path": "tools/future/autonomy_trial.py",
+    "sha256": "68408426267dd952e81910b57427b2e8caceb8c7e9669419546cc771541883ee",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 78485,
+    "path": "tools/future/candidate_planner.py",
+    "sha256": "d4f4142760cd56f1417ccf8d5b11fa2d29dfb906bd1fbfda88080170451ec0a3",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 49885,
+    "path": "tools/future/concurrency_doctor.py",
+    "sha256": "7168e9fa6de419ef0fc206756f9dbd62a0c8111ea21847ea7cb87543dba56810",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 45698,
+    "path": "tools/future/contamination.py",
+    "sha256": "ff000bd1459785f6045e8072cc725bc8dc4b384ec0ab4b3e93e73a9e8c328ab7",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 65216,
+    "path": "tools/future/detached.py",
+    "sha256": "17d70d2181bb2634a7a2618e58de5eedd0c3c37cf27cffd494aa6b878dee62a3",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 62148,
+    "path": "tools/future/device_compiler.py",
+    "sha256": "d34221a5d7e248bbab4b84b0c92f9682dbd0e859089399829774f3a5f5b5955b",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 66784,
+    "path": "tools/future/dirty_measure.py",
+    "sha256": "1b74482717214af6f52158daf8e96e2c066aefd33fe82bb9d71e1edcc23600f9",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 54920,
+    "path": "tools/future/ebpw_categories.py",
+    "sha256": "544c7dad345c3e86bf7dd15cf416c9fae0e615c0535a0dc6bfc96933460e674c",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 66731,
+    "path": "tools/future/expert_bank_school.py",
+    "sha256": "a8291a5da366c30367730f6358b3f286cc775014cf9960e71f8ef303e6c08cdf",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 26259,
+    "path": "tools/future/external_specimen_seal.py",
+    "sha256": "8d020ce056aeacc8204f328abf5332a84b26ecacf9673298a58318366bd0d20d",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 56326,
+    "path": "tools/future/flash_meta_replan.py",
+    "sha256": "9fcbfecf7b676e8cf420f0891e13339498bd576b427408f48ac70eb8734703b5",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 68001,
+    "path": "tools/future/flash_nx_audit.py",
+    "sha256": "dac654cc0424844bd19b6f9157c9a1cd021a652f9b99e2f58bbf0e1f2afa47d0",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 71546,
+    "path": "tools/future/flash_organ_pivot.py",
+    "sha256": "726f039862e3e69ab5e19f82b991de1e69610715a213ea19d82b3fdfd1a6c500",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 113230,
+    "path": "tools/future/flash_schools.py",
+    "sha256": "7d07e32d0dfffb5ee67510fc795a42432713f8a76ff7d5905ce14892d104e2c7",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 100960,
+    "path": "tools/future/frontiers.py",
+    "sha256": "eeb6d745b475c2bf20e310fdb4e88920030fb150b1f6394fcbd246e3398b5d94",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 53169,
+    "path": "tools/future/hardware_doctor.py",
+    "sha256": "73bb3dbfb3710e99ffe7a695bf667d817ad6779c8200efbda04e00f6f50be4f0",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 57194,
+    "path": "tools/future/meta_funnel.py",
+    "sha256": "6f96e4591b491a8fd5d4daff5b3d1dc8f2a9e5cf7859aed4a0760f020f652c09",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 69467,
+    "path": "tools/future/model_bearing.py",
+    "sha256": "1d9a1820735a4b5d0900faffe85bbca7a79e5717c775ebe9d31d33d79be7391f",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 43215,
+    "path": "tools/future/mutation_engine.py",
+    "sha256": "f64dad5ad9943dc5ac34c8ba9e559859c33724d51d38dc6adebf3086aa6abd82",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 5305,
+    "path": "tools/future/mutation_surface.py",
+    "sha256": "ff8d548ba0ca034428699dfe4ab6e7811af10d461e0733a240ea370150812e44",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 59430,
+    "path": "tools/future/negative_index.py",
+    "sha256": "c435fd2a98225c4e8bdf6af4120ed69f496d59a27dc157d38b532145533ec747",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 47702,
+    "path": "tools/future/ngram_school.py",
+    "sha256": "f7dfd8e29a9b0a5a3968afbb9d3315a743cda96dadc4ee470b79da6a667bfa6d",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 50928,
+    "path": "tools/future/no_wait_scheduler.py",
+    "sha256": "da2bcc7c691cca293749338f2a1886cfa98c110792ecf6e67710de2592621296",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 134745,
+    "path": "tools/future/nr_nx_generic.py",
+    "sha256": "554f12de4ea2635b20fbcf5aee5955a86054553d5563aa10b9afd96606d047d2",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 59816,
+    "path": "tools/future/nr_nx_path.py",
+    "sha256": "3eab2cf1699d8e4e3c82297cd166a4f53f9b907845054740fa65c7ef5aae6243",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 41733,
+    "path": "tools/future/nx_packer.py",
+    "sha256": "e02e9dddb3b331e6a53b7d211efde7f56383afa8e58c3c005e54bc1ff08c8a06",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 64210,
+    "path": "tools/future/odyssey2_law_store.py",
+    "sha256": "5a7c07b6f7e3c0c524d9ce05c79a45f60b4aaba5e4002ddf72d67bdf8994ef09",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 49615,
+    "path": "tools/future/odyssey3_adversary.py",
+    "sha256": "b8984765a73213a918b763ca0836b50bed924745bceae47c481dc5ed5a669227",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 125211,
+    "path": "tools/future/odyssey_launch.py",
+    "sha256": "0500044d233552ce12dc0c8d75359dec3ec3dc0067152f21a82dbdb3d15f3e34",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 24336,
+    "path": "tools/future/orchestration.py",
+    "sha256": "433f27f8c6c75d4431377da187220ca06d7e33b1d74a169bf8016b8b39efb5f2",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 65865,
+    "path": "tools/future/phase_listeners.py",
+    "sha256": "4fff69c6d6e4ca0e5420be5c0ac8a00d8567de861f4947df6a90e5d489df9f69",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 132533,
+    "path": "tools/future/power_torture.py",
+    "sha256": "68e2b8e8bf44d9d31a37482bc7e0b5b4cb48f301960e040f22fc38c359bbf9bd",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 50124,
+    "path": "tools/future/protected_scheduler.py",
+    "sha256": "d147e59294d942ef66cffe98e18e1c69d09c097585252e548a518a8dbf51fbd1",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 79436,
+    "path": "tools/future/protected_window.py",
+    "sha256": "85415a64cc820d6cd46c96c15ae026ebe4840e42177cefe519b96c35988aadd4",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 67526,
+    "path": "tools/future/qualification_pipeline.py",
+    "sha256": "c202b1f893a6376a89ad575abe48701b475f95e49b10aefbc66488a068ebe981",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 49570,
+    "path": "tools/future/repro_science.py",
+    "sha256": "f565c5df51465c7493d8016a6c2b03be92846779746dedb9184989f9d558e7b0",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 46786,
+    "path": "tools/future/resident_health.py",
+    "sha256": "f1956cb481b43bdf42c97fe43c029181f74344a38828a591cbe24c2696132629",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 82039,
+    "path": "tools/future/resident_identity.py",
+    "sha256": "b54516473af5466eb4bad27c1abbbd89570cd50d673ff42fb1cc3ac78744d4c4",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 16475,
+    "path": "tools/future/resident_install.py",
+    "sha256": "1e6a1d8901740bed09c54946b4ebad8b73ec93849ba85611eafbb4112cb87c56",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 57224,
+    "path": "tools/future/resident_optimizer.py",
+    "sha256": "c8dd1a4eeef066aa062122530a1f886a09fe0efa6523b69290c0063b6a38403f",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 103334,
+    "path": "tools/future/resident_provider.py",
+    "sha256": "216a79c5db59ac20d320dcdb423003d08cff7186b93f66d19f47ae6de6ed9e9d",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 70932,
+    "path": "tools/future/restart_supervisor.py",
+    "sha256": "de5cfd902fff364723c2e1e8dc34c8bef645ef68bae04bcef5de0b327305ba6f",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 77648,
+    "path": "tools/future/rival_codec_screen.py",
+    "sha256": "982e001d983c10d2b17bad47119c5bd1fb6f3b7b03cd4617948a6ce25f0f8554",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 52227,
+    "path": "tools/future/router_science.py",
+    "sha256": "f142bed15bc0f7aa0dc591d3cbafe1a099b8d037a0750a5550b46f8d6e384ef9",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 65924,
+    "path": "tools/future/scar_scheduling.py",
+    "sha256": "d0e3f41604c0cb846d08f4847fa1341bad55014d0d59bd75ae2be08117134fc5",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 42640,
+    "path": "tools/future/specimen_curriculum.py",
+    "sha256": "11c50ed5c06323d6d1fe97e7ed98d7124b5cc52b179e312f88f6d9b384632562",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 22931,
+    "path": "tools/future/specimen_verify.py",
+    "sha256": "5de4fe2e5f6513db1b21a16e55dc2151e273dfef4d7e70825497d793606d4f0b",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 78968,
+    "path": "tools/future/static_kernel_verify.py",
+    "sha256": "fdd2dd474737b2207af3d1e0d1ae2758166bcf76ed0cedaf9fabfb85d60b62f6",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 106575,
+    "path": "tools/future/status_causality.py",
+    "sha256": "661fe3cbf71ef99262435160b1fa3efe7875e07b8fe8698e435c4ec1686a1185",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 116258,
+    "path": "tools/future/succession.py",
+    "sha256": "fe5781fbe3be76eff08c78ea9d3dd8993a8ce07f6b830c784ae557bdb5402478",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 67115,
+    "path": "tools/future/tabula.py",
+    "sha256": "efd2c4693adeb13b1cb8dddb27f45d932e1a64bb4a1c04a312aa461530a5e7a6",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 29008,
+    "path": "tools/future/tournament.py",
+    "sha256": "8baa2e26c0a9aad2d2008ff2d839da8a5762e6487bee13a11b7234b09e5fad93",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 30754,
+    "path": "tools/future/trial_freeze.py",
+    "sha256": "ef577704a4de547d483dac1a3dbcc36e30117d841fe5cb3ca362c321016e0a40",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 40262,
+    "path": "tools/future/trial_workload.py",
+    "sha256": "603ecdd13a7ee63befe463e2a06ad096eada8a726b71bc7a329c285fd1769631",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 55737,
+    "path": "tools/future/wakeup.py",
+    "sha256": "5c9b0cedfe9f15f5566770de9b23f46d694fce6d5743c6ee81e8a388fcc7108c",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 22642,
+    "path": "tools/future/work_events.py",
+    "sha256": "f3683c45757ac64b4be4ec78dce4e4179533984403f93339ce46a9f78694a0c6",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 80574,
+    "path": "tools/future/workgraph.py",
+    "sha256": "8dcda78ebf0c16980e25b8b9cf767525050b94ca8428e8d3c786660804c5d76f",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 72338,
+    "path": "tools/future/workunit_species.py",
+    "sha256": "4a1c3ea2205f46eecde21764f52265f8314cfeddc32dda27d7f9d9241437477c",
+    "state": "HASHED"
+   }
+  ],
+  "moved": [],
+  "n_files": 64,
+  "n_shaders": 1,
+  "shaders": [
+   {
+    "bytes": 6553,
+    "path": "crates/hawking-core/shaders/qwen80_routed_expert_wave.metal",
+    "sha256": "b4b284ee5393d758ef1645d7788c5715fce5bf52f1a2b88816111f40da7baaaf",
+    "state": "HASHED"
+   }
+  ],
+  "verdict": "CLEAN"
+ },
+ "timeline": {
+  "append_only": true,
+  "elapsed_s": 4.00228,
+  "events_sha256": "f4fe2dba98f6dd3fbb3e161dc2a35e1617f03818ca81961d3628d74b65e8c94f",
+  "n_events": 27,
+  "path": "receipts/future/POWER_TORTURE_TIMELINE.json",
+  "receipt": "receipts/future/POWER_TORTURE_TIMELINE.json",
+  "sealed": true
+ },
+ "timeline_receipt": "receipts/future/POWER_TORTURE_TIMELINE.json",
+ "trial_id": "30m",
+ "verdict": "PASS",
+ "version": 2,
+ "why": "frozen substrate unchanged; judge read the sealed timeline; degeneracy PASS; 14 exercised (1 correct refusals), 0 skipped",
+ "within_budget": true
+}

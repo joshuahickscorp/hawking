@@ -1,0 +1,1320 @@
+diff --git a/crates/hawking-core/examples/ascension_qwen38_resident.rs b/crates/hawking-core/examples/ascension_qwen38_resident.rs
+index 46a945389..b1e25b15a 100644
+--- a/crates/hawking-core/examples/ascension_qwen38_resident.rs
++++ b/crates/hawking-core/examples/ascension_qwen38_resident.rs
+@@ -295,6 +295,70 @@ fn serve_request(
+     } else {
+         None
+     };
++    let mut metrics = json!({
++        "generation_wall_ns": wall_ns,
++        "complete_wall_ns": complete_wall_ns,
++        "complete_wall_ns_per_generated_token": complete_wall_ns_per_generated_token,
++        "gpu_ns": complete_gpu_ns,
++        "gpu_ns_per_generated_token": gpu_ns_per_generated_token,
++        "wall_minus_gpu_ns": complete_gpu_ns.map(|value| complete_wall_ns.saturating_sub(value)),
++        "dispatches": dispatches,
++        "dispatches_per_generated_token": dispatches_per_generated_token,
++        "generated_tokens": generated_count,
++        "prefill": {
++            "steps": result.prompt_len,
++            "wall_ns": result.prefill_wall_ns,
++            "gpu_ns": prefill_gpu_ns,
++            "dispatches": prefill_dispatches,
++            "wall_ns_per_step": result.prefill_wall_ns as f64 / result.prompt_len.max(1) as f64,
++        },
++        "decode": {
++            "steps": result.decode_steps,
++            "generated_tokens_after_prefill": result.decode_steps,
++            "wall_ns": result.decode_wall_ns,
++            "gpu_ns": decode_gpu_ns,
++            "dispatches": decode_dispatches,
++            "wall_ns_per_step": result.decode_wall_ns as f64 / result.decode_steps.max(1) as f64,
++        },
++        "step_trace": {
++            "wall_ns": result.wall_ns_per_step,
++            "gpu_ns": result.gpu_ns,
++            "wait_ns": result.wait_ns,
++            "encode_ns": result.encode_ns,
++            "submit_ns": result.submit_ns,
++            "dispatches": result.dispatches,
++        },
++        "kernel_genome": {
++            "trace_enabled": env::var("HAWKING_TRACE_DISPATCH").ok().as_deref() == Some("1"),
++            "histogram": kernel_histogram,
++            "exact_when_trace_enabled": true,
++        },
++        "capability": {
++            "resident": true,
++            "fallbacks": result.fallbacks,
++            "dense_w_materialized": result.dense_w_materialized,
++            "weights_loaded_once": true,
++            "complete_token_accounting": true,
++        },
++    });
++    if let Some(timeline) = result.region_timeline.as_ref() {
++        metrics["region_timeline"] =
++            serde_json::to_value(timeline).unwrap_or(Value::Null);
++        metrics["region_timing"] = json!({
++            "enabled": true,
++            "env": "HAWKING_QWEN38_REGION_TIMING",
++            "sample_source": timeline.sample_source,
++            "counter_sampling_supported": timeline.counter_sampling_supported,
++            "token_kind": timeline.token_kind,
++            "step_index": timeline.step_index,
++            "position": timeline.position,
++            "gpu_ns_sum": timeline.gpu_ns_sum,
++            "gpu_ns_span": timeline.gpu_ns_span,
++            "token_gpu_ns": timeline.token_gpu_ns,
++            "unknown_ns": timeline.unknown_ns,
++            "aggregated": timeline.aggregated,
++        });
++    }
+     Ok(json!({
+         "id": id,
+         "status": "ok",
+@@ -318,52 +382,7 @@ fn serve_request(
+         "dense_w_materialized": result.dense_w_materialized,
+         "model_open_count": 1,
+         "weight_upload_count": 1,
+-        "metrics": {
+-            "generation_wall_ns": wall_ns,
+-            "complete_wall_ns": complete_wall_ns,
+-            "complete_wall_ns_per_generated_token": complete_wall_ns_per_generated_token,
+-            "gpu_ns": complete_gpu_ns,
+-            "gpu_ns_per_generated_token": gpu_ns_per_generated_token,
+-            "wall_minus_gpu_ns": complete_gpu_ns.map(|value| complete_wall_ns.saturating_sub(value)),
+-            "dispatches": dispatches,
+-            "dispatches_per_generated_token": dispatches_per_generated_token,
+-            "generated_tokens": generated_count,
+-            "prefill": {
+-                "steps": result.prompt_len,
+-                "wall_ns": result.prefill_wall_ns,
+-                "gpu_ns": prefill_gpu_ns,
+-                "dispatches": prefill_dispatches,
+-                "wall_ns_per_step": result.prefill_wall_ns as f64 / result.prompt_len.max(1) as f64,
+-            },
+-            "decode": {
+-                "steps": result.decode_steps,
+-                "generated_tokens_after_prefill": result.decode_steps,
+-                "wall_ns": result.decode_wall_ns,
+-                "gpu_ns": decode_gpu_ns,
+-                "dispatches": decode_dispatches,
+-                "wall_ns_per_step": result.decode_wall_ns as f64 / result.decode_steps.max(1) as f64,
+-            },
+-            "step_trace": {
+-                "wall_ns": result.wall_ns_per_step,
+-                "gpu_ns": result.gpu_ns,
+-                "wait_ns": result.wait_ns,
+-                "encode_ns": result.encode_ns,
+-                "submit_ns": result.submit_ns,
+-                "dispatches": result.dispatches,
+-            },
+-            "kernel_genome": {
+-                "trace_enabled": env::var("HAWKING_TRACE_DISPATCH").ok().as_deref() == Some("1"),
+-                "histogram": kernel_histogram,
+-                "exact_when_trace_enabled": true,
+-            },
+-            "capability": {
+-                "resident": true,
+-                "fallbacks": result.fallbacks,
+-                "dense_w_materialized": result.dense_w_materialized,
+-                "weights_loaded_once": true,
+-                "complete_token_accounting": true,
+-            },
+-        },
++        "metrics": metrics,
+     }))
+ }
+ 
+diff --git a/crates/hawking-core/src/metal/mod.rs b/crates/hawking-core/src/metal/mod.rs
+index f96d17fa7..12bb57361 100644
+--- a/crates/hawking-core/src/metal/mod.rs
++++ b/crates/hawking-core/src/metal/mod.rs
+@@ -981,6 +981,80 @@ mod imp {
+         }
+     }
+ 
++    /// Region-boundary GPU timestamps via blit-encoder
++    /// `sampleCountersInBuffer:atSampleIndex:withBarrier:` on the timestamp
++    /// counter set. One sample per mark, not a pair. Opt-in from the decode
++    /// path (`TokenCommandBuffer::enable_region_timestamps`); construction of
++    /// an ordinary TCB never allocates one.
++    ///
++    /// Blit-boundary sampling is used because M-series does not support
++    /// mid-pass compute `sampleCounters`, and compute-pass descriptor
++    /// boundary attachments changed greedy token ids (lane-tracebug). A
++    /// blit encoder between already-closed compute encoders keeps the
++    /// production per-dispatch compute topology.
++    struct RegionTsTracer {
++        sample_buf: ::metal::CounterSampleBuffer,
++        next_index: usize,
++        capacity: usize,
++    }
++
++    impl RegionTsTracer {
++        const CAPACITY: usize = 512;
++
++        fn try_new(device: &Device) -> Option<Self> {
++            // M3 Ultra (AGXG15X) asserts inside
++            // `sampleCountersInBuffer:atSampleIndex:withBarrier:` when
++            // `supportsCounterSampling:AtBlitBoundary` is false. Do not
++            // allocate a sample buffer we cannot legally stamp.
++            if !device.supports_counter_sampling(::metal::MTLCounterSamplingPoint::AtBlitBoundary)
++            {
++                return None;
++            }
++            let cset = find_timestamp_counter_set(device)?;
++            let desc = ::metal::CounterSampleBufferDescriptor::new();
++            desc.set_counter_set(&cset);
++            desc.set_sample_count(Self::CAPACITY as u64);
++            desc.set_storage_mode(::metal::MTLStorageMode::Shared);
++            let sample_buf = device
++                .new_counter_sample_buffer_with_descriptor(&desc)
++                .ok()?;
++            Some(Self {
++                sample_buf,
++                next_index: 0,
++                capacity: Self::CAPACITY,
++            })
++        }
++
++        fn resolve(&mut self) -> Vec<Option<u64>> {
++            let n = self.next_index.min(self.capacity);
++            self.next_index = 0;
++            if n == 0 {
++                return Vec::new();
++            }
++            let timestamps = unsafe {
++                let ns_range = ::metal::NSRange {
++                    location: 0,
++                    length: n as u64,
++                };
++                let nsdata: *mut metal::objc::runtime::Object =
++                    msg_send![&*self.sample_buf, resolveCounterRange: ns_range];
++                if nsdata.is_null() {
++                    Vec::new()
++                } else {
++                    let bytes: *const u8 = msg_send![nsdata, bytes];
++                    let len: usize = msg_send![nsdata, length];
++                    let n_u64 = len / 8;
++                    let slice = std::slice::from_raw_parts(bytes as *const u64, n_u64);
++                    slice.to_vec()
++                }
++            };
++            const ERR: u64 = u64::MAX;
++            (0..n)
++                .map(|i| timestamps.get(i).copied().filter(|v| *v != ERR))
++                .collect()
++        }
++    }
++
+     // Re-export Metal's Buffer type so callers can hold pinned-weight
+     // handles without depending on the upstream `metal` crate directly.
+     pub use metal::Buffer as PinnedBuffer;
+@@ -1063,6 +1137,9 @@ mod imp {
+         /// tracer prevents the hardware sample-buffer quota from silently
+         /// truncating a gpu_prod profile after its first few stages.
+         prod_cb_tracer_pool: Arc<Mutex<Vec<ProdCbTracer>>>,
++        /// Region-boundary blit timestamp buffers. Empty unless a TCB calls
++        /// [`TokenCommandBuffer::enable_region_timestamps`].
++        region_ts_pool: Arc<Mutex<Vec<RegionTsTracer>>>,
+     }
+ 
+     /// One command buffer that can encode several compute kernels before
+@@ -2608,6 +2685,7 @@ mod imp {
+                     stats: Arc::new(MetalContextStats::new()),
+                     trace_dispatch: effective,
+                     prod_cb_tracer_pool: Arc::new(Mutex::new(Vec::new())),
++                    region_ts_pool: Arc::new(Mutex::new(Vec::new())),
+                 })
+             })
+         }
+@@ -2639,6 +2717,7 @@ mod imp {
+                         stats: Arc::new(MetalContextStats::new()),
+                         trace_dispatch: effective,
+                         prod_cb_tracer_pool: Arc::new(Mutex::new(Vec::new())),
++                        region_ts_pool: Arc::new(Mutex::new(Vec::new())),
+                     })
+                 },
+             )
+@@ -4581,6 +4660,12 @@ mod imp {
+         /// Physical CBs committed while this TCB was live (split-CB mode
+         /// increments per dispatch; production is 1).
+         pub command_buffer_count: usize,
++        /// Live only after [`Self::enable_region_timestamps`]. `None` on the
++        /// production path so TCB construction stays allocation-identical.
++        region_tracer: Option<RegionTsTracer>,
++        region_ts_pool: Option<Arc<Mutex<Vec<RegionTsTracer>>>>,
++        /// Filled after wait when a region tracer was live. Empty otherwise.
++        resolved_region_ns: Vec<Option<u64>>,
+     }
+ 
+     impl<'ctx> TokenCommandBuffer<'ctx> {
+@@ -4620,6 +4705,9 @@ mod imp {
+                 ledger_stage_dispatches: [0; crate::cost_ledger::GpuStage::ALL.len()],
+                 encoder_count: 0,
+                 command_buffer_count: 0,
++                region_tracer: None,
++                region_ts_pool: None,
++                resolved_region_ns: Vec::new(),
+             }
+         }
+ 
+@@ -4629,6 +4717,118 @@ mod imp {
+             self.dispatch_count
+         }
+ 
++        /// Opt in to blit-encoder timestamp samples at caller-chosen
++        /// region boundaries. Returns `false` when the device lacks the
++        /// timestamp counter set or blit-boundary sampling; the caller
++        /// then uses `GPUStartTime`/`GPUEndTime` on split command buffers.
++        ///
++        /// Must be called before the first dispatch. No-op-false under
++        /// `HAWKING_TCB_TRACE=gpu` (split-CB mode owns the queue).
++        pub fn enable_region_timestamps(&mut self) -> bool {
++            if self.region_tracer.is_some() {
++                return true;
++            }
++            if self.mode == TcbTraceMode::SplitCbGpu {
++                eprintln!(
++                    "[hawking] region timestamps: HAWKING_TCB_TRACE=gpu owns the queue; \
++                     using GPUStartTime split-CB fallback"
++                );
++                return false;
++            }
++            if self.dispatch_count != 0 || self.has_active_group() {
++                eprintln!(
++                    "[hawking] region timestamps: enable after first dispatch/group; \
++                     using GPUStartTime split-CB fallback"
++                );
++                return false;
++            }
++            self.region_ts_pool = Some(self.ctx.region_ts_pool.clone());
++            let pooled = self
++                .region_ts_pool
++                .as_ref()
++                .and_then(|pool| pool.lock().pop());
++            self.region_tracer =
++                pooled.or_else(|| RegionTsTracer::try_new(&self.ctx.inner.device));
++            self.region_tracer.is_some()
++        }
++
++        pub fn region_timestamps_enabled(&self) -> bool {
++            self.region_tracer.is_some()
++        }
++
++        /// Insert a blit-encoder timestamp sample with a barrier.
++        /// Returns the sample index, or `None` when region timestamps are
++        /// off / exhausted. Errors if a serial/concurrent compute group is
++        /// still open — a blit encoder cannot start while a compute encoder
++        /// owns the command buffer.
++        pub fn mark_region_boundary(&mut self) -> Result<Option<usize>> {
++            if self.region_tracer.is_none() {
++                return Ok(None);
++            }
++            if self.concurrent_encoder.is_some() {
++                return Err(Error::Metal(
++                    "region timestamp mark requires no open compute group".into(),
++                ));
++            }
++            let (idx, sample_buf) = {
++                let tracer = self
++                    .region_tracer
++                    .as_mut()
++                    .expect("checked is_some above");
++                if tracer.next_index >= tracer.capacity {
++                    return Ok(None);
++                }
++                let idx = tracer.next_index;
++                tracer.next_index += 1;
++                (idx, tracer.sample_buf.clone())
++            };
++            let cmd = self.cmd.as_ref().ok_or_else(|| {
++                Error::Metal("TokenCommandBuffer already committed".into())
++            })?;
++            let blit = cmd.new_blit_command_encoder();
++            if let Some(command) = self.physical_trace.as_ref() {
++                blit.set_label(&physical_encoder_label(
++                    command,
++                    "blit_encoder",
++                    "region_timestamp",
++                ));
++            } else {
++                blit.set_label("region_timestamp");
++            }
++            blit.sample_counters_in_buffer(&sample_buf, idx as u64, true);
++            blit.end_encoding();
++            self.has_encoded_work = true;
++            self.encoder_count = self.encoder_count.saturating_add(1);
++            Ok(Some(idx))
++        }
++
++        /// Same fence as [`commit_and_wait_timed`], plus resolved region
++        /// boundary timestamps (ns) in mark order. Empty when region
++        /// timestamps were not enabled or the driver returned no samples.
++        pub fn commit_and_wait_timed_with_regions(
++            mut self,
++        ) -> Result<(super::CommandBufferTiming, Vec<Option<u64>>)> {
++            let timing = self.commit_and_wait_split_mut()?;
++            Ok((timing, std::mem::take(&mut self.resolved_region_ns)))
++        }
++
++        fn recycle_unused_region_ts_tracer(&mut self) {
++            if let Some(tracer) = self.region_tracer.take() {
++                if let Some(pool) = self.region_ts_pool.as_ref() {
++                    pool.lock().push(tracer);
++                }
++            }
++        }
++
++        fn resolve_region_timestamps_after_wait(&mut self) {
++            if let Some(mut tracer) = self.region_tracer.take() {
++                self.resolved_region_ns = tracer.resolve();
++                if let Some(pool) = self.region_ts_pool.as_ref() {
++                    pool.lock().push(tracer);
++                }
++            }
++        }
++
+         /// Enable a capture-only structural trace for this fresh command
+         /// buffer.  The trace records only successful kernel encodes in
+         /// order; it never records timestamps or submits additional command
+@@ -5393,6 +5593,7 @@ mod imp {
+                     pool.lock().push(tracer);
+                 }
+             }
++            self.recycle_unused_region_ts_tracer();
+         }
+ 
+         /// Commit the command buffer and block until the GPU finishes.
+@@ -5567,6 +5768,10 @@ mod imp {
+         /// identical; decode output is unchanged. When the ledger is not
+         /// recording this is the same as the historical uninstrumented commit.
+         pub fn commit_and_wait_split(mut self) -> Result<super::CommandBufferTiming> {
++            self.commit_and_wait_split_mut()
++        }
++
++        fn commit_and_wait_split_mut(&mut self) -> Result<super::CommandBufferTiming> {
+             use crate::cost_ledger::{self, Bucket};
+             use std::time::Instant;
+ 
+@@ -5680,6 +5885,7 @@ mod imp {
+                         self.flush_prod_cb_trace_and_recycle();
+                     }
+                 }
++                self.resolve_region_timestamps_after_wait();
+             }
+             Ok(timing)
+         }
+@@ -5743,6 +5949,7 @@ mod imp {
+                     self.flush_prod_cb_trace_and_recycle();
+                 }
+             }
++            self.resolve_region_timestamps_after_wait();
+         }
+     }
+ 
+diff --git a/crates/hawking-core/src/model/qwen38_hybrid_decode.rs b/crates/hawking-core/src/model/qwen38_hybrid_decode.rs
+index db814f9df..8b11dc509 100644
+--- a/crates/hawking-core/src/model/qwen38_hybrid_decode.rs
++++ b/crates/hawking-core/src/model/qwen38_hybrid_decode.rs
+@@ -8,11 +8,11 @@
+ 
+ use super::qwen38_64_layer_execution_schedule::qwen38_assert_schedule_intact;
+ use super::qwen38_geometry::{ARGMAX_GROUPS, 
+-    qwen38_deltanet_state_slot, qwen38_gqa_state_slot, qwen38_layer_name, qwen38_mixer_kind,
+-    Qwen38DeltaNetLayout, Qwen38MixerKind, QWEN38_DELTANET_LAYERS, QWEN38_GQA_HEAD_DIM,
+-    QWEN38_GQA_HEADS, QWEN38_GQA_KV_HEADS, QWEN38_GQA_LAYERS, QWEN38_GQA_ROTARY_DIM,
+-    QWEN38_HIDDEN, QWEN38_INTERMEDIATE, QWEN38_LAYERS, QWEN38_RMS_EPS, QWEN38_ROPE_THETA,
+-    QWEN38_VOCAB,
++    qwen38_deltanet_state_slot, qwen38_embed_name, qwen38_gqa_state_slot, qwen38_layer_name,
++    qwen38_lm_head_name, qwen38_mixer_kind, Qwen38DeltaNetLayout, Qwen38MixerKind,
++    QWEN38_DELTANET_LAYERS, QWEN38_GQA_HEAD_DIM, QWEN38_GQA_HEADS, QWEN38_GQA_KV_HEADS,
++    QWEN38_GQA_LAYERS, QWEN38_GQA_ROTARY_DIM, QWEN38_HIDDEN, QWEN38_INTERMEDIATE,
++    QWEN38_LAYERS, QWEN38_RMS_EPS, QWEN38_ROPE_THETA, QWEN38_VOCAB,
+ };
+ use super::qwen38_pack::{
+     load_qwen38_manifest, read_qwen38_f32_payload, QWEN38_EXPECTED_CATALOG_TENSORS,
+@@ -54,6 +54,29 @@ pub fn qwen38_trace_dispatch_enabled() -> bool {
+     crate::env_on("HAWKING_TRACE_DISPATCH")
+ }
+ 
++/// `true` only when `HAWKING_QWEN38_REGION_TIMING=1`. Default off so
++/// production decode stays one command buffer with no blit timestamp
++/// markers and no extra `MTLCounterSampleBuffer`.
++pub fn qwen38_region_timing_enabled() -> bool {
++    crate::env_on("HAWKING_QWEN38_REGION_TIMING")
++}
++
++/// Aggregated region ids for one decode token. `routing` is always
++/// empty on this dense model; `normalization` / `residual` /
++/// `low_bit_decode` are not independently sampled while fused organs
++/// own those kernels.
++pub const QWEN38_REGION_IDS: &[&str] = &[
++    "mlp",
++    "attention",
++    "state",
++    "normalization",
++    "routing",
++    "low_bit_decode",
++    "residual",
++    "lm_head",
++    "misc",
++];
++
+ /// MLP suffix fusion. Default Off keeps the 964-dispatch production graph.
+ ///
+ /// `HAWKING_QWEN38_FUSE_MLP=pair`          — gate+up in one geo_tpr64 dispatch (still SwiGLU)
+@@ -1303,6 +1326,131 @@ impl Qwen38MatvecKernel {
+     }
+ }
+ 
++/// One GPU-timed region on a representative decode token.
++///
++/// `gpu_start_ns` / `gpu_end_ns` are Metal timestamp-counter values (blit
++/// boundary samples) when the device supports them, otherwise
++/// `MTLCommandBuffer` `GPUStartTime`/`GPUEndTime` on a split command buffer.
++#[derive(Clone, Debug, serde::Serialize)]
++pub struct Qwen38RegionSample {
++    pub region: &'static str,
++    pub gpu_start_ns: Option<u64>,
++    pub gpu_end_ns: Option<u64>,
++    pub duration_ns: Option<u64>,
++    pub dispatch_count: u64,
++    pub representation: String,
++    pub expected_bytes: u64,
++    pub layer: Option<u32>,
++    pub organ: &'static str,
++    pub dependency: String,
++}
++
++#[derive(Clone, Debug, serde::Serialize)]
++pub struct Qwen38RegionAggregate {
++    pub region: &'static str,
++    pub duration_ns: u64,
++    pub dispatch_count: u64,
++    pub expected_bytes: u64,
++    pub samples: u64,
++    pub independently_sampled: bool,
++}
++
++/// Subdivision of one decode token. Populated only when
++/// `HAWKING_QWEN38_REGION_TIMING=1`.
++#[derive(Clone, Debug, serde::Serialize)]
++pub struct Qwen38RegionTimeline {
++    pub enabled: bool,
++    pub sample_source: String,
++    pub counter_sampling_supported: bool,
++    pub token_kind: String,
++    pub step_index: usize,
++    pub position: usize,
++    pub samples: Vec<Qwen38RegionSample>,
++    pub aggregated: Vec<Qwen38RegionAggregate>,
++    pub gpu_ns_span: Option<u64>,
++    pub gpu_ns_sum: Option<u64>,
++    pub token_gpu_ns: Option<u64>,
++    pub unknown_ns: Option<i64>,
++    pub dispatches: u64,
++    pub command_buffers: u64,
++}
++
++impl Qwen38RegionTimeline {
++    pub fn from_samples(
++        samples: Vec<Qwen38RegionSample>,
++        token_gpu_ns: Option<u64>,
++        sample_source: &str,
++        counter_sampling_supported: bool,
++        token_kind: &str,
++        step_index: usize,
++        position: usize,
++        command_buffers: u64,
++    ) -> Self {
++        let independently = [
++            "mlp",
++            "attention",
++            "state",
++            "lm_head",
++            "misc",
++        ];
++        let mut duration = [0u64; QWEN38_REGION_IDS.len()];
++        let mut disp = [0u64; QWEN38_REGION_IDS.len()];
++        let mut bytes = [0u64; QWEN38_REGION_IDS.len()];
++        let mut count = [0u64; QWEN38_REGION_IDS.len()];
++        for sample in &samples {
++            if let Some(slot) = QWEN38_REGION_IDS.iter().position(|id| *id == sample.region) {
++                duration[slot] = duration[slot].saturating_add(sample.duration_ns.unwrap_or(0));
++                disp[slot] = disp[slot].saturating_add(sample.dispatch_count);
++                bytes[slot] = bytes[slot].saturating_add(sample.expected_bytes);
++                count[slot] = count[slot].saturating_add(1);
++            }
++        }
++        let aggregated: Vec<Qwen38RegionAggregate> = QWEN38_REGION_IDS
++            .iter()
++            .enumerate()
++            .map(|(i, region)| Qwen38RegionAggregate {
++                region,
++                duration_ns: duration[i],
++                dispatch_count: disp[i],
++                expected_bytes: bytes[i],
++                samples: count[i],
++                independently_sampled: independently.contains(region),
++            })
++            .collect();
++        let gpu_ns_sum = samples.iter().try_fold(0u64, |acc, s| {
++            Some(acc.saturating_add(s.duration_ns?))
++        });
++        let gpu_ns_span = match (
++            samples.first().and_then(|s| s.gpu_start_ns),
++            samples.last().and_then(|s| s.gpu_end_ns),
++        ) {
++            (Some(start), Some(end)) if end >= start => Some(end - start),
++            _ => None,
++        };
++        let unknown_ns = match (token_gpu_ns, gpu_ns_sum) {
++            (Some(token), Some(sum)) => Some(token as i64 - sum as i64),
++            _ => None,
++        };
++        let dispatches = samples.iter().map(|s| s.dispatch_count).fold(0u64, u64::saturating_add);
++        Self {
++            enabled: true,
++            sample_source: sample_source.to_owned(),
++            counter_sampling_supported,
++            token_kind: token_kind.to_owned(),
++            step_index,
++            position,
++            samples,
++            aggregated,
++            gpu_ns_span,
++            gpu_ns_sum,
++            token_gpu_ns,
++            unknown_ns,
++            dispatches,
++            command_buffers,
++        }
++    }
++}
++
+ /// Per-class GPU times from residual-correct split command buffers.
+ /// Each field's `gpu_ns` is `GPUEndTime-GPUStartTime` on that class's CBs.
+ #[derive(Clone, Debug, Default, serde::Serialize)]
+@@ -1418,7 +1566,11 @@ pub fn load_qwen38_tokenizer(path: impl AsRef<Path>) -> Result<Tokenizer> {
+ mod device {
+     use super::*;
+     use crate::kernels::{mha_decode_f32_tcb, qwen_next_add_residual_tcb, sample_argmax_f32_tcb};
+-    use crate::metal::{CommandBufferTiming, MetalContext, PinnedBuffer, TokenCommandBuffer};
++    use crate::metal::{
++        CommandBufferTiming, MetalContext, PinnedBuffer, SubmittedTokenCommandBuffer,
++        TokenCommandBuffer,
++    };
++    use std::cell::RefCell;
+     use std::thread;
+     use std::time::Instant;
+ 
+@@ -2145,6 +2297,23 @@ mod device {
+         /// (one encoder per dispatch). Opt-in attack on encoder-boundary idle
+         /// and host command construction. Independent of `concurrent_independent`.
+         pub serial_token_encoder: bool,
++        /// Cached `HAWKING_QWEN38_REGION_TIMING=1`. Default off.
++        region_timing: bool,
++        region_log: RefCell<Vec<Qwen38RegionOpen>>,
++        region_prev: RefCell<String>,
++        last_region_timeline: Option<Qwen38RegionTimeline>,
++        region_step_index: usize,
++    }
++
++    struct Qwen38RegionOpen {
++        region: &'static str,
++        organ: &'static str,
++        layer: Option<u32>,
++        dependency: String,
++        representation: String,
++        expected_bytes: u64,
++        sample_index: usize,
++        dispatch_count: u64,
+     }
+ 
+     impl Qwen38HybridDecodeSession {
+@@ -2200,6 +2369,11 @@ mod device {
+                 dense_w_materialized,
+                 q2f_force_serial: false,
+                 serial_token_encoder: false,
++                region_timing: qwen38_region_timing_enabled(),
++                region_log: RefCell::new(Vec::new()),
++                region_prev: RefCell::new("none".to_owned()),
++                last_region_timeline: None,
++                region_step_index: 0,
+             };
+             // `MetalContext` clones share `Arc<DispatchTrace>`. If that ever
+             // becomes a fresh buffer, `drain_trace` on the session would miss
+@@ -2233,6 +2407,98 @@ mod device {
+             Arc::ptr_eq(&self.weights, &other.weights)
+         }
+ 
++        pub fn region_timing_enabled(&self) -> bool {
++            self.region_timing
++        }
++
++        pub fn take_region_timeline(&mut self) -> Option<Qwen38RegionTimeline> {
++            self.last_region_timeline.take()
++        }
++
++        pub fn last_region_timeline(&self) -> Option<&Qwen38RegionTimeline> {
++            self.last_region_timeline.as_ref()
++        }
++
++        fn weight_bytes(&self, name: &str) -> u64 {
++            if let Some(mixed) = self.weights.mixed.get(name) {
++                return mixed.resident_bytes();
++            }
++            if let Some(q4) = self.weights.q4.get(name) {
++                return q4.codes.length() + q4.scales.length();
++            }
++            if let Some(f32) = self.weights.f32s.get(name) {
++                return f32.length();
++            }
++            0
++        }
++
++        fn weight_repr(&self, name: &str) -> &'static str {
++            match self.weights.mixed.get(name) {
++                Some(MixedGpuWeight::Affine(body)) => {
++                    if body.biases.is_some() {
++                        "hgrafv01"
++                    } else {
++                        "q2f"
++                    }
++                }
++                Some(MixedGpuWeight::Uniform(_)) => "hgravu01",
++                Some(MixedGpuWeight::Binary(_)) => "hgravb01",
++                Some(MixedGpuWeight::Residual(_)) => "hgravr02",
++                Some(MixedGpuWeight::Hgravs(_)) => "hgravs01",
++                None if self.weights.q4.contains_key(name) => "uniform_q4",
++                None if self.weights.f32s.contains_key(name) => "f32",
++                _ => "none",
++            }
++        }
++
++        fn catalog_bytes(&self, names: &[String]) -> u64 {
++            names.iter().map(|name| self.weight_bytes(name)).sum()
++        }
++
++        fn catalog_repr(&self, names: &[String]) -> String {
++            let mut kinds: Vec<&str> = names
++                .iter()
++                .map(|name| self.weight_repr(name))
++                .filter(|kind| *kind != "none")
++                .collect();
++            kinds.sort_unstable();
++            kinds.dedup();
++            if kinds.is_empty() {
++                "none".to_owned()
++            } else {
++                kinds.join("+")
++            }
++        }
++
++        fn region_begin(
++            &self,
++            tcb: &mut TokenCommandBuffer<'_>,
++            region: &'static str,
++            organ: &'static str,
++            layer: Option<u32>,
++            names: &[String],
++        ) -> Result<()> {
++            if !self.region_timing || !tcb.region_timestamps_enabled() {
++                return Ok(());
++            }
++            let dependency = self.region_prev.replace(match layer {
++                Some(layer) => format!("{organ}:{layer}"),
++                None => organ.to_owned(),
++            });
++            let sample_index = tcb.mark_region_boundary()?.unwrap_or(usize::MAX);
++            self.region_log.borrow_mut().push(Qwen38RegionOpen {
++                region,
++                organ,
++                layer,
++                dependency,
++                representation: self.catalog_repr(names),
++                expected_bytes: self.catalog_bytes(names),
++                sample_index,
++                dispatch_count: tcb.dispatch_count() as u64,
++            });
++            Ok(())
++        }
++
+         fn enable_dispatch_name_trace(tcb: &mut TokenCommandBuffer<'_>) {
+             if qwen38_trace_dispatch_enabled() {
+                 // Requires TCB Off. Cpu/gpu timing modes refuse this opt-in
+@@ -2481,6 +2747,10 @@ mod device {
+ 
+         pub fn reset(&mut self) {
+             self.position = 0;
++            self.region_step_index = 0;
++            self.last_region_timeline = None;
++            self.region_log.borrow_mut().clear();
++            *self.region_prev.borrow_mut() = "none".to_owned();
+             zero_buffer(&self.workspace.conv_state);
+             zero_buffer(&self.workspace.rec_state);
+             zero_buffer(&self.workspace.gqa_key);
+@@ -3656,13 +3926,20 @@ mod device {
+             tcb: &mut TokenCommandBuffer<'_>,
+             token: u32,
+         ) -> Result<()> {
+-            if self.serial_token_encoder {
++            // Blit timestamp marks cannot start while a serial compute
++            // encoder owns the command buffer. Region timing therefore
++            // keeps the production per-dispatch encoder topology.
++            let serial = self.serial_token_encoder && !self.region_timing;
++            if serial {
+                 tcb.begin_serial_group()?;
+             }
+             self.encode_embed(tcb, token)?;
+             self.encode_layers(tcb)?;
+             self.encode_terminal(tcb)?;
+-            if self.serial_token_encoder {
++            if self.region_timing && tcb.region_timestamps_enabled() {
++                let _ = tcb.mark_region_boundary()?;
++            }
++            if serial {
+                 tcb.end_serial_group()?;
+             }
+             Ok(())
+@@ -5302,6 +5579,13 @@ mod device {
+         }
+ 
+         fn encode_embed(&self, tcb: &mut TokenCommandBuffer<'_>, token: u32) -> Result<()> {
++            self.region_begin(
++                tcb,
++                "misc",
++                "embed",
++                None,
++                &[qwen38_embed_name().to_owned()],
++            )?;
+             if !self.weights.mixed.is_empty() {
+                 return self.encode_embed_mixed(tcb, token);
+             }
+@@ -5334,6 +5618,17 @@ mod device {
+             layer: usize,
+             input: &PinnedBuffer,
+         ) -> Result<()> {
++            self.region_begin(
++                tcb,
++                "mlp",
++                "mlp",
++                Some(layer as u32),
++                &[
++                    qwen38_layer_name(layer, "mlp.gate_proj.weight"),
++                    qwen38_layer_name(layer, "mlp.up_proj.weight"),
++                    qwen38_layer_name(layer, "mlp.down_proj.weight"),
++                ],
++            )?;
+             if !self.weights.mixed.is_empty() {
+                 return self.encode_dense_mlp_mixed(tcb, layer, input);
+             }
+@@ -5420,6 +5715,21 @@ mod device {
+             tcb: &mut TokenCommandBuffer<'_>,
+             layer: usize,
+         ) -> Result<()> {
++            self.region_begin(
++                tcb,
++                "state",
++                "deltanet",
++                Some(layer as u32),
++                &[
++                    qwen38_layer_name(layer, "linear_attn.in_proj_qkvz.weight"),
++                    qwen38_layer_name(layer, "linear_attn.in_proj_ba.weight"),
++                    qwen38_layer_name(layer, "linear_attn.out_proj.weight"),
++                    qwen38_layer_name(layer, "linear_attn.conv1d.weight"),
++                    qwen38_layer_name(layer, "linear_attn.A_log"),
++                    qwen38_layer_name(layer, "linear_attn.dt_bias"),
++                    qwen38_layer_name(layer, "linear_attn.norm.weight"),
++                ],
++            )?;
+             if !self.weights.mixed.is_empty() {
+                 return self.encode_deltanet_mixed(tcb, layer);
+             }
+@@ -5547,6 +5857,28 @@ mod device {
+         }
+ 
+         fn encode_gqa(&self, tcb: &mut TokenCommandBuffer<'_>, layer: usize) -> Result<()> {
++            let kv_read = 2u64
++                .saturating_mul((self.position.saturating_add(1)) as u64)
++                .saturating_mul(QWEN38_GQA_KV_HEADS as u64)
++                .saturating_mul(QWEN38_GQA_HEAD_DIM as u64)
++                .saturating_mul(4);
++            self.region_begin(
++                tcb,
++                "attention",
++                "gqa",
++                Some(layer as u32),
++                &[
++                    qwen38_layer_name(layer, "self_attn.q_proj.weight"),
++                    qwen38_layer_name(layer, "self_attn.k_proj.weight"),
++                    qwen38_layer_name(layer, "self_attn.v_proj.weight"),
++                    qwen38_layer_name(layer, "self_attn.o_proj.weight"),
++                    qwen38_layer_name(layer, "self_attn.q_norm.weight"),
++                    qwen38_layer_name(layer, "self_attn.k_norm.weight"),
++                ],
++            )?;
++            if let Some(open) = self.region_log.borrow_mut().last_mut() {
++                open.expected_bytes = open.expected_bytes.saturating_add(kv_read);
++            }
+             if !self.weights.mixed.is_empty() {
+                 return self.encode_gqa_mixed(tcb, layer);
+             }
+@@ -5709,6 +6041,16 @@ mod device {
+         }
+ 
+         fn encode_terminal(&self, tcb: &mut TokenCommandBuffer<'_>) -> Result<()> {
++            self.region_begin(
++                tcb,
++                "lm_head",
++                "lm_head",
++                None,
++                &[
++                    qwen38_lm_head_name().to_owned(),
++                    "language_model.model.norm.weight".to_owned(),
++                ],
++            )?;
+             if !self.weights.mixed.is_empty() {
+                 return self.encode_terminal_mixed(tcb);
+             }
+@@ -6298,6 +6640,9 @@ mod device {
+                     "qwen38 decode refuses a run after a fallback".into(),
+                 ));
+             }
++            if self.region_timing {
++                return self.step_region_timed(token);
++            }
+             let encode_t0 = Instant::now();
+             let mut tcb = TokenCommandBuffer::new(&self.context);
+             Self::enable_dispatch_name_trace(&mut tcb);
+@@ -6314,6 +6659,284 @@ mod device {
+             Ok((sampled, timing))
+         }
+ 
++        fn step_region_timed(&mut self, token: u32) -> Result<(u32, CommandBufferTiming)> {
++            let encode_t0 = Instant::now();
++            let mut tcb = TokenCommandBuffer::new(&self.context);
++            Self::enable_dispatch_name_trace(&mut tcb);
++            if !tcb.enable_region_timestamps() {
++                drop(tcb);
++                return self.step_region_split_cb(token);
++            }
++            self.region_log.borrow_mut().clear();
++            *self.region_prev.borrow_mut() = "none".to_owned();
++            self.encode_full_token(&mut tcb, token)?;
++            let harvested = tcb.structural_kernel_names().map(|names| names.to_vec());
++            let encode_ns = encode_t0.elapsed().as_nanos() as u64;
++            let (mut timing, stamps) = tcb.commit_and_wait_timed_with_regions()?;
++            self.harvest_dispatch_names(harvested);
++            if timing.encode_ns == 0 {
++                timing.encode_ns = encode_ns;
++            }
++            self.finish_counter_timeline(&timing, &stamps);
++            let sampled = unsafe { *(self.workspace.sampled.contents() as *const u32) };
++            self.position = self.position.saturating_add(1);
++            self.region_step_index = self.region_step_index.saturating_add(1);
++            Ok((sampled, timing))
++        }
++
++        fn finish_counter_timeline(&mut self, timing: &CommandBufferTiming, stamps: &[Option<u64>]) {
++            let log = self.region_log.borrow();
++            if log.is_empty() {
++                return;
++            }
++            let closer = stamps.len().saturating_sub(1);
++            let mut samples = Vec::with_capacity(log.len());
++            for (i, open) in log.iter().enumerate() {
++                let end_idx = if i + 1 < log.len() {
++                    log[i + 1].sample_index
++                } else {
++                    closer
++                };
++                let start = stamps.get(open.sample_index).copied().flatten();
++                let end = stamps.get(end_idx).copied().flatten();
++                let duration_ns = match (start, end) {
++                    (Some(s), Some(e)) if e >= s => Some(e - s),
++                    _ => None,
++                };
++                let next_disp = if i + 1 < log.len() {
++                    log[i + 1].dispatch_count
++                } else {
++                    timing.dispatches
++                };
++                samples.push(Qwen38RegionSample {
++                    region: open.region,
++                    gpu_start_ns: start,
++                    gpu_end_ns: end,
++                    duration_ns,
++                    dispatch_count: next_disp.saturating_sub(open.dispatch_count),
++                    representation: open.representation.clone(),
++                    expected_bytes: open.expected_bytes,
++                    layer: open.layer,
++                    organ: open.organ,
++                    dependency: open.dependency.clone(),
++                });
++            }
++            drop(log);
++            let token_kind = if self.position == 0 { "prefill" } else { "decode" };
++            self.last_region_timeline = Some(Qwen38RegionTimeline::from_samples(
++                samples,
++                timing.gpu_ns,
++                "mtl_counter_sample_buffer_blit_boundary",
++                true,
++                token_kind,
++                self.region_step_index,
++                self.position,
++                timing.command_buffers.max(1),
++            ));
++        }
++
++        fn step_region_split_cb(&mut self, token: u32) -> Result<(u32, CommandBufferTiming)> {
++            let encode_t0 = Instant::now();
++            let mut pending: Vec<(Qwen38RegionOpen, SubmittedTokenCommandBuffer)> = Vec::new();
++            let mut harvested_all: Vec<String> = Vec::new();
++
++            let mut submit_region = |tcb: TokenCommandBuffer<'_>, open: Qwen38RegionOpen| {
++                if let Some(names) = tcb.structural_kernel_names() {
++                    harvested_all.extend(names.iter().cloned());
++                }
++                tcb.commit_submit_retain().map(|submitted| {
++                    pending.push((open, submitted));
++                })
++            };
++
++            let mut tcb = TokenCommandBuffer::new(&self.context);
++            Self::enable_dispatch_name_trace(&mut tcb);
++            self.encode_embed(&mut tcb, token)?;
++            submit_region(
++                tcb,
++                Qwen38RegionOpen {
++                    region: "misc",
++                    organ: "embed",
++                    layer: None,
++                    dependency: "none".to_owned(),
++                    representation: self.catalog_repr(&[qwen38_embed_name().to_owned()]),
++                    expected_bytes: self.weight_bytes(qwen38_embed_name()),
++                    sample_index: 0,
++                    dispatch_count: 0,
++                },
++            )?;
++
++            let mut prev = "embed".to_owned();
++            for layer in 0..QWEN38_LAYERS {
++                let mixer_kind = qwen38_mixer_kind(layer)?;
++                let mut tcb = TokenCommandBuffer::new(&self.context);
++                Self::enable_dispatch_name_trace(&mut tcb);
++                let (region, organ, names) = match mixer_kind {
++                    Qwen38MixerKind::DeltaNet => {
++                        self.encode_deltanet(&mut tcb, layer)?;
++                        (
++                            "state",
++                            "deltanet",
++                            vec![
++                                qwen38_layer_name(layer, "linear_attn.in_proj_qkvz.weight"),
++                                qwen38_layer_name(layer, "linear_attn.in_proj_ba.weight"),
++                                qwen38_layer_name(layer, "linear_attn.out_proj.weight"),
++                            ],
++                        )
++                    }
++                    Qwen38MixerKind::Gqa => {
++                        self.encode_gqa(&mut tcb, layer)?;
++                        (
++                            "attention",
++                            "gqa",
++                            vec![
++                                qwen38_layer_name(layer, "self_attn.q_proj.weight"),
++                                qwen38_layer_name(layer, "self_attn.k_proj.weight"),
++                                qwen38_layer_name(layer, "self_attn.v_proj.weight"),
++                                qwen38_layer_name(layer, "self_attn.o_proj.weight"),
++                            ],
++                        )
++                    }
++                };
++                let expected_bytes = self.catalog_bytes(&names);
++                let representation = self.catalog_repr(&names);
++                submit_region(
++                    tcb,
++                    Qwen38RegionOpen {
++                        region,
++                        organ,
++                        layer: Some(layer as u32),
++                        dependency: prev.clone(),
++                        representation,
++                        expected_bytes,
++                        sample_index: 0,
++                        dispatch_count: 0,
++                    },
++                )?;
++                prev = format!("{organ}:{layer}");
++
++                let mut tcb = TokenCommandBuffer::new(&self.context);
++                Self::enable_dispatch_name_trace(&mut tcb);
++                self.encode_dense_mlp(&mut tcb, layer, &self.workspace.first_residual)?;
++                let mlp_names = vec![
++                    qwen38_layer_name(layer, "mlp.gate_proj.weight"),
++                    qwen38_layer_name(layer, "mlp.up_proj.weight"),
++                    qwen38_layer_name(layer, "mlp.down_proj.weight"),
++                ];
++                submit_region(
++                    tcb,
++                    Qwen38RegionOpen {
++                        region: "mlp",
++                        organ: "mlp",
++                        layer: Some(layer as u32),
++                        dependency: prev.clone(),
++                        representation: self.catalog_repr(&mlp_names),
++                        expected_bytes: self.catalog_bytes(&mlp_names),
++                        sample_index: 0,
++                        dispatch_count: 0,
++                    },
++                )?;
++                prev = format!("mlp:{layer}");
++            }
++
++            let mut tcb = TokenCommandBuffer::new(&self.context);
++            Self::enable_dispatch_name_trace(&mut tcb);
++            self.encode_terminal(&mut tcb)?;
++            if let Some(names) = tcb.structural_kernel_names() {
++                harvested_all.extend(names.iter().cloned());
++            }
++            let term_names = vec![
++                qwen38_lm_head_name().to_owned(),
++                "language_model.model.norm.weight".to_owned(),
++            ];
++            let last_timing = tcb.commit_and_wait_timed()?;
++            self.harvest_dispatch_names(Some(harvested_all));
++
++            let mut samples = Vec::new();
++            let mut submit_ns = 0u64;
++            let mut wait_ns = 0u64;
++            let mut dispatches = 0u64;
++            let mut encoder_count = 0u64;
++            let mut first_start = None;
++            let mut last_end = None;
++            for (open, submitted) in pending {
++                let timing = submitted.resolve();
++                submit_ns = submit_ns.saturating_add(timing.submit_ns);
++                wait_ns = wait_ns.saturating_add(timing.wait_ns);
++                dispatches = dispatches.saturating_add(timing.dispatches);
++                encoder_count = encoder_count.saturating_add(timing.encoder_count);
++                if first_start.is_none() {
++                    first_start = timing.gpu_start_ns;
++                }
++                last_end = timing.gpu_end_ns.or(last_end);
++                samples.push(Qwen38RegionSample {
++                    region: open.region,
++                    gpu_start_ns: timing.gpu_start_ns,
++                    gpu_end_ns: timing.gpu_end_ns,
++                    duration_ns: timing.gpu_ns,
++                    dispatch_count: timing.dispatches,
++                    representation: open.representation,
++                    expected_bytes: open.expected_bytes,
++                    layer: open.layer,
++                    organ: open.organ,
++                    dependency: open.dependency,
++                });
++            }
++            submit_ns = submit_ns.saturating_add(last_timing.submit_ns);
++            wait_ns = wait_ns.saturating_add(last_timing.wait_ns);
++            dispatches = dispatches.saturating_add(last_timing.dispatches);
++            encoder_count = encoder_count.saturating_add(last_timing.encoder_count);
++            last_end = last_timing.gpu_end_ns.or(last_end);
++            samples.push(Qwen38RegionSample {
++                region: "lm_head",
++                gpu_start_ns: last_timing.gpu_start_ns,
++                gpu_end_ns: last_timing.gpu_end_ns,
++                duration_ns: last_timing.gpu_ns,
++                dispatch_count: last_timing.dispatches,
++                representation: self.catalog_repr(&term_names),
++                expected_bytes: self.catalog_bytes(&term_names),
++                layer: None,
++                organ: "lm_head",
++                dependency: prev,
++            });
++            let gpu_ns = match (first_start, last_end) {
++                (Some(start), Some(end)) if end >= start => Some(end - start),
++                _ => last_timing.gpu_ns,
++            };
++            let command_buffers = samples.len() as u64;
++            let token_kind = if self.position == 0 { "prefill" } else { "decode" };
++            self.last_region_timeline = Some(Qwen38RegionTimeline::from_samples(
++                samples,
++                gpu_ns,
++                "mtl_command_buffer_gpu_start_end",
++                false,
++                token_kind,
++                self.region_step_index,
++                self.position,
++                command_buffers,
++            ));
++            let encode_ns = encode_t0.elapsed().as_nanos() as u64;
++            let sampled = unsafe { *(self.workspace.sampled.contents() as *const u32) };
++            self.position = self.position.saturating_add(1);
++            self.region_step_index = self.region_step_index.saturating_add(1);
++            Ok((
++                sampled,
++                CommandBufferTiming {
++                    submit_ns,
++                    wait_ns,
++                    gpu_ns,
++                    gpu_start_ns: first_start,
++                    gpu_end_ns: last_end,
++                    gpu_start_s: None,
++                    gpu_end_s: None,
++                    dispatches,
++                    encode_ns,
++                    encoder_count,
++                    command_buffers,
++                },
++            ))
++        }
++
+         /// Same GPU work as [`Self::step`], with host-side Instants around
+         /// encode / commit-return / sample readback / position update so
+         /// wall − gpu can be named. Timers do not change the command buffer.
+@@ -6390,6 +7013,7 @@ mod device {
+         let mut submit_ns = Vec::new();
+         let mut dispatches = Vec::new();
+         let mut wall_ns_per_step = Vec::new();
++        let mut region_timeline = None;
+         let wall = Instant::now();
+         let mut next = 0u32;
+         let prefill = Instant::now();
+@@ -6433,6 +7057,9 @@ mod device {
+             tokens.push(sampled);
+             next = sampled;
+         }
++        if session.region_timing {
++            region_timeline = session.last_region_timeline.clone();
++        }
+         let decode_wall_ns = decode.elapsed().as_nanos() as u64;
+         let decode_steps = tokens.len().saturating_sub(prompt.len()).saturating_sub(1);
+         Ok(Qwen38GenerateResult {
+@@ -6451,6 +7078,7 @@ mod device {
+             decode_wall_ns,
+             decode_steps,
+             wall_ns_per_step,
++            region_timeline,
+         })
+     }
+ 
+@@ -6778,6 +7406,7 @@ pub struct Qwen38GenerateResult {
+     pub decode_wall_ns: u64,
+     pub decode_steps: usize,
+     pub wall_ns_per_step: Vec<u64>,
++    pub region_timeline: Option<Qwen38RegionTimeline>,
+ }
+ 
+ impl Qwen38GenerateResult {
+@@ -6882,6 +7511,108 @@ mod mlp_fusion_env_tests {
+     }
+ }
+ 
++#[cfg(test)]
++mod region_timing_tests {
++    use super::*;
++
++    #[test]
++    fn region_timing_is_off_unless_explicit_one() {
++        const K: &str = "HAWKING_QWEN38_REGION_TIMING";
++        let restore = std::env::var(K).ok();
++        std::env::remove_var(K);
++        assert!(
++            !qwen38_region_timing_enabled(),
++            "unset must leave production uninstrumented"
++        );
++        std::env::set_var(K, "0");
++        assert!(!qwen38_region_timing_enabled());
++        std::env::set_var(K, "true");
++        assert!(
++            !qwen38_region_timing_enabled(),
++            "env_on is the =1 convention; true must not silently enable"
++        );
++        std::env::set_var(K, "1");
++        assert!(qwen38_region_timing_enabled());
++        if let Some(v) = restore {
++            std::env::set_var(K, v);
++        } else {
++            std::env::remove_var(K);
++        }
++    }
++
++    #[test]
++    fn aggregated_regions_cover_the_nine_ids_and_leave_unsampled_at_zero() {
++        let samples = vec![
++            Qwen38RegionSample {
++                region: "mlp",
++                gpu_start_ns: Some(1_000),
++                gpu_end_ns: Some(5_000),
++                duration_ns: Some(4_000),
++                dispatch_count: 3,
++                representation: "hgravu01".into(),
++                expected_bytes: 100,
++                layer: Some(0),
++                organ: "mlp",
++                dependency: "embed".into(),
++            },
++            Qwen38RegionSample {
++                region: "attention",
++                gpu_start_ns: Some(5_000),
++                gpu_end_ns: Some(8_000),
++                duration_ns: Some(3_000),
++                dispatch_count: 2,
++                representation: "hgrafv01".into(),
++                expected_bytes: 50,
++                layer: Some(3),
++                organ: "gqa",
++                dependency: "mlp:0".into(),
++            },
++            Qwen38RegionSample {
++                region: "lm_head",
++                gpu_start_ns: Some(8_000),
++                gpu_end_ns: Some(9_000),
++                duration_ns: Some(1_000),
++                dispatch_count: 1,
++                representation: "hgravu01".into(),
++                expected_bytes: 25,
++                layer: None,
++                organ: "lm_head",
++                dependency: "mlp:63".into(),
++            },
++        ];
++        let timeline = Qwen38RegionTimeline::from_samples(
++            samples,
++            Some(10_000),
++            "mtl_counter_sample_buffer_blit_boundary",
++            true,
++            "decode",
++            12,
++            20,
++            1,
++        );
++        assert_eq!(timeline.aggregated.len(), QWEN38_REGION_IDS.len());
++        assert_eq!(timeline.gpu_ns_sum, Some(8_000));
++        assert_eq!(timeline.gpu_ns_span, Some(8_000));
++        assert_eq!(timeline.unknown_ns, Some(2_000));
++        let by_id: std::collections::BTreeMap<_, _> = timeline
++            .aggregated
++            .iter()
++            .map(|row| (row.region, row))
++            .collect();
++        assert!(by_id["mlp"].independently_sampled);
++        assert_eq!(by_id["mlp"].duration_ns, 4_000);
++        assert!(by_id["attention"].independently_sampled);
++        assert_eq!(by_id["attention"].duration_ns, 3_000);
++        assert!(!by_id["routing"].independently_sampled);
++        assert_eq!(by_id["routing"].duration_ns, 0);
++        assert!(!by_id["normalization"].independently_sampled);
++        assert!(!by_id["residual"].independently_sampled);
++        assert!(!by_id["low_bit_decode"].independently_sampled);
++        assert_eq!(by_id["state"].duration_ns, 0);
++        assert_eq!(by_id["lm_head"].duration_ns, 1_000);
++    }
++}
++
+ #[cfg(test)]
+ mod mixed_catalog_contract_tests {
+     use super::*;

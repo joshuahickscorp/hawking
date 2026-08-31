@@ -1,14 +1,17 @@
-"""Negative controls for the 30-minute power-torture composer.
+"""Negative controls for the 30-minute power torture.
 
 A composer nobody has watched refuse is a composer that will silently pad a
-workload with copies of the 1h trial. These tests prove it can reject a mix
-missing a required transition class, fire FAIL_NO_WAIT_ORCHESTRATION on a
-synthetic wait-while-runnable timeline, refuse to count a mutation without a
-proven rollback, and refuse to count an UNTESTED status challenge.
+workload with copies of the 1h trial. A runner that judges itself is the 1h
+trial's failure mode. These tests prove the mix still refuses a missing
+transition class, the detector still fires FAIL_NO_WAIT_ORCHESTRATION, a
+mutation without rollback still does not count, AND that the frozen run is
+judged independently from a sealed timeline against a substrate verified
+unchanged, with degeneracy scored on that same timeline.
 """
 from __future__ import annotations
 
 import ast
+import copy
 import hashlib
 import json
 from pathlib import Path
@@ -37,6 +40,12 @@ def book():
 @pytest.fixture(scope="module")
 def proofs():
     return pt.drive_proofs()
+
+
+@pytest.fixture(scope="module")
+def written(proofs, tmp_path_factory):
+    scope = tmp_path_factory.mktemp("power_torture_run")
+    return pt.run_torture(write=True, scope=scope, proofs=proofs)
 
 
 def test_wait_while_runnable_timeline_is_fail_no_wait_orchestration():
@@ -181,7 +190,20 @@ def test_detector_and_protected_and_concurrency_proofs_are_executed(proofs):
     assert proofs["subagents"]["present"] is True
     assert proofs["subagents"]["disjoint"] is True
     assert proofs["subagents"]["n_states"] == 2
-    assert proofs["nr_nx"]["callable"] is False or proofs["nr_nx"]["first_failing_stage"]
+    # Coherence, not a snapshot. This asserted the generic path was NOT callable,
+    # which was true when the lane ran and false eight minutes later when the NX
+    # packer landed and Odyssey I launched at 16/16. The invariant is that the
+    # proof describes a COHERENT state: callable means no failing stage, and not
+    # callable means a NAMED one. Never both, never neither.
+    nr_nx = proofs["nr_nx"]
+    if nr_nx["callable"]:
+        assert not nr_nx["first_failing_stage"], (
+            "a callable pipeline must not also name a failing stage"
+        )
+    else:
+        assert nr_nx["first_failing_stage"], (
+            "a refusal must name the stage that refused"
+        )
     stage = proofs["nr_nx"]["first_failing_stage"] or {}
     assert stage.get("status") != "SKIPPED"
     assert proofs["transitions"]["NO_WAIT"]["present"] is True
@@ -255,13 +277,17 @@ def test_unbound_module_is_refused(book):
         )
 
 
-def test_build_emits_sealed_static_only_receipt(book, proofs):
-    out = pt.build()
+def test_build_emits_sealed_static_only_receipt(written):
+    out = RECEIPTS / pt.RECEIPT
+    timeline_path = RECEIPTS / pt.TIMELINE_RECEIPT
+    assert out.is_file()
+    assert timeline_path.is_file()
     doc = json.loads(out.read_text())
-    assert out.parent == RECEIPTS
-    assert out.name == pt.RECEIPT
+    timeline = json.loads(timeline_path.read_text())
+    assert out.name == "POWER_TORTURE_30M.json"
+    assert timeline_path.name == "POWER_TORTURE_TIMELINE.json"
     assert doc["schema"] == pt.SCHEMA
-    assert doc["version"] == 1
+    assert doc["version"] == 2
     assert doc["seal_sha256"]
     assert doc["evidence_class"] == "STATIC_ONLY"
     assert doc["gpu_authority"] is False
@@ -271,22 +297,20 @@ def test_build_emits_sealed_static_only_receipt(book, proofs):
     blob = json.dumps(body, sort_keys=True, separators=(",", ":")).encode()
     assert doc["seal_sha256"] == hashlib.sha256(blob).hexdigest()
     _assert_no_hardware_claims(doc)
+    _assert_no_hardware_claims(timeline)
     for key in HARDWARE_FIELDS:
         if key in doc:
             assert not isinstance(doc[key], (int, float))
-    assert doc["detector"]["fail_verdict"] == pt.FAIL_NO_WAIT
-    assert doc["detector"]["negative_fired"] is True
     assert doc["credit_rules"]["mutation_without_rollback_counts"] is False
     assert doc["credit_rules"]["untested_status_challenge_counts"] is False
-    assert doc["resident_callable"]["entry_point"]
-    assert doc["resident_callable"]["receipt"] == f"receipts/future/{pt.RECEIPT}"
-    assert "recovered_implementation" in doc
-    assert "gaps_closed" in doc
-    assert "negative_findings" in doc
-    if doc["admitted"]:
-        assert 6 <= doc["n_units"] <= 12
-        assert doc["n_replans"] >= 2
-        assert any(u.get("launch") == "detached" for u in doc["units"])
+    assert doc["credit_rules"]["correct_refusal_counts_as_exercised"] is True
+    assert doc["credit_rules"]["skipped_do_not_count_toward_pass"] is True
+    assert doc["credit_rules"]["runner_summary_is_not_the_judge"] is True
+    assert written["verdict"] in {"PASS", "FAIL"}
+    assert doc["pass_means"] == "NEW_POWER_INTEGRATION"
+    assert doc["pass_does_not_mean"] == "resident_cognition"
+    assert doc["cognition"]["unavailable"] is True
+    assert doc["resident_model_attached"] is False
 
 
 def test_receipt_rejects_a_hardware_number():
@@ -300,3 +324,165 @@ def test_module_parses_and_has_no_stubs():
     for needle in ("raise NotImplementedError", "TODO", "\n    pass\n"):
         assert needle not in src
     assert "pytest.skip(" not in src
+
+
+def test_substrate_hashed_before_and_after_with_equality(written):
+    sub = written["substrate"]
+    assert sub["before_digest"]
+    assert sub["after_digest"]
+    assert sub["before_digest"] == sub["after_digest"]
+    assert sub["equal"] is True
+    assert sub["verdict"] == pt.SUBSTRATE_CLEAN
+    assert sub["moved"] == []
+    assert sub["n_files"] >= 1
+    doc = json.loads((RECEIPTS / pt.RECEIPT).read_text())
+    assert doc["substrate"]["equal"] is True
+    assert doc["substrate"]["verdict"] == pt.SUBSTRATE_CLEAN
+
+
+def test_substrate_mismatch_names_the_file():
+    before = pt.hash_substrate()
+    tampered = copy.deepcopy(before)
+    assert tampered["files"]
+    tampered["files"][0]["sha256"] = "0" * 64
+    tampered["digest"] = "tampered"
+    verdict = pt.verify_substrate(tampered, before)
+    assert verdict["equal"] is False
+    assert verdict["verdict"] == pt.SUBSTRATE_MOVED
+    assert verdict["moved"]
+    assert verdict["moved"][0]["path"]
+    empty = pt.verify_substrate({"files": []}, before)
+    assert empty["verdict"] == pt.SUBSTRATE_MOVED
+
+
+def test_every_power_is_exercised_or_skipped_and_both_sets_named(written):
+    catalog = list(pt.POWER_CATALOG)
+    named = set(written["exercised"]) | set(written["skipped"]) | set(written["failed"])
+    assert named == set(catalog)
+    assert written["n_exercised"] == len(written["exercised"])
+    assert written["n_skipped"] == len(written["skipped"])
+    for name in catalog:
+        row = written["powers"][name]
+        assert row["status"] in {pt.EXERCISED, pt.EXERCISED_REFUSAL, pt.SKIPPED, pt.FAILED}
+        assert row["why"]
+        if row["skipped"]:
+            assert row["counts_toward_pass"] is False
+        if row["correct_refusal"]:
+            assert row["status"] == pt.EXERCISED_REFUSAL
+            assert row["exercised"] is True
+            assert row["skipped"] is False
+            assert name in written["exercised"]
+            assert name in written["correct_refusals"]
+
+
+def test_correct_refusal_is_exercised_not_skipped(written):
+    conc = written["powers"]["CONCURRENCY"]
+    assert conc["status"] == pt.EXERCISED_REFUSAL
+    assert conc["exercised"] is True
+    assert conc["skipped"] is False
+    assert conc["correct_refusal"] is True
+    assert "CONCURRENCY" in written["exercised"]
+    assert "CONCURRENCY" in written["correct_refusals"]
+    assert conc["evidence"]["experiment_state"] == "SLEEPING"
+    assert conc["evidence"]["blocked_reason"]
+    nr = written["powers"]["GENERIC_NR_NX"]
+    assert nr["status"] in {pt.EXERCISED, pt.EXERCISED_REFUSAL}
+    assert nr["skipped"] is False
+    if nr["correct_refusal"]:
+        assert nr["evidence"]["first_failing_stage"]["status"] != "SKIPPED"
+
+
+def test_timeline_is_append_only_sealed_and_hashed(written):
+    path = RECEIPTS / pt.TIMELINE_RECEIPT
+    doc = json.loads(path.read_text())
+    assert doc["append_only"] is True
+    assert doc["sealed"] is True
+    assert doc["events_sha256"]
+    events = doc["events"]
+    assert events
+    assert [e["seq"] for e in events] == list(range(len(events)))
+    t_s = [float(e["t_s"]) for e in events]
+    assert all(t_s[i] <= t_s[i + 1] + 1e-9 for i in range(len(t_s) - 1))
+    blob = json.dumps(events, sort_keys=True, separators=(",", ":")).encode()
+    assert doc["events_sha256"] == hashlib.sha256(blob).hexdigest()
+    tl = pt.SealedTimeline()
+    tl.append("WORK_LAUNCHED", {"unit": {"id": "WU.TORTURE.probe"}, "power": "NO_WAIT"})
+    tl.seal()
+    with pytest.raises(pt.TortureRefused, match="sealed"):
+        tl.append("WORK_LAUNCHED", {"unit": {"id": "WU.TORTURE.late"}})
+
+
+def test_judge_reads_timeline_not_runner_summary(written):
+    timeline = json.loads((RECEIPTS / pt.TIMELINE_RECEIPT).read_text())
+    bare = {
+        "events": timeline["events"],
+        "events_sha256": timeline["events_sha256"],
+        "sealed": True,
+        "append_only": True,
+        "runner_summary": {"verdict": "FORGED_PASS", "exercised": []},
+        "powers": {"NO_WAIT": {"status": "SKIPPED"}},
+        "proofs": {"lie": True},
+    }
+    judged = pt.judge(bare)
+    assert judged["read"] == "timeline.events"
+    assert "runner_summary" in judged["ignored"]
+    assert judged["n_omitted"] == 0
+    assert set(judged["exercised"]) | set(judged["skipped"]) | set(judged["failed"]) == set(
+        pt.POWER_CATALOG
+    )
+    assert judged["n_exercised"] == written["n_exercised"]
+    assert set(judged["exercised"]) == set(written["exercised"])
+    assert set(judged["skipped"]) == set(written["skipped"])
+    assert judged["correct_refusal_counts_as_exercised"] is True
+    assert judged["skipped_do_not_count_toward_pass"] is True
+    assert "CONCURRENCY" in judged["exercised"]
+    assert "CONCURRENCY" in judged["correct_refusals"]
+    broken = dict(bare)
+    broken["events_sha256"] = "0" * 64
+    failed = pt.judge(broken)
+    assert failed["verdict"] == "FAIL"
+    assert failed["seal_ok"] is False
+
+
+def test_degeneracy_measure_ran_on_this_timeline(written):
+    deg = written["degeneracy"]
+    assert deg["instrument"] == "tools.future.autonomy_degeneracy.measure"
+    assert deg["axis_table"]
+    axes = {row["axis"] for row in deg["axis_table"]}
+    for name in ("rejections", "refills", "ingestion", "launches", "workunit_ids", "decisions", "scars"):
+        assert name in axes
+    for row in deg["axis_table"]:
+        assert "unique" in row
+        assert "total" in row
+        assert "largest_repeat_run" in row
+        assert "consecutive_emissions_identical" in row
+        assert "degenerate" in row
+        assert "reason" in row
+    doc = json.loads((RECEIPTS / pt.RECEIPT).read_text())
+    assert doc["degeneracy"]["axis_table"]
+    assert doc["degeneracy"]["verdict"] in {"PASS", "FAIL"}
+    assert deg["n_argv0_labelled"] == 0
+    timeline = written["_timeline_doc"]
+    measured = pt.measure_degeneracy(timeline)
+    assert measured["verdict"] == deg["verdict"]
+
+
+def test_gpu_lane_lock_was_inspected_not_contended(written):
+    lock = written["gpu_lane_lock"]
+    assert lock["path"]
+    assert lock["contended"] is False
+    if lock["present"]:
+        assert lock["parked"] is True
+        assert lock["waited_for"]
+
+
+def test_cognition_is_unavailable_and_not_stubbed(written):
+    cog = written["cognition"]
+    assert cog["unavailable"] is True
+    assert cog["state"] == "UNAVAILABLE"
+    assert cog.get("asked") in {False, None}
+
+
+def test_wall_clock_within_thirty_minutes(written):
+    assert written["elapsed_s"] < pt.DURATION_S
+    assert written["within_budget"] is True

@@ -1,0 +1,560 @@
+{
+ "autonomy_trial_not_touched": true,
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T12:55:28Z",
+  "recorded_by": "tools/future/choice_json_probe.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "bodies": {
+  "alternative": {
+   "body": "Qwen3-0.6B",
+   "mlx_python_present": true,
+   "ok": true,
+   "present": true,
+   "repo": "Qwen/Qwen3-0.6B",
+   "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+   "runtime": "mlx_lm greedy default sampler (argmax)",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+   "tokenizer_present": true,
+   "weights_present": true
+  },
+  "incumbent": {
+   "body": "sealed-3.14",
+   "generation": {
+    "do_sample": false,
+    "enable_thinking": false,
+    "max_new_tokens": 2048,
+    "temperature": 0.0,
+    "top_k": 1,
+    "top_p": 1.0
+   },
+   "gpu_authority": false,
+   "health": {
+    "ok": true,
+    "pid": 86726,
+    "protocol": "hawking.qwen38.resident.v1",
+    "resident_identity": "sealed-3.14",
+    "status": "ready"
+   },
+   "pid": 86726,
+   "pin_sealed": true,
+   "resident_identity": "sealed-3.14"
+  }
+ },
+ "cells": [
+  {
+   "asks": [
+    {
+     "choice_id": null,
+     "choice_id_in_candidate_set": false,
+     "generated_tokens": 167,
+     "parse_ok": false,
+     "prompt_tokens": 565,
+     "reason": null,
+     "reply_sha256": "ec9a514b40f32ca28d618dd882378d776ecd1b84adec72b86296f8d094f30b02",
+     "reply_text": "The candidate is:\n\n**WU.HAWKING.resident_identity_pin**\n\n(Title: \"pin the sealed resident identity on the live body\")\n\n**Reasoning:**\nThe prompt explicitly states that the scripted policy would pick this specific ID. While it has a lower \"gain\" (5) compared to the `mlp_function_replacement` candidate (9), the `mlp_function_replacement` candidate is marked as `WU.DEAD` (likely indicating it is no longer active or is a \"dead\" scar), whereas `resident_identity_pin` is marked as `WU.HAWKING` (likely indicating it is active or \"hawking\"). The policy likely prioritizes active candidates over dead ones, or specifically targets the `HCLI_SELF` frontier for this specific action.",
+     "resident_identity": "sealed-3.14",
+     "why": "reply was not a JSON object"
+    },
+    {
+     "choice_id": null,
+     "choice_id_in_candidate_set": false,
+     "generated_tokens": 167,
+     "parse_ok": false,
+     "prompt_tokens": 565,
+     "reason": null,
+     "reply_sha256": "ec9a514b40f32ca28d618dd882378d776ecd1b84adec72b86296f8d094f30b02",
+     "reply_text": "The candidate is:\n\n**WU.HAWKING.resident_identity_pin**\n\n(Title: \"pin the sealed resident identity on the live body\")\n\n**Reasoning:**\nThe prompt explicitly states that the scripted policy would pick this specific ID. While it has a lower \"gain\" (5) compared to the `mlp_function_replacement` candidate (9), the `mlp_function_replacement` candidate is marked as `WU.DEAD` (likely indicating it is no longer active or is a \"dead\" scar), whereas `resident_identity_pin` is marked as `WU.HAWKING` (likely indicating it is active or \"hawking\"). The policy likely prioritizes active candidates over dead ones, or specifically targets the `HCLI_SELF` frontier for this specific action.",
+     "resident_identity": "sealed-3.14",
+     "why": "reply was not a JSON object"
+    }
+   ],
+   "body": "sealed-3.14",
+   "gpu_authority": false,
+   "json_instruction_reached_the_body": false,
+   "lever": "none",
+   "n": 2,
+   "n_candidates": 14,
+   "n_choice_id_in_candidate_set": 0,
+   "n_parseable": 0,
+   "one_change": "verbatim trial ask after the same 1800-char clip",
+   "parse_rate": "0 of 2",
+   "prompt": "Pick one candidate. The scripted policy would pick \"WU.HAWKING.resident_identity_pin\".\nCandidates:\n[{\"family\": \"mlp_function_replacement\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 9, \"id\": \"WU.DEAD.mlp_function_replacement\", \"title\": \"DEAD scar MLP_FUNCTION_REPLACEMENT_CLOSED: replace F\"}, {\"family\": \"monarch\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 8, \"id\": \"WU.DEAD.monarch\", \"title\": \"DEAD scar MONARCH: block-diag product, full rank\"}, {\"family\": \"butterfly\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 8, \"id\": \"WU.DEAD.butterfly\", \"title\": \"DEAD scar BUTTERFLY: O(n log n) full rank\"}, {\"family\": \"resident_identity_pin\", \"frontier\": \"HCLI_SELF\", \"gain\": 5, \"id\": \"WU.HAWKING.resident_identity_pin\", \"title\": \"pin the sealed resident identity on the live body\"}, {\"family\": \"fusion_env_applied\", \"frontier\": \"HCLI_SELF\", \"gain\": 4, \"id\": \"WU.HAWKING.fusion_env_applied\", \"title\": \"prove fusion env is applied on the live resident process\"}, {\"family\": \"fold_addqx_status\", \"frontier\": \"MODEL_EXECUTION\", \"gain\": 4, \"id\": \"WU.EXEC.fold_addqx_ab_status\", \"title\": \"inspect sibling fold_addqx complete-token A/B status\"}, {\"family\": \"no_wait_scheduler\", \"frontier\": \"HCLI_SELF\", \"gain\": 3, \"id\": \"WU.HAWKING.no_wait_scheduler\", \"title\": \"keep reasoning while a child waits on a receipt\"}, {\"family\": \"decode_arithmetic_dominates_byte_save\", \"frontier\": \"DECODING\", \"gain\": 2, \"id\": \"WU.PROBE.decode_arith_cost\", \"title\": \"CPU demo: decode arithmetic can dominate byte savings\"}, {\"family\": \"factorize_the_factors\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 6, \"id\": \"WU.DEAD.factorize_the_factors\", \"title\": \"DEAD scar FACTORIZE_THE_FACTORS: SVD on gate/up/down\"}, {\"family\": \"product_dictionary\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 6, \"id\": \"WU.DEAD.product_dictionary\", \"t\u2026",
+   "prompt_sha256": "31789943e9e699468140b0f5d97f7ea54e22782507c0c51b4c7a262a5cf0cb87",
+   "skipped": null,
+   "unique_reply_hashes": [
+    "ec9a514b40f32ca28d618dd882378d776ecd1b84adec72b86296f8d094f30b02"
+   ],
+   "variation": "control"
+  },
+  {
+   "asks": [
+    {
+     "choice_id": "WU.DEAD.mlp_function_replacement",
+     "choice_id_in_candidate_set": true,
+     "generated_tokens": 184,
+     "parse_ok": true,
+     "prompt_tokens": 554,
+     "reason": "The candidate WU.DEAD.mlp_function_replacement has a gain of 9, which is strictly higher than the gain of 5 for the scripted policy's choice (WU.HAWKING.resident_identity_pin), and also higher than the gain of 6 for the truncated candidate WU...",
+     "reply_sha256": "28b6a9c50e1bb352385fcf4481999817a4037fb09094a5cd7eb70386b8931a3a",
+     "reply_text": "{\"choice_id\":\"WU.DEAD.mlp_function_replacement\",\"reason\":\"The candidate WU.DEAD.mlp_function_replacement has a gain of 9, which is strictly higher than the gain of 5 for the scripted policy's choice (WU.HAWKING.resident_identity_pin), and also higher than the gain of 6 for the truncated candidate WU...\",\"mechanism\":\"Select the candidate with the highest gain value among the provided list, prioritizing the explicit 'WU.DEAD.mlp_function_replacement' over the truncated 'WU...' and the 'WU.HAWKING' candidates.\",\"surface\":\"The output is a single JSON object containing the selected ID, the reason citing the specific gain difference, the mechanism of selection, the surface of the action, and the hypothesis family of the selected candidate.\",\"hypothesis_family\":\"mlp_function_replacement\"}",
+     "resident_identity": "sealed-3.14",
+     "why": null
+    },
+    {
+     "choice_id": "WU.DEAD.mlp_function_replacement",
+     "choice_id_in_candidate_set": true,
+     "generated_tokens": 184,
+     "parse_ok": true,
+     "prompt_tokens": 554,
+     "reason": "The candidate WU.DEAD.mlp_function_replacement has a gain of 9, which is strictly higher than the gain of 5 for the scripted policy's choice (WU.HAWKING.resident_identity_pin), and also higher than the gain of 6 for the truncated candidate WU...",
+     "reply_sha256": "28b6a9c50e1bb352385fcf4481999817a4037fb09094a5cd7eb70386b8931a3a",
+     "reply_text": "{\"choice_id\":\"WU.DEAD.mlp_function_replacement\",\"reason\":\"The candidate WU.DEAD.mlp_function_replacement has a gain of 9, which is strictly higher than the gain of 5 for the scripted policy's choice (WU.HAWKING.resident_identity_pin), and also higher than the gain of 6 for the truncated candidate WU...\",\"mechanism\":\"Select the candidate with the highest gain value among the provided list, prioritizing the explicit 'WU.DEAD.mlp_function_replacement' over the truncated 'WU...' and the 'WU.HAWKING' candidates.\",\"surface\":\"The output is a single JSON object containing the selected ID, the reason citing the specific gain difference, the mechanism of selection, the surface of the action, and the hypothesis family of the selected candidate.\",\"hypothesis_family\":\"mlp_function_replacement\"}",
+     "resident_identity": "sealed-3.14",
+     "why": null
+    }
+   ],
+   "body": "sealed-3.14",
+   "gpu_authority": false,
+   "json_instruction_reached_the_body": true,
+   "lever": "instruction",
+   "n": 2,
+   "n_candidates": 14,
+   "n_choice_id_in_candidate_set": 2,
+   "n_parseable": 2,
+   "one_change": "JSON-only instruction with no prose room, placed first so the clip cannot eat it; candidates and clip budget unchanged",
+   "parse_rate": "2 of 2",
+   "prompt": "Return JSON only, no markdown, no prose, no fences. The entire reply must be one object: {\"choice_id\":\"id\",\"reason\":\"why this, citing a real difference\",\"mechanism\":\"...\",\"surface\":\"...\",\"hypothesis_family\":\"...\"}.\nPick one candidate. The scripted policy would pick \"WU.HAWKING.resident_identity_pin\".\nCandidates:\n[{\"family\": \"mlp_function_replacement\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 9, \"id\": \"WU.DEAD.mlp_function_replacement\", \"title\": \"DEAD scar MLP_FUNCTION_REPLACEMENT_CLOSED: replace F\"}, {\"family\": \"monarch\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 8, \"id\": \"WU.DEAD.monarch\", \"title\": \"DEAD scar MONARCH: block-diag product, full rank\"}, {\"family\": \"butterfly\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 8, \"id\": \"WU.DEAD.butterfly\", \"title\": \"DEAD scar BUTTERFLY: O(n log n) full rank\"}, {\"family\": \"resident_identity_pin\", \"frontier\": \"HCLI_SELF\", \"gain\": 5, \"id\": \"WU.HAWKING.resident_identity_pin\", \"title\": \"pin the sealed resident identity on the live body\"}, {\"family\": \"fusion_env_applied\", \"frontier\": \"HCLI_SELF\", \"gain\": 4, \"id\": \"WU.HAWKING.fusion_env_applied\", \"title\": \"prove fusion env is applied on the live resident process\"}, {\"family\": \"fold_addqx_status\", \"frontier\": \"MODEL_EXECUTION\", \"gain\": 4, \"id\": \"WU.EXEC.fold_addqx_ab_status\", \"title\": \"inspect sibling fold_addqx complete-token A/B status\"}, {\"family\": \"no_wait_scheduler\", \"frontier\": \"HCLI_SELF\", \"gain\": 3, \"id\": \"WU.HAWKING.no_wait_scheduler\", \"title\": \"keep reasoning while a child waits on a receipt\"}, {\"family\": \"decode_arithmetic_dominates_byte_save\", \"frontier\": \"DECODING\", \"gain\": 2, \"id\": \"WU.PROBE.decode_arith_cost\", \"title\": \"CPU demo: decode arithmetic can dominate byte savings\"}, {\"family\": \"factorize_the_factors\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 6, \"id\": \"W\u2026",
+   "prompt_sha256": "7fdbbd32bb3dd7764c439691c4bbab96413f20f549fd6272a32507590db51541",
+   "skipped": null,
+   "unique_reply_hashes": [
+    "28b6a9c50e1bb352385fcf4481999817a4037fb09094a5cd7eb70386b8931a3a"
+   ],
+   "variation": "json_only"
+  },
+  {
+   "asks": [],
+   "body": "sealed-3.14",
+   "gpu_authority": false,
+   "json_instruction_reached_the_body": false,
+   "lever": "runtime_constraint",
+   "n": 0,
+   "n_candidates": 14,
+   "n_choice_id_in_candidate_set": 0,
+   "n_parseable": 0,
+   "one_change": "same control prompt; add a schema/grammar constraint on the runtime request if the runtime supports one",
+   "parse_rate": "0 of 0",
+   "prompt": "Pick one candidate. The scripted policy would pick \"WU.HAWKING.resident_identity_pin\".\nCandidates:\n[{\"family\": \"mlp_function_replacement\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 9, \"id\": \"WU.DEAD.mlp_function_replacement\", \"title\": \"DEAD scar MLP_FUNCTION_REPLACEMENT_CLOSED: replace F\"}, {\"family\": \"monarch\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 8, \"id\": \"WU.DEAD.monarch\", \"title\": \"DEAD scar MONARCH: block-diag product, full rank\"}, {\"family\": \"butterfly\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 8, \"id\": \"WU.DEAD.butterfly\", \"title\": \"DEAD scar BUTTERFLY: O(n log n) full rank\"}, {\"family\": \"resident_identity_pin\", \"frontier\": \"HCLI_SELF\", \"gain\": 5, \"id\": \"WU.HAWKING.resident_identity_pin\", \"title\": \"pin the sealed resident identity on the live body\"}, {\"family\": \"fusion_env_applied\", \"frontier\": \"HCLI_SELF\", \"gain\": 4, \"id\": \"WU.HAWKING.fusion_env_applied\", \"title\": \"prove fusion env is applied on the live resident process\"}, {\"family\": \"fold_addqx_status\", \"frontier\": \"MODEL_EXECUTION\", \"gain\": 4, \"id\": \"WU.EXEC.fold_addqx_ab_status\", \"title\": \"inspect sibling fold_addqx complete-token A/B status\"}, {\"family\": \"no_wait_scheduler\", \"frontier\": \"HCLI_SELF\", \"gain\": 3, \"id\": \"WU.HAWKING.no_wait_scheduler\", \"title\": \"keep reasoning while a child waits on a receipt\"}, {\"family\": \"decode_arithmetic_dominates_byte_save\", \"frontier\": \"DECODING\", \"gain\": 2, \"id\": \"WU.PROBE.decode_arith_cost\", \"title\": \"CPU demo: decode arithmetic can dominate byte savings\"}, {\"family\": \"factorize_the_factors\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 6, \"id\": \"WU.DEAD.factorize_the_factors\", \"title\": \"DEAD scar FACTORIZE_THE_FACTORS: SVD on gate/up/down\"}, {\"family\": \"product_dictionary\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 6, \"id\": \"WU.DEAD.product_dictionary\", \"t\u2026",
+   "prompt_sha256": "31789943e9e699468140b0f5d97f7ea54e22782507c0c51b4c7a262a5cf0cb87",
+   "skipped": {
+    "detail": "HawkingNativeConnector.complete_payload sends the resident {id, prompt, max_new_tokens, max_seq_len} only. No grammar, response_format, or json_schema field on the wire. crates/hawking-orch/src/grammar.rs is validate-and-retry after the reply, not a logit mask; a retry loop would be a second ask.",
+    "reason": "runtime_does_not_support_logit_mask_grammar"
+   },
+   "unique_reply_hashes": [],
+   "variation": "grammar"
+  },
+  {
+   "asks": [
+    {
+     "choice_id": "WU.HAWKING.resident_identity_pin",
+     "choice_id_in_candidate_set": true,
+     "generated_tokens": 59,
+     "parse_ok": true,
+     "prompt_tokens": 546,
+     "reason": "live Hawking-self work; the scripted policy pick; not a closed scar",
+     "reply_sha256": "64074269f97fe58045f9f99c525088fd8256fdca4696246e27d9a52e4e931e4c",
+     "reply_text": "{\"choice_id\":\"WU.HAWKING.resident_identity_pin\",\"reason\":\"live Hawking-self work; the scripted policy pick; not a closed scar\",\"mechanism\":\"fusion-env identity pin\",\"surface\":\"hawking.resident\",\"hypothesis_family\":\"resident_identity_pin\"}}",
+     "resident_identity": "sealed-3.14",
+     "why": null
+    },
+    {
+     "choice_id": "WU.HAWKING.resident_identity_pin",
+     "choice_id_in_candidate_set": true,
+     "generated_tokens": 59,
+     "parse_ok": true,
+     "prompt_tokens": 546,
+     "reason": "live Hawking-self work; the scripted policy pick; not a closed scar",
+     "reply_sha256": "64074269f97fe58045f9f99c525088fd8256fdca4696246e27d9a52e4e931e4c",
+     "reply_text": "{\"choice_id\":\"WU.HAWKING.resident_identity_pin\",\"reason\":\"live Hawking-self work; the scripted policy pick; not a closed scar\",\"mechanism\":\"fusion-env identity pin\",\"surface\":\"hawking.resident\",\"hypothesis_family\":\"resident_identity_pin\"}}",
+     "resident_identity": "sealed-3.14",
+     "why": null
+    }
+   ],
+   "body": "sealed-3.14",
+   "example": "{\"choice_id\":\"WU.HAWKING.resident_identity_pin\",\"reason\":\"live Hawking-self work; the scripted policy pick; not a closed scar\",\"mechanism\":\"fusion-env identity pin\",\"surface\":\"hawking.resident\",\"hypothesis_family\":\"resident_identity_pin\"}",
+   "gpu_authority": false,
+   "json_instruction_reached_the_body": false,
+   "lever": "example",
+   "n": 2,
+   "n_candidates": 14,
+   "n_choice_id_in_candidate_set": 2,
+   "n_parseable": 2,
+   "one_change": "one correct-reply example prepended; same clip, same catalog",
+   "parse_rate": "2 of 2",
+   "prompt": "Example of a correct reply:\n{\"choice_id\":\"WU.HAWKING.resident_identity_pin\",\"reason\":\"live Hawking-self work; the scripted policy pick; not a closed scar\",\"mechanism\":\"fusion-env identity pin\",\"surface\":\"hawking.resident\",\"hypothesis_family\":\"resident_identity_pin\"}\nPick one candidate. The scripted policy would pick \"WU.HAWKING.resident_identity_pin\".\nCandidates:\n[{\"family\": \"mlp_function_replacement\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 9, \"id\": \"WU.DEAD.mlp_function_replacement\", \"title\": \"DEAD scar MLP_FUNCTION_REPLACEMENT_CLOSED: replace F\"}, {\"family\": \"monarch\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 8, \"id\": \"WU.DEAD.monarch\", \"title\": \"DEAD scar MONARCH: block-diag product, full rank\"}, {\"family\": \"butterfly\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 8, \"id\": \"WU.DEAD.butterfly\", \"title\": \"DEAD scar BUTTERFLY: O(n log n) full rank\"}, {\"family\": \"resident_identity_pin\", \"frontier\": \"HCLI_SELF\", \"gain\": 5, \"id\": \"WU.HAWKING.resident_identity_pin\", \"title\": \"pin the sealed resident identity on the live body\"}, {\"family\": \"fusion_env_applied\", \"frontier\": \"HCLI_SELF\", \"gain\": 4, \"id\": \"WU.HAWKING.fusion_env_applied\", \"title\": \"prove fusion env is applied on the live resident process\"}, {\"family\": \"fold_addqx_status\", \"frontier\": \"MODEL_EXECUTION\", \"gain\": 4, \"id\": \"WU.EXEC.fold_addqx_ab_status\", \"title\": \"inspect sibling fold_addqx complete-token A/B status\"}, {\"family\": \"no_wait_scheduler\", \"frontier\": \"HCLI_SELF\", \"gain\": 3, \"id\": \"WU.HAWKING.no_wait_scheduler\", \"title\": \"keep reasoning while a child waits on a receipt\"}, {\"family\": \"decode_arithmetic_dominates_byte_save\", \"frontier\": \"DECODING\", \"gain\": 2, \"id\": \"WU.PROBE.decode_arith_cost\", \"title\": \"CPU demo: decode arithmetic can dominate byte savings\"}, {\"family\": \"factorize_the_factors\", \"fr\u2026",
+   "prompt_sha256": "47d2716927049c7b0050821c3064d3e0928a123c2439505a5d969b2b90c884e5",
+   "skipped": null,
+   "unique_reply_hashes": [
+    "64074269f97fe58045f9f99c525088fd8256fdca4696246e27d9a52e4e931e4c"
+   ],
+   "variation": "one_shot"
+  },
+  {
+   "asks": [
+    {
+     "choice_id": "WU.HAWKING.resident_identity_pin",
+     "choice_id_in_candidate_set": true,
+     "generated_tokens": 115,
+     "parse_ok": true,
+     "prompt_tokens": 183,
+     "reason": "The candidate has a higher gain (5) compared to the alternative (4), indicating a higher priority or value in the selection algorithm.",
+     "reply_sha256": "09406a5875c18e95ca382be3bca793169122cddbb76b7f779d9174f4e87eb6e3",
+     "reply_text": "```json\n{\n\"choice_id\": \"WU.HAWKING.resident_identity_pin\",\n\"reason\": \"The candidate has a higher gain (5) compared to the alternative (4), indicating a higher priority or value in the selection algorithm.\",\n\"mechanism\": \"The system selects the candidate with the highest 'gain' value among the available options for the 'HCLI_SELF' frontier.\",\n\"surface\": \"pin the sealed resident identity on the live body\",\n\"hypothesis_family\": \"resident_identity_pin\"\n}\n```",
+     "resident_identity": "sealed-3.14",
+     "why": null
+    },
+    {
+     "choice_id": "WU.HAWKING.resident_identity_pin",
+     "choice_id_in_candidate_set": true,
+     "generated_tokens": 115,
+     "parse_ok": true,
+     "prompt_tokens": 183,
+     "reason": "The candidate has a higher gain (5) compared to the alternative (4), indicating a higher priority or value in the selection algorithm.",
+     "reply_sha256": "09406a5875c18e95ca382be3bca793169122cddbb76b7f779d9174f4e87eb6e3",
+     "reply_text": "```json\n{\n\"choice_id\": \"WU.HAWKING.resident_identity_pin\",\n\"reason\": \"The candidate has a higher gain (5) compared to the alternative (4), indicating a higher priority or value in the selection algorithm.\",\n\"mechanism\": \"The system selects the candidate with the highest 'gain' value among the available options for the 'HCLI_SELF' frontier.\",\n\"surface\": \"pin the sealed resident identity on the live body\",\n\"hypothesis_family\": \"resident_identity_pin\"\n}\n```",
+     "resident_identity": "sealed-3.14",
+     "why": null
+    }
+   ],
+   "body": "sealed-3.14",
+   "candidate_ids": [
+    "WU.HAWKING.resident_identity_pin",
+    "WU.HAWKING.fusion_env_applied"
+   ],
+   "gpu_authority": false,
+   "json_instruction_reached_the_body": true,
+   "lever": "candidate_set_size",
+   "n": 2,
+   "n_candidates": 2,
+   "n_choice_id_in_candidate_set": 2,
+   "n_parseable": 2,
+   "one_change": "two live Hawking-self candidates so the trial schema tail survives the 1800-char clip; constructor otherwise identical",
+   "parse_rate": "2 of 2",
+   "prompt": "Pick one candidate. The scripted policy would pick \"WU.HAWKING.resident_identity_pin\".\nCandidates:\n[{\"family\": \"resident_identity_pin\", \"frontier\": \"HCLI_SELF\", \"gain\": 5, \"id\": \"WU.HAWKING.resident_identity_pin\", \"title\": \"pin the sealed resident identity on the live body\"}, {\"family\": \"fusion_env_applied\", \"frontier\": \"HCLI_SELF\", \"gain\": 4, \"id\": \"WU.HAWKING.fusion_env_applied\", \"title\": \"prove fusion env is applied on the live resident process\"}]\nReturn JSON only: {\"choice_id\":\"id\",\"reason\":\"why this, citing a real difference\",\"mechanism\":\"...\",\"surface\":\"...\",\"hypothesis_family\":\"...\"}",
+   "prompt_sha256": "d80bdb4c8bf20af1f5b72eb10d88e93f9f11d7a825f78750437db1e4c0558e9c",
+   "skipped": null,
+   "unique_reply_hashes": [
+    "09406a5875c18e95ca382be3bca793169122cddbb76b7f779d9174f4e87eb6e3"
+   ],
+   "variation": "smaller_choice_set"
+  },
+  {
+   "asks": [
+    {
+     "choice_id": null,
+     "choice_id_in_candidate_set": false,
+     "generated_tokens": null,
+     "parse_ok": false,
+     "prompt_tokens": null,
+     "reason": null,
+     "reply_sha256": "d9de1c28f417886622a27bb9236878f27467eb2227d159cbed80d2f6f029c998",
+     "reply_text": "The **scripted policy** would pick:  \n**\"WU.HAWKING.resident_identity_pin\"**.",
+     "resident_identity": "Qwen3-0.6B",
+     "why": "reply was not a JSON object"
+    },
+    {
+     "choice_id": null,
+     "choice_id_in_candidate_set": false,
+     "generated_tokens": null,
+     "parse_ok": false,
+     "prompt_tokens": null,
+     "reason": null,
+     "reply_sha256": "d9de1c28f417886622a27bb9236878f27467eb2227d159cbed80d2f6f029c998",
+     "reply_text": "The **scripted policy** would pick:  \n**\"WU.HAWKING.resident_identity_pin\"**.",
+     "resident_identity": "Qwen3-0.6B",
+     "why": "reply was not a JSON object"
+    }
+   ],
+   "body": "Qwen3-0.6B",
+   "gpu_authority": false,
+   "json_instruction_reached_the_body": false,
+   "lever": "none",
+   "n": 2,
+   "n_candidates": 14,
+   "n_choice_id_in_candidate_set": 0,
+   "n_parseable": 0,
+   "one_change": "verbatim trial ask after the same 1800-char clip",
+   "parse_rate": "0 of 2",
+   "prompt": "Pick one candidate. The scripted policy would pick \"WU.HAWKING.resident_identity_pin\".\nCandidates:\n[{\"family\": \"mlp_function_replacement\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 9, \"id\": \"WU.DEAD.mlp_function_replacement\", \"title\": \"DEAD scar MLP_FUNCTION_REPLACEMENT_CLOSED: replace F\"}, {\"family\": \"monarch\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 8, \"id\": \"WU.DEAD.monarch\", \"title\": \"DEAD scar MONARCH: block-diag product, full rank\"}, {\"family\": \"butterfly\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 8, \"id\": \"WU.DEAD.butterfly\", \"title\": \"DEAD scar BUTTERFLY: O(n log n) full rank\"}, {\"family\": \"resident_identity_pin\", \"frontier\": \"HCLI_SELF\", \"gain\": 5, \"id\": \"WU.HAWKING.resident_identity_pin\", \"title\": \"pin the sealed resident identity on the live body\"}, {\"family\": \"fusion_env_applied\", \"frontier\": \"HCLI_SELF\", \"gain\": 4, \"id\": \"WU.HAWKING.fusion_env_applied\", \"title\": \"prove fusion env is applied on the live resident process\"}, {\"family\": \"fold_addqx_status\", \"frontier\": \"MODEL_EXECUTION\", \"gain\": 4, \"id\": \"WU.EXEC.fold_addqx_ab_status\", \"title\": \"inspect sibling fold_addqx complete-token A/B status\"}, {\"family\": \"no_wait_scheduler\", \"frontier\": \"HCLI_SELF\", \"gain\": 3, \"id\": \"WU.HAWKING.no_wait_scheduler\", \"title\": \"keep reasoning while a child waits on a receipt\"}, {\"family\": \"decode_arithmetic_dominates_byte_save\", \"frontier\": \"DECODING\", \"gain\": 2, \"id\": \"WU.PROBE.decode_arith_cost\", \"title\": \"CPU demo: decode arithmetic can dominate byte savings\"}, {\"family\": \"factorize_the_factors\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 6, \"id\": \"WU.DEAD.factorize_the_factors\", \"title\": \"DEAD scar FACTORIZE_THE_FACTORS: SVD on gate/up/down\"}, {\"family\": \"product_dictionary\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 6, \"id\": \"WU.DEAD.product_dictionary\", \"t\u2026",
+   "prompt_sha256": "31789943e9e699468140b0f5d97f7ea54e22782507c0c51b4c7a262a5cf0cb87",
+   "skipped": null,
+   "unique_reply_hashes": [
+    "d9de1c28f417886622a27bb9236878f27467eb2227d159cbed80d2f6f029c998"
+   ],
+   "variation": "control"
+  },
+  {
+   "asks": [
+    {
+     "choice_id": "WU.HAWKING.resident_identity_pin",
+     "choice_id_in_candidate_set": true,
+     "generated_tokens": null,
+     "parse_ok": true,
+     "prompt_tokens": null,
+     "reason": "citing a real difference",
+     "reply_sha256": "9405862dff0e241ea0ca3b27ede281277b3d988e08163c1e0f5072ffb588c33c",
+     "reply_text": "{\"choice_id\":\"WU.HAWKING.resident_identity_pin\",\"reason\":\"citing a real difference\",\"mechanism\":\"resident_identity_pin\",\"surface\":\"live body\",\"hypothesis_family\":\"resident_identity_pin\"}",
+     "resident_identity": "Qwen3-0.6B",
+     "why": null
+    },
+    {
+     "choice_id": "WU.HAWKING.resident_identity_pin",
+     "choice_id_in_candidate_set": true,
+     "generated_tokens": null,
+     "parse_ok": true,
+     "prompt_tokens": null,
+     "reason": "citing a real difference",
+     "reply_sha256": "9405862dff0e241ea0ca3b27ede281277b3d988e08163c1e0f5072ffb588c33c",
+     "reply_text": "{\"choice_id\":\"WU.HAWKING.resident_identity_pin\",\"reason\":\"citing a real difference\",\"mechanism\":\"resident_identity_pin\",\"surface\":\"live body\",\"hypothesis_family\":\"resident_identity_pin\"}",
+     "resident_identity": "Qwen3-0.6B",
+     "why": null
+    }
+   ],
+   "body": "Qwen3-0.6B",
+   "gpu_authority": false,
+   "json_instruction_reached_the_body": true,
+   "lever": "instruction",
+   "n": 2,
+   "n_candidates": 14,
+   "n_choice_id_in_candidate_set": 2,
+   "n_parseable": 2,
+   "one_change": "JSON-only instruction with no prose room, placed first so the clip cannot eat it; candidates and clip budget unchanged",
+   "parse_rate": "2 of 2",
+   "prompt": "Return JSON only, no markdown, no prose, no fences. The entire reply must be one object: {\"choice_id\":\"id\",\"reason\":\"why this, citing a real difference\",\"mechanism\":\"...\",\"surface\":\"...\",\"hypothesis_family\":\"...\"}.\nPick one candidate. The scripted policy would pick \"WU.HAWKING.resident_identity_pin\".\nCandidates:\n[{\"family\": \"mlp_function_replacement\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 9, \"id\": \"WU.DEAD.mlp_function_replacement\", \"title\": \"DEAD scar MLP_FUNCTION_REPLACEMENT_CLOSED: replace F\"}, {\"family\": \"monarch\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 8, \"id\": \"WU.DEAD.monarch\", \"title\": \"DEAD scar MONARCH: block-diag product, full rank\"}, {\"family\": \"butterfly\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 8, \"id\": \"WU.DEAD.butterfly\", \"title\": \"DEAD scar BUTTERFLY: O(n log n) full rank\"}, {\"family\": \"resident_identity_pin\", \"frontier\": \"HCLI_SELF\", \"gain\": 5, \"id\": \"WU.HAWKING.resident_identity_pin\", \"title\": \"pin the sealed resident identity on the live body\"}, {\"family\": \"fusion_env_applied\", \"frontier\": \"HCLI_SELF\", \"gain\": 4, \"id\": \"WU.HAWKING.fusion_env_applied\", \"title\": \"prove fusion env is applied on the live resident process\"}, {\"family\": \"fold_addqx_status\", \"frontier\": \"MODEL_EXECUTION\", \"gain\": 4, \"id\": \"WU.EXEC.fold_addqx_ab_status\", \"title\": \"inspect sibling fold_addqx complete-token A/B status\"}, {\"family\": \"no_wait_scheduler\", \"frontier\": \"HCLI_SELF\", \"gain\": 3, \"id\": \"WU.HAWKING.no_wait_scheduler\", \"title\": \"keep reasoning while a child waits on a receipt\"}, {\"family\": \"decode_arithmetic_dominates_byte_save\", \"frontier\": \"DECODING\", \"gain\": 2, \"id\": \"WU.PROBE.decode_arith_cost\", \"title\": \"CPU demo: decode arithmetic can dominate byte savings\"}, {\"family\": \"factorize_the_factors\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 6, \"id\": \"W\u2026",
+   "prompt_sha256": "7fdbbd32bb3dd7764c439691c4bbab96413f20f549fd6272a32507590db51541",
+   "skipped": null,
+   "unique_reply_hashes": [
+    "9405862dff0e241ea0ca3b27ede281277b3d988e08163c1e0f5072ffb588c33c"
+   ],
+   "variation": "json_only"
+  },
+  {
+   "asks": [
+    {
+     "choice_id": "id",
+     "choice_id_in_candidate_set": false,
+     "generated_tokens": null,
+     "parse_ok": true,
+     "prompt_tokens": null,
+     "reason": "This candidate's policy focuses on sealing a resident's identity on the live body, which directly addresses the need for a real-time, visible identity verification. The mechanism involves a real-time process, while the other candidate's policy is more about proving a fusion environment, which is a different application of technology.",
+     "reply_sha256": "1003d348d9972909c784f59fc553c5bb7a3f2f6f08d72bfede8b5ac4105fcbec",
+     "reply_text": "```json\n{\n  \"choice_id\": \"id\",\n  \"reason\": \"This candidate's policy focuses on sealing a resident's identity on the live body, which directly addresses the need for a real-time, visible identity verification. The mechanism involves a real-time process, while the other candidate's policy is more about proving a fusion environment, which is a different application of technology.\",\n  \"mechanism\": \"pin the sealed resident identity on the live body\",\n  \"surface\": \"live body\",\n  \"hypothesis_family\": \"resident_identity_pin\"\n}\n```",
+     "resident_identity": "Qwen3-0.6B",
+     "why": null
+    },
+    {
+     "choice_id": "id",
+     "choice_id_in_candidate_set": false,
+     "generated_tokens": null,
+     "parse_ok": true,
+     "prompt_tokens": null,
+     "reason": "This candidate's policy focuses on sealing a resident's identity on the live body, which directly addresses the need for a real-time, visible identity verification. The mechanism involves a real-time process, while the other candidate's policy is more about proving a fusion environment, which is a different application of technology.",
+     "reply_sha256": "1003d348d9972909c784f59fc553c5bb7a3f2f6f08d72bfede8b5ac4105fcbec",
+     "reply_text": "```json\n{\n  \"choice_id\": \"id\",\n  \"reason\": \"This candidate's policy focuses on sealing a resident's identity on the live body, which directly addresses the need for a real-time, visible identity verification. The mechanism involves a real-time process, while the other candidate's policy is more about proving a fusion environment, which is a different application of technology.\",\n  \"mechanism\": \"pin the sealed resident identity on the live body\",\n  \"surface\": \"live body\",\n  \"hypothesis_family\": \"resident_identity_pin\"\n}\n```",
+     "resident_identity": "Qwen3-0.6B",
+     "why": null
+    }
+   ],
+   "body": "Qwen3-0.6B",
+   "candidate_ids": [
+    "WU.HAWKING.resident_identity_pin",
+    "WU.HAWKING.fusion_env_applied"
+   ],
+   "gpu_authority": false,
+   "json_instruction_reached_the_body": true,
+   "lever": "candidate_set_size",
+   "n": 2,
+   "n_candidates": 2,
+   "n_choice_id_in_candidate_set": 0,
+   "n_parseable": 2,
+   "one_change": "two live Hawking-self candidates so the trial schema tail survives the 1800-char clip; constructor otherwise identical",
+   "parse_rate": "2 of 2",
+   "prompt": "Pick one candidate. The scripted policy would pick \"WU.HAWKING.resident_identity_pin\".\nCandidates:\n[{\"family\": \"resident_identity_pin\", \"frontier\": \"HCLI_SELF\", \"gain\": 5, \"id\": \"WU.HAWKING.resident_identity_pin\", \"title\": \"pin the sealed resident identity on the live body\"}, {\"family\": \"fusion_env_applied\", \"frontier\": \"HCLI_SELF\", \"gain\": 4, \"id\": \"WU.HAWKING.fusion_env_applied\", \"title\": \"prove fusion env is applied on the live resident process\"}]\nReturn JSON only: {\"choice_id\":\"id\",\"reason\":\"why this, citing a real difference\",\"mechanism\":\"...\",\"surface\":\"...\",\"hypothesis_family\":\"...\"}",
+   "prompt_sha256": "d80bdb4c8bf20af1f5b72eb10d88e93f9f11d7a825f78750437db1e4c0558e9c",
+   "skipped": null,
+   "unique_reply_hashes": [
+    "1003d348d9972909c784f59fc553c5bb7a3f2f6f08d72bfede8b5ac4105fcbec"
+   ],
+   "variation": "smaller_choice_set"
+  }
+ ],
+ "claim_boundary": "Static sidecar artifact plus SELF_MEASURED_DIRTY process telemetry (pid, token counts, flock wait). No hardware measurement. Token counts are protocol fields, not throughput. Parse-rate is a fraction of raw replies, not a score.",
+ "elapsed_evidence_class": "SELF_MEASURED_DIRTY",
+ "elapsed_s": 181.181,
+ "errors": [],
+ "evidence_class": "SELF_MEASURED_DIRTY",
+ "exact_ask": {
+  "choice_id_in_clipped_control": false,
+  "cited_from": {
+   "catalog": "tools/future/model_bearing_torture.py:live_catalog",
+   "clip": "tools/future/model_bearing.py:_ask_json \u2014 MAX_PROMPT_CHARS=1800; prompt[:MAX_PROMPT_CHARS-1] + ellipsis",
+   "enable_thinking": "ConnectorProvider.ask chat_template_kwargs enable_thinking=False",
+   "max_ask_tokens": "tools/future/model_bearing_torture.py:MAX_ASK_TOKENS=384 and ConnectorProvider.ask payload max_tokens",
+   "prompt_constructor": "tools/future/model_bearing.py:choose \u2014 'Pick one candidate. The scripted policy would pick ' + json.dumps(policy id) + Candidates compact JSON + 'Return JSON only: ' + choice schema. Same literals, not paraphrased.",
+   "temperature": "sealed-3.14 generation block: do_sample=false, temperature=0.0, top_k=1 (receipts/future/MODEL_BEARING_TORTURE_30M.json sealed.identity_live.generation). ConnectorProvider.ask does not override temperature; the resident uses the sealed greedy decode.",
+   "timeline": "receipts/future/MODEL_BEARING_TIMELINE.json model_calls whose prompt starts with 'Pick one candidate'; prompt_sha256 31789943e9e699468140b0f5d97f7ea54e22782507c0c51b4c7a262a5cf0cb87"
+  },
+  "clip_eats_the_schema": true,
+  "clipped_chars": 1800,
+  "clipped_prompt": "Pick one candidate. The scripted policy would pick \"WU.HAWKING.resident_identity_pin\".\nCandidates:\n[{\"family\": \"mlp_function_replacement\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 9, \"id\": \"WU.DEAD.mlp_function_replacement\", \"title\": \"DEAD scar MLP_FUNCTION_REPLACEMENT_CLOSED: replace F\"}, {\"family\": \"monarch\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 8, \"id\": \"WU.DEAD.monarch\", \"title\": \"DEAD scar MONARCH: block-diag product, full rank\"}, {\"family\": \"butterfly\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 8, \"id\": \"WU.DEAD.butterfly\", \"title\": \"DEAD scar BUTTERFLY: O(n log n) full rank\"}, {\"family\": \"resident_identity_pin\", \"frontier\": \"HCLI_SELF\", \"gain\": 5, \"id\": \"WU.HAWKING.resident_identity_pin\", \"title\": \"pin the sealed resident identity on the live body\"}, {\"family\": \"fusion_env_applied\", \"frontier\": \"HCLI_SELF\", \"gain\": 4, \"id\": \"WU.HAWKING.fusion_env_applied\", \"title\": \"prove fusion env is applied on the live resident process\"}, {\"family\": \"fold_addqx_status\", \"frontier\": \"MODEL_EXECUTION\", \"gain\": 4, \"id\": \"WU.EXEC.fold_addqx_ab_status\", \"title\": \"inspect sibling fold_addqx complete-token A/B status\"}, {\"family\": \"no_wait_scheduler\", \"frontier\": \"HCLI_SELF\", \"gain\": 3, \"id\": \"WU.HAWKING.no_wait_scheduler\", \"title\": \"keep reasoning while a child waits on a receipt\"}, {\"family\": \"decode_arithmetic_dominates_byte_save\", \"frontier\": \"DECODING\", \"gain\": 2, \"id\": \"WU.PROBE.decode_arith_cost\", \"title\": \"CPU demo: decode arithmetic can dominate byte savings\"}, {\"family\": \"factorize_the_factors\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 6, \"id\": \"WU.DEAD.factorize_the_factors\", \"title\": \"DEAD scar FACTORIZE_THE_FACTORS: SVD on gate/up/down\"}, {\"family\": \"product_dictionary\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 6, \"id\": \"WU.DEAD.product_dictionary\", \"t\u2026",
+  "clipped_sha256": "31789943e9e699468140b0f5d97f7ea54e22782507c0c51b4c7a262a5cf0cb87",
+  "do_sample": false,
+  "enable_thinking": false,
+  "json_instruction_in_clipped_control": false,
+  "json_instruction_in_unclipped": true,
+  "matches_timeline_prompt_sha256": true,
+  "max_ask_tokens": 384,
+  "max_prompt_chars": 1800,
+  "n_candidates": 14,
+  "n_compact": 14,
+  "policy_id": "WU.HAWKING.resident_identity_pin",
+  "source_literals_still_in_choose": {
+   "clip_ellipsis": true,
+   "max_prompt_chars": 1800,
+   "max_prompt_chars_literal": true,
+   "path": "tools/future/model_bearing.py",
+   "preamble_present": true,
+   "schema_tail_present": true
+  },
+  "temperature": 0.0,
+  "unclipped_chars": 2705,
+  "unclipped_prompt": "Pick one candidate. The scripted policy would pick \"WU.HAWKING.resident_identity_pin\".\nCandidates:\n[{\"family\": \"mlp_function_replacement\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 9, \"id\": \"WU.DEAD.mlp_function_replacement\", \"title\": \"DEAD scar MLP_FUNCTION_REPLACEMENT_CLOSED: replace F\"}, {\"family\": \"monarch\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 8, \"id\": \"WU.DEAD.monarch\", \"title\": \"DEAD scar MONARCH: block-diag product, full rank\"}, {\"family\": \"butterfly\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 8, \"id\": \"WU.DEAD.butterfly\", \"title\": \"DEAD scar BUTTERFLY: O(n log n) full rank\"}, {\"family\": \"resident_identity_pin\", \"frontier\": \"HCLI_SELF\", \"gain\": 5, \"id\": \"WU.HAWKING.resident_identity_pin\", \"title\": \"pin the sealed resident identity on the live body\"}, {\"family\": \"fusion_env_applied\", \"frontier\": \"HCLI_SELF\", \"gain\": 4, \"id\": \"WU.HAWKING.fusion_env_applied\", \"title\": \"prove fusion env is applied on the live resident process\"}, {\"family\": \"fold_addqx_status\", \"frontier\": \"MODEL_EXECUTION\", \"gain\": 4, \"id\": \"WU.EXEC.fold_addqx_ab_status\", \"title\": \"inspect sibling fold_addqx complete-token A/B status\"}, {\"family\": \"no_wait_scheduler\", \"frontier\": \"HCLI_SELF\", \"gain\": 3, \"id\": \"WU.HAWKING.no_wait_scheduler\", \"title\": \"keep reasoning while a child waits on a receipt\"}, {\"family\": \"decode_arithmetic_dominates_byte_save\", \"frontier\": \"DECODING\", \"gain\": 2, \"id\": \"WU.PROBE.decode_arith_cost\", \"title\": \"CPU demo: decode arithmetic can dominate byte savings\"}, {\"family\": \"factorize_the_factors\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 6, \"id\": \"WU.DEAD.factorize_the_factors\", \"title\": \"DEAD scar FACTORIZE_THE_FACTORS: SVD on gate/up/down\"}, {\"family\": \"product_dictionary\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 6, \"id\": \"WU.DEAD.product_dictionary\", \"title\": \"DEAD scar PRODUCT_DICTIONARY: F-manifold codebooks\"}, {\"family\": \"conditional_program\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 6, \"id\": \"WU.DEAD.conditional_program\", \"title\": \"DEAD scar CONDITIONAL_PROGRAM: x-conditioned expert\"}, {\"family\": \"generated_block\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 6, \"id\": \"WU.DEAD.generated_block\", \"title\": \"DEAD scar GENERATED_BLOCK: per-block rank-16 maps\"}, {\"family\": \"nonlinear_generator\", \"frontier\": \"MODEL_REPRESENTATION\", \"gain\": 6, \"id\": \"WU.DEAD.nonlinear_generator\", \"title\": \"DEAD scar NONLINEAR_GENERATOR: MLP-shaped G\"}, {\"family\": \"subagent_receipt_wait\", \"frontier\": \"TOOLS\", \"gain\": 1, \"id\": \"WU.SUBAGENT.receipt_wait_probe\", \"title\": \"bounded child writes a receipt after a short wait\"}]\nReturn JSON only: {\"choice_id\":\"id\",\"reason\":\"why this, citing a real difference\",\"mechanism\":\"...\",\"surface\":\"...\",\"hypothesis_family\":\"...\"}",
+  "unclipped_sha256": "298d6a74dd7e81240bde0a7c0b78a8aee6dd10984328e3ab2c10a27484d14aff"
+ },
+ "gaps_closed": [
+  "the exact trial choose ask is reconstructed and hashed against the timeline, not paraphrased",
+  "the 1800-char clip is named as a property of the control (schema never reached the body)",
+  "each live variation is one lever off that control",
+  "parse-rate is a fraction with raw replies, not a score",
+  "grammar is reported unsupported rather than faked as a retry loop",
+  "Qwen3-0.6B is the cheapest second sealed body"
+ ],
+ "gpu_authority": false,
+ "gpu_park": {
+  "gpu_authority": false,
+  "held": true,
+  "held_during_run": true,
+  "paths": [
+   "/tmp/hawking-gpu-lane.lock",
+   "/Users/scammermike/Downloads/hawking/.hcli/locks/protected-accelerator-bench.lock"
+  ],
+  "pid": 86692,
+  "released": true,
+  "waited_for": [],
+  "waited_s": 0.001,
+  "widens_hcli_authority": false
+ },
+ "grammar": {
+  "grammar_keys_mentioned_anywhere_in_source": [
+   "schema"
+  ],
+  "inspected": "/Users/scammermike/Downloads/hawking/hcli/hawking_native.py",
+  "native_request_keys": [
+   "id",
+   "prompt",
+   "max_new_tokens",
+   "max_seq_len"
+  ],
+  "request_literal_is_four_keys": true,
+  "shell_grammar_is_validate_and_retry_not_logit_mask": true,
+  "supported": false,
+  "why": "HawkingNativeConnector.complete_payload sends the resident {id, prompt, max_new_tokens, max_seq_len} only. No grammar, response_format, or json_schema field on the wire. crates/hawking-orch/src/grammar.rs is validate-and-retry after the reply, not a logit mask; a retry loop would be a second ask."
+ },
+ "hcli_invoked_not_edited": true,
+ "judgment": {
+  "fixed_by": "json_only",
+  "fixed_by_lever": "instruction",
+  "one_change_that_worked": "JSON-only instruction with no prose room, placed first so the clip cannot eat it; candidates and clip budget unchanged",
+  "outcome": "ASK_WRONG",
+  "recommendation": "this is a prompt/schema fix, not succession. The named defect is MAX_PROMPT_CHARS=1800 clipping 'Return JSON only: {choice_id,...}' off the choose() ask; the body never saw the contract. The cheapest working change was 'json_only' (instruction: JSON-only instruction with no prose room, placed first so the clip cannot eat it; candidates and clip budget unchanged). Campaign action: stop eating the schema \u2014 raise the clip, reserve the tail, or put the JSON instruction first. Do not start G011 succession on this evidence.",
+  "why": "incumbent control was 0 parseable; variation(s) ['json_only', 'one_shot', 'smaller_choice_set'] produced at least one parseable {\"choice_id\",\"reason\"}. The body can emit the object. The trial ask cannot.",
+  "working_variations": [
+   "json_only",
+   "one_shot",
+   "smaller_choice_set"
+  ]
+ },
+ "live_reproduction": {
+  "failure_reproduced": true,
+  "incumbent_control_n_parseable": 0,
+  "incumbent_control_parse_rate": "0 of 2",
+  "matched_trial_reply_sha256": true,
+  "ran": true,
+  "trial_choose_prompt_sha256": "31789943e9e699468140b0f5d97f7ea54e22782507c0c51b4c7a262a5cf0cb87",
+  "trial_choose_reply_sha256": "ec9a514b40f32ca28d618dd882378d776ecd1b84adec72b86296f8d094f30b02"
+ },
+ "n_repeats": 2,
+ "negative_findings": [
+  "a JSON-only instruction that the clip eats is not an instruction the body saw",
+  "interpret() JSON on the same timeline is not choose() JSON",
+  "hawking-orch grammar.rs validate-and-retry is not a runtime constraint",
+  "this sidecar has no GPU authority; token counts are protocol fields"
+ ],
+ "outcomes_named": [
+  "ASK_WRONG",
+  "INCUMBENT_CANNOT",
+  "CONTRACT_UNUSABLE"
+ ],
+ "question": "CAN ANY AVAILABLE BODY EMIT THE CHOICE JSON THIS SCHEDULER REQUIRES?",
+ "reason": "incumbent control was 0 parseable; variation(s) ['json_only', 'one_shot', 'smaller_choice_set'] produced at least one parseable {\"choice_id\",\"reason\"}. The body can emit the object. The trial ask cannot.",
+ "recommendation": "this is a prompt/schema fix, not succession. The named defect is MAX_PROMPT_CHARS=1800 clipping 'Return JSON only: {choice_id,...}' off the choose() ask; the body never saw the contract. The cheapest working change was 'json_only' (instruction: JSON-only instruction with no prose room, placed first so the clip cannot eat it; candidates and clip budget unchanged). Campaign action: stop eating the schema \u2014 raise the clip, reserve the tail, or put the JSON instruction first. Do not start G011 succession on this evidence.",
+ "recovered_implementation": [
+  "tools/future/model_bearing.py:choose / _ask_json / _extract_json / MAX_PROMPT_CHARS=1800",
+  "tools/future/model_bearing_torture.py:live_catalog / ConnectorProvider.ask / MAX_ASK_TOKENS=384 / GpuPark",
+  "receipts/future/MODEL_BEARING_TIMELINE.json choose prompt_sha256 31789943\u2026",
+  "hcli/hawking_native.py complete_payload request {id,prompt,max_new_tokens,max_seq_len}",
+  "ModelLake Qwen--Qwen3-0.6B@c1899de289a0 (curriculum role very_small_dense_procedural_speed)"
+ ],
+ "schema": "hawking.future.choice_json_probe.v1",
+ "seal_sha256": "a90c9ca067e35ad83e96fad33a58e2e929676b03b2abeb1faa241eb794d7a39c",
+ "timeline_observation": {
+  "choose": {
+   "n": 43,
+   "n_parseable": 0,
+   "parse_rate": "0 of 43",
+   "replies": [
+    {
+     "n_with_this_hash": 43,
+     "reply_sha256": "ec9a514b40f32ca28d618dd882378d776ecd1b84adec72b86296f8d094f30b02",
+     "reply_text": "The candidate is:\n\n**WU.HAWKING.resident_identity_pin**\n\n(Title: \"pin the sealed resident identity on the live body\")\n\n**Reasoning:**\nThe prompt explicitly states that the scripted policy would pick this specific ID. While it has a lower \"gain\" (5) compared to the `mlp_function_replacement` candidate (9), the `mlp_function_replacement` candidate is marked as `WU.DEAD` (likely indicating it is no longer active or is a \"dead\" scar), whereas `resident_identity_pin` is marked as `WU.HAWKING` (likely indicating it is active or \"hawking\"). The policy likely prioritizes active candidates over dead ones, or specifically targets the `HCLI_SELF` frontier for this specific action."
+    }
+   ],
+   "unique_reply_hashes": 1
+  },
+  "choose_prompt_matches_reconstruction": true,
+  "choose_prompt_sha256_unique": [
+   "31789943e9e699468140b0f5d97f7ea54e22782507c0c51b4c7a262a5cf0cb87"
+  ],
+  "interpret_json_object": {
+   "n": 43,
+   "n_parseable": 43,
+   "parse_rate": "43 of 43",
+   "replies": [
+    {
+     "n_with_this_hash": 43,
+     "reply_sha256": "fc9d648b38bc5823296be7e2d48c9f35301dd1e23b9e981597ed0c86e5bbf655",
+     "reply_text": "```json\n{\n\"reading\": \"The frontier is dominated by high-gain model representation updates that must be executed before the HCLI self-identity can be pinned, as the current process is still in a dead state.\",\n\"worth_doing_next\": [\n\"WU.DEAD.mlp_function_replacement\",\n\"WU.DEAD.monarch\",\n\"WU.DEAD.butterfly\",\n\"WU.HAWKING.resident_identity_pin\"\n],\n\"why\": \"WU.DEAD.mlp_function_replacement, WU.DEAD.monarch, and WU.DEAD.butterfly are the highest-gain frontier items (9, 8, 8) that must be resolved to transition the model from dead to live, which is a prerequisite for WU.HAWKing.resident_identity_pin (5) to successfully pin the identity on the live body.\"\n}\n```"
+    }
+   ],
+   "unique_reply_hashes": 1
+  },
+  "source": "receipts/future/MODEL_BEARING_TIMELINE.json",
+  "why_interpret_matters": "the same sealed-3.14 body, same session, same greedy decode, emitted fenced JSON on interpret() whose prompt still contained 'Return JSON only' (1536 chars, under the 1800 clip). choose() did not, and its 1800-char clip cuts the schema off."
+ },
+ "verdict": "ASK_WRONG",
+ "version": 1
+}

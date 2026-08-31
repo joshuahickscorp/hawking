@@ -69,6 +69,34 @@ SEED_SOURCES: tuple[str, ...] = (
     # SKIP_PREFIXES excludes receipts/future/ from the discovery sweep,
     # and SEED_SOURCES is appended after that filter.
     "receipts/future/TPS_FALSIFICATIONS.jsonl",
+    # Emitted by tools/future/campaign_scars.py. Same reason as the
+    # TPS_FALSIFICATIONS.jsonl row: SKIP_PREFIXES drops receipts/future/.
+    "receipts/future/CAMPAIGN_SCARS.json",
+    # SCIENCE scars landed by the 2026-08-31 Gravity wave. SKIP_PREFIXES excludes
+    # receipts/future/ from the discovery sweep, so a scar landed there is
+    # INVISIBLE to refuse_if_dead unless it is named here - and the whole point of
+    # a scar is that the next proposer cannot rediscover it for free.
+    #
+    # This was not theoretical. The model-bearing torture (G015) failed with zero
+    # launches because choose() advertised WU.DEAD.mlp_function_replacement as
+    # policy: refuse_if_dead did not key MLP_FUNCTION_REPLACEMENT_CLOSED, so the
+    # dead school was still on the menu 45 times running and the resident kept
+    # picking it. Every school this wave closed is listed below.
+    "receipts/future/MLP_STRUCTURED_OPERATOR.json",
+    "receipts/future/MLP_SPARSE_RESIDUAL.json",
+    "receipts/future/MLP_FUNCTIONAL_RANK.json",
+    "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+    "receipts/future/MLP_SHARED_PROGRAM.json",
+    "receipts/future/DELTANET_GENERATED_TRANSITION.json",
+    "receipts/future/AUX_CAPABILITY_SCREEN.json",
+    "receipts/future/AUX_U8_NATIVE.json",
+    "receipts/future/AUX_U8_LUT.json",
+    "receipts/future/MLP_STREAM_COUNT.json",
+    "receipts/future/MLP_ISSUE_RATE_LADDER.json",
+    # S025 §16-17. Not a representation school - a COST MODEL scar, and the one
+    # that priced two of the schools above. Listed here so refuse_if_dead can
+    # refuse the next candidate whose whole case is a byte count.
+    "receipts/future/ECONOMICS_CALIBRATION.json",
 )
 
 SKIP_PREFIXES = ("tools/future/", "receipts/future/", "crates/")
@@ -742,6 +770,37 @@ def _parse_odyssey(rel: str, obj: dict[str, Any], origin: str) -> list[Scar]:
     return out or [_unparsed(rel, "odyssey store had no entries", origin)]
 
 
+def _parse_campaign_scars(rel: str, obj: dict[str, Any], origin: str) -> list[Scar]:
+    """Seven campaign scars: process/method defects keyed for refuse_if_dead."""
+    rows = obj.get("scars") or obj.get("entries") or []
+    out: list[Scar] = []
+    if not isinstance(rows, list):
+        return [_unparsed(rel, "campaign scars is not a list", origin)]
+    for rec in rows:
+        if not isinstance(rec, dict):
+            continue
+        oid = rec.get("id") or rec.get("scar_id") or rec.get("hypothesis_family") or "CS"
+        family = _pick(rec, "hypothesis_family", "id", "generalized_class")
+        mech = _pick(rec, "generalized_class", "observed") or family
+        verd = _pick(rec, "verdict", "status") or "FALSIFIED"
+        claim = _pick(rec, "claim_refuted", "wrongly_concluded", "observed")
+        out.append(
+            _scar(
+                rel,
+                origin,
+                str(oid),
+                family_text=family or str(oid),
+                mechanism=mech,
+                verdict=verd,
+                status=verd,
+                reopen=_pick(rec, "reopen_condition", "reopen_if"),
+                claim=claim,
+                level=_pick(rec, "level") or "GENERAL_PHYSICAL",
+            )
+        )
+    return out or [_unparsed(rel, "campaign scars had no entries", origin)]
+
+
 def _parse_negative_science_v2(rel: str, obj: dict[str, Any], origin: str) -> list[Scar]:
     out = []
     for rec in obj.get("entries") or []:
@@ -805,6 +864,51 @@ def _parse_cross_expert_measurement(rel: str, obj: dict[str, Any], origin: str) 
     ]
 
 
+def _parse_landed_science_scars(rel: str, obj: dict[str, Any], origin: str) -> list[Scar]:
+    """Science scars carried in a tools/future receipt's own `scars` array.
+
+    These receipts declare a well-formed machine-readable scar - family, level,
+    mechanism, status, organ, parent, and often a `not` clause listing what the
+    scar is NOT a retry of. Nothing read them, because SKIP_PREFIXES excludes
+    receipts/future/ from the discovery sweep and only two files were seeded back.
+
+    That gap had a measured cost. The model-bearing torture ran 30 minutes, made
+    88 model calls and launched NOTHING, because choose() advertised
+    WU.DEAD.mlp_function_replacement as policy: refuse_if_dead did not key
+    MLP_FUNCTION_REPLACEMENT_CLOSED, so a school this campaign had closed hours
+    earlier was still on the menu 45 times running and the resident kept picking
+    it. A scar the index cannot see does not prune anything.
+    """
+    rows = obj.get("scars")
+    if not isinstance(rows, list) or not rows:
+        return []
+    out: list[Scar] = []
+    for rec in rows:
+        if not isinstance(rec, dict):
+            continue
+        family = _pick(rec, "family", "hypothesis_family", "id")
+        if not family:
+            continue
+        verd = _pick(rec, "status", "verdict") or "MEASURED_NEGATIVE"
+        out.append(
+            _scar(
+                rel,
+                origin,
+                str(_pick(rec, "id", "family") or family),
+                family_text=str(family),
+                mechanism=_pick(rec, "mechanism", "why", "object") or str(family),
+                verdict=verd,
+                status=verd,
+                reopen=_pick(rec, "reopen", "reopen_if", "reopen_condition"),
+                claim=_pick(rec, "object", "claim_refuted", "not"),
+                level=_pick(rec, "level") or "MODEL_SPECIFIC",
+                model_text=_pick(rec, "parent", "model"),
+                organ_text=_pick(rec, "organ"),
+            )
+        )
+    return out
+
+
 def parse_json(rel: str, text: str, origin: str) -> list[Scar]:
     try:
         obj = json.loads(text)
@@ -824,6 +928,12 @@ def parse_json(rel: str, text: str, origin: str) -> list[Scar]:
         return _parse_negative_science_v2(rel, obj, origin)
     if schema.endswith("odyssey.negative_science.v1") or rel.endswith("odyssey/NEGATIVE_SCIENCE.json"):
         return _parse_odyssey(rel, obj, origin)
+    if schema.endswith("campaign_scars.v1") or rel.endswith("CAMPAIGN_SCARS.json"):
+        return _parse_campaign_scars(rel, obj, origin)
+    if rel.startswith("receipts/future/") and isinstance(obj.get("scars"), list):
+        landed = _parse_landed_science_scars(rel, obj, origin)
+        if landed:
+            return landed
     if "CROSS_EXPERT_STRUCTURE" in rel:
         return _parse_cross_expert_measurement(rel, obj, origin)
     if "n_experts" in obj and "components" in obj and "layer" in obj:
@@ -1092,7 +1202,10 @@ def _score(scar: Scar, q: dict[str, str | None]) -> int | None:
         return None
     score = scar.keys_filled
     mh = _model_hit(q.get("model"), scar.models)
-    if q.get("model") and mh is None:
+    # A GENERAL_PHYSICAL scar is a law about method and applies whatever parent
+    # the query names. Filtering it out on a model miss made every process scar
+    # unreachable from a model-specific proposal.
+    if q.get("model") and mh is None and scar.level != "GENERAL_PHYSICAL":
         return None
     if mh == "exact":
         score += 8
@@ -1195,7 +1308,13 @@ def refuse_if_dead(proposal: dict[str, Any] | str | None, scars: list[Scar] | No
         # Exact family gate: a weak substring hit from query() must not refuse.
         if want_family != h.get("hypothesis_family"):
             continue
-        if want_model:
+        # A GENERAL_PHYSICAL scar is a law about method, not about a parent.
+        # "a field named per_X is not per_X unless both sides count the same
+        # events" does not stop being true because the query names a model, and
+        # gating it on an exact model match made every process scar silently
+        # unreachable from any model-specific proposal -- which is precisely the
+        # narrow-probe-broad-label defect these scars record.
+        if want_model and str(h.get("level") or "") != "GENERAL_PHYSICAL":
             mh = _model_hit(str(want_model), list(h.get("models") or [h.get("model") or UNRECORDED]))
             if mh != "exact":
                 continue

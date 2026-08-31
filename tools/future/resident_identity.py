@@ -27,7 +27,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
 from tools.future._common import (
     HARDWARE_FIELDS,
@@ -96,6 +96,24 @@ QUAL_REL = "receipts/future/QUALIFICATION_PIPELINE.json"
 FLASH_NX_REL = "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
 NEGATIVE_REL = "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
 PROFILE_SCHEMA_REL = "receipts/future/QWEN27_ACCELERATOR_PROFILE_SCHEMA.json"
+SUCCESSION_TRIAL_REL = "receipts/future/SUCCESSION_TRIAL.json"
+
+# Catalog name of the incumbent this sidecar documents. Disk (SUCCESSION_TRIAL
+# then the sealed profile) is authority; this constant is the expected id
+# those documents currently carry, not a substitute for reading them.
+EXPECTED_INCUMBENT_ID = "qwen3.8-27b-sealed-3.14"
+
+# Fields a launch binding must name. Presence of the receipt is not binding.
+# bound is true only when every pin is present and sealed_model_id agrees
+# with the incumbent that would actually be launched.
+BIND_PIN_FIELDS: tuple[str, ...] = (
+    "nx_id",
+    "sealed_model_id",
+    "executable_hash",
+    "artifact_root",
+    "tokenizer",
+    "qualification",
+)
 TEACHER_RELS = (
     "receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
     "receipts/future/evidence/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
@@ -1361,6 +1379,430 @@ def accept(identity: Any) -> dict[str, Any]:
     return result
 
 
+# ---------------------------------------------------------------------------
+# Launch binding. Finding the receipt is not binding it.
+# ---------------------------------------------------------------------------
+
+
+def _sha256_ok(value: Any) -> bool:
+    if not isinstance(value, str) or len(value) != 64:
+        return False
+    try:
+        int(value, 16)
+    except ValueError:
+        return False
+    return True
+
+
+def _known_str(value: Any) -> str | None:
+    if isinstance(value, str):
+        text = value.strip()
+        if text and text != UNKNOWN:
+            return text
+    return None
+
+
+def resolve_incumbent() -> dict[str, Any]:
+    """Who would actually be launched. Disk is authority; identity is not invented.
+
+    SUCCESSION_TRIAL.json#incumbent.id first, sealed profile model_id second.
+    A missing incumbent keeps the identity unbound.
+    """
+    src, doc = load_authority(SUCCESSION_TRIAL_REL)
+    if isinstance(doc, dict):
+        inc = doc.get("incumbent")
+        if isinstance(inc, dict):
+            iid = _known_str(inc.get("id"))
+            if iid:
+                return {
+                    "id": iid,
+                    "source": SUCCESSION_TRIAL_REL,
+                    "load": src,
+                    "residency_status": inc.get("residency_status"),
+                    "artifact_path": inc.get("artifact_path"),
+                    "role": inc.get("role"),
+                }
+    src, sealed = load_authority(SEALED_REL)
+    if isinstance(sealed, dict):
+        mid = _known_str(sealed.get("model_id"))
+        if mid:
+            return {
+                "id": mid,
+                "source": SEALED_REL,
+                "load": src,
+                "resident_identity": sealed.get("resident_identity"),
+            }
+    return {
+        "id": None,
+        "source": None,
+        "load": "ABSENT",
+        "missing": f"{SUCCESSION_TRIAL_REL}#incumbent.id and {SEALED_REL}#model_id",
+    }
+
+
+def _nx_pins(slot: Any) -> tuple[dict[str, Any] | None, str | None]:
+    val = _slot_value(slot) if isinstance(slot, dict) else slot
+    if isinstance(val, dict):
+        model_id = _known_str(val.get("model_id"))
+        if not model_id:
+            return None, None
+        return (
+            {
+                "model_id": model_id,
+                "resident_identity": val.get("resident_identity"),
+                "protocol": val.get("protocol"),
+            },
+            model_id,
+        )
+    model_id = _known_str(val)
+    if model_id:
+        return {"model_id": model_id}, model_id
+    return None, None
+
+
+def _executable_pins(slot: Any) -> dict[str, Any] | None:
+    hashed: dict[str, str] = {}
+    meta: dict[str, Any] = {}
+    val = _slot_value(slot) if isinstance(slot, dict) else slot
+    if isinstance(val, dict):
+        by_role = val.get("by_role")
+        if isinstance(by_role, dict):
+            for role, digest in by_role.items():
+                if _sha256_ok(digest):
+                    hashed[str(role)] = digest
+        if val.get("seal_matching_role") is not None:
+            meta["seal_matching_role"] = val.get("seal_matching_role")
+        if val.get("seal_declared_sha256_16") is not None:
+            meta["seal_declared_sha256_16"] = val.get("seal_declared_sha256_16")
+    if isinstance(slot, dict):
+        for role in ("resident_binary", "binary"):
+            rec = slot.get(role)
+            if isinstance(rec, dict) and _sha256_ok(rec.get("sha256")):
+                hashed.setdefault(role, rec["sha256"])
+    if not hashed:
+        return None
+    return {"by_role": hashed, **meta}
+
+
+def _artifact_root_pin(slot: Any) -> str | None:
+    val = _slot_value(slot) if isinstance(slot, dict) else slot
+    if isinstance(val, dict):
+        return _known_str(val.get("artifact_root"))
+    return _known_str(val)
+
+
+def _tokenizer_pin(slot: Any) -> dict[str, Any] | None:
+    val = _slot_value(slot) if isinstance(slot, dict) else slot
+    path = None
+    digest = None
+    prefix_match = None
+    if isinstance(val, dict):
+        digest = val.get("sha256")
+        path = val.get("path")
+        prefix_match = val.get("declared_prefix_match")
+    if not _sha256_ok(digest) and isinstance(slot, dict):
+        digest = slot.get("sha256")
+        path = path or slot.get("path")
+        if prefix_match is None:
+            prefix_match = slot.get("declared_prefix_match")
+    if not _sha256_ok(digest):
+        return None
+    pin: dict[str, Any] = {"sha256": digest, "path": path}
+    if prefix_match is not None:
+        pin["declared_prefix_match"] = prefix_match
+    return pin
+
+
+def _qualification_pin(identity: Mapping[str, Any], *, validation: Mapping[str, Any] | None) -> dict[str, Any] | None:
+    """Qualification the body carries, not a physical pass.
+
+    The capability receipt is CONTROL_HISTORICAL and identity_sufficient is
+    false; that is a named qualification, not a missing one. A missing
+    capability receipt is a missing pin.
+    """
+    cap_slot = identity.get("capability_receipt")
+    cap = _slot_value(cap_slot) if isinstance(cap_slot, dict) else cap_slot
+    if not isinstance(cap, dict):
+        return None
+    path = _known_str(cap.get("path"))
+    label = _known_str(cap.get("label"))
+    role = cap.get("role")
+    if not path and not label and not role:
+        return None
+    pin: dict[str, Any] = {
+        "path": path,
+        "label": label,
+        "role": role,
+        "identity_sufficient": cap.get("identity_sufficient"),
+        "residency_status": identity.get("residency_status"),
+    }
+    if validation is not None:
+        pin["identity_validation"] = validation.get("status")
+    return pin
+
+
+def extract_pins(
+    identity: Mapping[str, Any],
+    *,
+    validation: Mapping[str, Any] | None = None,
+) -> tuple[dict[str, Any], list[str]]:
+    """Return (pins, missing_field_names) for the launch-binding contract."""
+    pins: dict[str, Any] = {}
+    missing: list[str] = []
+
+    nx, model_id = _nx_pins(identity.get("nx_id"))
+    if nx is None or model_id is None:
+        missing.append("nx_id")
+    else:
+        pins["nx_id"] = nx
+
+    if model_id is None:
+        missing.append("sealed_model_id")
+    else:
+        pins["sealed_model_id"] = model_id
+
+    exe = _executable_pins(identity.get("executable_hash"))
+    if exe is None:
+        missing.append("executable_hash")
+    else:
+        pins["executable_hash"] = exe
+
+    root = _artifact_root_pin(identity.get("parent_lineage"))
+    if root is None:
+        missing.append("artifact_root")
+    else:
+        pins["artifact_root"] = root
+
+    tok = _tokenizer_pin(identity.get("tokenizer_identity"))
+    if tok is None:
+        missing.append("tokenizer")
+    else:
+        pins["tokenizer"] = tok
+
+    qual = _qualification_pin(identity, validation=validation)
+    if qual is None:
+        missing.append("qualification")
+    else:
+        pins["qualification"] = qual
+
+    return pins, missing
+
+
+def _unbound_reason(
+    *,
+    missing: Sequence[str],
+    agrees: bool,
+    incumbent: Mapping[str, Any],
+    sealed_model_id: Any,
+    status: Any,
+) -> str:
+    parts: list[str] = []
+    pin_missing = [m for m in missing if m not in {"incumbent", "identity_validation"}]
+    if pin_missing:
+        parts.append("found but does not pin " + ", ".join(pin_missing))
+    if "incumbent" in missing or incumbent.get("id") is None:
+        parts.append(
+            "incumbent identity is not on disk "
+            f"({SUCCESSION_TRIAL_REL} / {SEALED_REL})"
+        )
+    elif not agrees and _known_str(sealed_model_id):
+        parts.append(
+            f"sealed_model_id={sealed_model_id!r} does not agree with "
+            f"incumbent={incumbent.get('id')!r}"
+        )
+    if status != "ACCEPTED":
+        parts.append(f"status={status!r} (identity_validation is not ACCEPTED)")
+    return "; ".join(parts) if parts else "found but unbound"
+
+
+def describe_binding(
+    identity: Any,
+    *,
+    receipt: Mapping[str, Any] | None = None,
+    validation: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Bound iff the document pins the resident that would be launched.
+
+    bound is never true because the file exists. A missing pin is named.
+    Status is identity_validation.status (ACCEPTED/REJECTED), never a
+    silent null while the document carries residency_status.
+    """
+    if not isinstance(identity, Mapping):
+        return {
+            "bound": False,
+            "status": "REJECTED",
+            "residency_status": None,
+            "pins": {},
+            "pins_named": [],
+            "missing": ["identity"],
+            "incumbent": resolve_incumbent(),
+            "agrees_with_incumbent": False,
+            "unbound_reason": "identity is missing or not a mapping; identity is not invented",
+        }
+    if validation is None:
+        validation = validate(identity)
+    pins, missing = extract_pins(identity, validation=validation)
+    incumbent = resolve_incumbent()
+    sealed_model_id = pins.get("sealed_model_id")
+    incumbent_id = incumbent.get("id")
+    agrees = (
+        isinstance(sealed_model_id, str)
+        and isinstance(incumbent_id, str)
+        and sealed_model_id == incumbent_id
+    )
+    if incumbent_id is None:
+        missing.append("incumbent")
+        agrees = False
+
+    status = validation.get("status") if isinstance(validation, Mapping) else None
+    if isinstance(receipt, Mapping):
+        rec_val = receipt.get("identity_validation")
+        if isinstance(rec_val, Mapping) and rec_val.get("status"):
+            status = rec_val.get("status")
+        elif _known_str(receipt.get("status")):
+            status = receipt.get("status")
+    if not _known_str(status):
+        status = identity.get("residency_status")
+    if status != "ACCEPTED":
+        missing.append("identity_validation")
+
+    # Deduplicate while preserving order.
+    seen: set[str] = set()
+    missing_uniq: list[str] = []
+    for item in missing:
+        if item not in seen:
+            seen.add(item)
+            missing_uniq.append(item)
+    missing = missing_uniq
+
+    bound = (not missing) and agrees and status == "ACCEPTED"
+    pins_named = [name for name in BIND_PIN_FIELDS if name in pins]
+    return {
+        "bound": bound,
+        "status": status,
+        "residency_status": identity.get("residency_status"),
+        "pins": pins,
+        "pins_named": pins_named,
+        "missing": missing,
+        "incumbent": incumbent,
+        "agrees_with_incumbent": agrees,
+        "unbound_reason": None
+        if bound
+        else _unbound_reason(
+            missing=missing,
+            agrees=agrees,
+            incumbent=incumbent,
+            sealed_model_id=sealed_model_id,
+            status=status,
+        ),
+    }
+
+
+def launch_binding(
+    *,
+    probe: Mapping[str, Any] | None = None,
+    integration: str = "",
+) -> dict[str, Any]:
+    """Launch-receipt identity block. Missing receipt stays unbound; found is not bound."""
+    note = (
+        "Identity is not invented. A missing this-wave receipt stays unbound. "
+        "Bound only when the document pins nx_id, sealed_model_id, executable_hash, "
+        "artifact_root, tokenizer, and qualification, and sealed_model_id agrees "
+        "with the incumbent. HCLI prior gates, if found, are cited and are not "
+        "this identity."
+    )
+    if probe is None:
+        target = RECEIPTS / RECEIPT
+        if target.is_file():
+            try:
+                probe = {
+                    "found": True,
+                    "path_taken": "worktree",
+                    "resolved": str(target),
+                    "doc": load_json(target),
+                }
+            except (OSError, json.JSONDecodeError, UnicodeError) as exc:
+                probe = {
+                    "found": True,
+                    "path_taken": "worktree",
+                    "resolved": str(target),
+                    "doc": None,
+                    "error": f"{type(exc).__name__}: {exc}",
+                }
+        else:
+            src, doc = load_authority(f"receipts/future/{RECEIPT}")
+            if isinstance(doc, dict):
+                probe = {
+                    "found": True,
+                    "path_taken": src,
+                    "resolved": f"{src}:receipts/future/{RECEIPT}",
+                    "doc": doc,
+                }
+            else:
+                probe = {
+                    "found": False,
+                    "path_taken": src,
+                    "resolved": None,
+                    "doc": None,
+                }
+    doc = probe.get("doc") if isinstance(probe.get("doc"), Mapping) else None
+    base: dict[str, Any] = {
+        "kind": "resident",
+        "found": bool(probe.get("found") and doc is not None),
+        "path_taken": probe.get("path_taken"),
+        "resolved": probe.get("resolved"),
+        "schema": None if not doc else doc.get("schema"),
+        "integration_point": integration,
+        "note": note,
+    }
+    if not base["found"]:
+        return {
+            **base,
+            "bound": False,
+            "status": None,
+            "residency_status": None,
+            "pins": {},
+            "pins_named": [],
+            "missing": ["receipt"],
+            "incumbent": resolve_incumbent(),
+            "agrees_with_incumbent": False,
+            "unbound_reason": "identity receipt is missing; identity is not invented",
+        }
+    if doc.get("schema") != SCHEMA:
+        status = doc.get("status") or (doc.get("identity_validation") or {}).get("status")
+        return {
+            **base,
+            "bound": False,
+            "status": status,
+            "residency_status": doc.get("residency_status"),
+            "pins": {},
+            "pins_named": [],
+            "missing": ["schema"],
+            "incumbent": resolve_incumbent(),
+            "agrees_with_incumbent": False,
+            "unbound_reason": (
+                f"found but schema is {doc.get('schema')!r}; want {SCHEMA}"
+            ),
+        }
+    try:
+        ident = identity_from_receipt(doc)
+    except IdentityRejectedError as exc:
+        return {
+            **base,
+            "bound": False,
+            "status": (doc.get("identity_validation") or {}).get("status") or doc.get("status"),
+            "residency_status": doc.get("residency_status"),
+            "pins": {},
+            "pins_named": [],
+            "missing": ["identity"],
+            "incumbent": resolve_incumbent(),
+            "agrees_with_incumbent": False,
+            "unbound_reason": f"found but identity is unreadable: {exc}",
+        }
+    described = describe_binding(ident, receipt=doc)
+    return {**base, **described}
+
+
 def work_unit() -> dict[str, Any]:
     return {
         "id": WORK_UNIT_ID,
@@ -1478,6 +1920,7 @@ def gaps_closed() -> list[str]:
         "Negative controls fire: invented measurement slot REJECTED; zero-weakness identity REJECTED; hardware numeric keys refused.",
         "Host tokenizer/binary hashed when present; UNKNOWN with the missing path named when not. Sparse checkout is not encoded as absence.",
         "Machine genome cited as a prior; measure_bandwidth was not invoked.",
+        "Launch binding pins nx_id, sealed_model_id, executable_hash, artifact_root, tokenizer, and qualification against the succession incumbent; a missing pin stays unbound with the field named.",
     ]
 
 
@@ -1558,6 +2001,8 @@ def build_document() -> dict[str, Any]:
             "UNKNOWN where this sidecar cannot know. Models think; tools know; context is a cache."
         ),
         "residency_status": RESIDENCY_STATUS,
+        "status": accepted["status"],
+        "binding": describe_binding(identity, validation=accepted),
         "claim_class": CLAIM_CLASS,
         "gpu_authority": False,
         "nomenclature": {

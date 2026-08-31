@@ -1123,6 +1123,186 @@ def _catalog() -> tuple[dict[str, Any], ...]:
             resource_class="GPU_EXCLUSIVE",
             wake_all_of=("authorized HCLI resident-install lane", "existing HCLI lease with proven holder"),
         ),
+        _item(
+            id="FT.MODEL_EXECUTION.capacity-occupancy",
+            frontier="MODEL_EXECUTION",
+            kind="NEXT_WORK",
+            title="Capacity class B: occupancy",
+            detail=(
+                "MULTISTREAM_CAPACITY_TREE class B, still OPEN. G009 measured "
+                "~361 GB/s at n=1 against 449-580 aggregate, so the machine has "
+                "capacity one stream does not use; SINGLE_TOKEN_PARALLEL_SLACK "
+                "killed the artificial-serialization explanation (11 edges, 11 true "
+                "dependencies) and INTRA_TOKEN_CONCURRENCY_AB confirmed it from the "
+                "other side (0.62 microseconds between arms). What remains is inside "
+                "the kernels. Discriminator: sweep threadgroup size and grid on ONE production matvec at fixed bytes and fixed arithmetic; if effective GB/s rises with occupancy alone the class is live."
+            ),
+            required_lanes=(LANE_GPU_PROTECTED,),
+            wake_all_of=_WAKE_GPU,
+            wake_never=_WAKE_NEVER,
+            gain=INFO_HIGH,
+            species="executor_capacity_discriminator",
+            verifier="future.multistream_capacity_tree.classes",
+            evidence=(f"{ev}/MULTISTREAM_CAPACITY_TREE.json",
+                      f"{ev}/RESIDENT_CONCURRENCY_MEASURED.json",
+                      f"{ev}/SINGLE_TOKEN_PARALLEL_SLACK.json"),
+            hypothesis_family="executor_capacity_occupancy",
+            source_f="S025",
+        ),
+        _item(
+            id="FT.MODEL_EXECUTION.capacity-memory_level_parallelism",
+            frontier="MODEL_EXECUTION",
+            kind="NEXT_WORK",
+            title="Capacity class E: memory level parallelism",
+            detail=(
+                "MULTISTREAM_CAPACITY_TREE class E, still OPEN. G009 measured "
+                "~361 GB/s at n=1 against 449-580 aggregate, so the machine has "
+                "capacity one stream does not use; SINGLE_TOKEN_PARALLEL_SLACK "
+                "killed the artificial-serialization explanation (11 edges, 11 true "
+                "dependencies) and INTRA_TOKEN_CONCURRENCY_AB confirmed it from the "
+                "other side (0.62 microseconds between arms). What remains is inside "
+                "the kernels. Discriminator: unroll the per-thread load stride on one matvec so each thread issues N independent loads before consuming any; bytes and arithmetic identical, output bit-identical."
+            ),
+            required_lanes=(LANE_GPU_PROTECTED,),
+            wake_all_of=_WAKE_GPU,
+            wake_never=_WAKE_NEVER,
+            gain=INFO_HIGH,
+            species="executor_capacity_discriminator",
+            verifier="future.multistream_capacity_tree.classes",
+            evidence=(f"{ev}/MULTISTREAM_CAPACITY_TREE.json",
+                      f"{ev}/RESIDENT_CONCURRENCY_MEASURED.json",
+                      f"{ev}/SINGLE_TOKEN_PARALLEL_SLACK.json"),
+            hypothesis_family="executor_capacity_memory_level_parallelism",
+            source_f="S025",
+        ),
+        _item(
+            id="FT.MODEL_EXECUTION.capacity-instruction_dependency_chain",
+            frontier="MODEL_EXECUTION",
+            kind="NEXT_WORK",
+            title="Capacity class D: instruction dependency chain",
+            detail=(
+                "MULTISTREAM_CAPACITY_TREE class D, still OPEN. G009 measured "
+                "~361 GB/s at n=1 against 449-580 aggregate, so the machine has "
+                "capacity one stream does not use; SINGLE_TOKEN_PARALLEL_SLACK "
+                "killed the artificial-serialization explanation (11 edges, 11 true "
+                "dependencies) and INTRA_TOKEN_CONCURRENCY_AB confirmed it from the "
+                "other side (0.62 microseconds between arms). What remains is inside "
+                "the kernels. Discriminator: the matched ARM A pair: bytes identical, arithmetic stripped. If stripping arithmetic moves the time, the chain is arithmetic-bound rather than memory-bound."
+            ),
+            required_lanes=(LANE_GPU_PROTECTED,),
+            wake_all_of=_WAKE_GPU,
+            wake_never=_WAKE_NEVER,
+            gain=INFO_HIGH,
+            species="executor_capacity_discriminator",
+            verifier="future.multistream_capacity_tree.classes",
+            evidence=(f"{ev}/MULTISTREAM_CAPACITY_TREE.json",
+                      f"{ev}/RESIDENT_CONCURRENCY_MEASURED.json",
+                      f"{ev}/SINGLE_TOKEN_PARALLEL_SLACK.json"),
+            hypothesis_family="executor_capacity_instruction_dependency_chain",
+            source_f="S025",
+        ),
+        _item(
+            id="FT.MODEL_EXECUTION.capacity-register_limited_occupancy",
+            frontier="MODEL_EXECUTION",
+            kind="NEXT_WORK",
+            title="Capacity class C: register limited occupancy",
+            detail=(
+                "MULTISTREAM_CAPACITY_TREE class C, still OPEN. G009 measured "
+                "~361 GB/s at n=1 against 449-580 aggregate, so the machine has "
+                "capacity one stream does not use; SINGLE_TOKEN_PARALLEL_SLACK "
+                "killed the artificial-serialization explanation (11 edges, 11 true "
+                "dependencies) and INTRA_TOKEN_CONCURRENCY_AB confirmed it from the "
+                "other side (0.62 microseconds between arms). What remains is inside "
+                "the kernels. Discriminator: read the compiled pipeline's register footprint and max threads per threadgroup from the Metal reflection and compare against the occupancy sweep."
+            ),
+            required_lanes=(LANE_CPU, LANE_ANALYSIS),
+            gain=INFO_HIGH,
+            species="executor_capacity_discriminator",
+            verifier="future.multistream_capacity_tree.classes",
+            evidence=(f"{ev}/MULTISTREAM_CAPACITY_TREE.json",
+                      f"{ev}/RESIDENT_CONCURRENCY_MEASURED.json",
+                      f"{ev}/SINGLE_TOKEN_PARALLEL_SLACK.json"),
+            hypothesis_family="executor_capacity_register_limited_occupancy",
+            source_f="S025",
+        ),
+        _item(
+            id="FT.MODEL_EXECUTION.capacity-cache_behaviour",
+            frontier="MODEL_EXECUTION",
+            kind="NEXT_WORK",
+            title="Capacity class F: cache behaviour",
+            detail=(
+                "MULTISTREAM_CAPACITY_TREE class F, still OPEN. G009 measured "
+                "~361 GB/s at n=1 against 449-580 aggregate, so the machine has "
+                "capacity one stream does not use; SINGLE_TOKEN_PARALLEL_SLACK "
+                "killed the artificial-serialization explanation (11 edges, 11 true "
+                "dependencies) and INTRA_TOKEN_CONCURRENCY_AB confirmed it from the "
+                "other side (0.62 microseconds between arms). What remains is inside "
+                "the kernels. Discriminator: vary only the per-launch working-set size at constant bytes and constant arithmetic and look for a knee."
+            ),
+            required_lanes=(LANE_GPU_PROTECTED,),
+            wake_all_of=_WAKE_GPU,
+            wake_never=_WAKE_NEVER,
+            gain=INFO_HIGH,
+            species="executor_capacity_discriminator",
+            verifier="future.multistream_capacity_tree.classes",
+            evidence=(f"{ev}/MULTISTREAM_CAPACITY_TREE.json",
+                      f"{ev}/RESIDENT_CONCURRENCY_MEASURED.json",
+                      f"{ev}/SINGLE_TOKEN_PARALLEL_SLACK.json"),
+            hypothesis_family="executor_capacity_cache_behaviour",
+            source_f="S025",
+        ),
+        _item(
+            id="FT.MODEL_EXECUTION.capacity-command_queue_topology",
+            frontier="MODEL_EXECUTION",
+            kind="NEXT_WORK",
+            title="Capacity class G: command queue topology",
+            detail=(
+                "MULTISTREAM_CAPACITY_TREE class G, still OPEN. G009 measured "
+                "~361 GB/s at n=1 against 449-580 aggregate, so the machine has "
+                "capacity one stream does not use; SINGLE_TOKEN_PARALLEL_SLACK "
+                "killed the artificial-serialization explanation (11 edges, 11 true "
+                "dependencies) and INTRA_TOKEN_CONCURRENCY_AB confirmed it from the "
+                "other side (0.62 microseconds between arms). What remains is inside "
+                "the kernels. Discriminator: the same token issued across two command queues versus one, identical kernels and identical order, token output bit-identical. INTRA_TOKEN_CONCURRENCY_AB varied encoder topology within ONE queue and explicitly did not test this."
+            ),
+            required_lanes=(LANE_GPU_PROTECTED,),
+            wake_all_of=_WAKE_GPU,
+            wake_never=_WAKE_NEVER,
+            gain=INFO_HIGH,
+            species="executor_capacity_discriminator",
+            verifier="future.multistream_capacity_tree.classes",
+            evidence=(f"{ev}/MULTISTREAM_CAPACITY_TREE.json",
+                      f"{ev}/RESIDENT_CONCURRENCY_MEASURED.json",
+                      f"{ev}/SINGLE_TOKEN_PARALLEL_SLACK.json"),
+            hypothesis_family="executor_capacity_command_queue_topology",
+            source_f="S025",
+        ),
+        _item(
+            id="FT.MODEL_EXECUTION.capacity-kernel_shape_underfill",
+            frontier="MODEL_EXECUTION",
+            kind="NEXT_WORK",
+            title="Capacity class I: kernel shape underfill",
+            detail=(
+                "MULTISTREAM_CAPACITY_TREE class I, still OPEN. G009 measured "
+                "~361 GB/s at n=1 against 449-580 aggregate, so the machine has "
+                "capacity one stream does not use; SINGLE_TOKEN_PARALLEL_SLACK "
+                "killed the artificial-serialization explanation (11 edges, 11 true "
+                "dependencies) and INTRA_TOKEN_CONCURRENCY_AB confirmed it from the "
+                "other side (0.62 microseconds between arms). What remains is inside "
+                "the kernels. Discriminator: run the SAME kernel at batch>1 on synthetic input and compare GB/s per byte moved against the batch-1 rate."
+            ),
+            required_lanes=(LANE_GPU_PROTECTED,),
+            wake_all_of=_WAKE_GPU,
+            wake_never=_WAKE_NEVER,
+            gain=INFO_HIGH,
+            species="executor_capacity_discriminator",
+            verifier="future.multistream_capacity_tree.classes",
+            evidence=(f"{ev}/MULTISTREAM_CAPACITY_TREE.json",
+                      f"{ev}/RESIDENT_CONCURRENCY_MEASURED.json",
+                      f"{ev}/SINGLE_TOKEN_PARALLEL_SLACK.json"),
+            hypothesis_family="executor_capacity_kernel_shape_underfill",
+            source_f="S025",
+        ),
     )
 
 

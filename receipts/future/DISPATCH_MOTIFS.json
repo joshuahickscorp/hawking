@@ -1,0 +1,2902 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T03:15:31Z",
+  "recorded_by": "tools/future.dispatch_motifs.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "candidates": [
+  {
+   "blocked_today": false,
+   "cheapest_falsifier": "Re-walk with Fusion.ba_delta=True must emit 580 and reconcile. A later GPU timestamp A/B of HAWKING_QWEN38_FUSE_BA_DELTA=1 vs unset, token-identical, zero fallback, answers whether those 48 launches are this 6.25 us class. Named, not run: this module is STATIC_ONLY.",
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 48,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.3,
+    "product_us": 300.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dispatches_removed": 48,
+   "form": "long_lived_state_machine",
+   "host_encode_already_falsified_as_the_token": "NEGATIVE_SCIENCE L6 Type-1 kill: ICB removes host encode; after residency batching that is ~0.4% of wall. THE_TOKEN_IS_GPU_BOUND: host gap 0.8 ms of 28.44. The 6.25 us class is on-device launch and teardown, which kernel fusion / a persistent occupancy region / an FPGA spatial pipeline can remove and ICB replay cannot be assumed to.",
+   "icb_is_the_wrong_textbook_for_the_6_25us_class": true,
+   "id": "dn_ba_delta_existing_lever",
+   "judgment": "EXISTING_FUSION_LEVER_NOT_A_NEW_REGION",
+   "launches_after": 48,
+   "metal_blockers": {
+    "argument_buffers": "the fused sibling already exists (qwen38_gated_delta_decode_vi_simd_ba); it still uses set_bytes for heads/kd/vd, same as the split pair",
+    "dynamic_shapes": "none; DeltaNet is O(1) in sequence length",
+    "icb": "not required; this is one kernel, not graph replay",
+    "resource_residency": "rec_state is already UMA-resident at a per-layer offset",
+    "routing_dependence": "none; mixer kind is static in layer index"
+   },
+   "motifs": [
+    "dn_ba_to_decay",
+    "dn_gated_delta"
+   ],
+   "not_628_to_500": true,
+   "not_a_fusion_plan": "listed as a lever that already exists, ranked separately from region candidates that would absorb a whole operation sequence",
+   "removed_per_risk_unit": 48.0,
+   "risk": 1,
+   "sealed_dispatches": 96,
+   "why": "encode_dn_ba_and_delta already folds ba_to_decay into gated-delta when FUSE_BA_DELTA=1. Source comment: '48 launches on the 628 graph. Default Off'. This is the inner cut of the DN state machine, not a new region, and 628 -> 580 is exactly the 628 -> 500-class increment the task said not to target. Recorded so the census does not pretend the lever is absent.",
+   "why_not_628_to_500": "the goalpost is a PersistentPhysicalRegion, not shaving 128 launches. A candidate that happens to remove 128 is still a region judgment, not a 628 -> 500 plan"
+  },
+  {
+   "blocked_today": false,
+   "cheapest_falsifier": "GPU timestamps on isolated 64-layer MLP (already measure_isolated_dense_mlp) vs a fused down+add_rms sibling, token-identical. If 128 fewer launches do not save on the order of 128 x 6.25 us = 0.80 ms, this suffix is not that tax class. STATIC_ONLY: named, not run.",
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 128,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.8,
+    "product_us": 800.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dispatches_removed": 128,
+   "form": "representation_native_region",
+   "host_encode_already_falsified_as_the_token": "NEGATIVE_SCIENCE L6 Type-1 kill: ICB removes host encode; after residency batching that is ~0.4% of wall. THE_TOKEN_IS_GPU_BOUND: host gap 0.8 ms of 28.44. The 6.25 us class is on-device launch and teardown, which kernel fusion / a persistent occupancy region / an FPGA spatial pipeline can remove and ICB replay cannot be assumed to.",
+   "icb_is_the_wrong_textbook_for_the_6_25us_class": true,
+   "id": "mlp_suffix_representation_region",
+   "judgment": "YES_REPRESENTATION_NATIVE",
+   "launches_after": 64,
+   "metal_blockers": {
+    "argument_buffers": "a fused kernel can keep layer weights as buffer bindings; ICB replay of the current three would need argument-buffer scalars because all three use set_bytes for rows/cols",
+    "dynamic_shapes": "none; hidden and intermediate are compile-time constants",
+    "icb": "wrong textbook for the 6.25 us class. Kernel fusion of down_proj epilogue + residual RMSNorm is the Metal-native move, the same class as FUSE_MLP=swiglu which already landed",
+    "resource_residency": "weights already resident; activations are the workspace buffers the three launches already share",
+    "routing_dependence": "none; MLP is dense on this model"
+   },
+   "motifs": [
+    "mlp_fused_gate_up_swiglu",
+    "mlp_down_proj",
+    "mlp_add_residual_rmsnorm"
+   ],
+   "not_628_to_500": true,
+   "not_a_fusion_plan": "the motif is the 64-wide repetition of a 3-launch suffix; the region judgment is whether that suffix can stay resident, not a list of further FUSE_* env bits",
+   "removed_per_risk_unit": 64.0,
+   "risk": 2,
+   "sealed_dispatches": 192,
+   "why": "The sealed MLP suffix is already a 3-launch operation sequence, identical 64 times, static grids, no recurrent state, no growing KV. Producer-consumer is closed inside the layer: fused gate_up_swiglu writes act, down_proj reads act, residual_rmsnorm reads down. It cannot loop all 64 MLPs in one launch because a mixer sits between layer i and i+1. One PersistentPhysicalRegion per layer with a layer-index weight slot is the honest form. 192 -> 64 removes 128.",
+   "why_not_628_to_500": "the goalpost is a PersistentPhysicalRegion, not shaving 128 launches. A candidate that happens to remove 128 is still a region judgment, not a 628 -> 500 plan"
+  },
+  {
+   "blocked_today": false,
+   "cheapest_falsifier": "The inner cut already in tree: FUSE_BA_DELTA removes 48 of these 337. A GPU timestamp A/B of that lever, token-identical, zero fallback, is the cheapest probe of whether DN launches are the 6.25 us class. If 48 fewer launches do not save on the order of 0.30 ms, a 7-kernel DN region is the wrong bet. STATIC_ONLY: named, not run.",
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 289,
+    "not_a_hardware_measurement": true,
+    "product_ms": 1.80625,
+    "product_us": 1806.25,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dispatches_removed": 289,
+   "form": "long_lived_state_machine",
+   "host_encode_already_falsified_as_the_token": "NEGATIVE_SCIENCE L6 Type-1 kill: ICB removes host encode; after residency batching that is ~0.4% of wall. THE_TOKEN_IS_GPU_BOUND: host gap 0.8 ms of 28.44. The 6.25 us class is on-device launch and teardown, which kernel fusion / a persistent occupancy region / an FPGA spatial pipeline can remove and ICB replay cannot be assumed to.",
+   "icb_is_the_wrong_textbook_for_the_6_25us_class": true,
+   "id": "dn_layer_state_machine",
+   "judgment": "YES_STATE_MACHINE",
+   "launches_after": 48,
+   "metal_blockers": {
+    "argument_buffers": "seven kernels, most using set_bytes for layout constants (heads, kd, vd, conv kernel, rms eps). A persistent layer kernel can bake those; ICB replay cannot capture set_bytes without promoting them to argument-buffer scalars",
+    "dynamic_shapes": "none. DeltaNet rearrange/delta are O(1) in sequence length \u2014 this is why DN is the cheaper state machine",
+    "icb": "graph replay of 7 serial launches does not keep conv_state and rec_state in registers/threadgroup across tokens. A state machine does. ICB is the wrong textbook",
+    "resource_residency": "conv_state and rec_state are already sequence-scoped UMA buffers with per-layer offsets. The region is occupancy and binding lifetime, not a copy-in",
+    "routing_dependence": "mixer kind is static: GQA every 4th layer. A 48-layer DN pipeline cannot run without yielding to GQA. The honest region is one DN layer with a layer slot, replayed 48 times, not one region covering all 48"
+   },
+   "motifs": [
+    "mixer_input_rmsnorm",
+    "dn_inproj_pair_concat",
+    "dn_rearrange_conv",
+    "dn_ba_to_decay",
+    "dn_gated_delta",
+    "dn_gated_rmsnorm",
+    "dn_out_proj",
+    "mixer_add_residual_rmsnorm"
+   ],
+   "not_628_to_500": true,
+   "not_a_fusion_plan": "the motif is the repeated DN operation sequence plus its resident state; fusing ba_to_decay is one inner cut of it, not the region",
+   "removed_per_risk_unit": 72.25,
+   "risk": 4,
+   "sealed_dispatches": 337,
+   "why": "Sealed DeltaNet is a 7-launch sequence (8 on layer 0 because input RMSNorm still runs): inproj -> conv/rearrange -> ba_to_decay -> gated_delta -> gated_rmsnorm -> out_proj -> residual_rmsnorm. conv_state and rec_state are the LocalState the PersistentPhysicalRegion contract asks to keep valid. FPGA spatial pipeline is the textbook; CUDA persistent kernel is the occupancy textbook. 337 -> 48 removes 289. GQA interrupts every 4th layer, so this is not 'one region for all 48 DN layers'.",
+   "why_not_628_to_500": "the goalpost is a PersistentPhysicalRegion, not shaving 128 launches. A candidate that happens to remove 128 is still a region judgment, not a 628 -> 500 plan"
+  },
+  {
+   "blocked_today": true,
+   "cheapest_falsifier": "Pad mha_decode_f32 threadgroup memory to max_seq_len and count whether the encode path is then a static DAG (it is, if position stays a scalar slot). That is a source reading plus a kernel change, not a GPU lease. A later timestamp A/B against the growing-TG form tells whether padding is free.",
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 80,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.5,
+    "product_us": 500.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dispatches_removed": 80,
+   "form": "static_skeleton_with_dynamic_token_or_route_slots",
+   "host_encode_already_falsified_as_the_token": "NEGATIVE_SCIENCE L6 Type-1 kill: ICB removes host encode; after residency batching that is ~0.4% of wall. THE_TOKEN_IS_GPU_BOUND: host gap 0.8 ms of 28.44. The 6.25 us class is on-device launch and teardown, which kernel fusion / a persistent occupancy region / an FPGA spatial pipeline can remove and ICB replay cannot be assumed to.",
+   "icb_is_the_wrong_textbook_for_the_6_25us_class": true,
+   "id": "gqa_layer_static_skeleton",
+   "judgment": "YES_STATIC_SKELETON",
+   "launches_after": 16,
+   "metal_blockers": {
+    "argument_buffers": "mha_decode_f32_tcb already packs seq_len into a KernelArgBuffer. RoPE and sigmoid still use set_bytes for position / dims. ICB capture of the 6-launch sequence needs those scalars promoted",
+    "dynamic_shapes": "seq_len = position+1 is the only growing quantity on the 628 graph. Grid is static (n_heads * tg). The dynamic slot is threadgroup memory length, not dispatch topology. TPU static execution would pad to max_seq; Metal must either pad or recapture",
+    "icb": "CUDA-graph recapture problem: MHA threadgroup memory is (seq_len + tg) * 4 bytes and grows every token. ICB replay is legal only if TG memory is allocated at max_seq_len. Host encode savings would not be the 6.25 us class",
+    "resource_residency": "KV cache is already sequence-scoped UMA at a per-layer slot; residency is not the blocker",
+    "routing_dependence": "sigmoid gate is value-dependent arithmetic, not topology. No expert routing"
+   },
+   "motifs": [
+    "gqa_fused_qkv",
+    "gqa_qk_norm_rope_cache",
+    "gqa_mha_decode",
+    "gqa_sigmoid_gate",
+    "gqa_o_proj",
+    "mixer_add_residual_rmsnorm"
+   ],
+   "not_628_to_500": true,
+   "not_a_fusion_plan": "the motif is the GQA operation sequence with a position slot; QKV fusion already landed and is not the remaining question",
+   "removed_per_risk_unit": 20.0,
+   "risk": 4,
+   "sealed_dispatches": 96,
+   "why": "Sealed GQA is a 6-launch sequence: fused QKV -> QK-norm/RoPE/cache-write -> MHA -> sigmoid -> o_proj -> residual_rmsnorm. 16 times. The skeleton is static except MHA's TG memory. 96 -> 16 removes 80. Blocked today by that growing TG allocation, which is a dynamic shape even though the grid is not.",
+   "why_not_628_to_500": "the goalpost is a PersistentPhysicalRegion, not shaving 128 launches. A candidate that happens to remove 128 is still a region judgment, not a 628 -> 500 plan"
+  },
+  {
+   "blocked_today": true,
+   "cheapest_falsifier": "Data dependence is already in source: mixer residual consumes mixer out_proj/o_proj, MLP residual consumes down_proj, and the next mixer consumes the MLP residual's RMSNorm output. A walk that tried to group all 128 residual launches into one region would reorder across those edges. This module refuses that grouping rather than emit it.",
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 0,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.0,
+    "product_us": 0.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dispatches_removed": 0,
+   "form": "producer_consumer_boundary",
+   "host_encode_already_falsified_as_the_token": "NEGATIVE_SCIENCE L6 Type-1 kill: ICB removes host encode; after residency batching that is ~0.4% of wall. THE_TOKEN_IS_GPU_BOUND: host gap 0.8 ms of 28.44. The 6.25 us class is on-device launch and teardown, which kernel fusion / a persistent occupancy region / an FPGA spatial pipeline can remove and ICB replay cannot be assumed to.",
+   "icb_is_the_wrong_textbook_for_the_6_25us_class": true,
+   "id": "residual_rmsnorm_is_a_boundary_not_a_region",
+   "judgment": "NO_PRODUCER_CONSUMER_BOUNDARY",
+   "launches_after": 128,
+   "metal_blockers": {
+    "argument_buffers": "n/a as a standalone region",
+    "dynamic_shapes": "none",
+    "icb": "replaying 128 residual launches without the GEMVs that produce them is not a legal graph",
+    "resource_residency": "n/a",
+    "routing_dependence": "none"
+   },
+   "motifs": [
+    "mixer_add_residual_rmsnorm",
+    "mlp_add_residual_rmsnorm"
+   ],
+   "not_628_to_500": true,
+   "not_a_fusion_plan": "this is a negative: FUSE_ADD_RMSNORM already folded the adjacent RMSNorm in; further folding belongs to the producer regions, not to residual as a thing",
+   "removed_per_risk_unit": 0.0,
+   "risk": 2,
+   "sealed_dispatches": 128,
+   "why": "128 sealed residual+RMSNorm launches look like a high-frequency motif, and they are. They are not a region. They sit on the producer-consumer boundary between mixer and MLP and between layer i and layer i+1. Collapsing them requires absorbing the preceding GEMV (mlp_suffix / dn_layer / gqa_layer). Standalone: 128 -> 128, zero removed.",
+   "why_not_628_to_500": "the goalpost is a PersistentPhysicalRegion, not shaving 128 launches. A candidate that happens to remove 128 is still a region judgment, not a 628 -> 500 plan"
+  },
+  {
+   "blocked_today": true,
+   "cheapest_falsifier": "Count distinct GEMV launch geometries on the sealed graph (already in this census: pair-concat, fused QKV, fused gate_up_swiglu, vanilla geo_tpr64, embed lookup, lm_head). If they do not share a dispatch ABI, a single persistent queue is several kernels wearing a trench coat. That is a source reading.",
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 257,
+    "not_a_hardware_measurement": true,
+    "product_ms": 1.60625,
+    "product_us": 1606.25,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dispatches_removed": 257,
+   "form": "representation_native_region",
+   "host_encode_already_falsified_as_the_token": "NEGATIVE_SCIENCE L6 Type-1 kill: ICB removes host encode; after residency batching that is ~0.4% of wall. THE_TOKEN_IS_GPU_BOUND: host gap 0.8 ms of 28.44. The 6.25 us class is on-device launch and teardown, which kernel fusion / a persistent occupancy region / an FPGA spatial pipeline can remove and ICB replay cannot be assumed to.",
+   "icb_is_the_wrong_textbook_for_the_6_25us_class": true,
+   "id": "representation_decode_persistent_queue",
+   "judgment": "YES_REPRESENTATION_NATIVE",
+   "launches_after": 1,
+   "metal_blockers": {
+    "argument_buffers": "a device-side worklist of (codes, scales, in, out, rows) is exactly an argument-buffer table. Today's GEMV helpers bind those per launch with set_buffer + set_bytes",
+    "dynamic_shapes": "GEMV grids differ by organ (hidden, intermediate, vocab, concat rows). A persistent kernel can loop variable rows; a captured ICB needs one command per shape class",
+    "icb": "GPU-encoded MTLIndirectCommandBuffer is Metal's persistent-kernel analogue. Host-encoded ICB is Type-1 killed. Metal compute cannot dispatch other kernels except by encoding into an ICB. Blocked today: no such interpreter is in the decode path, and most GEMVs still use set_bytes",
+    "resource_residency": "weights are already resident. The queue does not move them",
+    "routing_dependence": "GEMVs are interleaved with DN/GQA consumers. You cannot run all 258 representation-decode launches first. A persistent kernel has to stay alive across the whole token and accept a sequenced worklist"
+   },
+   "motifs": [
+    "embed_lookup",
+    "dn_inproj_pair_concat",
+    "dn_out_proj",
+    "gqa_fused_qkv",
+    "gqa_o_proj",
+    "mlp_fused_gate_up_swiglu",
+    "mlp_down_proj",
+    "lm_head"
+   ],
+   "not_628_to_500": true,
+   "not_a_fusion_plan": "grouping by representation decode, not by which FUSE_* bit would merge two of these GEMVs",
+   "removed_per_risk_unit": 51.4,
+   "risk": 5,
+   "sealed_dispatches": 258,
+   "why": "258 of 628 launches are representation decode of packed weights. That is the high-frequency family. It is not one region today because the GEMVs are sequenced through mixer and MLP residuals. CUDA persistent kernels / FPGA spatial GEMV pipelines are the textbooks. 258 -> 1 would remove 257 and is blocked on Metal by the absence of a device-side enqueue that keeps occupancy between organs.",
+   "why_not_628_to_500": "the goalpost is a PersistentPhysicalRegion, not shaving 128 launches. A candidate that happens to remove 128 is still a region judgment, not a 628 -> 500 plan"
+  },
+  {
+   "blocked_today": true,
+   "cheapest_falsifier": "Walk layers 4..7 and 8..11 and assert identical motif sequences (this module already does: 39 launches per tile after layer 0). That confirms the skeleton. The remaining blocker is GQA TG memory, same as gqa_layer_static_skeleton.",
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 609,
+    "not_a_hardware_measurement": true,
+    "product_ms": 3.80625,
+    "product_us": 3806.25,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dispatches_removed": 609,
+   "form": "static_skeleton_with_dynamic_token_or_route_slots",
+   "host_encode_already_falsified_as_the_token": "NEGATIVE_SCIENCE L6 Type-1 kill: ICB removes host encode; after residency batching that is ~0.4% of wall. THE_TOKEN_IS_GPU_BOUND: host gap 0.8 ms of 28.44. The 6.25 us class is on-device launch and teardown, which kernel fusion / a persistent occupancy region / an FPGA spatial pipeline can remove and ICB replay cannot be assumed to.",
+   "icb_is_the_wrong_textbook_for_the_6_25us_class": true,
+   "id": "hybrid_4_layer_tile",
+   "judgment": "YES_STATIC_SKELETON",
+   "launches_after": 16,
+   "metal_blockers": {
+    "argument_buffers": "a tile kernel / ICB would have to rebind every organ's weights; argument buffers are the slot mechanism",
+    "dynamic_shapes": "inherits GQA MHA's growing threadgroup memory; the DN half of the tile is static",
+    "icb": "the 4-layer tile is the CUDA-graph unit one would capture if MHA TG memory were padded to max_seq. Host replay still would not be the 6.25 us class",
+    "resource_residency": "weights and state already resident",
+    "routing_dependence": "none. (layer+1) % 4 == 0 is compile-time. The tile is the static mixer schedule, not a route"
+   },
+   "motifs": [
+    "mixer_input_rmsnorm",
+    "dn_inproj_qkvz",
+    "dn_inproj_ba",
+    "dn_inproj_pair_concat",
+    "dn_rearrange_conv",
+    "dn_ba_to_decay",
+    "dn_gated_delta",
+    "dn_gated_delta_fused_ba",
+    "dn_gated_rmsnorm",
+    "dn_out_proj",
+    "gqa_q_proj",
+    "gqa_k_proj",
+    "gqa_v_proj",
+    "gqa_fused_qkv",
+    "gqa_qk_norm_rope_cache",
+    "gqa_mha_decode",
+    "gqa_sigmoid_gate",
+    "gqa_o_proj",
+    "mixer_add_residual",
+    "mixer_add_residual_rmsnorm",
+    "mlp_post_attn_rmsnorm",
+    "mlp_gate_proj",
+    "mlp_up_proj",
+    "mlp_swiglu",
+    "mlp_fused_gate_up",
+    "mlp_fused_gate_up_swiglu",
+    "mlp_down_proj",
+    "mlp_add_residual",
+    "mlp_add_residual_rmsnorm"
+   ],
+   "not_628_to_500": true,
+   "not_a_fusion_plan": "the motif is layer repetition of the hybrid schedule, which is already in qwen38_mixer_kind; grouping tiles is not a new FUSE_* bit",
+   "removed_per_risk_unit": 121.8,
+   "risk": 5,
+   "sealed_dispatches": 625,
+   "why": "After layer 0's extra RMSNorm, the stack is 15 identical 39-dispatch tiles of DN,DN,DN,GQA plus four MLP suffixes, plus one 40-dispatch first tile. Mixer kind is static, so the tile is a static skeleton with a layer-base slot. 625 layer launches -> 16 tile launches removes 609. Blocked by the GQA dynamic TG memory inside the tile and by the lack of a Metal persistent occupancy story for a 39-kernel DAG.",
+   "why_not_628_to_500": "the goalpost is a PersistentPhysicalRegion, not shaving 128 launches. A candidate that happens to remove 128 is still a region judgment, not a 628 -> 500 plan"
+  },
+  {
+   "blocked_today": true,
+   "cheapest_falsifier": "Already run: serial_token_encoder (one compute encoder, still 628 dispatches inside) did not separate wall (DISPATCH_CEREMONY / GPU_IDLE_GAP). ICB pre-encode was Type-1 killed (NEGATIVE_SCIENCE L6). A new falsifier is only needed if someone claims a *device-side* persistent occupancy region, which this tree does not have. Per-kernel GPU timestamps for one decode step remain the cheapest probe of whether the 628 survivors are the 6.25 us class at all.",
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 627,
+    "not_a_hardware_measurement": true,
+    "product_ms": 3.91875,
+    "product_us": 3918.75,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dispatches_removed": 627,
+   "form": "graph_replay_equivalent",
+   "host_encode_already_falsified_as_the_token": "NEGATIVE_SCIENCE L6 Type-1 kill: ICB removes host encode; after residency batching that is ~0.4% of wall. THE_TOKEN_IS_GPU_BOUND: host gap 0.8 ms of 28.44. The 6.25 us class is on-device launch and teardown, which kernel fusion / a persistent occupancy region / an FPGA spatial pipeline can remove and ICB replay cannot be assumed to.",
+   "icb_is_the_wrong_textbook_for_the_6_25us_class": true,
+   "id": "token_graph_persistent_executor",
+   "judgment": "YES_GRAPH_REPLAY",
+   "launches_after": 1,
+   "metal_blockers": {
+    "argument_buffers": "almost every launch on this graph uses set_bytes for shapes, eps, position, or token id. L6: ICB cannot capture set_bytes without argument-buffer scalars. Embed's token id and GQA's position are the actual per-token slots; the rest are constants",
+    "dynamic_shapes": "embed token_id (scalar), RoPE position (scalar), MHA seq_len in an argument buffer, MHA threadgroup memory growing with seq. Across tokens the only topology change is that TG length. Pad it and the DAG is static",
+    "icb": "MTLIndirectCommandBuffer is Metal's CUDA-graph analogue. Type-1 killed for this decode token graph: the cost ICB removes (host encode) had already been removed by residency batching (~0.4% of wall). serial_token_encoder already covers the token with one compute encoder and did not separate complete-wall. ICB replay is not the PersistentPhysicalRegion that removes on-device launch",
+    "resource_residency": "weights and sequence state are already resident on UMA; the contract's residency preconditions hold",
+    "routing_dependence": "none on this model. Argmax -> next embed token is a slot, not a route. Mixer kind is static"
+   },
+   "motifs": [
+    "embed_lookup",
+    "mixer_input_rmsnorm",
+    "dn_inproj_qkvz",
+    "dn_inproj_ba",
+    "dn_inproj_pair_concat",
+    "dn_rearrange_conv",
+    "dn_ba_to_decay",
+    "dn_gated_delta",
+    "dn_gated_delta_fused_ba",
+    "dn_gated_rmsnorm",
+    "dn_out_proj",
+    "gqa_q_proj",
+    "gqa_k_proj",
+    "gqa_v_proj",
+    "gqa_fused_qkv",
+    "gqa_qk_norm_rope_cache",
+    "gqa_mha_decode",
+    "gqa_sigmoid_gate",
+    "gqa_o_proj",
+    "mixer_add_residual",
+    "mixer_add_residual_rmsnorm",
+    "mlp_post_attn_rmsnorm",
+    "mlp_gate_proj",
+    "mlp_up_proj",
+    "mlp_swiglu",
+    "mlp_fused_gate_up",
+    "mlp_fused_gate_up_swiglu",
+    "mlp_down_proj",
+    "mlp_add_residual",
+    "mlp_add_residual_rmsnorm",
+    "final_rmsnorm",
+    "lm_head",
+    "argmax"
+   ],
+   "not_628_to_500": true,
+   "not_a_fusion_plan": "this is the whole token as one region, which is the question the task asked; it is not 628 -> 500",
+   "removed_per_risk_unit": 125.4,
+   "risk": 5,
+   "sealed_dispatches": 628,
+   "why": "The PersistentPhysicalRegion invariant: when state and bindings remain valid, repeated host entry is not semantically required. TPU static execution / CUDA Graphs / FPGA spatial pipelines are the textbooks. On Metal today the graph-replay equivalent (ICB) does not remove the cost class that fusion's 336 actually moved. A long-lived on-device state machine would. 628 -> 1 removes 627 host launches and an unknown fraction of on-device launch tax. That unknown is why this is not 'zero the token'.",
+   "why_not_628_to_500": "the goalpost is a PersistentPhysicalRegion, not shaving 128 launches. A candidate that happens to remove 128 is still a region judgment, not a 628 -> 500 plan"
+  }
+ ],
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. Motif counts are re-derived from encode/dispatch call sites in crates/hawking-core/src/model/qwen38_hybrid_decode.rs (one dispatch_threads = one launch) and must reconcile to the established 628/964 totals or this module refuses to emit. The 6.25 us marginal is cited from receipts/future/RESIDENT_TOKEN_BUDGET.json, not re-measured. gpu_authority is false. evidence_class is STATIC_ONLY.",
+ "decode_path_markers": {
+  "missing": [],
+  "ok": true,
+  "reading": "generate_greedy still calls session.step for every prompt and decode token; step always encode_full_token, which always runs lm_head + argmax. Prefill-skip-terminal described in receipts/future/DISPATCH_CEREMONY.json is not in this checkout's decode.rs.",
+  "required_present": {
+   "argmax_two_pass_default_off": true,
+   "encode_embed": true,
+   "encode_full_token": true,
+   "encode_layers": true,
+   "encode_terminal": true,
+   "generate_greedy_calls_step": true,
+   "mlp_from_env": true,
+   "serial_encoder_default_false": true,
+   "step_calls_full_token": true
+  },
+  "skip_terminal_in_this_tree": false,
+  "source": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+ },
+ "established": {
+  "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json",
+  "cited_fusion_saved_ms": 2.1,
+  "cited_marginal_us": 6.25,
+  "do_not_assume_remaining_628_cost_the_same": true,
+  "do_not_extrapolate_linearly_to_zero": true,
+  "fusion_removed": 336,
+  "layer_structure": {
+   "deltanet_layers": 48,
+   "embed": 1,
+   "gqa_layers": 16,
+   "mixer_rule": "(layer + 1) % QWEN38_FULL_ATTENTION_INTERVAL == 0 -> GQA",
+   "mlp_layers": 64,
+   "terminal": "lm_head + argmax (final RMSNorm folded under sealed)"
+  },
+  "marginal_caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+  "sealed_dispatches_per_decoded_token": 628,
+  "unfused_dispatches_per_decoded_token": 964
+ },
+ "evidence_class": "STATIC_ONLY",
+ "families": {
+  "axis": "representation_decode | state_update | producer_consumer | norm | residual | routing | elementwise",
+  "reading": "Each launch has one primary family, so families partition. Fused add_residual_rmsnorm is counted as residual and tagged as norm. elementwise is SwiGLU, which sealed fusion folded into the GEMV (count 0). routing is the GQA sigmoid gate: value-dependent arithmetic, not expert routing. This model has no MoE on the decode path; mixer kind is static.",
+  "sealed": {
+   "elementwise": 0,
+   "norm": 49,
+   "producer_consumer": 65,
+   "representation_decode": 258,
+   "residual": 128,
+   "routing": 16,
+   "state_update": 112
+  },
+  "unfused": {
+   "elementwise": 64,
+   "norm": 177,
+   "producer_consumer": 65,
+   "representation_decode": 402,
+   "residual": 128,
+   "routing": 16,
+   "state_update": 112
+  }
+ },
+ "fusion_delta_is_not_a_plan": {
+  "launches_that_appeared": 256,
+  "launches_that_vanished": 592,
+  "net_removed": 336,
+  "reading": "Fusion does not delete work; it replaces launch kinds. 592 unfused launches vanished, 256 sealed launches appeared (the fused kernels), net 336. Established net is 336.",
+  "rows": [
+   {
+    "id": "mixer_input_rmsnorm",
+    "removed_or_added": 63,
+    "sealed": 1,
+    "unfused": 64
+   },
+   {
+    "id": "dn_inproj_qkvz",
+    "removed_or_added": 48,
+    "sealed": 0,
+    "unfused": 48
+   },
+   {
+    "id": "dn_inproj_ba",
+    "removed_or_added": 48,
+    "sealed": 0,
+    "unfused": 48
+   },
+   {
+    "id": "dn_inproj_pair_concat",
+    "removed_or_added": -48,
+    "sealed": 48,
+    "unfused": 0
+   },
+   {
+    "id": "gqa_q_proj",
+    "removed_or_added": 16,
+    "sealed": 0,
+    "unfused": 16
+   },
+   {
+    "id": "gqa_k_proj",
+    "removed_or_added": 16,
+    "sealed": 0,
+    "unfused": 16
+   },
+   {
+    "id": "gqa_v_proj",
+    "removed_or_added": 16,
+    "sealed": 0,
+    "unfused": 16
+   },
+   {
+    "id": "gqa_fused_qkv",
+    "removed_or_added": -16,
+    "sealed": 16,
+    "unfused": 0
+   },
+   {
+    "id": "mixer_add_residual",
+    "removed_or_added": 64,
+    "sealed": 0,
+    "unfused": 64
+   },
+   {
+    "id": "mixer_add_residual_rmsnorm",
+    "removed_or_added": -64,
+    "sealed": 64,
+    "unfused": 0
+   },
+   {
+    "id": "mlp_post_attn_rmsnorm",
+    "removed_or_added": 64,
+    "sealed": 0,
+    "unfused": 64
+   },
+   {
+    "id": "mlp_gate_proj",
+    "removed_or_added": 64,
+    "sealed": 0,
+    "unfused": 64
+   },
+   {
+    "id": "mlp_up_proj",
+    "removed_or_added": 64,
+    "sealed": 0,
+    "unfused": 64
+   },
+   {
+    "id": "mlp_swiglu",
+    "removed_or_added": 64,
+    "sealed": 0,
+    "unfused": 64
+   },
+   {
+    "id": "mlp_fused_gate_up_swiglu",
+    "removed_or_added": -64,
+    "sealed": 64,
+    "unfused": 0
+   },
+   {
+    "id": "mlp_add_residual",
+    "removed_or_added": 64,
+    "sealed": 0,
+    "unfused": 64
+   },
+   {
+    "id": "mlp_add_residual_rmsnorm",
+    "removed_or_added": -64,
+    "sealed": 64,
+    "unfused": 0
+   },
+   {
+    "id": "final_rmsnorm",
+    "removed_or_added": 1,
+    "sealed": 0,
+    "unfused": 1
+   }
+  ]
+ },
+ "gaps_closed": [
+  "628 and 964 partitioned into semantic motifs at launch grain, not copied as a headline",
+  "each motif carries a PersistentPhysicalRegion judgment or an explicit negative",
+  "unreconciled census refuses rather than emitting"
+ ],
+ "geometry_from_source": {
+  "constants": {
+   "QWEN38_DELTANET_LAYERS": 48,
+   "QWEN38_FULL_ATTENTION_INTERVAL": 4,
+   "QWEN38_GQA_LAYERS": 16,
+   "QWEN38_HIDDEN": 5120,
+   "QWEN38_INTERMEDIATE": 17408,
+   "QWEN38_LAYERS": 64,
+   "QWEN38_VOCAB": 248320
+  },
+  "source": "crates/hawking-core/src/model/qwen38_geometry.rs"
+ },
+ "gpu_authority": false,
+ "helper_markers": {
+  "missing": [],
+  "ok": true,
+  "required_present": {
+   "encode_add_residual_rmsnorm": true,
+   "encode_ba_to_decay": true,
+   "encode_deltanet": true,
+   "encode_dense_mlp": true,
+   "encode_dn_ba_and_delta": true,
+   "encode_embed": true,
+   "encode_full_token": true,
+   "encode_fused_gate_up": true,
+   "encode_fused_pair_concat": true,
+   "encode_fused_qkv": true,
+   "encode_gated_delta": true,
+   "encode_gated_delta_fused_ba": true,
+   "encode_gqa": true,
+   "encode_layers": true,
+   "encode_rearrange": true,
+   "encode_rmsnorm": true,
+   "encode_sigmoid_gate": true,
+   "encode_terminal": true,
+   "fuse_ba_delta_off_default": true,
+   "mha_decode_f32_tcb": true,
+   "qwen_next_add_residual_tcb": true,
+   "sample_argmax_f32_tcb": true
+  },
+  "source": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+ },
+ "high_frequency_motifs": [
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 64,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.4,
+    "product_us": 400.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_add_residual_rmsnorm",
+   "family": "residual",
+   "high_frequency": true,
+   "id": "mixer_add_residual_rmsnorm",
+   "kernel": "qwen38 add_residual_rmsnorm",
+   "region": {
+    "absorbed_by": [
+     "residual_rmsnorm_is_a_boundary_not_a_region",
+     "dn_layer_state_machine",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor",
+     "gqa_layer_static_skeleton",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor",
+     "mlp_suffix_representation_region",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": null,
+    "standalone": false,
+    "why": "producer-consumer boundary. 128 sealed looks like a region and is not"
+   },
+   "sealed_count": 64,
+   "tags": [
+    "residual",
+    "norm",
+    "producer_consumer",
+    "operation_sequence"
+   ],
+   "unfused_count": 0,
+   "what": "mixer residual + post-attention RMSNorm in one launch. Sealed FUSE_ADD_RMSNORM. Counted once as residual; tagged as norm."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 64,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.4,
+    "product_us": 400.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_add_residual_rmsnorm",
+   "family": "residual",
+   "high_frequency": true,
+   "id": "mlp_add_residual_rmsnorm",
+   "kernel": "qwen38 add_residual_rmsnorm",
+   "region": {
+    "absorbed_by": [
+     "residual_rmsnorm_is_a_boundary_not_a_region",
+     "mlp_suffix_representation_region",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": null,
+    "standalone": false,
+    "why": "producer-consumer boundary and the MLP suffix epilogue"
+   },
+   "sealed_count": 64,
+   "tags": [
+    "residual",
+    "norm",
+    "producer_consumer",
+    "operation_sequence"
+   ],
+   "unfused_count": 0,
+   "what": "MLP residual + next mixer input RMSNorm (last layer: final norm) in one launch. Sealed FUSE_ADD_RMSNORM."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 64,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.4,
+    "product_us": 400.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_named_matvec / encode_q4_matvec (down_proj)",
+   "family": "representation_decode",
+   "high_frequency": true,
+   "id": "mlp_down_proj",
+   "kernel": "geo_tpr64 matvec",
+   "region": {
+    "absorbed_by": [
+     "representation_decode_persistent_queue",
+     "token_graph_persistent_executor",
+     "mlp_suffix_representation_region",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "representation_native_region",
+    "standalone": false,
+    "why": "survives every fusion set; epilogue-fuses with residual_rmsnorm in the MLP suffix region"
+   },
+   "sealed_count": 64,
+   "tags": [
+    "representation_decode",
+    "layer_repetition"
+   ],
+   "unfused_count": 64,
+   "what": "MLP down_proj GEMV. Intermediate -> hidden. Survives every fusion set."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 64,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.4,
+    "product_us": 400.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_fused_gate_up(with_swiglu=true)",
+   "family": "representation_decode",
+   "high_frequency": true,
+   "id": "mlp_fused_gate_up_swiglu",
+   "kernel": "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+   "region": {
+    "absorbed_by": [
+     "representation_decode_persistent_queue",
+     "token_graph_persistent_executor",
+     "mlp_suffix_representation_region",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "representation_native_region",
+    "standalone": false,
+    "why": "first stage of the MLP suffix region"
+   },
+   "sealed_count": 64,
+   "tags": [
+    "representation_decode",
+    "operation_sequence",
+    "layer_repetition"
+   ],
+   "unfused_count": 0,
+   "what": "fused gate+up+SwiGLU. Sealed FUSE_MLP=swiglu. One launch replaces three."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 48,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.3,
+    "product_us": 300.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_ba_to_decay",
+   "family": "producer_consumer",
+   "high_frequency": true,
+   "id": "dn_ba_to_decay",
+   "kernel": "qwen80_ba_to_decay_beta_f32",
+   "region": {
+    "absorbed_by": [
+     "dn_ba_delta_existing_lever",
+     "dn_layer_state_machine",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "long_lived_state_machine",
+    "standalone": false,
+    "why": "producer for gated-delta; existing FUSE_BA_DELTA folds it"
+   },
+   "sealed_count": 48,
+   "tags": [
+    "producer_consumer",
+    "layer_repetition"
+   ],
+   "unfused_count": 48,
+   "what": "ba activations + A_log + dt_bias -> decay, beta. Producer for gated-delta. Folded by FUSE_BA_DELTA (default Off on the 628 graph)."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 48,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.3,
+    "product_us": 300.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_gated_delta",
+   "family": "state_update",
+   "high_frequency": true,
+   "id": "dn_gated_delta",
+   "kernel": "qwen38_gated_delta_decode_vi_simd",
+   "region": {
+    "absorbed_by": [
+     "dn_ba_delta_existing_lever",
+     "dn_layer_state_machine",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "long_lived_state_machine",
+    "standalone": false,
+    "why": "the recurrent step; the DN region is this plus its producers and epilogue"
+   },
+   "sealed_count": 48,
+   "tags": [
+    "state_update",
+    "layer_repetition"
+   ],
+   "unfused_count": 48,
+   "what": "recurrent state machine step. Reads/writes rec_state at a per-layer slot. O(1) in sequence length."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 48,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.3,
+    "product_us": 300.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_gated_rmsnorm / encode_deltanet inline",
+   "family": "norm",
+   "high_frequency": true,
+   "id": "dn_gated_rmsnorm",
+   "kernel": "qwen80_deltanet_gated_rmsnorm_tg",
+   "region": {
+    "absorbed_by": [
+     "dn_layer_state_machine",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "long_lived_state_machine",
+    "standalone": false,
+    "why": "norm on rec_out; epilogue of the recurrent step, before out_proj"
+   },
+   "sealed_count": 48,
+   "tags": [
+    "norm",
+    "layer_repetition"
+   ],
+   "unfused_count": 48,
+   "what": "per-head gated RMSNorm on rec_out * z, before out_proj."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 48,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.3,
+    "product_us": 300.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_fused_pair_concat",
+   "family": "representation_decode",
+   "high_frequency": true,
+   "id": "dn_inproj_pair_concat",
+   "kernel": "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+   "region": {
+    "absorbed_by": [
+     "representation_decode_persistent_queue",
+     "token_graph_persistent_executor",
+     "dn_layer_state_machine",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "representation_native_region",
+    "standalone": false,
+    "why": "representation decode of two packed weights; first stage of the DN state machine"
+   },
+   "sealed_count": 48,
+   "tags": [
+    "representation_decode",
+    "layer_repetition",
+    "operation_sequence"
+   ],
+   "unfused_count": 0,
+   "what": "fused qkvz+ba pair-concat GEMV. Sealed FUSE_DN_INPROJ. One launch replaces two independent matvecs."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 48,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.3,
+    "product_us": 300.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_named_matvec / encode_q4_matvec (out_proj)",
+   "family": "representation_decode",
+   "high_frequency": true,
+   "id": "dn_out_proj",
+   "kernel": "geo_tpr64 matvec",
+   "region": {
+    "absorbed_by": [
+     "representation_decode_persistent_queue",
+     "token_graph_persistent_executor",
+     "dn_layer_state_machine",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "representation_native_region",
+    "standalone": false,
+    "why": "GEMV epilogue of the DN sequence; residual follows it"
+   },
+   "sealed_count": 48,
+   "tags": [
+    "representation_decode",
+    "layer_repetition"
+   ],
+   "unfused_count": 48,
+   "what": "DeltaNet out_proj GEMV. Gated vector -> hidden."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 48,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.3,
+    "product_us": 300.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_deltanet inline / encode_rearrange",
+   "family": "state_update",
+   "high_frequency": true,
+   "id": "dn_rearrange_conv",
+   "kernel": "qwen38_qkvz_rearrange_conv_l2_f32",
+   "region": {
+    "absorbed_by": [
+     "dn_layer_state_machine",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "long_lived_state_machine",
+    "standalone": false,
+    "why": "writes conv_state; O(1) in seq; not a region without the rest of the DN sequence"
+   },
+   "sealed_count": 48,
+   "tags": [
+    "state_update",
+    "layer_repetition"
+   ],
+   "unfused_count": 48,
+   "what": "rearrange qkvz, depthwise conv1d, L2. Writes conv_state at a per-layer slot. O(1) in sequence length."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 16,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.1,
+    "product_us": 100.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_fused_qkv",
+   "family": "representation_decode",
+   "high_frequency": true,
+   "id": "gqa_fused_qkv",
+   "kernel": "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+   "region": {
+    "absorbed_by": [
+     "representation_decode_persistent_queue",
+     "token_graph_persistent_executor",
+     "gqa_layer_static_skeleton",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "representation_native_region",
+    "standalone": false,
+    "why": "first stage of the GQA skeleton"
+   },
+   "sealed_count": 16,
+   "tags": [
+    "representation_decode",
+    "layer_repetition",
+    "operation_sequence"
+   ],
+   "unfused_count": 0,
+   "what": "fused QKV GEMV. Sealed FUSE_GQA_QKV. One launch replaces three."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 16,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.1,
+    "product_us": 100.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [
+    "seq_len",
+    "threadgroup_memory"
+   ],
+   "encode": "mha_decode_f32_tcb",
+   "family": "producer_consumer",
+   "high_frequency": true,
+   "id": "gqa_mha_decode",
+   "kernel": "mha_decode_f32",
+   "region": {
+    "absorbed_by": [
+     "gqa_layer_static_skeleton",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "static_skeleton_with_dynamic_token_or_route_slots",
+    "standalone": false,
+    "why": "the dynamic-shape launch (TG memory grows with seq). Pad to max_seq and the GQA skeleton is static"
+   },
+   "sealed_count": 16,
+   "tags": [
+    "producer_consumer",
+    "state_update",
+    "layer_repetition"
+   ],
+   "unfused_count": 16,
+   "what": "attention over the growing KV cache. Grid is static (n_heads * tg). Threadgroup memory is (seq_len + tg) floats, so it grows every token. seq_len already lives in a KernelArgBuffer, not set_bytes \u2014 the only launch on this graph that already uses argument buffers for scalars."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 16,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.1,
+    "product_us": 100.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_named_matvec / encode_q4_matvec (o_proj)",
+   "family": "representation_decode",
+   "high_frequency": true,
+   "id": "gqa_o_proj",
+   "kernel": "geo_tpr64 matvec",
+   "region": {
+    "absorbed_by": [
+     "representation_decode_persistent_queue",
+     "token_graph_persistent_executor",
+     "gqa_layer_static_skeleton",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "representation_native_region",
+    "standalone": false,
+    "why": "GEMV epilogue of GQA; residual follows it"
+   },
+   "sealed_count": 16,
+   "tags": [
+    "representation_decode",
+    "layer_repetition"
+   ],
+   "unfused_count": 16,
+   "what": "GQA o_proj GEMV."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 16,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.1,
+    "product_us": 100.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [
+    "position"
+   ],
+   "encode": "encode_gqa inline / encode_rope_cache",
+   "family": "state_update",
+   "high_frequency": true,
+   "id": "gqa_qk_norm_rope_cache",
+   "kernel": "qwen38_gqa_qk_norm_rope_cache_tg",
+   "region": {
+    "absorbed_by": [
+     "gqa_layer_static_skeleton",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "static_skeleton_with_dynamic_token_or_route_slots",
+    "standalone": false,
+    "why": "position is a scalar slot; writes KV. Not a region without MHA"
+   },
+   "sealed_count": 16,
+   "tags": [
+    "state_update",
+    "layer_repetition"
+   ],
+   "unfused_count": 16,
+   "what": "Q/K RMSNorm, RoPE, write K/V cache at position. Grid is static (heads x tg). Position is set_bytes."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 16,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.1,
+    "product_us": 100.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_sigmoid_gate",
+   "family": "routing",
+   "high_frequency": true,
+   "id": "gqa_sigmoid_gate",
+   "kernel": "qwen38_attention_apply_sigmoid_gate",
+   "region": {
+    "absorbed_by": [
+     "gqa_layer_static_skeleton",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": null,
+    "standalone": false,
+    "why": "value-dependent elementwise, not expert routing; does not change topology"
+   },
+   "sealed_count": 16,
+   "tags": [
+    "routing",
+    "layer_repetition"
+   ],
+   "unfused_count": 16,
+   "what": "elementwise sigmoid gate of attention. Value-dependent arithmetic, not expert routing: it does not change dispatch topology. This model's MLP is dense; mixer kind is a static function of layer."
+  }
+ ],
+ "high_frequency_reading": "624 of 628 sealed launches belong to motifs that fire at least 16 times (the 64-wide MLP suffix and fused residuals, the 48-wide DeltaNet sequence, the 16-wide GQA sequence). The four leftover singletons are embed, layer-0 mixer RMSNorm, lm_head, and argmax.",
+ "high_frequency_sealed_sum": 624,
+ "high_frequency_threshold": 16,
+ "layer_repetition": {
+  "first_tile_dispatches": 40,
+  "later_tile_dispatches": [
+   39
+  ],
+  "later_tiles_identical": true,
+  "n_tiles": 16,
+  "reading": "mixer_kind is (layer+1) % 4 == 0 -> GQA. After layer 0's extra input RMSNorm, each 4-layer tile is an identical dispatch sequence. That is the layer-repetition motif.",
+  "tiles": [
+   {
+    "dispatches": 40,
+    "kinds": [
+     "dn",
+     "dn",
+     "dn",
+     "gqa"
+    ],
+    "layers": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "per_layer": [
+     11,
+     10,
+     10,
+     9
+    ]
+   },
+   {
+    "dispatches": 39,
+    "kinds": [
+     "dn",
+     "dn",
+     "dn",
+     "gqa"
+    ],
+    "layers": [
+     4,
+     5,
+     6,
+     7
+    ],
+    "per_layer": [
+     10,
+     10,
+     10,
+     9
+    ]
+   },
+   {
+    "dispatches": 39,
+    "kinds": [
+     "dn",
+     "dn",
+     "dn",
+     "gqa"
+    ],
+    "layers": [
+     8,
+     9,
+     10,
+     11
+    ],
+    "per_layer": [
+     10,
+     10,
+     10,
+     9
+    ]
+   },
+   {
+    "dispatches": 39,
+    "kinds": [
+     "dn",
+     "dn",
+     "dn",
+     "gqa"
+    ],
+    "layers": [
+     12,
+     13,
+     14,
+     15
+    ],
+    "per_layer": [
+     10,
+     10,
+     10,
+     9
+    ]
+   },
+   {
+    "dispatches": 39,
+    "kinds": [
+     "dn",
+     "dn",
+     "dn",
+     "gqa"
+    ],
+    "layers": [
+     16,
+     17,
+     18,
+     19
+    ],
+    "per_layer": [
+     10,
+     10,
+     10,
+     9
+    ]
+   },
+   {
+    "dispatches": 39,
+    "kinds": [
+     "dn",
+     "dn",
+     "dn",
+     "gqa"
+    ],
+    "layers": [
+     20,
+     21,
+     22,
+     23
+    ],
+    "per_layer": [
+     10,
+     10,
+     10,
+     9
+    ]
+   },
+   {
+    "dispatches": 39,
+    "kinds": [
+     "dn",
+     "dn",
+     "dn",
+     "gqa"
+    ],
+    "layers": [
+     24,
+     25,
+     26,
+     27
+    ],
+    "per_layer": [
+     10,
+     10,
+     10,
+     9
+    ]
+   },
+   {
+    "dispatches": 39,
+    "kinds": [
+     "dn",
+     "dn",
+     "dn",
+     "gqa"
+    ],
+    "layers": [
+     28,
+     29,
+     30,
+     31
+    ],
+    "per_layer": [
+     10,
+     10,
+     10,
+     9
+    ]
+   },
+   {
+    "dispatches": 39,
+    "kinds": [
+     "dn",
+     "dn",
+     "dn",
+     "gqa"
+    ],
+    "layers": [
+     32,
+     33,
+     34,
+     35
+    ],
+    "per_layer": [
+     10,
+     10,
+     10,
+     9
+    ]
+   },
+   {
+    "dispatches": 39,
+    "kinds": [
+     "dn",
+     "dn",
+     "dn",
+     "gqa"
+    ],
+    "layers": [
+     36,
+     37,
+     38,
+     39
+    ],
+    "per_layer": [
+     10,
+     10,
+     10,
+     9
+    ]
+   },
+   {
+    "dispatches": 39,
+    "kinds": [
+     "dn",
+     "dn",
+     "dn",
+     "gqa"
+    ],
+    "layers": [
+     40,
+     41,
+     42,
+     43
+    ],
+    "per_layer": [
+     10,
+     10,
+     10,
+     9
+    ]
+   },
+   {
+    "dispatches": 39,
+    "kinds": [
+     "dn",
+     "dn",
+     "dn",
+     "gqa"
+    ],
+    "layers": [
+     44,
+     45,
+     46,
+     47
+    ],
+    "per_layer": [
+     10,
+     10,
+     10,
+     9
+    ]
+   },
+   {
+    "dispatches": 39,
+    "kinds": [
+     "dn",
+     "dn",
+     "dn",
+     "gqa"
+    ],
+    "layers": [
+     48,
+     49,
+     50,
+     51
+    ],
+    "per_layer": [
+     10,
+     10,
+     10,
+     9
+    ]
+   },
+   {
+    "dispatches": 39,
+    "kinds": [
+     "dn",
+     "dn",
+     "dn",
+     "gqa"
+    ],
+    "layers": [
+     52,
+     53,
+     54,
+     55
+    ],
+    "per_layer": [
+     10,
+     10,
+     10,
+     9
+    ]
+   },
+   {
+    "dispatches": 39,
+    "kinds": [
+     "dn",
+     "dn",
+     "dn",
+     "gqa"
+    ],
+    "layers": [
+     56,
+     57,
+     58,
+     59
+    ],
+    "per_layer": [
+     10,
+     10,
+     10,
+     9
+    ]
+   },
+   {
+    "dispatches": 39,
+    "kinds": [
+     "dn",
+     "dn",
+     "dn",
+     "gqa"
+    ],
+    "layers": [
+     60,
+     61,
+     62,
+     63
+    ],
+    "per_layer": [
+     10,
+     10,
+     10,
+     9
+    ]
+   }
+  ]
+ },
+ "loads": {
+  "resident_token_budget": {
+   "rel": "receipts/future/RESIDENT_TOKEN_BUDGET.json",
+   "status": "LOADED"
+  },
+  "tps_budget_coarse_walk": {
+   "sealed": 628,
+   "unfused": 964
+  }
+ },
+ "motifs": [
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 1,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.00625,
+    "product_us": 6.25,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [
+    "token_id"
+   ],
+   "encode": "encode_embed / encode_embed_mixed",
+   "family": "representation_decode",
+   "high_frequency": false,
+   "id": "embed_lookup",
+   "kernel": "qwen_uniform_q4_embedding_lookup | hgravu | hgravf",
+   "region": {
+    "absorbed_by": [
+     "token_graph_persistent_executor",
+     "representation_decode_persistent_queue"
+    ],
+    "form": "static_skeleton_with_dynamic_token_or_route_slots",
+    "standalone": false,
+    "why": "one launch; token_id is a slot of the token-graph skeleton, not a region"
+   },
+   "sealed_count": 1,
+   "tags": [
+    "representation_decode"
+   ],
+   "unfused_count": 1,
+   "what": "token-indexed packed-weight row lookup into hidden. One launch. Not a GEMV; the token id is a set_bytes slot."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 1,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.00625,
+    "product_us": 6.25,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_rmsnorm",
+   "family": "norm",
+   "high_frequency": false,
+   "id": "mixer_input_rmsnorm",
+   "kernel": "qwen80_residual_rmsnorm_tg",
+   "region": {
+    "absorbed_by": [
+     "dn_layer_state_machine",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": null,
+    "standalone": false,
+    "why": "sealed: layer-0 only. Later layers already folded into the previous MLP residual"
+   },
+   "sealed_count": 1,
+   "tags": [
+    "norm"
+   ],
+   "unfused_count": 64,
+   "what": "mixer input RMSNorm. Layer 0 always runs it. fuse_add_rmsnorm folds layer>0 into the previous MLP residual."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 0,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.0,
+    "product_us": 0.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_named_matvec / encode_q4_matvec (qkvz)",
+   "family": "representation_decode",
+   "high_frequency": false,
+   "id": "dn_inproj_qkvz",
+   "kernel": "geo_tpr64 matvec",
+   "region": {
+    "absorbed_by": [
+     "representation_decode_persistent_queue",
+     "token_graph_persistent_executor",
+     "dn_layer_state_machine",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "representation_native_region",
+    "standalone": false,
+    "why": "unfused GEMV; sealed replaces it with pair-concat"
+   },
+   "sealed_count": 0,
+   "tags": [
+    "representation_decode",
+    "layer_repetition"
+   ],
+   "unfused_count": 48,
+   "what": "DeltaNet in_proj_qkvz GEMV. Unfused only; sealed uses pair-concat."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 0,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.0,
+    "product_us": 0.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_named_matvec / encode_q4_matvec (ba)",
+   "family": "representation_decode",
+   "high_frequency": false,
+   "id": "dn_inproj_ba",
+   "kernel": "geo_tpr64 matvec",
+   "region": {
+    "absorbed_by": [
+     "representation_decode_persistent_queue",
+     "token_graph_persistent_executor",
+     "dn_layer_state_machine",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "representation_native_region",
+    "standalone": false,
+    "why": "unfused GEMV; sealed replaces it with pair-concat"
+   },
+   "sealed_count": 0,
+   "tags": [
+    "representation_decode",
+    "layer_repetition"
+   ],
+   "unfused_count": 48,
+   "what": "DeltaNet in_proj_ba GEMV. Unfused only; sealed uses pair-concat."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 48,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.3,
+    "product_us": 300.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_fused_pair_concat",
+   "family": "representation_decode",
+   "high_frequency": true,
+   "id": "dn_inproj_pair_concat",
+   "kernel": "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+   "region": {
+    "absorbed_by": [
+     "representation_decode_persistent_queue",
+     "token_graph_persistent_executor",
+     "dn_layer_state_machine",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "representation_native_region",
+    "standalone": false,
+    "why": "representation decode of two packed weights; first stage of the DN state machine"
+   },
+   "sealed_count": 48,
+   "tags": [
+    "representation_decode",
+    "layer_repetition",
+    "operation_sequence"
+   ],
+   "unfused_count": 0,
+   "what": "fused qkvz+ba pair-concat GEMV. Sealed FUSE_DN_INPROJ. One launch replaces two independent matvecs."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 48,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.3,
+    "product_us": 300.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_deltanet inline / encode_rearrange",
+   "family": "state_update",
+   "high_frequency": true,
+   "id": "dn_rearrange_conv",
+   "kernel": "qwen38_qkvz_rearrange_conv_l2_f32",
+   "region": {
+    "absorbed_by": [
+     "dn_layer_state_machine",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "long_lived_state_machine",
+    "standalone": false,
+    "why": "writes conv_state; O(1) in seq; not a region without the rest of the DN sequence"
+   },
+   "sealed_count": 48,
+   "tags": [
+    "state_update",
+    "layer_repetition"
+   ],
+   "unfused_count": 48,
+   "what": "rearrange qkvz, depthwise conv1d, L2. Writes conv_state at a per-layer slot. O(1) in sequence length."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 48,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.3,
+    "product_us": 300.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_ba_to_decay",
+   "family": "producer_consumer",
+   "high_frequency": true,
+   "id": "dn_ba_to_decay",
+   "kernel": "qwen80_ba_to_decay_beta_f32",
+   "region": {
+    "absorbed_by": [
+     "dn_ba_delta_existing_lever",
+     "dn_layer_state_machine",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "long_lived_state_machine",
+    "standalone": false,
+    "why": "producer for gated-delta; existing FUSE_BA_DELTA folds it"
+   },
+   "sealed_count": 48,
+   "tags": [
+    "producer_consumer",
+    "layer_repetition"
+   ],
+   "unfused_count": 48,
+   "what": "ba activations + A_log + dt_bias -> decay, beta. Producer for gated-delta. Folded by FUSE_BA_DELTA (default Off on the 628 graph)."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 48,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.3,
+    "product_us": 300.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_gated_delta",
+   "family": "state_update",
+   "high_frequency": true,
+   "id": "dn_gated_delta",
+   "kernel": "qwen38_gated_delta_decode_vi_simd",
+   "region": {
+    "absorbed_by": [
+     "dn_ba_delta_existing_lever",
+     "dn_layer_state_machine",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "long_lived_state_machine",
+    "standalone": false,
+    "why": "the recurrent step; the DN region is this plus its producers and epilogue"
+   },
+   "sealed_count": 48,
+   "tags": [
+    "state_update",
+    "layer_repetition"
+   ],
+   "unfused_count": 48,
+   "what": "recurrent state machine step. Reads/writes rec_state at a per-layer slot. O(1) in sequence length."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 0,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.0,
+    "product_us": 0.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_gated_delta_fused_ba",
+   "family": "state_update",
+   "high_frequency": false,
+   "id": "dn_gated_delta_fused_ba",
+   "kernel": "qwen38_gated_delta_decode_vi_simd_ba",
+   "region": {
+    "absorbed_by": [
+     "dn_layer_state_machine",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "long_lived_state_machine",
+    "standalone": false,
+    "why": "not on the 628 graph; the inner cut of the DN state machine"
+   },
+   "sealed_count": 0,
+   "tags": [
+    "state_update",
+    "layer_repetition",
+    "operation_sequence"
+   ],
+   "unfused_count": 0,
+   "what": "ba_to_decay folded into gated-delta. Not on the 628 graph."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 48,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.3,
+    "product_us": 300.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_gated_rmsnorm / encode_deltanet inline",
+   "family": "norm",
+   "high_frequency": true,
+   "id": "dn_gated_rmsnorm",
+   "kernel": "qwen80_deltanet_gated_rmsnorm_tg",
+   "region": {
+    "absorbed_by": [
+     "dn_layer_state_machine",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "long_lived_state_machine",
+    "standalone": false,
+    "why": "norm on rec_out; epilogue of the recurrent step, before out_proj"
+   },
+   "sealed_count": 48,
+   "tags": [
+    "norm",
+    "layer_repetition"
+   ],
+   "unfused_count": 48,
+   "what": "per-head gated RMSNorm on rec_out * z, before out_proj."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 48,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.3,
+    "product_us": 300.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_named_matvec / encode_q4_matvec (out_proj)",
+   "family": "representation_decode",
+   "high_frequency": true,
+   "id": "dn_out_proj",
+   "kernel": "geo_tpr64 matvec",
+   "region": {
+    "absorbed_by": [
+     "representation_decode_persistent_queue",
+     "token_graph_persistent_executor",
+     "dn_layer_state_machine",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "representation_native_region",
+    "standalone": false,
+    "why": "GEMV epilogue of the DN sequence; residual follows it"
+   },
+   "sealed_count": 48,
+   "tags": [
+    "representation_decode",
+    "layer_repetition"
+   ],
+   "unfused_count": 48,
+   "what": "DeltaNet out_proj GEMV. Gated vector -> hidden."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 0,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.0,
+    "product_us": 0.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_q4_matvec (q_proj)",
+   "family": "representation_decode",
+   "high_frequency": false,
+   "id": "gqa_q_proj",
+   "kernel": "geo_tpr64 matvec",
+   "region": {
+    "absorbed_by": [
+     "representation_decode_persistent_queue",
+     "token_graph_persistent_executor",
+     "gqa_layer_static_skeleton",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "representation_native_region",
+    "standalone": false,
+    "why": "unfused GEMV; sealed uses fused QKV"
+   },
+   "sealed_count": 0,
+   "tags": [
+    "representation_decode",
+    "layer_repetition"
+   ],
+   "unfused_count": 16,
+   "what": "GQA q_proj GEMV. Unfused only."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 0,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.0,
+    "product_us": 0.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_q4_matvec (k_proj)",
+   "family": "representation_decode",
+   "high_frequency": false,
+   "id": "gqa_k_proj",
+   "kernel": "geo_tpr64 matvec",
+   "region": {
+    "absorbed_by": [
+     "representation_decode_persistent_queue",
+     "token_graph_persistent_executor",
+     "gqa_layer_static_skeleton",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "representation_native_region",
+    "standalone": false,
+    "why": "unfused GEMV; sealed uses fused QKV"
+   },
+   "sealed_count": 0,
+   "tags": [
+    "representation_decode",
+    "layer_repetition"
+   ],
+   "unfused_count": 16,
+   "what": "GQA k_proj GEMV. Unfused only."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 0,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.0,
+    "product_us": 0.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_q4_matvec (v_proj)",
+   "family": "representation_decode",
+   "high_frequency": false,
+   "id": "gqa_v_proj",
+   "kernel": "geo_tpr64 matvec",
+   "region": {
+    "absorbed_by": [
+     "representation_decode_persistent_queue",
+     "token_graph_persistent_executor",
+     "gqa_layer_static_skeleton",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "representation_native_region",
+    "standalone": false,
+    "why": "unfused GEMV; sealed uses fused QKV"
+   },
+   "sealed_count": 0,
+   "tags": [
+    "representation_decode",
+    "layer_repetition"
+   ],
+   "unfused_count": 16,
+   "what": "GQA v_proj GEMV. Unfused only."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 16,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.1,
+    "product_us": 100.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_fused_qkv",
+   "family": "representation_decode",
+   "high_frequency": true,
+   "id": "gqa_fused_qkv",
+   "kernel": "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+   "region": {
+    "absorbed_by": [
+     "representation_decode_persistent_queue",
+     "token_graph_persistent_executor",
+     "gqa_layer_static_skeleton",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "representation_native_region",
+    "standalone": false,
+    "why": "first stage of the GQA skeleton"
+   },
+   "sealed_count": 16,
+   "tags": [
+    "representation_decode",
+    "layer_repetition",
+    "operation_sequence"
+   ],
+   "unfused_count": 0,
+   "what": "fused QKV GEMV. Sealed FUSE_GQA_QKV. One launch replaces three."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 16,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.1,
+    "product_us": 100.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [
+    "position"
+   ],
+   "encode": "encode_gqa inline / encode_rope_cache",
+   "family": "state_update",
+   "high_frequency": true,
+   "id": "gqa_qk_norm_rope_cache",
+   "kernel": "qwen38_gqa_qk_norm_rope_cache_tg",
+   "region": {
+    "absorbed_by": [
+     "gqa_layer_static_skeleton",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "static_skeleton_with_dynamic_token_or_route_slots",
+    "standalone": false,
+    "why": "position is a scalar slot; writes KV. Not a region without MHA"
+   },
+   "sealed_count": 16,
+   "tags": [
+    "state_update",
+    "layer_repetition"
+   ],
+   "unfused_count": 16,
+   "what": "Q/K RMSNorm, RoPE, write K/V cache at position. Grid is static (heads x tg). Position is set_bytes."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 16,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.1,
+    "product_us": 100.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [
+    "seq_len",
+    "threadgroup_memory"
+   ],
+   "encode": "mha_decode_f32_tcb",
+   "family": "producer_consumer",
+   "high_frequency": true,
+   "id": "gqa_mha_decode",
+   "kernel": "mha_decode_f32",
+   "region": {
+    "absorbed_by": [
+     "gqa_layer_static_skeleton",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "static_skeleton_with_dynamic_token_or_route_slots",
+    "standalone": false,
+    "why": "the dynamic-shape launch (TG memory grows with seq). Pad to max_seq and the GQA skeleton is static"
+   },
+   "sealed_count": 16,
+   "tags": [
+    "producer_consumer",
+    "state_update",
+    "layer_repetition"
+   ],
+   "unfused_count": 16,
+   "what": "attention over the growing KV cache. Grid is static (n_heads * tg). Threadgroup memory is (seq_len + tg) floats, so it grows every token. seq_len already lives in a KernelArgBuffer, not set_bytes \u2014 the only launch on this graph that already uses argument buffers for scalars."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 16,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.1,
+    "product_us": 100.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_sigmoid_gate",
+   "family": "routing",
+   "high_frequency": true,
+   "id": "gqa_sigmoid_gate",
+   "kernel": "qwen38_attention_apply_sigmoid_gate",
+   "region": {
+    "absorbed_by": [
+     "gqa_layer_static_skeleton",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": null,
+    "standalone": false,
+    "why": "value-dependent elementwise, not expert routing; does not change topology"
+   },
+   "sealed_count": 16,
+   "tags": [
+    "routing",
+    "layer_repetition"
+   ],
+   "unfused_count": 16,
+   "what": "elementwise sigmoid gate of attention. Value-dependent arithmetic, not expert routing: it does not change dispatch topology. This model's MLP is dense; mixer kind is a static function of layer."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 16,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.1,
+    "product_us": 100.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_named_matvec / encode_q4_matvec (o_proj)",
+   "family": "representation_decode",
+   "high_frequency": true,
+   "id": "gqa_o_proj",
+   "kernel": "geo_tpr64 matvec",
+   "region": {
+    "absorbed_by": [
+     "representation_decode_persistent_queue",
+     "token_graph_persistent_executor",
+     "gqa_layer_static_skeleton",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "representation_native_region",
+    "standalone": false,
+    "why": "GEMV epilogue of GQA; residual follows it"
+   },
+   "sealed_count": 16,
+   "tags": [
+    "representation_decode",
+    "layer_repetition"
+   ],
+   "unfused_count": 16,
+   "what": "GQA o_proj GEMV."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 0,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.0,
+    "product_us": 0.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "qwen_next_add_residual_tcb",
+   "family": "residual",
+   "high_frequency": false,
+   "id": "mixer_add_residual",
+   "kernel": "qwen_next_add_residual",
+   "region": {
+    "absorbed_by": [
+     "residual_rmsnorm_is_a_boundary_not_a_region",
+     "dn_layer_state_machine",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor",
+     "gqa_layer_static_skeleton",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": null,
+    "standalone": false,
+    "why": "producer-consumer boundary, unfused"
+   },
+   "sealed_count": 0,
+   "tags": [
+    "residual",
+    "producer_consumer"
+   ],
+   "unfused_count": 64,
+   "what": "plain mixer residual add. Unfused only."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 64,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.4,
+    "product_us": 400.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_add_residual_rmsnorm",
+   "family": "residual",
+   "high_frequency": true,
+   "id": "mixer_add_residual_rmsnorm",
+   "kernel": "qwen38 add_residual_rmsnorm",
+   "region": {
+    "absorbed_by": [
+     "residual_rmsnorm_is_a_boundary_not_a_region",
+     "dn_layer_state_machine",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor",
+     "gqa_layer_static_skeleton",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor",
+     "mlp_suffix_representation_region",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": null,
+    "standalone": false,
+    "why": "producer-consumer boundary. 128 sealed looks like a region and is not"
+   },
+   "sealed_count": 64,
+   "tags": [
+    "residual",
+    "norm",
+    "producer_consumer",
+    "operation_sequence"
+   ],
+   "unfused_count": 0,
+   "what": "mixer residual + post-attention RMSNorm in one launch. Sealed FUSE_ADD_RMSNORM. Counted once as residual; tagged as norm."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 0,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.0,
+    "product_us": 0.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_rmsnorm (post_attention_layernorm)",
+   "family": "norm",
+   "high_frequency": false,
+   "id": "mlp_post_attn_rmsnorm",
+   "kernel": "qwen80_residual_rmsnorm_tg",
+   "region": {
+    "absorbed_by": [
+     "mlp_suffix_representation_region",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": null,
+    "standalone": false,
+    "why": "folded into mixer residual under sealed fusion"
+   },
+   "sealed_count": 0,
+   "tags": [
+    "norm",
+    "layer_repetition"
+   ],
+   "unfused_count": 64,
+   "what": "MLP input RMSNorm. Folded into mixer residual under sealed fusion."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 0,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.0,
+    "product_us": 0.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_named_matvec (gate_proj)",
+   "family": "representation_decode",
+   "high_frequency": false,
+   "id": "mlp_gate_proj",
+   "kernel": "geo_tpr64 matvec",
+   "region": {
+    "absorbed_by": [
+     "representation_decode_persistent_queue",
+     "token_graph_persistent_executor",
+     "mlp_suffix_representation_region",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "representation_native_region",
+    "standalone": false,
+    "why": "unfused GEMV; sealed uses fused gate_up_swiglu"
+   },
+   "sealed_count": 0,
+   "tags": [
+    "representation_decode",
+    "layer_repetition"
+   ],
+   "unfused_count": 64,
+   "what": "MLP gate GEMV. Unfused only."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 0,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.0,
+    "product_us": 0.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_named_matvec (up_proj)",
+   "family": "representation_decode",
+   "high_frequency": false,
+   "id": "mlp_up_proj",
+   "kernel": "geo_tpr64 matvec",
+   "region": {
+    "absorbed_by": [
+     "representation_decode_persistent_queue",
+     "token_graph_persistent_executor",
+     "mlp_suffix_representation_region",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "representation_native_region",
+    "standalone": false,
+    "why": "unfused GEMV; sealed uses fused gate_up_swiglu"
+   },
+   "sealed_count": 0,
+   "tags": [
+    "representation_decode",
+    "layer_repetition"
+   ],
+   "unfused_count": 64,
+   "what": "MLP up GEMV. Unfused only."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 0,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.0,
+    "product_us": 0.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_dense_mlp inline swiglu_f32",
+   "family": "elementwise",
+   "high_frequency": false,
+   "id": "mlp_swiglu",
+   "kernel": "swiglu_f32",
+   "region": {
+    "absorbed_by": [
+     "mlp_suffix_representation_region",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": null,
+    "standalone": false,
+    "why": "elementwise; sealed fusion already folded it into the GEMV"
+   },
+   "sealed_count": 0,
+   "tags": [
+    "elementwise",
+    "producer_consumer",
+    "layer_repetition"
+   ],
+   "unfused_count": 64,
+   "what": "SwiGLU on gate x up. Folded into the fused GEMV under sealed swiglu."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 0,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.0,
+    "product_us": 0.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_fused_gate_up(with_swiglu=false)",
+   "family": "representation_decode",
+   "high_frequency": false,
+   "id": "mlp_fused_gate_up",
+   "kernel": "qwen_uniform_q4_group64_matvec_gate_up_geo_tpr64_tg128",
+   "region": {
+    "absorbed_by": [
+     "representation_decode_persistent_queue",
+     "token_graph_persistent_executor",
+     "mlp_suffix_representation_region",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "representation_native_region",
+    "standalone": false,
+    "why": "not the sealed graph (pair, not swiglu)"
+   },
+   "sealed_count": 0,
+   "tags": [
+    "representation_decode",
+    "operation_sequence"
+   ],
+   "unfused_count": 0,
+   "what": "fused gate+up GEMV, SwiGLU still separate. Not the sealed graph."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 64,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.4,
+    "product_us": 400.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_fused_gate_up(with_swiglu=true)",
+   "family": "representation_decode",
+   "high_frequency": true,
+   "id": "mlp_fused_gate_up_swiglu",
+   "kernel": "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+   "region": {
+    "absorbed_by": [
+     "representation_decode_persistent_queue",
+     "token_graph_persistent_executor",
+     "mlp_suffix_representation_region",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "representation_native_region",
+    "standalone": false,
+    "why": "first stage of the MLP suffix region"
+   },
+   "sealed_count": 64,
+   "tags": [
+    "representation_decode",
+    "operation_sequence",
+    "layer_repetition"
+   ],
+   "unfused_count": 0,
+   "what": "fused gate+up+SwiGLU. Sealed FUSE_MLP=swiglu. One launch replaces three."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 64,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.4,
+    "product_us": 400.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_named_matvec / encode_q4_matvec (down_proj)",
+   "family": "representation_decode",
+   "high_frequency": true,
+   "id": "mlp_down_proj",
+   "kernel": "geo_tpr64 matvec",
+   "region": {
+    "absorbed_by": [
+     "representation_decode_persistent_queue",
+     "token_graph_persistent_executor",
+     "mlp_suffix_representation_region",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": "representation_native_region",
+    "standalone": false,
+    "why": "survives every fusion set; epilogue-fuses with residual_rmsnorm in the MLP suffix region"
+   },
+   "sealed_count": 64,
+   "tags": [
+    "representation_decode",
+    "layer_repetition"
+   ],
+   "unfused_count": 64,
+   "what": "MLP down_proj GEMV. Intermediate -> hidden. Survives every fusion set."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 0,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.0,
+    "product_us": 0.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "qwen_next_add_residual_tcb",
+   "family": "residual",
+   "high_frequency": false,
+   "id": "mlp_add_residual",
+   "kernel": "qwen_next_add_residual",
+   "region": {
+    "absorbed_by": [
+     "residual_rmsnorm_is_a_boundary_not_a_region",
+     "mlp_suffix_representation_region",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": null,
+    "standalone": false,
+    "why": "producer-consumer boundary, unfused"
+   },
+   "sealed_count": 0,
+   "tags": [
+    "residual",
+    "producer_consumer"
+   ],
+   "unfused_count": 64,
+   "what": "plain MLP residual add. Unfused only."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 64,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.4,
+    "product_us": 400.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_add_residual_rmsnorm",
+   "family": "residual",
+   "high_frequency": true,
+   "id": "mlp_add_residual_rmsnorm",
+   "kernel": "qwen38 add_residual_rmsnorm",
+   "region": {
+    "absorbed_by": [
+     "residual_rmsnorm_is_a_boundary_not_a_region",
+     "mlp_suffix_representation_region",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor"
+    ],
+    "form": null,
+    "standalone": false,
+    "why": "producer-consumer boundary and the MLP suffix epilogue"
+   },
+   "sealed_count": 64,
+   "tags": [
+    "residual",
+    "norm",
+    "producer_consumer",
+    "operation_sequence"
+   ],
+   "unfused_count": 0,
+   "what": "MLP residual + next mixer input RMSNorm (last layer: final norm) in one launch. Sealed FUSE_ADD_RMSNORM."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 0,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.0,
+    "product_us": 0.0,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_terminal encode_rmsnorm",
+   "family": "norm",
+   "high_frequency": false,
+   "id": "final_rmsnorm",
+   "kernel": "qwen80_residual_rmsnorm_tg",
+   "region": {
+    "absorbed_by": [
+     "mlp_suffix_representation_region",
+     "hybrid_4_layer_tile",
+     "token_graph_persistent_executor",
+     "token_graph_persistent_executor"
+    ],
+    "form": null,
+    "standalone": false,
+    "why": "folded into last MLP residual under sealed fusion"
+   },
+   "sealed_count": 0,
+   "tags": [
+    "norm"
+   ],
+   "unfused_count": 1,
+   "what": "standalone final RMSNorm. Folded into last MLP residual under sealed fusion."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 1,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.00625,
+    "product_us": 6.25,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_named_matvec / encode_q4_matvec (lm_head)",
+   "family": "representation_decode",
+   "high_frequency": false,
+   "id": "lm_head",
+   "kernel": "geo_tpr64 matvec",
+   "region": {
+    "absorbed_by": [
+     "representation_decode_persistent_queue",
+     "token_graph_persistent_executor",
+     "token_graph_persistent_executor"
+    ],
+    "form": "representation_native_region",
+    "standalone": false,
+    "why": "already one launch; a region only as the terminal of the token graph"
+   },
+   "sealed_count": 1,
+   "tags": [
+    "representation_decode"
+   ],
+   "unfused_count": 1,
+   "what": "lm_head GEMV, hidden -> vocab. Always runs on encode_full_token."
+  },
+  {
+   "cited_marginal_if_this_class": {
+    "caveat": "6.25 us is the paired A/B of the 336 dispatches fusion removed (336 launches, 2.1 ms). Do not assume that figure extrapolates linearly to zero, and do not assume the remaining 628 cost the same as the 336 that fusion removed. Fusion also changed the surviving kernels' work (gate+up+SwiGLU in one launch still does the GEMVs), so the 2.10 ms is not a pure launch tax. A work-free removed dispatch was priced at ~1 us on a different class (DISPATCH_CEREMONY / ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Product count x 6.25 us is CITED_MARGINAL_NOT_EXTRAPOLATED, not a measurement of that motif.",
+    "cited_from": "receipts/future/RESIDENT_TOKEN_BUDGET.json derived.measured_marginal_dispatch_us",
+    "cited_marginal_us": 6.25,
+    "count": 1,
+    "not_a_hardware_measurement": true,
+    "product_ms": 0.00625,
+    "product_us": 6.25,
+    "status": "CITED_MARGINAL_NOT_EXTRAPOLATED"
+   },
+   "dynamic_slots": [],
+   "encode": "encode_argmax / sample_argmax_f32_tcb",
+   "family": "producer_consumer",
+   "high_frequency": false,
+   "id": "argmax",
+   "kernel": "sample_argmax_f32",
+   "region": {
+    "absorbed_by": [
+     "token_graph_persistent_executor"
+    ],
+    "form": "static_skeleton_with_dynamic_token_or_route_slots",
+    "standalone": false,
+    "why": "produces the next embed token_id slot; not a region"
+   },
+   "sealed_count": 1,
+   "tags": [
+    "producer_consumer"
+   ],
+   "unfused_count": 1,
+   "what": "greedy argmax over logits. Output token is the next step's embed slot. Two-pass default Off (one launch)."
+  }
+ ],
+ "negative_findings": [
+  "this module did not run a GPU benchmark and did not take a bench lock",
+  "6.25 us is cited from the 336 fusion removed; products over the remaining 628 are not measurements of those motifs",
+  "ICB / CUDA Graphs remove host encode, which is already not the token; they are the wrong textbook for the 6.25 us class",
+  "serial_token_encoder already one compute encoder around 628 launches and did not separate wall",
+  "the residual+RMSNorm motif (128) is a producer-consumer boundary and removes zero as a standalone region",
+  "Qwen3.8 hybrid decode has no MoE routing; mixer kind is static; sigmoid is not a route",
+  "the target is not 628 -> 500",
+  "FUSE_BA_DELTA would remove 48 and is default Off; that is an inner cut, not the region"
+ ],
+ "persistent_physical_region": {
+  "contract_source": "tools/future/physical_primitives.py",
+  "forms": [
+   "static_skeleton_with_dynamic_token_or_route_slots",
+   "graph_replay_equivalent",
+   "representation_native_region",
+   "long_lived_state_machine"
+  ],
+  "invariant": "when state and bindings remain valid, repeated host entry is not semantically required",
+  "primitive": "PersistentPhysicalRegion",
+  "textbooks": {
+   "cuda_graphs": "capture/replay of a static launch DAG (host encode)",
+   "fpga_spatial_pipelines": "one region wired in space",
+   "metal_authority": "MTLIndirectCommandBuffer is the graph-replay analogue and is the wrong textbook for the remaining 6.25 us class. A persistent occupancy region or a fused kernel is the right one. Metal has no CUDA-style persistent kernel API; GPU-encoded ICB plus argument buffers is the closest, and host-encoded ICB was Type-1 killed.",
+   "persistent_kernels": "one grid stays occupied and pulls work (on-device occupancy)",
+   "tpu_static_execution": "compiled program with dynamic slots"
+  }
+ },
+ "purpose": "Cluster the 628 (and 964) dispatches per decoded token into semantic motifs, judge which could become a PersistentPhysicalRegion, and refuse an unreconciled census.",
+ "ranking": {
+  "cheapest_falsifier_for_top": "The inner cut already in tree: FUSE_BA_DELTA removes 48 of these 337. A GPU timestamp A/B of that lever, token-identical, zero fallback, is the cheapest probe of whether DN launches are the 6.25 us class. If 48 fewer launches do not save on the order of 0.30 ms, a 7-kernel DN region is the wrong bet. STATIC_ONLY: named, not run.",
+  "order": [
+   "token_graph_persistent_executor",
+   "hybrid_4_layer_tile",
+   "dn_layer_state_machine",
+   "mlp_suffix_representation_region",
+   "representation_decode_persistent_queue",
+   "dn_ba_delta_existing_lever",
+   "gqa_layer_static_skeleton",
+   "residual_rmsnorm_is_a_boundary_not_a_region"
+  ],
+  "order_region_candidates": [
+   "token_graph_persistent_executor",
+   "hybrid_4_layer_tile",
+   "dn_layer_state_machine",
+   "mlp_suffix_representation_region",
+   "representation_decode_persistent_queue",
+   "gqa_layer_static_skeleton"
+  ],
+  "order_unblocked": [
+   "dn_layer_state_machine",
+   "mlp_suffix_representation_region",
+   "dn_ba_delta_existing_lever"
+  ],
+  "order_unblocked_regions": [
+   "dn_layer_state_machine",
+   "mlp_suffix_representation_region"
+  ],
+  "ranking_rule": "dispatches_removed / risk, then dispatches_removed. Residual-as-region (0 removed) and existing levers are listed but the named top is the highest-ratio unblocked region candidate. The target is not 628 -> 500; an existing 48-launch lever is recorded so it is not rediscovered as a region.",
+  "risk_legend": {
+   "1": "existing lever already in tree",
+   "2": "adjacent-kernel epilogue fusion, static grids",
+   "3": "multi-kernel layer state machine, static seq",
+   "4": "layer state machine or mega-kernel; dynamic seq or large kernel",
+   "5": "new execution model (persistent kernel / GPU ICB interpreter / whole-token region)"
+  },
+  "top_dispatches_removed": 289,
+  "top_removed_per_risk_unit": 72.25,
+  "top_unblocked_region": "dn_layer_state_machine"
+ },
+ "reconciliation": {
+  "fusion_removed": 336,
+  "ok": true,
+  "sealed_families": {
+   "elementwise": 0,
+   "norm": 49,
+   "producer_consumer": 65,
+   "representation_decode": 258,
+   "residual": 128,
+   "routing": 16,
+   "state_update": 112
+  },
+  "sealed_sum": 628,
+  "treated_unknown_as_zero": false,
+  "unfused_families": {
+   "elementwise": 64,
+   "norm": 177,
+   "producer_consumer": 65,
+   "representation_decode": 402,
+   "residual": 128,
+   "routing": 16,
+   "state_update": 112
+  },
+  "unfused_sum": 964
+ },
+ "recovered_implementation": [
+  "crates/hawking-core/src/model/qwen38_hybrid_decode.rs encode_full_token / encode_embed / encode_layers / encode_deltanet / encode_gqa / encode_dense_mlp / encode_terminal",
+  "crates/hawking-core/src/model/qwen38_hybrid_decode.rs encode_fused_pair_concat / encode_fused_qkv / encode_fused_gate_up / encode_dn_ba_and_delta / encode_add_residual_rmsnorm",
+  "crates/hawking-core/src/kernels/mod.rs mha_decode_f32_tcb (KernelArgBuffer seq_len; TG memory grows with seq)",
+  "crates/hawking-core/src/kernels/mod.rs qwen_next_add_residual_tcb / sample_argmax_f32_tcb",
+  "crates/hawking-core/src/model/qwen38_geometry.rs layer census / mixer_kind",
+  "tools/future/tps_budget.py coarse encode-path walk (oracle, not the motif grain)",
+  "receipts/future/RESIDENT_TOKEN_BUDGET.json 628/964/336 and the 6.25 us paired A/B",
+  "tools/future/physical_primitives.py PersistentPhysicalRegion contract",
+  "receipts/future/NEGATIVE_SCIENCE_INDEX.json L6 ICB Type-1 kill / set_bytes without argbuf scalars",
+  "receipts/future/DISPATCH_CEREMONY.json serial encoder did not separate; host ceremony is not the token"
+ ],
+ "resident_callable": {
+  "entry_point": "tools.future.dispatch_motifs.build() / record()",
+  "evidence_class": "STATIC_ONLY",
+  "fails_closed": "motif counts that do not sum to 628 and 964 raise MotifRefuse rather than emit; a truncated walk raises; missing encode helpers raise; HardwareClaimError on tps/wall_ns/gpu_ns/dispatch_ns keys; this module emits no GPU measurement it did not derive",
+  "gpu_authority": false,
+  "receipt": "receipts/future/DISPATCH_MOTIFS.json"
+ },
+ "schema": "hawking.future.dispatch_motifs.v1",
+ "seal_sha256": "8de84927c4a96d16698305aa06654801667b618260bd9466f882230c8e79a150",
+ "self_timing": {
+  "class": "SELF_MEASURED_DIRTY",
+  "cpu_parse_s": 0.002507416997104883,
+  "not": "a GPU measurement, a lease, a qualified TPS, a roof, or evidence the cited 6.25 us still holds on this host",
+  "numbers_decide_nothing": true
+ },
+ "target_is_not_628_to_500": {
+  "existing_inner_cut_still_off": {
+   "lever": "HAWKING_QWEN38_FUSE_BA_DELTA",
+   "why_listed": "so it is not rediscovered as the region answer",
+   "would_leave": 580,
+   "would_remove": 48
+  },
+  "what_628_to_500_would_be": "removing 128 launches. That number is coincidentally the MLP suffix (192 -> 64) or add_rmsnorm's already-landed 128, and is the wrong goalpost. A region either absorbs a repeating operation sequence (hundreds) or it is an inner cut of one."
+ },
+ "version": 1,
+ "walk": {
+  "agrees_with_tps_budget_coarse_walk": true,
+  "ba_delta_on_sealed_would_be": 580,
+  "gpu_counter": false,
+  "grain": "one dispatch_threads helper = one launch",
+  "mixed_vs_q4_does_not_change_count": true,
+  "not_copied_from_a_receipt": true,
+  "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs generate_greedy -> Qwen38HybridDecodeSession::step -> encode_full_token (encode_embed + encode_layers + encode_terminal)",
+  "sealed_launches": 628,
+  "split_deltanet_projections_not_walked": true,
+  "tps_budget_sealed": 628,
+  "tps_budget_unfused": 964,
+  "unfused_launches": 964
+ }
+}

@@ -1,0 +1,912 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T12:08:04Z",
+  "recorded_by": "tools/future/odyssey2_transfer.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "campaign_laws": [
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "Metal",
+   "counterexample_requirement": "ARM A vs production on a second specimen's MLP, loads live, same unique payload in both arms, where ARM A does not jump relative to production. Copying 497.4 GB/s is not a counterexample and is not a transfer.",
+   "evidence_refs": [
+    "receipts/future/MLP_ALU_ROOFLINE.json",
+    "receipts/future/MLP_STREAM_COUNT.json",
+    "receipts/future/MLP_ISSUE_RATE_LADDER.json"
+   ],
+   "evidence_strength": "DIAGNOSTIC_RELATIVE",
+   "expected_saved_experiments": 3,
+   "law_id": "LAW-L1-MLP-ARITHMETIC-SENSITIVE",
+   "organ_class": "mlp",
+   "scope": "MODEL_LOCAL",
+   "source_device": "APPLE_GPU_0",
+   "source_model": "Qwen3.8-27B",
+   "statement": "On qwen3.8-27b sealed-3.14 the MLP is arithmetic-sensitive, not addressing-limited. ARM A (stripped) at 497.4 GB/s against production 329.6 on the SAME 83.56 MB with loads proven live (MLP_ALU_ROOFLINE). Stream count is MIXED at fixed bytes/thread (MLP_STREAM_COUNT). Not a dependency chain (ILP 8/1 = 1.062), not register pressure (ws32/ws0 = 1.078), not occupancy \u2014 raising it is worse (MLP_ISSUE_RATE_LADDER).",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.25,
+     "confidence_basis": "MODEL_LOCAL campaign law; values do not transfer; method transfer is a measurement, not a similarity score",
+     "counterexample_requirement": "a measurement of the same statement on this specimen that fails",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "falcon_h1",
+     "target_model": "tiiuae/Falcon-H1-7B-Instruct",
+     "target_school": "Falcon-H1-7B-Instruct"
+    },
+    {
+     "confidence": 0.25,
+     "confidence_basis": "MODEL_LOCAL campaign law; values do not transfer; method transfer is a measurement, not a similarity score",
+     "counterexample_requirement": "a measurement of the same statement on this specimen that fails",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "dense_transformer",
+     "target_model": "Qwen/Qwen3-0.6B",
+     "target_school": "Qwen3-0.6B"
+    },
+    {
+     "confidence": 0.25,
+     "confidence_basis": "MODEL_LOCAL campaign law; values do not transfer; method transfer is a measurement, not a similarity score",
+     "counterexample_requirement": "a measurement of the same statement on this specimen that fails",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "dense_transformer",
+     "target_model": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+     "target_school": "Mistral-Small-3.1-24B"
+    },
+    {
+     "confidence": 0.25,
+     "confidence_basis": "MODEL_LOCAL campaign law; values do not transfer; method transfer is a measurement, not a similarity score",
+     "counterexample_requirement": "a measurement of the same statement on this specimen that fails",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Qwen3.8-Flash-Next"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+    "value": 0.45
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "Metal",
+   "counterexample_requirement": "a specimen whose broadcast-aux (or equivalent scale/bias stream) drop of the same unique bytes is billed on the critical path outside the calibration noise floor",
+   "evidence_refs": [
+    "receipts/future/AUX_U8_NATIVE.json",
+    "receipts/future/AUX_U8_LUT.json",
+    "receipts/future/ECONOMICS_CALIBRATION.json"
+   ],
+   "evidence_strength": "DIAGNOSTIC_RELATIVE",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-L2-BROADCAST-AUX-NOT-CRITICAL-PATH",
+   "organ_class": "mlp.broadcast_aux",
+   "scope": "MODEL_LOCAL",
+   "source_device": "APPLE_GPU_0",
+   "source_model": "Qwen3.8-27B",
+   "statement": "On qwen3.8-27b sealed-3.14 broadcast-aux bytes are not on the critical path: shrinking the aux stream made the kernel SLOWER, and the calibrated economics now prices them at ~0 (AUX_U8_NATIVE, AUX_U8_LUT, ECONOMICS_CALIBRATION).",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.25,
+     "confidence_basis": "MODEL_LOCAL campaign law; values do not transfer; method transfer is a measurement, not a similarity score",
+     "counterexample_requirement": "a measurement of the same statement on this specimen that fails",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "falcon_h1",
+     "target_model": "tiiuae/Falcon-H1-7B-Instruct",
+     "target_school": "Falcon-H1-7B-Instruct"
+    },
+    {
+     "confidence": 0.25,
+     "confidence_basis": "MODEL_LOCAL campaign law; values do not transfer; method transfer is a measurement, not a similarity score",
+     "counterexample_requirement": "a measurement of the same statement on this specimen that fails",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "dense_transformer",
+     "target_model": "Qwen/Qwen3-0.6B",
+     "target_school": "Qwen3-0.6B"
+    },
+    {
+     "confidence": 0.25,
+     "confidence_basis": "MODEL_LOCAL campaign law; values do not transfer; method transfer is a measurement, not a similarity score",
+     "counterexample_requirement": "a measurement of the same statement on this specimen that fails",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "dense_transformer",
+     "target_model": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+     "target_school": "Mistral-Small-3.1-24B"
+    },
+    {
+     "confidence": 0.25,
+     "confidence_basis": "MODEL_LOCAL campaign law; values do not transfer; method transfer is a measurement, not a similarity score",
+     "counterexample_requirement": "a measurement of the same statement on this specimen that fails",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Qwen3.8-Flash-Next"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+    "value": 0.45
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "Metal",
+   "counterexample_requirement": "an under-incumbent full-width operator on this parent whose held-out relative L2 is <= 0.25 (the kill). Beating the mean predictor is not function replacement.",
+   "evidence_refs": [
+    "receipts/future/MLP_STRUCTURED_OPERATOR.json"
+   ],
+   "evidence_strength": "DIAGNOSTIC_RELATIVE",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-L3-MLP-FUNCTION-REPLACEMENT-CLOSED",
+   "organ_class": "mlp",
+   "scope": "MODEL_LOCAL",
+   "source_device": "APPLE_GPU_0",
+   "source_model": "Qwen3.8-27B",
+   "statement": "MLP function replacement is closed for this parent: the distilled control beats the mean predictor (0.442 vs 0.859) and still cannot carry F under 5,347,795,776 bytes (MLP_STRUCTURED_OPERATOR).",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.25,
+     "confidence_basis": "MODEL_LOCAL campaign law; values do not transfer; method transfer is a measurement, not a similarity score",
+     "counterexample_requirement": "a measurement of the same statement on this specimen that fails",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "falcon_h1",
+     "target_model": "tiiuae/Falcon-H1-7B-Instruct",
+     "target_school": "Falcon-H1-7B-Instruct"
+    },
+    {
+     "confidence": 0.25,
+     "confidence_basis": "MODEL_LOCAL campaign law; values do not transfer; method transfer is a measurement, not a similarity score",
+     "counterexample_requirement": "a measurement of the same statement on this specimen that fails",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "dense_transformer",
+     "target_model": "Qwen/Qwen3-0.6B",
+     "target_school": "Qwen3-0.6B"
+    },
+    {
+     "confidence": 0.25,
+     "confidence_basis": "MODEL_LOCAL campaign law; values do not transfer; method transfer is a measurement, not a similarity score",
+     "counterexample_requirement": "a measurement of the same statement on this specimen that fails",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "dense_transformer",
+     "target_model": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+     "target_school": "Mistral-Small-3.1-24B"
+    },
+    {
+     "confidence": 0.25,
+     "confidence_basis": "MODEL_LOCAL campaign law; values do not transfer; method transfer is a measurement, not a similarity score",
+     "counterexample_requirement": "a measurement of the same statement on this specimen that fails",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Qwen3.8-Flash-Next"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+    "value": 0.45
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "Metal",
+   "counterexample_requirement": "a probe vs complete-token pair on this parent where the probe over-sells the saving (probe_ms > complete_token_ms) by more than the materiality bar, or a third independent pair that fails to undersell",
+   "evidence_refs": [
+    "receipts/future/DELTANET_WIDEN_AB.json",
+    "receipts/future/FOLD_ADDQX_AB.json"
+   ],
+   "evidence_strength": "DIAGNOSTIC_RELATIVE",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-L4-PROBE-UNDERSELLS-TOKEN",
+   "organ_class": "complete_token",
+   "scope": "MODEL_LOCAL",
+   "source_device": "APPLE_GPU_0",
+   "source_model": "Qwen3.8-27B",
+   "statement": "A probe undersells the token on this parent: widen_f4 isolated fair-cut 0.7046 ms became 1.0245 ms on the complete token (DELTANET_WIDEN_AB); fold_addqx 1.745 ms projected became 3.9833 ms measured (FOLD_ADDQX_AB).",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.25,
+     "confidence_basis": "MODEL_LOCAL campaign law; values do not transfer; method transfer is a measurement, not a similarity score",
+     "counterexample_requirement": "a measurement of the same statement on this specimen that fails",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "falcon_h1",
+     "target_model": "tiiuae/Falcon-H1-7B-Instruct",
+     "target_school": "Falcon-H1-7B-Instruct"
+    },
+    {
+     "confidence": 0.25,
+     "confidence_basis": "MODEL_LOCAL campaign law; values do not transfer; method transfer is a measurement, not a similarity score",
+     "counterexample_requirement": "a measurement of the same statement on this specimen that fails",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "dense_transformer",
+     "target_model": "Qwen/Qwen3-0.6B",
+     "target_school": "Qwen3-0.6B"
+    },
+    {
+     "confidence": 0.25,
+     "confidence_basis": "MODEL_LOCAL campaign law; values do not transfer; method transfer is a measurement, not a similarity score",
+     "counterexample_requirement": "a measurement of the same statement on this specimen that fails",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "dense_transformer",
+     "target_model": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+     "target_school": "Mistral-Small-3.1-24B"
+    },
+    {
+     "confidence": 0.25,
+     "confidence_basis": "MODEL_LOCAL campaign law; values do not transfer; method transfer is a measurement, not a similarity score",
+     "counterexample_requirement": "a measurement of the same statement on this specimen that fails",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Qwen3.8-Flash-Next"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+    "value": 0.45
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "Metal",
+   "counterexample_requirement": "a third production-shaped organ on this parent that loads the activation and whose cited GB/s disagrees with 497.4 by more than the catalog-full sibling (~2%), or a second specimen's same-shape measurement that disagrees. 703.5 without an activation load is not a counterexample \u2014 the law already names it as the wrong shape.",
+   "evidence_refs": [
+    "receipts/future/MLP_ALU_ROOFLINE.json",
+    "receipts/future/ROOF_ANCHOR.json"
+   ],
+   "evidence_strength": "DIAGNOSTIC_RELATIVE",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD",
+   "organ_class": "production_shaped_activation_load",
+   "scope": "MODEL_LOCAL",
+   "source_device": "APPLE_GPU_0",
+   "source_model": "Qwen3.8-27B",
+   "statement": "The production-shaped roof WITH the activation load is 497.4 GB/s on two independent legs (MLP ARM A stripped and LM head production); 703.5 is a probe that never loads the activation (ROOF_ANCHOR, MLP_ALU_ROOFLINE).",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.25,
+     "confidence_basis": "MODEL_LOCAL campaign law; values do not transfer; method transfer is a measurement, not a similarity score",
+     "counterexample_requirement": "a measurement of the same statement on this specimen that fails",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "falcon_h1",
+     "target_model": "tiiuae/Falcon-H1-7B-Instruct",
+     "target_school": "Falcon-H1-7B-Instruct"
+    },
+    {
+     "confidence": 0.25,
+     "confidence_basis": "MODEL_LOCAL campaign law; values do not transfer; method transfer is a measurement, not a similarity score",
+     "counterexample_requirement": "a measurement of the same statement on this specimen that fails",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "dense_transformer",
+     "target_model": "Qwen/Qwen3-0.6B",
+     "target_school": "Qwen3-0.6B"
+    },
+    {
+     "confidence": 0.25,
+     "confidence_basis": "MODEL_LOCAL campaign law; values do not transfer; method transfer is a measurement, not a similarity score",
+     "counterexample_requirement": "a measurement of the same statement on this specimen that fails",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "dense_transformer",
+     "target_model": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+     "target_school": "Mistral-Small-3.1-24B"
+    },
+    {
+     "confidence": 0.25,
+     "confidence_basis": "MODEL_LOCAL campaign law; values do not transfer; method transfer is a measurement, not a similarity score",
+     "counterexample_requirement": "a measurement of the same statement on this specimen that fails",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Qwen3.8-Flash-Next"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+    "value": 0.45
+   }
+  }
+ ],
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "claim_boundary_reminder": "DIAGNOSTIC_RELATIVE guides, never promotes. Copied GB/s figures are citations. UNMEASURED stays UNMEASURED.",
+ "consulted_store_laws": {
+  "LAW-FALCON-H1-HAS-NO-EXPERT-TENSORS": {
+   "how_it_constrains_transfer": "Falcon-H1 is not an MoE transfer target; L1 is a dense MLP law, so this scar blocks expert-tensor copies, not the MLP METHOD",
+   "in_store": true
+  },
+  "LAW-KERNEL-REUSE-FOLLOWS-STORAGE-LAYOUT": {
+   "how_it_constrains_transfer": "kernel identity is a storage claim; architecture-family similarity is not evidence the 497.4 kernel exists on B",
+   "in_store": true
+  },
+  "LAW-VALUES-DO-NOT-TRANSFER-METHODS-DO": {
+   "how_it_constrains_transfer": "values (497.4, 329.6, 83.56 MB, 5.35e9 bytes) do not copy; a method may still be worth measuring",
+   "in_store": true
+  }
+ },
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "Named campaign laws L1\u2013L5 as ols.Law records (MODEL_LOCAL, cited receipts).",
+  "L1 VALUES transferred onto Falcon-H1 and FAILED with the cited organ-instance measurement, not a similarity score.",
+  "L1 METHOD on Falcon-H1 recorded UNMEASURED with the ARM A experiment that would settle it.",
+  "Failed transfer narrows scope (recorded) and does not delete the law.",
+  "widen() raises ReplicatingSpecimenRequired before ols.promote when no second specimen HOLDS the statement.",
+  "No Odyssey I completion barrier (LISTEN_RULE)."
+ ],
+ "gpu_authority": false,
+ "headline": {
+  "bench_state": "UNKNOWN",
+  "citations": {
+   "arm_a_gb_s": {
+    "copied": true,
+    "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+    "source_field": "mlp.arm_a_stripped.effective_gb_s",
+    "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+    "value": 497.4,
+    "why": "copied; this sidecar did not measure it"
+   },
+   "arm_a_over_production": {
+    "copied": true,
+    "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+    "source_field": "mlp.judgement.arm_a_over_production",
+    "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+    "value": 1.5089,
+    "why": "copied; this sidecar did not measure it"
+   },
+   "ilp_8_over_1": {
+    "copied": true,
+    "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+    "source_field": "judgement.ilp.ratio_8_over_1",
+    "source_receipt": "receipts/future/MLP_ISSUE_RATE_LADDER.json",
+    "value": 1.062,
+    "why": "copied; this sidecar did not measure it"
+   },
+   "lm_head_gb_s": {
+    "copied": true,
+    "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+    "source_field": "lm_head_gb_s",
+    "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+    "value": 497.4,
+    "why": "copied; this sidecar did not measure it"
+   },
+   "loads_survived": {
+    "copied": true,
+    "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+    "source_field": "mlp.judgement.loads_survived.survived",
+    "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+    "value": true,
+    "why": "copied; this sidecar did not measure it"
+   },
+   "production_gb_s": {
+    "copied": true,
+    "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+    "source_field": "mlp.production.effective_gb_s",
+    "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+    "value": 329.6,
+    "why": "copied; this sidecar did not measure it"
+   },
+   "register_ws32_over_ws0": {
+    "copied": true,
+    "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+    "source_field": "judgement.register_pressure.ratio_ws32_over_ws0",
+    "source_receipt": "receipts/future/MLP_ISSUE_RATE_LADDER.json",
+    "value": 1.0782,
+    "why": "copied; this sidecar did not measure it"
+   },
+   "stream_verdict": {
+    "copied": true,
+    "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+    "source_field": "verdict",
+    "source_receipt": "receipts/future/MLP_STREAM_COUNT.json",
+    "value": "MIXED",
+    "why": "copied; this sidecar did not measure it"
+   },
+   "weight_bytes": {
+    "copied": true,
+    "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+    "source_field": "mlp.arm_a_stripped.weight_bytes",
+    "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+    "value": 83558400,
+    "why": "copied; this sidecar did not measure it"
+   }
+  },
+  "consulted_store_laws": {
+   "LAW-FALCON-H1-HAS-NO-EXPERT-TENSORS": {
+    "how_it_constrains_transfer": "Falcon-H1 is not an MoE transfer target; L1 is a dense MLP law, so this scar blocks expert-tensor copies, not the MLP METHOD",
+    "in_store": true
+   },
+   "LAW-KERNEL-REUSE-FOLLOWS-STORAGE-LAYOUT": {
+    "how_it_constrains_transfer": "kernel identity is a storage claim; architecture-family similarity is not evidence the 497.4 kernel exists on B",
+    "in_store": true
+   },
+   "LAW-VALUES-DO-NOT-TRANSFER-METHODS-DO": {
+    "how_it_constrains_transfer": "values (497.4, 329.6, 83.56 MB, 5.35e9 bytes) do not copy; a method may still be worth measuring",
+    "in_store": true
+   }
+  },
+  "evidence_class": "STATIC_ONLY",
+  "falcon_layout": {
+   "copied": true,
+   "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+   "msl_matches_model2_from_disk": false,
+   "probe_tensor": null,
+   "source_field": "result.layout_survey.Falcon-H1-7B",
+   "source_receipt": "receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json",
+   "storage": "NO EXPERT TENSORS AT ALL"
+  },
+  "gpu_authority": false,
+  "kind": "values",
+  "law_id": "LAW-L1-MLP-ARITHMETIC-SENSITIVE",
+  "named_law": "LAW-L1-MLP-ARITHMETIC-SENSITIVE",
+  "narrowing": {
+   "deleted": false,
+   "law_id": "LAW-L1-MLP-ARITHMETIC-SENSITIVE",
+   "narrowed_to": {
+    "does_not_carry_values_to": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+    "organ_class": "mlp",
+    "source_model": "Qwen3.8-27B"
+   },
+   "note": "MODEL_LOCAL is already the bottom of the Odyssey II promotion lattice; the measured scope is recorded on the transfer, not by deleting the law or inventing an ORGAN_LOCAL rung here (that rung lives on the Odyssey III adversary ladder).",
+   "reason": "VALUE transfer failed: 83.56 MB / 497.4 GB/s / 329.6 GB/s are the unique payload and measured-under-load rates of one sealed-3.14 MLP layer (copied from receipts/future/MLP_ALU_ROOFLINE.json). Falcon-H1-7B-Instruct is architecture family 'falcon_h1', specimen 'tiiuae--Falcon-H1-7B-Instruct@41e72f27effb', WHOLE_TREE_VERIFIED. Layout survey storage='NO EXPERT TENSORS AT ALL'. The stored scar LAW-VALUES-DO-NOT-TRANSFER-METHODS-DO forbids copying the numbers. No Falcon MLP ARM A measurement exists in this campaign.",
+   "scope_after": "MODEL_LOCAL",
+   "scope_before": "MODEL_LOCAL"
+  },
+  "odyssey_i_barrier": null,
+  "scope_after": "MODEL_LOCAL",
+  "scope_before": "MODEL_LOCAL",
+  "similarity_score": null,
+  "source_display": "qwen3.8-27b sealed-3.14",
+  "source_specimen": "qwen3.8-27b-abliterated-bf16@local",
+  "statement": "On qwen3.8-27b sealed-3.14 the MLP is arithmetic-sensitive, not addressing-limited. ARM A (stripped) at 497.4 GB/s against production 329.6 on the SAME 83.56 MB with loads proven live (MLP_ALU_ROOFLINE). Stream count is MIXED at fixed bytes/thread (MLP_STREAM_COUNT). Not a dependency chain (ILP 8/1 = 1.062), not register pressure (ws32/ws0 = 1.078), not occupancy \u2014 raising it is worse (MLP_ISSUE_RATE_LADDER).",
+  "target_alias": "Falcon-H1-7B-Instruct",
+  "target_architecture_family": "falcon_h1",
+  "target_repo": "tiiuae/Falcon-H1-7B-Instruct",
+  "target_specimen": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+  "target_whole_tree_verified": true,
+  "trial_id": "L1-VALUES-TO-FALCON-H1",
+  "verdict": "TRANSFER_FAILED",
+  "what_transfer_bought": {
+   "expected_if_method_holds": 3,
+   "expected_if_values_had_held": null,
+   "experiments_saved": 0,
+   "new_search_only_where_transfer_fails": "METHOD (arithmetic-sensitive vs addressing-limited) is UNMEASURED on Falcon; that is the remaining experiment, not a value copy",
+   "precise_reason_the_law_did_not_carry": "VALUE transfer failed: 83.56 MB / 497.4 GB/s / 329.6 GB/s are the unique payload and measured-under-load rates of one sealed-3.14 MLP layer (copied from receipts/future/MLP_ALU_ROOFLINE.json). Falcon-H1-7B-Instruct is architecture family 'falcon_h1', specimen 'tiiuae--Falcon-H1-7B-Instruct@41e72f27effb', WHOLE_TREE_VERIFIED. Layout survey storage='NO EXPERT TENSORS AT ALL'. The stored scar LAW-VALUES-DO-NOT-TRANSFER-METHODS-DO forbids copying the numbers. No Falcon MLP ARM A measurement exists in this campaign.",
+   "section_65": "consulted LAW-VALUES-DO-NOT-TRANSFER-METHODS-DO and LAW-FALCON-H1-HAS-NO-EXPERT-TENSORS before any new search; did not launch an ALU/stream/issue ladder on Falcon expecting 497.4"
+  }
+ },
+ "identity_transfer_refused": {
+  "law_id": "LAW-L1-MLP-ARITHMETIC-SENSITIVE",
+  "reason": "LAW-L1-MLP-ARITHMETIC-SENSITIVE: target qwen3.8-27b-abliterated-bf16@local is the origin; a transfer onto the law's origin is not a transfer",
+  "reason_code": "not_a_transfer",
+  "refused": true,
+  "target_specimen": "qwen3.8-27b-abliterated-bf16@local"
+ },
+ "law_authority": {
+  "lattice": [
+   "MODEL_LOCAL",
+   "ARCHITECTURE_FAMILY",
+   "BACKEND_FAMILY",
+   "MACHINE_LOCAL",
+   "GENERIC_CANDIDATE",
+   "GENERIC_VERIFIED"
+  ],
+  "module": "tools/future/odyssey2_law_store.py",
+  "not_a_fork": true,
+  "promote": "ols.promote \u2014 sequential, raises ScopeViolation",
+  "transfer_candidates": "ols.transfer_candidates \u2014 atlas-dead levers raise"
+ },
+ "listen_rule": "once Phase I emits a law, Phase II may transfer it and Phase III may attack it. There is no global barrier between II and III.",
+ "named_law": "LAW-L1-MLP-ARITHMETIC-SENSITIVE",
+ "negative_findings": [
+  "No GPU lease: METHOD transfer of L1 onto Falcon is UNMEASURED, not a fabricated 497.4.",
+  "Odyssey II lattice has no ORGAN_LOCAL rung; organ locality is recorded on the transfer, not by forking the lattice.",
+  "ols.SCHOOLS names Flash/Qwen27 only; Falcon is a sealed curriculum specimen, not a second school table.",
+  "time_to_first_useful_executable_ns is null on every campaign law."
+ ],
+ "odyssey": "II WHAT DID HAWKING ALREADY LEARN?",
+ "odyssey_i_barrier": null,
+ "phase_ii_waits_for_odyssey_i_complete": false,
+ "purpose": "Odyssey II transfer: consume a named campaign law and test it on a different sealed specimen. Report transfer or failure with the measurement (or UNMEASURED). Concurrent with Odyssey I and III; no Phase-I barrier.",
+ "recovered_implementation": {
+  "negative_transfer_atlas": "via ols.match_failed_atlas / transfer_candidates",
+  "odyssey2_law_store": "field set, lattice, promote, atlas refusal \u2014 consumed, not forked",
+  "phase_listeners": "LISTEN_RULE, NotATransferError, origin identity \u2014 consumed",
+  "specimen_curriculum": "five first-wave sealed roles \u2014 consumed",
+  "specimen_verify": "WHOLE_TREE_VERIFIED rows \u2014 consumed"
+ },
+ "schema": "hawking.future.odyssey2_transfer.v1",
+ "seal_sha256": "b158821f9b1d048aab6e935ffbc23999b6beab810c89b2e18bdfd889c9266ed1",
+ "sealed_specimens": {
+  "Falcon-H1-7B-Instruct": {
+   "alias": "Falcon-H1-7B-Instruct",
+   "architecture_family": "falcon_h1",
+   "bytes_hashed": 15182220635,
+   "n_files": 13,
+   "ready": true,
+   "repo": "tiiuae/Falcon-H1-7B-Instruct",
+   "revision": "41e72f27effbab80cd45b6e884688452253a3686",
+   "role": "small_dense_alternate_architecture_transfer",
+   "source_of_campaign_laws": false,
+   "specimen_id": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "whole_tree_verified": true
+  },
+  "Mistral-Small-3.1-24B": {
+   "alias": "Mistral-Small-3.1-24B",
+   "architecture_family": "dense_transformer",
+   "bytes_hashed": 96077777512,
+   "n_files": 25,
+   "ready": true,
+   "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+   "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
+   "role": "mid_size_dense_compiler",
+   "source_of_campaign_laws": false,
+   "specimen_id": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+   "whole_tree_verified": true
+  },
+  "Qwen3-0.6B": {
+   "alias": "Qwen3-0.6B",
+   "architecture_family": "dense_transformer",
+   "bytes_hashed": 1519209243,
+   "n_files": 10,
+   "ready": true,
+   "repo": "Qwen/Qwen3-0.6B",
+   "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+   "role": "very_small_dense_procedural_speed",
+   "source_of_campaign_laws": false,
+   "specimen_id": "Qwen--Qwen3-0.6B@c1899de289a0",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+   "whole_tree_verified": true
+  },
+  "Qwen3.8-Flash-Next": {
+   "alias": "Qwen3.8-Flash-Next",
+   "architecture_family": "qwen4_exp",
+   "bytes_hashed": 360023286454,
+   "n_files": 144,
+   "ready": true,
+   "repo": "Qwen/Qwen3.8-Flash-Next",
+   "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+   "role": "flash_heterogeneous_frontier",
+   "source_of_campaign_laws": false,
+   "specimen_id": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "whole_tree_verified": true
+  },
+  "qwen27": {
+   "alias": "qwen27",
+   "architecture_family": "dense_hybrid_transformer",
+   "bytes_hashed": 55586059240,
+   "n_files": 31,
+   "ready": true,
+   "repo": "Qwen3.8-27B",
+   "revision": "qwen3.8-27b-abliterated-bf16@local",
+   "role": "qwen27_mature_physical",
+   "source_of_campaign_laws": true,
+   "specimen_id": "qwen3.8-27b-abliterated-bf16@local",
+   "specimen_path": "/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
+   "whole_tree_verified": true
+  }
+ },
+ "selftest": {
+  "bench_state": "UNKNOWN",
+  "evidence_class": "STATIC_ONLY",
+  "law_deleted": false,
+  "listen_rule": "once Phase I emits a law, Phase II may transfer it and Phase III may attack it. There is no global barrier between II and III.",
+  "n_failed": 2,
+  "n_unmeasured": 1,
+  "named_law": "LAW-L1-MLP-ARITHMETIC-SENSITIVE",
+  "odyssey_i_barrier": null,
+  "ok": true,
+  "similarity_score_refused": true,
+  "specimen_used": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+  "verdict": "TRANSFER_FAILED",
+  "widen_without_replicating_specimen_raised": {
+   "law_id": "LAW-L1-MLP-ARITHMETIC-SENSITIVE",
+   "raised": true,
+   "reason": "need_replicating_specimen"
+  }
+ },
+ "specimen_used": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+ "trials": [
+  {
+   "bench_state": "UNKNOWN",
+   "citations": {
+    "arm_a_gb_s": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "mlp.arm_a_stripped.effective_gb_s",
+     "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+     "value": 497.4,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "arm_a_over_production": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "mlp.judgement.arm_a_over_production",
+     "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+     "value": 1.5089,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "ilp_8_over_1": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "judgement.ilp.ratio_8_over_1",
+     "source_receipt": "receipts/future/MLP_ISSUE_RATE_LADDER.json",
+     "value": 1.062,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "lm_head_gb_s": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "lm_head_gb_s",
+     "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+     "value": 497.4,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "loads_survived": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "mlp.judgement.loads_survived.survived",
+     "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+     "value": true,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "production_gb_s": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "mlp.production.effective_gb_s",
+     "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+     "value": 329.6,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "register_ws32_over_ws0": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "judgement.register_pressure.ratio_ws32_over_ws0",
+     "source_receipt": "receipts/future/MLP_ISSUE_RATE_LADDER.json",
+     "value": 1.0782,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "stream_verdict": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "verdict",
+     "source_receipt": "receipts/future/MLP_STREAM_COUNT.json",
+     "value": "MIXED",
+     "why": "copied; this sidecar did not measure it"
+    },
+    "weight_bytes": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "mlp.arm_a_stripped.weight_bytes",
+     "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+     "value": 83558400,
+     "why": "copied; this sidecar did not measure it"
+    }
+   },
+   "consulted_store_laws": {
+    "LAW-FALCON-H1-HAS-NO-EXPERT-TENSORS": {
+     "how_it_constrains_transfer": "Falcon-H1 is not an MoE transfer target; L1 is a dense MLP law, so this scar blocks expert-tensor copies, not the MLP METHOD",
+     "in_store": true
+    },
+    "LAW-KERNEL-REUSE-FOLLOWS-STORAGE-LAYOUT": {
+     "how_it_constrains_transfer": "kernel identity is a storage claim; architecture-family similarity is not evidence the 497.4 kernel exists on B",
+     "in_store": true
+    },
+    "LAW-VALUES-DO-NOT-TRANSFER-METHODS-DO": {
+     "how_it_constrains_transfer": "values (497.4, 329.6, 83.56 MB, 5.35e9 bytes) do not copy; a method may still be worth measuring",
+     "in_store": true
+    }
+   },
+   "evidence_class": "STATIC_ONLY",
+   "falcon_layout": {
+    "copied": true,
+    "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+    "msl_matches_model2_from_disk": false,
+    "probe_tensor": null,
+    "source_field": "result.layout_survey.Falcon-H1-7B",
+    "source_receipt": "receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json",
+    "storage": "NO EXPERT TENSORS AT ALL"
+   },
+   "gpu_authority": false,
+   "kind": "values",
+   "law_id": "LAW-L1-MLP-ARITHMETIC-SENSITIVE",
+   "named_law": "LAW-L1-MLP-ARITHMETIC-SENSITIVE",
+   "narrowing": {
+    "deleted": false,
+    "law_id": "LAW-L1-MLP-ARITHMETIC-SENSITIVE",
+    "narrowed_to": {
+     "does_not_carry_values_to": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "organ_class": "mlp",
+     "source_model": "Qwen3.8-27B"
+    },
+    "note": "MODEL_LOCAL is already the bottom of the Odyssey II promotion lattice; the measured scope is recorded on the transfer, not by deleting the law or inventing an ORGAN_LOCAL rung here (that rung lives on the Odyssey III adversary ladder).",
+    "reason": "VALUE transfer failed: 83.56 MB / 497.4 GB/s / 329.6 GB/s are the unique payload and measured-under-load rates of one sealed-3.14 MLP layer (copied from receipts/future/MLP_ALU_ROOFLINE.json). Falcon-H1-7B-Instruct is architecture family 'falcon_h1', specimen 'tiiuae--Falcon-H1-7B-Instruct@41e72f27effb', WHOLE_TREE_VERIFIED. Layout survey storage='NO EXPERT TENSORS AT ALL'. The stored scar LAW-VALUES-DO-NOT-TRANSFER-METHODS-DO forbids copying the numbers. No Falcon MLP ARM A measurement exists in this campaign.",
+    "scope_after": "MODEL_LOCAL",
+    "scope_before": "MODEL_LOCAL"
+   },
+   "odyssey_i_barrier": null,
+   "scope_after": "MODEL_LOCAL",
+   "scope_before": "MODEL_LOCAL",
+   "similarity_score": null,
+   "source_display": "qwen3.8-27b sealed-3.14",
+   "source_specimen": "qwen3.8-27b-abliterated-bf16@local",
+   "statement": "On qwen3.8-27b sealed-3.14 the MLP is arithmetic-sensitive, not addressing-limited. ARM A (stripped) at 497.4 GB/s against production 329.6 on the SAME 83.56 MB with loads proven live (MLP_ALU_ROOFLINE). Stream count is MIXED at fixed bytes/thread (MLP_STREAM_COUNT). Not a dependency chain (ILP 8/1 = 1.062), not register pressure (ws32/ws0 = 1.078), not occupancy \u2014 raising it is worse (MLP_ISSUE_RATE_LADDER).",
+   "target_alias": "Falcon-H1-7B-Instruct",
+   "target_architecture_family": "falcon_h1",
+   "target_repo": "tiiuae/Falcon-H1-7B-Instruct",
+   "target_specimen": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "target_whole_tree_verified": true,
+   "trial_id": "L1-VALUES-TO-FALCON-H1",
+   "verdict": "TRANSFER_FAILED",
+   "what_transfer_bought": {
+    "expected_if_method_holds": 3,
+    "expected_if_values_had_held": null,
+    "experiments_saved": 0,
+    "new_search_only_where_transfer_fails": "METHOD (arithmetic-sensitive vs addressing-limited) is UNMEASURED on Falcon; that is the remaining experiment, not a value copy",
+    "precise_reason_the_law_did_not_carry": "VALUE transfer failed: 83.56 MB / 497.4 GB/s / 329.6 GB/s are the unique payload and measured-under-load rates of one sealed-3.14 MLP layer (copied from receipts/future/MLP_ALU_ROOFLINE.json). Falcon-H1-7B-Instruct is architecture family 'falcon_h1', specimen 'tiiuae--Falcon-H1-7B-Instruct@41e72f27effb', WHOLE_TREE_VERIFIED. Layout survey storage='NO EXPERT TENSORS AT ALL'. The stored scar LAW-VALUES-DO-NOT-TRANSFER-METHODS-DO forbids copying the numbers. No Falcon MLP ARM A measurement exists in this campaign.",
+    "section_65": "consulted LAW-VALUES-DO-NOT-TRANSFER-METHODS-DO and LAW-FALCON-H1-HAS-NO-EXPERT-TENSORS before any new search; did not launch an ALU/stream/issue ladder on Falcon expecting 497.4"
+   }
+  },
+  {
+   "bench_state": "UNKNOWN",
+   "evidence_class": "STATIC_ONLY",
+   "experiment_that_would_settle": "crates/hawking-core/examples/alu_roofline_organs.rs ARM A (production access pattern and byte count, decode+dequant+FMA replaced by XOR/add sink) vs production on the target specimen's MLP, same process, loads proven live (stripped time above the zero-load floor and stripped-half time dropping with bytes). Settle: ARM A jumps vs production on the same unique payload. Do not copy 497.4 / 329.6 / 83.56 MB.",
+   "gpu_authority": false,
+   "kind": "method",
+   "law_id": "LAW-L1-MLP-ARITHMETIC-SENSITIVE",
+   "measurement": null,
+   "measurement_state": "UNMEASURED",
+   "named_law": "LAW-L1-MLP-ARITHMETIC-SENSITIVE",
+   "odyssey_i_barrier": null,
+   "scope_after": "MODEL_LOCAL",
+   "scope_before": "MODEL_LOCAL",
+   "similarity_score": null,
+   "source_display": "qwen3.8-27b sealed-3.14",
+   "source_specimen": "qwen3.8-27b-abliterated-bf16@local",
+   "statement": "On qwen3.8-27b sealed-3.14 the MLP is arithmetic-sensitive, not addressing-limited. ARM A (stripped) at 497.4 GB/s against production 329.6 on the SAME 83.56 MB with loads proven live (MLP_ALU_ROOFLINE). Stream count is MIXED at fixed bytes/thread (MLP_STREAM_COUNT). Not a dependency chain (ILP 8/1 = 1.062), not register pressure (ws32/ws0 = 1.078), not occupancy \u2014 raising it is worse (MLP_ISSUE_RATE_LADDER).",
+   "target_alias": "Falcon-H1-7B-Instruct",
+   "target_architecture_family": "falcon_h1",
+   "target_repo": "tiiuae/Falcon-H1-7B-Instruct",
+   "target_specimen": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "target_whole_tree_verified": true,
+   "trial_id": "L1-METHOD-TO-FALCON-H1",
+   "verdict": "UNMEASURED",
+   "what_transfer_bought": {
+    "experiments_saved": 0,
+    "precise_reason_the_law_did_not_carry": "METHOD unmeasured on Falcon-H1; VALUE transfer already failed. \u00a765: new search is the ARM A experiment named above, not a re-run of the source ladder expecting the same GB/s."
+   },
+   "why_not_copied": "ARM A 497.4 / production 329.6 are sealed-3.14 MLP numbers; writing them onto Falcon-H1 would fabricate a hardware number"
+  },
+  {
+   "bench_state": "UNKNOWN",
+   "citations": {
+    "aux_stream_on_critical_path": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "economics.bytes_only_screen_style.assumptions.stream_on_critical_path",
+     "source_receipt": "receipts/future/AUX_U8_NATIVE.json",
+     "value": false,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "bytes_removed_organ": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "economics.bytes_only_screen_style.bytes_removed",
+     "source_receipt": "receipts/future/AUX_U8_NATIVE.json",
+     "value": 534773760,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "bytes_removed_this_layer": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "gpu_ab.bytes_removed_this_layer",
+     "source_receipt": "receipts/future/AUX_U8_NATIVE.json",
+     "value": 8355840,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "lut_faster_than_incumbent": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "gpu_ab.speedup.lut_faster_than_incumbent",
+     "source_receipt": "receipts/future/AUX_U8_LUT.json",
+     "value": false,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "native_slower_us": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "gpu_ab.delta.gpu_us",
+     "source_receipt": "receipts/future/AUX_U8_NATIVE.json",
+     "value": 29.041,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "predicted_ms_saved": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "economics.bytes_only_screen_style.predicted_ms_saved",
+     "source_receipt": "receipts/future/AUX_U8_NATIVE.json",
+     "value": -0.0,
+     "why": "copied; this sidecar did not measure it"
+    }
+   },
+   "evidence_class": "STATIC_ONLY",
+   "falcon_layout": {
+    "copied": true,
+    "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+    "msl_matches_model2_from_disk": false,
+    "probe_tensor": null,
+    "source_field": "result.layout_survey.Falcon-H1-7B",
+    "source_receipt": "receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json",
+    "storage": "NO EXPERT TENSORS AT ALL"
+   },
+   "gpu_authority": false,
+   "kind": "organ_presence",
+   "law_id": "LAW-L2-BROADCAST-AUX-NOT-CRITICAL-PATH",
+   "named_law": "LAW-L2-BROADCAST-AUX-NOT-CRITICAL-PATH",
+   "narrowing": {
+    "deleted": false,
+    "law_id": "LAW-L2-BROADCAST-AUX-NOT-CRITICAL-PATH",
+    "narrowed_to": {
+     "does_not_carry_values_to": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "organ_class": "mlp.broadcast_aux",
+     "source_model": "Qwen3.8-27B"
+    },
+    "note": "MODEL_LOCAL is already the bottom of the Odyssey II promotion lattice; the measured scope is recorded on the transfer, not by deleting the law or inventing an ORGAN_LOCAL rung here (that rung lives on the Odyssey III adversary ladder).",
+    "reason": "organ absent on B: LAW-L2 is about the affine-q2 broadcast-aux stream (stream_on_critical_path copied as False from receipts/future/AUX_U8_NATIVE.json). Falcon-H1 layout storage='NO EXPERT TENSORS AT ALL', family='falcon_h1'. There is no broadcast-aux organ to transfer onto. The law stays MODEL_LOCAL to sealed-3.14 mlp.broadcast_aux.",
+    "scope_after": "MODEL_LOCAL",
+    "scope_before": "MODEL_LOCAL"
+   },
+   "odyssey_i_barrier": null,
+   "scope_after": "MODEL_LOCAL",
+   "scope_before": "MODEL_LOCAL",
+   "similarity_score": null,
+   "source_display": "qwen3.8-27b sealed-3.14",
+   "source_specimen": "qwen3.8-27b-abliterated-bf16@local",
+   "statement": "On qwen3.8-27b sealed-3.14 broadcast-aux bytes are not on the critical path: shrinking the aux stream made the kernel SLOWER, and the calibrated economics now prices them at ~0 (AUX_U8_NATIVE, AUX_U8_LUT, ECONOMICS_CALIBRATION).",
+   "target_alias": "Falcon-H1-7B-Instruct",
+   "target_architecture_family": "falcon_h1",
+   "target_repo": "tiiuae/Falcon-H1-7B-Instruct",
+   "target_specimen": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "target_whole_tree_verified": true,
+   "trial_id": "L2-ORGAN-ABSENT-ON-FALCON-H1",
+   "verdict": "TRANSFER_FAILED",
+   "what_transfer_bought": {
+    "experiments_saved": 1,
+    "precise_reason_the_law_did_not_carry": "organ absent on B: LAW-L2 is about the affine-q2 broadcast-aux stream (stream_on_critical_path copied as False from receipts/future/AUX_U8_NATIVE.json). Falcon-H1 layout storage='NO EXPERT TENSORS AT ALL', family='falcon_h1'. There is no broadcast-aux organ to transfer onto. The law stays MODEL_LOCAL to sealed-3.14 mlp.broadcast_aux.",
+    "saved": "did not run AUX_U8_NATIVE / ECONOMICS_CALIBRATION on Falcon expecting a broadcast-aux critical-path price of ~0"
+   }
+  }
+ ],
+ "verdict": "TRANSFER_FAILED",
+ "version": 1
+}

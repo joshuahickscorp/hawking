@@ -1,0 +1,1132 @@
+{
+ "anti_fabrication": {
+  "detectors": [
+   "HELD_OUT_PROMPT_LEAK",
+   "SYNTHETIC_ROW",
+   "DUPLICATE_ROWS_ABOVE_THRESHOLD",
+   "PROMPT_NOT_IN_SPLIT"
+  ],
+  "dup_rate_max": 0.05,
+  "loud_exception": "CorpusRefused",
+  "rule": "emit_manifest raises CorpusRefused if the hold set shares a prompt_id with train, or if any row is synthetic/Gaussian. A return-flag nobody checks is not a guard.",
+  "synthetic_kinds": [
+   "gaussian",
+   "gaussian_proxy",
+   "proxy",
+   "random",
+   "synthesised",
+   "synthesized",
+   "synthetic"
+  ]
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host; CPU/MPS affine-Q2 F(X), no GPU lease",
+  "measurement_state": "DIAGNOSTIC_RELATIVE",
+  "recorded_at": "2026-08-31T06:44:12Z",
+  "recorded_by": "tools/future/mlp_teacher_corpus.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "capability_domains": [
+  "reasoning",
+  "code",
+  "tool-calling",
+  "long-horizon-coherence",
+  "plain-prose"
+ ],
+ "capture": {
+  "beats_nns007_scar": true,
+  "capture_elapsed_s": 13.599116292025428,
+  "claim_boundary": "DIAGNOSTIC_RELATIVE sidecar. X is real post_attn_norm from teacher-forced prefill (capture_diverse2; named Qwen3.8 teacher under NNS-006). Y is F(X)=down(silu(gate(X))*up(X)) reconstructed from the sealed-3.14 HGRAVF01 affine-Q2 tensors the resident fused-SwiGLU kernel consumes (w = float(q)*scale+bias). Y is exact for that arithmetic. X is not claimed to be the sealed residual stream: the JSONL resident does not dump hidden states, and this module refuses to substitute Gaussian X (NNS-001) or the wrong norm (CORRECTION_MLP_INPUT_TENSOR). capture_elapsed_s is process elapsed, not a GPU-lease measurement. bench.gpu_authority is false.",
+  "fusion_env": {
+   "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+   "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+   "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+   "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+  },
+  "layers": [
+   {
+    "layer": 3,
+    "n_rows": 11269,
+    "x_path": "workspace/ops/local/scratch/mlp_teacher_corpus/L03_x.f32",
+    "x_sha256": "00baa0e5b0193b703c8238702e1af2243a101593ea80a5b29eed8d0c5ec388ec",
+    "x_source_f16": "/Users/scammermike/Downloads/hawking/workspace/campaign/phaseB/capture_diverse2/L03.f16",
+    "x_source_f16_sha256": "55a3169b2f58cd8843c5a2e4111d4ac30dad760ae105fa260c2f1f14cbec1b74",
+    "y_path": "workspace/ops/local/scratch/mlp_teacher_corpus/L03_y.f32",
+    "y_sha256": "6a581bdc2464990df26a9e6b0807e3c73b20decef71949d9462342bf3fcb86db"
+   },
+   {
+    "layer": 31,
+    "n_rows": 11269,
+    "x_path": "workspace/ops/local/scratch/mlp_teacher_corpus/L31_x.f32",
+    "x_sha256": "94b4efa60f33ff37e83a093a656d035d966de3a93bd000b9cd924ef3726ccf15",
+    "x_source_f16": "/Users/scammermike/Downloads/hawking/workspace/campaign/phaseB/capture_diverse2/L31.f16",
+    "x_source_f16_sha256": "710a64062fb4649589fcc3d506d98d32036efaadb3ee598010cb954b091383a5",
+    "y_path": "workspace/ops/local/scratch/mlp_teacher_corpus/L31_y.f32",
+    "y_sha256": "d4b58791e9cc2dfea6f9f9b2195d60f878db3e9a9ed5122b578811260d013094"
+   },
+   {
+    "layer": 38,
+    "n_rows": 11269,
+    "x_path": "workspace/ops/local/scratch/mlp_teacher_corpus/L38_x.f32",
+    "x_sha256": "ac92446ecb711ef84dd2fda04c249b185da523d714f77e879efc82834b04f8d9",
+    "x_source_f16": "/Users/scammermike/Downloads/hawking/workspace/campaign/phaseB/capture_diverse2/L38.f16",
+    "x_source_f16_sha256": "f09b4d2fccb69ff7735516108a6578ba59bbd60b485c4fe01cf8b219f4222d8d",
+    "y_path": "workspace/ops/local/scratch/mlp_teacher_corpus/L38_y.f32",
+    "y_sha256": "53928f933050d25522991d884f531bc37f567ec1cd92d106bfef7c1a4e742fe2"
+   },
+   {
+    "layer": 63,
+    "n_rows": 11269,
+    "x_path": "workspace/ops/local/scratch/mlp_teacher_corpus/L63_x.f32",
+    "x_sha256": "70c1d60eb12d99a357ed3ed8a559c62886514f6ee775768dfbf859408f7fd81c",
+    "x_source_f16": "/Users/scammermike/Downloads/hawking/workspace/campaign/phaseB/capture_diverse2/L63.f16",
+    "x_source_f16_sha256": "c52202bcf5dc86e52bedf72e6e8909b22c268e24a8402dff57ff175dc7328d21",
+    "y_path": "workspace/ops/local/scratch/mlp_teacher_corpus/L63_y.f32",
+    "y_sha256": "8ce5c5f8e544b4c259465bd3bb951459275bf10f03810f7a484dd07f933ab15e"
+   }
+  ],
+  "n_hold_rows": 10044,
+  "n_prompts_per_domain": {
+   "code": 18,
+   "long-horizon-coherence": 8,
+   "plain-prose": 20,
+   "reasoning": 10,
+   "tool-calling": 8
+  },
+  "n_rows": 45076,
+  "n_rows_per_domain": {
+   "code": 32556,
+   "long-horizon-coherence": 2380,
+   "plain-prose": 6048,
+   "reasoning": 2464,
+   "tool-calling": 1628
+  },
+  "n_train_rows": 35032,
+  "n_train_rows_per_layer": {
+   "3": 8758,
+   "31": 8758,
+   "38": 8758,
+   "63": 8758
+  },
+  "payload_dir": "workspace/ops/local/scratch/mlp_teacher_corpus",
+  "position_bands": {
+   "early": 15120,
+   "late": 15032,
+   "middle": 14924
+  },
+  "rank32_overdetermined": true,
+  "representatives": {
+   "chosen": [
+    {
+     "H_q_down": 1.8732330611763028,
+     "H_q_gate": 1.873613129372985,
+     "H_q_mean": 1.873333582066703,
+     "H_q_up": 1.873154555650821,
+     "delta_from_global_mean": 0.0031713318766357634,
+     "layer": 3,
+     "mixer": "full_attention",
+     "role": "first_full_attention",
+     "why": "First full-attention (GQA) layer. Mixer-class contrast against the 48 linear-attention MLPs; independently the stack entropy maximum (H_q_mean=1.873334)."
+    },
+    {
+     "H_q_down": 1.8677754979112966,
+     "H_q_gate": 1.8681617723539965,
+     "H_q_mean": 1.8673360209824894,
+     "H_q_up": 1.8660707926821751,
+     "delta_from_global_mean": -0.0028262292075778017,
+     "layer": 31,
+     "mixer": "full_attention",
+     "role": "nns015_mid_full",
+     "why": "Layer 31 is the NNS-015 named surface (down_proj L31, real post_swiglu X). Mid-depth full-attention; H(q) sits below the global mean (delta=-0.002826)."
+    },
+    {
+     "H_q_down": 1.8706447767676493,
+     "H_q_gate": 1.8709887748369747,
+     "H_q_mean": 1.8701870292370277,
+     "H_q_up": 1.8689275361064592,
+     "delta_from_global_mean": 2.4779046960521356e-05,
+     "layer": 38,
+     "mixer": "linear_attention",
+     "role": "typical",
+     "why": "Closest H(q) to the 64-layer mean (1.870162 bits) among layers other than 0. Layer 0 is a high-entropy outlier (H_q_mean=1.873140, delta=+0.002978) and is not typical."
+    },
+    {
+     "H_q_down": 1.8502978255791103,
+     "H_q_gate": 1.8691888211143635,
+     "H_q_mean": 1.8633490107269008,
+     "H_q_up": 1.8705603854872295,
+     "delta_from_global_mean": -0.006813239463166365,
+     "layer": 63,
+     "mixer": "full_attention",
+     "role": "last_layer_entropy_min",
+     "why": "Last layer. Depth-axis pole. Independently the stack entropy minimum (H_q_mean=1.863349, driven by mlp.down H_q=1.850298)."
+    }
+   ],
+   "chosen_layers": [
+    3,
+    31,
+    38,
+    63
+   ],
+   "global_H_q_mean": 1.8701622501900672,
+   "layer0": {
+    "H_q_mean": 1.8731400426538949,
+    "delta_from_global_mean": 0.0029777924638276776,
+    "layer": 0,
+    "mixer": "linear_attention",
+    "typical": false,
+    "why_not_typical": "Layer 0 mean H(q) is above the later-layer mean (MLP_CODE_INFORMATION answers.are_some_rows_or_layers_lower_entropy). Using it as 'the MLP' is the default this corpus exists to refuse."
+   },
+   "n_full_attention": 16,
+   "n_linear_attention": 48
+  },
+  "rows_jsonl": "workspace/ops/local/scratch/mlp_teacher_corpus/rows.jsonl",
+  "rows_jsonl_sha256": "1072d78380b0bec634f0b981ff2e445dfeeb264bf8f77ae112bcda2b89200dba",
+  "rows_per_dimension_all": 8.80390625,
+  "rows_per_dimension_train": 1.710546875,
+  "rows_per_dimension_train_per_layer": {
+   "3": 1.710546875,
+   "31": 1.710546875,
+   "38": 1.710546875,
+   "63": 1.710546875
+  },
+  "rows_per_dimension_train_pooled": 6.8421875,
+  "schema": "hawking.future.mlp_teacher_corpus.capture.v1",
+  "specimen": {
+   "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+   "fusion_env": {
+    "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+    "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+    "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+    "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+   },
+   "geometry": {
+    "hidden_size": 5120,
+    "intermediate_size": 17408,
+    "num_hidden_layers": 64
+   },
+   "model_id": "qwen3.8-27b-sealed-3.14",
+   "pinned_revision": "c7b9aaa4d93471a1af6fb11e2828289b6f0a51d2",
+   "protocol": "hawking.qwen38.resident.v1",
+   "require_fusion_env": true,
+   "resident_binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release/examples/ascension_qwen38_resident",
+   "resident_binary_sha256": "39f3f28c0bf695f2f5c2e436bdb82a88f8406fb3f7a4b6f2588899350ebd78f8",
+   "resident_identity": "sealed-3.14",
+   "seal_source": "hcli/hawking-native.sealed-3.14.json",
+   "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json"
+  },
+  "split": {
+   "disjoint": true,
+   "hold_frac": 0.25,
+   "hold_prompt_ids": [
+    "code:14",
+    "code:15",
+    "code:16",
+    "code:17",
+    "dialogue:06",
+    "dialogue:07",
+    "instruction:06",
+    "instruction:07",
+    "math:08",
+    "math:09",
+    "prose:07",
+    "prose:08",
+    "prose:09",
+    "prose:10",
+    "prose:11"
+   ],
+   "n_hold_prompts": 15,
+   "n_train_prompts": 49,
+   "train_prompt_ids": [
+    "code:00",
+    "code:01",
+    "code:02",
+    "code:03",
+    "code:04",
+    "code:05",
+    "code:06",
+    "code:07",
+    "code:08",
+    "code:09",
+    "code:10",
+    "code:11",
+    "code:12",
+    "code:13",
+    "dialogue:00",
+    "dialogue:01",
+    "dialogue:02",
+    "dialogue:03",
+    "dialogue:04",
+    "dialogue:05",
+    "instruction:00",
+    "instruction:01",
+    "instruction:02",
+    "instruction:03",
+    "instruction:04",
+    "instruction:05",
+    "math:00",
+    "math:01",
+    "math:02",
+    "math:03",
+    "math:04",
+    "math:05",
+    "math:06",
+    "math:07",
+    "multilingual:00",
+    "multilingual:01",
+    "multilingual:02",
+    "multilingual:03",
+    "multilingual:04",
+    "multilingual:05",
+    "multilingual:06",
+    "multilingual:07",
+    "prose:00",
+    "prose:01",
+    "prose:02",
+    "prose:03",
+    "prose:04",
+    "prose:05",
+    "prose:06"
+   ],
+   "unit": "prompt_id"
+  },
+  "status": "captured",
+  "x_capture_dir": "/Users/scammermike/Downloads/hawking/workspace/campaign/phaseB/capture_diverse2",
+  "x_input": "post_attn_norm",
+  "x_manifest_sha256": "8dd9de6b6dc76673e70936f5e316e7c386affd64dc1fc8ddc6c6bdb82e5209db",
+  "y_function": "down(silu(gate(x))*up(x)) affine-Q2 HGRAVF01"
+ },
+ "claim_boundary": "DIAGNOSTIC_RELATIVE sidecar. X is real post_attn_norm from teacher-forced prefill (capture_diverse2; named Qwen3.8 teacher under NNS-006). Y is F(X)=down(silu(gate(X))*up(X)) reconstructed from the sealed-3.14 HGRAVF01 affine-Q2 tensors the resident fused-SwiGLU kernel consumes (w = float(q)*scale+bias). Y is exact for that arithmetic. X is not claimed to be the sealed residual stream: the JSONL resident does not dump hidden states, and this module refuses to substitute Gaussian X (NNS-001) or the wrong norm (CORRECTION_MLP_INPUT_TENSOR). capture_elapsed_s is process elapsed, not a GPU-lease measurement. bench.gpu_authority is false.",
+ "era_vocabulary": {
+  "bench_state": "UNKNOWN",
+  "evidence_class": "DIAGNOSTIC_RELATIVE"
+ },
+ "evidence_class": "DIAGNOSTIC_RELATIVE",
+ "family_to_domain": {
+  "code": "code",
+  "dialogue": "long-horizon-coherence",
+  "instruction": "tool-calling",
+  "math": "reasoning",
+  "multilingual": "plain-prose",
+  "prose": "plain-prose"
+ },
+ "fingerprint": {
+  "layers": [
+   {
+    "H_q_down": 1.8717295501869682,
+    "H_q_gate": 1.8738227181311817,
+    "H_q_mean": 1.8731400426538949,
+    "H_q_up": 1.873867859643535,
+    "delta_from_global_mean": 0.0029777924638276776,
+    "is_layer0": true,
+    "layer": 0,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8707446595629142,
+    "H_q_gate": 1.8739446167887208,
+    "H_q_mean": 1.872638870869135,
+    "H_q_up": 1.8732273362557699,
+    "delta_from_global_mean": 0.0024766206790678424,
+    "is_layer0": false,
+    "layer": 1,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8725761198427495,
+    "H_q_gate": 1.873977371526143,
+    "H_q_mean": 1.8731604678640237,
+    "H_q_up": 1.8729279122231786,
+    "delta_from_global_mean": 0.0029982176739564714,
+    "is_layer0": false,
+    "layer": 2,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8732330611763028,
+    "H_q_gate": 1.873613129372985,
+    "H_q_mean": 1.873333582066703,
+    "H_q_up": 1.873154555650821,
+    "delta_from_global_mean": 0.0031713318766357634,
+    "is_layer0": false,
+    "layer": 3,
+    "mixer": "full_attention"
+   },
+   {
+    "H_q_down": 1.8730692011522867,
+    "H_q_gate": 1.8730744091025269,
+    "H_q_mean": 1.8728200912900725,
+    "H_q_up": 1.872316663615404,
+    "delta_from_global_mean": 0.0026578411000053315,
+    "is_layer0": false,
+    "layer": 4,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8724259177124987,
+    "H_q_gate": 1.8738221659064187,
+    "H_q_mean": 1.8729691926866272,
+    "H_q_up": 1.8726594944409647,
+    "delta_from_global_mean": 0.0028069424965599943,
+    "is_layer0": false,
+    "layer": 5,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8705823633959144,
+    "H_q_gate": 1.873030912232795,
+    "H_q_mean": 1.871748140959123,
+    "H_q_up": 1.8716311472486593,
+    "delta_from_global_mean": 0.0015858907690557977,
+    "is_layer0": false,
+    "layer": 6,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8720646165620658,
+    "H_q_gate": 1.873235030509911,
+    "H_q_mean": 1.8724456061961448,
+    "H_q_up": 1.872037171516458,
+    "delta_from_global_mean": 0.0022833560060775415,
+    "is_layer0": false,
+    "layer": 7,
+    "mixer": "full_attention"
+   },
+   {
+    "H_q_down": 1.8727449677714811,
+    "H_q_gate": 1.8733820177650977,
+    "H_q_mean": 1.8728367359024916,
+    "H_q_up": 1.8723832221708956,
+    "delta_from_global_mean": 0.002674485712424346,
+    "is_layer0": false,
+    "layer": 8,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8728588262068755,
+    "H_q_gate": 1.8734466493260165,
+    "H_q_mean": 1.872998267477209,
+    "H_q_up": 1.8726893268987346,
+    "delta_from_global_mean": 0.002836017287141779,
+    "is_layer0": false,
+    "layer": 9,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8723737707694859,
+    "H_q_gate": 1.8729839644725543,
+    "H_q_mean": 1.872558840027076,
+    "H_q_up": 1.8723187848391878,
+    "delta_from_global_mean": 0.0023965898370088556,
+    "is_layer0": false,
+    "layer": 10,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.87260255120117,
+    "H_q_gate": 1.8733875415614354,
+    "H_q_mean": 1.872875817100451,
+    "H_q_up": 1.8726373585387472,
+    "delta_from_global_mean": 0.0027135669103837134,
+    "is_layer0": false,
+    "layer": 11,
+    "mixer": "full_attention"
+   },
+   {
+    "H_q_down": 1.872217928065805,
+    "H_q_gate": 1.8732650879239574,
+    "H_q_mean": 1.8727662571739019,
+    "H_q_up": 1.8728157555319433,
+    "delta_from_global_mean": 0.0026040069838346724,
+    "is_layer0": false,
+    "layer": 12,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.872170550734408,
+    "H_q_gate": 1.873531433639974,
+    "H_q_mean": 1.8728614219602544,
+    "H_q_up": 1.872882281506381,
+    "delta_from_global_mean": 0.002699171770187192,
+    "is_layer0": false,
+    "layer": 13,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.87195471350593,
+    "H_q_gate": 1.8733774572578537,
+    "H_q_mean": 1.8727339230959814,
+    "H_q_up": 1.872869598524161,
+    "delta_from_global_mean": 0.002571672905914202,
+    "is_layer0": false,
+    "layer": 14,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.871665545294352,
+    "H_q_gate": 1.873465736736673,
+    "H_q_mean": 1.8726007039555173,
+    "H_q_up": 1.872670829835527,
+    "delta_from_global_mean": 0.0024384537654500438,
+    "is_layer0": false,
+    "layer": 15,
+    "mixer": "full_attention"
+   },
+   {
+    "H_q_down": 1.871033213639457,
+    "H_q_gate": 1.8730921897037427,
+    "H_q_mean": 1.8722162745828144,
+    "H_q_up": 1.8725234204052437,
+    "delta_from_global_mean": 0.0020540243927471558,
+    "is_layer0": false,
+    "layer": 16,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8706500722789388,
+    "H_q_gate": 1.8729899996668222,
+    "H_q_mean": 1.8719618784544083,
+    "H_q_up": 1.872245563417464,
+    "delta_from_global_mean": 0.0017996282643411021,
+    "is_layer0": false,
+    "layer": 17,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8671785561282397,
+    "H_q_gate": 1.8720921626143454,
+    "H_q_mean": 1.8702297819481117,
+    "H_q_up": 1.87141862710175,
+    "delta_from_global_mean": 6.75317580445256e-05,
+    "is_layer0": false,
+    "layer": 18,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8698486527483469,
+    "H_q_gate": 1.8731235173026477,
+    "H_q_mean": 1.8715122111738214,
+    "H_q_up": 1.8715644634704693,
+    "delta_from_global_mean": 0.0013499609837541726,
+    "is_layer0": false,
+    "layer": 19,
+    "mixer": "full_attention"
+   },
+   {
+    "H_q_down": 1.8708365823802415,
+    "H_q_gate": 1.8733518735235841,
+    "H_q_mean": 1.8719114111838377,
+    "H_q_up": 1.8715457776476871,
+    "delta_from_global_mean": 0.0017491609937705377,
+    "is_layer0": false,
+    "layer": 20,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.87143535150344,
+    "H_q_gate": 1.8733002605224898,
+    "H_q_mean": 1.8721142683252159,
+    "H_q_up": 1.8716071929497176,
+    "delta_from_global_mean": 0.0019520181351486698,
+    "is_layer0": false,
+    "layer": 21,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8704932271935042,
+    "H_q_gate": 1.8722143069544877,
+    "H_q_mean": 1.870977284857723,
+    "H_q_up": 1.8702243204251778,
+    "delta_from_global_mean": 0.0008150346676558673,
+    "is_layer0": false,
+    "layer": 22,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8711203317605865,
+    "H_q_gate": 1.8729361606920383,
+    "H_q_mean": 1.8714273769969287,
+    "H_q_up": 1.8702256385381615,
+    "delta_from_global_mean": 0.0012651268068615273,
+    "is_layer0": false,
+    "layer": 23,
+    "mixer": "full_attention"
+   },
+   {
+    "H_q_down": 1.8702770025446753,
+    "H_q_gate": 1.872149348008178,
+    "H_q_mean": 1.8703934413153653,
+    "H_q_up": 1.8687539733932423,
+    "delta_from_global_mean": 0.0002311911252981247,
+    "is_layer0": false,
+    "layer": 24,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.870159038615829,
+    "H_q_gate": 1.8714622363502111,
+    "H_q_mean": 1.8698773855939592,
+    "H_q_up": 1.8680108818158374,
+    "delta_from_global_mean": -0.0002848645961079921,
+    "is_layer0": false,
+    "layer": 25,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.86901315877499,
+    "H_q_gate": 1.870476695180844,
+    "H_q_mean": 1.8687506913397751,
+    "H_q_up": 1.8667622200634915,
+    "delta_from_global_mean": -0.001411558850292094,
+    "is_layer0": false,
+    "layer": 26,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8691887010540948,
+    "H_q_gate": 1.8709139001306332,
+    "H_q_mean": 1.8691678727789656,
+    "H_q_up": 1.8674010171521684,
+    "delta_from_global_mean": -0.0009943774111016435,
+    "is_layer0": false,
+    "layer": 27,
+    "mixer": "full_attention"
+   },
+   {
+    "H_q_down": 1.8686606134410169,
+    "H_q_gate": 1.870104580053797,
+    "H_q_mean": 1.8686095807633556,
+    "H_q_up": 1.8670635487952532,
+    "delta_from_global_mean": -0.001552669426711617,
+    "is_layer0": false,
+    "layer": 28,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8689872692599379,
+    "H_q_gate": 1.869488074566807,
+    "H_q_mean": 1.8685654401533078,
+    "H_q_up": 1.867220976633179,
+    "delta_from_global_mean": -0.0015968100367593774,
+    "is_layer0": false,
+    "layer": 29,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8681766498692332,
+    "H_q_gate": 1.868311286989456,
+    "H_q_mean": 1.8675544838020082,
+    "H_q_up": 1.866175514547335,
+    "delta_from_global_mean": -0.0026077663880590407,
+    "is_layer0": false,
+    "layer": 30,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8677754979112966,
+    "H_q_gate": 1.8681617723539965,
+    "H_q_mean": 1.8673360209824894,
+    "H_q_up": 1.8660707926821751,
+    "delta_from_global_mean": -0.0028262292075778017,
+    "is_layer0": false,
+    "layer": 31,
+    "mixer": "full_attention"
+   },
+   {
+    "H_q_down": 1.865673809499975,
+    "H_q_gate": 1.8673072948296179,
+    "H_q_mean": 1.8660714598049897,
+    "H_q_up": 1.8652332750853768,
+    "delta_from_global_mean": -0.004090790385077536,
+    "is_layer0": false,
+    "layer": 32,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8656474655926347,
+    "H_q_gate": 1.86728468102367,
+    "H_q_mean": 1.8661639505345906,
+    "H_q_up": 1.8655597049874664,
+    "delta_from_global_mean": -0.0039982996554766,
+    "is_layer0": false,
+    "layer": 33,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8612839841022506,
+    "H_q_gate": 1.865920625163291,
+    "H_q_mean": 1.8640103586974937,
+    "H_q_up": 1.8648264668269399,
+    "delta_from_global_mean": -0.006151891492573558,
+    "is_layer0": false,
+    "layer": 34,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8670309575359632,
+    "H_q_gate": 1.868800646316247,
+    "H_q_mean": 1.8675409932904807,
+    "H_q_up": 1.8667913760192316,
+    "delta_from_global_mean": -0.002621256899586477,
+    "is_layer0": false,
+    "layer": 35,
+    "mixer": "full_attention"
+   },
+   {
+    "H_q_down": 1.8702356049839137,
+    "H_q_gate": 1.8702487363144993,
+    "H_q_mean": 1.869577571195897,
+    "H_q_up": 1.868248372289278,
+    "delta_from_global_mean": -0.0005846789941701402,
+    "is_layer0": false,
+    "layer": 36,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.871770751183763,
+    "H_q_gate": 1.8713724753397227,
+    "H_q_mean": 1.871004767194105,
+    "H_q_up": 1.8698710750588299,
+    "delta_from_global_mean": 0.0008425170040378127,
+    "is_layer0": false,
+    "layer": 37,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8706447767676493,
+    "H_q_gate": 1.8709887748369747,
+    "H_q_mean": 1.8701870292370277,
+    "H_q_up": 1.8689275361064592,
+    "delta_from_global_mean": 2.4779046960521356e-05,
+    "is_layer0": false,
+    "layer": 38,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.87226545653873,
+    "H_q_gate": 1.8723160470147326,
+    "H_q_mean": 1.8716851998179322,
+    "H_q_up": 1.870474095900334,
+    "delta_from_global_mean": 0.0015229496278650334,
+    "is_layer0": false,
+    "layer": 39,
+    "mixer": "full_attention"
+   },
+   {
+    "H_q_down": 1.8714769801890068,
+    "H_q_gate": 1.8717414224458426,
+    "H_q_mean": 1.870641863508305,
+    "H_q_up": 1.8687071878900663,
+    "delta_from_global_mean": 0.00047961331823787035,
+    "is_layer0": false,
+    "layer": 40,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8706109333840801,
+    "H_q_gate": 1.8706570538644791,
+    "H_q_mean": 1.8697779406879371,
+    "H_q_up": 1.868065834815252,
+    "delta_from_global_mean": -0.00038430950213008686,
+    "is_layer0": false,
+    "layer": 41,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.869385532313385,
+    "H_q_gate": 1.8692961275669489,
+    "H_q_mean": 1.8685340897194946,
+    "H_q_up": 1.8669206092781503,
+    "delta_from_global_mean": -0.0016281604705725705,
+    "is_layer0": false,
+    "layer": 42,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8688574735286512,
+    "H_q_gate": 1.869805018595319,
+    "H_q_mean": 1.8687552430916217,
+    "H_q_up": 1.867603237150895,
+    "delta_from_global_mean": -0.0014070070984455452,
+    "is_layer0": false,
+    "layer": 43,
+    "mixer": "full_attention"
+   },
+   {
+    "H_q_down": 1.868430741298996,
+    "H_q_gate": 1.8689028414331044,
+    "H_q_mean": 1.868149078147238,
+    "H_q_up": 1.867113651709614,
+    "delta_from_global_mean": -0.0020131720428291366,
+    "is_layer0": false,
+    "layer": 44,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.868826123075336,
+    "H_q_gate": 1.869228232715169,
+    "H_q_mean": 1.868453856602106,
+    "H_q_up": 1.867307214015813,
+    "delta_from_global_mean": -0.0017083935879611545,
+    "is_layer0": false,
+    "layer": 45,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8683641012219174,
+    "H_q_gate": 1.8689454454046586,
+    "H_q_mean": 1.8681910193757474,
+    "H_q_up": 1.8672635115006655,
+    "delta_from_global_mean": -0.0019712308143198243,
+    "is_layer0": false,
+    "layer": 46,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8675551120017488,
+    "H_q_gate": 1.868955694285189,
+    "H_q_mean": 1.8678725218373058,
+    "H_q_up": 1.8671067592249795,
+    "delta_from_global_mean": -0.002289728352761422,
+    "is_layer0": false,
+    "layer": 47,
+    "mixer": "full_attention"
+   },
+   {
+    "H_q_down": 1.8661221572457987,
+    "H_q_gate": 1.8681909703202741,
+    "H_q_mean": 1.8670298871964317,
+    "H_q_up": 1.8667765340232223,
+    "delta_from_global_mean": -0.003132362993635507,
+    "is_layer0": false,
+    "layer": 48,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8663071768823116,
+    "H_q_gate": 1.8681685096296925,
+    "H_q_mean": 1.8671366660162259,
+    "H_q_up": 1.8669343115366739,
+    "delta_from_global_mean": -0.003025584173841356,
+    "is_layer0": false,
+    "layer": 49,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.861890716591998,
+    "H_q_gate": 1.866325816671716,
+    "H_q_mean": 1.8647982196706134,
+    "H_q_up": 1.8661781257481258,
+    "delta_from_global_mean": -0.005364030519453777,
+    "is_layer0": false,
+    "layer": 50,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8657560083657574,
+    "H_q_gate": 1.8683312225825013,
+    "H_q_mean": 1.8672954859794821,
+    "H_q_up": 1.8677992269901882,
+    "delta_from_global_mean": -0.002866764210585071,
+    "is_layer0": false,
+    "layer": 51,
+    "mixer": "full_attention"
+   },
+   {
+    "H_q_down": 1.8684602880363115,
+    "H_q_gate": 1.869496394106074,
+    "H_q_mean": 1.8688537698175143,
+    "H_q_up": 1.8686046273101573,
+    "delta_from_global_mean": -0.0013084803725529337,
+    "is_layer0": false,
+    "layer": 52,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.869201070960121,
+    "H_q_gate": 1.8704214502891827,
+    "H_q_mean": 1.8697375801674587,
+    "H_q_up": 1.8695902192530724,
+    "delta_from_global_mean": -0.0004246700226084865,
+    "is_layer0": false,
+    "layer": 53,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.867520772443077,
+    "H_q_gate": 1.8699431920810785,
+    "H_q_mean": 1.8687801811226599,
+    "H_q_up": 1.8688765788438246,
+    "delta_from_global_mean": -0.0013820690674073433,
+    "is_layer0": false,
+    "layer": 54,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8706622649742108,
+    "H_q_gate": 1.8718552736055156,
+    "H_q_mean": 1.8712327111551679,
+    "H_q_up": 1.8711805948857774,
+    "delta_from_global_mean": 0.0010704609651006614,
+    "is_layer0": false,
+    "layer": 55,
+    "mixer": "full_attention"
+   },
+   {
+    "H_q_down": 1.8717980253983646,
+    "H_q_gate": 1.8725120930880297,
+    "H_q_mean": 1.8719575894577545,
+    "H_q_up": 1.8715626498868687,
+    "delta_from_global_mean": 0.0017953392676872681,
+    "is_layer0": false,
+    "layer": 56,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8724332796973429,
+    "H_q_gate": 1.8728103115673727,
+    "H_q_mean": 1.8722779023393843,
+    "H_q_up": 1.8715901157534378,
+    "delta_from_global_mean": 0.002115652149317082,
+    "is_layer0": false,
+    "layer": 57,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.872190119399459,
+    "H_q_gate": 1.872495984594976,
+    "H_q_mean": 1.871908907039438,
+    "H_q_up": 1.8710406171238794,
+    "delta_from_global_mean": 0.001746656849370698,
+    "is_layer0": false,
+    "layer": 58,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8715205296262576,
+    "H_q_gate": 1.872127796425967,
+    "H_q_mean": 1.871734067782503,
+    "H_q_up": 1.8715538772952838,
+    "delta_from_global_mean": 0.0015718175924357425,
+    "is_layer0": false,
+    "layer": 59,
+    "mixer": "full_attention"
+   },
+   {
+    "H_q_down": 1.870660689134158,
+    "H_q_gate": 1.8712141880820372,
+    "H_q_mean": 1.871165944962393,
+    "H_q_up": 1.871622957670984,
+    "delta_from_global_mean": 0.0010036947723257583,
+    "is_layer0": false,
+    "layer": 60,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8700643690687904,
+    "H_q_gate": 1.870300812201009,
+    "H_q_mean": 1.8706373004302879,
+    "H_q_up": 1.8715467200210643,
+    "delta_from_global_mean": 0.00047505024022065356,
+    "is_layer0": false,
+    "layer": 61,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8649673939160478,
+    "H_q_gate": 1.8697587559305848,
+    "H_q_mean": 1.8687784800271157,
+    "H_q_up": 1.8716092902347148,
+    "delta_from_global_mean": -0.0013837701629515475,
+    "is_layer0": false,
+    "layer": 62,
+    "mixer": "linear_attention"
+   },
+   {
+    "H_q_down": 1.8502978255791103,
+    "H_q_gate": 1.8691888211143635,
+    "H_q_mean": 1.8633490107269008,
+    "H_q_up": 1.8705603854872295,
+    "delta_from_global_mean": -0.006813239463166365,
+    "is_layer0": false,
+    "layer": 63,
+    "mixer": "full_attention"
+   }
+  ],
+  "n_layers": 64,
+  "representatives": {
+   "chosen": [
+    {
+     "H_q_down": 1.8732330611763028,
+     "H_q_gate": 1.873613129372985,
+     "H_q_mean": 1.873333582066703,
+     "H_q_up": 1.873154555650821,
+     "delta_from_global_mean": 0.0031713318766357634,
+     "layer": 3,
+     "mixer": "full_attention",
+     "role": "first_full_attention",
+     "why": "First full-attention (GQA) layer. Mixer-class contrast against the 48 linear-attention MLPs; independently the stack entropy maximum (H_q_mean=1.873334)."
+    },
+    {
+     "H_q_down": 1.8677754979112966,
+     "H_q_gate": 1.8681617723539965,
+     "H_q_mean": 1.8673360209824894,
+     "H_q_up": 1.8660707926821751,
+     "delta_from_global_mean": -0.0028262292075778017,
+     "layer": 31,
+     "mixer": "full_attention",
+     "role": "nns015_mid_full",
+     "why": "Layer 31 is the NNS-015 named surface (down_proj L31, real post_swiglu X). Mid-depth full-attention; H(q) sits below the global mean (delta=-0.002826)."
+    },
+    {
+     "H_q_down": 1.8706447767676493,
+     "H_q_gate": 1.8709887748369747,
+     "H_q_mean": 1.8701870292370277,
+     "H_q_up": 1.8689275361064592,
+     "delta_from_global_mean": 2.4779046960521356e-05,
+     "layer": 38,
+     "mixer": "linear_attention",
+     "role": "typical",
+     "why": "Closest H(q) to the 64-layer mean (1.870162 bits) among layers other than 0. Layer 0 is a high-entropy outlier (H_q_mean=1.873140, delta=+0.002978) and is not typical."
+    },
+    {
+     "H_q_down": 1.8502978255791103,
+     "H_q_gate": 1.8691888211143635,
+     "H_q_mean": 1.8633490107269008,
+     "H_q_up": 1.8705603854872295,
+     "delta_from_global_mean": -0.006813239463166365,
+     "layer": 63,
+     "mixer": "full_attention",
+     "role": "last_layer_entropy_min",
+     "why": "Last layer. Depth-axis pole. Independently the stack entropy minimum (H_q_mean=1.863349, driven by mlp.down H_q=1.850298)."
+    }
+   ],
+   "chosen_layers": [
+    3,
+    31,
+    38,
+    63
+   ],
+   "global_H_q_mean": 1.8701622501900672,
+   "layer0": {
+    "H_q_mean": 1.8731400426538949,
+    "delta_from_global_mean": 0.0029777924638276776,
+    "layer": 0,
+    "mixer": "linear_attention",
+    "typical": false,
+    "why_not_typical": "Layer 0 mean H(q) is above the later-layer mean (MLP_CODE_INFORMATION answers.are_some_rows_or_layers_lower_entropy). Using it as 'the MLP' is the default this corpus exists to refuse."
+   },
+   "n_full_attention": 16,
+   "n_linear_attention": 48
+  }
+ },
+ "fusion_env": {
+  "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+  "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+  "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+  "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+ },
+ "gaps_closed": [
+  "64 MLP layers fingerprinted from real H(q); layer 0 is not treated as typical.",
+  "Representatives chosen with mixer-class, depth, and entropy-pole evidence.",
+  "Held-out split is by prompt_id; emit_manifest refuses a leak.",
+  "Synthetic / Gaussian rows are refused (NNS-001).",
+  "Duplicate rows above 5% refuse the emit.",
+  "Rank-32 sizing floor is 64 train rows (n * 5120 >= 32*(10240-32)).",
+  "X is post_attn_norm, Y is sealed affine-Q2 SwiGLU; payloads are not in git."
+ ],
+ "gpu_authority": false,
+ "n_catalog_prompts_per_domain": {
+  "code": 8,
+  "long-horizon-coherence": 8,
+  "plain-prose": 8,
+  "reasoning": 8,
+  "tool-calling": 8
+ },
+ "organ": {
+  "function": "F(x)=down(silu(gate(x))*up(x))",
+  "hidden": 5120,
+  "intermediate": 17408,
+  "n_layers": 64,
+  "packing": "affine_q2_group64_fp16_scale_bias",
+  "reconstruction": "w = float(q) * scale + bias, q unsigned in {0,1,2,3}"
+ },
+ "payload_dir": "workspace/ops/local/scratch/mlp_teacher_corpus",
+ "payload_gitignored": true,
+ "purpose": "Functional MLP teacher corpus for sealed-3.14: real post_attn_norm X and exact F(X) under the affine-Q2 packing, held out by prompt, sized so a rank-32 fit over 5120 dims is not underdetermined.",
+ "scars": {
+  "CORRECTION_MLP_INPUT_TENSOR": "MLP input is post_attn_norm, not post_input_norm (121% relative).",
+  "NNS-001": "Gaussian-proxy method is dead; never evaluate F on synthetic X.",
+  "NNS-007": "Median 92 rows against 2048 dims (0.04492 rows/dim) is not a codec score. Rank-32 needs n_train >= 64.",
+  "NNS-015": "Layer 31 down_proj is the named distillation surface; included."
+ },
+ "schema": "hawking.future.mlp_teacher_corpus.v1",
+ "seal_sha256": "878c7ee02c7a37bc9b3c148658dc41cfeeb55b715bad71c5ff578cde62a1a0a2",
+ "selftest": {
+  "chosen_layers": [
+   3,
+   31,
+   38,
+   63
+  ],
+  "diverse_accepted": true,
+  "diverse_n": 60,
+  "diverse_unique": 60,
+  "fingerprint_n_layers": 64,
+  "held_out_leak_codes": [
+   "HELD_OUT_PROMPT_LEAK"
+  ],
+  "held_out_leak_refused": true,
+  "layer0_typical": false,
+  "min_train_rows_determined": 64,
+  "nns007_scar_rows_per_dim": 0.044921875,
+  "synthetic_codes": [
+   "SYNTHETIC_ROW"
+  ],
+  "synthetic_refused": true
+ },
+ "sizing": {
+  "dup_rate_max": 0.05,
+  "hidden": 5120,
+  "hold_frac": 0.25,
+  "min_train_rows_determined": 64,
+  "min_train_rows_rank": 32,
+  "nns007_scar_dim": 2048,
+  "nns007_scar_rows": 92,
+  "nns007_scar_rows_per_dim": 0.044921875,
+  "rank": 32,
+  "rank32_params": 326656,
+  "split_unit": "prompt_id"
+ },
+ "specimen": {
+  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "fusion_env": {
+   "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+   "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+   "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+   "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+  },
+  "geometry": {
+   "hidden_size": 5120,
+   "intermediate_size": 17408,
+   "num_hidden_layers": 64
+  },
+  "model_id": "qwen3.8-27b-sealed-3.14",
+  "pinned_revision": "c7b9aaa4d93471a1af6fb11e2828289b6f0a51d2",
+  "protocol": "hawking.qwen38.resident.v1",
+  "require_fusion_env": true,
+  "resident_binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release/examples/ascension_qwen38_resident",
+  "resident_binary_sha256": "39f3f28c0bf695f2f5c2e436bdb82a88f8406fb3f7a4b6f2588899350ebd78f8",
+  "resident_identity": "sealed-3.14",
+  "seal_source": "hcli/hawking-native.sealed-3.14.json",
+  "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json"
+ },
+ "version": 1,
+ "what_this_does_not_prove": [
+  "That a small program actually fits F at q3 quality (that is the next experiment).",
+  "That X equals the sealed residual stream (the JSONL resident does not dump it).",
+  "A protected complete-token or TPS number."
+ ]
+}

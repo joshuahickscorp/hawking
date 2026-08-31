@@ -47,9 +47,123 @@ from pathlib import Path
 from typing import Any
 
 from tools.future._common import RECEIPTS, REPO, write_receipt
+from tools.future import status_causality as sc
 
 RECEIPT = "SPECIMEN_VERIFICATION.json"
 SCHEMA = "hawking.future.specimen_verify.v1"
+
+FIVE_RECORDED_FIELDS: tuple[str, ...] = getattr(
+    sc,
+    "FIVE_RECORDED_FIELDS",
+    (
+        "probe_performed",
+        "direct_observation",
+        "interpretation",
+        "confidence",
+        "alternatives",
+    ),
+)
+
+
+def _bind_emit() -> None:
+    """Consumer-side emit. Sibling owns the routine; this checkout may predate it."""
+    if hasattr(sc, "emit"):
+        return
+
+    def emit(
+        status: str,
+        *,
+        probe_performed: str = "",
+        direct_observation: Any = "",
+        interpretation: str = "",
+        probe_kind: str = "",
+        claim_kind: str | None = None,
+        falsifier: str = "",
+        source: str = "",
+    ) -> dict[str, Any]:
+        row: dict[str, Any] = {
+            "status": status,
+            "probe_performed": probe_performed,
+            "direct_observation": direct_observation,
+            "interpretation": interpretation or status,
+            "probe_kind": probe_kind,
+            "use_catalog": False,
+            "source": source or "<emit>",
+        }
+        if claim_kind:
+            row["claim_kind"] = claim_kind
+        if falsifier:
+            row["falsifier"] = falsifier
+        out = sc.challenge(row)
+        out["entry"] = "emit"
+        return out
+
+    sc.emit = emit  # type: ignore[attr-defined]
+
+
+_bind_emit()
+
+
+def records_five_fields(node: Any) -> bool:
+    fn = getattr(sc, "records_five_fields", None)
+    if callable(fn):
+        return bool(fn(node))
+    if not isinstance(node, dict):
+        return False
+    if not all(k in node for k in FIVE_RECORDED_FIELDS):
+        return False
+    if not str(node.get("probe_performed") or "").strip():
+        return False
+    if node.get("direct_observation") in (None, "", [], {}):
+        return False
+    if not str(node.get("interpretation") or "").strip():
+        return False
+    conf = node.get("confidence")
+    if not isinstance(conf, dict):
+        return False
+    if not {"would_raise", "would_lower", "level", "about"} <= set(conf):
+        return False
+    alts = node.get("alternatives")
+    return isinstance(alts, list) and bool(alts)
+
+
+def record_specimen_causality(
+    result: dict[str, Any],
+    *,
+    probe_performed: str = "",
+    direct_observation: Any = "",
+    interpretation: str | None = None,
+    probe_kind: str = "",
+    claim_kind: str | None = None,
+) -> dict[str, Any]:
+    """Stamp the five causality fields. Does not change status/whole_tree_verified.
+
+    An unsupplied observation is UNTESTED, never a restatement of the status.
+    """
+    status_before = result.get("status")
+    whole_before = result.get("whole_tree_verified")
+    status = str(result.get("status") or "")
+    unsupplied = direct_observation in (None, "", [], {})
+    rec = sc.emit(
+        status,
+        probe_performed=str(probe_performed or ""),
+        direct_observation="" if unsupplied else direct_observation,
+        interpretation=interpretation if interpretation is not None else status,
+        probe_kind="" if unsupplied else probe_kind,
+        claim_kind=None if unsupplied else claim_kind,
+        source="tools/future/specimen_verify.py::verify_specimen",
+    )
+    for key in FIVE_RECORDED_FIELDS:
+        result[key] = rec[key]
+    result["causality_verdict"] = rec["verdict"]
+    result["falsifier"] = rec.get("falsifier")
+    if rec.get("probe_kind"):
+        result["probe_kind"] = rec["probe_kind"]
+    if rec.get("claim_kind") is not None:
+        result["claim_kind"] = rec["claim_kind"]
+    if result.get("status") != status_before or result.get("whole_tree_verified") != whole_before:
+        raise RuntimeError("status_causality.emit mutated the specimen verdict")
+    return rec
 
 LAKE = Path("/Volumes/corpdrive/hawking-modellake")
 SPECIMENS = LAKE / "specimens"
@@ -226,7 +340,7 @@ def verify_specimen(name: str, *, max_seconds: float | None = None) -> dict[str,
     else:
         status = "PARTIAL_NO_REMOTE_DIGEST"
 
-    return {
+    result = {
         "specimen": name,
         "owner": specimen_owner(name),
         "specimen_path": str(specimen_dir(name)),
@@ -244,6 +358,38 @@ def verify_specimen(name: str, *, max_seconds: float | None = None) -> dict[str,
         "source_mutated": False,
         "files": rows,
     }
+    observation = (
+        f"n_files={n}; verified={matched}; mismatched={mismatched}; "
+        f"no_remote_digest={no_digest}; unrecognized_digest={unrecognized}; "
+        f"skipped_time_budget={skipped}; bytes_hashed={bytes_hashed}"
+    )
+    if whole_tree:
+        probe_kind = sc.PROBE_HASH
+        claim_kind = sc.CLAIM_DIGEST_MATCH
+        interpretation = (
+            f"{name}: every file carried a published digest and the hash "
+            "recomputed here matched"
+        )
+    else:
+        probe_kind = sc.PROBE_MEASURED_FLAGS
+        claim_kind = sc.CLAIM_FIELD_VALUE
+        interpretation = (
+            f"{name} status={status}: matched={matched}/{n} mismatched={mismatched} "
+            f"no_remote_digest={no_digest} skipped={skipped}"
+        )
+    record_specimen_causality(
+        result,
+        probe_performed=(
+            f"recompute published HuggingFace .metadata digests for specimen {name!r} "
+            f"at {result['specimen_path']}: sha256 or git-blob sha1 per etag shape; "
+            "ModelLake opened read-only; lake-own seal files skipped"
+        ),
+        direct_observation=observation,
+        interpretation=interpretation,
+        probe_kind=probe_kind,
+        claim_kind=claim_kind,
+    )
+    return result
 
 
 def record(result: dict[str, Any]) -> Path:
@@ -325,7 +471,19 @@ def build(
             try:
                 results.append(verify_specimen(name, max_seconds=max_seconds_each))
             except SpecimenError as exc:
-                results.append({"specimen": name, "status": "ABSENT", "why": str(exc)})
+                absent = {"specimen": name, "status": "ABSENT", "why": str(exc)}
+                record_specimen_causality(
+                    absent,
+                    probe_performed=(
+                        f"specimen_files({name!r}): Path.is_dir on "
+                        f"{specimen_dir(name)} and iterdir of specimen files"
+                    ),
+                    direct_observation=f"exists=False; error={exc}",
+                    interpretation=f"{name} is ABSENT: {exc}",
+                    probe_kind=sc.PROBE_PATH_EXISTENCE,
+                    claim_kind=sc.CLAIM_PATH_STATE,
+                )
+                results.append(absent)
         # Anything verified in an earlier pass and not revisited stays on the
         # record; dropping it would make a bounded run look like a regression.
         seen = {r.get("specimen") for r in results}

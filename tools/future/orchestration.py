@@ -146,6 +146,8 @@ BINDINGS: dict[str, tuple[str, str]] = {
     "odyssey_tool_driver.py":     ("FT.MODEL_CAPABILITY.hard-gates.drive-tools", "ODYSSEY_TOOL_DRIVER"),
     "nr_nx_path.py":              ("FT.GPU_KERNELS.flash-nx", "NR_NX_PATH_MAP"),
     "rival_codec_screen.py":      ("FT.MODEL_REPRESENTATION.meta-gates-3-9", "RIVAL_CODEC_SCREEN"),
+    # Resident-callable: recognize/inspect/decide/park/continue. CAPABLE is
+    # not AVAILABLE. An unbound scheduler cannot be invoked by the resident.
     "protected_scheduler.py":     ("FT.GPU_KERNELS.ready-protected", "PROTECTED_SCHEDULER"),
     "nr_nx_generic.py":           ("FT.GPU_KERNELS.flash-nx", "NR_NX_GENERIC"),
     "status_causality.py":        ("FT.VERIFICATION.negative-index", "STATUS_CHALLENGE"),
@@ -258,6 +260,45 @@ def species_for(module: str) -> str:
     if module not in BINDINGS:
         raise UnknownBinding(f"no binding for {module!r}")
     return BINDINGS[module][1]
+
+
+def bound_module(module: str) -> Any:
+    """Import a BINDINGS-listed module. Unbound is not resident-callable."""
+    if module not in BINDINGS:
+        raise UnknownBinding(f"no binding for {module!r}")
+    name = module.removesuffix(".py")
+    try:
+        return importlib.import_module(f"tools.future.{name}")
+    except Exception as exc:
+        raise BindingError(
+            f"{module} failed to import: {type(exc).__name__}: {exc}"
+        ) from exc
+
+
+def call_bound(module: str, fn_name: str, *args: Any, **kwargs: Any) -> Any:
+    """Call a function on a bound module. Unbound or missing fn fails closed."""
+    mod = bound_module(module)
+    fn = getattr(mod, fn_name, None)
+    if not callable(fn):
+        raise BindingError(f"{module} has no callable {fn_name!r}")
+    return fn(*args, **kwargs)
+
+
+def resident_mutation_engine(scope: str | Path) -> Any:
+    """Construct and bind a MutationEngine through BINDINGS.
+
+    An unbound engine is not resident-callable. autonomy_run.py is not
+    edited; the resident reaches propose/apply/evidence/rollback/verdict
+    by this BINDINGS path (call_bound / this constructor).
+    """
+    if "mutation_engine.py" not in BINDINGS:
+        raise UnknownBinding(
+            "mutation_engine.py is not in BINDINGS; refuse rather than "
+            "construct an unbound mutation engine"
+        )
+    engine = call_bound("mutation_engine.py", "MutationEngine", scope)
+    call_bound("mutation_engine.py", "bind", engine)
+    return engine
 
 
 def emit_workunit(module: str, *, hypothesis: str | None = None) -> dict[str, Any]:

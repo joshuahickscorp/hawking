@@ -1,0 +1,211 @@
+{
+ "baseline": {
+  "active_gb": 9.878901136,
+  "host_ms": 0.989,
+  "token_ms": 27.2896,
+  "tps": 36.64
+ },
+ "claim_boundary": "Arithmetic over recorded components. QUALIFIED means measured on the real resident with parity. PROSPECTIVE means the byte model is measured and capability is NOT \u2014 no generate gate has been run on any auxiliary lever. Overlapping levers are not summed. A composed path is a prediction, not a result, and every one above PATH_01 contains at least one component nobody has implemented.",
+ "components": {
+  "_aux_u8_superseded": {
+   "_orig": "FITTED_HELDOUT",
+   "cost": "a native consumer, then a dirty A/B",
+   "evidence": "REFUTED",
+   "gb_saved": 0.0,
+   "source": "receipts/future/AUX_CAPABILITY_SCREEN.json",
+   "why": "a real u8 encode of the incumbent f16 aux (log scale + linear bias, 2-bit codes kept), screened in weight, organ AND logit space. argmax agreement 1.00 AND KL 0.003 - actual parity, which is why the screen refuses to accept argmax alone. The cheapest live byte lever left and the first one to survive a capability screen."
+  },
+  "_deltanet_widen_f4_old": {
+   "cost": "a layout change plus a 628-graph A/B",
+   "evidence": "REFUTED",
+   "ms_saved": 0.0,
+   "source": "receipts/future/DELTANET_ORGAN_DECOMPOSE.json",
+   "why": "gated-delta layout, measured back-to-back in one process: fused-ba 1.581 ms against widen_f4 0.879 ms on the same work. Production still launches unfused vi-SIMD, so a 628-graph A/B is required before this rises above DIRTY_DIAGNOSTIC. Fusing ba_to_decay alone saves no GPU ms - fused-ba is about equal to unfused delta."
+  },
+  "aux_group_size_1024": {
+   "evidence": "REFUTED",
+   "gb_saved": 0.0,
+   "source": "receipts/future/AUX_CAPABILITY_SCREEN.json",
+   "why": "the capability screen it was waiting for has now run. A real LS refit of scale/zero, not an error model: weight-space injury 0.24-0.27 on every screened layer (3, 31, 38, 63), organ output below the 0.99 cosine bar, and in logit space G=1024 keeps argmax on only 44% of hold rows with KL 1.23 nats. This rung leaves the ladder; it was never worth 2.914 ms."
+  },
+  "aux_group_size_256": {
+   "evidence": "REFUTED",
+   "gb_saved": 0.0,
+   "source": "receipts/future/AUX_CAPABILITY_SCREEN.json",
+   "why": "same screen, same failure mode; MUTUALLY_EXCLUSIVE with group_size_1024 in any case. Was carried as 2.331 ms."
+  },
+  "aux_u8": {
+   "evidence": "REFUTED",
+   "gb_saved": 0.0,
+   "source": "receipts/future/AUX_U8_NATIVE.json",
+   "why": "it passed its capability screen and then FAILED as an executable. The native consumer was built and measured: layer 3, GPUStartTime/GPUEndTime, incumbent 334.5682 GB/s in 249.75 us against native 269.7453 GB/s in 278.791 us - 29.04 us SLOWER for 8,355,840 FEWER bytes. Decoding a u8 log-scale needs an exp plus ten int_to_float per group: 2.5 decode-FMA/weight-byte at 4 B/iter against the incumbent's 1.3333 at 6 B/iter. Billed bytes only it is +1.5541 ms; billed with aux-decode FLOPs it is -0.3885 ms. A bytes-only model is not safe on an organ MLP_ISSUE_RATE_LADDER showed is arithmetic-sensitive. REOPEN_IF a decode exists that adds no per-group transcendental math - a 256-entry LUT is the obvious one and is untried."
+  },
+  "ba_delta_fusion": {
+   "cost": "set one env flag",
+   "evidence": "QUALIFIED",
+   "ms_saved": 0.1384,
+   "parity": "token-identical across 8 runs, 128 tokens, fallbacks 0",
+   "source": "receipts/future/BA_DELTA_AB.json"
+  },
+  "deltanet_generated_transition": {
+   "evidence": "REFUTED",
+   "gb_saved": 0.0,
+   "source": "receipts/future/DELTANET_GENERATED_TRANSITION.json",
+   "why": "the candidate removed 2,139,096,960 bytes and added 4,548,560 - worth about 5.8 ms/token if the function had held. It does not: the shared map does not emit this layer's coefficients and the state diverges at STEP 1, not after a long horizon. MEASURED_NEGATIVE, economics IMMATERIAL."
+  },
+  "deltanet_q3": {
+   "evidence": "REFUTED",
+   "gb_saved": 0.50331648,
+   "source": "receipts/future/DELTANET_QKVZ_PRECISION.json",
+   "why": "entropies are 3.465-3.479 of 4 across q/k/v/z and any_supported is false; no sensitivity measurement licenses the reduction"
+  },
+  "deltanet_widen_f4": {
+   "cost": "landed",
+   "evidence": "QUALIFIED",
+   "ms_saved": 1.0245,
+   "parity": "token-id IDENTICAL across 14 runs, 32 tokens, fallbacks 0",
+   "source": "receipts/future/DELTANET_WIDEN_AB.json",
+   "why": "MEASURED complete-token A/B under gpu_lane_lock with MTLCommandBuffer GPUStartTime/GPUEndTime: incumbent 27.4065 ms against widen_f4 26.3821 ms. Production launches qwen38_gated_delta_decode_vi_simd_ba_f4 rather than unfused vi-SIMD plus ba_to_decay. It BEAT its own diagnostic - the isolated fair cut was 0.7046 ms and the extra 0.32 ms is the 48-launch fold that only appears in the real graph."
+  },
+  "mlp_decode_fold_addqx": {
+   "cost": "a kernel change plus a complete-token A/B",
+   "evidence": "DIRTY_DIAGNOSTIC",
+   "measured": "complete-token A/B on the fused 580-graph: incumbent 26.3026 ms against fold_addqx 22.3192 ms, saved 3.9833 ms. The organ cut REACHED the token (3.98 against 3.95 isolated). The 1.745 ms one-layer projection did not reproduce - it under-predicted by 2.24 ms.",
+   "ms_saved": 3.9833,
+   "parity": "token-id IDENTICAL across 7x2 runs (fnv1a64 e04e1b12206475d8, 128 bytes compared, 0 mismatch) - but layer-0 named-matvec output buffers are NOT byte-identical (gate 22309 of 69632 bytes differ). APPROX_CANDIDATE, not exact.",
+   "source": "receipts/future/MLP_DECODE_CHEAPEN.json",
+   "why": "BIT-IDENTICAL on the probed layer. 370.9 GB/s against production 329.2, 1.127x, by folding the affine into integer adds for q.x and applying s and b once per group: decode FMA/byte 1.3333 -> 0.3333. Projection over a single-layer probe, not a resident measurement: MLP 15.541 -> 13.796 ms. It closes only 24.8% of the 329.2->497.4 gap, because an EIGHTFOLD cut in total FMA/byte bought 12.7% while ARM A bought 50.9% - FMA count is not the ceiling.",
+   "why_not_qualified": "faster-but-not-exact. The single-layer probe was called bit-identical; at token level it is not. A faster resident that answers differently is not the same resident, so production default stays Affine2Geo::Tpr64 and this is not blended into a bit-identical verdict."
+  },
+  "mlp_dispatch_size": {
+   "cost": "an executor change",
+   "evidence": "PROSPECTIVE",
+   "ms_saved": 1.258,
+   "parity": "arithmetic is unchanged; a real implementation must prove it",
+   "source": "receipts/future/DISPATCH_SIZE_SWEEP.json",
+   "why_prospective": "the 374.4 GB/s at 337.7 MB/dispatch is measured, but no implementation batches the MLP that way yet"
+  },
+  "mlp_entropy_floor": {
+   "cost": "a codec plus a native consumer",
+   "evidence": "PROSPECTIVE",
+   "gb_saved": 0.277697891,
+   "source": "receipts/future/MLP_CODE_INFORMATION.json",
+   "why_prospective": "the 1.87018-of-2-bits floor is measured; an actual entropy coder that a GPU can consume in-register does not exist and may cost more ALU than it saves bytes"
+  },
+  "mlp_low_rank_program": {
+   "evidence": "REFUTED",
+   "gb_saved": 0.0,
+   "source": "receipts/future/MLP_FUNCTIONAL_RANK.json",
+   "why": "activation-WEIGHTED functional rank, not raw SVD: 10% held-out output error needs rank 5120 (full) on three of four layers. The largest rank whose complete ledger is under the incumbent 5,347,795,776 bytes is r=617, and there hold error is 35-84%. Reaching 10% costs 44.3 GB added."
+  },
+  "mlp_nonlinear_program": {
+   "evidence": "REFUTED",
+   "gb_saved": 0.0,
+   "source": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+   "why": "six families on the real corpus, all held-out by prompt: FACTORIZE_THE_FACTORS 0.977, PRODUCT_DICTIONARY 0.997 (0.928 even with an unfair Y-oracle), NONLINEAR_GENERATOR 0.918, CONDITIONAL_PROGRAM 0.917, GENERATED_BLOCK 0.943. The MEAN PREDICTOR on the same hold set is 0.970, so the factorized program is worse than predicting the mean. Common mechanism: every one is an r-bottleneck. Reopen is a full-width structured operator only."
+  }
+ },
+ "evidence_class": "DIAGNOSTIC_RELATIVE",
+ "gap_to_71": {
+  "best_composed_path": "PATH_04",
+  "best_composed_token_ms": 20.078,
+  "best_composed_tps": 49.8,
+  "still_to_remove_ms": 5.993,
+  "still_to_remove_share_of_gpu": 0.314,
+  "target_token_ms": 14.085,
+  "verdict": "Everything on record \u2014 every qualified win, every prospective byte lever, refuted ones excluded \u2014 reaches 49.8 TPS. Reaching 71 needs another 5.99 ms, which is 31% of the GPU time that would remain. No component on record can supply that. It requires a representation result that does not exist yet.",
+  "what_would_supply_it": "A functional replacement for the MLP or DeltaNet that eliminates information rather than coding it better. Both organs are at their entropy floor, so the only remaining source of that magnitude is weights that need not exist independently."
+ },
+ "gpu_authority": false,
+ "paths": [
+  {
+   "components": [],
+   "label": "measured now",
+   "path": "PATH_00",
+   "skipped": [],
+   "token_ms": 27.2896,
+   "tps": 36.64,
+   "weakest_evidence": "MEASURED"
+  },
+  {
+   "components": [
+    "ba_delta_fusion",
+    "deltanet_widen_f4"
+   ],
+   "gb_removed": 0.0,
+   "label": "everything QUALIFIED today",
+   "ms_removed_directly": 1.1629,
+   "path": "PATH_01",
+   "skipped": [],
+   "token_ms": 26.127,
+   "tps": 38.28,
+   "weakest_evidence": "QUALIFIED"
+  },
+  {
+   "components": [
+    "ba_delta_fusion",
+    "deltanet_widen_f4",
+    "mlp_decode_fold_addqx"
+   ],
+   "gb_removed": 0.0,
+   "label": "qualified + the decode fold (APPROX, not exact)",
+   "ms_removed_directly": 5.1462,
+   "path": "PATH_02",
+   "skipped": [],
+   "token_ms": 22.143,
+   "tps": 45.16,
+   "weakest_evidence": "DIRTY_DIAGNOSTIC"
+  },
+  {
+   "components": [
+    "ba_delta_fusion",
+    "deltanet_widen_f4",
+    "mlp_decode_fold_addqx",
+    "mlp_dispatch_size"
+   ],
+   "gb_removed": 0.0,
+   "label": "that + the executor lever that survived",
+   "ms_removed_directly": 6.4042,
+   "path": "PATH_03",
+   "skipped": [],
+   "token_ms": 20.885,
+   "tps": 47.88,
+   "weakest_evidence": "PROSPECTIVE"
+  },
+  {
+   "components": [
+    "ba_delta_fusion",
+    "deltanet_widen_f4",
+    "mlp_decode_fold_addqx",
+    "mlp_dispatch_size",
+    "mlp_entropy_floor"
+   ],
+   "gb_removed": 0.2777,
+   "label": "everything on record, refuted excluded",
+   "ms_removed_directly": 6.4042,
+   "path": "PATH_04",
+   "skipped": [
+    "aux_group_size_1024: REFUTED",
+    "aux_u8: REFUTED",
+    "deltanet_q3: REFUTED"
+   ],
+   "token_ms": 20.078,
+   "tps": 49.8,
+   "weakest_evidence": "PROSPECTIVE"
+  }
+ ],
+ "recorded_by": "tools/future/path_to_71.py",
+ "schema": "hawking.future.path_to_71.v1",
+ "schools_running": [
+  "mlp full-width structured operator (Monarch/butterfly/distilled control) - the only reopen left after six r-bottleneck families died",
+  "mlp error budget: what relative output error the model actually tolerates",
+  "native consumer for aux_u8, the one byte lever that passed its screen",
+  "cheapen the MLP decode arithmetic: 1.33 FMA/byte down to 0.88",
+  "the DeviceCompiler that the Odyssey NR-NX path now blocks on",
+  "deltanet gated-delta widen_f4 layout, 0.70 ms measured back-to-back",
+  "is the MLP kernel ALU-bound or memory-bound",
+  "deltanet multi-step authority (the instrument, after the one-step candidate died)",
+  "sparse residual concentration curve"
+ ],
+ "version": 1
+}

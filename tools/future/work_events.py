@@ -438,9 +438,23 @@ def watched_refusals() -> list[dict[str, Any]]:
 
 
 def scan_partition_for_legacy_emits() -> list[dict[str, Any]]:
-    """AST-walk production modules. The alias table may name a retired kind;
-    a string constant in any other production module is an emit. Tests are
-    excluded so they can name the forbidden string to prove it is forbidden."""
+    """AST-walk production modules for EMITS of a retired kind.
+
+    "A string constant in any other production module is an emit" was too broad
+    and made this scan permanently red for the one thing a migration REQUIRES.
+    Of the five it flagged, exactly one was an emit:
+
+        model_bearing_torture.py:1845   emit  -> migrated to RESULT_INGESTED
+        model_bearing_torture.py:2694   fixture event -> migrated
+        model_bearing_torture.py:1444   CONSUMER set: kind in {legacy, ...}
+        autonomy_degeneracy.py:225      CONSUMER set, beside "RESULT_INGESTED"
+        power_torture.py:175            CONSUMER set
+
+    A consumer that still ACCEPTS the old name is how old timelines stay
+    readable; flagging it as an emit asks the migration to break its own
+    evidence. Constants inside a set/list/tuple/frozenset literal are reads, not
+    emits, and are skipped - a genuine emit passes the kind as a bare argument.
+    """
     here = Path(__file__).resolve()
     root = here.parent
     hits: list[dict[str, Any]] = []
@@ -462,8 +476,16 @@ def scan_partition_for_legacy_emits() -> list[dict[str, Any]]:
                 }
             )
             continue
+        membership = {
+            id(elt)
+            for n in ast.walk(tree)
+            if isinstance(n, (ast.Set, ast.List, ast.Tuple))
+            for elt in n.elts
+        }
         for node in ast.walk(tree):
             if isinstance(node, ast.Constant) and isinstance(node.value, str):
+                if id(node) in membership:
+                    continue  # a collection element is a read, not an emit
                 if node.value in forbidden:
                     hits.append(
                         {

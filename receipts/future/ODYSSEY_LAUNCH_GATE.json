@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T23:33:52Z",
+  "recorded_at": "2026-08-31T10:13:39Z",
   "recorded_by": "tools/future/odyssey_launch.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -13,6 +13,22 @@
  "claim_boundary": "Static sidecar artifact. No hardware measurement. A launch-gate REFUSED receipt is not Odyssey started. ODYSSEY_I_LAUNCH.json is the only phase-transition receipt and is written only when every criterion is met.",
  "criteria": [
   {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "the named flags were measured and have these values"
+    }
+   ],
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "field_value",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "AUTONOMY_TRIALS found=True path_taken=worktree candidate_is_mapping=True trial='1h' verdict='PASS' eligible=True resident_orchestration=True timeline_seal_verifies=True seal_why='timeline file digest matches the persisted seal' cognition_recorded=True cognition='UNAVAILABLE' AUTONOMY_TRIAL.json found=False not_authority=True hcli_all_requested_stages_passed=True not_this_criterion=True met=True",
    "evidence": [
     {
      "found": true,
@@ -47,7 +63,9 @@
      "schema": "hcli.agentos.autonomy_gate.v1"
     }
    ],
+   "falsifier": "an independent probe of the same object the status names, not a reread of the status",
    "id": "resident_autonomy_trial_pass",
+   "interpretation": "Odyssey I resident-orchestration autonomy trial 1h persisted PASS in AUTONOMY_TRIALS.json; timeline seal verifies; resident_orchestration=true; resident_model_cognition='UNAVAILABLE'",
    "met": true,
    "operational": {
     "cli_is_not_enough": true,
@@ -70,6 +88,8 @@
    },
    "persisted_trial": "1h",
    "persisted_verdict": "PASS",
+   "probe_kind": "measured_flags",
+   "probe_performed": "probe_json receipts/future/AUTONOMY_TRIALS.json (plural); autonomy_trial.launch_candidate_from_receipt; verify_timeline_digest(timeline_path, timeline_seal_digest); probe_json receipts/future/AUTONOMY_TRIAL.json recorded as not-authority; HCLI AgentOS autonomy all_requested_stages_passed recorded as not this criterion",
    "reason": "Odyssey I resident-orchestration autonomy trial 1h persisted PASS in AUTONOMY_TRIALS.json; timeline seal verifies; resident_orchestration=true; resident_model_cognition='UNAVAILABLE'",
    "resident_model_cognition": "UNAVAILABLE",
    "resident_model_cognition_reason": "measured: Apple M3 Ultra GPU is present; the offline Metal shader compiler is absent (developer dir is /Library/Developer/CommandLineTools, full Xcode not installed), so no .metallib can be built ahead of time here; runtime shader compilation from source is AVAILABLE (exercised with the crate the runtime uses), so the missing offline compiler is a cold-start cost, not a wall; the loop under test is HCLI orchestration, not model cognition",
@@ -77,13 +97,29 @@
    "timeline_seal_verifies": true
   },
   {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "the named flags were measured and have these values"
+    }
+   ],
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "field_value",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
    "curriculum": {
+    "authority": "tools/future/specimen_curriculum.py owns first-wave readiness. odyssey_launch._eval_curriculum reads this; it does not re-derive the roles.",
     "census_probe": {
      "found": true,
      "path_taken": "worktree",
      "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/HCLI_MODELLAKE_FLASH_CENSUS.json"
     },
-    "n_ready": 1,
+    "n_ready": 5,
     "n_roles": 5,
     "not_proposed": [
      {
@@ -174,7 +210,7 @@
      {
       "reason": "present in ModelLake, not a first-wave curriculum role",
       "repo": "deepseek-ai/DeepSeek-V4-Flash",
-      "revision": "60d8d70770c6"
+      "revision": "60d8d70770c6776ff598c94bb586a859a38244f1"
      },
      {
       "reason": "present in ModelLake, not a first-wave curriculum role",
@@ -244,7 +280,7 @@
      {
       "reason": "present in ModelLake, not a first-wave curriculum role",
       "repo": "moonshotai/Kimi-K3",
-      "revision": "9f62e4e9fffb"
+      "revision": "9f62e4e9fffbd0a83ddd60e1c209d828994b3569"
      },
      {
       "reason": "present in ModelLake, not a first-wave curriculum role",
@@ -278,8 +314,13 @@
      },
      {
       "reason": "present in ModelLake, not a first-wave curriculum role",
+      "repo": "zai-org/GLM-4.5",
+      "revision": "cbb2c7cfb52fa128a9660cb1a7a78e017899e115"
+     },
+     {
+      "reason": "present in ModelLake, not a first-wave curriculum role",
       "repo": "zai-org/GLM-4.5-Air",
-      "revision": "a24ceef6ce4f"
+      "revision": "a24ceef6ce4f3536971efe9b778bdaa1bab18daa"
      }
     ],
     "not_proposed_rule": "Do not exhaustively optimize every downloaded model. First-wave curriculum is the five roles above; other lake entries are recorded and deferred.",
@@ -343,40 +384,68 @@
       "weights_canonical": "/Users/scammermike/.cache/huggingface/hub/models--Qwen--Qwen3-30B-A3B/snapshots/ad44e777bcd18fa416d9da3bd8f70d33ebb85d39"
      }
     ],
-    "ready": false,
+    "ready": true,
     "roles": [
      {
       "architecture_family": "dense_transformer",
+      "blocked": null,
+      "gap_class": null,
       "identity_source": "modellake_manifest",
       "located_under_partial": false,
       "modellake": {
+       "bytes_hashed": 1519209243,
        "in_specimens_listing": true,
        "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-0.6B@c1899de289a0.json",
        "n_files": 10,
+       "n_files_matched": 10,
+       "n_files_verified": 10,
        "n_sha256_verified": 2,
        "n_size_only_verified": 8,
+       "published_as_verified": true,
        "repo": "Qwen/Qwen3-0.6B",
        "resolved_sha": "c1899de289a04d12100db370d81485cdf75e47ca",
        "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
        "source": "modellake_manifest",
        "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
-       "whole_tree_verified": false
+       "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+       "whole_tree_verified": true
       },
       "purpose": "very small dense for procedural speed",
-      "ready": false,
-      "ready_reason": "ModelLake manifest is partial (n_sha256_verified=2 n_files=10); not a sealed specimen",
+      "ready": true,
+      "ready_reason": "ModelLake whole-tree sha256 verification",
       "repo": "Qwen/Qwen3-0.6B",
       "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
-      "role": "very_small_dense_procedural_speed"
+      "role": "very_small_dense_procedural_speed",
+      "verified_specimen": {
+       "bytes_hashed": 1519209243,
+       "identity_kind": "modellake_sha",
+       "in_specimens_listing": true,
+       "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-0.6B@c1899de289a0.json",
+       "n_files": 10,
+       "n_sha256_verified": 10,
+       "n_size_only_verified": 0,
+       "published_as_verified": true,
+       "repo": "Qwen/Qwen3-0.6B",
+       "resolved_sha": "c1899de289a04d12100db370d81485cdf75e47ca",
+       "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+       "specimen_owner": null,
+       "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+       "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+       "whole_tree_verified": true
+      }
      },
      {
       "architecture_family": "falcon_h1",
+      "blocked": null,
+      "gap_class": null,
       "identity_source": "modellake_manifest+odyssey_i_O001",
       "modellake": {
        "bytes_hashed": 15182220635,
        "in_specimens_listing": true,
        "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb.json",
        "n_files": 13,
+       "n_files_matched": 13,
+       "n_files_verified": 13,
        "n_sha256_verified": 5,
        "n_size_only_verified": 8,
        "published_as_verified": true,
@@ -408,19 +477,54 @@
       "ready_reason": "RECURRENT_PATIENT: retired from the historical first wave, prior seal intact, and whole-tree verified again now",
       "repo": "tiiuae/Falcon-H1-7B-Instruct",
       "revision": "41e72f27effbab80cd45b6e884688452253a3686",
-      "role": "small_dense_alternate_architecture_transfer"
+      "role": "small_dense_alternate_architecture_transfer",
+      "verified_specimen": {
+       "bytes_hashed": 15182220635,
+       "identity_kind": "modellake_sha",
+       "in_specimens_listing": true,
+       "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb.json",
+       "n_files": 13,
+       "n_sha256_verified": 13,
+       "n_size_only_verified": 0,
+       "published_as_verified": true,
+       "repo": "tiiuae/Falcon-H1-7B-Instruct",
+       "resolved_sha": "41e72f27effbab80cd45b6e884688452253a3686",
+       "revision": "41e72f27effbab80cd45b6e884688452253a3686",
+       "specimen_owner": null,
+       "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+       "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+       "whole_tree_verified": true
+      }
      },
      {
       "architecture_family": "dense_transformer",
-      "identity_source": "odyssey_i_O004+modellake_partial",
+      "blocked": null,
+      "gap_class": null,
+      "identity_source": "modellake_manifest",
       "modellake": {
+       "bytes_hashed": 96077777512,
+       "in_specimens_listing": true,
+       "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618.json",
+       "n_files": 25,
+       "n_files_matched": 25,
+       "n_files_verified": 25,
+       "n_sha256_verified": 13,
+       "n_size_only_verified": 12,
+       "published_as_verified": true,
+       "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+       "resolved_sha": "68faf511d618ef198fef186659617cfd2eb8e33a",
+       "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
+       "source": "modellake_manifest",
+       "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
        "stale_partial": {
         "action": "REPORT_ONLY_NO_DELETE",
         "active_process_evidence": false,
         "age_s": 129994.4,
         "candidate_stale": true,
         "path": "/Volumes/corpdrive/hawking-modellake/partial/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618"
-       }
+       },
+       "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+       "whole_tree_verified": true
       },
       "prior_odyssey_i": {
        "oxx": "O004",
@@ -437,20 +541,305 @@
        "weights_canonical": "/Users/scammermike/.cache/huggingface/hub/models--mistralai--Mistral-Small-3.1-24B-Instruct-2503/snapshots/68faf511d618ef198fef186659617cfd2eb8e33a"
       },
       "purpose": "mid-size dense for compiler",
-      "ready": false,
-      "ready_reason": "ModelLake manifest is partial (n_sha256_verified=None n_files=None); not a sealed specimen",
+      "ready": true,
+      "ready_reason": "RECURRENT_PATIENT: retired from the historical first wave, prior seal intact, and whole-tree verified again now",
       "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
-      "revision": "68faf511d618",
-      "role": "mid_size_dense_compiler"
+      "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
+      "role": "mid_size_dense_compiler",
+      "verified_specimen": {
+       "bytes_hashed": 96077777512,
+       "identity_kind": "modellake_sha",
+       "in_specimens_listing": true,
+       "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618.json",
+       "n_files": 25,
+       "n_sha256_verified": 25,
+       "n_size_only_verified": 0,
+       "published_as_verified": true,
+       "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+       "resolved_sha": "68faf511d618ef198fef186659617cfd2eb8e33a",
+       "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
+       "specimen_owner": null,
+       "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+       "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+       "whole_tree_verified": true
+      }
      },
      {
       "architecture_family": "dense_hybrid_transformer",
+      "blocked": null,
+      "gap_class": null,
       "identity_source": "odyssey2_law_store.SCHOOLS.Qwen27",
-      "local_specimen": null,
+      "local_specimen": {
+       "bytes_hashed": 55586059240,
+       "files": [
+        {
+         "actual": "52373fe24473b1aa44333d318f578ae6bf04b49b",
+         "bytes": 1570,
+         "digest_kind": "git_blob_sha1",
+         "expected": "52373fe24473b1aa44333d318f578ae6bf04b49b",
+         "file": ".gitattributes",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "f938136e3adacfd92be087f6e113b5d6d97f678f",
+         "bytes": 11544,
+         "digest_kind": "git_blob_sha1",
+         "expected": "f938136e3adacfd92be087f6e113b5d6d97f678f",
+         "file": "LICENSE",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "2a3a3cf74b48e3fae0fc59794bff0da379bb4c9c",
+         "bytes": 10187,
+         "digest_kind": "git_blob_sha1",
+         "expected": "2a3a3cf74b48e3fae0fc59794bff0da379bb4c9c",
+         "file": "README.md",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "c0c686f9c38d70d179fb7b5f5aa7530bc913dda3",
+         "bytes": 8952,
+         "digest_kind": "git_blob_sha1",
+         "expected": "c0c686f9c38d70d179fb7b5f5aa7530bc913dda3",
+         "file": "chat_template.jinja",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "706cebd746c4b6f2b1d1f892630867acfdfd3df8",
+         "bytes": 4312,
+         "digest_kind": "git_blob_sha1",
+         "expected": "706cebd746c4b6f2b1d1f892630867acfdfd3df8",
+         "file": "config.json",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "023756cfadf88e5bf69eefeee3e172f38c448d64",
+         "bytes": 202,
+         "digest_kind": "git_blob_sha1",
+         "expected": "023756cfadf88e5bf69eefeee3e172f38c448d64",
+         "file": "generation_config.json",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "a494e019ca1502219fd0128658b979e5f05ae8e8",
+         "bytes": 3353259,
+         "digest_kind": "git_blob_sha1",
+         "expected": "a494e019ca1502219fd0128658b979e5f05ae8e8",
+         "file": "merges.txt",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "746142a26219375775e31233a25b9d06bb50cc36a45b833dfad58d45bbeb68ac",
+         "bytes": 3966730520,
+         "digest_kind": "sha256",
+         "expected": "746142a26219375775e31233a25b9d06bb50cc36a45b833dfad58d45bbeb68ac",
+         "file": "model-00001-of-00018.safetensors",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "32e1fcb17fea75306e94eb0adfacf7e4069226f938582920df5962dc11c3becb",
+         "bytes": 3043080296,
+         "digest_kind": "sha256",
+         "expected": "32e1fcb17fea75306e94eb0adfacf7e4069226f938582920df5962dc11c3becb",
+         "file": "model-00002-of-00018.safetensors",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "1e22bff91476ac31fd41fa6c5b6772286cacb458fcb0b13cd0d401d15504cf42",
+         "bytes": 2542796928,
+         "digest_kind": "sha256",
+         "expected": "1e22bff91476ac31fd41fa6c5b6772286cacb458fcb0b13cd0d401d15504cf42",
+         "file": "model-00003-of-00018.safetensors",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "955da8a0ee55a8864617fd26e845a340bdbb4467087a223af0ef36caeb772397",
+         "bytes": 3988973120,
+         "digest_kind": "sha256",
+         "expected": "955da8a0ee55a8864617fd26e845a340bdbb4467087a223af0ef36caeb772397",
+         "file": "model-00004-of-00018.safetensors",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "b1abd9cf4146923b9bdc2a943a3a3cf6600c0d622ff902626185377fc1b0e18a",
+         "bytes": 2099339832,
+         "digest_kind": "sha256",
+         "expected": "b1abd9cf4146923b9bdc2a943a3a3cf6600c0d622ff902626185377fc1b0e18a",
+         "file": "model-00005-of-00018.safetensors",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "f69e98460c36b5c2b53b52de139bd1473c9ac872c7fe5575a0aac7ab6a823aef",
+         "bytes": 3979553664,
+         "digest_kind": "sha256",
+         "expected": "f69e98460c36b5c2b53b52de139bd1473c9ac872c7fe5575a0aac7ab6a823aef",
+         "file": "model-00006-of-00018.safetensors",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "fa7adc386e8f88b5c68b26303bbe65c7a578797c66219f204699290427e91277",
+         "bytes": 2108759312,
+         "digest_kind": "sha256",
+         "expected": "fa7adc386e8f88b5c68b26303bbe65c7a578797c66219f204699290427e91277",
+         "file": "model-00007-of-00018.safetensors",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "4aafde533aa91b53df84b58bc6a7b61cd6b547878ae975f0250fde88203e288c",
+         "bytes": 3979553664,
+         "digest_kind": "sha256",
+         "expected": "4aafde533aa91b53df84b58bc6a7b61cd6b547878ae975f0250fde88203e288c",
+         "file": "model-00008-of-00018.safetensors",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "75eedafc64705770e1a88132095cb848616c73a38689f33ec3802f3fada44a03",
+         "bytes": 2108759312,
+         "digest_kind": "sha256",
+         "expected": "75eedafc64705770e1a88132095cb848616c73a38689f33ec3802f3fada44a03",
+         "file": "model-00009-of-00018.safetensors",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "79e1151f7868618544645443228956ca3c47734ce7f5ff57e701399d593d37cf",
+         "bytes": 3979553664,
+         "digest_kind": "sha256",
+         "expected": "79e1151f7868618544645443228956ca3c47734ce7f5ff57e701399d593d37cf",
+         "file": "model-00010-of-00018.safetensors",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "545a750b0b0ef3e4a9fdec1f14177472c0d5c3c8028b52de3419098a1b90a0fa",
+         "bytes": 2108759312,
+         "digest_kind": "sha256",
+         "expected": "545a750b0b0ef3e4a9fdec1f14177472c0d5c3c8028b52de3419098a1b90a0fa",
+         "file": "model-00011-of-00018.safetensors",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "71fce00e3a7a171c0938685a63405d8266ea7697ec243553a38e94c6f69add60",
+         "bytes": 3979553664,
+         "digest_kind": "sha256",
+         "expected": "71fce00e3a7a171c0938685a63405d8266ea7697ec243553a38e94c6f69add60",
+         "file": "model-00012-of-00018.safetensors",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "74cb96b32e845358f1db196134fb51fa60b288bfbf050e40a33abbe14ebce5d6",
+         "bytes": 2108759312,
+         "digest_kind": "sha256",
+         "expected": "74cb96b32e845358f1db196134fb51fa60b288bfbf050e40a33abbe14ebce5d6",
+         "file": "model-00013-of-00018.safetensors",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "0aec080a2c075370573a87a5f3baabe7969d0dd3b304c77feb5d24349bc91d7e",
+         "bytes": 3979553664,
+         "digest_kind": "sha256",
+         "expected": "0aec080a2c075370573a87a5f3baabe7969d0dd3b304c77feb5d24349bc91d7e",
+         "file": "model-00014-of-00018.safetensors",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "fd49765c104b7db242f1e0e58866fc378e89fc435022bba5004d81cb94f4944f",
+         "bytes": 2108759312,
+         "digest_kind": "sha256",
+         "expected": "fd49765c104b7db242f1e0e58866fc378e89fc435022bba5004d81cb94f4944f",
+         "file": "model-00015-of-00018.safetensors",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "08dbb33dd635e396782a1f604b0de40f16721ee0f7ad0b19fccffc4888c28531",
+         "bytes": 3979564008,
+         "digest_kind": "sha256",
+         "expected": "08dbb33dd635e396782a1f604b0de40f16721ee0f7ad0b19fccffc4888c28531",
+         "file": "model-00016-of-00018.safetensors",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "fa2aec9367b5878d5694f819fc3d192cfaa941a18ac344330785a9f37d4e9e11",
+         "bytes": 2108759312,
+         "digest_kind": "sha256",
+         "expected": "fa2aec9367b5878d5694f819fc3d192cfaa941a18ac344330785a9f37d4e9e11",
+         "file": "model-00017-of-00018.safetensors",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "fe72369eebdd81b26cb9c22ea63aec33f003ddcbb5cf08e4e7165f7cbcc5628b",
+         "bytes": 3392197320,
+         "digest_kind": "sha256",
+         "expected": "fe72369eebdd81b26cb9c22ea63aec33f003ddcbb5cf08e4e7165f7cbcc5628b",
+         "file": "model-00018-of-00018.safetensors",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "da35e3c564457dface7d138f0b6cac284ff8958c",
+         "bytes": 112216,
+         "digest_kind": "git_blob_sha1",
+         "expected": "da35e3c564457dface7d138f0b6cac284ff8958c",
+         "file": "model.safetensors.index.json",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "2ea84a437d448ff71b08df68fdd949d5cc4ebb64",
+         "bytes": 390,
+         "digest_kind": "git_blob_sha1",
+         "expected": "2ea84a437d448ff71b08df68fdd949d5cc4ebb64",
+         "file": "preprocessor_config.json",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+         "bytes": 12809320,
+         "digest_kind": "sha256",
+         "expected": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+         "file": "tokenizer.json",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "5de744b3fca2129d7186979ae47c06be33903243",
+         "bytes": 17928,
+         "digest_kind": "git_blob_sha1",
+         "expected": "5de744b3fca2129d7186979ae47c06be33903243",
+         "file": "tokenizer_config.json",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "3ba673a5ad7d4d13f54155ecd38b2a94a6dac8fe",
+         "bytes": 385,
+         "digest_kind": "git_blob_sha1",
+         "expected": "3ba673a5ad7d4d13f54155ecd38b2a94a6dac8fe",
+         "file": "video_preprocessor_config.json",
+         "verdict": "VERIFIED"
+        },
+        {
+         "actual": "0aa0ce0658d60ac4a5d609f4eadb0e8e43514176",
+         "bytes": 6722759,
+         "digest_kind": "git_blob_sha1",
+         "expected": "0aa0ce0658d60ac4a5d609f4eadb0e8e43514176",
+         "file": "vocab.json",
+         "verdict": "VERIFIED"
+        }
+       ],
+       "mismatched": 0,
+       "modellake_mutated": false,
+       "n_files": 31,
+       "no_remote_digest": 0,
+       "owner": "local_directory",
+       "skipped_time_budget": 0,
+       "source_mutated": false,
+       "specimen": "qwen3.8-27b-abliterated-bf16@local",
+       "specimen_path": "/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
+       "status": "WHOLE_TREE_VERIFIED",
+       "unrecognized_digest": 0,
+       "verified": 31,
+       "wall_seconds": 882.72,
+       "whole_tree_verified": true
+      },
       "modellake": {},
       "purpose": "Qwen27 for mature physical",
-      "ready": false,
-      "ready_reason": "identity known but specimen is not in the ModelLake specimens listing",
+      "ready": true,
+      "ready_reason": "authorized external specimen; tree digest is sealed identity (c7c81652283f\u2026)",
       "repo": "Qwen3.8-27B",
       "revision": null,
       "role": "qwen27_mature_physical",
@@ -466,29 +855,52 @@
        "role_in_map": "model_a",
        "school": "Qwen27",
        "source_model": "Qwen3.8-27B"
+      },
+      "verified_specimen": {
+       "bytes_hashed": 55586059240,
+       "identity_kind": "external_tree_digest",
+       "in_specimens_listing": false,
+       "manifest_path": "/Users/scammermike/Downloads/hawking/receipts/future/EXTERNAL_SPECIMEN_SEAL.json",
+       "n_files": 31,
+       "n_sha256_verified": 31,
+       "n_size_only_verified": 0,
+       "published_as_verified": null,
+       "repo": "Qwen3.8-27B",
+       "resolved_sha": "c7c81652283f9324994e0e1a60e52b0a8bf92f9a0d2167d2af2ab341d3073750",
+       "revision": null,
+       "specimen_owner": "local_directory",
+       "specimen_path": "/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
+       "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+       "whole_tree_verified": true
       }
      },
      {
       "architecture_family": "qwen4_exp",
+      "blocked": null,
+      "gap_class": null,
       "identity_source": "hcli.flash_next pin + modellake census + odyssey2 school",
       "modellake": {
+       "bytes_hashed": 360023286454,
        "census_qualification": "MODELLAKE_CENSUS_PINNED_FLASH_IDENTITY_NO_ACQUISITION",
-       "in_specimens_listing": false,
-       "manifest_path": null,
-       "n_files": null,
-       "n_sha256_verified": 0,
-       "n_size_only_verified": null,
-       "published_as_verified": false,
+       "in_specimens_listing": true,
+       "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+       "n_files": 144,
+       "n_files_matched": 144,
+       "n_files_verified": 144,
+       "n_sha256_verified": 132,
+       "n_size_only_verified": 12,
+       "published_as_verified": true,
        "repo": "Qwen/Qwen3.8-Flash-Next",
        "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
        "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
-       "source": "flash_pinned_census",
+       "source": "modellake_manifest",
        "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
-       "whole_tree_verified": false
+       "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+       "whole_tree_verified": true
       },
       "purpose": "Flash for heterogeneous frontier",
-      "ready": false,
-      "ready_reason": "ModelLake pin exists but the specimen is not published as verified",
+      "ready": true,
+      "ready_reason": "ModelLake whole-tree sha256 verification",
       "repo": "Qwen/Qwen3.8-Flash-Next",
       "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
       "role": "flash_heterogeneous_frontier",
@@ -505,25 +917,40 @@
        "role_in_map": "model_b",
        "school": "Flash",
        "source_model": "Qwen/Qwen3.8-Flash-Next"
+      },
+      "verified_specimen": {
+       "bytes_hashed": 360023286454,
+       "identity_kind": "modellake_sha",
+       "in_specimens_listing": true,
+       "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+       "n_files": 144,
+       "n_sha256_verified": 144,
+       "n_size_only_verified": 0,
+       "published_as_verified": true,
+       "repo": "Qwen/Qwen3.8-Flash-Next",
+       "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+       "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+       "specimen_owner": null,
+       "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+       "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+       "whole_tree_verified": true
       }
      }
     ],
     "schema": "hawking.future.odyssey_i.specimen_curriculum.v1"
    },
+   "direct_observation": "n_roles=5 n_ready=5 ready=True unready=[]",
    "evidence": [
     {
      "curriculum_n_roles": 5,
-     "n_ready": 1,
-     "unready": [
-      "very_small_dense_procedural_speed",
-      "mid_size_dense_compiler",
-      "qwen27_mature_physical",
-      "flash_heterogeneous_frontier"
-     ]
+     "n_ready": 5,
+     "unready": []
     }
    ],
+   "falsifier": "an independent probe of the same object the status names, not a reread of the status",
    "id": "specimen_curriculum_ready",
-   "met": false,
+   "interpretation": "all 5 curriculum roles have a live sealed first-wave specimen",
+   "met": true,
    "operational": {
     "cli_is_not_enough": true,
     "flags": {
@@ -537,13 +964,31 @@
     },
     "notes": {
      "proposal_emitted": "true",
-     "specimens_not_all_published": "True"
+     "specimens_not_all_published": "False"
     },
     "resident_operational": false
    },
-   "reason": "curriculum proposes 5 roles; ready=1. unready=['very_small_dense_procedural_speed', 'mid_size_dense_compiler', 'qwen27_mature_physical', 'flash_heterogeneous_frontier']. A proposal is not a ready specimen set."
+   "probe_kind": "measured_flags",
+   "probe_performed": "propose_specimen_curriculum(): ModelLake specimens/ listing, independent digest recomputation, lake census, Odyssey I patient seals, law-store schools; a proposal is not a ready specimen set",
+   "reason": "all 5 curriculum roles have a live sealed first-wave specimen"
   },
   {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "the named flags were measured and have these values"
+    }
+   ],
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "field_value",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "import_ok=True census_found=True path_taken=worktree schema_ok=True schema='hcli.agentos.modellake_census.v1' status='PASSED'",
    "evidence": [
     {
      "census": {
@@ -560,7 +1005,9 @@
      }
     }
    ],
+   "falsifier": "an independent probe of the same object the status names, not a reread of the status",
    "id": "modellake_identity",
+   "interpretation": "ModelLake identity machinery is importable and a census receipt schema='hcli.agentos.modellake_census.v1' status='PASSED' was loaded via worktree",
    "met": true,
    "operational": {
     "cli_is_not_enough": true,
@@ -578,9 +1025,27 @@
     },
     "resident_operational": false
    },
+   "probe_kind": "measured_flags",
+   "probe_performed": "import hcli.agentos.modellake_receipts; probe_json census receipts ['receipts/headless/MODELLAKE_FLASH_NEXT_CENSUS.json', 'receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json', 'receipts/future/evidence/HCLI_MODELLAKE_FLASH_CENSUS.json'] for schema starting hcli.agentos.modellake",
    "reason": "ModelLake identity machinery is importable and a census receipt schema='hcli.agentos.modellake_census.v1' status='PASSED' was loaded via worktree"
   },
   {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "the named flags were measured and have these values"
+    }
+   ],
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "field_value",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "present=True invocable=True n_prior=5 missing_inputs=[] stale_declared_paths=[] absent_inputs=[] schedule=True frontier=FT.MODEL_CAPABILITY.hard-gates.drive-tools refill=True driver=odyssey_tool_driver.py flags={'discover': True, 'invoke': True, 'schedule': True, 'verify': True, 'frontier': True, 'persist': True, 'refill': True} resident_operational=True",
    "evidence": [
     {
      "absent_inputs": [],
@@ -649,7 +1114,9 @@
      "stale_declared_paths": []
     }
    ],
+   "falsifier": "an independent probe of the same object the status names, not a reread of the status",
    "id": "doctor_callable",
+   "interpretation": "Doctor is resident-operational",
    "met": true,
    "operational": {
     "cli_is_not_enough": true,
@@ -670,9 +1137,27 @@
     },
     "resident_operational": true
    },
+   "probe_kind": "measured_flags",
+   "probe_performed": "_module_file on ['tools/odyssey/doctor_tournament.py', 'tools/doctor_seal.py', 'tools/doctor_seal.py', 'tools/gravity_doctor_capability.py', 'tools/gravity_doctor_dimensions.py', 'tools/gravity_doctor_gate.py']; glob prior seals *_DOCTOR_SEAL.json across checkout roots; ast-parse Path('/abs/...') literals and Path.exists(); _resolve_stale_input under MODEL_ROOTS; _resident_schedulable via orchestration.BINDINGS (Call nodes only; this gate cannot self-certify)",
    "reason": "Doctor is resident-operational"
   },
   {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "the named flags were measured and have these values"
+    }
+   ],
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "field_value",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "present=True invocable=True n_prior=108 missing_inputs=[] stale_declared_paths=[] absent_inputs=[] schedule=True frontier=FT.MODEL_CAPABILITY.hard-gates.drive-tools refill=True driver=odyssey_tool_driver.py flags={'discover': True, 'invoke': True, 'schedule': True, 'verify': True, 'frontier': True, 'persist': True, 'refill': True} resident_operational=True",
    "evidence": [
     {
      "absent_inputs": [],
@@ -832,7 +1317,9 @@
      "stale_declared_paths": []
     }
    ],
+   "falsifier": "an independent probe of the same object the status names, not a reread of the status",
    "id": "gravity_callable",
+   "interpretation": "Gravity is resident-operational",
    "met": true,
    "operational": {
     "cli_is_not_enough": true,
@@ -853,23 +1340,36 @@
     },
     "resident_operational": true
    },
+   "probe_kind": "measured_flags",
+   "probe_performed": "_module_file on ['tools/odyssey/decoding_gravity.py', 'tools/odyssey/state_gravity.py', 'hcli/gravity/__init__.py']; glob prior seals *_GRAVITY_*.json across checkout roots; ast-parse Path('/abs/...') literals and Path.exists(); _resolve_stale_input under MODEL_ROOTS; _resident_schedulable via orchestration.BINDINGS (Call nodes only; this gate cannot self-certify)",
    "reason": "Gravity is resident-operational"
   },
   {
    "FLASH_NX_READY": false,
-   "GENERIC_NR_NX_PIPELINE_CALLABLE": false,
+   "GENERIC_NR_NX_PIPELINE_CALLABLE": true,
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "the named flags were measured and have these values"
+    }
+   ],
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "field_value",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "invoked=['nr_nx_generic.flash_nx_ready', 'nr_nx_generic.generic_pipeline_callable'] import_ok=True GENERIC_NR_NX_PIPELINE_CALLABLE=True GENERIC_FROM_RECEIPT=True FLASH_NX_READY=False FLASH_FROM_RECEIPT=False first_failing_stage=None n_stages=14 receipt_path_taken=worktree",
    "evidence": [
     {
      "FLASH_FROM_RECEIPT": false,
      "FLASH_NX_READY": false,
-     "GENERIC_FROM_RECEIPT": false,
-     "GENERIC_NR_NX_PIPELINE_CALLABLE": false,
-     "first_failing_stage": {
-      "error": null,
-      "stage": "KernelPlanner",
-      "status": "FAILED",
-      "why": "KERNEL_LIBRARY.json was read and compared to this specimen's organs. role intersection=['gqa_attention', 'mlp_down', 'mlp_gate_up']. None of the 16 role-matched kernels carry this specimen's id or shapes. A shared organ name is not a compiled kernel for this body. specimen_field=None"
-     },
+     "GENERIC_FROM_RECEIPT": true,
+     "GENERIC_NR_NX_PIPELINE_CALLABLE": true,
+     "first_failing_stage": null,
      "flash_why": "FLASH_COMPLETE_V0.nx status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION'; check_nx.promotable=False",
      "import_ok": true,
      "import_path_taken": "import",
@@ -883,8 +1383,10 @@
     }
    ],
    "facts_are_independent": true,
+   "falsifier": "an independent probe of the same object the status names, not a reread of the status",
    "id": "nr_nx_path_callable",
-   "met": false,
+   "interpretation": "generic NR\u2192NX pipeline is callable on an available specimen; FLASH_NX_READY is independent",
+   "met": true,
    "operational": {
     "cli_is_not_enough": true,
     "flags": {
@@ -899,13 +1401,31 @@
     "notes": {
      "FLASH_NX_READY": "False",
      "FLASH_NX_READY_is_not_this_criterion": "true",
-     "generic_pipeline_callable": "False"
+     "generic_pipeline_callable": "True"
     },
     "resident_operational": false
    },
-   "reason": "generic NR\u2192NX pipeline is not callable. GENERIC_NR_NX_PIPELINE_CALLABLE=False FLASH_NX_READY=False (separate field, not this criterion). first_failing_stage=\"KernelPlanner: KERNEL_LIBRARY.json was read and compared to this specimen's organs. role intersection=['gqa_attention', 'mlp_down', 'mlp_gate_up']. None of the 16 role-matched kernels carry this specimen's id or shapes. A shared organ name is not a compiled kernel for this body. specimen_field=None\". invoked=['nr_nx_generic.flash_nx_ready', 'nr_nx_generic.generic_pipeline_callable']. A Flash metadata seal is not a packed NX and is not this path."
+   "probe_kind": "measured_flags",
+   "probe_performed": "import nr_nx_generic; invoke flash_nx_ready() and generic_pipeline_callable(stages); probe_json receipts/future/NR_NX_GENERIC.json; live function wins over a receipt declaration",
+   "reason": "generic NR\u2192NX pipeline is callable on an available specimen; FLASH_NX_READY is independent"
   },
   {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "the named flags were measured and have these values"
+    }
+   ],
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "field_value",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "lattice=['PROTECTED_ABSOLUTE', 'DIAGNOSTIC_RELATIVE', 'STATIC_ONLY'] lattice_ok=True snapshot_captured=46 path_taken=worktree dag_present=True dag_path_taken=worktree selftest_ok=True selftest_why=None flags={'discover': True, 'invoke': True, 'schedule': True, 'verify': True, 'frontier': True, 'persist': True, 'refill': True}",
    "evidence": [
     {
      "dag": {
@@ -919,11 +1439,13 @@
       "DIAGNOSTIC_RELATIVE",
       "STATIC_ONLY"
      ],
-     "snapshot_captured": 0
+     "snapshot_captured": 46
     }
    ],
+   "falsifier": "an independent probe of the same object the status names, not a reread of the status",
    "id": "evidence_hierarchy",
-   "met": false,
+   "interpretation": "evidence DAG is resident-operational",
+   "met": true,
    "operational": {
     "cli_is_not_enough": true,
     "flags": {
@@ -933,26 +1455,46 @@
      "persist": true,
      "refill": true,
      "schedule": true,
-     "verify": false
+     "verify": true
     },
     "notes": {
      "evidence_dag": "worktree",
      "integration": "tools/future/evidence_dag.py \u2014 evidence DAG the resident walks; lattice alone is not the DAG",
      "lattice_recovered": "True"
     },
-    "resident_operational": false
+    "resident_operational": true
    },
-   "reason": "measurement-class lattice is encoded (['PROTECTED_ABSOLUTE', 'DIAGNOSTIC_RELATIVE', 'STATIC_ONLY']) and evidence snapshot captured=0 via worktree, but the resident-callable evidence DAG is not landed (tools/future/evidence_dag.py \u2014 evidence DAG the resident walks; lattice alone is not the DAG). DIAGNOSTIC_RELATIVE guides and never promotes."
+   "probe_kind": "measured_flags",
+   "probe_performed": "probe_json receipts/future/EVIDENCE_SNAPSHOT.json; compare contamination.MEASUREMENT_CLASSES to EVIDENCE_LATTICE; _module_file tools/future/evidence_dag.py; _exercise tools.future.evidence_dag.selftest",
+   "reason": "evidence DAG is resident-operational"
   },
   {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "the named flags were measured and have these values"
+    }
+   ],
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "field_value",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "import_ok=True has_query=True path_taken=worktree found=True n_scars=663 sealed=True flags={'discover': True, 'invoke': True, 'schedule': True, 'verify': True, 'frontier': True, 'persist': True, 'refill': True}",
    "evidence": [
     {
      "import_ok": true,
-     "n_scars": 653,
+     "n_scars": 663,
      "path_taken": "worktree"
     }
    ],
+   "falsifier": "an independent probe of the same object the status names, not a reread of the status",
    "id": "negative_science",
+   "interpretation": "negative-science index is importable, sealed, scars=663, query/refuse_if_dead callable",
    "met": true,
    "operational": {
     "cli_is_not_enough": true,
@@ -970,9 +1512,27 @@
     },
     "resident_operational": true
    },
-   "reason": "negative-science index is importable, sealed, scars=653, query/refuse_if_dead callable"
+   "probe_kind": "measured_flags",
+   "probe_performed": "import tools.future.negative_index; hasattr query; probe_json receipts/future/NEGATIVE_SCIENCE_INDEX.json; read coverage.n_scars",
+   "reason": "negative-science index is importable, sealed, scars=663, query/refuse_if_dead callable"
   },
   {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "the named flags were measured and have these values"
+    }
+   ],
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "field_value",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "runtime_present=True path_taken=worktree species_ok=True selftest_ok=True selftest_why=None flags={'discover': True, 'invoke': True, 'schedule': True, 'verify': True, 'frontier': True, 'persist': True, 'refill': True}",
    "evidence": [
     {
      "exercised": {
@@ -989,7 +1549,9 @@
      "workunit_species_import": true
     }
    ],
+   "falsifier": "an independent probe of the same object the status names, not a reread of the status",
    "id": "workgraphs",
+   "interpretation": "WorkGraph runtime is resident-operational",
    "met": true,
    "operational": {
     "cli_is_not_enough": true,
@@ -1009,9 +1571,27 @@
     },
     "resident_operational": true
    },
+   "probe_kind": "measured_flags",
+   "probe_performed": "_module_file tools/future/workgraph.py; import tools.future.workunit_species; _exercise tools.future.workgraph.selftest",
    "reason": "WorkGraph runtime is resident-operational"
   },
   {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "the named flags were measured and have these values"
+    }
+   ],
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "field_value",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "frontier_found=True path_taken=worktree frontiers_present=True succession_present=True refill_ok=True is_idle_ok=True refill_why=None idle_why=None flags={'discover': True, 'invoke': True, 'schedule': True, 'verify': True, 'frontier': True, 'persist': True, 'refill': True}",
    "evidence": [
     {
      "frontier": {
@@ -1032,7 +1612,9 @@
      }
     }
    ],
+   "falsifier": "an independent probe of the same object the status names, not a reread of the status",
    "id": "self_refill",
+   "interpretation": "resident self-refill loop is operational",
    "met": true,
    "operational": {
     "cli_is_not_enough": true,
@@ -1053,9 +1635,27 @@
     },
     "resident_operational": true
    },
+   "probe_kind": "measured_flags",
+   "probe_performed": "probe_json receipts/future/CLAUDE_GLOBAL_FRONTIER.json; _module_file frontiers.py and succession.py; _exercise tools.future.frontiers.refill and tools.future.frontiers.is_idle",
    "reason": "resident self-refill loop is operational"
   },
   {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "the named flags were measured and have these values"
+    }
+   ],
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "field_value",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "contamination_class='HEAVY' path_taken=worktree dirty_present=True build_ok=True build_why=None flags={'discover': True, 'invoke': True, 'schedule': True, 'verify': True, 'frontier': True, 'persist': True, 'refill': True}",
    "evidence": [
     {
      "contamination_class": "HEAVY",
@@ -1068,7 +1668,9 @@
      "path_taken": "worktree"
     }
    ],
+   "falsifier": "an independent probe of the same object the status names, not a reread of the status",
    "id": "dirty_measurement",
+   "interpretation": "dirty measurement is resident-operational",
    "met": true,
    "operational": {
     "cli_is_not_enough": true,
@@ -1088,12 +1690,30 @@
     },
     "resident_operational": true
    },
+   "probe_kind": "measured_flags",
+   "probe_performed": "_module_file tools/future/dirty_measure.py; _exercise tools.future.dirty_measure.build; probe_json receipts/future/CONTAMINATION_SCIENCE.json; read contamination_class",
    "reason": "dirty measurement is resident-operational"
   },
   {
    "PROTECTED_SCHEDULER_CAPABLE": true,
    "PROTECTED_WINDOW_AVAILABLE": false,
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "the named flags were measured and have these values"
+    }
+   ],
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "field_value",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
    "contamination_class": "HEAVY",
+   "direct_observation": "invoked=True why=\"protected-required unit cannot start: contamination_class='HEAVY' (needs QUIESCENT; at least one HEAVY probe fired); no proven HCLI lease (protected lock file(s) exist but no holder could be proven without flock; fail closed: present=false. flock would be a seizure). scheduler_capable remains true; the window is what is missing\" PROTECTED_SCHEDULER_CAPABLE=True PROTECTED_WINDOW_AVAILABLE=False contamination_class='HEAVY' live_verdict='BLOCKED_ON_PROTECTED_WINDOW' lease_present=False did_not_flock=True did_not_fabricate_lease=True receipt_path_taken=worktree",
    "evidence": [
     {
      "PROTECTED_SCHEDULER_CAPABLE": true,
@@ -1122,7 +1742,9 @@
      "receipt_path_taken": "worktree"
     }
    ],
+   "falsifier": "an independent probe of the same object the status names, not a reread of the status",
    "id": "protected_scheduling",
+   "interpretation": "protected scheduler is CAPABLE; window AVAILABLE=False (contamination_class='HEAVY'). Capability is not availability; no lock was seized",
    "met": true,
    "operational": {
     "cli_is_not_enough": true,
@@ -1147,6 +1769,8 @@
     },
     "resident_operational": true
    },
+   "probe_kind": "measured_flags",
+   "probe_performed": "import protected_scheduler; invoke capability_report(); probe_json receipts/future/PROTECTED_SCHEDULER.json; _module_file protected_window.py; do not flock a bench lock; do not fabricate a lease",
    "protected_physical_run_completed": {
     "id": "protected_physical_run_completed",
     "required_for_odyssey_i_start": false,
@@ -1157,6 +1781,22 @@
    "reason": "protected scheduler is CAPABLE; window AVAILABLE=False (contamination_class='HEAVY'). Capability is not availability; no lock was seized"
   },
   {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "the named flags were measured and have these values"
+    }
+   ],
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "field_value",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "import_ok=True has_promote=True path_taken=worktree found=True n_laws=24 sealed=True flags={'discover': True, 'invoke': True, 'schedule': True, 'verify': True, 'frontier': True, 'persist': True, 'refill': True}",
    "evidence": [
     {
      "n_laws": 24,
@@ -1164,7 +1804,9 @@
      "schema": "hawking.future.odyssey2_law_store.v1"
     }
    ],
+   "falsifier": "an independent probe of the same object the status names, not a reread of the status",
    "id": "transfer_substrate",
+   "interpretation": "Odyssey II law store is sealed with n_laws=24; promote/transfer_candidates raise rather than flag",
    "met": true,
    "operational": {
     "cli_is_not_enough": true,
@@ -1183,9 +1825,27 @@
     },
     "resident_operational": true
    },
+   "probe_kind": "measured_flags",
+   "probe_performed": "import tools.future.odyssey2_law_store; hasattr promote and transfer_candidates; probe_json receipts/future/ODYSSEY2_LAW_STORE.json; count n_laws",
    "reason": "Odyssey II law store is sealed with n_laws=24; promote/transfer_candidates raise rather than flag"
   },
   {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "the named flags were measured and have these values"
+    }
+   ],
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "field_value",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "import_ok=True has_p_refutation=True path_taken=worktree found=True n_attack_families=9 flags={'discover': True, 'invoke': True, 'schedule': True, 'verify': True, 'frontier': True, 'persist': True, 'refill': True}",
    "evidence": [
     {
      "n_attack_families": 9,
@@ -1193,7 +1853,9 @@
      "schema": "hawking.future.odyssey3_adversary.v1"
     }
    ],
+   "falsifier": "an independent probe of the same object the status names, not a reread of the status",
    "id": "adversary_substrate",
+   "interpretation": "Odyssey III adversary is sealed; attack_families derived from receipt (n=9)",
    "met": true,
    "operational": {
     "cli_is_not_enough": true,
@@ -1212,9 +1874,27 @@
     },
     "resident_operational": true
    },
+   "probe_kind": "measured_flags",
+   "probe_performed": "import tools.future.odyssey3_adversary; hasattr p_refutation; probe_json receipts/future/ODYSSEY3_ADVERSARY.json; read attack_families",
    "reason": "Odyssey III adversary is sealed; attack_families derived from receipt (n=9)"
   },
   {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "the named flags were measured and have these values"
+    }
+   ],
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "field_value",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "repro_ok=True faults_ok=True hcli_recovery=True recovery_gate_found=True recovery_gate_path=worktree git_lock_found=True flags={'discover': True, 'invoke': True, 'schedule': True, 'verify': True, 'frontier': True, 'persist': True, 'refill': True}",
    "evidence": [
     {
      "faults_ok": true,
@@ -1230,7 +1910,9 @@
      "repro_path_taken": "worktree"
     }
    ],
+   "falsifier": "an independent probe of the same object the status names, not a reread of the status",
    "id": "crash_recovery",
+   "interpretation": "repro_science fault injectors all_detected and HCLI recovery module importable; sidecar fail-closed",
    "met": true,
    "operational": {
     "cli_is_not_enough": true,
@@ -1249,16 +1931,36 @@
     },
     "resident_operational": true
    },
+   "probe_kind": "measured_flags",
+   "probe_performed": "import tools.future.repro_science; hasattr admit; probe_json receipts/future/REPRO_SCIENCE.json read fault_injection.all_detected; probe_json HCLI_AGENTOS_RECOVERY_GATE.json; import hcli.agentos.recovery; probe_json receipts/future/GIT_LOCK_DURABILITY_REPORT.json",
    "reason": "repro_science fault injectors all_detected and HCLI recovery module importable; sidecar fail-closed"
   },
   {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "the named flags were measured and have these values"
+    }
+   ],
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "field_value",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "dir_present=True n_json=193 path=/Users/scammermike/Downloads/hawking/receipts/future flags={'discover': True, 'invoke': True, 'schedule': True, 'verify': True, 'frontier': True, 'persist': True, 'refill': True}",
    "evidence": [
     {
-     "n_json": 113,
+     "n_json": 193,
      "receipts_future": "/Users/scammermike/Downloads/hawking/receipts/future"
     }
    ],
+   "falsifier": "an independent probe of the same object the status names, not a reread of the status",
    "id": "receipts",
+   "interpretation": "receipts/future is present with n_json=193 (derived); write_receipt seals STATIC_ONLY and raises on hardware fields",
    "met": true,
    "operational": {
     "cli_is_not_enough": true,
@@ -1277,7 +1979,9 @@
     },
     "resident_operational": true
    },
-   "reason": "receipts/future is present with n_json=113 (derived); write_receipt seals STATIC_ONLY and raises on hardware fields"
+   "probe_kind": "measured_flags",
+   "probe_performed": "Path.is_dir() and glob('*.json') on receipts/future; write_receipt seals STATIC_ONLY and raises on hardware fields",
+   "reason": "receipts/future is present with n_json=193 (derived); write_receipt seals STATIC_ONLY and raises on hardware fields"
   }
  ],
  "criterion_ids": [
@@ -1981,6 +2685,8 @@
   "Sixteen launch criteria evaluated from evidence; can_launch is False until all pass.",
   "Refuse path names every unmet criterion; it does not stop at the first.",
   "ODYSSEY_I_LAUNCH.json is written only on pass; refuse does not write the phase-transition receipt.",
+  "write_launch_if_passed refuses an unbound resident_identity even if all sixteen criteria are met; a phase-transition receipt must name its resident.",
+  "resident_identity / sandbox_identity bind from RESIDENT_IDENTITY.json and RESIDENT_SANDBOX.json when those documents pin the named fields; a missing pin stays unbound with the field named; status is read from the document, not defaulted to null.",
   "Specimen curriculum proposes five roles from ModelLake seals / Odyssey I / law-store schools; other lake entries are recorded and not first-wave.",
   "First WorkGraphs emitted as real HCLI WorkUnits with dependencies and resource lanes.",
   "Phase II transfer and Phase III attack both depend on Phase I laws and not on each other \u2014 no global barrier.",
@@ -1995,9 +2701,9 @@
   "assigned_runtime": null,
   "attempts": 0,
   "backend_task_id": null,
-  "blocked_reason": "launch criteria unmet; see unmet list",
+  "blocked_reason": null,
   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
-  "classification": "REFUSED",
+  "classification": "STATIC_ONLY",
   "content_hash": "aa559adb84a92cb403de862e216ff4529ed10b40f07ec8555ba5a12d23cc2388",
   "dependencies": [],
   "description": "Evaluate Odyssey I launch criteria; refuse until every criterion is met",
@@ -2019,18 +2725,14 @@
   "role": "science",
   "running_at": null,
   "status": "completed",
-  "unmet": [
-   "specimen_curriculum_ready",
-   "nr_nx_path_callable",
-   "evidence_hierarchy"
-  ],
-  "verdict": "REFUSED",
+  "unmet": [],
+  "verdict": "LAUNCH",
   "verification": null,
   "verifier": "future.odyssey_launch.can_launch",
   "workspace": "repo-root"
  },
  "gpu_authority": false,
- "head": "2dd9fc8c0a0113e389e25842bc832c1c1c7accb5",
+ "head": "607b235241e7a9b0d1f5d052364d6e5436f21aaa",
  "integration_points": {
   "autonomy_trial": "tools/future/autonomy_trial.py \u2014 persisted --verify verdict in AUTONOMY_TRIALS.json (plural)",
   "dirty_measure": "tools/future/dirty_measure.py \u2014 dirty-class measurement that cannot launder into PROTECTED_ABSOLUTE",
@@ -2049,6 +2751,22 @@
  },
  "launch_payload_draft": {
   "autonomy_status": {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "the named flags were measured and have these values"
+    }
+   ],
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "field_value",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "AUTONOMY_TRIALS found=True path_taken=worktree candidate_is_mapping=True trial='1h' verdict='PASS' eligible=True resident_orchestration=True timeline_seal_verifies=True seal_why='timeline file digest matches the persisted seal' cognition_recorded=True cognition='UNAVAILABLE' AUTONOMY_TRIAL.json found=False not_authority=True hcli_all_requested_stages_passed=True not_this_criterion=True met=True",
    "evidence": [
     {
      "found": true,
@@ -2083,7 +2801,9 @@
      "schema": "hcli.agentos.autonomy_gate.v1"
     }
    ],
+   "falsifier": "an independent probe of the same object the status names, not a reread of the status",
    "id": "resident_autonomy_trial_pass",
+   "interpretation": "Odyssey I resident-orchestration autonomy trial 1h persisted PASS in AUTONOMY_TRIALS.json; timeline seal verifies; resident_orchestration=true; resident_model_cognition='UNAVAILABLE'",
    "met": true,
    "operational": {
     "cli_is_not_enough": true,
@@ -2106,6 +2826,8 @@
    },
    "persisted_trial": "1h",
    "persisted_verdict": "PASS",
+   "probe_kind": "measured_flags",
+   "probe_performed": "probe_json receipts/future/AUTONOMY_TRIALS.json (plural); autonomy_trial.launch_candidate_from_receipt; verify_timeline_digest(timeline_path, timeline_seal_digest); probe_json receipts/future/AUTONOMY_TRIAL.json recorded as not-authority; HCLI AgentOS autonomy all_requested_stages_passed recorded as not this criterion",
    "reason": "Odyssey I resident-orchestration autonomy trial 1h persisted PASS in AUTONOMY_TRIALS.json; timeline seal verifies; resident_orchestration=true; resident_model_cognition='UNAVAILABLE'",
    "resident_model_cognition": "UNAVAILABLE",
    "resident_model_cognition_reason": "measured: Apple M3 Ultra GPU is present; the offline Metal shader compiler is absent (developer dir is /Library/Developer/CommandLineTools, full Xcode not installed), so no .metallib can be built ahead of time here; runtime shader compilation from source is AVAILABLE (exercised with the crate the runtime uses), so the missing offline compiler is a cold-start cost, not a wall; the loop under test is HCLI orchestration, not model cognition",
@@ -2131,12 +2853,13 @@
    "rule": "DIAGNOSTIC_RELATIVE guides and never promotes; PROTECTED_ABSOLUTE decides; this module produces neither"
   },
   "first_specimen_set": {
+   "authority": "tools/future/specimen_curriculum.py owns first-wave readiness. odyssey_launch._eval_curriculum reads this; it does not re-derive the roles.",
    "census_probe": {
     "found": true,
     "path_taken": "worktree",
     "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/HCLI_MODELLAKE_FLASH_CENSUS.json"
    },
-   "n_ready": 1,
+   "n_ready": 5,
    "n_roles": 5,
    "not_proposed": [
     {
@@ -2227,7 +2950,7 @@
     {
      "reason": "present in ModelLake, not a first-wave curriculum role",
      "repo": "deepseek-ai/DeepSeek-V4-Flash",
-     "revision": "60d8d70770c6"
+     "revision": "60d8d70770c6776ff598c94bb586a859a38244f1"
     },
     {
      "reason": "present in ModelLake, not a first-wave curriculum role",
@@ -2297,7 +3020,7 @@
     {
      "reason": "present in ModelLake, not a first-wave curriculum role",
      "repo": "moonshotai/Kimi-K3",
-     "revision": "9f62e4e9fffb"
+     "revision": "9f62e4e9fffbd0a83ddd60e1c209d828994b3569"
     },
     {
      "reason": "present in ModelLake, not a first-wave curriculum role",
@@ -2331,8 +3054,13 @@
     },
     {
      "reason": "present in ModelLake, not a first-wave curriculum role",
+     "repo": "zai-org/GLM-4.5",
+     "revision": "cbb2c7cfb52fa128a9660cb1a7a78e017899e115"
+    },
+    {
+     "reason": "present in ModelLake, not a first-wave curriculum role",
      "repo": "zai-org/GLM-4.5-Air",
-     "revision": "a24ceef6ce4f"
+     "revision": "a24ceef6ce4f3536971efe9b778bdaa1bab18daa"
     }
    ],
    "not_proposed_rule": "Do not exhaustively optimize every downloaded model. First-wave curriculum is the five roles above; other lake entries are recorded and deferred.",
@@ -2396,40 +3124,68 @@
      "weights_canonical": "/Users/scammermike/.cache/huggingface/hub/models--Qwen--Qwen3-30B-A3B/snapshots/ad44e777bcd18fa416d9da3bd8f70d33ebb85d39"
     }
    ],
-   "ready": false,
+   "ready": true,
    "roles": [
     {
      "architecture_family": "dense_transformer",
+     "blocked": null,
+     "gap_class": null,
      "identity_source": "modellake_manifest",
      "located_under_partial": false,
      "modellake": {
+      "bytes_hashed": 1519209243,
       "in_specimens_listing": true,
       "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-0.6B@c1899de289a0.json",
       "n_files": 10,
+      "n_files_matched": 10,
+      "n_files_verified": 10,
       "n_sha256_verified": 2,
       "n_size_only_verified": 8,
+      "published_as_verified": true,
       "repo": "Qwen/Qwen3-0.6B",
       "resolved_sha": "c1899de289a04d12100db370d81485cdf75e47ca",
       "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
       "source": "modellake_manifest",
       "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
-      "whole_tree_verified": false
+      "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+      "whole_tree_verified": true
      },
      "purpose": "very small dense for procedural speed",
-     "ready": false,
-     "ready_reason": "ModelLake manifest is partial (n_sha256_verified=2 n_files=10); not a sealed specimen",
+     "ready": true,
+     "ready_reason": "ModelLake whole-tree sha256 verification",
      "repo": "Qwen/Qwen3-0.6B",
      "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
-     "role": "very_small_dense_procedural_speed"
+     "role": "very_small_dense_procedural_speed",
+     "verified_specimen": {
+      "bytes_hashed": 1519209243,
+      "identity_kind": "modellake_sha",
+      "in_specimens_listing": true,
+      "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-0.6B@c1899de289a0.json",
+      "n_files": 10,
+      "n_sha256_verified": 10,
+      "n_size_only_verified": 0,
+      "published_as_verified": true,
+      "repo": "Qwen/Qwen3-0.6B",
+      "resolved_sha": "c1899de289a04d12100db370d81485cdf75e47ca",
+      "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+      "specimen_owner": null,
+      "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+      "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+      "whole_tree_verified": true
+     }
     },
     {
      "architecture_family": "falcon_h1",
+     "blocked": null,
+     "gap_class": null,
      "identity_source": "modellake_manifest+odyssey_i_O001",
      "modellake": {
       "bytes_hashed": 15182220635,
       "in_specimens_listing": true,
       "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb.json",
       "n_files": 13,
+      "n_files_matched": 13,
+      "n_files_verified": 13,
       "n_sha256_verified": 5,
       "n_size_only_verified": 8,
       "published_as_verified": true,
@@ -2461,19 +3217,54 @@
      "ready_reason": "RECURRENT_PATIENT: retired from the historical first wave, prior seal intact, and whole-tree verified again now",
      "repo": "tiiuae/Falcon-H1-7B-Instruct",
      "revision": "41e72f27effbab80cd45b6e884688452253a3686",
-     "role": "small_dense_alternate_architecture_transfer"
+     "role": "small_dense_alternate_architecture_transfer",
+     "verified_specimen": {
+      "bytes_hashed": 15182220635,
+      "identity_kind": "modellake_sha",
+      "in_specimens_listing": true,
+      "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb.json",
+      "n_files": 13,
+      "n_sha256_verified": 13,
+      "n_size_only_verified": 0,
+      "published_as_verified": true,
+      "repo": "tiiuae/Falcon-H1-7B-Instruct",
+      "resolved_sha": "41e72f27effbab80cd45b6e884688452253a3686",
+      "revision": "41e72f27effbab80cd45b6e884688452253a3686",
+      "specimen_owner": null,
+      "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+      "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+      "whole_tree_verified": true
+     }
     },
     {
      "architecture_family": "dense_transformer",
-     "identity_source": "odyssey_i_O004+modellake_partial",
+     "blocked": null,
+     "gap_class": null,
+     "identity_source": "modellake_manifest",
      "modellake": {
+      "bytes_hashed": 96077777512,
+      "in_specimens_listing": true,
+      "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618.json",
+      "n_files": 25,
+      "n_files_matched": 25,
+      "n_files_verified": 25,
+      "n_sha256_verified": 13,
+      "n_size_only_verified": 12,
+      "published_as_verified": true,
+      "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+      "resolved_sha": "68faf511d618ef198fef186659617cfd2eb8e33a",
+      "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
+      "source": "modellake_manifest",
+      "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
       "stale_partial": {
        "action": "REPORT_ONLY_NO_DELETE",
        "active_process_evidence": false,
        "age_s": 129994.4,
        "candidate_stale": true,
        "path": "/Volumes/corpdrive/hawking-modellake/partial/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618"
-      }
+      },
+      "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+      "whole_tree_verified": true
      },
      "prior_odyssey_i": {
       "oxx": "O004",
@@ -2490,20 +3281,305 @@
       "weights_canonical": "/Users/scammermike/.cache/huggingface/hub/models--mistralai--Mistral-Small-3.1-24B-Instruct-2503/snapshots/68faf511d618ef198fef186659617cfd2eb8e33a"
      },
      "purpose": "mid-size dense for compiler",
-     "ready": false,
-     "ready_reason": "ModelLake manifest is partial (n_sha256_verified=None n_files=None); not a sealed specimen",
+     "ready": true,
+     "ready_reason": "RECURRENT_PATIENT: retired from the historical first wave, prior seal intact, and whole-tree verified again now",
      "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
-     "revision": "68faf511d618",
-     "role": "mid_size_dense_compiler"
+     "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
+     "role": "mid_size_dense_compiler",
+     "verified_specimen": {
+      "bytes_hashed": 96077777512,
+      "identity_kind": "modellake_sha",
+      "in_specimens_listing": true,
+      "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618.json",
+      "n_files": 25,
+      "n_sha256_verified": 25,
+      "n_size_only_verified": 0,
+      "published_as_verified": true,
+      "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+      "resolved_sha": "68faf511d618ef198fef186659617cfd2eb8e33a",
+      "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
+      "specimen_owner": null,
+      "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+      "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+      "whole_tree_verified": true
+     }
     },
     {
      "architecture_family": "dense_hybrid_transformer",
+     "blocked": null,
+     "gap_class": null,
      "identity_source": "odyssey2_law_store.SCHOOLS.Qwen27",
-     "local_specimen": null,
+     "local_specimen": {
+      "bytes_hashed": 55586059240,
+      "files": [
+       {
+        "actual": "52373fe24473b1aa44333d318f578ae6bf04b49b",
+        "bytes": 1570,
+        "digest_kind": "git_blob_sha1",
+        "expected": "52373fe24473b1aa44333d318f578ae6bf04b49b",
+        "file": ".gitattributes",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "f938136e3adacfd92be087f6e113b5d6d97f678f",
+        "bytes": 11544,
+        "digest_kind": "git_blob_sha1",
+        "expected": "f938136e3adacfd92be087f6e113b5d6d97f678f",
+        "file": "LICENSE",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "2a3a3cf74b48e3fae0fc59794bff0da379bb4c9c",
+        "bytes": 10187,
+        "digest_kind": "git_blob_sha1",
+        "expected": "2a3a3cf74b48e3fae0fc59794bff0da379bb4c9c",
+        "file": "README.md",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "c0c686f9c38d70d179fb7b5f5aa7530bc913dda3",
+        "bytes": 8952,
+        "digest_kind": "git_blob_sha1",
+        "expected": "c0c686f9c38d70d179fb7b5f5aa7530bc913dda3",
+        "file": "chat_template.jinja",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "706cebd746c4b6f2b1d1f892630867acfdfd3df8",
+        "bytes": 4312,
+        "digest_kind": "git_blob_sha1",
+        "expected": "706cebd746c4b6f2b1d1f892630867acfdfd3df8",
+        "file": "config.json",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "023756cfadf88e5bf69eefeee3e172f38c448d64",
+        "bytes": 202,
+        "digest_kind": "git_blob_sha1",
+        "expected": "023756cfadf88e5bf69eefeee3e172f38c448d64",
+        "file": "generation_config.json",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "a494e019ca1502219fd0128658b979e5f05ae8e8",
+        "bytes": 3353259,
+        "digest_kind": "git_blob_sha1",
+        "expected": "a494e019ca1502219fd0128658b979e5f05ae8e8",
+        "file": "merges.txt",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "746142a26219375775e31233a25b9d06bb50cc36a45b833dfad58d45bbeb68ac",
+        "bytes": 3966730520,
+        "digest_kind": "sha256",
+        "expected": "746142a26219375775e31233a25b9d06bb50cc36a45b833dfad58d45bbeb68ac",
+        "file": "model-00001-of-00018.safetensors",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "32e1fcb17fea75306e94eb0adfacf7e4069226f938582920df5962dc11c3becb",
+        "bytes": 3043080296,
+        "digest_kind": "sha256",
+        "expected": "32e1fcb17fea75306e94eb0adfacf7e4069226f938582920df5962dc11c3becb",
+        "file": "model-00002-of-00018.safetensors",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "1e22bff91476ac31fd41fa6c5b6772286cacb458fcb0b13cd0d401d15504cf42",
+        "bytes": 2542796928,
+        "digest_kind": "sha256",
+        "expected": "1e22bff91476ac31fd41fa6c5b6772286cacb458fcb0b13cd0d401d15504cf42",
+        "file": "model-00003-of-00018.safetensors",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "955da8a0ee55a8864617fd26e845a340bdbb4467087a223af0ef36caeb772397",
+        "bytes": 3988973120,
+        "digest_kind": "sha256",
+        "expected": "955da8a0ee55a8864617fd26e845a340bdbb4467087a223af0ef36caeb772397",
+        "file": "model-00004-of-00018.safetensors",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "b1abd9cf4146923b9bdc2a943a3a3cf6600c0d622ff902626185377fc1b0e18a",
+        "bytes": 2099339832,
+        "digest_kind": "sha256",
+        "expected": "b1abd9cf4146923b9bdc2a943a3a3cf6600c0d622ff902626185377fc1b0e18a",
+        "file": "model-00005-of-00018.safetensors",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "f69e98460c36b5c2b53b52de139bd1473c9ac872c7fe5575a0aac7ab6a823aef",
+        "bytes": 3979553664,
+        "digest_kind": "sha256",
+        "expected": "f69e98460c36b5c2b53b52de139bd1473c9ac872c7fe5575a0aac7ab6a823aef",
+        "file": "model-00006-of-00018.safetensors",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "fa7adc386e8f88b5c68b26303bbe65c7a578797c66219f204699290427e91277",
+        "bytes": 2108759312,
+        "digest_kind": "sha256",
+        "expected": "fa7adc386e8f88b5c68b26303bbe65c7a578797c66219f204699290427e91277",
+        "file": "model-00007-of-00018.safetensors",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "4aafde533aa91b53df84b58bc6a7b61cd6b547878ae975f0250fde88203e288c",
+        "bytes": 3979553664,
+        "digest_kind": "sha256",
+        "expected": "4aafde533aa91b53df84b58bc6a7b61cd6b547878ae975f0250fde88203e288c",
+        "file": "model-00008-of-00018.safetensors",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "75eedafc64705770e1a88132095cb848616c73a38689f33ec3802f3fada44a03",
+        "bytes": 2108759312,
+        "digest_kind": "sha256",
+        "expected": "75eedafc64705770e1a88132095cb848616c73a38689f33ec3802f3fada44a03",
+        "file": "model-00009-of-00018.safetensors",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "79e1151f7868618544645443228956ca3c47734ce7f5ff57e701399d593d37cf",
+        "bytes": 3979553664,
+        "digest_kind": "sha256",
+        "expected": "79e1151f7868618544645443228956ca3c47734ce7f5ff57e701399d593d37cf",
+        "file": "model-00010-of-00018.safetensors",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "545a750b0b0ef3e4a9fdec1f14177472c0d5c3c8028b52de3419098a1b90a0fa",
+        "bytes": 2108759312,
+        "digest_kind": "sha256",
+        "expected": "545a750b0b0ef3e4a9fdec1f14177472c0d5c3c8028b52de3419098a1b90a0fa",
+        "file": "model-00011-of-00018.safetensors",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "71fce00e3a7a171c0938685a63405d8266ea7697ec243553a38e94c6f69add60",
+        "bytes": 3979553664,
+        "digest_kind": "sha256",
+        "expected": "71fce00e3a7a171c0938685a63405d8266ea7697ec243553a38e94c6f69add60",
+        "file": "model-00012-of-00018.safetensors",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "74cb96b32e845358f1db196134fb51fa60b288bfbf050e40a33abbe14ebce5d6",
+        "bytes": 2108759312,
+        "digest_kind": "sha256",
+        "expected": "74cb96b32e845358f1db196134fb51fa60b288bfbf050e40a33abbe14ebce5d6",
+        "file": "model-00013-of-00018.safetensors",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "0aec080a2c075370573a87a5f3baabe7969d0dd3b304c77feb5d24349bc91d7e",
+        "bytes": 3979553664,
+        "digest_kind": "sha256",
+        "expected": "0aec080a2c075370573a87a5f3baabe7969d0dd3b304c77feb5d24349bc91d7e",
+        "file": "model-00014-of-00018.safetensors",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "fd49765c104b7db242f1e0e58866fc378e89fc435022bba5004d81cb94f4944f",
+        "bytes": 2108759312,
+        "digest_kind": "sha256",
+        "expected": "fd49765c104b7db242f1e0e58866fc378e89fc435022bba5004d81cb94f4944f",
+        "file": "model-00015-of-00018.safetensors",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "08dbb33dd635e396782a1f604b0de40f16721ee0f7ad0b19fccffc4888c28531",
+        "bytes": 3979564008,
+        "digest_kind": "sha256",
+        "expected": "08dbb33dd635e396782a1f604b0de40f16721ee0f7ad0b19fccffc4888c28531",
+        "file": "model-00016-of-00018.safetensors",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "fa2aec9367b5878d5694f819fc3d192cfaa941a18ac344330785a9f37d4e9e11",
+        "bytes": 2108759312,
+        "digest_kind": "sha256",
+        "expected": "fa2aec9367b5878d5694f819fc3d192cfaa941a18ac344330785a9f37d4e9e11",
+        "file": "model-00017-of-00018.safetensors",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "fe72369eebdd81b26cb9c22ea63aec33f003ddcbb5cf08e4e7165f7cbcc5628b",
+        "bytes": 3392197320,
+        "digest_kind": "sha256",
+        "expected": "fe72369eebdd81b26cb9c22ea63aec33f003ddcbb5cf08e4e7165f7cbcc5628b",
+        "file": "model-00018-of-00018.safetensors",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "da35e3c564457dface7d138f0b6cac284ff8958c",
+        "bytes": 112216,
+        "digest_kind": "git_blob_sha1",
+        "expected": "da35e3c564457dface7d138f0b6cac284ff8958c",
+        "file": "model.safetensors.index.json",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "2ea84a437d448ff71b08df68fdd949d5cc4ebb64",
+        "bytes": 390,
+        "digest_kind": "git_blob_sha1",
+        "expected": "2ea84a437d448ff71b08df68fdd949d5cc4ebb64",
+        "file": "preprocessor_config.json",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+        "bytes": 12809320,
+        "digest_kind": "sha256",
+        "expected": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+        "file": "tokenizer.json",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "5de744b3fca2129d7186979ae47c06be33903243",
+        "bytes": 17928,
+        "digest_kind": "git_blob_sha1",
+        "expected": "5de744b3fca2129d7186979ae47c06be33903243",
+        "file": "tokenizer_config.json",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "3ba673a5ad7d4d13f54155ecd38b2a94a6dac8fe",
+        "bytes": 385,
+        "digest_kind": "git_blob_sha1",
+        "expected": "3ba673a5ad7d4d13f54155ecd38b2a94a6dac8fe",
+        "file": "video_preprocessor_config.json",
+        "verdict": "VERIFIED"
+       },
+       {
+        "actual": "0aa0ce0658d60ac4a5d609f4eadb0e8e43514176",
+        "bytes": 6722759,
+        "digest_kind": "git_blob_sha1",
+        "expected": "0aa0ce0658d60ac4a5d609f4eadb0e8e43514176",
+        "file": "vocab.json",
+        "verdict": "VERIFIED"
+       }
+      ],
+      "mismatched": 0,
+      "modellake_mutated": false,
+      "n_files": 31,
+      "no_remote_digest": 0,
+      "owner": "local_directory",
+      "skipped_time_budget": 0,
+      "source_mutated": false,
+      "specimen": "qwen3.8-27b-abliterated-bf16@local",
+      "specimen_path": "/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
+      "status": "WHOLE_TREE_VERIFIED",
+      "unrecognized_digest": 0,
+      "verified": 31,
+      "wall_seconds": 882.72,
+      "whole_tree_verified": true
+     },
      "modellake": {},
      "purpose": "Qwen27 for mature physical",
-     "ready": false,
-     "ready_reason": "identity known but specimen is not in the ModelLake specimens listing",
+     "ready": true,
+     "ready_reason": "authorized external specimen; tree digest is sealed identity (c7c81652283f\u2026)",
      "repo": "Qwen3.8-27B",
      "revision": null,
      "role": "qwen27_mature_physical",
@@ -2519,29 +3595,52 @@
       "role_in_map": "model_a",
       "school": "Qwen27",
       "source_model": "Qwen3.8-27B"
+     },
+     "verified_specimen": {
+      "bytes_hashed": 55586059240,
+      "identity_kind": "external_tree_digest",
+      "in_specimens_listing": false,
+      "manifest_path": "/Users/scammermike/Downloads/hawking/receipts/future/EXTERNAL_SPECIMEN_SEAL.json",
+      "n_files": 31,
+      "n_sha256_verified": 31,
+      "n_size_only_verified": 0,
+      "published_as_verified": null,
+      "repo": "Qwen3.8-27B",
+      "resolved_sha": "c7c81652283f9324994e0e1a60e52b0a8bf92f9a0d2167d2af2ab341d3073750",
+      "revision": null,
+      "specimen_owner": "local_directory",
+      "specimen_path": "/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
+      "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+      "whole_tree_verified": true
      }
     },
     {
      "architecture_family": "qwen4_exp",
+     "blocked": null,
+     "gap_class": null,
      "identity_source": "hcli.flash_next pin + modellake census + odyssey2 school",
      "modellake": {
+      "bytes_hashed": 360023286454,
       "census_qualification": "MODELLAKE_CENSUS_PINNED_FLASH_IDENTITY_NO_ACQUISITION",
-      "in_specimens_listing": false,
-      "manifest_path": null,
-      "n_files": null,
-      "n_sha256_verified": 0,
-      "n_size_only_verified": null,
-      "published_as_verified": false,
+      "in_specimens_listing": true,
+      "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+      "n_files": 144,
+      "n_files_matched": 144,
+      "n_files_verified": 144,
+      "n_sha256_verified": 132,
+      "n_size_only_verified": 12,
+      "published_as_verified": true,
       "repo": "Qwen/Qwen3.8-Flash-Next",
       "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
       "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
-      "source": "flash_pinned_census",
+      "source": "modellake_manifest",
       "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
-      "whole_tree_verified": false
+      "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+      "whole_tree_verified": true
      },
      "purpose": "Flash for heterogeneous frontier",
-     "ready": false,
-     "ready_reason": "ModelLake pin exists but the specimen is not published as verified",
+     "ready": true,
+     "ready_reason": "ModelLake whole-tree sha256 verification",
      "repo": "Qwen/Qwen3.8-Flash-Next",
      "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
      "role": "flash_heterogeneous_frontier",
@@ -2558,6 +3657,23 @@
       "role_in_map": "model_b",
       "school": "Flash",
       "source_model": "Qwen/Qwen3.8-Flash-Next"
+     },
+     "verified_specimen": {
+      "bytes_hashed": 360023286454,
+      "identity_kind": "modellake_sha",
+      "in_specimens_listing": true,
+      "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+      "n_files": 144,
+      "n_sha256_verified": 144,
+      "n_size_only_verified": 0,
+      "published_as_verified": true,
+      "repo": "Qwen/Qwen3.8-Flash-Next",
+      "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "specimen_owner": null,
+      "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+      "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+      "whole_tree_verified": true
      }
     }
    ],
@@ -3296,17 +4412,67 @@
   "no_era_vi": true,
   "no_odyssey_iv": true,
   "odyssey": "I WHAT IS TRUE?",
-  "phase_transition": "NOT_STARTED",
+  "phase_transition": "STARTED",
   "resident_identity": {
-   "bound": false,
+   "agrees_with_incumbent": true,
+   "bound": true,
    "found": true,
+   "incumbent": {
+    "artifact_path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+    "id": "qwen3.8-27b-sealed-3.14",
+    "load": "ON_DISK",
+    "residency_status": "CURRENT_NONFINAL_HCLI_WORKER",
+    "role": "CURRENT_NONFINAL_HCLI_WORKER",
+    "source": "receipts/future/SUCCESSION_TRIAL.json"
+   },
    "integration_point": "tools/future/resident_identity.py \u2014 canonical resident declaration the launch receipt binds",
    "kind": "resident",
-   "note": "Identity is not invented. A missing this-wave receipt stays unbound. HCLI prior gates, if found, are cited and are not this identity.",
+   "missing": [],
+   "note": "Identity is not invented. A missing this-wave receipt stays unbound. Bound only when the document pins nx_id, sealed_model_id, executable_hash, artifact_root, tokenizer, and qualification, and sealed_model_id agrees with the incumbent. HCLI prior gates, if found, are cited and are not this identity.",
    "path_taken": "worktree",
+   "pins": {
+    "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+    "executable_hash": {
+     "by_role": {
+      "binary": "d34044cffae8f32055cca40aae27ec62beb44f043df081293126da89e51b8e76",
+      "resident_binary": "2d5fd0f157fb7987f307782d3a12abf2efadd6a0e14a787740e51adb101ac3f8"
+     },
+     "seal_declared_sha256_16": "d34044cffae8f320",
+     "seal_matching_role": "binary"
+    },
+    "nx_id": {
+     "model_id": "qwen3.8-27b-sealed-3.14",
+     "protocol": "hawking.qwen38.resident.v1",
+     "resident_identity": "sealed-3.14"
+    },
+    "qualification": {
+     "identity_sufficient": false,
+     "identity_validation": "ACCEPTED",
+     "label": "noetic-sealed-3.14",
+     "path": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+     "residency_status": "CURRENT_NONFINAL_HCLI_WORKER",
+     "role": "CONTROL_HISTORICAL_NOT_CURRENT_PROOF"
+    },
+    "sealed_model_id": "qwen3.8-27b-sealed-3.14",
+    "tokenizer": {
+     "declared_prefix_match": true,
+     "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+     "sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3"
+    }
+   },
+   "pins_named": [
+    "nx_id",
+    "sealed_model_id",
+    "executable_hash",
+    "artifact_root",
+    "tokenizer",
+    "qualification"
+   ],
+   "residency_status": "CURRENT_NONFINAL_HCLI_WORKER",
    "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/RESIDENT_IDENTITY.json",
    "schema": "hawking.future.resident_identity.v1",
-   "status": null
+   "status": "ACCEPTED",
+   "unbound_reason": null
   },
   "resource_schedule": {
    "by_resource_class": {
@@ -3372,24 +4538,38 @@
    "sleeping_are_not_results": true
   },
   "sandbox_identity": {
-   "bound": false,
+   "bound": true,
    "found": true,
    "integration_point": "tools/future/sandbox.py \u2014 orchestrator sandbox identity the resident operates",
    "kind": "sandbox",
-   "note": "Identity is not invented. A missing this-wave receipt stays unbound. HCLI prior gates, if found, are cited and are not this identity.",
+   "missing": [],
+   "note": "Identity is not invented. A missing this-wave receipt stays unbound. Bound only when RESIDENT_SANDBOX.json pins identity_sha256 and reentry_same_identity. HCLI prior gates are not this identity.",
    "path_taken": "worktree",
-   "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_CHECKPOINT.json",
-   "schema": "hcli.agentos.program_checkpoint.v1",
-   "status": null
+   "pins": {
+    "identity_sha256": "01d52b60766cb97f00b0e43e4c90e4cf4ec1171525973780d03cff46265cc134",
+    "reentry_same_identity": true,
+    "sandbox_id": "resident"
+   },
+   "pins_named": [
+    "identity_sha256",
+    "reentry_same_identity"
+   ],
+   "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/RESIDENT_SANDBOX.json",
+   "schema": "hawking.future.sandbox.v1",
+   "status": "BUILT_NOT_PROMOTED",
+   "unbound_reason": null
   },
   "schema": "hawking.future.odyssey_i_launch.v1",
   "verdict": {
-   "allowed": false,
+   "allowed": true,
    "met": [
     "resident_autonomy_trial_pass",
+    "specimen_curriculum_ready",
     "modellake_identity",
     "doctor_callable",
     "gravity_callable",
+    "nr_nx_path_callable",
+    "evidence_hierarchy",
     "negative_science",
     "workgraphs",
     "self_refill",
@@ -3401,27 +4581,23 @@
     "receipts"
    ],
    "n_criteria": 16,
-   "n_met": 13,
-   "n_unmet": 3,
+   "n_met": 16,
+   "n_unmet": 0,
    "rule": "every unmet criterion is named; the first failure does not hide the rest",
-   "unmet": [
-    "specimen_curriculum_ready",
-    "nr_nx_path_callable",
-    "evidence_hierarchy"
-   ],
-   "verdict": "REFUSED"
+   "unmet": [],
+   "verdict": "LAUNCH"
   },
   "version": 1
  },
  "launch_receipt": {
   "name": "ODYSSEY_I_LAUNCH.json",
-  "path": null,
-  "reason": "gate REFUSED; ODYSSEY_I_LAUNCH.json is a phase-transition receipt and is not written while any criterion is unmet",
-  "written": false
+  "path": "/Users/scammermike/Downloads/hawking/receipts/future/ODYSSEY_I_LAUNCH.json",
+  "reason": "all sixteen criteria met",
+  "written": true
  },
  "measurement_class": "STATIC_ONLY",
  "negative_findings": [
-  "verdict=REFUSED n_unmet=3 unmet=['specimen_curriculum_ready', 'nr_nx_path_callable', 'evidence_hierarchy']",
+  "verdict=LAUNCH n_unmet=0 unmet=[]",
   "A gate that passed today would mistake 'Odyssey infrastructure ready' for 'Odyssey started'.",
   "physical blocker sleep.no-gpu-authority: Sidecar has no GPU authority and does not invoke MetalContext. Handoff blockers record no protected GPU authority on this campaign.",
   "physical blocker sleep.metal-compiler: xcrun -f metal did not locate the Metal compiler",
@@ -3429,19 +4605,18 @@
   "physical blocker sleep.machine-heavy: contamination_class='HEAVY'; sidecar will not SIGSTOP standing workers. HEAVY (or unknown) is not a protected window.",
   "physical blocker sleep.flash-nx-scaffold: FLASH_NX_COMPLETENESS_AUDIT seven_all_met=False nx_status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION' nr_v2.status='COMPLETE_HETEROGENEOUS_CANDIDATE_NOT_FOR_PROMOTION'. SCAFFOLD_ONLY / metadata seals are not a callable NX path.",
   "physical blocker sleep.teacher-capture: teacher capture executed=0/12 workunits; target_row_counts=[256]. Unrun capture is not a synthetic corpus.",
-  "curriculum unready roles: ['very_small_dense_procedural_speed', 'mid_size_dense_compiler', 'qwen27_mature_physical', 'flash_heterogeneous_frontier']",
   "autonomy_trial / protected_scheduler / nr_nx_generic are imported when present; other this-wave siblings remain named integration points: autonomy_trial, dirty_measure, evidence_dag, frontiers, nr_nx_generic, protected_scheduler, protected_window, resident_api, resident_identity, sandbox, succession, super_resident, wakeup, workgraph"
  ],
  "no_era_vi": true,
  "no_odyssey_iv": true,
  "odyssey": "I WHAT IS TRUE?",
- "odyssey_i_launch_written": false,
+ "odyssey_i_launch_written": true,
  "odysseys": [
   "I WHAT IS TRUE?",
   "II WHAT DID HAWKING ALREADY LEARN?",
   "III WHERE IS HAWKING WRONG?"
  ],
- "phase_transition": "NOT_STARTED",
+ "phase_transition": "STARTED",
  "physical_blockers": [
   {
    "evidence": {
@@ -3568,7 +4743,7 @@
  },
  "resident_callable": {
   "entry_point": "python3 tools/future/odyssey_launch.py --verify",
-  "fail_closed": "can_launch() is False while any criterion is unmet; unmet_criteria() names every unmet id; write_launch_if_passed() does not call write_receipt for ODYSSEY_I_LAUNCH.json on refuse; --launch exits 1; HardwareClaimError on numeric hardware fields; GPU units stay SLEEPING rather than inventing a result.",
+  "fail_closed": "can_launch() is False while any criterion is unmet; unmet_criteria() names every unmet id; write_launch_if_passed() does not call write_receipt for ODYSSEY_I_LAUNCH.json on refuse; write_launch_if_passed() also refuses when resident_identity.bound is false; --launch exits 1; HardwareClaimError on numeric hardware fields; GPU units stay SLEEPING rather than inventing a result.",
   "frontier_fed": "Odyssey I start frontier: a REFUSED gate keeps the frontier at NOT_STARTED; a pass would write ODYSSEY_I_LAUNCH.json and that is the only start mark. Next refill trigger is a criterion flip or a SLEEPING wakeup.",
   "integration_points": {
    "autonomy_trial": "tools/future/autonomy_trial.py \u2014 persisted --verify verdict in AUTONOMY_TRIALS.json (plural)",
@@ -3612,7 +4787,7 @@
    "protected_scheduler",
    "nr_nx_generic"
   ],
-  "verdict_now": "REFUSED",
+  "verdict_now": "LAUNCH",
   "workunit_emitted": "odyssey-i.launch-gate plus first WorkGraph units and SLEEPING physical blockers"
  },
  "resource_schedule": {
@@ -3688,10 +4863,10 @@
     "why": "now reads AUTONOMY_TRIALS.json persisted --verify (plural) with orchestration/cognition split and timeline-seal verify; used to probe AUTONOMY_TRIAL.json which was never written"
    },
    {
-    "after_met": false,
+    "after_met": true,
     "before_met": false,
     "id": "nr_nx_path_callable",
-    "live_reason": "generic NR\u2192NX pipeline is not callable. GENERIC_NR_NX_PIPELINE_CALLABLE=False FLASH_NX_READY=False (separate field, not this criterion). first_failing_stage=\"KernelPlanner: KERNEL_LIBRARY.json was read and compared to this specimen's organs. role intersection=['gqa_attention', 'mlp_down', 'mlp_gate_up']. None of the 16 role-matched kernels carry this specimen's id or shapes. A shared organ name is not a compiled kernel for this body. specimen_field=None\". invoked=['nr_nx_generic.flash_nx_ready', 'nr_nx_generic.generic_pipeline_callable']. A Flash metadata seal is not a packed NX and is not this path.",
+    "live_reason": "generic NR\u2192NX pipeline is callable on an available specimen; FLASH_NX_READY is independent",
     "why": "now reads nr_nx_generic GENERIC_NR_NX_PIPELINE_CALLABLE; used to key on FLASH_NX_COMPLETENESS_AUDIT / Flash NX metadata"
    },
    {
@@ -3705,9 +4880,12 @@
   "gate_count_after": {
    "met": [
     "resident_autonomy_trial_pass",
+    "specimen_curriculum_ready",
     "modellake_identity",
     "doctor_callable",
     "gravity_callable",
+    "nr_nx_path_callable",
+    "evidence_hierarchy",
     "negative_science",
     "workgraphs",
     "self_refill",
@@ -3719,14 +4897,10 @@
     "receipts"
    ],
    "n_criteria": 16,
-   "n_met": 13,
-   "n_unmet": 3,
-   "unmet": [
-    "specimen_curriculum_ready",
-    "nr_nx_path_callable",
-    "evidence_hierarchy"
-   ],
-   "verdict": "REFUSED"
+   "n_met": 16,
+   "n_unmet": 0,
+   "unmet": [],
+   "verdict": "LAUNCH"
   },
   "gate_count_before": {
    "n_criteria": 16,
@@ -3743,21 +4917,17 @@
   "rewired_net": {
    "became_met": [
     "resident_autonomy_trial_pass",
+    "nr_nx_path_callable",
     "protected_scheduling"
    ],
    "stayed_met": [],
-   "stayed_unmet": [
-    "nr_nx_path_callable"
-   ]
+   "stayed_unmet": []
   },
-  "still_refused_if_any_unmet": true,
-  "unmet_not_from_this_rewire": [
-   "specimen_curriculum_ready",
-   "evidence_hierarchy"
-  ]
+  "still_refused_if_any_unmet": false,
+  "unmet_not_from_this_rewire": []
  },
  "schema": "hawking.future.odyssey_launch.v1",
- "seal_sha256": "5b21f588a1ec862ca5c369ebc3ae46e611da98a386541e64a7338f5e33c115b8",
+ "seal_sha256": "16a8a80e34d5d431d1ad2b3556e2a603a34bbc5bbfd85f049ca69ae69f7e9b70",
  "sleeping_workunits": [
   {
    "assigned_backend": null,
@@ -3971,12 +5141,13 @@
   }
  ],
  "specimen_curriculum": {
+  "authority": "tools/future/specimen_curriculum.py owns first-wave readiness. odyssey_launch._eval_curriculum reads this; it does not re-derive the roles.",
   "census_probe": {
    "found": true,
    "path_taken": "worktree",
    "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/HCLI_MODELLAKE_FLASH_CENSUS.json"
   },
-  "n_ready": 1,
+  "n_ready": 5,
   "n_roles": 5,
   "not_proposed": [
    {
@@ -4067,7 +5238,7 @@
    {
     "reason": "present in ModelLake, not a first-wave curriculum role",
     "repo": "deepseek-ai/DeepSeek-V4-Flash",
-    "revision": "60d8d70770c6"
+    "revision": "60d8d70770c6776ff598c94bb586a859a38244f1"
    },
    {
     "reason": "present in ModelLake, not a first-wave curriculum role",
@@ -4137,7 +5308,7 @@
    {
     "reason": "present in ModelLake, not a first-wave curriculum role",
     "repo": "moonshotai/Kimi-K3",
-    "revision": "9f62e4e9fffb"
+    "revision": "9f62e4e9fffbd0a83ddd60e1c209d828994b3569"
    },
    {
     "reason": "present in ModelLake, not a first-wave curriculum role",
@@ -4171,8 +5342,13 @@
    },
    {
     "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "zai-org/GLM-4.5",
+    "revision": "cbb2c7cfb52fa128a9660cb1a7a78e017899e115"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
     "repo": "zai-org/GLM-4.5-Air",
-    "revision": "a24ceef6ce4f"
+    "revision": "a24ceef6ce4f3536971efe9b778bdaa1bab18daa"
    }
   ],
   "not_proposed_rule": "Do not exhaustively optimize every downloaded model. First-wave curriculum is the five roles above; other lake entries are recorded and deferred.",
@@ -4236,40 +5412,68 @@
     "weights_canonical": "/Users/scammermike/.cache/huggingface/hub/models--Qwen--Qwen3-30B-A3B/snapshots/ad44e777bcd18fa416d9da3bd8f70d33ebb85d39"
    }
   ],
-  "ready": false,
+  "ready": true,
   "roles": [
    {
     "architecture_family": "dense_transformer",
+    "blocked": null,
+    "gap_class": null,
     "identity_source": "modellake_manifest",
     "located_under_partial": false,
     "modellake": {
+     "bytes_hashed": 1519209243,
      "in_specimens_listing": true,
      "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-0.6B@c1899de289a0.json",
      "n_files": 10,
+     "n_files_matched": 10,
+     "n_files_verified": 10,
      "n_sha256_verified": 2,
      "n_size_only_verified": 8,
+     "published_as_verified": true,
      "repo": "Qwen/Qwen3-0.6B",
      "resolved_sha": "c1899de289a04d12100db370d81485cdf75e47ca",
      "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
      "source": "modellake_manifest",
      "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
-     "whole_tree_verified": false
+     "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+     "whole_tree_verified": true
     },
     "purpose": "very small dense for procedural speed",
-    "ready": false,
-    "ready_reason": "ModelLake manifest is partial (n_sha256_verified=2 n_files=10); not a sealed specimen",
+    "ready": true,
+    "ready_reason": "ModelLake whole-tree sha256 verification",
     "repo": "Qwen/Qwen3-0.6B",
     "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
-    "role": "very_small_dense_procedural_speed"
+    "role": "very_small_dense_procedural_speed",
+    "verified_specimen": {
+     "bytes_hashed": 1519209243,
+     "identity_kind": "modellake_sha",
+     "in_specimens_listing": true,
+     "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-0.6B@c1899de289a0.json",
+     "n_files": 10,
+     "n_sha256_verified": 10,
+     "n_size_only_verified": 0,
+     "published_as_verified": true,
+     "repo": "Qwen/Qwen3-0.6B",
+     "resolved_sha": "c1899de289a04d12100db370d81485cdf75e47ca",
+     "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+     "specimen_owner": null,
+     "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+     "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+     "whole_tree_verified": true
+    }
    },
    {
     "architecture_family": "falcon_h1",
+    "blocked": null,
+    "gap_class": null,
     "identity_source": "modellake_manifest+odyssey_i_O001",
     "modellake": {
      "bytes_hashed": 15182220635,
      "in_specimens_listing": true,
      "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb.json",
      "n_files": 13,
+     "n_files_matched": 13,
+     "n_files_verified": 13,
      "n_sha256_verified": 5,
      "n_size_only_verified": 8,
      "published_as_verified": true,
@@ -4301,19 +5505,54 @@
     "ready_reason": "RECURRENT_PATIENT: retired from the historical first wave, prior seal intact, and whole-tree verified again now",
     "repo": "tiiuae/Falcon-H1-7B-Instruct",
     "revision": "41e72f27effbab80cd45b6e884688452253a3686",
-    "role": "small_dense_alternate_architecture_transfer"
+    "role": "small_dense_alternate_architecture_transfer",
+    "verified_specimen": {
+     "bytes_hashed": 15182220635,
+     "identity_kind": "modellake_sha",
+     "in_specimens_listing": true,
+     "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb.json",
+     "n_files": 13,
+     "n_sha256_verified": 13,
+     "n_size_only_verified": 0,
+     "published_as_verified": true,
+     "repo": "tiiuae/Falcon-H1-7B-Instruct",
+     "resolved_sha": "41e72f27effbab80cd45b6e884688452253a3686",
+     "revision": "41e72f27effbab80cd45b6e884688452253a3686",
+     "specimen_owner": null,
+     "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+     "whole_tree_verified": true
+    }
    },
    {
     "architecture_family": "dense_transformer",
-    "identity_source": "odyssey_i_O004+modellake_partial",
+    "blocked": null,
+    "gap_class": null,
+    "identity_source": "modellake_manifest",
     "modellake": {
+     "bytes_hashed": 96077777512,
+     "in_specimens_listing": true,
+     "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618.json",
+     "n_files": 25,
+     "n_files_matched": 25,
+     "n_files_verified": 25,
+     "n_sha256_verified": 13,
+     "n_size_only_verified": 12,
+     "published_as_verified": true,
+     "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+     "resolved_sha": "68faf511d618ef198fef186659617cfd2eb8e33a",
+     "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
+     "source": "modellake_manifest",
+     "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
      "stale_partial": {
       "action": "REPORT_ONLY_NO_DELETE",
       "active_process_evidence": false,
       "age_s": 129994.4,
       "candidate_stale": true,
       "path": "/Volumes/corpdrive/hawking-modellake/partial/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618"
-     }
+     },
+     "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+     "whole_tree_verified": true
     },
     "prior_odyssey_i": {
      "oxx": "O004",
@@ -4330,20 +5569,305 @@
      "weights_canonical": "/Users/scammermike/.cache/huggingface/hub/models--mistralai--Mistral-Small-3.1-24B-Instruct-2503/snapshots/68faf511d618ef198fef186659617cfd2eb8e33a"
     },
     "purpose": "mid-size dense for compiler",
-    "ready": false,
-    "ready_reason": "ModelLake manifest is partial (n_sha256_verified=None n_files=None); not a sealed specimen",
+    "ready": true,
+    "ready_reason": "RECURRENT_PATIENT: retired from the historical first wave, prior seal intact, and whole-tree verified again now",
     "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
-    "revision": "68faf511d618",
-    "role": "mid_size_dense_compiler"
+    "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
+    "role": "mid_size_dense_compiler",
+    "verified_specimen": {
+     "bytes_hashed": 96077777512,
+     "identity_kind": "modellake_sha",
+     "in_specimens_listing": true,
+     "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618.json",
+     "n_files": 25,
+     "n_sha256_verified": 25,
+     "n_size_only_verified": 0,
+     "published_as_verified": true,
+     "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+     "resolved_sha": "68faf511d618ef198fef186659617cfd2eb8e33a",
+     "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
+     "specimen_owner": null,
+     "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+     "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+     "whole_tree_verified": true
+    }
    },
    {
     "architecture_family": "dense_hybrid_transformer",
+    "blocked": null,
+    "gap_class": null,
     "identity_source": "odyssey2_law_store.SCHOOLS.Qwen27",
-    "local_specimen": null,
+    "local_specimen": {
+     "bytes_hashed": 55586059240,
+     "files": [
+      {
+       "actual": "52373fe24473b1aa44333d318f578ae6bf04b49b",
+       "bytes": 1570,
+       "digest_kind": "git_blob_sha1",
+       "expected": "52373fe24473b1aa44333d318f578ae6bf04b49b",
+       "file": ".gitattributes",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "f938136e3adacfd92be087f6e113b5d6d97f678f",
+       "bytes": 11544,
+       "digest_kind": "git_blob_sha1",
+       "expected": "f938136e3adacfd92be087f6e113b5d6d97f678f",
+       "file": "LICENSE",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "2a3a3cf74b48e3fae0fc59794bff0da379bb4c9c",
+       "bytes": 10187,
+       "digest_kind": "git_blob_sha1",
+       "expected": "2a3a3cf74b48e3fae0fc59794bff0da379bb4c9c",
+       "file": "README.md",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "c0c686f9c38d70d179fb7b5f5aa7530bc913dda3",
+       "bytes": 8952,
+       "digest_kind": "git_blob_sha1",
+       "expected": "c0c686f9c38d70d179fb7b5f5aa7530bc913dda3",
+       "file": "chat_template.jinja",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "706cebd746c4b6f2b1d1f892630867acfdfd3df8",
+       "bytes": 4312,
+       "digest_kind": "git_blob_sha1",
+       "expected": "706cebd746c4b6f2b1d1f892630867acfdfd3df8",
+       "file": "config.json",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "023756cfadf88e5bf69eefeee3e172f38c448d64",
+       "bytes": 202,
+       "digest_kind": "git_blob_sha1",
+       "expected": "023756cfadf88e5bf69eefeee3e172f38c448d64",
+       "file": "generation_config.json",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "a494e019ca1502219fd0128658b979e5f05ae8e8",
+       "bytes": 3353259,
+       "digest_kind": "git_blob_sha1",
+       "expected": "a494e019ca1502219fd0128658b979e5f05ae8e8",
+       "file": "merges.txt",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "746142a26219375775e31233a25b9d06bb50cc36a45b833dfad58d45bbeb68ac",
+       "bytes": 3966730520,
+       "digest_kind": "sha256",
+       "expected": "746142a26219375775e31233a25b9d06bb50cc36a45b833dfad58d45bbeb68ac",
+       "file": "model-00001-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "32e1fcb17fea75306e94eb0adfacf7e4069226f938582920df5962dc11c3becb",
+       "bytes": 3043080296,
+       "digest_kind": "sha256",
+       "expected": "32e1fcb17fea75306e94eb0adfacf7e4069226f938582920df5962dc11c3becb",
+       "file": "model-00002-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "1e22bff91476ac31fd41fa6c5b6772286cacb458fcb0b13cd0d401d15504cf42",
+       "bytes": 2542796928,
+       "digest_kind": "sha256",
+       "expected": "1e22bff91476ac31fd41fa6c5b6772286cacb458fcb0b13cd0d401d15504cf42",
+       "file": "model-00003-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "955da8a0ee55a8864617fd26e845a340bdbb4467087a223af0ef36caeb772397",
+       "bytes": 3988973120,
+       "digest_kind": "sha256",
+       "expected": "955da8a0ee55a8864617fd26e845a340bdbb4467087a223af0ef36caeb772397",
+       "file": "model-00004-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "b1abd9cf4146923b9bdc2a943a3a3cf6600c0d622ff902626185377fc1b0e18a",
+       "bytes": 2099339832,
+       "digest_kind": "sha256",
+       "expected": "b1abd9cf4146923b9bdc2a943a3a3cf6600c0d622ff902626185377fc1b0e18a",
+       "file": "model-00005-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "f69e98460c36b5c2b53b52de139bd1473c9ac872c7fe5575a0aac7ab6a823aef",
+       "bytes": 3979553664,
+       "digest_kind": "sha256",
+       "expected": "f69e98460c36b5c2b53b52de139bd1473c9ac872c7fe5575a0aac7ab6a823aef",
+       "file": "model-00006-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "fa7adc386e8f88b5c68b26303bbe65c7a578797c66219f204699290427e91277",
+       "bytes": 2108759312,
+       "digest_kind": "sha256",
+       "expected": "fa7adc386e8f88b5c68b26303bbe65c7a578797c66219f204699290427e91277",
+       "file": "model-00007-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "4aafde533aa91b53df84b58bc6a7b61cd6b547878ae975f0250fde88203e288c",
+       "bytes": 3979553664,
+       "digest_kind": "sha256",
+       "expected": "4aafde533aa91b53df84b58bc6a7b61cd6b547878ae975f0250fde88203e288c",
+       "file": "model-00008-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "75eedafc64705770e1a88132095cb848616c73a38689f33ec3802f3fada44a03",
+       "bytes": 2108759312,
+       "digest_kind": "sha256",
+       "expected": "75eedafc64705770e1a88132095cb848616c73a38689f33ec3802f3fada44a03",
+       "file": "model-00009-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "79e1151f7868618544645443228956ca3c47734ce7f5ff57e701399d593d37cf",
+       "bytes": 3979553664,
+       "digest_kind": "sha256",
+       "expected": "79e1151f7868618544645443228956ca3c47734ce7f5ff57e701399d593d37cf",
+       "file": "model-00010-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "545a750b0b0ef3e4a9fdec1f14177472c0d5c3c8028b52de3419098a1b90a0fa",
+       "bytes": 2108759312,
+       "digest_kind": "sha256",
+       "expected": "545a750b0b0ef3e4a9fdec1f14177472c0d5c3c8028b52de3419098a1b90a0fa",
+       "file": "model-00011-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "71fce00e3a7a171c0938685a63405d8266ea7697ec243553a38e94c6f69add60",
+       "bytes": 3979553664,
+       "digest_kind": "sha256",
+       "expected": "71fce00e3a7a171c0938685a63405d8266ea7697ec243553a38e94c6f69add60",
+       "file": "model-00012-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "74cb96b32e845358f1db196134fb51fa60b288bfbf050e40a33abbe14ebce5d6",
+       "bytes": 2108759312,
+       "digest_kind": "sha256",
+       "expected": "74cb96b32e845358f1db196134fb51fa60b288bfbf050e40a33abbe14ebce5d6",
+       "file": "model-00013-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "0aec080a2c075370573a87a5f3baabe7969d0dd3b304c77feb5d24349bc91d7e",
+       "bytes": 3979553664,
+       "digest_kind": "sha256",
+       "expected": "0aec080a2c075370573a87a5f3baabe7969d0dd3b304c77feb5d24349bc91d7e",
+       "file": "model-00014-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "fd49765c104b7db242f1e0e58866fc378e89fc435022bba5004d81cb94f4944f",
+       "bytes": 2108759312,
+       "digest_kind": "sha256",
+       "expected": "fd49765c104b7db242f1e0e58866fc378e89fc435022bba5004d81cb94f4944f",
+       "file": "model-00015-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "08dbb33dd635e396782a1f604b0de40f16721ee0f7ad0b19fccffc4888c28531",
+       "bytes": 3979564008,
+       "digest_kind": "sha256",
+       "expected": "08dbb33dd635e396782a1f604b0de40f16721ee0f7ad0b19fccffc4888c28531",
+       "file": "model-00016-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "fa2aec9367b5878d5694f819fc3d192cfaa941a18ac344330785a9f37d4e9e11",
+       "bytes": 2108759312,
+       "digest_kind": "sha256",
+       "expected": "fa2aec9367b5878d5694f819fc3d192cfaa941a18ac344330785a9f37d4e9e11",
+       "file": "model-00017-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "fe72369eebdd81b26cb9c22ea63aec33f003ddcbb5cf08e4e7165f7cbcc5628b",
+       "bytes": 3392197320,
+       "digest_kind": "sha256",
+       "expected": "fe72369eebdd81b26cb9c22ea63aec33f003ddcbb5cf08e4e7165f7cbcc5628b",
+       "file": "model-00018-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "da35e3c564457dface7d138f0b6cac284ff8958c",
+       "bytes": 112216,
+       "digest_kind": "git_blob_sha1",
+       "expected": "da35e3c564457dface7d138f0b6cac284ff8958c",
+       "file": "model.safetensors.index.json",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "2ea84a437d448ff71b08df68fdd949d5cc4ebb64",
+       "bytes": 390,
+       "digest_kind": "git_blob_sha1",
+       "expected": "2ea84a437d448ff71b08df68fdd949d5cc4ebb64",
+       "file": "preprocessor_config.json",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+       "bytes": 12809320,
+       "digest_kind": "sha256",
+       "expected": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+       "file": "tokenizer.json",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "5de744b3fca2129d7186979ae47c06be33903243",
+       "bytes": 17928,
+       "digest_kind": "git_blob_sha1",
+       "expected": "5de744b3fca2129d7186979ae47c06be33903243",
+       "file": "tokenizer_config.json",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "3ba673a5ad7d4d13f54155ecd38b2a94a6dac8fe",
+       "bytes": 385,
+       "digest_kind": "git_blob_sha1",
+       "expected": "3ba673a5ad7d4d13f54155ecd38b2a94a6dac8fe",
+       "file": "video_preprocessor_config.json",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "0aa0ce0658d60ac4a5d609f4eadb0e8e43514176",
+       "bytes": 6722759,
+       "digest_kind": "git_blob_sha1",
+       "expected": "0aa0ce0658d60ac4a5d609f4eadb0e8e43514176",
+       "file": "vocab.json",
+       "verdict": "VERIFIED"
+      }
+     ],
+     "mismatched": 0,
+     "modellake_mutated": false,
+     "n_files": 31,
+     "no_remote_digest": 0,
+     "owner": "local_directory",
+     "skipped_time_budget": 0,
+     "source_mutated": false,
+     "specimen": "qwen3.8-27b-abliterated-bf16@local",
+     "specimen_path": "/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
+     "status": "WHOLE_TREE_VERIFIED",
+     "unrecognized_digest": 0,
+     "verified": 31,
+     "wall_seconds": 882.72,
+     "whole_tree_verified": true
+    },
     "modellake": {},
     "purpose": "Qwen27 for mature physical",
-    "ready": false,
-    "ready_reason": "identity known but specimen is not in the ModelLake specimens listing",
+    "ready": true,
+    "ready_reason": "authorized external specimen; tree digest is sealed identity (c7c81652283f\u2026)",
     "repo": "Qwen3.8-27B",
     "revision": null,
     "role": "qwen27_mature_physical",
@@ -4359,29 +5883,52 @@
      "role_in_map": "model_a",
      "school": "Qwen27",
      "source_model": "Qwen3.8-27B"
+    },
+    "verified_specimen": {
+     "bytes_hashed": 55586059240,
+     "identity_kind": "external_tree_digest",
+     "in_specimens_listing": false,
+     "manifest_path": "/Users/scammermike/Downloads/hawking/receipts/future/EXTERNAL_SPECIMEN_SEAL.json",
+     "n_files": 31,
+     "n_sha256_verified": 31,
+     "n_size_only_verified": 0,
+     "published_as_verified": null,
+     "repo": "Qwen3.8-27B",
+     "resolved_sha": "c7c81652283f9324994e0e1a60e52b0a8bf92f9a0d2167d2af2ab341d3073750",
+     "revision": null,
+     "specimen_owner": "local_directory",
+     "specimen_path": "/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
+     "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+     "whole_tree_verified": true
     }
    },
    {
     "architecture_family": "qwen4_exp",
+    "blocked": null,
+    "gap_class": null,
     "identity_source": "hcli.flash_next pin + modellake census + odyssey2 school",
     "modellake": {
+     "bytes_hashed": 360023286454,
      "census_qualification": "MODELLAKE_CENSUS_PINNED_FLASH_IDENTITY_NO_ACQUISITION",
-     "in_specimens_listing": false,
-     "manifest_path": null,
-     "n_files": null,
-     "n_sha256_verified": 0,
-     "n_size_only_verified": null,
-     "published_as_verified": false,
+     "in_specimens_listing": true,
+     "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+     "n_files": 144,
+     "n_files_matched": 144,
+     "n_files_verified": 144,
+     "n_sha256_verified": 132,
+     "n_size_only_verified": 12,
+     "published_as_verified": true,
      "repo": "Qwen/Qwen3.8-Flash-Next",
      "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
      "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
-     "source": "flash_pinned_census",
+     "source": "modellake_manifest",
      "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
-     "whole_tree_verified": false
+     "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+     "whole_tree_verified": true
     },
     "purpose": "Flash for heterogeneous frontier",
-    "ready": false,
-    "ready_reason": "ModelLake pin exists but the specimen is not published as verified",
+    "ready": true,
+    "ready_reason": "ModelLake whole-tree sha256 verification",
     "repo": "Qwen/Qwen3.8-Flash-Next",
     "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
     "role": "flash_heterogeneous_frontier",
@@ -4398,6 +5945,23 @@
      "role_in_map": "model_b",
      "school": "Flash",
      "source_model": "Qwen/Qwen3.8-Flash-Next"
+    },
+    "verified_specimen": {
+     "bytes_hashed": 360023286454,
+     "identity_kind": "modellake_sha",
+     "in_specimens_listing": true,
+     "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+     "n_files": 144,
+     "n_sha256_verified": 144,
+     "n_size_only_verified": 0,
+     "published_as_verified": true,
+     "repo": "Qwen/Qwen3.8-Flash-Next",
+     "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+     "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+     "specimen_owner": null,
+     "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+     "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+     "whole_tree_verified": true
     }
    }
   ],
@@ -4427,12 +5991,15 @@
   "nr_nx_generic"
  ],
  "verdict": {
-  "allowed": false,
+  "allowed": true,
   "met": [
    "resident_autonomy_trial_pass",
+   "specimen_curriculum_ready",
    "modellake_identity",
    "doctor_callable",
    "gravity_callable",
+   "nr_nx_path_callable",
+   "evidence_hierarchy",
    "negative_science",
    "workgraphs",
    "self_refill",
@@ -4444,15 +6011,11 @@
    "receipts"
   ],
   "n_criteria": 16,
-  "n_met": 13,
-  "n_unmet": 3,
+  "n_met": 16,
+  "n_unmet": 0,
   "rule": "every unmet criterion is named; the first failure does not hide the rest",
-  "unmet": [
-   "specimen_curriculum_ready",
-   "nr_nx_path_callable",
-   "evidence_hierarchy"
-  ],
-  "verdict": "REFUSED"
+  "unmet": [],
+  "verdict": "LAUNCH"
  },
  "version": 1
 }

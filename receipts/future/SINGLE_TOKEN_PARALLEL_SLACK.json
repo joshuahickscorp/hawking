@@ -1,0 +1,219 @@
+{
+ "actually_overlapped_ns": 0,
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T18:51:43Z",
+  "recorded_by": "tools/future/single_token_dag.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. The EDGES are declared from the decode step's data flow, each with its reason; the MILLISECONDS are the measured post-widen_f4 organ census. No new hardware measurement. Concurrency is never inferred from dispatch counts - this models dependencies, and where independence cannot be established from the data flow the edge is UNKNOWN rather than assumed parallel.",
+ "critical_path_ns": 26701300,
+ "edges": [
+  {
+   "from": "embed",
+   "kind": "TRUE_DEPENDENCY",
+   "to": "layer.in_rmsnorm",
+   "why": "the norm reads the embedding row this token's id selected"
+  },
+  {
+   "from": "layer.in_rmsnorm",
+   "kind": "TRUE_DEPENDENCY",
+   "to": "mixer.proj",
+   "why": "the projection reads the normalised hidden state, nothing else"
+  },
+  {
+   "from": "mixer.proj",
+   "kind": "TRUE_DEPENDENCY",
+   "to": "mixer.core",
+   "why": "DeltaNet's gated-delta decode reads q/k/v/z; GQA's mha reads q/k/v"
+  },
+  {
+   "from": "mixer.core",
+   "kind": "TRUE_DEPENDENCY",
+   "to": "mixer.out",
+   "why": "the out projection reads the mixer's own output activations"
+  },
+  {
+   "from": "mixer.out",
+   "kind": "TRUE_DEPENDENCY",
+   "to": "post_attn_rmsnorm",
+   "why": "add_residual_rmsnorm reads the mixer output and the residual"
+  },
+  {
+   "from": "post_attn_rmsnorm",
+   "kind": "TRUE_DEPENDENCY",
+   "to": "mlp.gate_up_swiglu",
+   "why": "gate and up both read the post-attention normalised state"
+  },
+  {
+   "from": "mlp.gate_up_swiglu",
+   "kind": "TRUE_DEPENDENCY",
+   "to": "mlp.down",
+   "why": "down reads the SwiGLU product, which is gate*silu(up)"
+  },
+  {
+   "from": "mlp.down",
+   "kind": "TRUE_DEPENDENCY",
+   "to": "layer.residual",
+   "why": "the residual add reads the MLP output"
+  },
+  {
+   "from": "layer.residual",
+   "kind": "TRUE_DEPENDENCY",
+   "to": "layer.next.in_rmsnorm",
+   "why": "layer N+1 normalises layer N's residual stream; this is the chain that makes a token serial and it is TRUE, not an artefact"
+  },
+  {
+   "from": "layer.last.residual",
+   "kind": "TRUE_DEPENDENCY",
+   "to": "lm_head",
+   "why": "the head reads the final hidden state"
+  },
+  {
+   "from": "lm_head",
+   "kind": "TRUE_DEPENDENCY",
+   "to": "argmax",
+   "why": "sampling reads the logits"
+  }
+ ],
+ "evidence_class": "STATIC_ONLY",
+ "fused_independence_already_taken": [
+  {
+   "now": "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+   "was": [
+    "gate_proj",
+    "up_proj",
+    "swiglu"
+   ],
+   "why_independent": "gate and up both read the same normalised x and neither reads the other's output"
+  },
+  {
+   "now": "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+   "was": [
+    "q_proj",
+    "k_proj",
+    "v_proj"
+   ],
+   "why_independent": "three projections of the same input, no cross-reads"
+  },
+  {
+   "now": "qwen80_add_residual_rmsnorm_tg",
+   "was": [
+    "residual_add",
+    "rmsnorm"
+   ],
+   "why_independent": "elementwise then reduction over the same buffer; fusing removes a full activation round trip"
+  },
+  {
+   "now": "qwen38_gated_delta_decode_vi_simd_ba_f4",
+   "was": [
+    "ba_projection",
+    "decay_beta"
+   ],
+   "why_independent": "widen_f4 folds ba_to_decay into the state kernel"
+  }
+ ],
+ "gpu_authority": false,
+ "largest_artificial_barriers": [],
+ "largest_independent_regions": [],
+ "measured_rows": [
+  {
+   "dispatches": 1,
+   "gpu_ms": 0.0073,
+   "organ": "embedding"
+  },
+  {
+   "dispatches": 96,
+   "gpu_ms": 2.0356,
+   "organ": "gqa_attention"
+  },
+  {
+   "dispatches": 288,
+   "gpu_ms": 5.5971,
+   "organ": "deltanet"
+  },
+  {
+   "dispatches": 128,
+   "gpu_ms": 9.9154,
+   "organ": "mlp_gate_up"
+  },
+  {
+   "dispatches": 128,
+   "gpu_ms": 5.7319,
+   "organ": "mlp_down"
+  },
+  {
+   "dispatches": 64,
+   "gpu_ms": 2.0596,
+   "organ": "q4_remainder"
+  },
+  {
+   "dispatches": 2,
+   "gpu_ms": 1.0204,
+   "organ": "lm_head"
+  },
+  {
+   "dispatches": 1,
+   "gpu_ms": 0.334,
+   "organ": "sampling"
+  }
+ ],
+ "measured_total_ms": 26.7013,
+ "n_edges": 11,
+ "n_true_dependency": 11,
+ "nodes": {
+  "cites": {
+   "q4_remainder": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:5310"
+  },
+  "ms_by_node": {
+   "argmax": 0.334,
+   "embed": 0.0073,
+   "lm_head": 1.0204,
+   "mixer.core": 7.6327,
+   "mixer.out": 2.0596,
+   "mlp.down": 5.7319,
+   "mlp.gate_up_swiglu": 9.9154
+  },
+  "n_rows": 8,
+  "row_to_node": {
+   "deltanet": "mixer.core",
+   "embedding": "embed",
+   "gqa_attention": "mixer.core",
+   "lm_head": "lm_head",
+   "mlp_down": "mlp.down",
+   "mlp_gate_up": "mlp.gate_up_swiglu",
+   "q4_remainder": "mixer.out",
+   "sampling": "argmax"
+  },
+  "unmapped_rows": []
+ },
+ "overlap_efficiency": null,
+ "overlap_efficiency_is_none_because": "there is nothing to overlap at this grain: every edge in the token's data flow is a TRUE dependency, so an efficiency would divide by zero and reporting 0.0 would read as a failure to exploit slack that does not exist",
+ "reading": {
+  "concurrency_evidence": {
+   "gb_s_by_level": {
+    "1": 361.9,
+    "2": 454.8,
+    "3": 453.2
+   },
+   "verdict": "CONCURRENCY_HELPS"
+  },
+  "finding": "THE_TOKEN_IS_A_CHAIN",
+  "therefore_about_g009": "the capacity a second stream exposes cannot be coming from reordering this token's dispatches, because there is no ordering freedom left. It has to come from INSIDE the kernels - occupancy, memory-level parallelism, or latency the kernel cannot hide from itself. That kills the artificial-executor-serialization branch of the why-does-multistream-help tree and points the rest at the kernels, which is a much narrower search.",
+  "what_it_means": "Every edge in the decode step is a true data dependency and the sealed build has ALREADY fused the four places where independent operations existed - gate/up/swiglu, q/k/v, residual/rmsnorm, and ba_to_decay into the state kernel. So there is no artificial serialization left to remove AT THE DISPATCH GRAIN, and the theoretically overlapable work between dispatches is zero.",
+  "what_this_does_not_prove": [
+   "that no independence exists WITHIN a kernel - heads, groups and row blocks are not modelled here and are exactly where the remaining slack would live",
+   "that the dispatch grain is the right grain; it is the grain at which this executor currently makes scheduling decisions",
+   "that a different representation could not create new independence"
+  ]
+ },
+ "schema": "hawking.future.single_token_dag.v1",
+ "seal_sha256": "e3636e883bdffdda423b110d5b7321f0cab6f2b931380e453efb6cf8c7ad0b51",
+ "theoretically_overlapable_ns": 0,
+ "total_gpu_work_ns": 26701300,
+ "unknown_edges": [],
+ "version": 1
+}

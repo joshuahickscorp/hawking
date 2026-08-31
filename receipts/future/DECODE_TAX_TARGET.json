@@ -1,0 +1,82 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T20:29:32Z",
+  "recorded_by": "tools/future/decode_tax_target.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. Every rate is READ from MLP_ALU_ROOFLINE and every millisecond from the measured post-widen_f4 organ census; nothing is measured here. This is an OPPORTUNITY BOUND computed by scaling measured organ time by a measured ARM A ratio, not a prediction that any decode achieves it. Both roofline arms are SELF_MEASURED_DIRTY under load, so the RATIO is the usable part.",
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "prior_from_every_decode_tried": {
+  "attempts": [
+   {
+    "decode_fma_per_weight_byte": 2.0,
+    "direction": "WORSE",
+    "id": "aux_u8_lut",
+    "source": "receipts/future/AUX_U8_LUT.json",
+    "what": "two 256-entry tables instead of exp; dequant only"
+   },
+   {
+    "decode_fma_per_weight_byte": 2.5,
+    "direction": "WORSE",
+    "id": "aux_u8_native",
+    "source": "receipts/future/AUX_U8_NATIVE.json",
+    "what": "uchar scale/bias decoded in-register, log-scale exp"
+   }
+  ],
+  "incumbent_decode_fma_per_weight_byte": 1.3333,
+  "law": "A REPRESENTATION CHANGE THAT TRADES BYTES FOR DECODE ARITHMETIC TRADES A FREE RESOURCE FOR THE BINDING ONE. broadcast_aux bytes measure 0.000 ms/GB and arithmetic measures 1.51x, so removing aux bytes at the cost of decode FMA is negative before it starts. That is aux_u8's measured slowdown explained without a second theory.",
+  "nothing_built_is_below": 1.3333,
+  "target": 0.8835,
+  "what_would_be_needed": "a decode cheaper than the incumbent's 1.3333, which is the opposite direction from both attempts. Fewer int_to_float and fewer dequant FMA per weight, not a different place to store the scale."
+ },
+ "ranking": {
+  "decode_tax_at_arm_a_rate_ms": 7.3099,
+  "entire_auxiliary_school_ms": 0.0,
+  "entire_byte_lever_ladder_tps": 0.18,
+  "entire_deltanet_representation_ms": 2.0768,
+  "mlp_entropy_floor_ms": 0.152,
+  "reading": "the arithmetic term is larger than every representation lever on record COMBINED, and unlike them it needs no fit and no capability screen - the output stays bit-identical by construction if the decode is exact. That is the reordering S025 asked for: stop polishing bytes that do not cost time and attack the arithmetic that does.",
+  "the_catch": "ARM A removes the decode ENTIRELY, which no real representation can. The 5.2787 ms is the ceiling of a cheaper decode, not a candidate's yield, and the required 1.509x cheapening is a specification nobody has met. A format decoding in 0.8835 FMA per weight byte instead of 1.3333 may not exist at this bit width."
+ },
+ "requirement": {
+  "decode_share_of_inner_loop": 0.5,
+  "inner_loop": {
+   "bitops": 16,
+   "decode_fma_per_weight_byte": 1.3333,
+   "dequant_fma": 8,
+   "fma_per_weight_byte": 2.6667,
+   "int_to_float": 8,
+   "mac_fma": 8,
+   "weight_bytes_per_iteration": 6,
+   "weights_per_iteration": 8,
+   "x_bytes_per_iteration": 32
+  },
+  "not_a_promise": "If the kernel is ALU-bound at production_gb_s, a cheaper decode must cut decode-FMA per weight-byte by this factor (or raise issue rate by the same factor) to sit at the LM head's 497.4 GB/s. Not a promise that such a decode exists.",
+  "production_decode_fma_per_weight_byte": 1.3333,
+  "production_fma_per_weight_byte": 2.6667,
+  "required_decode_cheapening": 1.509,
+  "target_decode_fma_per_weight_byte": 0.8835
+ },
+ "schema": "hawking.future.decode_tax_target.v1",
+ "seal_sha256": "cf25042e02da854a7fa51e07cf0d150161b0afc26787f600c6b8977a4d6e894c",
+ "version": 1,
+ "worth": {
+  "closes_the_residual": true,
+  "deltanet_ms_at_arm_a_rate": 3.5658,
+  "deltanet_ms_now": 5.5971,
+  "deltanet_ms_saved": 2.0313,
+  "gap_raw_ms": 13.2051,
+  "gap_residual_ms": 5.993,
+  "mlp_ms_at_arm_a_rate": 10.3686,
+  "mlp_ms_now": 15.6473,
+  "mlp_ms_saved": 5.2787,
+  "share_of_raw_gap": 0.5536,
+  "share_of_residual_gap": 1.2197,
+  "total_ms_saved": 7.3099
+ }
+}

@@ -16,9 +16,82 @@ from pathlib import Path
 import pytest
 
 from tools.future import autonomy_trial as at
-from tools.future._common import RECEIPTS, HardwareClaimError, _assert_no_hardware_claims
+from tools.future._common import RECEIPTS, REPO, git, HardwareClaimError, _assert_no_hardware_claims
 from tools.future.repro_science import FailClosed
 from hcli.workunit import WorkUnit
+
+
+CONTROL_REL = "receipts/future/controls/AUTONOMY_TIMELINE_30m_ARCHIVED_477s.json"
+
+
+def _load_sealed_30m_timeline() -> dict:
+    """The archived 30m transcript with the 477s idle, from an IMMUTABLE path.
+
+    G037 requires the negative control to be "the archived 30m timeline itself".
+    This used to prefer HEAD:receipts/future/AUTONOMY_TIMELINE_30m.json, with a
+    docstring that correctly warned "the live frozen 30m run overwrites the
+    on-disk file". The mitigation was right in intent and defeated by its own
+    lane landing: once the frozen run committed, HEAD held the NEW timeline
+    (490s idle at t 102->592) and the control was gone. The test then failed for
+    the only bad reason a control can - it had been replaced by the thing it was
+    meant to judge.
+
+    A control a run can overwrite is not a control. The archived transcript now
+    lives at a path nothing writes, recovered from 547951182, and git history is
+    the fallback rather than the source.
+    """
+    path = REPO / CONTROL_REL
+    if path.is_file():
+        return json.loads(path.read_text())
+    # Fallback: the commit that landed the archived run, by name. Never HEAD -
+    # HEAD moves, and that is exactly how this control was lost.
+    blob = git("show", "547951182:receipts/future/AUTONOMY_TIMELINE_30m.json")
+    if blob:
+        return json.loads(blob)
+    raise AssertionError(
+        f"the archived 30m control is missing at {CONTROL_REL} and is not "
+        "recoverable from 547951182; the negative control G037 names is gone"
+    )
+
+
+def test_sealed_30m_timeline_fails_no_idle_while_work_exists():
+    """NEGATIVE CONTROL: the 477s idle the 16/16 pass could not see.
+
+    Write this first. If the new evaluator PASSes the archived 30m timeline,
+    the evaluator is wrong.
+    """
+    doc = _load_sealed_30m_timeline()
+    assert doc.get("trial") == "30m"
+    events = at._seq_events(list(doc.get("events") or []))
+    max_gap = 0
+    gap_at = None
+    for prev, nxt in zip(events, events[1:]):
+        dt = int(nxt.get("t_s") or 0) - int(prev.get("t_s") or 0)
+        if dt > max_gap:
+            max_gap = dt
+            gap_at = (int(prev.get("t_s") or 0), int(nxt.get("t_s") or 0), prev.get("kind"), nxt.get("kind"))
+    # 477 is pinned because the control is IMMUTABLE - a fixture, not a moving
+    # measurement. If this number changes, the control file was replaced, which
+    # is the failure this loader now prevents.
+    assert max_gap == 477, (
+        f"archived idle is {max_gap}s, not the 477s this campaign named; at "
+        f"{gap_at}. If this fires, the control at {CONTROL_REL} was overwritten "
+        f"by a live run - restore it from 547951182."
+    )
+
+    view = at.TimelineView(doc, "30m")
+    idle = at.eval_no_idle_while_work_exists(view)
+    assert idle["met"] is False, idle.get("detail")
+    assert "477" in idle["detail"] or "88->565" in idle["detail"] or "88->565s" in idle["detail"]
+
+    # The phrase detector still cannot see this gap — we did not weaken it,
+    # and it must not be the thing that catches the idle.
+    conversational = at.eval_never_conversational_wait(view)
+    assert conversational["met"] is True, conversational.get("detail")
+
+    verdict = at.verify("30m", doc)
+    assert verdict["verdict"] == "FAIL"
+    assert "no_idle_while_work_exists" in verdict["unmet"]
 
 
 def test_entry_point_runs_and_seals_receipt():
@@ -611,3 +684,578 @@ def test_unstamped_timeline_still_falls_back_to_adjacency():
     ]
     ok, jobs, _cited = _detached_overlap_for_test(events)
     assert ok and jobs == ["A", "B"]
+
+
+def test_30m_required_set_gained_no_idle_while_work_exists():
+    assert "no_idle_while_work_exists" in at.REQUIRED_CONDITIONS["30m"]
+    assert "no_idle_while_work_exists" not in at.THIRTEEN_ACCEPTANCE
+    assert "no_idle_while_work_exists" not in at.REQUIRED_CONDITIONS["1h"]
+    assert "no_idle_while_work_exists" not in at.REQUIRED_CONDITIONS["15m"]
+    assert len(at.REQUIRED_CONDITIONS["30m"]) == 17
+    assert at.REQUIRED_CONDITIONS["30m"].count("no_idle_while_work_exists") == 1
+    assert at.eval_never_conversational_wait is not at.eval_no_idle_while_work_exists
+
+
+def test_30m_passing_fixture_still_passes_with_the_stricter_judge():
+    verdict = at.verify("30m", at.build_passing_timeline("30m"))
+    assert verdict["verdict"] == "PASS", verdict.get("reason")
+    assert "no_idle_while_work_exists" not in verdict["unmet"]
+    met_ids = [c["id"] for c in verdict["conditions"] if c["met"]]
+    assert "no_idle_while_work_exists" in met_ids
+
+
+def test_honest_inter_event_gaps_do_not_fail_no_idle():
+    """23s is the largest honest gap on the sealed 30m; it must not fail."""
+    units = at.passing_units()
+    u1 = units["atlas"]
+    timeline = {
+        "schema": at.TIMELINE_SCHEMA,
+        "trial": "30m",
+        "duration_s": at.TRIAL_DURATION_S["30m"],
+        "elapsed_s": 90,
+        "frontier": at.fixture_frontier(),
+        "events": at._seq_events(
+            [
+                at._ev(0, "state_recovered", cites=[at.FRONTIER_REL], payload={"path_taken": "fixture"}),
+                at._ev(0, "workunit_sleeping", payload={"resource_class": "GPU_PROTECTED"}),
+                at._ev(23, "workunit_sleeping", payload={"resource_class": "ANE"}),
+                at._ev(
+                    23,
+                    "workunit_launched",
+                    cites=[u1["id"], "F012"],
+                    payload={"unit": u1, "frontier_id": "F012"},
+                ),
+                at._ev(45, "result_ingested", cites=["receipts/future/X.json"], payload={"receipt": "receipts/future/X.json"}),
+                at._ev(45, "next_work_left", cites=["F015"], payload={"unit_ids": ["F015"], "n": 1}),
+            ]
+        ),
+    }
+    verdict = at.eval_no_idle_while_work_exists(at.TimelineView(timeline, "30m"))
+    assert verdict["met"] is True, verdict.get("detail")
+
+
+def test_performing_work_gap_is_not_an_idle():
+    """A long invoke is a gap opened by workunit_launched; that is work, not wait."""
+    units = at.passing_units()
+    u1 = units["atlas"]
+    timeline = {
+        "schema": at.TIMELINE_SCHEMA,
+        "trial": "30m",
+        "duration_s": at.TRIAL_DURATION_S["30m"],
+        "elapsed_s": 500,
+        "frontier": at.fixture_frontier(),
+        "events": at._seq_events(
+            [
+                at._ev(0, "state_recovered", cites=[at.FRONTIER_REL], payload={"path_taken": "fixture"}),
+                at._ev(
+                    10,
+                    "workunit_launched",
+                    cites=[u1["id"], "F012"],
+                    payload={"unit": u1, "frontier_id": "F012"},
+                ),
+                at._ev(487, "result_ingested", cites=["receipts/future/X.json"], payload={"receipt": "receipts/future/X.json"}),
+                at._ev(487, "next_work_left", cites=["F015"], payload={"unit_ids": ["F015"], "n": 1}),
+            ]
+        ),
+    }
+    verdict = at.eval_no_idle_while_work_exists(at.TimelineView(timeline, "30m"))
+    assert verdict["met"] is True, verdict.get("detail")
+
+
+def test_justified_idle_gap_passes_no_idle_while_work_exists():
+    """The same 477s wait PASSes when the gap opens with a complete idle_justified."""
+    units = at.passing_units()
+    u1 = units["atlas"]
+    timeline = {
+        "schema": at.TIMELINE_SCHEMA,
+        "trial": "30m",
+        "duration_s": at.TRIAL_DURATION_S["30m"],
+        "elapsed_s": 565,
+        "frontier": at.fixture_frontier(),
+        "events": at._seq_events(
+            [
+                at._ev(0, "state_recovered", cites=[at.FRONTIER_REL], payload={"path_taken": "fixture"}),
+                at._ev(
+                    3,
+                    "workunit_launched",
+                    cites=[u1["id"], "F012"],
+                    payload={"unit": u1, "frontier_id": "F012"},
+                ),
+                at._ev(88, "mission_state_written", cites=["mission/state.json"], payload={"path": "mission/state.json", "mission_id": "x", "next_action": "wait"}),
+                at._ev(
+                    88,
+                    at.IDLE_JUSTIFIED_KIND,
+                    payload={
+                        "why": "queue empty and refill returned no novel work; waiting on open handles",
+                        "frontiers_asked": ["F012", "F015"],
+                        "returned": [
+                            {"frontier_id": "F012", "returned": "already_run"},
+                            {"frontier_id": "F015", "returned": "already_held"},
+                        ],
+                        "waiting_on": [{"job_id": "specimen", "pid": 22827, "unit_id": "WU.TORTURE.NO_WAIT.specimen_verify"}],
+                        "n_asked": 2,
+                        "n_novel": 0,
+                    },
+                ),
+                at._ev(565, "detached_completed", payload={"job_id": "specimen"}),
+                at._ev(565, "next_work_left", cites=["F015", "F016"], payload={"unit_ids": ["F015", "F016"], "n": 2}),
+            ]
+        ),
+    }
+    verdict = at.eval_no_idle_while_work_exists(at.TimelineView(timeline, "30m"))
+    assert verdict["met"] is True, verdict.get("detail")
+
+
+def test_idle_justified_with_novel_work_still_fails():
+    """A wait that reports n_novel>0 is not a justification; it is the defect confessing."""
+    units = at.passing_units()
+    u1 = units["atlas"]
+    timeline = {
+        "schema": at.TIMELINE_SCHEMA,
+        "trial": "30m",
+        "duration_s": at.TRIAL_DURATION_S["30m"],
+        "elapsed_s": 565,
+        "frontier": at.fixture_frontier(),
+        "events": at._seq_events(
+            [
+                at._ev(
+                    3,
+                    "workunit_launched",
+                    cites=[u1["id"], "F012"],
+                    payload={"unit": u1, "frontier_id": "F012"},
+                ),
+                at._ev(
+                    88,
+                    at.IDLE_JUSTIFIED_KIND,
+                    payload={
+                        "why": "waiting",
+                        "frontiers_asked": ["F015"],
+                        "returned": [{"frontier_id": "F015", "returned": "novel"}],
+                        "waiting_on": [{"job_id": "specimen", "pid": 1}],
+                        "n_novel": 1,
+                    },
+                ),
+                at._ev(565, "next_work_left", cites=["F015"], payload={"unit_ids": ["F015"], "n": 1}),
+            ]
+        ),
+    }
+    verdict = at.eval_no_idle_while_work_exists(at.TimelineView(timeline, "30m"))
+    assert verdict["met"] is False, verdict.get("detail")
+
+
+def _stage_kinds(timeline: dict, kinds: set[str]) -> dict:
+    body = json.loads(json.dumps(timeline))
+    for event in body.get("events") or []:
+        if event.get("kind") in kinds:
+            event["staged"] = True
+            payload = event.get("payload")
+            if not isinstance(payload, dict):
+                payload = {}
+                event["payload"] = payload
+            payload["staged"] = True
+            payload["injected_for_condition"] = True
+    return body
+
+
+def test_staged_event_cannot_satisfy_refill_work():
+    """G030: a staged work_refilled cannot close refill_work."""
+    good = at.build_passing_timeline("30m")
+    assert at.verify("30m", good)["verdict"] == "PASS"
+    staged = _stage_kinds(good, {"work_refilled"})
+    verdict = at.verify("30m", staged)
+    assert verdict["verdict"] == "FAIL"
+    assert "refill_work" in verdict["unmet"]
+    refill = next(c for c in verdict["conditions"] if c["id"] == "refill_work")
+    assert refill["met"] is False
+    assert "staged" in refill["detail"]
+
+
+def test_staged_event_cannot_satisfy_overlap_detached_work():
+    good = at.build_passing_timeline("30m")
+    staged = _stage_kinds(good, {"detached_started", "detached_completed"})
+    verdict = at.verify("30m", staged)
+    assert "overlap_detached_work" in verdict["unmet"]
+    overlap = next(c for c in verdict["conditions"] if c["id"] == "overlap_detached_work")
+    assert overlap["met"] is False
+    assert "staged" in overlap["detail"]
+
+
+def test_staged_event_cannot_satisfy_use_negative_science():
+    good = at.build_passing_timeline("30m")
+    staged = _stage_kinds(good, {"negative_science_query", "negative_science_refusal"})
+    verdict = at.verify("30m", staged)
+    assert "use_negative_science" in verdict["unmet"]
+    row = next(c for c in verdict["conditions"] if c["id"] == "use_negative_science")
+    assert row["met"] is False
+    assert "staged" in row["detail"]
+
+
+def test_staged_event_cannot_satisfy_alter_priority_from_evidence():
+    good = at.build_passing_timeline("30m")
+    staged = _stage_kinds(good, {"priority_altered"})
+    verdict = at.verify("30m", staged)
+    assert "alter_priority_from_evidence" in verdict["unmet"]
+    row = next(c for c in verdict["conditions"] if c["id"] == "alter_priority_from_evidence")
+    assert row["met"] is False
+    assert "staged" in row["detail"]
+
+
+def test_sixteen_thirty_m_is_the_named_set_without_no_idle():
+    assert len(at.SIXTEEN_THIRTY_M) == 16
+    assert "no_idle_while_work_exists" not in at.SIXTEEN_THIRTY_M
+    for cid in at.FOUR_THIRTY_M:
+        assert cid in at.SIXTEEN_THIRTY_M
+    assert at.REQUIRED_CONDITIONS["30m"][-1] == "no_idle_while_work_exists"
+
+
+def test_campaign_science_scars_are_reachable_in_the_live_index():
+    """6fc77f169: a scar the index cannot see prunes nothing."""
+    report = at.campaign_science_scars_reachable()
+    assert report["ok"] is True, report
+    assert report["missing"] == []
+    assert report["n_reachable"] == len(at.CAMPAIGN_SCIENCE_SCARS)
+    for name in at.CAMPAIGN_SCIENCE_SCARS:
+        row = report["reachable"][name]
+        assert row["reachable"] is True, name
+        assert row.get("source_path"), name
+
+
+def test_driver_emits_the_four_at_real_call_sites():
+    """The four events must be emitted by autonomy_run, not by this judge."""
+    import ast
+
+    src_path = REPO / "tools/future/autonomy_run.py"
+    assert src_path.is_file()
+    tree = ast.parse(src_path.read_text())
+    names: set[str] = set()
+    constants: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef):
+            names.add(node.name)
+        elif isinstance(node, ast.Call):
+            func = node.func
+            if isinstance(func, ast.Name):
+                names.add(func.id)
+            elif isinstance(func, ast.Attribute):
+                names.add(func.attr)
+        elif isinstance(node, ast.Constant) and isinstance(node.value, str):
+            constants.add(node.value)
+    for fn in (
+        "emit_detached_started",
+        "emit_priority_altered",
+        "emit_negative_science_query",
+        "emit_negative_science_refusal",
+        "rank_detachable",
+        "_try_refill",
+        "_kickoff_overlap",
+        "_apply_replan",
+    ):
+        assert fn in names, fn
+    for kind in (
+        "work_refilled",
+        "detached_started",
+        "negative_science_query",
+        "negative_science_refusal",
+        "priority_altered",
+    ):
+        assert kind in constants, kind
+    # Ranking uses `if prio is None`, not the falsy-zero `or 99` default.
+    # The documenting comment may still name the scar.
+    src = src_path.read_text()
+    assert "if prio is None:" in src
+    assert "ranked.sort(key=lambda pair: pair[0])" in src
+
+
+def test_priority_zero_start_requires_a_live_pid_and_started_at():
+    fake = {
+        "kind": "detached_started",
+        "payload": {"job_id": "WU.TORTURE.NO_WAIT.specimen_verify", "capability": "specimen_verify.py"},
+    }
+    assert at._priority_zero_start(fake) is False
+    live = {
+        "kind": "detached_started",
+        "payload": {
+            "job_id": "WU.TORTURE.NO_WAIT.specimen_verify",
+            "capability": "specimen_verify.py",
+            "pid": 22827,
+            "started_at": 1788141745.19,
+        },
+    }
+    assert at._priority_zero_start(live) is True
+    staged = {
+        "kind": "detached_started",
+        "staged": True,
+        "payload": {
+            "job_id": "WU.TORTURE.NO_WAIT.specimen_verify",
+            "capability": "specimen_verify.py",
+            "pid": 1,
+            "started_at": 1.0,
+            "staged": True,
+        },
+    }
+    assert at._priority_zero_start(staged) is False
+
+
+def test_judge_four_from_sealed_quotes_call_site_and_observation():
+    """A constructed real-looking timeline is quoted; a staged one is not met."""
+    units = at.passing_units()
+    u1, u3 = units["atlas"], units["lpc"]
+    timeline = {
+        "schema": at.TIMELINE_SCHEMA,
+        "trial": "30m",
+        "duration_s": 1800,
+        "elapsed_s": 1800,
+        "frontier": at.fixture_frontier(),
+        "events": at._seq_events(
+            [
+                at._ev(0, "state_recovered", cites=[at.FRONTIER_REL], payload={"path_taken": "fixture"}),
+                at._ev(
+                    3,
+                    "workunit_launched",
+                    cites=[u1["id"], "F012"],
+                    payload={"unit": u1, "frontier_id": "F012"},
+                ),
+                at._ev(
+                    10,
+                    "result_ingested",
+                    cites=["receipts/future/CODEX_INGEST_STATE.json", u1["id"]],
+                    payload={"receipt": "receipts/future/CODEX_INGEST_STATE.json"},
+                ),
+                at._ev(
+                    12,
+                    "work_refilled",
+                    cites=[u3["id"], "F007"],
+                    payload={
+                        "unit_ids": [u3["id"]],
+                        "n": 1,
+                        "source": "frontiers.refill",
+                        "queue_remaining_when_asked": 3,
+                    },
+                ),
+                at._ev(
+                    20,
+                    "detached_started",
+                    payload={
+                        "job_id": "WU.TORTURE.NO_WAIT.specimen_verify",
+                        "pid": 11,
+                        "started_at": 100.0,
+                        "capability": "specimen_verify.py",
+                        "unit_id": "WU.TORTURE.NO_WAIT.specimen_verify",
+                    },
+                ),
+                at._ev(
+                    20,
+                    "detached_started",
+                    payload={
+                        "job_id": "WU.AUTONOMY.detach.census",
+                        "pid": 12,
+                        "started_at": 100.5,
+                        "unit_id": "WU.AUTONOMY.detach.census",
+                    },
+                ),
+                at._ev(
+                    21,
+                    "detached_overlap_confirmed",
+                    payload={
+                        "job_ids": [
+                            "WU.TORTURE.NO_WAIT.specimen_verify",
+                            "WU.AUTONOMY.detach.census",
+                        ],
+                        "n_live": 2,
+                    },
+                ),
+                at._ev(
+                    22,
+                    "negative_science_query",
+                    cites=[at.NEG_INDEX_REL],
+                    payload={"query": {"model": "qwen3.8-27b", "organ": "mlp", "n_families": 63}},
+                ),
+                at._ev(
+                    22,
+                    "negative_science_refusal",
+                    cites=["receipts/future/MLP_STRUCTURED_OPERATOR.json"],
+                    payload={
+                        "query": {"hypothesis_family": "MONARCH"},
+                        "source_path": "receipts/future/MLP_STRUCTURED_OPERATOR.json",
+                        "scar_id": "MONARCH",
+                    },
+                ),
+                at._ev(
+                    23,
+                    "priority_altered",
+                    cites=["receipts/future/CODEX_INGEST_STATE.json"],
+                    payload={"before": ["a", "b"], "after": ["b", "a"], "cause": "ingest"},
+                ),
+                at._ev(
+                    40,
+                    "detached_completed",
+                    payload={
+                        "job_id": "WU.AUTONOMY.detach.census",
+                        "pid": 12,
+                        "finished_at": 108.0,
+                    },
+                ),
+                at._ev(
+                    80,
+                    "detached_completed",
+                    payload={
+                        "job_id": "WU.TORTURE.NO_WAIT.specimen_verify",
+                        "pid": 11,
+                        "finished_at": 180.0,
+                    },
+                ),
+            ]
+        ),
+    }
+    four = at.judge_four_from_sealed(timeline)
+    assert four["all_four_met"] is True, {k: v.get("detail") for k, v in four["conditions"].items()}
+    assert four["staged_event_cannot_satisfy"] is True
+    for cid in at.FOUR_THIRTY_M:
+        row = four["conditions"][cid]
+        assert row["met"] is True, (cid, row.get("detail"))
+        quote = row["quote"]
+        assert quote, cid
+        assert quote["call_site"], cid
+        assert quote["observation"], cid
+        assert quote["staged"] is False
+        assert "tools/future/autonomy_run.py" in quote["call_site"]
+    overlap = four["conditions"]["overlap_detached_work"]
+    assert overlap["priority_zero_started"]
+    assert overlap["priority_zero_in_overlap"] is True
+
+    staged = _stage_kinds(timeline, {"work_refilled", "detached_started", "negative_science_refusal", "negative_science_query", "priority_altered"})
+    four_staged = at.judge_four_from_sealed(staged)
+    assert four_staged["all_four_met"] is False
+    assert set(four_staged["unmet"]) >= set(at.FOUR_THIRTY_M)
+
+
+def test_event_is_staged_detects_injected_for_condition():
+    assert at.event_is_staged({"kind": "work_refilled", "payload": {"staged": True}}) is True
+    assert at.event_is_staged({"kind": "work_refilled", "payload": {"injected_for_condition": "refill_work"}}) is True
+    assert at.event_is_staged({"kind": "work_refilled", "payload": {"unit_ids": ["x"]}}) is False
+
+
+def _live_frozen_30m_doc():
+    receipt = RECEIPTS / "AUTONOMY_TRIALS.json"
+    run = None
+    if receipt.is_file():
+        body = json.loads(receipt.read_text())
+        raw = body.get("frozen_30m_run")
+        if isinstance(raw, dict) and raw.get("timeline_path"):
+            run = raw
+    path = RECEIPTS / "AUTONOMY_TIMELINE_30m.json"
+    if run and run.get("timeline_path"):
+        cand = REPO / run["timeline_path"]
+        if cand.is_file():
+            path = cand
+    if not path.is_file():
+        pytest.skip("no on-disk 30m timeline")
+    doc = json.loads(path.read_text())
+    if run is None and int(doc.get("elapsed_s") or 0) < 120:
+        pytest.skip("on-disk 30m is not a frozen run")
+    return path, doc, run
+
+
+def test_live_frozen_30m_ran_a_real_30_minutes_if_present():
+    path, doc, run = _live_frozen_30m_doc()
+    assert doc.get("trial") == "30m"
+    assert int(doc.get("elapsed_s") or 0) > 0
+    assert "verdict" not in doc or doc.get("schema") == at.TIMELINE_SCHEMA
+    four = at.judge_four_from_sealed(doc)
+    for cid in at.FOUR_THIRTY_M:
+        row = four["conditions"][cid]
+        quote = row.get("quote") or {}
+        assert quote.get("kind") or row.get("detail")
+        if row.get("met"):
+            assert quote.get("call_site"), (cid, quote)
+            assert quote.get("observation"), (cid, quote)
+            assert quote.get("staged") is not True
+    overlap = four["conditions"]["overlap_detached_work"]
+    if overlap.get("met"):
+        assert overlap.get("priority_zero_started"), overlap
+        assert overlap.get("priority_zero_in_overlap") is True
+    ns = four["conditions"]["use_negative_science"]
+    scars = (ns.get("campaign_science_scars") or {})
+    assert scars.get("ok") is True, scars
+    instruments = at.run_instruments_on_timeline(path)
+    assert instruments["exempted"] is False
+    assert "degeneracy" in instruments
+    assert "no_wait" in instruments
+    assert instruments["degeneracy"]["instrument"] == "tools.future.autonomy_degeneracy.measure"
+    assert instruments["no_wait"]["instrument"] == "tools.future.no_wait_orchestration.classify"
+    if run is not None and int(run.get("elapsed_s") or 0) < at.TRIAL_DURATION_S["30m"]:
+        assert "elapsed<30m" in str(run.get("report") or "")
+
+
+def test_frozen_30m_receipt_if_present_hashes_substrate_and_quotes_four():
+    receipt = RECEIPTS / "AUTONOMY_TRIALS.json"
+    if not receipt.is_file():
+        pytest.skip("no AUTONOMY_TRIALS.json")
+    doc = json.loads(receipt.read_text())
+    run = doc.get("frozen_30m_run")
+    if not isinstance(run, dict) or not run:
+        pytest.skip("frozen_30m_run not persisted yet")
+    sub = run.get("substrate") or {}
+    assert sub.get("equal") is True, sub
+    assert sub.get("before_digest")
+    assert sub.get("before_digest") == sub.get("after_digest")
+    assert run.get("elapsed_s") is not None
+    if int(run.get("elapsed_s") or 0) < at.TRIAL_DURATION_S["30m"]:
+        assert "elapsed<30m" in str(run.get("report") or "")
+    four = run.get("four") or {}
+    conds = four.get("conditions") or {}
+    for cid in at.FOUR_THIRTY_M:
+        row = conds.get(cid) or {}
+        quote = row.get("quote") or {}
+        assert quote.get("call_site"), (cid, row)
+        assert quote.get("observation"), (cid, row)
+        assert quote.get("staged") is not True
+    overlap = conds.get("overlap_detached_work") or {}
+    assert overlap.get("priority_zero_started"), overlap
+    assert overlap.get("priority_zero_in_overlap") is True
+    inst = run.get("instruments") or {}
+    assert inst.get("exempted") is False
+    assert "degeneracy" in inst and "no_wait" in inst
+    assert run.get("staged_event_used") is False
+    assert run.get("judged_from") == "sealed_timeline"
+
+
+def test_a_snapshot_of_zero_runnable_acquits_and_the_control_still_convicts():
+    """The distinction two timelines could not make, now made by evidence.
+
+    A runnability_snapshot at the wait reports a COUNT derived from the frontier
+    set, the scar list and the launched set. Zero runnable means the wait was
+    justified. The archived 477 s control carries NO snapshot, so it stays
+    convicted - which is the whole job of a negative control.
+
+    I first keyed this on the driver's `exhausted` flag and this control caught
+    it inside a minute: the archived run emits the identical exhausted True, n 0,
+    ids [] and ended with twelve frontiers holding novel work. The flag was false
+    there; the snapshot cannot be false the same way.
+    """
+    live = json.loads((at.REPO / "receipts/future/AUTONOMY_TIMELINE_30m.json").read_text())
+    snaps = [e for e in (live.get("events") or [])
+             if e.get("kind") == "runnability_snapshot"]
+    if not snaps:
+        pytest.skip("the live timeline predates the snapshot instrument")
+    assert int(snaps[0]["payload"]["n_runnable"]) == 0
+    assert at.eval_no_idle_while_work_exists(at.TimelineView(live, "30m"))["met"] is True
+
+    control = _load_sealed_30m_timeline()
+    assert not [e for e in (control.get("events") or [])
+                if e.get("kind") == "runnability_snapshot"], (
+        "the control must stay snapshot-free or it stops being the control"
+    )
+    assert at.eval_no_idle_while_work_exists(at.TimelineView(control, "30m"))["met"] is False
+
+
+def test_a_failed_snapshot_is_not_evidence_either_way():
+    """An errored snapshot must not acquit; it recorded nothing."""
+    doc = {"events": [
+        {"kind": "runnability_snapshot", "t_s": 10,
+         "payload": {"error": "boom", "n_runnable": 0}},
+        {"kind": "next_work_left", "t_s": 10, "payload": {"ids": ["FT.A"], "n": 1}},
+        {"kind": "mission_state_written", "t_s": 400, "payload": {}},
+    ]}
+    got = at._work_remained_across_gap(at.TimelineView(doc, "30m"), 10, 400)
+    assert got, "an errored snapshot must not be read as zero runnable"

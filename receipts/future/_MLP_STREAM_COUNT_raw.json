@@ -1,0 +1,789 @@
+{
+  "absolute_gb_s_are_measured_under_load": true,
+  "alignment": [
+    {
+      "access_pattern": {
+        "activation_reused_across_rows": true,
+        "coalesced_across_simd_codes": true,
+        "codes_contiguous_per_thread": false,
+        "operand_alignment_bytes": 2,
+        "per_thread_col_stride": 512,
+        "scale_bias_group_broadcast": true,
+        "x_alignment_bytes": 4
+      },
+      "bytes_per_stream": [
+        2,
+        2,
+        2,
+        32
+      ],
+      "bytes_per_thread_iteration": 38,
+      "command_buffers": 1,
+      "dispatches": 3,
+      "effective_gb_s": 308.3347171022771,
+      "encoders": 1,
+      "family": "alignment",
+      "gpu_ns_median": 270999,
+      "gpu_ns_reps": [
+        270958,
+        269250,
+        272375,
+        275958,
+        275624,
+        278041,
+        273375,
+        269000,
+        267624,
+        266708,
+        270999
+      ],
+      "gpu_us_median": 270.999,
+      "id": "align_2",
+      "kernel": "stream_count_mlp_2_2_2_32",
+      "occupancy": {
+        "gpu_cores": 60,
+        "max_total_threads_per_threadgroup": 1024,
+        "occupancy_of_max_threads": 0.125,
+        "registers_note": "Metal pipeline state does not report register count on this toolchain; xcrun metal is not on PATH",
+        "registers_per_thread": null,
+        "thread_execution_width": 32,
+        "threadgroups": 8704,
+        "threadgroups_per_core": 145.06666666666666,
+        "threads_per_threadgroup": 128
+      },
+      "stream_count": 4,
+      "threads_per_threadgroup": 128,
+      "weight_bytes": 83558400
+    },
+    {
+      "access_pattern": {
+        "activation_reused_across_rows": true,
+        "coalesced_across_simd_codes": true,
+        "codes_contiguous_per_thread": false,
+        "operand_alignment_bytes": 4,
+        "per_thread_col_stride": 512,
+        "scale_bias_group_broadcast": true,
+        "x_alignment_bytes": 4
+      },
+      "bytes_per_stream": [
+        2,
+        2,
+        2,
+        32
+      ],
+      "bytes_per_thread_iteration": 38,
+      "command_buffers": 1,
+      "dispatches": 3,
+      "effective_gb_s": 339.3248297455015,
+      "encoders": 1,
+      "family": "alignment",
+      "gpu_ns_median": 246249,
+      "gpu_ns_reps": [
+        246374,
+        243624,
+        245874,
+        243791,
+        351249,
+        248875,
+        246249,
+        243416,
+        248583,
+        245458,
+        295875
+      ],
+      "gpu_us_median": 246.249,
+      "id": "align_4",
+      "kernel": "stream_count_align_4",
+      "occupancy": {
+        "gpu_cores": 60,
+        "max_total_threads_per_threadgroup": 1024,
+        "occupancy_of_max_threads": 0.125,
+        "registers_note": "Metal pipeline state does not report register count on this toolchain; xcrun metal is not on PATH",
+        "registers_per_thread": null,
+        "thread_execution_width": 32,
+        "threadgroups": 8704,
+        "threadgroups_per_core": 145.06666666666666,
+        "threads_per_threadgroup": 128
+      },
+      "stream_count": 4,
+      "threads_per_threadgroup": 128,
+      "weight_bytes": 83558400
+    },
+    {
+      "access_pattern": {
+        "activation_reused_across_rows": true,
+        "coalesced_across_simd_codes": true,
+        "codes_contiguous_per_thread": false,
+        "operand_alignment_bytes": 16,
+        "per_thread_col_stride": 512,
+        "scale_bias_group_broadcast": true,
+        "x_alignment_bytes": 4
+      },
+      "bytes_per_stream": [
+        2,
+        2,
+        2,
+        32
+      ],
+      "bytes_per_thread_iteration": 38,
+      "command_buffers": 1,
+      "dispatches": 3,
+      "effective_gb_s": 91.69656153257782,
+      "encoders": 1,
+      "family": "alignment",
+      "gpu_ns_median": 911249,
+      "gpu_ns_reps": [
+        911249,
+        910625,
+        913124,
+        924249,
+        954416,
+        919041,
+        1027000,
+        908125,
+        908749,
+        904750,
+        909833
+      ],
+      "gpu_us_median": 911.249,
+      "id": "align_16",
+      "kernel": "stream_count_align_16",
+      "occupancy": {
+        "gpu_cores": 60,
+        "max_total_threads_per_threadgroup": 1024,
+        "occupancy_of_max_threads": 0.125,
+        "registers_note": "Metal pipeline state does not report register count on this toolchain; xcrun metal is not on PATH",
+        "registers_per_thread": null,
+        "thread_execution_width": 32,
+        "threadgroups": 8704,
+        "threadgroups_per_core": 145.06666666666666,
+        "threads_per_threadgroup": 128
+      },
+      "stream_count": 4,
+      "threads_per_threadgroup": 128,
+      "weight_bytes": 83558400
+    },
+    {
+      "access_pattern": {
+        "activation_reused_across_rows": true,
+        "coalesced_across_simd_codes": false,
+        "codes_contiguous_per_thread": true,
+        "operand_alignment_bytes": 2,
+        "per_thread_col_stride": 1,
+        "scale_bias_group_broadcast": true,
+        "x_alignment_bytes": 4
+      },
+      "bytes_per_stream": [
+        2,
+        2,
+        2,
+        32
+      ],
+      "bytes_per_thread_iteration": 38,
+      "command_buffers": 1,
+      "dispatches": 3,
+      "effective_gb_s": 452.0751164564769,
+      "encoders": 1,
+      "family": "stride",
+      "gpu_ns_median": 184833,
+      "gpu_ns_reps": [
+        186000,
+        184708,
+        184124,
+        187333,
+        184083,
+        186541,
+        184291,
+        185875,
+        182999,
+        187499,
+        184833
+      ],
+      "gpu_us_median": 184.833,
+      "id": "stride_contig",
+      "kernel": "stream_count_stride_contig",
+      "occupancy": {
+        "gpu_cores": 60,
+        "max_total_threads_per_threadgroup": 1024,
+        "occupancy_of_max_threads": 0.125,
+        "registers_note": "Metal pipeline state does not report register count on this toolchain; xcrun metal is not on PATH",
+        "registers_per_thread": null,
+        "thread_execution_width": 32,
+        "threadgroups": 8704,
+        "threadgroups_per_core": 145.06666666666666,
+        "threads_per_threadgroup": 128
+      },
+      "stream_count": 4,
+      "threads_per_threadgroup": 128,
+      "weight_bytes": 83558400
+    }
+  ],
+  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "bytes_per_thread_iteration_held": 38,
+  "codec": "HGRAVF01 affine2 q2 group64",
+  "concurrent_load": {
+    "loadavg": "{ 8.76 8.24 7.88 }",
+    "note": "absolute GB/s is measured-under-load; verdict uses back-to-back ratios",
+    "top_cpu": [
+      {
+        "comm": "rustc",
+        "cpu_pct": 1295.0,
+        "pid": 61144,
+        "rss_kib": 2759168
+      },
+      {
+        "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+        "cpu_pct": 121.0,
+        "pid": 59270,
+        "rss_kib": 7385424
+      },
+      {
+        "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+        "cpu_pct": 102.2,
+        "pid": 59258,
+        "rss_kib": 8831424
+      },
+      {
+        "comm": "workspace/ops/build/rust/release-fast/examples/stream_count_probe",
+        "cpu_pct": 73.4,
+        "pid": 61336,
+        "rss_kib": 1045856
+      },
+      {
+        "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+        "cpu_pct": 20.3,
+        "pid": 180,
+        "rss_kib": 55968
+      },
+      {
+        "comm": "/System/Library/ExtensionKit/Extensions/WallpaperAerialsExtension.appex/Contents/MacOS/WallpaperAerialsExtension",
+        "cpu_pct": 8.8,
+        "pid": 624,
+        "rss_kib": 30368
+      },
+      {
+        "comm": "powermetrics",
+        "cpu_pct": 4.8,
+        "pid": 25867,
+        "rss_kib": 2512
+      },
+      {
+        "comm": "/System/Library/Frameworks/Metal.framework/Versions/A/XPCServices/MTLCompilerService.xpc/Contents/MacOS/MTLCompilerService",
+        "cpu_pct": 4.6,
+        "pid": 61370,
+        "rss_kib": 34720
+      },
+      {
+        "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+        "cpu_pct": 3.0,
+        "pid": 82743,
+        "rss_kib": 36352
+      }
+    ],
+    "uptime": "4:40  up 5 days,  8:38, 3 users, load averages: 8.76 8.24 7.88"
+  },
+  "concurrent_load_start": {
+    "loadavg": "{ 8.76 8.24 7.88 }",
+    "note": "absolute GB/s is measured-under-load; verdict uses back-to-back ratios",
+    "top_cpu": [
+      {
+        "comm": "rustc",
+        "cpu_pct": 1385.7,
+        "pid": 61144,
+        "rss_kib": 2642000
+      },
+      {
+        "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+        "cpu_pct": 97.7,
+        "pid": 59270,
+        "rss_kib": 7268048
+      },
+      {
+        "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+        "cpu_pct": 78.4,
+        "pid": 59258,
+        "rss_kib": 8732928
+      },
+      {
+        "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+        "cpu_pct": 18.6,
+        "pid": 180,
+        "rss_kib": 56048
+      },
+      {
+        "comm": "powermetrics",
+        "cpu_pct": 10.2,
+        "pid": 25867,
+        "rss_kib": 2512
+      },
+      {
+        "comm": "/System/Library/ExtensionKit/Extensions/WallpaperAerialsExtension.appex/Contents/MacOS/WallpaperAerialsExtension",
+        "cpu_pct": 8.9,
+        "pid": 624,
+        "rss_kib": 30368
+      },
+      {
+        "comm": "/bin/zsh",
+        "cpu_pct": 8.5,
+        "pid": 61329,
+        "rss_kib": 4976
+      },
+      {
+        "comm": "/usr/libexec/syspolicyd",
+        "cpu_pct": 8.0,
+        "pid": 272,
+        "rss_kib": 25776
+      },
+      {
+        "comm": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+        "cpu_pct": 7.8,
+        "pid": 19545,
+        "rss_kib": 47072
+      },
+      {
+        "comm": "/System/Applications/Utilities/Activity Monitor.app/Contents/MacOS/Activity Monitor",
+        "cpu_pct": 5.0,
+        "pid": 632,
+        "rss_kib": 47824
+      },
+      {
+        "comm": "/usr/libexec/trustd",
+        "cpu_pct": 4.4,
+        "pid": 211,
+        "rss_kib": 13936
+      }
+    ],
+    "uptime": "4:40  up 5 days,  8:38, 3 users, load averages: 8.76 8.24 7.88"
+  },
+  "dispatches": 3,
+  "geometry": "geo_tpr64_tg128",
+  "git_head": "feced9f2defa7efee3daef62bd2a52b5680102a3",
+  "halfk": {
+    "access_pattern": {
+      "activation_reused_across_rows": true,
+      "coalesced_across_simd_codes": true,
+      "codes_contiguous_per_thread": false,
+      "operand_alignment_bytes": 2,
+      "per_thread_col_stride": 512,
+      "scale_bias_group_broadcast": true,
+      "x_alignment_bytes": 4
+    },
+    "bytes_per_stream": [
+      2,
+      2,
+      2,
+      32
+    ],
+    "bytes_per_thread_iteration": 38,
+    "command_buffers": 1,
+    "dispatches": 3,
+    "effective_gb_s": 283.7297113752122,
+    "encoders": 1,
+    "family": "dce",
+    "gpu_ns_median": 147250,
+    "gpu_ns_reps": [
+      147166,
+      147124,
+      145500,
+      147333,
+      148791,
+      147624,
+      148999,
+      145041,
+      146624,
+      147624,
+      147250
+    ],
+    "gpu_us_median": 147.25,
+    "id": "mlp_2_2_2_32_halfk",
+    "kernel": "stream_count_mlp_2_2_2_32",
+    "occupancy": {
+      "gpu_cores": 60,
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_max_threads": 0.125,
+      "registers_note": "Metal pipeline state does not report register count on this toolchain; xcrun metal is not on PATH",
+      "registers_per_thread": null,
+      "thread_execution_width": 32,
+      "threadgroups": 8704,
+      "threadgroups_per_core": 145.06666666666666,
+      "threads_per_threadgroup": 128
+    },
+    "stream_count": 4,
+    "threads_per_threadgroup": 128,
+    "weight_bytes": 41779200
+  },
+  "inner_loop_trips_down": 34,
+  "inner_loop_trips_gate_up": 10,
+  "layer": 0,
+  "organ": "mlp",
+  "pre_registered_interpretation": {
+    "align_lift_bar": 1.12,
+    "arithmetic": "stripped (XOR/add sink); this is streaming, not ALU",
+    "bytes_per_thread_iteration_held": 38,
+    "monotone_slack": 0.97,
+    "registered_before_measurement": true,
+    "rules": [
+      "GB/s rises monotonically as streams are merged (4 -> 3 -> 2 -> 1) and 2+2+2 differs from 4+2 -> STREAM_COUNT_BOUND. The MLP's 497 is a packing property. An interleaved affine2 layout (6 B operand record) is the fix; cost is a one-time catalog bake that expands 20 B/group to 48 B tight or 64 B with 8 B records.",
+      "2+2+2 and 4+2 measure the same -> stream count is NOT the mechanism. Then the cheapest remaining candidate that ran in this process (alignment 2/4/16, then per-thread code stride) decides ALIGNMENT_BOUND vs NOT_STREAM_COUNT.",
+      "2+2+2 differs from 4+2 but 2+4+32 tracks 2+2+2 (the 4-byte operand is the lift, not the count) -> ALIGNMENT_BOUND.",
+      "neither curve -> MIXED. Do not force a verdict."
+    ],
+    "same_ratio_bar": 1.08
+  },
+  "projections": [
+    {
+      "bias_bytes": 2785280,
+      "code_bytes": 22282240,
+      "cols": 5120,
+      "group_size": 64,
+      "name": "language_model.model.layers.0.mlp.gate_proj.weight",
+      "rows": 17408,
+      "scale_bytes": 2785280,
+      "weight_bytes": 27852800
+    },
+    {
+      "bias_bytes": 2785280,
+      "code_bytes": 22282240,
+      "cols": 5120,
+      "group_size": 64,
+      "name": "language_model.model.layers.0.mlp.up_proj.weight",
+      "rows": 17408,
+      "scale_bytes": 2785280,
+      "weight_bytes": 27852800
+    },
+    {
+      "bias_bytes": 2785280,
+      "code_bytes": 22282240,
+      "cols": 17408,
+      "group_size": 64,
+      "name": "language_model.model.layers.0.mlp.down_proj.weight",
+      "rows": 5120,
+      "scale_bytes": 2785280,
+      "weight_bytes": 27852800
+    }
+  ],
+  "reps": 11,
+  "rungs": [
+    {
+      "access_pattern": {
+        "activation_reused_across_rows": true,
+        "coalesced_across_simd_codes": true,
+        "codes_contiguous_per_thread": false,
+        "operand_alignment_bytes": 2,
+        "per_thread_col_stride": 512,
+        "scale_bias_group_broadcast": true,
+        "x_alignment_bytes": 4
+      },
+      "bytes_per_stream": [
+        2,
+        2,
+        2,
+        32
+      ],
+      "bytes_per_thread_iteration": 38,
+      "command_buffers": 1,
+      "dispatches": 3,
+      "effective_gb_s": 308.3347171022771,
+      "encoders": 1,
+      "family": "stream_ladder",
+      "gpu_ns_median": 270999,
+      "gpu_ns_reps": [
+        270958,
+        269250,
+        272375,
+        275958,
+        275624,
+        278041,
+        273375,
+        269000,
+        267624,
+        266708,
+        270999
+      ],
+      "gpu_us_median": 270.999,
+      "id": "mlp_2_2_2_32",
+      "kernel": "stream_count_mlp_2_2_2_32",
+      "occupancy": {
+        "gpu_cores": 60,
+        "max_total_threads_per_threadgroup": 1024,
+        "occupancy_of_max_threads": 0.125,
+        "registers_note": "Metal pipeline state does not report register count on this toolchain; xcrun metal is not on PATH",
+        "registers_per_thread": null,
+        "thread_execution_width": 32,
+        "threadgroups": 8704,
+        "threadgroups_per_core": 145.06666666666666,
+        "threads_per_threadgroup": 128
+      },
+      "stream_count": 4,
+      "threads_per_threadgroup": 128,
+      "weight_bytes": 83558400
+    },
+    {
+      "access_pattern": {
+        "activation_reused_across_rows": true,
+        "coalesced_across_simd_codes": true,
+        "codes_contiguous_per_thread": false,
+        "operand_alignment_bytes": 4,
+        "per_thread_col_stride": 512,
+        "scale_bias_group_broadcast": true,
+        "x_alignment_bytes": 4
+      },
+      "bytes_per_stream": [
+        4,
+        2,
+        32
+      ],
+      "bytes_per_thread_iteration": 38,
+      "command_buffers": 1,
+      "dispatches": 3,
+      "effective_gb_s": 377.09752101921174,
+      "encoders": 1,
+      "family": "stream_ladder",
+      "gpu_ns_median": 221583,
+      "gpu_ns_reps": [
+        219375,
+        217374,
+        221583,
+        227499,
+        229999,
+        228499,
+        221208,
+        223750,
+        222333,
+        218249,
+        219041
+      ],
+      "gpu_us_median": 221.583,
+      "id": "dn_4_2_32",
+      "kernel": "stream_count_dn_4_2_32",
+      "occupancy": {
+        "gpu_cores": 60,
+        "max_total_threads_per_threadgroup": 1024,
+        "occupancy_of_max_threads": 0.125,
+        "registers_note": "Metal pipeline state does not report register count on this toolchain; xcrun metal is not on PATH",
+        "registers_per_thread": null,
+        "thread_execution_width": 32,
+        "threadgroups": 8704,
+        "threadgroups_per_core": 145.06666666666666,
+        "threads_per_threadgroup": 128
+      },
+      "stream_count": 3,
+      "threads_per_threadgroup": 128,
+      "weight_bytes": 83558400
+    },
+    {
+      "access_pattern": {
+        "activation_reused_across_rows": true,
+        "coalesced_across_simd_codes": true,
+        "codes_contiguous_per_thread": false,
+        "operand_alignment_bytes": 2,
+        "per_thread_col_stride": 512,
+        "scale_bias_group_broadcast": true,
+        "x_alignment_bytes": 4
+      },
+      "bytes_per_stream": [
+        2,
+        4,
+        32
+      ],
+      "bytes_per_thread_iteration": 38,
+      "command_buffers": 1,
+      "dispatches": 3,
+      "effective_gb_s": 526.6307841629587,
+      "encoders": 1,
+      "family": "stream_ladder",
+      "gpu_ns_median": 158666,
+      "gpu_ns_reps": [
+        160499,
+        160125,
+        158666,
+        158375,
+        158083,
+        159583,
+        159375,
+        158375,
+        158499,
+        158249,
+        159041
+      ],
+      "gpu_us_median": 158.666,
+      "id": "mid_2_4_32",
+      "kernel": "stream_count_mid_2_4_32",
+      "occupancy": {
+        "gpu_cores": 60,
+        "max_total_threads_per_threadgroup": 1024,
+        "occupancy_of_max_threads": 0.125,
+        "registers_note": "Metal pipeline state does not report register count on this toolchain; xcrun metal is not on PATH",
+        "registers_per_thread": null,
+        "thread_execution_width": 32,
+        "threadgroups": 8704,
+        "threadgroups_per_core": 145.06666666666666,
+        "threads_per_threadgroup": 128
+      },
+      "stream_count": 3,
+      "threads_per_threadgroup": 128,
+      "weight_bytes": 83558400
+    },
+    {
+      "access_pattern": {
+        "activation_reused_across_rows": true,
+        "codes_contiguous_per_thread": false,
+        "operand_alignment_bytes": 4,
+        "payload_bytes_per_group": 48,
+        "per_thread_col_stride": 512,
+        "production_bytes_per_group": 20,
+        "scale_bias_group_broadcast": false,
+        "scale_bias_replicated_per_tile": true,
+        "storage_bytes_per_group": 64,
+        "x_alignment_bytes": 4
+      },
+      "bytes_per_stream": [
+        6,
+        32
+      ],
+      "bytes_per_thread_iteration": 38,
+      "command_buffers": 1,
+      "dispatches": 3,
+      "effective_gb_s": 218.7157922840742,
+      "encoders": 1,
+      "family": "stream_ladder",
+      "gpu_ns_median": 382041,
+      "gpu_ns_reps": [
+        375333,
+        461750,
+        400333,
+        383874,
+        409208,
+        391000,
+        380374,
+        378416,
+        381249,
+        381666,
+        382041
+      ],
+      "gpu_us_median": 382.041,
+      "id": "pack_6_32",
+      "kernel": "stream_count_pack_6_32",
+      "occupancy": {
+        "gpu_cores": 60,
+        "max_total_threads_per_threadgroup": 1024,
+        "occupancy_of_max_threads": 0.125,
+        "registers_note": "Metal pipeline state does not report register count on this toolchain; xcrun metal is not on PATH",
+        "registers_per_thread": null,
+        "thread_execution_width": 32,
+        "threadgroups": 8704,
+        "threadgroups_per_core": 145.06666666666666,
+        "threads_per_threadgroup": 128
+      },
+      "stream_count": 2,
+      "threads_per_threadgroup": 128,
+      "weight_bytes": 83558400
+    },
+    {
+      "access_pattern": {
+        "activation_reused_across_rows": false,
+        "codes_contiguous_per_thread": false,
+        "note": "x is copied into each row's records; unique DRAM traffic grows, counted payload stays 38",
+        "operand_alignment_bytes": 4,
+        "payload_bytes": 38,
+        "per_thread_col_stride": 512,
+        "record_bytes": 40,
+        "scale_bias_group_broadcast": false,
+        "x_alignment_bytes": 4
+      },
+      "bytes_per_stream": [
+        38
+      ],
+      "bytes_per_thread_iteration": 38,
+      "command_buffers": 1,
+      "dispatches": 3,
+      "effective_gb_s": 45.61879731348401,
+      "encoders": 1,
+      "family": "stream_ladder",
+      "gpu_ns_median": 1831666,
+      "gpu_ns_reps": [
+        2104458,
+        1834249,
+        1964333,
+        1825458,
+        1833666,
+        1817499,
+        1828749,
+        1858999,
+        1831666,
+        1828083,
+        1817875
+      ],
+      "gpu_us_median": 1831.666,
+      "id": "pack_38",
+      "kernel": "stream_count_pack_38",
+      "occupancy": {
+        "gpu_cores": 60,
+        "max_total_threads_per_threadgroup": 1024,
+        "occupancy_of_max_threads": 0.125,
+        "registers_note": "Metal pipeline state does not report register count on this toolchain; xcrun metal is not on PATH",
+        "registers_per_thread": null,
+        "thread_execution_width": 32,
+        "threadgroups": 8704,
+        "threadgroups_per_core": 145.06666666666666,
+        "threads_per_threadgroup": 128
+      },
+      "stream_count": 1,
+      "threads_per_threadgroup": 128,
+      "weight_bytes": 83558400
+    }
+  ],
+  "schema": "hawking.future.mlp_stream_count.raw.v1",
+  "timing": "MTLCommandBuffer GPUStartTime/GPUEndTime",
+  "warmup": 5,
+  "weight_bytes": 83558400,
+  "zero_load": {
+    "access_pattern": {
+      "bytes_per_thread_iteration_note": "numerator is the organ's unique payload so GB/s is huge by construction",
+      "role": "launch+reduction floor; no weight/x loads"
+    },
+    "bytes_per_stream": [
+      0,
+      0,
+      0,
+      38
+    ],
+    "bytes_per_thread_iteration": 38,
+    "command_buffers": 1,
+    "dispatches": 3,
+    "effective_gb_s": 1275.7202400036642,
+    "encoders": 1,
+    "family": "dce",
+    "gpu_ns_median": 65499,
+    "gpu_ns_reps": [
+      66125,
+      65458,
+      65499,
+      65458,
+      66208,
+      65875,
+      117750,
+      50041,
+      50250,
+      50499,
+      129666
+    ],
+    "gpu_us_median": 65.499,
+    "id": "zero_load",
+    "kernel": "stream_count_zero",
+    "occupancy": {
+      "gpu_cores": 60,
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_max_threads": 0.125,
+      "registers_note": "Metal pipeline state does not report register count on this toolchain; xcrun metal is not on PATH",
+      "registers_per_thread": null,
+      "thread_execution_width": 32,
+      "threadgroups": 8704,
+      "threadgroups_per_core": 145.06666666666666,
+      "threads_per_threadgroup": 128
+    },
+    "stream_count": 0,
+    "threads_per_threadgroup": 128,
+    "weight_bytes": 83558400
+  }
+}

@@ -1,0 +1,644 @@
+{
+ "activation_intermediates_not_weight_decode": {
+  "are_decoded_weights": false,
+  "reading": "These are consume *results* of the 258 packed GEMVs, re-read by the next kernel. They are not a materialized W. Ranking W-decode fusion by these bytes would confuse two different physical objects.",
+  "rows": [
+   {
+    "bytes_per_launch": 69632,
+    "consumer": "mlp_down_proj",
+    "element": "f32[intermediate]",
+    "id": "mlp_act",
+    "producer": "mlp_fused_gate_up_swiglu",
+    "sealed_launches": 64,
+    "write_plus_reread_per_token": 8912896
+   },
+   {
+    "bytes_per_launch": 65536,
+    "consumer": "dn_rearrange_conv",
+    "element": "f32[qkvz_rows]",
+    "id": "dn_qkvz",
+    "producer": "dn_inproj_pair_concat",
+    "sealed_launches": 48,
+    "write_plus_reread_per_token": 6291456
+   },
+   {
+    "bytes_per_launch": 384,
+    "consumer": "dn_ba_to_decay",
+    "element": "f32[ba_rows]",
+    "id": "dn_ba",
+    "producer": "dn_inproj_pair_concat",
+    "sealed_launches": 48,
+    "write_plus_reread_per_token": 36864
+   },
+   {
+    "bytes_per_launch": 993280,
+    "consumer": "argmax",
+    "element": "f32[vocab]",
+    "id": "lm_head_logits",
+    "producer": "lm_head",
+    "sealed_launches": 1,
+    "write_plus_reread_per_token": 1986560
+   },
+   {
+    "bytes_per_launch": 20480,
+    "consumer": "mixer_input_rmsnorm",
+    "element": "f32[hidden]",
+    "id": "embed_hidden_row",
+    "producer": "embed_lookup",
+    "sealed_launches": 1,
+    "write_plus_reread_per_token": 40960
+   },
+   {
+    "bytes_per_launch": 640,
+    "consumer": "dispatch_hgravs second factor",
+    "element": "f32[rank160]",
+    "id": "hgravs_mid",
+    "note": "workspace exists; sealed-3.14 GEMV census is affine+q4, so this buffer is not on the 258.",
+    "producer": "dispatch_hgravs first factor",
+    "sealed_launches": 0,
+    "write_plus_reread_per_token": 0
+   },
+   {
+    "bytes_per_launch": 1088,
+    "consumer": "affine2 BiasPrep gate_up_swiglu",
+    "element": "f32[intermediate/64]",
+    "id": "xsum64_biasprep",
+    "note": "HAWKING_AFFINE2_GEO=biasprep only; not the sealed tpr64/splitk graph.",
+    "producer": "RMSNorm BiasPrep opt-in",
+    "sealed_launches": 0,
+    "write_plus_reread_per_token": 0
+   }
+  ]
+ },
+ "answer": {
+  "what_is_still_a_split_on_a_codec_path": "HGRAVS two-stage writes f32[160] mid (640 B) and the fused kernel is unbound and K-capped at 512. Zero such GEMVs on sealed-3.14. Rice\u2192CSR expansion is load-time and also has zero residual tensors here.",
+  "what_would_look_like_separate_and_is_forbidden": "Decode packed codes to a full f16 W, then run the ordinary GEMV. That would write 51243909120 bytes of W and reread them. REJECTED_DENSE_REMAT.",
+  "why_is_it_separate": "It is not, for W, on the sealed Metal path. The 258 representation_decode launches *are* the consume: packed GEMVs (and one embedding row lookup) that dequant in-register. The family is large because there are 258 packed weight consumers, not because a decode pass writes numbers that a later GEMV rereads. ORGAN_BANDWIDTH already folded low_bit_decode into the organ kernels; this sidecar names the sites."
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T05:43:18Z",
+  "recorded_by": "tools/future/representation_decode_fusion.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "candidates": [
+  {
+   "blocked_today": false,
+   "bytes_eliminated_if_true": 0,
+   "bytes_eliminated_vs_split_decode": 34225520640,
+   "cheapest_falsifier": "STATIC: affine2_group32_matvec.metal header still says 'never writes a dense W', and MixedCatalogCensus.dense_w_materialized stays 0 on HQ38M20 load. A new kernel that stores (rows\u00d7cols) f16 W, or a census that increments dense_w_materialized, kills this finding without a GPU lease.",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Production already consumes packed affine-Q2. Writing f16 W then binding a generic GEMV would add 34225520640 bytes of intermediate traffic and is the thing this candidate has already refused.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "affine_q2_unpack_plus_matvec",
+   "intermediate_bytes_written_and_reread": 0,
+   "mechanism": "HGRAVF01 codes stay packed (4 q per byte). qwen_affine_q2_group32_matvec_geo_tpr64_tg128 / gate_up_swiglu siblings reconstruct w = float(q)*scale + bias in registers and FMA with x in the same loop. No (rows\u00d7cols) buffer.",
+   "metal_blockers": {
+    "argument_buffers": "already bound per GEMV with set_buffer + set_bytes",
+    "dynamic_shapes": "none on these GEMVs; grids are rows \u00d7 tpr64",
+    "icb": "not required; decode is already inside the kernel",
+    "resource_residency": "packed codes, scales, biases already UMA-resident",
+    "routing_dependence": "none; mixer kind is static, MLP is dense",
+    "threadgroup_capacity": "tpr64 TG 128 already holds the reduction tree"
+   },
+   "name": "affine-Q2 unpack already lives inside the GEMV",
+   "not_a_dispatch_count_plan": true,
+   "on_sealed_258": true,
+   "operation": "unpack_plus_matvec",
+   "organs": [
+    "mlp.gate",
+    "mlp.up",
+    "mlp.down"
+   ],
+   "physical_primitive": "FusedDecodeCompute",
+   "sealed_launches": 128,
+   "status": "ALREADY_FUSED",
+   "what_is_materialized": "nothing of W. The GEMV writes y, the consume result."
+  },
+  {
+   "blocked_today": false,
+   "bytes_eliminated_if_true": 0,
+   "bytes_eliminated_vs_split_decode": 17018388480,
+   "cheapest_falsifier": "STATIC: qwen_uniform_q4.metal still decodes a nibble in qwen_uniform_q4_value / unpack8 and accumulates against x. QWEN38_Q4_DECODE_PROBE is a diagnostic isolate, not a 628 graph launch. Kill if a production bind starts writing a decoded Q4 row-major W.",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "A split Q4\u2192f16 W then GEMV would write 17018388480 bytes of attention+lm_head W that production never writes.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "q4_unpack_plus_matvec",
+   "intermediate_bytes_written_and_reread": 0,
+   "mechanism": "Uniform Q4 group-64: q = nibble-8, w = float(q)*scale, in qwen_uniform_q4_group64_matvec_geo_tpr64_tg128 and the fused pair-concat / QKV siblings. Embed is a packed row lookup, not a GEMV. Codes stay packed.",
+   "metal_blockers": {
+    "argument_buffers": "already bound per GEMV with set_buffer + set_bytes",
+    "dynamic_shapes": "none on these GEMVs; grids are rows \u00d7 tpr64",
+    "icb": "not required; decode is already inside the kernel",
+    "resource_residency": "packed codes, scales, biases already UMA-resident",
+    "routing_dependence": "none; mixer kind is static, MLP is dense",
+    "threadgroup_capacity": "tpr64 TG 128 already holds the reduction tree"
+   },
+   "name": "Q4 unpack already lives inside the GEMV / row lookup",
+   "not_a_dispatch_count_plan": true,
+   "on_sealed_258": true,
+   "operation": "unpack_plus_matvec",
+   "organs": [
+    "attention.linear_qkvz",
+    "attention.linear_ba",
+    "attention.linear_out",
+    "attention.q",
+    "attention.k",
+    "attention.v",
+    "attention.o",
+    "lm_head",
+    "embedding"
+   ],
+   "physical_primitive": "FusedDecodeCompute",
+   "sealed_launches": 130,
+   "status": "ALREADY_FUSED",
+   "what_is_materialized": "nothing of W. Embed writes one hidden row (the lookup result)."
+  },
+  {
+   "blocked_today": false,
+   "bytes_eliminated_if_true": 0,
+   "bytes_eliminated_if_true_note": "Generating or dropping aux is MLP_AUXILIARY_INFORMATION, not a decode+consume fuse. A lowering that writes an f16 W from q,s,b then GEMVs is unpack_to_dense_f16_then_gemv.",
+   "bytes_eliminated_vs_split_decode": 0,
+   "cheapest_falsifier": "STATIC: production geo_tpr64 kernel still takes device const half* scales/biases and does float(s) in the FMA. Kill if bind starts widening aux to a resident f32 buffer that the token then re-reads, or if a new kernel writes q*s+b into a W tensor.",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Scale applies in-register. Materializing S or W is not the production path.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "affine_q2_scale_plus_matvec",
+   "intermediate_bytes_written_and_reread": 0,
+   "mechanism": "geo_tpr64 affine2 binds on-disk f16 scale/bias as half* and widens with float(scales[rgb]) in-register. AccFuse rewrites sum((q*s+b)*x) = s*sum(q x)+b*sum(x) as an opt-in ALU association (HAWKING_AFFINE2_GEO=accfuse); it does not eliminate the scale/bias *load*. tgsb stages aux in threadgroup to avoid re-fetching per 8-wide tile. Neither is a separate decode dispatch. The 1.07 GB aux is stored representation (MLP_AUXILIARY_INFORMATION), not an intermediate of a decode pass.",
+   "metal_blockers": {
+    "argument_buffers": "already bound per GEMV with set_buffer + set_bytes",
+    "dynamic_shapes": "none on these GEMVs; grids are rows \u00d7 tpr64",
+    "icb": "not required; decode is already inside the kernel",
+    "resource_residency": "packed codes, scales, biases already UMA-resident",
+    "routing_dependence": "none; mixer kind is static, MLP is dense",
+    "threadgroup_capacity": "tpr64 TG 128 already holds the reduction tree"
+   },
+   "name": "affine scale/bias already apply inside the same FMA",
+   "not_a_dispatch_count_plan": true,
+   "on_sealed_258": true,
+   "operation": "scale_plus_matvec",
+   "organs": [
+    "mlp.gate",
+    "mlp.up",
+    "mlp.down"
+   ],
+   "physical_primitive": "FusedDecodeCompute",
+   "sealed_launches": 128,
+   "status": "ALREADY_FUSED",
+   "what_is_materialized": "no scale buffer is written at token time. Aux is catalog storage: 534773760 scale + 534773760 bias."
+  },
+  {
+   "blocked_today": false,
+   "bytes_eliminated_if_true": 0,
+   "bytes_eliminated_vs_split_decode": 0,
+   "cheapest_falsifier": "STATIC: qwen_uniform_q4_value still returns float(q)*float(scales[group]) and the geo_tpr64 matvec calls it (or unpack8) against x. Kill if a production pass writes dequantized Q4 into a buffer the GEMV then reads.",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Q4 scale is already a direct consumer.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "q4_scale_plus_matvec",
+   "intermediate_bytes_written_and_reread": 0,
+   "mechanism": "Each Q4 group owns one f16 scale. The GEMV loads it as half and does float(q)*scale * x[i] in-register. There is no separate scale-apply kernel on the 628 graph.",
+   "metal_blockers": {
+    "argument_buffers": "already bound per GEMV with set_buffer + set_bytes",
+    "dynamic_shapes": "none on these GEMVs; grids are rows \u00d7 tpr64",
+    "icb": "not required; decode is already inside the kernel",
+    "resource_residency": "packed codes, scales, biases already UMA-resident",
+    "routing_dependence": "none; mixer kind is static, MLP is dense",
+    "threadgroup_capacity": "tpr64 TG 128 already holds the reduction tree"
+   },
+   "name": "Q4 group scale already applies inside the same FMA",
+   "not_a_dispatch_count_plan": true,
+   "on_sealed_258": true,
+   "operation": "scale_plus_matvec",
+   "physical_primitive": "FusedDecodeCompute",
+   "sealed_launches": 130,
+   "status": "ALREADY_FUSED",
+   "what_is_materialized": "nothing. Scale is catalog storage, consumed in-register."
+  },
+  {
+   "blocked_today": true,
+   "bytes_eliminated_if_true": 0,
+   "bytes_eliminated_vs_split_decode": 0,
+   "cheapest_falsifier": "STATIC: KERNEL_GEOMETRY census affine=192 q4=209, no PQ organ. Kill this NOT_THIS_ARTIFACT if a future catalog binds gravity_pq_matvec on the decode token graph; then the fused kernel is already the consumer and the remaining question is only a dense-W lowering, which stays REJECTED.",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "The PQ kernels already consume entries in-register. A codebook\u2192dense-W lowering is REJECTED_DENSE_REMAT and is filed under unpack_to_dense_f16_then_gemv, not here.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "codebook_lookup_plus_accumulate",
+   "intermediate_bytes_written_and_reread": 0,
+   "mechanism": "gravity_pq_matvec / gravity_residual_pq_matvec index a half codebook and accumulate against x without expanding a dense row. That is FusedDecodeCompute for PQ. Sealed-3.14 GEMVs are affine-Q2 and Q4, not PQ. Expanding a codebook to W then running the ordinary GEMV is unpack_to_dense_f16_then_gemv.",
+   "metal_blockers": {
+    "argument_buffers": "gravity_pq_matvec already binds codebooks + codes + x",
+    "dynamic_shapes": "sub/card are kernel params; not on this graph",
+    "icb": "n/a; 0 launches",
+    "resource_residency": "n/a on sealed-3.14",
+    "routing_dependence": "none",
+    "threadgroup_capacity": "n/a"
+   },
+   "name": "codebook lookup + accumulate is fused in gravity_pq, absent here",
+   "not_a_dispatch_count_plan": true,
+   "on_sealed_258": false,
+   "operation": "codebook_lookup_plus_accumulate",
+   "physical_primitive": "FusedDecodeCompute",
+   "sealed_launches": 0,
+   "status": "NOT_THIS_ARTIFACT",
+   "what_is_materialized": "no codebook intermediate on the 258."
+  },
+  {
+   "blocked_today": true,
+   "bytes_eliminated_if_true": 0,
+   "bytes_eliminated_vs_split_decode": 0,
+   "cheapest_falsifier": "STATIC: KERNEL_GEOMETRY census has no residual GEMVs. Source still contains the split q80_sparse_q1_apply_csr under recon_fuse=0. Kill NOT_THIS_ARTIFACT if a catalog row binds MixedGpuWeight::Residual on the 628 graph; then check recon_fuse is still ON so the split y round-trip does not return.",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "CSR indices + residual signs are the representation. The fused kernel consumes them. Expanding residual to a dense W is REJECTED_DENSE_REMAT.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "sparse_residual_decode_plus_consume",
+   "intermediate_bytes_written_and_reread": 0,
+   "mechanism": "dispatch_residual with HAWKING_QWEN38_RECON_FUSE default ON launches q80_binary_group_csr_matvec_* : binary GEMV and CSR outlier apply in one kernel. recon_fuse=0 is the split: binary GEMV writes y, then q80_sparse_q1_apply_csr re-reads y. Sealed-3.14 GEMV census has no residual tensors, so neither form is in the 258.",
+   "metal_blockers": {
+    "argument_buffers": "fused CSR kernel already binds signs, scales, indices, row_ptr, residual_signs",
+    "dynamic_shapes": "none; cols must be a 256-tile multiple when cols>2048 (qwen38_assert_k_complete_cols)",
+    "icb": "n/a on this artifact",
+    "resource_residency": "n/a on sealed-3.14 GEMVs",
+    "routing_dependence": "none",
+    "threadgroup_capacity": "tg256 / simd_bytes already sized"
+   },
+   "name": "HGRAVR02 CSR residual is fused when recon_fuse=1, absent here",
+   "not_a_dispatch_count_plan": true,
+   "on_sealed_258": false,
+   "operation": "sparse_residual_decode_plus_consume",
+   "physical_primitive": "FusedDecodeCompute",
+   "sealed_launches": 0,
+   "status": "NOT_THIS_ARTIFACT",
+   "what_is_materialized": "on the split path only: the binary GEMV output y, then the CSR kernel reads y and adds. On the fused path: nothing extra. On this artifact: nothing."
+  },
+  {
+   "blocked_today": true,
+   "bytes_eliminated_if_true": 0,
+   "bytes_eliminated_if_true_note": "Per HGRAVS GEMV the fused kernel would eliminate 1280 bytes of mid traffic. Sealed-3.14 has 0 HGRAVS GEMVs, so the token number is 0. Ranked so a future mixed catalog cannot pretend the split is undiscovered.",
+   "bytes_eliminated_vs_split_decode": 0,
+   "bytes_per_hgravs_gemv_write_plus_reread": 1280,
+   "cheapest_falsifier": "STATIC, already visible: (1) KERNEL_GEOMETRY has 0 HGRAVS GEMVs on sealed-3.14, so the 258 does not contain this split. (2) kXCap=512 < hidden 5120, so binding the existing fused kernel on this body would no-op. A real fuse needs a K-complete x stage (or no x_tg) AND a dispatch_hgravs bind. Do not GPU-lease a kernel that returns on K>512.",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Two-stage fused keeps mid in threadgroup. Reconstructing L@R as dense W is REJECTED_DENSE_REMAT.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "hgravs_two_stage_mid",
+   "intermediate_bytes_written_and_reread": 0,
+   "mechanism": "dispatch_hgravs runs two factor GEMVs. First writes workspace.hgravs_mid (f32[160]), second reads it. q80_hgravs01_two_stage_matvec already fuses that into one launch with mid in threadgroup (640 B, not dense W) but is not bound. This is the only remaining decode-then-consume *buffer* on the mixed codec path.",
+   "metal_blockers": {
+    "argument_buffers": "the fused two-stage kernel takes 12 set_bytes slots (rows/cols/group/bits/bound for both factors). An ICB replay would need those promoted. Bind, not ICB, is the first gap: dispatch_hgravs never names q80_hgravs01_two_stage_matvec",
+    "dynamic_shapes": "none; rank is 160, K is a compile-time organ width",
+    "icb": "wrong textbook; this is one kernel versus two, not graph replay",
+    "resource_residency": "both factors already resident; mid is 640 B",
+    "routing_dependence": "none",
+    "threadgroup_capacity": "q80_hgravs01_two_stage_matvec stages x in threadgroup with kXCap=512. This model's K is in {5120, 17408, 6144}. All exceed 512, so the fused kernel returns without writing. That is the Metal blocker on this body even if a future catalog grew HGRAVS GEMVs."
+   },
+   "name": "HGRAVS y=L@(R@x) still writes a rank-160 mid buffer",
+   "not_a_dispatch_count_plan": true,
+   "on_sealed_258": false,
+   "operation": "unpack_plus_matvec",
+   "physical_primitive": "FusedDecodeCompute",
+   "sealed_launches": 0,
+   "status": "OPEN",
+   "what_is_materialized": "f32[160] hgravs_mid, 640 bytes, written then re-read."
+  },
+  {
+   "blocked_today": true,
+   "bytes_eliminated_if_true": 0,
+   "bytes_eliminated_vs_split_decode": 0,
+   "cheapest_falsifier": "STATIC: sealed-3.14 has no residual tensors. Reopen only if a residual catalog row appears AND a kernel consumes rice bits in-register. Measuring CSR bytes without a residual tensor is inventing a denominator.",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Expanding rice\u2192CSR is not expanding to W. Expanding residual to dense W is REJECTED_DENSE_REMAT.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "rice_index_expansion_at_upload",
+   "intermediate_bytes_written_and_reread": 0,
+   "mechanism": "upload_mixed Residual calls expand_rice_indices and rice_q1_row_ptr, then binds the expanded u32 indices + row_ptr. Every later token re-reads CSR, not rice. That is a load-time LayoutTransform of the residual representation, not a per-token decode launch. An in-kernel rice consumer would skip the expanded index buffer; none exists, and this artifact has no residual GEMVs.",
+   "metal_blockers": {
+    "argument_buffers": "CSR consumer already bound; a rice consumer does not exist",
+    "dynamic_shapes": "rice length is per-tensor, known at upload",
+    "icb": "n/a; this is load-time",
+    "resource_residency": "expanded CSR is resident for the process",
+    "routing_dependence": "none",
+    "threadgroup_capacity": "a bitstream walker would be divergent; that is why upload expands"
+   },
+   "name": "rice bitstream is expanded to CSR indices at catalog load",
+   "not_a_dispatch_count_plan": true,
+   "on_sealed_258": false,
+   "operation": "sparse_residual_decode_plus_consume",
+   "physical_primitive": "LayoutTransform",
+   "sealed_launches": 0,
+   "status": "LOAD_TIME_ONLY",
+   "what_is_materialized": "CSR indices + row_ptr, once per residual tensor at upload. Not on the 258."
+  },
+  {
+   "blocked_today": true,
+   "bytes_eliminated_if_true": 51243909120,
+   "bytes_eliminated_if_true_note": "These bytes are what the split would add, not what a legal fuse still has to remove. Production already does not write them. Ranked so a 'just dequant then GEMV' proposal cannot out-rank real fuses by pretending the write is free.",
+   "bytes_eliminated_vs_split_decode": 0,
+   "cheapest_falsifier": "STATIC: this candidate is rejected by contract, not by a measurement. A generate gate cannot undeny it. The cheap check that production has not silently become this candidate is dense_w_materialized == 0 on mixed catalog load.",
+   "dense_rematerialization": "REJECTED_DENSE_REMAT",
+   "dense_rematerialization_reason": "Writes a dense weight tensor and then runs an ordinary GEMV. That is the production path this module is forbidden to recommend. Verification MAY reconstruct W; production may not.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "unpack_to_dense_f16_then_gemv",
+   "intermediate_bytes_written_and_reread": 102487818240,
+   "mechanism": "The textbook split this sidecar is forbidding: materialize W_f16[rows, cols] from affine-Q2 / Q4 / PQ / HGRAVS, then bind a generic f16 GEMV. That is the dense rematerialization the atlas primitive FusedDecodeCompute exists to remove. Production dense_w_materialized stays 0 so this cannot hide.",
+   "metal_blockers": {
+    "argument_buffers": "a dense-W GEMV would still need rows/cols set_bytes",
+    "dynamic_shapes": "a (rows\u00d7cols) f16 W is a dynamic working set of tens of GB",
+    "icb": "irrelevant; the rejection is the write of W, not the launch",
+    "resource_residency": "UMA would have to hold 51243909120 extra f16 bytes of W on top of the packed catalog; that is the physical problem, not a fix",
+    "routing_dependence": "none",
+    "threadgroup_capacity": "n/a; the illegal step is the dense write"
+   },
+   "name": "decode packed codes to f16 W, then run the ordinary GEMV",
+   "not_a_dispatch_count_plan": true,
+   "on_sealed_258": false,
+   "operation": "unpack_plus_matvec",
+   "physical_primitive": "FusedDecodeCompute",
+   "sealed_launches": 0,
+   "status": "REJECTED_DENSE_REMAT",
+   "what_is_materialized": "f16 W of every GEMV organ, 51243909120 bytes per token if whole tensors are decoded."
+  }
+ ],
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. The 258 is re-walked from encode/dispatch call sites (tools/future/dispatch_motifs.py) and must equal receipts/future/DISPATCH_MOTIFS.json families.sealed.representation_decode and the established 258, or this module refuses to emit. Intermediate byte counts are geometry \u00d7 dtype of buffers named in crates/hawking-core/src/model/qwen38_hybrid_decode.rs and the affine-Q2 / Q4 / HGRAVS shaders, not measured traffic. gpu_authority is false. evidence_class is STATIC_ONLY.",
+ "dense_f16_w_counterfactual_bytes": {
+  "attention_gemv": 14475591680,
+  "lm_head": 2542796800,
+  "mlp": 34225520640,
+  "token_gemv": 51243909120
+ },
+ "established": {
+  "dispatch_count_is_not_the_350GBs_cause": {
+   "cited_from": "receipts/future/ORGAN_BANDWIDTH.json",
+   "finding_id": "DISPATCH_COUNT_DOES_NOT_EXPLAIN_THE_DIFFERENCE",
+   "this_module_does_not_target_258_to_a_smaller_integer": true,
+   "what": "A least-squares fit of t = a*bytes + b*dispatches over the four organs returns b = -1.008 us per dispatch. A negative per-dispatch cost is physically meaningless; the model is refuted, not fitted."
+  },
+  "not_a_fuse_to_reduce_the_integer": true,
+  "representation_decode_sealed": 258,
+  "representation_decode_unfused": 402,
+  "sealed_dispatches_per_decoded_token": 628,
+  "share_of_sealed": 0.410828025477707,
+  "unfused_dispatches_per_decoded_token": 964
+ },
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "258 re-walked and reconciled against DISPATCH_MOTIFS.json or refused",
+  "four decode+consume operations judged; dense remat marked REJECTED_DENSE_REMAT",
+  "rank is intermediate W bytes, not launches",
+  "HGRAVS mid named with the kXCap=512 Metal blocker",
+  "activation intermediates recorded as not W"
+ ],
+ "gpu_authority": false,
+ "helper_markers": {
+  "missing": [],
+  "ok": true,
+  "reading": "affine2 / q80 shaders contract in-register dequant and no dense W. dispatch_hgravs still writes hgravs_mid; the fused two-stage kernel exists in q80_mixed_decode.metal and is not bound. expand_rice_indices is a load-time CSR expansion.",
+  "required_present": {
+   "affine2_codes_stay_packed": true,
+   "affine2_never_writes_dense_w": true,
+   "decode_dense_w_counter": true,
+   "decode_dispatch_hgravs": true,
+   "decode_expand_rice": true,
+   "decode_hgravs_mid": true,
+   "decode_sparse_csr_split": true,
+   "decode_two_stage_unbound": true,
+   "gravity_pq_no_dense_row": true,
+   "gravity_pq_no_temporary_residual": true,
+   "q80_must_never_write_dense": true,
+   "q80_packed_bytes_read_directly": true,
+   "q80_rank_cap_160": true,
+   "q80_two_stage_kernel": true,
+   "q80_x_cap_512": true
+  },
+  "via": {
+   "crates/hawking-core/shaders/affine2_group32_matvec.metal": "disk",
+   "crates/hawking-core/shaders/gravity_pq.metal": "disk",
+   "crates/hawking-core/shaders/q80_mixed_decode.metal": "disk",
+   "crates/hawking-core/src/model/qwen38_hybrid_decode.rs": "disk"
+  }
+ },
+ "nomenclature": {
+  "already_fused": "ALREADY_FUSED",
+  "depends_on_lowering": "DEPENDS_ON_LOWERING",
+  "direct_consume": "DIRECT_CONSUME",
+  "load_time_only": "LOAD_TIME_ONLY",
+  "not_this_artifact": "NOT_THIS_ARTIFACT",
+  "open": "OPEN",
+  "rejected_dense_remat": "REJECTED_DENSE_REMAT"
+ },
+ "packing": {
+  "affine_tensors": 192,
+  "binary_gemv_tensors_in_kernel_geometry_census": 0,
+  "hgravs_gemv_tensors_in_kernel_geometry_census": 0,
+  "mlp_aux_bytes": 1069605696,
+  "mlp_code_bytes": 4278190080,
+  "mlp_family": "affine_q2_group64_ls",
+  "mlp_params": 17112760320,
+  "mlp_reconstruction": "w = float(q) * scale + bias, q unsigned in {0,1,2,3}",
+  "q4_tensors": 209,
+  "reading": "KERNEL_GEOMETRY census is 192 affine + 209 q4. That is the sealed-3.14 GEMV mix: MLP affine-Q2 group-64, everything else a packed Q4 GEMV or the embedding row lookup. HGRAVS / residual / binary / PQ are codec lanes in decode.rs and shaders, not members of the 258 on this artifact.",
+  "residual_gemv_tensors_in_kernel_geometry_census": 0
+ },
+ "partition": {
+  "motifs": [
+   {
+    "id": "embed_lookup",
+    "sealed_count": 1,
+    "why": "packed row lookup, not a GEMV"
+   },
+   {
+    "id": "dn_inproj_pair_concat",
+    "sealed_count": 48,
+    "why": "fused qkvz+ba packed GEMV"
+   },
+   {
+    "id": "dn_out_proj",
+    "sealed_count": 48,
+    "why": "packed GEMV"
+   },
+   {
+    "id": "gqa_fused_qkv",
+    "sealed_count": 16,
+    "why": "fused QKV packed GEMV"
+   },
+   {
+    "id": "gqa_o_proj",
+    "sealed_count": 16,
+    "why": "packed GEMV"
+   },
+   {
+    "id": "mlp_fused_gate_up_swiglu",
+    "sealed_count": 64,
+    "why": "affine-Q2 gate+up+SwiGLU"
+   },
+   {
+    "id": "mlp_down_proj",
+    "sealed_count": 64,
+    "why": "affine-Q2 GEMV"
+   },
+   {
+    "id": "lm_head",
+    "sealed_count": 1,
+    "why": "Q4 GEMV"
+   }
+  ],
+  "sum": 258
+ },
+ "purpose": "Explain why representation_decode is 258 of 628 without treating that integer as a fusion target, and judge decode+consume as one physical operation by intermediate bytes.",
+ "ranking": {
+  "cheapest_falsifier_for_top": "STATIC: affine2_group32_matvec.metal header still says 'never writes a dense W', and MixedCatalogCensus.dense_w_materialized stays 0 on HQ38M20 load. A new kernel that stores (rows\u00d7cols) f16 W, or a census that increments dense_w_materialized, kills this finding without a GPU lease.",
+  "launch_order_differs_from_byte_order": true,
+  "not_by": "dispatches_removed",
+  "order": [
+   "affine_q2_unpack_plus_matvec",
+   "q4_unpack_plus_matvec",
+   "codebook_lookup_plus_accumulate",
+   "sparse_residual_decode_plus_consume",
+   "hgravs_two_stage_mid",
+   "rice_index_expansion_at_upload",
+   "affine_q2_scale_plus_matvec",
+   "q4_scale_plus_matvec"
+  ],
+  "rank_by": "bytes_eliminated_vs_split_decode",
+  "reading": "The largest intermediate W traffic on this graph is the dense f16 W that production already does not write. affine-Q2 unpack+matvec is therefore the top legal candidate: it is already one operation. The OPEN leftover (HGRAVS mid) is 0 bytes on sealed-3.14 and is blocked on Metal by kXCap=512. REJECTED_DENSE_REMAT is the same 34+ GB in the opposite direction and is not a plan.",
+  "rejected_dense_remat": [
+   "unpack_to_dense_f16_then_gemv"
+  ],
+  "remaining_open": [
+   "hgravs_two_stage_mid"
+  ],
+  "top_bytes_eliminated_vs_split_decode": 34225520640,
+  "top_legal": "affine_q2_unpack_plus_matvec",
+  "top_status": "ALREADY_FUSED"
+ },
+ "reconciliation": {
+  "ok": true,
+  "representation_decode": 258,
+  "sealed_total": 628,
+  "share": 0.410828025477707,
+  "treated_unknown_as_zero": false,
+  "unfused_representation_decode": 402
+ },
+ "recorded_by": "tools/future/representation_decode_fusion.py",
+ "schema": "hawking.future.representation_decode_fusion.v1",
+ "seal_sha256": "c9a68ebcfd78251ac85d2ed888657caf2105c96f5434c122859366b9c9f22a5f",
+ "sites": [
+  {
+   "also": "crates/hawking-core/shaders/q80_mixed_decode.metal",
+   "consumer_primitive": "FusedDecodeCompute",
+   "file": "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+   "id": "affine_q2_inregister",
+   "intermediate_bytes": 0,
+   "materialized": null,
+   "metal_today": "already the production MLP GEMV",
+   "operation": "unpack_plus_matvec"
+  },
+  {
+   "consumer_primitive": "FusedDecodeCompute",
+   "file": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+   "id": "q4_inregister",
+   "intermediate_bytes": 0,
+   "materialized": null,
+   "metal_today": "already the production attention / lm_head GEMV",
+   "operation": "unpack_plus_matvec"
+  },
+  {
+   "consumer_primitive": "FusedDecodeCompute",
+   "file": "crates/hawking-core/shaders/affine2_group32_matvec.metal",
+   "id": "affine_scale_inregister",
+   "intermediate_bytes": 0,
+   "materialized": null,
+   "metal_today": "half scale/bias widened in-register; aux is storage",
+   "operation": "scale_plus_matvec",
+   "stored_aux_bytes": 1069605696
+  },
+  {
+   "consumer_primitive": "FusedDecodeCompute",
+   "file": "crates/hawking-core/shaders/gravity_pq.metal",
+   "id": "gravity_pq_inregister",
+   "intermediate_bytes": 0,
+   "materialized": null,
+   "metal_today": "fused in shaders; 0 launches on sealed-3.14",
+   "operation": "codebook_lookup_plus_accumulate"
+  },
+  {
+   "consumer_primitive": "FusedDecodeCompute",
+   "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+   "id": "residual_csr_fused",
+   "intermediate_bytes": 0,
+   "materialized": null,
+   "metal_today": "recon_fuse=1 fused kernel; 0 residual GEMVs here",
+   "operation": "sparse_residual_decode_plus_consume"
+  },
+  {
+   "consumer_primitive": "FusedDecodeCompute",
+   "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+   "id": "hgravs_mid_buffer",
+   "intermediate_bytes": 1280,
+   "materialized": "workspace.hgravs_mid f32[160]",
+   "metal_today": "two launches; fused kernel exists but kXCap=512 blocks this K; 0 HGRAVS GEMVs on sealed-3.14",
+   "operation": "unpack_plus_matvec"
+  },
+  {
+   "consumer_primitive": "LayoutTransform",
+   "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+   "id": "rice_csr_at_upload",
+   "intermediate_bytes": 0,
+   "materialized": "expand_rice_indices \u2192 u32 CSR",
+   "metal_today": "load-time; no residual tensors on this artifact",
+   "operation": "sparse_residual_decode_plus_consume"
+  },
+  {
+   "consumer_primitive": "FusedDecodeCompute",
+   "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+   "id": "dense_f16_w_counterfactual",
+   "intermediate_bytes": 102487818240,
+   "materialized": "f16[rows, cols] W",
+   "metal_today": "REJECTED_DENSE_REMAT; dense_w_materialized stays 0",
+   "operation": "unpack_plus_matvec"
+  }
+ ],
+ "version": 1,
+ "walk": {
+  "sealed_families": {
+   "elementwise": 0,
+   "norm": 49,
+   "producer_consumer": 65,
+   "representation_decode": 258,
+   "residual": 128,
+   "routing": 16,
+   "state_update": 112
+  },
+  "sealed_motif_counts": {
+   "dn_inproj_pair_concat": 48,
+   "dn_out_proj": 48,
+   "embed_lookup": 1,
+   "gqa_fused_qkv": 16,
+   "gqa_o_proj": 16,
+   "lm_head": 1,
+   "mlp_down_proj": 64,
+   "mlp_fused_gate_up_swiglu": 64
+  },
+  "sealed_total": 628,
+  "unfused_representation_decode": 402,
+  "unfused_total": 964
+ },
+ "what_this_does_not_prove": [
+  "a GB/s change from keeping fused decode (no GPU)",
+  "capability of a K-complete HGRAVS two-stage kernel",
+  "that 1.07 GB of affine aux can shrink (that is MLP_AUXILIARY_INFORMATION)"
+ ]
+}

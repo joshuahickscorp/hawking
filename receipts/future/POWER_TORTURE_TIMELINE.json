@@ -1,0 +1,540 @@
+{
+ "append_only": true,
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T10:22:28Z",
+  "recorded_by": "tools/future/power_torture.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "elapsed_s": 4.00228,
+ "events": [
+  {
+   "kind": "substrate_hashed",
+   "payload": {
+    "digest": "56834d7c5cabad6e9fb0083125007f342a754812331d44528c3d47761b362318",
+    "id": "WU.TORTURE.substrate.before",
+    "n_files": 64,
+    "n_shaders": 1,
+    "unit_id": "WU.TORTURE.substrate.before",
+    "when": "before"
+   },
+   "seq": 0,
+   "t_s": 0.622492,
+   "t_unix": 1788171745.461941
+  },
+  {
+   "kind": "gpu_lane_lock_parked",
+   "payload": {
+    "id": "WU.TORTURE.gpu_lock",
+    "kind": "absent",
+    "owner": null,
+    "parked": false,
+    "path": "/tmp/hawking-gpu-lane.lock",
+    "pid": null,
+    "pid_alive": null,
+    "present": false,
+    "unit_id": "WU.TORTURE.gpu_lock",
+    "waited_for": null
+   },
+   "seq": 1,
+   "t_s": 0.622504,
+   "t_unix": 1788171745.46195
+  },
+  {
+   "kind": "detached_started",
+   "payload": {
+    "detached": true,
+    "id": "WU.TORTURE.NO_WAIT.child",
+    "job_id": "WU-TORTURE-NO_WAIT-child-c7570080",
+    "no_wait": true,
+    "pid": 72371,
+    "power": "NO_WAIT",
+    "runnable_now": [
+     {
+      "id": "WU.TORTURE.NO_WAIT.ind"
+     }
+    ],
+    "status": "EXERCISED",
+    "unit": {
+     "id": "WU.TORTURE.NO_WAIT.child",
+     "resource_class": "LIGHT_CONTROL"
+    },
+    "unit_id": "WU.TORTURE.NO_WAIT.child"
+   },
+   "seq": 2,
+   "t_s": 0.706458,
+   "t_unix": 1788171745.5459058
+  },
+  {
+   "kind": "WORK_LAUNCHED",
+   "payload": {
+    "blocking": false,
+    "detached": false,
+    "id": "WU.TORTURE.NO_WAIT.ind",
+    "pid": 72373,
+    "power": "NO_WAIT",
+    "status": "EXERCISED",
+    "unit": {
+     "id": "WU.TORTURE.NO_WAIT.ind",
+     "resource_class": "LIGHT_CONTROL"
+    },
+    "unit_id": "WU.TORTURE.NO_WAIT.ind"
+   },
+   "seq": 3,
+   "t_s": 0.778365,
+   "t_unix": 1788171745.617814
+  },
+  {
+   "kind": "workunit_progressed",
+   "payload": {
+    "id": "WU.TORTURE.NO_WAIT.ind",
+    "power": "NO_WAIT",
+    "progress_at": 1788171745.659212,
+    "slow_still_open": true,
+    "unit_id": "WU.TORTURE.NO_WAIT.ind"
+   },
+   "seq": 4,
+   "t_s": 0.819769,
+   "t_unix": 1788171745.659216
+  },
+  {
+   "kind": "WORK_LAUNCHED",
+   "payload": {
+    "correct_refusal": false,
+    "id": "WU.TORTURE.NO_WAIT",
+    "pid": 72371,
+    "power": "NO_WAIT",
+    "status": "EXERCISED",
+    "unit_id": "WU.TORTURE.NO_WAIT",
+    "why": "detached pid 72371 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
+   },
+   "seq": 5,
+   "t_s": 1.011054,
+   "t_unix": 1788171745.8505018
+  },
+  {
+   "kind": "WORK_REFILLED",
+   "payload": {
+    "catalog_refill_is_replay": true,
+    "id": "WU.TORTURE.REAL_REFILL.a",
+    "n_fresh": 2,
+    "power": "REAL_REFILL",
+    "queue_depth": 32,
+    "source": "replan_after_scar_and_invalidation",
+    "status": "EXERCISED",
+    "unit_id": "WU.TORTURE.REAL_REFILL.a",
+    "unit_ids": [
+     "WU.TORTURE.replan.ngram_product_codebook",
+     "WU.TORTURE.replan.next_organ.NGRAM"
+    ],
+    "why": "replan_after_scar_and_invalidation returned 2 id(s) not already offered"
+   },
+   "seq": 6,
+   "t_s": 1.833225,
+   "t_unix": 1788171746.6726751
+  },
+  {
+   "kind": "WORK_REFILLED",
+   "payload": {
+    "id": "WU.TORTURE.REAL_REFILL.b",
+    "power": "REAL_REFILL",
+    "queue_depth": 34,
+    "status": "EXERCISED",
+    "unit_id": "WU.TORTURE.REAL_REFILL.b",
+    "unit_ids": [
+     "WU.TORTURE.replan.ngram_product_codebook.next",
+     "WU.TORTURE.replan.next_organ.NGRAM.next"
+    ],
+    "why": "second refill set differs from the first; consecutive identical sets are the 1h scar"
+   },
+   "seq": 7,
+   "t_s": 1.833233,
+   "t_unix": 1788171746.672679
+  },
+  {
+   "cites": [
+    "receipts/future/STATUS_CAUSALITY_CHALLENGE.json",
+    "receipts/future/DETACHED_WORK_TRIAL.json",
+    "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/pytest-of-scammermike/pytest-1741/power_torture_run0/nowait/results/fast.json"
+   ],
+   "kind": "RESULT_INGESTED",
+   "payload": {
+    "id": "WU.TORTURE.REAL_INGESTION",
+    "power": "REAL_INGESTION",
+    "receipt": "receipts/future/STATUS_CAUSALITY_CHALLENGE.json",
+    "status": "EXERCISED",
+    "unit_id": "WU.TORTURE.REAL_INGESTION",
+    "why": "ok"
+   },
+   "seq": 8,
+   "t_s": 1.83332,
+   "t_unix": 1788171746.672765
+  },
+  {
+   "kind": "IDEA_REJECTED",
+   "payload": {
+    "decision": "REFUSED",
+    "hypothesis_family": "cross_expert_structure",
+    "id": "WU.TORTURE.SCAR_PRUNING",
+    "live_decision": "ADMITTED",
+    "power": "SCAR_PRUNING",
+    "scar_id": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-010",
+    "status": "EXERCISED",
+    "unit_id": "WU.TORTURE.SCAR_PRUNING",
+    "why": "candidate refused by scar receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-010; replacement admitted"
+   },
+   "seq": 9,
+   "t_s": 1.849791,
+   "t_unix": 1788171746.6892438
+  },
+  {
+   "kind": "NEGATIVE_SCIENCE_REFUSAL",
+   "payload": {
+    "hypothesis_family": "cross_expert_structure",
+    "id": "WU.TORTURE.SCAR_PRUNING.ni",
+    "negative_index_refusal": true,
+    "power": "SCAR_PRUNING",
+    "scar_id": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-010",
+    "unit_id": "WU.TORTURE.SCAR_PRUNING.ni"
+   },
+   "seq": 10,
+   "t_s": 1.849803,
+   "t_unix": 1788171746.689248
+  },
+  {
+   "kind": "status_challenged",
+   "payload": {
+    "claim_kind": "host_hardware_absence",
+    "emit_verdict": "OVERREACHING",
+    "id": "WU.TORTURE.STATUS_CAUSALITY",
+    "n_gates_named_gap": 11,
+    "n_gates_recording": 7,
+    "power": "STATUS_CAUSALITY",
+    "probe_kind": "process_error",
+    "status": "EXERCISED",
+    "unit_id": "WU.TORTURE.STATUS_CAUSALITY",
+    "verdict": "OVERREACHING",
+    "why": "challenged 'BLOCKED_NO_METAL_GPU' with probe_kind='process_error'; verdict=OVERREACHING"
+   },
+   "seq": 11,
+   "t_s": 1.86286,
+   "t_unix": 1788171746.7023082
+  },
+  {
+   "kind": "workunit_sleeping",
+   "payload": {
+    "PROTECTED_SCHEDULER_CAPABLE": true,
+    "PROTECTED_WINDOW_AVAILABLE": false,
+    "classification": "SLEEPING",
+    "correct_refusal": true,
+    "id": "WU.TORTURE.PROTECTED_PARKING",
+    "n_continued": 32,
+    "power": "PROTECTED_PARKING",
+    "status": "EXERCISED",
+    "unit_id": "WU.TORTURE.PROTECTED_PARKING",
+    "verdict": "BLOCKED_ON_PROTECTED_WINDOW",
+    "wake_condition": {
+     "all_of": [
+      "contamination_class == QUIESCENT (CONTAMINATION_SCIENCE receipt, never coerced)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)"
+     ],
+     "never": [
+      "fabricated or simulated lease presented as live",
+      "fcntl.flock / lockf / os.O_EXCL on a bench lock",
+      "quiesce standing workers to forge a quiet machine",
+      "synthetic QUIESCENT",
+      "mark the scheduler incapable because the window is busy"
+     ]
+    },
+    "why": "GPU_EXCLUSIVE parked BLOCKED_ON_PROTECTED_WINDOW; scheduler stays CAPABLE"
+   },
+   "seq": 12,
+   "t_s": 3.181961,
+   "t_unix": 1788171748.02141
+  },
+  {
+   "kind": "blocked_resource_reroute",
+   "payload": {
+    "id": "WU.TORTURE.BLOCKED_RESOURCE_REROUTE",
+    "n_continued": 32,
+    "power": "BLOCKED_RESOURCE_REROUTE",
+    "status": "EXERCISED",
+    "unit_id": "WU.TORTURE.BLOCKED_RESOURCE_REROUTE",
+    "unit_ids": [
+     "FT.ACTIVE_BYTES.hbm-rank",
+     "FT.CHILD_RESIDENT.install-dry-run",
+     "FT.CONTEXT.disk-authority",
+     "FT.DECODING.cost-model",
+     "FT.FPGA.engine-sim",
+     "FT.GPU_KERNELS.static-warnings",
+     "FT.HCLI_SELF.emit-workunits",
+     "FT.MODEL_CAPABILITY.hard-gates.drive-tools",
+     "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+     "FT.ODYSSEY_ADVERSARY.attacks",
+     "FT.ODYSSEY_TRANSFER.re-earn",
+     "FT.PHYSICAL_GRAPH.p6-projection",
+     "FT.STATE.coverage-audit",
+     "FT.TOOLS.freshness",
+     "FT.TOOLS.propagate-skips",
+     "FT.TPS.accepted-token-cost",
+     "FT.VERIFICATION.negative-index",
+     "FT.VERIFICATION.repro",
+     "FT.ANE.preboard",
+     "FT.ARCHITECTURE_REPATRIATION.compile-specs",
+     "FT.CHILD_RESIDENT.optimizer",
+     "FT.EXPERIMENT_TURNAROUND.refresh",
+     "FT.FPGA.hardware-doctor",
+     "FT.LATENCY.cpu-turnaround",
+     "FT.MEMORY.hbm",
+     "FT.MEMORY.hmf",
+     "FT.MODEL_CAPABILITY.tournament-refuse",
+     "FT.MODEL_EXECUTION.fusion-sim",
+     "FT.MODEL_EXECUTION.static-skeleton",
+     "FT.MODEL_REPRESENTATION.ngram-school",
+     "FT.PHYSICAL_GRAPH.hwir-lower",
+     "FT.TOOLS.frontiers-refill"
+    ],
+    "why": "protected unit parked; continue_with returned 32 CPU units"
+   },
+   "seq": 13,
+   "t_s": 3.18197,
+   "t_unix": 1788171748.021415
+  },
+  {
+   "kind": "nr_nx_stage",
+   "payload": {
+    "callable": true,
+    "correct_refusal": false,
+    "first_failing_stage": {},
+    "id": "WU.TORTURE.GENERIC_NR_NX",
+    "n_compiled_organs": null,
+    "power": "GENERIC_NR_NX",
+    "status": "EXERCISED",
+    "unit_id": "WU.TORTURE.GENERIC_NR_NX",
+    "why": "every named stage ran and PASSED"
+   },
+   "seq": 14,
+   "t_s": 3.182089,
+   "t_unix": 1788171748.021535
+  },
+  {
+   "kind": "mutation_applied",
+   "payload": {
+    "applied": true,
+    "id": "WU.TORTURE.MUTATION",
+    "mutation_class": "PIPELINE_SELF",
+    "mutation_id": "MUT.PIPELINE_SELF.FT_HCLI_SELF_emit-workunits.1",
+    "power": "MUTATION",
+    "proposed": true,
+    "status": "EXERCISED",
+    "unit_id": "WU.TORTURE.MUTATION",
+    "why": "proposal applied in reversible scope; rollback digest matched"
+   },
+   "seq": 15,
+   "t_s": 3.18361,
+   "t_unix": 1788171748.0230558
+  },
+  {
+   "kind": "mutation_rolled_back",
+   "payload": {
+    "byte_identical": true,
+    "digest_match": true,
+    "id": "WU.TORTURE.MUTATION.rollback",
+    "mutation_id": "MUT.PIPELINE_SELF.FT_HCLI_SELF_emit-workunits.1",
+    "power": "MUTATION",
+    "unit_id": "WU.TORTURE.MUTATION.rollback"
+   },
+   "seq": 16,
+   "t_s": 3.183613,
+   "t_unix": 1788171748.023058
+  },
+  {
+   "kind": "subagent_state_persisted",
+   "payload": {
+    "disjoint": true,
+    "id": "WU.TORTURE.SUBAGENT_STATE",
+    "n_states": 2,
+    "power": "SUBAGENT_STATE",
+    "status": "EXERCISED",
+    "unit_id": "WU.TORTURE.SUBAGENT_STATE",
+    "why": "two WorkGraph documents, distinct unit sets, reload preserved identity and did not leak state"
+   },
+   "seq": 17,
+   "t_s": 3.185618,
+   "t_unix": 1788171748.025064
+  },
+  {
+   "kind": "concurrency_doctor_decided",
+   "payload": {
+    "blocked_reason": "resident presence is 'UNDECLARED', not PRESENT; will not invent a pid from the largest RSS neighbour; sidecar has no GPU authority and will not take a lease; no protected GPU lease is held; quiescence is 'UNKNOWN', not QUIESCENT; a DIAGNOSTIC_RELATIVE number on a busy machine is not this experiment; this sidecar is structurally unable to execute the protected ladder; a process with PROTECTED_ABSOLUTE authority must run observe() on hardware",
+    "classification": "SLEEPING",
+    "correct_refusal": true,
+    "experiment_state": "SLEEPING",
+    "id": "WU.TORTURE.CONCURRENCY",
+    "ladder": [
+     1,
+     2,
+     3,
+     4
+    ],
+    "power": "CONCURRENCY",
+    "status": "EXERCISED_REFUSAL",
+    "unit_id": "WU.TORTURE.CONCURRENCY",
+    "verdict_refused": true,
+    "why": "doctor REFUSED a verdict without observations and is SLEEPING with blocked_reason=\"resident presence is 'UNDECLARED', not PRESENT; will not invent a pid from the largest RSS neighbour; sidecar has no GPU authority and will not take a lease; no protected GPU lease is held; quiescence is 'UNKNOWN', not QUIESCENT; a DIAGNOSTIC_RELATIVE number on a busy machine is not this experiment; this sidecar is structurally unable to execute the protected ladder; a process with PROTECTED_ABSOLUTE authority must run observe() on hardware\"; that is the exercise"
+   },
+   "seq": 18,
+   "t_s": 3.344455,
+   "t_unix": 1788171748.183906
+  },
+  {
+   "kind": "restatement_refused",
+   "payload": {
+    "id": "WU.TORTURE.FRONTIER_INVALIDATION",
+    "killed_family": "shared_input_latent_plus_expert_local_output_readout",
+    "next_school": "NGRAM",
+    "power": "FRONTIER_INVALIDATION",
+    "status": "EXERCISED",
+    "unit_id": "WU.TORTURE.FRONTIER_INVALIDATION",
+    "why": "REFUSED WU.TORTURE.invalidate.gate_up.shared_input_latent: restatement of killed family shared_input_latent_plus_expert_local_output_readout (receipts/future/RIVAL_CODEC_SCREEN.json): nearby restatement of shared_input_latent_plus_expert_local_output_readout on layer_4.routed_experts.gate_up_proj (split=None); more ranks of a killed family on the exhausted surface are refused. The scar does not generalise, and this candidate did not leave the surface."
+   },
+   "seq": 19,
+   "t_s": 3.346276,
+   "t_unix": 1788171748.185722
+  },
+  {
+   "kind": "replan_emitted",
+   "payload": {
+    "cause": "scar_pruning",
+    "cause_id": "WU.TORTURE.scar.cross_expert_structure",
+    "effect_id": "WU.TORTURE.replan.ngram_product_codebook",
+    "how": "refuse_if_dead / scar_scheduling.admit killed cross_expert_structure on qwen3-80b; the replacement is the n-gram product codebook, a different organ, not a restatement",
+    "id": "WU.TORTURE.REPLAN.0",
+    "power": "REPLAN",
+    "status": "EXERCISED",
+    "unit_id": "WU.TORTURE.REPLAN.0",
+    "why": "result scar_pruning changes what runs next"
+   },
+   "seq": 20,
+   "t_s": 3.351639,
+   "t_unix": 1788171748.1910841
+  },
+  {
+   "kind": "replan_emitted",
+   "payload": {
+    "cause": "status_causality",
+    "cause_id": "WU.TORTURE.status.blocked_no_metal_gpu",
+    "effect_id": "WU.TORTURE.protected.ready_protected",
+    "how": "BLOCKED_NO_METAL_GPU is OVERREACHING given a process_error probe; teacher-capture's wake condition is not 'acquire a GPU'. Protected work stays parked; CPU work continues",
+    "id": "WU.TORTURE.REPLAN.1",
+    "power": "REPLAN",
+    "status": "EXERCISED",
+    "unit_id": "WU.TORTURE.REPLAN.1",
+    "why": "result status_causality changes what runs next"
+   },
+   "seq": 21,
+   "t_s": 3.351642,
+   "t_unix": 1788171748.191087
+  },
+  {
+   "kind": "replan_emitted",
+   "payload": {
+    "cause": "frontier_invalidation",
+    "cause_id": "WU.TORTURE.invalidate.gate_up.shared_input_latent",
+    "effect_id": "WU.TORTURE.replan.next_organ.NGRAM",
+    "how": "restatement of shared_input_latent_plus_expert_local_output_readout on layer_4.routed_experts.gate_up_proj is refused; next ranked school is NGRAM",
+    "id": "WU.TORTURE.REPLAN.2",
+    "power": "REPLAN",
+    "status": "EXERCISED",
+    "unit_id": "WU.TORTURE.REPLAN.2",
+    "why": "result frontier_invalidation changes what runs next"
+   },
+   "seq": 22,
+   "t_s": 3.351644,
+   "t_unix": 1788171748.191089
+  },
+  {
+   "kind": "replan_emitted",
+   "payload": {
+    "cause": "flash_meta_replan",
+    "cause_id": "WU.TORTURE.invalidate.gate_up.shared_input_latent",
+    "effect_id": "WU.TORTURE.replan.next_organ.NGRAM",
+    "how": "the next teacher rows go to surfaces that have never been measured, not to another rank sweep of layer_4.routed_experts.gate_up_proj",
+    "id": "WU.TORTURE.REPLAN.3",
+    "power": "REPLAN",
+    "status": "EXERCISED",
+    "unit_id": "WU.TORTURE.REPLAN.3",
+    "why": "result flash_meta_replan changes what runs next"
+   },
+   "seq": 23,
+   "t_s": 3.351645,
+   "t_unix": 1788171748.1910899
+  },
+  {
+   "kind": "tabula_callable",
+   "payload": {
+    "callable": true,
+    "entry_point": "python3 tools/future/tabula.py --build",
+    "evaluate_outcome": "PASS",
+    "id": "WU.TORTURE.TABULA",
+    "n_recovered": 12,
+    "n_units": 3,
+    "power": "TABULA",
+    "refusal_rate_refused": true,
+    "status": "EXERCISED",
+    "unit_id": "WU.TORTURE.TABULA",
+    "weights_frozen": true,
+    "why": "Tabula floor is callable: recover, evaluate, rank, catalog, resident_callable; apply_to_weights is WeightsFrozen (the floor, not a stubbed model); zero-refusal scoring is refused"
+   },
+   "seq": 24,
+   "t_s": 3.383282,
+   "t_unix": 1788171748.222731
+  },
+  {
+   "kind": "cognition_state",
+   "payload": {
+    "asked": false,
+    "id": "WU.TORTURE.cognition",
+    "provider_source": null,
+    "state": "UNAVAILABLE",
+    "unavailable": true,
+    "unit_id": "WU.TORTURE.cognition",
+    "why": "PASS means new power integration, not resident cognition"
+   },
+   "seq": 25,
+   "t_s": 3.385208,
+   "t_unix": 1788171748.2246542
+  },
+  {
+   "kind": "substrate_hashed",
+   "payload": {
+    "digest": "56834d7c5cabad6e9fb0083125007f342a754812331d44528c3d47761b362318",
+    "equal": true,
+    "id": "WU.TORTURE.substrate.after",
+    "moved": [],
+    "unit_id": "WU.TORTURE.substrate.after",
+    "verdict": "CLEAN",
+    "when": "after"
+   },
+   "seq": 26,
+   "t_s": 4.00228,
+   "t_unix": 1788171748.841728
+  }
+ ],
+ "events_sha256": "f4fe2dba98f6dd3fbb3e161dc2a35e1617f03818ca81961d3628d74b65e8c94f",
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "n_events": 27,
+ "purpose": "Sealed append-only timeline of the 30-minute power torture. The judge reads this document, not the runner's summary.",
+ "schema": "hawking.future.power_torture.timeline.v1",
+ "seal_sha256": "9b1e32439476461d6bd997aba8b98bb1b1713fecf450ef28b4412947b673d946",
+ "sealed": true,
+ "sealed_at": "2026-08-31T10:22:28Z",
+ "t0_unix": 1788171744.8394449,
+ "trial_id": "30m",
+ "version": 1
+}

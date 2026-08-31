@@ -1,0 +1,2235 @@
+diff --git a/crates/hawking-core/examples/dispatch_size_sweep.rs b/crates/hawking-core/examples/dispatch_size_sweep.rs
+new file mode 100644
+index 000000000..5e52afcdb
+--- /dev/null
++++ b/crates/hawking-core/examples/dispatch_size_sweep.rs
+@@ -0,0 +1,197 @@
++//! Bytes-per-dispatch sweep on one affine2 kernel, one representation.
++//!
++//! Stacks real `mlp.gate_proj` catalog rows into a single GEMV and varies
++//! only the launched working set (~5, ~20, ~50, ~100, ~200, ~338, ~700 MB).
++//! GPU time is `GPUEndTime - GPUStartTime` on the command buffer (the n1 /
++//! p1 region-timing approach). A size-vs-shape control at the LM head's
++//! ~338 MB compares one concatenated launch against the same bytes as many
++//! unit tensors.
++//!
++//! Does not mutate the production decode path.
++//!
++//! ```text
++//! cargo build --profile release-fast -p hawking-core --example dispatch_size_sweep
++//! ./workspace/ops/build/rust/release-fast/examples/dispatch_size_sweep \
++//!   --artifact-root ~/noetic/NOETIC_PARENT_A \
++//!   --out receipts/future/_DISPATCH_SIZE_SWEEP_raw.json
++//! ```
++
++use serde_json::{json, Value};
++use std::env;
++use std::fs;
++use std::path::PathBuf;
++use std::process;
++
++fn usage() -> &'static str {
++    "usage: dispatch_size_sweep --artifact-root DIR \
++        [--warmup N] [--reps N] [--out FILE]"
++}
++
++fn fail(message: impl std::fmt::Display) -> ! {
++    eprintln!("dispatch_size_sweep: {message}");
++    process::exit(2);
++}
++
++struct Args {
++    artifact_root: PathBuf,
++    warmup: usize,
++    reps: usize,
++    out: Option<PathBuf>,
++}
++
++fn parse_args() -> Args {
++    let mut artifact_root = None;
++    let mut warmup = 5usize;
++    let mut reps = 11usize;
++    let mut out = None;
++    let mut args = env::args().skip(1);
++    while let Some(flag) = args.next() {
++        match flag.as_str() {
++            "--artifact-root" => {
++                artifact_root = Some(PathBuf::from(args.next().unwrap_or_else(|| fail(usage()))));
++            }
++            "--warmup" => {
++                warmup = args
++                    .next()
++                    .unwrap_or_else(|| fail(usage()))
++                    .parse()
++                    .unwrap_or_else(|_| fail("--warmup"));
++            }
++            "--reps" => {
++                reps = args
++                    .next()
++                    .unwrap_or_else(|| fail(usage()))
++                    .parse()
++                    .unwrap_or_else(|_| fail("--reps"));
++            }
++            "--out" => out = Some(PathBuf::from(args.next().unwrap_or_else(|| fail(usage())))),
++            other => fail(format!("unknown {other}; {}", usage())),
++        }
++    }
++    if reps < 9 {
++        fail("--reps must be >= 9");
++    }
++    Args {
++        artifact_root: artifact_root.unwrap_or_else(|| fail(usage())),
++        warmup,
++        reps,
++        out,
++    }
++}
++
++fn git_head() -> String {
++    std::process::Command::new("git")
++        .args(["rev-parse", "HEAD"])
++        .output()
++        .ok()
++        .and_then(|o| String::from_utf8(o.stdout).ok())
++        .map(|s| s.trim().to_string())
++        .unwrap_or_default()
++}
++
++fn point_json(p: &hawking_core::model::qwen38_hybrid_decode::Qwen38DispatchSizePoint) -> Value {
++    json!({
++        "label": p.label,
++        "target_mb": p.target_mb,
++        "weight_bytes": p.weight_bytes,
++        "rows": p.rows,
++        "cols": p.cols,
++        "n_source_tensors": p.n_source_tensors,
++        "dispatches": p.dispatches,
++        "encoders": p.encoders,
++        "command_buffers": p.command_buffers,
++        "gpu_ns_median": p.gpu_ns_median,
++        "gpu_ns_reps": p.gpu_ns_reps,
++        "effective_gb_s": p.effective_gb_s,
++        "mb_per_dispatch": p.mb_per_dispatch,
++    })
++}
++
++#[cfg(target_os = "macos")]
++fn run(args: Args) -> Value {
++    use hawking_core::model::qwen38_hybrid_decode::Qwen38HybridDecodeSession;
++
++    eprintln!(
++        "dispatch_size_sweep opening {} warmup={} reps={}",
++        args.artifact_root.display(),
++        args.warmup,
++        args.reps
++    );
++    let session = Qwen38HybridDecodeSession::open(&args.artifact_root, 8).unwrap_or_else(|e| fail(e));
++    let measured = session
++        .measure_dispatch_size_sweep(args.warmup, args.reps)
++        .unwrap_or_else(|e| fail(e));
++    eprintln!(
++        "  kernel={} codec={} geometry={} unit_rows={} unit_bytes={}",
++        measured.kernel,
++        measured.codec,
++        measured.geometry,
++        measured.unit_rows,
++        measured.unit_weight_bytes
++    );
++    for p in &measured.curve {
++        eprintln!(
++            "  curve {:.1} MB  {:.1} GB/s  {} ns  {} disp",
++            p.mb_per_dispatch, p.effective_gb_s, p.gpu_ns_median, p.dispatches
++        );
++    }
++    eprintln!(
++        "  control one_large {:.1} GB/s  many_small {:.1} GB/s  bit_identical={}",
++        measured.control.one_large.effective_gb_s,
++        measured.control.many_small.effective_gb_s,
++        measured.control.bit_identical
++    );
++    json!({
++        "schema": "hawking.future.dispatch_size_sweep.raw.v1",
++        "git_head": git_head(),
++        "artifact_root": args.artifact_root.display().to_string(),
++        "kernel": measured.kernel,
++        "codec": measured.codec,
++        "geometry": measured.geometry,
++        "projection": measured.projection,
++        "group_size": measured.group_size,
++        "bits": measured.bits,
++        "cols": measured.cols,
++        "unit_rows": measured.unit_rows,
++        "unit_weight_bytes": measured.unit_weight_bytes,
++        "bytes_per_row": measured.bytes_per_row,
++        "warmup": measured.warmup,
++        "reps": measured.reps,
++        "pack_parity_max_abs_diff": measured.pack_parity_max_abs_diff,
++        "pack_parity_bit_identical": measured.pack_parity_bit_identical,
++        "curve": measured.curve.iter().map(point_json).collect::<Vec<_>>(),
++        "control": {
++            "total_weight_bytes": measured.control.total_weight_bytes,
++            "n_unit_tensors": measured.control.n_unit_tensors,
++            "unit_rows": measured.control.unit_rows,
++            "one_large": point_json(&measured.control.one_large),
++            "many_small": point_json(&measured.control.many_small),
++            "max_abs_diff": measured.control.max_abs_diff,
++            "bit_identical": measured.control.bit_identical,
++        },
++        "timing": measured.timing,
++        "arithmetic": measured.arithmetic,
++    })
++}
++
++#[cfg(not(target_os = "macos"))]
++fn run(_args: Args) -> Value {
++    fail("dispatch_size_sweep is Metal-only")
++}
++
++fn main() {
++    let args = parse_args();
++    let out = args.out.clone();
++    let doc = run(args);
++    let text = serde_json::to_string_pretty(&doc).unwrap_or_else(|e| fail(e));
++    println!("{text}");
++    if let Some(path) = out {
++        if let Some(parent) = path.parent() {
++            if !parent.as_os_str().is_empty() {
++                fs::create_dir_all(parent).unwrap_or_else(|e| fail(e));
++            }
++        }
++        fs::write(&path, format!("{text}\n")).unwrap_or_else(|e| fail(e));
++        eprintln!("wrote {}", path.display());
++    }
++}
+diff --git a/crates/hawking-core/src/model/qwen38_hybrid_decode.rs b/crates/hawking-core/src/model/qwen38_hybrid_decode.rs
+index db814f9df..7df8be389 100644
+--- a/crates/hawking-core/src/model/qwen38_hybrid_decode.rs
++++ b/crates/hawking-core/src/model/qwen38_hybrid_decode.rs
+@@ -446,6 +446,68 @@ pub struct Qwen38FusionParity {
+     pub dense_w_materialized: u64,
+ }
+ 
++/// Target working sets (MB, 10^6 bytes) for the bytes-per-dispatch sweep.
++/// Includes the LM head's 337.7 MB/launch and a point past it.
++pub const QWEN38_DISPATCH_SIZE_TARGETS_MB: [f64; 7] =
++    [5.0, 20.0, 50.0, 100.0, 200.0, 337.7, 700.0];
++
++/// One timed point: a single affine2 GEMV launch of `rows` catalog rows.
++#[derive(Clone, Debug, serde::Serialize)]
++pub struct Qwen38DispatchSizePoint {
++    pub label: String,
++    pub target_mb: f64,
++    pub weight_bytes: u64,
++    pub rows: u32,
++    pub cols: u32,
++    pub n_source_tensors: usize,
++    pub dispatches: u64,
++    pub encoders: u64,
++    pub command_buffers: u64,
++    pub gpu_ns_median: u64,
++    pub gpu_ns_reps: Vec<u64>,
++    pub effective_gb_s: f64,
++    pub mb_per_dispatch: f64,
++}
++
++/// Same total bytes, two shapes: one concatenated GEMV vs many unit GEMVs.
++#[derive(Clone, Debug, serde::Serialize)]
++pub struct Qwen38DispatchSizeControl {
++    pub total_weight_bytes: u64,
++    pub n_unit_tensors: usize,
++    pub unit_rows: u32,
++    pub one_large: Qwen38DispatchSizePoint,
++    pub many_small: Qwen38DispatchSizePoint,
++    pub max_abs_diff: f32,
++    pub bit_identical: bool,
++}
++
++/// Bytes-per-dispatch sweep on one kernel and one representation.
++///
++/// Stacks real `mlp.gate_proj` HGRAVF01 affine2 rows into one GEMV and
++/// varies only the launched working set. Does not change the default
++/// decode path.
++#[derive(Clone, Debug, serde::Serialize)]
++pub struct Qwen38DispatchSizeSweep {
++    pub kernel: String,
++    pub codec: String,
++    pub geometry: String,
++    pub projection: String,
++    pub group_size: u32,
++    pub bits: u32,
++    pub cols: u32,
++    pub unit_rows: u32,
++    pub unit_weight_bytes: u64,
++    pub bytes_per_row: u64,
++    pub warmup: usize,
++    pub reps: usize,
++    pub pack_parity_max_abs_diff: f32,
++    pub pack_parity_bit_identical: bool,
++    pub curve: Vec<Qwen38DispatchSizePoint>,
++    pub control: Qwen38DispatchSizeControl,
++    pub timing: &'static str,
++    pub arithmetic: &'static str,
++}
++
+ fn mixed_error(message: impl Into<String>) -> Error {
+     Error::Model(format!("qwen38 mixed hybrid decode: {}", message.into()))
+ }
+@@ -1489,6 +1551,28 @@ mod device {
+         bits: u32,
+     }
+ 
++    /// Concatenated affine2 rows in one staging buffer (codes, then scales, then biases).
++    struct PackedAffineRowStack {
++        staging: PinnedBuffer,
++        output: PinnedBuffer,
++        codes_off: u64,
++        scales_off: u64,
++        biases_off: u64,
++        codes_per_row: u64,
++        scales_per_row: u64,
++        biases_per_row: u64,
++        #[allow(dead_code)]
++        bytes_per_row: u64,
++        rows: u32,
++        cols: u32,
++        group_size: u32,
++        bits: u32,
++        unit_rows: u32,
++        kernel: &'static str,
++        #[allow(dead_code)]
++        n_source_tensors: usize,
++    }
++
+     enum MixedGpuWeight {
+         Binary(GpuBinary),
+         Residual(GpuResidual),
+@@ -1929,6 +2013,27 @@ mod device {
+         encoder.set_bytes(index, 4, &value as *const u32 as *const _);
+     }
+ 
++    fn align_up(n: u64, align: u64) -> u64 {
++        debug_assert!(align.is_power_of_two());
++        (n + align - 1) & !(align - 1)
++    }
++
++    fn host_copy_bytes(
++        src: &PinnedBuffer,
++        src_off: usize,
++        dst: &PinnedBuffer,
++        dst_off: usize,
++        n: usize,
++    ) {
++        unsafe {
++            std::ptr::copy_nonoverlapping(
++                (src.contents() as *const u8).add(src_off),
++                (dst.contents() as *mut u8).add(dst_off),
++                n,
++            );
++        }
++    }
++
+     fn tg256_grid(rows: u32) -> (u32, u32, u32) {
+         (rows.saturating_mul(256), 1, 1)
+     }
+@@ -5151,6 +5256,596 @@ mod device {
+             self.timed_cb(|tcb| self.encode_f32_stream(tcb, src, dest, n as u32))
+         }
+ 
++        fn encode_affine_args_at(
++            &self,
++            enc: &metal::ComputeCommandEncoderRef,
++            staging: &PinnedBuffer,
++            codes_off: u64,
++            scales_off: u64,
++            biases_off: u64,
++            rows: u32,
++            cols: u32,
++            group_size: u32,
++            input: &PinnedBuffer,
++            output: &PinnedBuffer,
++            output_off: u64,
++        ) {
++            enc.set_buffer(0, Some(staging), codes_off);
++            enc.set_buffer(1, Some(staging), scales_off);
++            enc.set_buffer(2, Some(staging), biases_off);
++            enc.set_buffer(3, Some(input), 0);
++            enc.set_buffer(4, Some(output), output_off);
++            set_u32(enc, 5, rows);
++            set_u32(enc, 6, cols);
++            set_u32(enc, 7, group_size);
++        }
++
++        fn dispatch_affine_at(
++            &self,
++            tcb: &mut TokenCommandBuffer<'_>,
++            packed: &PackedAffineRowStack,
++            rows: u32,
++            codes_off: u64,
++            scales_off: u64,
++            biases_off: u64,
++            input: &PinnedBuffer,
++            output: &PinnedBuffer,
++            output_off: u64,
++        ) -> Result<()> {
++            if packed.bits != 2 || !affine_group_size_supported(packed.group_size as usize) {
++                return Err(mixed_error(format!(
++                    "dispatch size sweep refuses bits={} group_size={}",
++                    packed.bits, packed.group_size
++                )));
++            }
++            // Pin tpr64: this measurement holds kernel + tile geometry fixed.
++            let (name, grid, tg) = qwen38_affine_q2_launch(
++                Affine2Geo::Tpr64,
++                packed.group_size,
++                rows,
++                packed.cols,
++            )
++            .ok_or_else(|| {
++                mixed_error(format!(
++                    "dispatch size sweep: no tpr64 launch for rows={rows} cols={} g={}",
++                    packed.cols, packed.group_size
++                ))
++            })?;
++            tcb.dispatch_threads(name, grid, tg, |enc| {
++                self.encode_affine_args_at(
++                    enc,
++                    &packed.staging,
++                    codes_off,
++                    scales_off,
++                    biases_off,
++                    rows,
++                    packed.cols,
++                    packed.group_size,
++                    input,
++                    output,
++                    output_off,
++                )
++            })
++        }
++
++        fn require_gpu_ns(timing: &CommandBufferTiming, label: &str) -> Result<u64> {
++            timing.gpu_ns.ok_or_else(|| {
++                mixed_error(format!(
++                    "{label}: driver did not expose GPUEndTime-GPUStartTime"
++                ))
++            })
++        }
++
++        fn median_gpu_ns(values: &[u64]) -> Result<u64> {
++            if values.is_empty() {
++                return Err(mixed_error("dispatch size sweep: empty GPU sample"));
++            }
++            let mut sorted = values.to_vec();
++            sorted.sort_unstable();
++            Ok(sorted[sorted.len() / 2])
++        }
++
++        fn dispatch_size_point(
++            label: String,
++            target_mb: f64,
++            weight_bytes: u64,
++            rows: u32,
++            cols: u32,
++            n_source_tensors: usize,
++            samples: &[u64],
++            dispatches: u64,
++            encoders: u64,
++            command_buffers: u64,
++        ) -> Result<Qwen38DispatchSizePoint> {
++            let gpu_ns_median = Self::median_gpu_ns(samples)?;
++            let effective_gb_s = if gpu_ns_median == 0 {
++                0.0
++            } else {
++                weight_bytes as f64 / gpu_ns_median as f64
++            };
++            let mb_per_dispatch =
++                weight_bytes as f64 / 1e6 / (dispatches.max(1) as f64);
++            Ok(Qwen38DispatchSizePoint {
++                label,
++                target_mb,
++                weight_bytes,
++                rows,
++                cols,
++                n_source_tensors,
++                dispatches,
++                encoders,
++                command_buffers,
++                gpu_ns_median,
++                gpu_ns_reps: samples.to_vec(),
++                effective_gb_s,
++                mb_per_dispatch,
++            })
++        }
++
++        fn affine_row_layout(body: &GpuAffine) -> Result<(u64, u64, u64)> {
++            let rows = body.rows as u64;
++            if rows == 0 {
++                return Err(mixed_error("dispatch size sweep: empty affine rows"));
++            }
++            let biases = body.biases.as_ref().ok_or_else(|| {
++                mixed_error("dispatch size sweep refuses delta-only (q2f) tensors")
++            })?;
++            let codes = body.codes.length();
++            let scales = body.scales.length();
++            let bias_len = biases.length();
++            if codes % rows != 0 || scales % rows != 0 || bias_len % rows != 0 {
++                return Err(mixed_error(format!(
++                    "dispatch size sweep: affine layout is not row-major \
++                     (rows={rows} codes={codes} scales={scales} biases={bias_len})"
++                )));
++            }
++            Ok((codes / rows, scales / rows, bias_len / rows))
++        }
++
++        fn pack_affine_row_stack(
++            &self,
++            sources: &[&GpuAffine],
++            want_rows: u32,
++        ) -> Result<PackedAffineRowStack> {
++            if sources.is_empty() || want_rows == 0 {
++                return Err(mixed_error(
++                    "dispatch size sweep: need at least one source row",
++                ));
++            }
++            let proto = sources[0];
++            let (cpr, spr, bpr) = Self::affine_row_layout(proto)?;
++            let bytes_per_row = cpr + spr + bpr;
++            for (i, body) in sources.iter().enumerate() {
++                if body.cols != proto.cols
++                    || body.group_size != proto.group_size
++                    || body.bits != proto.bits
++                {
++                    return Err(mixed_error(format!(
++                        "dispatch size sweep: source {i} geometry drifted"
++                    )));
++                }
++                let layout = Self::affine_row_layout(body)?;
++                if layout != (cpr, spr, bpr) {
++                    return Err(mixed_error(format!(
++                        "dispatch size sweep: source {i} row layout drifted"
++                    )));
++                }
++            }
++            let available: u32 = sources.iter().map(|b| b.rows).sum();
++            if want_rows > available {
++                return Err(mixed_error(format!(
++                    "dispatch size sweep: want {want_rows} rows, catalog has {available}"
++                )));
++            }
++            let (name, _, _) = qwen38_affine_q2_launch(
++                Affine2Geo::Tpr64,
++                proto.group_size,
++                want_rows,
++                proto.cols,
++            )
++            .ok_or_else(|| mixed_error("dispatch size sweep: tpr64 launch unavailable"))?;
++
++            const ALIGN: u64 = 256;
++            let codes_bytes = cpr * want_rows as u64;
++            let scales_bytes = spr * want_rows as u64;
++            let biases_bytes = bpr * want_rows as u64;
++            let codes_off = 0u64;
++            let scales_off = align_up(codes_off + codes_bytes, ALIGN);
++            let biases_off = align_up(scales_off + scales_bytes, ALIGN);
++            let staging_len = (biases_off + biases_bytes).max(ALIGN) as usize;
++            let staging = self.context.new_buffer_checked(staging_len)?;
++            let output = self
++                .context
++                .new_buffer_checked((want_rows as usize) * std::mem::size_of::<f32>())?;
++
++            let mut copied = 0u32;
++            let mut src_i = 0usize;
++            let mut src_row = 0u32;
++            while copied < want_rows {
++                let body = sources[src_i];
++                if src_row >= body.rows {
++                    src_i += 1;
++                    src_row = 0;
++                    continue;
++                }
++                let take = (body.rows - src_row).min(want_rows - copied);
++                let src_off_rows = src_row as u64;
++                let dst_off_rows = copied as u64;
++                host_copy_bytes(
++                    &body.codes,
++                    (src_off_rows * cpr) as usize,
++                    &staging,
++                    (codes_off + dst_off_rows * cpr) as usize,
++                    (take as u64 * cpr) as usize,
++                );
++                host_copy_bytes(
++                    &body.scales,
++                    (src_off_rows * spr) as usize,
++                    &staging,
++                    (scales_off + dst_off_rows * spr) as usize,
++                    (take as u64 * spr) as usize,
++                );
++                let biases = body.biases.as_ref().expect("affine_row_layout required bias");
++                host_copy_bytes(
++                    biases,
++                    (src_off_rows * bpr) as usize,
++                    &staging,
++                    (biases_off + dst_off_rows * bpr) as usize,
++                    (take as u64 * bpr) as usize,
++                );
++                copied += take;
++                src_row += take;
++            }
++
++            Ok(PackedAffineRowStack {
++                staging,
++                output,
++                codes_off,
++                scales_off,
++                biases_off,
++                codes_per_row: cpr,
++                scales_per_row: spr,
++                biases_per_row: bpr,
++                bytes_per_row,
++                rows: want_rows,
++                cols: proto.cols,
++                group_size: proto.group_size,
++                bits: proto.bits,
++                unit_rows: proto.rows,
++                kernel: name,
++                n_source_tensors: src_i + 1,
++            })
++        }
++
++        fn encode_packed_one_dispatch(
++            &self,
++            tcb: &mut TokenCommandBuffer<'_>,
++            packed: &PackedAffineRowStack,
++            rows: u32,
++        ) -> Result<()> {
++            tcb.begin_serial_group()?;
++            tcb.use_resources_read_on_group(&[packed.staging.clone()])?;
++            self.dispatch_affine_at(
++                tcb,
++                packed,
++                rows,
++                packed.codes_off,
++                packed.scales_off,
++                packed.biases_off,
++                &self.workspace.normalized,
++                &packed.output,
++                0,
++            )?;
++            tcb.end_serial_group()
++        }
++
++        fn encode_packed_many_small(
++            &self,
++            tcb: &mut TokenCommandBuffer<'_>,
++            packed: &PackedAffineRowStack,
++            n_unit: usize,
++        ) -> Result<()> {
++            let unit = packed.unit_rows;
++            tcb.begin_serial_group()?;
++            tcb.use_resources_read_on_group(&[packed.staging.clone()])?;
++            for i in 0..n_unit {
++                let i = i as u64;
++                let codes_off = packed.codes_off + i * unit as u64 * packed.codes_per_row;
++                let scales_off = packed.scales_off + i * unit as u64 * packed.scales_per_row;
++                let biases_off = packed.biases_off + i * unit as u64 * packed.biases_per_row;
++                let output_off = i * unit as u64 * 4;
++                self.dispatch_affine_at(
++                    tcb,
++                    packed,
++                    unit,
++                    codes_off,
++                    scales_off,
++                    biases_off,
++                    &self.workspace.normalized,
++                    &packed.output,
++                    output_off,
++                )?;
++            }
++            tcb.end_serial_group()
++        }
++
++        fn sample_packed_launch(
++            &self,
++            packed: &PackedAffineRowStack,
++            rows: u32,
++            warmup: usize,
++            reps: usize,
++            label: &str,
++        ) -> Result<(Vec<u64>, CommandBufferTiming)> {
++            for _ in 0..warmup {
++                let _ = self.timed_cb(|tcb| self.encode_packed_one_dispatch(tcb, packed, rows))?;
++            }
++            let mut ns = Vec::with_capacity(reps);
++            let mut last = CommandBufferTiming::default();
++            for _ in 0..reps {
++                last = self.timed_cb(|tcb| self.encode_packed_one_dispatch(tcb, packed, rows))?;
++                ns.push(Self::require_gpu_ns(&last, label)?);
++            }
++            Ok((ns, last))
++        }
++
++        /// Sweep effective GB/s against bytes per dispatch on one affine2
++        /// kernel. Concatenates real `mlp.gate_proj` catalog rows; does not
++        /// mutate fusion flags or the decode graph.
++        pub fn measure_dispatch_size_sweep(
++            &self,
++            warmup: usize,
++            reps: usize,
++        ) -> Result<Qwen38DispatchSizeSweep> {
++            if reps < 9 {
++                return Err(mixed_error(
++                    "dispatch size sweep --reps must be >= 9 (median over warmup-excluded samples)",
++                ));
++            }
++            let mut sources: Vec<&GpuAffine> = Vec::with_capacity(QWEN38_LAYERS);
++            for layer in 0..QWEN38_LAYERS {
++                let name = qwen38_layer_name(layer, "mlp.gate_proj.weight");
++                let body = self.affine(&name).ok_or_else(|| {
++                    mixed_error(format!("dispatch size sweep missing affine {name}"))
++                })?;
++                sources.push(body);
++            }
++            let proto = sources[0];
++            let (cpr, spr, bpr) = Self::affine_row_layout(proto)?;
++            let bytes_per_row = cpr + spr + bpr;
++            let unit_rows = proto.rows;
++            let unit_weight_bytes = bytes_per_row * unit_rows as u64;
++            let available_rows: u32 = sources.iter().map(|b| b.rows).sum();
++
++            let mut want_rows: Vec<u32> = Vec::new();
++            for &mb in &QWEN38_DISPATCH_SIZE_TARGETS_MB {
++                let target_bytes = (mb * 1e6).round() as u64;
++                let mut rows = (target_bytes / bytes_per_row) as u32;
++                if rows % 2 == 1 {
++                    rows = rows.saturating_sub(1);
++                }
++                rows = rows.max(2).min(available_rows);
++                if !want_rows.contains(&rows) {
++                    want_rows.push(rows);
++                }
++            }
++            if want_rows.len() < 5 {
++                return Err(mixed_error(format!(
++                    "dispatch size sweep produced {} distinct row counts; need >= 5",
++                    want_rows.len()
++                )));
++            }
++            let max_rows = *want_rows.iter().max().unwrap_or(&2);
++            eprintln!(
++                "dispatch_size_sweep packing {max_rows} rows ({} MB) from mlp.gate_proj \
++                 unit_rows={unit_rows} bytes/row={bytes_per_row}",
++                max_rows as f64 * bytes_per_row as f64 / 1e6
++            );
++            let packed = self.pack_affine_row_stack(&sources, max_rows)?;
++
++            let n_hidden = QWEN38_HIDDEN;
++            if packed.cols as usize != n_hidden {
++                return Err(mixed_error(format!(
++                    "dispatch size sweep: cols {} != hidden {n_hidden}",
++                    packed.cols
++                )));
++            }
++            let mut x = vec![0.0f32; n_hidden];
++            for (i, v) in x.iter_mut().enumerate() {
++                *v = ((i % 17) as f32) * 0.01 - 0.08;
++            }
++            self.write_f32_workspace("normalized", &x)?;
++
++            // Packed unit tensor vs production layer-0 gate_proj. If this
++            // drifts, the concatenated launches are not the same arithmetic.
++            zero_buffer(&packed.output);
++            let prod_body = sources[0];
++            let _ = self.timed_cb(|tcb| {
++                self.dispatch_affine(
++                    tcb,
++                    prod_body,
++                    &self.workspace.normalized,
++                    &self.workspace.gate,
++                )
++            })?;
++            let gate_p = self.read_f32_workspace("gate", unit_rows as usize)?;
++            zero_buffer(&packed.output);
++            let _ = self.timed_cb(|tcb| {
++                self.encode_packed_one_dispatch(tcb, &packed, unit_rows)
++            })?;
++            let packed_unit = {
++                let n = unit_rows as usize;
++                let mut out = vec![0.0f32; n];
++                unsafe {
++                    std::ptr::copy_nonoverlapping(
++                        packed.output.contents() as *const f32,
++                        out.as_mut_ptr(),
++                        n,
++                    );
++                }
++                out
++            };
++            let pack_parity_max_abs_diff = Self::max_abs_diff(&gate_p, &packed_unit);
++            let pack_parity_bit_identical = pack_parity_max_abs_diff == 0.0;
++            if !pack_parity_bit_identical {
++                return Err(mixed_error(format!(
++                    "dispatch size sweep: packed unit tensor is not bit-identical \
++                     to production gate_proj (max_abs_diff={pack_parity_max_abs_diff})"
++                )));
++            }
++
++            let mut curve = Vec::with_capacity(want_rows.len());
++            for &rows in &want_rows {
++                let weight_bytes = bytes_per_row * rows as u64;
++                let target_mb = weight_bytes as f64 / 1e6;
++                let n_src = rows.div_ceil(unit_rows) as usize;
++                eprintln!(
++                    "  launch rows={rows} ({:.1} MB) warmup={warmup} reps={reps}",
++                    target_mb
++                );
++                let (samples, meta) = self.sample_packed_launch(
++                    &packed,
++                    rows,
++                    warmup,
++                    reps,
++                    "dispatch size sweep",
++                )?;
++                let point = Self::dispatch_size_point(
++                    format!("rows_{rows}"),
++                    target_mb,
++                    weight_bytes,
++                    rows,
++                    packed.cols,
++                    n_src,
++                    &samples,
++                    meta.dispatches,
++                    meta.encoder_count,
++                    meta.command_buffers,
++                )?;
++                eprintln!(
++                    "    {:.1} GB/s  {} ns  {} disp  {} enc",
++                    point.effective_gb_s,
++                    point.gpu_ns_median,
++                    point.dispatches,
++                    point.encoders
++                );
++                curve.push(point);
++            }
++
++            // Size-vs-shape control: same bytes, one tall GEMV vs N unit GEMVs.
++            let n_unit = {
++                let target = (337.7e6 / unit_weight_bytes as f64).round() as usize;
++                target.max(2).min((max_rows / unit_rows) as usize).max(2)
++            };
++            let control_rows = n_unit as u32 * unit_rows;
++            if control_rows > packed.rows {
++                return Err(mixed_error(
++                    "dispatch size sweep: control rows exceed packed staging",
++                ));
++            }
++            let control_bytes = bytes_per_row * control_rows as u64;
++            eprintln!(
++                "  control n_unit={n_unit} rows={control_rows} ({:.1} MB)",
++                control_bytes as f64 / 1e6
++            );
++            let (one_samples, one_meta) = self.sample_packed_launch(
++                &packed,
++                control_rows,
++                warmup,
++                reps,
++                "control one_large",
++            )?;
++            let one_large = Self::dispatch_size_point(
++                "one_large".to_owned(),
++                control_bytes as f64 / 1e6,
++                control_bytes,
++                control_rows,
++                packed.cols,
++                n_unit,
++                &one_samples,
++                one_meta.dispatches,
++                one_meta.encoder_count,
++                one_meta.command_buffers,
++            )?;
++            let mut one_out = vec![0.0f32; control_rows as usize];
++            unsafe {
++                std::ptr::copy_nonoverlapping(
++                    packed.output.contents() as *const f32,
++                    one_out.as_mut_ptr(),
++                    control_rows as usize,
++                );
++            }
++            zero_buffer(&packed.output);
++            for _ in 0..warmup {
++                let _ = self.timed_cb(|tcb| {
++                    self.encode_packed_many_small(tcb, &packed, n_unit)
++                })?;
++            }
++            let mut many_ns = Vec::with_capacity(reps);
++            let mut many_meta = CommandBufferTiming::default();
++            for _ in 0..reps {
++                many_meta = self.timed_cb(|tcb| {
++                    self.encode_packed_many_small(tcb, &packed, n_unit)
++                })?;
++                many_ns.push(Self::require_gpu_ns(&many_meta, "control many_small")?);
++            }
++            let many_small = Self::dispatch_size_point(
++                "many_small".to_owned(),
++                control_bytes as f64 / 1e6,
++                control_bytes,
++                control_rows,
++                packed.cols,
++                n_unit,
++                &many_ns,
++                many_meta.dispatches,
++                many_meta.encoder_count,
++                many_meta.command_buffers,
++            )?;
++            let mut many_out = vec![0.0f32; control_rows as usize];
++            unsafe {
++                std::ptr::copy_nonoverlapping(
++                    packed.output.contents() as *const f32,
++                    many_out.as_mut_ptr(),
++                    control_rows as usize,
++                );
++            }
++            let control_diff = Self::max_abs_diff(&one_out, &many_out);
++            let control = Qwen38DispatchSizeControl {
++                total_weight_bytes: control_bytes,
++                n_unit_tensors: n_unit,
++                unit_rows,
++                one_large,
++                many_small,
++                max_abs_diff: control_diff,
++                bit_identical: control_diff == 0.0,
++            };
++            eprintln!(
++                "    one_large {:.1} GB/s  many_small {:.1} GB/s  max_abs_diff={control_diff}",
++                control.one_large.effective_gb_s, control.many_small.effective_gb_s
++            );
++
++            Ok(Qwen38DispatchSizeSweep {
++                kernel: packed.kernel.to_owned(),
++                codec: "HGRAVF01 affine2 q2".to_owned(),
++                geometry: "tpr64_tg128".to_owned(),
++                projection: "mlp.gate_proj.weight".to_owned(),
++                group_size: packed.group_size,
++                bits: packed.bits,
++                cols: packed.cols,
++                unit_rows,
++                unit_weight_bytes,
++                bytes_per_row,
++                warmup,
++                reps,
++                pack_parity_max_abs_diff,
++                pack_parity_bit_identical,
++                curve,
++                control,
++                timing: "MTLCommandBuffer GPUStartTime/GPUEndTime",
++                arithmetic: "y = affine2_q2(W, x) on a known x; identical kernel; rows stacked from catalog gate_proj",
++            })
++        }
++
+         pub fn step_decomposed(&mut self, token: u32) -> Result<(u32, Qwen38ClassTiming)> {
+             if self.fallbacks != 0 {
+                 return Err(Error::Model(
+diff --git a/receipts/future/DISPATCH_SIZE_SWEEP.json b/receipts/future/DISPATCH_SIZE_SWEEP.json
+new file mode 100644
+index 000000000..f9b524006
+--- /dev/null
++++ b/receipts/future/DISPATCH_SIZE_SWEEP.json
+@@ -0,0 +1,312 @@
++{
++ "arithmetic": "y = affine2_q2(W, x) on a known x; identical kernel; rows stacked from catalog gate_proj",
++ "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
++ "bits": 2,
++ "bytes_per_row": 1600,
++ "claim_boundary": "One kernel (affine2 q2 geo_tpr64_tg128) and one representation (HGRAVF01 affine2, mlp.gate_proj) on sealed-3.14, DIAGNOSTIC_RELATIVE. GPU time is MTLCommandBuffer GPUStartTime/GPUEndTime for an isolated command buffer that contains only that launch. Bytes are the GPU-resident codes+scales+biases of the launched rows, stacked from real catalog tensors; bandwidth is those bytes divided by GPU ns, so it inherits the perfect-locality assumption. Same arithmetic, same codec, same tile geometry; only the per-launch working set changes. A verdict is emitted only over at least five curve points, and only when the packed unit tensor is bit-identical to production. The size-vs-shape control holds total bytes near the LM head's 337.7 MB and compares one concatenated GEMV against the same bytes as many unit tensors. This does not change the production decode path.",
++ "clean_gemv_gb_s": 703.5,
++ "codec": "HGRAVF01 affine2 q2",
++ "cols": 5120,
++ "control": {
++  "bit_identical": true,
++  "many_small": {
++   "cols": 5120,
++   "command_buffers": 1,
++   "dispatches": 12,
++   "effective_gb_s": 346.8,
++   "encoders": 1,
++   "gpu_ns_median": 963833,
++   "gpu_ns_reps": [
++    966291,
++    964000,
++    962875,
++    963624,
++    964333,
++    962999,
++    963791,
++    963833,
++    963750,
++    964541,
++    964625
++   ],
++   "label": "many_small",
++   "mb_per_dispatch": 27.9,
++   "n_source_tensors": 12,
++   "rows": 208896,
++   "share_of_clean_roof": 0.4929,
++   "target_mb": 334.2336,
++   "weight_bytes": 334233600
++  },
++  "max_abs_diff": 0.0,
++  "n_unit_tensors": 12,
++  "one_large": {
++   "cols": 5120,
++   "command_buffers": 1,
++   "dispatches": 1,
++   "effective_gb_s": 374.6,
++   "encoders": 1,
++   "gpu_ns_median": 892291,
++   "gpu_ns_reps": [
++    892083,
++    892375,
++    892416,
++    892375,
++    892208,
++    892208,
++    892583,
++    892291,
++    892125,
++    891916,
++    892708
++   ],
++   "label": "one_large",
++   "mb_per_dispatch": 334.2,
++   "n_source_tensors": 12,
++   "rows": 208896,
++   "share_of_clean_roof": 0.5325,
++   "target_mb": 334.2336,
++   "weight_bytes": 334233600
++  },
++  "total_weight_bytes": 334233600,
++  "unit_rows": 17408
++ },
++ "curve": [
++  {
++   "cols": 5120,
++   "command_buffers": 1,
++   "dispatches": 1,
++   "effective_gb_s": 223.4,
++   "encoders": 1,
++   "gpu_ns_median": 22375,
++   "gpu_ns_reps": [
++    22208,
++    22458,
++    22499,
++    22333,
++    22458,
++    22166,
++    22416,
++    22083,
++    22375,
++    22041,
++    22416
++   ],
++   "label": "rows_3124",
++   "mb_per_dispatch": 5.0,
++   "n_source_tensors": 1,
++   "rows": 3124,
++   "share_of_clean_roof": 0.3175,
++   "target_mb": 4.9984,
++   "weight_bytes": 4998400
++  },
++  {
++   "cols": 5120,
++   "command_buffers": 1,
++   "dispatches": 1,
++   "effective_gb_s": 325.9,
++   "encoders": 1,
++   "gpu_ns_median": 61374,
++   "gpu_ns_reps": [
++    61374,
++    61458,
++    61333,
++    61124,
++    61416,
++    61083,
++    61416,
++    61374,
++    64375,
++    61416,
++    61374
++   ],
++   "label": "rows_12500",
++   "mb_per_dispatch": 20.0,
++   "n_source_tensors": 1,
++   "rows": 12500,
++   "share_of_clean_roof": 0.4632,
++   "target_mb": 20.0,
++   "weight_bytes": 20000000
++  },
++  {
++   "cols": 5120,
++   "command_buffers": 1,
++   "dispatches": 1,
++   "effective_gb_s": 354.8,
++   "encoders": 1,
++   "gpu_ns_median": 140916,
++   "gpu_ns_reps": [
++    140749,
++    140916,
++    141000,
++    140874,
++    140541,
++    140958,
++    140541,
++    140958,
++    141041,
++    140833,
++    141000
++   ],
++   "label": "rows_31250",
++   "mb_per_dispatch": 50.0,
++   "n_source_tensors": 2,
++   "rows": 31250,
++   "share_of_clean_roof": 0.5044,
++   "target_mb": 50.0,
++   "weight_bytes": 50000000
++  },
++  {
++   "cols": 5120,
++   "command_buffers": 1,
++   "dispatches": 1,
++   "effective_gb_s": 365.8,
++   "encoders": 1,
++   "gpu_ns_median": 273374,
++   "gpu_ns_reps": [
++    273291,
++    280375,
++    274374,
++    274124,
++    273749,
++    272916,
++    273458,
++    272958,
++    273291,
++    273374,
++    273208
++   ],
++   "label": "rows_62500",
++   "mb_per_dispatch": 100.0,
++   "n_source_tensors": 4,
++   "rows": 62500,
++   "share_of_clean_roof": 0.52,
++   "target_mb": 100.0,
++   "weight_bytes": 100000000
++  },
++  {
++   "cols": 5120,
++   "command_buffers": 1,
++   "dispatches": 1,
++   "effective_gb_s": 371.0,
++   "encoders": 1,
++   "gpu_ns_median": 539041,
++   "gpu_ns_reps": [
++    539041,
++    538708,
++    538958,
++    538666,
++    539125,
++    539250,
++    539833,
++    539249,
++    538999,
++    539499,
++    538916
++   ],
++   "label": "rows_125000",
++   "mb_per_dispatch": 200.0,
++   "n_source_tensors": 8,
++   "rows": 125000,
++   "share_of_clean_roof": 0.5274,
++   "target_mb": 200.0,
++   "weight_bytes": 200000000
++  },
++  {
++   "cols": 5120,
++   "command_buffers": 1,
++   "dispatches": 1,
++   "effective_gb_s": 374.4,
++   "encoders": 1,
++   "gpu_ns_median": 901875,
++   "gpu_ns_reps": [
++    901999,
++    901708,
++    901541,
++    901999,
++    901291,
++    911749,
++    913708,
++    901875,
++    901875,
++    901874,
++    902083
++   ],
++   "label": "rows_211062",
++   "mb_per_dispatch": 337.7,
++   "n_source_tensors": 13,
++   "rows": 211062,
++   "share_of_clean_roof": 0.5323,
++   "target_mb": 337.6992,
++   "weight_bytes": 337699200
++  },
++  {
++   "cols": 5120,
++   "command_buffers": 1,
++   "dispatches": 1,
++   "effective_gb_s": 376.7,
++   "encoders": 1,
++   "gpu_ns_median": 1858125,
++   "gpu_ns_reps": [
++    1858125,
++    1857875,
++    1858166,
++    1857625,
++    1857874,
++    1858208,
++    1858166,
++    1858374,
++    1857624,
++    1858083,
++    1858250
++   ],
++   "label": "rows_437500",
++   "mb_per_dispatch": 700.0,
++   "n_source_tensors": 26,
++   "rows": 437500,
++   "share_of_clean_roof": 0.5355,
++   "target_mb": 700.0,
++   "weight_bytes": 700000000
++  }
++ ],
++ "evidence_class": "DIAGNOSTIC_RELATIVE",
++ "finding": "The curve saturates in the ~350 GB/s cluster: 325.9 GB/s at 20.0 MB/dispatch, 374.4 GB/s at 337.7 MB (LM head is 337.7 MB at 497.4 GB/s), 376.7 GB/s at 700.0 MB. It does not rise toward ~497. Per-dispatch working set is DEAD. Do not rescue it with more concatenation variants.",
++ "gb_s_at_largest_mb": 376.7,
++ "gb_s_at_lm_head_mb": 374.4,
++ "gb_s_at_small_mb": 325.9,
++ "geometry": "tpr64_tg128",
++ "git_head": "44c699f5048842b082d982818b59232d2a55ce37",
++ "gpu_authority": false,
++ "group_size": 64,
++ "implicate_gb_s": 430.0,
++ "keeps_rising_past_lm_head_mb": false,
++ "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
++ "knee_mb": null,
++ "lm_head_gb_s": 497.4,
++ "lm_head_mb": 337.7,
++ "pack_parity_bit_identical": true,
++ "pack_parity_max_abs_diff": 0.0,
++ "production_cluster_gb_s": 350.0,
++ "projection": "mlp.gate_proj.weight",
++ "recorded_by": "tools/future/dispatch_size_sweep.py",
++ "refute_ceiling_gb_s": 400.0,
++ "remaining_candidates": {
++  "candidates": [
++   "decode ALU cost of affine2 q2 (this kernel) versus the Q4 LM head",
++   "cross-layer dependency serialization in the production token graph"
++  ],
++  "favoured": "decode_alu_cost",
++  "why": "This sweep launches independent GEMVs on a known x; layer N+1 does not wait on layer N. The working set still sat in the ~350 GB/s cluster at the LM head's 337.7 MB and past it (saturating near 377 GB/s at 700 MB). Dependency serialization is therefore not what holds THIS kernel at 350. A 5 MB launch is slower because fixed GPU start-up is not yet amortized; that is not the 350\u2192497 gap. The remaining difference between a 374 GB/s affine2 GEMV at 338 MB and the 497 GB/s Q4 LM head at the same bytes is the decode ALU cost of the two codecs."
++ },
++ "reps": 11,
++ "schema": "hawking.future.dispatch_size_sweep.v1",
++ "shape_irrelevant": false,
++ "size_alone_reproduces": false,
++ "source": "crates/hawking-core/examples/dispatch_size_sweep.rs via Qwen38HybridDecodeSession::measure_dispatch_size_sweep; region GPU timestamps (MTLCommandBuffer GPUStartTime/GPUEndTime)",
++ "timing": "MTLCommandBuffer GPUStartTime/GPUEndTime",
++ "took_gpu_lease": false,
++ "unit_rows": 17408,
++ "unit_weight_bytes": 27852800,
++ "verdict": "PER_DISPATCH_SIZE_REFUTED",
++ "version": 1,
++ "warmup": 5
++}
+diff --git a/receipts/future/_DISPATCH_SIZE_SWEEP_raw.json b/receipts/future/_DISPATCH_SIZE_SWEEP_raw.json
+new file mode 100644
+index 000000000..8438116c9
+--- /dev/null
++++ b/receipts/future/_DISPATCH_SIZE_SWEEP_raw.json
+@@ -0,0 +1,273 @@
++{
++  "arithmetic": "y = affine2_q2(W, x) on a known x; identical kernel; rows stacked from catalog gate_proj",
++  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
++  "bits": 2,
++  "bytes_per_row": 1600,
++  "codec": "HGRAVF01 affine2 q2",
++  "cols": 5120,
++  "control": {
++    "bit_identical": true,
++    "many_small": {
++      "cols": 5120,
++      "command_buffers": 1,
++      "dispatches": 12,
++      "effective_gb_s": 346.7754268633674,
++      "encoders": 1,
++      "gpu_ns_median": 963833,
++      "gpu_ns_reps": [
++        966291,
++        964000,
++        962875,
++        963624,
++        964333,
++        962999,
++        963791,
++        963833,
++        963750,
++        964541,
++        964625
++      ],
++      "label": "many_small",
++      "mb_per_dispatch": 27.852800000000002,
++      "n_source_tensors": 12,
++      "rows": 208896,
++      "target_mb": 334.2336,
++      "weight_bytes": 334233600
++    },
++    "max_abs_diff": 0.0,
++    "n_unit_tensors": 12,
++    "one_large": {
++      "cols": 5120,
++      "command_buffers": 1,
++      "dispatches": 1,
++      "effective_gb_s": 374.5791451443531,
++      "encoders": 1,
++      "gpu_ns_median": 892291,
++      "gpu_ns_reps": [
++        892083,
++        892375,
++        892416,
++        892375,
++        892208,
++        892208,
++        892583,
++        892291,
++        892125,
++        891916,
++        892708
++      ],
++      "label": "one_large",
++      "mb_per_dispatch": 334.2336,
++      "n_source_tensors": 12,
++      "rows": 208896,
++      "target_mb": 334.2336,
++      "weight_bytes": 334233600
++    },
++    "total_weight_bytes": 334233600,
++    "unit_rows": 17408
++  },
++  "curve": [
++    {
++      "cols": 5120,
++      "command_buffers": 1,
++      "dispatches": 1,
++      "effective_gb_s": 223.39217877094973,
++      "encoders": 1,
++      "gpu_ns_median": 22375,
++      "gpu_ns_reps": [
++        22208,
++        22458,
++        22499,
++        22333,
++        22458,
++        22166,
++        22416,
++        22083,
++        22375,
++        22041,
++        22416
++      ],
++      "label": "rows_3124",
++      "mb_per_dispatch": 4.9984,
++      "n_source_tensors": 1,
++      "rows": 3124,
++      "target_mb": 4.9984,
++      "weight_bytes": 4998400
++    },
++    {
++      "cols": 5120,
++      "command_buffers": 1,
++      "dispatches": 1,
++      "effective_gb_s": 325.8708899534005,
++      "encoders": 1,
++      "gpu_ns_median": 61374,
++      "gpu_ns_reps": [
++        61374,
++        61458,
++        61333,
++        61124,
++        61416,
++        61083,
++        61416,
++        61374,
++        64375,
++        61416,
++        61374
++      ],
++      "label": "rows_12500",
++      "mb_per_dispatch": 20.0,
++      "n_source_tensors": 1,
++      "rows": 12500,
++      "target_mb": 20.0,
++      "weight_bytes": 20000000
++    },
++    {
++      "cols": 5120,
++      "command_buffers": 1,
++      "dispatches": 1,
++      "effective_gb_s": 354.8213119872832,
++      "encoders": 1,
++      "gpu_ns_median": 140916,
++      "gpu_ns_reps": [
++        140749,
++        140916,
++        141000,
++        140874,
++        140541,
++        140958,
++        140541,
++        140958,
++        141041,
++        140833,
++        141000
++      ],
++      "label": "rows_31250",
++      "mb_per_dispatch": 50.0,
++      "n_source_tensors": 2,
++      "rows": 31250,
++      "target_mb": 50.0,
++      "weight_bytes": 50000000
++    },
++    {
++      "cols": 5120,
++      "command_buffers": 1,
++      "dispatches": 1,
++      "effective_gb_s": 365.7992347480009,
++      "encoders": 1,
++      "gpu_ns_median": 273374,
++      "gpu_ns_reps": [
++        273291,
++        280375,
++        274374,
++        274124,
++        273749,
++        272916,
++        273458,
++        272958,
++        273291,
++        273374,
++        273208
++      ],
++      "label": "rows_62500",
++      "mb_per_dispatch": 100.0,
++      "n_source_tensors": 4,
++      "rows": 62500,
++      "target_mb": 100.0,
++      "weight_bytes": 100000000
++    },
++    {
++      "cols": 5120,
++      "command_buffers": 1,
++      "dispatches": 1,
++      "effective_gb_s": 371.0292909073707,
++      "encoders": 1,
++      "gpu_ns_median": 539041,
++      "gpu_ns_reps": [
++        539041,
++        538708,
++        538958,
++        538666,
++        539125,
++        539250,
++        539833,
++        539249,
++        538999,
++        539499,
++        538916
++      ],
++      "label": "rows_125000",
++      "mb_per_dispatch": 200.0,
++      "n_source_tensors": 8,
++      "rows": 125000,
++      "target_mb": 200.0,
++      "weight_bytes": 200000000
++    },
++    {
++      "cols": 5120,
++      "command_buffers": 1,
++      "dispatches": 1,
++      "effective_gb_s": 374.4412474012474,
++      "encoders": 1,
++      "gpu_ns_median": 901875,
++      "gpu_ns_reps": [
++        901999,
++        901708,
++        901541,
++        901999,
++        901291,
++        911749,
++        913708,
++        901875,
++        901875,
++        901874,
++        902083
++      ],
++      "label": "rows_211062",
++      "mb_per_dispatch": 337.6992,
++      "n_source_tensors": 13,
++      "rows": 211062,
++      "target_mb": 337.6992,
++      "weight_bytes": 337699200
++    },
++    {
++      "cols": 5120,
++      "command_buffers": 1,
++      "dispatches": 1,
++      "effective_gb_s": 376.7238479650185,
++      "encoders": 1,
++      "gpu_ns_median": 1858125,
++      "gpu_ns_reps": [
++        1858125,
++        1857875,
++        1858166,
++        1857625,
++        1857874,
++        1858208,
++        1858166,
++        1858374,
++        1857624,
++        1858083,
++        1858250
++      ],
++      "label": "rows_437500",
++      "mb_per_dispatch": 700.0,
++      "n_source_tensors": 26,
++      "rows": 437500,
++      "target_mb": 700.0,
++      "weight_bytes": 700000000
++    }
++  ],
++  "geometry": "tpr64_tg128",
++  "git_head": "44c699f5048842b082d982818b59232d2a55ce37",
++  "group_size": 64,
++  "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
++  "pack_parity_bit_identical": true,
++  "pack_parity_max_abs_diff": 0.0,
++  "projection": "mlp.gate_proj.weight",
++  "reps": 11,
++  "schema": "hawking.future.dispatch_size_sweep.raw.v1",
++  "timing": "MTLCommandBuffer GPUStartTime/GPUEndTime",
++  "unit_rows": 17408,
++  "unit_weight_bytes": 27852800,
++  "warmup": 5
++}
+diff --git a/tools/future/dispatch_size_sweep.py b/tools/future/dispatch_size_sweep.py
+new file mode 100644
+index 000000000..e49ba364e
+--- /dev/null
++++ b/tools/future/dispatch_size_sweep.py
+@@ -0,0 +1,461 @@
++#!/usr/bin/env python3
++"""Bytes-per-dispatch sweep: does working set, not codec, make the 497 GB/s?
++
++Organ bandwidth left bytes-per-dispatch standing after dispatch COUNT was
++refuted. Granularity packed the buffers and left the work at 20.9 MB per
++launch; it stayed at 332 GB/s. This sweep moves the one variable nobody
++has moved: bytes per dispatch, on ONE kernel and ONE representation.
++
++    python3 tools/future/dispatch_size_sweep.py --record
++    python3 tools/future/dispatch_size_sweep.py --from receipts/future/_DISPATCH_SIZE_SWEEP_raw.json --record
++    python3 -m pytest tools/future/test_dispatch_size_sweep.py -q
++
++evidence_class DIAGNOSTIC_RELATIVE. Does not change the production decode path.
++"""
++from __future__ import annotations
++
++import argparse
++import json
++import os
++import subprocess
++import sys
++from pathlib import Path
++from typing import Any, Mapping
++
++sys.path.insert(0, str(Path(__file__).resolve().parent))
++from _common import REPO  # noqa: E402
++
++
++RECEIPT = REPO / "receipts" / "future" / "DISPATCH_SIZE_SWEEP.json"
++RAW_DEFAULT = REPO / "receipts" / "future" / "_DISPATCH_SIZE_SWEEP_raw.json"
++SCHEMA = "hawking.future.dispatch_size_sweep.v1"
++VERSION = 1
++RECORDED_BY = "tools/future/dispatch_size_sweep.py"
++
++CLEAN_GEMV_GB_S = 703.5
++LM_HEAD_GB_S = 497.4
++LM_HEAD_MB = 337.7
++SMALL_MB = 20.9
++PRODUCTION_CLUSTER_GB_S = 350.0
++# Same bar the granularity falsifier used for "materially toward the LM head".
++IMPLICATE_GB_S = 430.0
++REFUTE_CEILING_GB_S = 400.0
++MIN_POINTS = 5
++
++VERDICT_IMPLICATED = "PER_DISPATCH_SIZE_IMPLICATED"
++VERDICT_REFUTED = "PER_DISPATCH_SIZE_REFUTED"
++
++CLAIM_BOUNDARY = (
++    "One kernel (affine2 q2 geo_tpr64_tg128) and one representation "
++    "(HGRAVF01 affine2, mlp.gate_proj) on sealed-3.14, DIAGNOSTIC_RELATIVE. "
++    "GPU time is MTLCommandBuffer GPUStartTime/GPUEndTime for an isolated "
++    "command buffer that contains only that launch. Bytes are the GPU-resident "
++    "codes+scales+biases of the launched rows, stacked from real catalog "
++    "tensors; bandwidth is those bytes divided by GPU ns, so it inherits the "
++    "perfect-locality assumption. Same arithmetic, same codec, same tile "
++    "geometry; only the per-launch working set changes. A verdict is emitted "
++    "only over at least five curve points, and only when the packed unit "
++    "tensor is bit-identical to production. The size-vs-shape control holds "
++    "total bytes near the LM head's 337.7 MB and compares one concatenated "
++    "GEMV against the same bytes as many unit tensors. This does not change "
++    "the production decode path."
++)
++
++
++class TooFewPoints(Exception):
++    """Raised rather than emit a verdict over fewer than five curve points."""
++
++
++class PackNotIdentical(Exception):
++    """Raised rather than emit a verdict over a packed tensor that drifted."""
++
++
++class InconclusiveBandwidth(Exception):
++    """Raised rather than force IMPLICATED/REFUTED on a mid-band result."""
++
++
++def effective_gb_s(weight_bytes: int, gpu_ns: int) -> float:
++    if gpu_ns <= 0:
++        raise ValueError("gpu_ns must be positive to form a bandwidth")
++    return weight_bytes / gpu_ns
++
++
++def _as_point(raw: Mapping[str, Any]) -> dict[str, Any]:
++    weight_bytes = int(raw["weight_bytes"])
++    gpu_ns = int(raw["gpu_ns_median"])
++    dispatches = max(int(raw["dispatches"]), 1)
++    gb_s = effective_gb_s(weight_bytes, gpu_ns)
++    mb = weight_bytes / 1e6
++    return {
++        "label": str(raw["label"]),
++        "target_mb": float(raw.get("target_mb", mb)),
++        "weight_bytes": weight_bytes,
++        "rows": int(raw["rows"]),
++        "cols": int(raw.get("cols", 5120)),
++        "n_source_tensors": int(raw.get("n_source_tensors", 1)),
++        "dispatches": int(raw["dispatches"]),
++        "encoders": int(raw.get("encoders", 1)),
++        "command_buffers": int(raw.get("command_buffers", 1)),
++        "gpu_ns_median": gpu_ns,
++        "gpu_ns_reps": [int(x) for x in raw.get("gpu_ns_reps", [])],
++        "effective_gb_s": round(gb_s, 1),
++        "mb_per_dispatch": round(mb / dispatches, 1),
++        "share_of_clean_roof": round(gb_s / CLEAN_GEMV_GB_S, 4),
++    }
++
++
++def nearest_point(curve: list[Mapping[str, Any]], mb: float) -> dict[str, Any]:
++    if not curve:
++        raise TooFewPoints("refusing a verdict: curve is empty")
++    return min(curve, key=lambda p: abs(float(p["mb_per_dispatch"]) - mb))
++
++
++def knee_mb(curve: list[Mapping[str, Any]]) -> float | None:
++    """First (smallest working set) point that enters the LM-head regime."""
++    ordered = sorted(curve, key=lambda p: float(p["mb_per_dispatch"]))
++    for p in ordered:
++        if float(p["effective_gb_s"]) >= IMPLICATE_GB_S:
++            return float(p["mb_per_dispatch"])
++    return None
++
++
++def judge(curve: list[Mapping[str, Any]]) -> str:
++    """Return IMPLICATED or REFUTED, or refuse."""
++    if len(curve) < MIN_POINTS:
++        raise TooFewPoints(
++            f"refusing a verdict: {len(curve)} curve points is fewer than {MIN_POINTS}"
++        )
++    at_lm = nearest_point(curve, LM_HEAD_MB)
++    gb_lm = float(at_lm["effective_gb_s"])
++    if gb_lm >= IMPLICATE_GB_S:
++        return VERDICT_IMPLICATED
++    if gb_lm < REFUTE_CEILING_GB_S:
++        return VERDICT_REFUTED
++    raise InconclusiveBandwidth(
++        f"refusing a verdict: {gb_lm:.1f} GB/s at ~{at_lm['mb_per_dispatch']} MB "
++        f"sits between the ~350 cluster (refute below {REFUTE_CEILING_GB_S}) and "
++        f"the LM-head regime (implicate at {IMPLICATE_GB_S})"
++    )
++
++
++def _finding(
++    verdict: str,
++    curve: list[Mapping[str, Any]],
++    control: Mapping[str, Any],
++) -> dict[str, Any]:
++    at_lm = nearest_point(curve, LM_HEAD_MB)
++    at_small = nearest_point(curve, SMALL_MB)
++    ordered = sorted(curve, key=lambda p: float(p["mb_per_dispatch"]))
++    largest = ordered[-1]
++    knee = knee_mb(curve)
++    gb_lm = float(at_lm["effective_gb_s"])
++    gb_small = float(at_small["effective_gb_s"])
++    gb_large = float(largest["effective_gb_s"])
++    keeps_rising = gb_large > gb_lm + 10.0
++    one_gb = float(control["one_large"]["effective_gb_s"])
++    many_gb = float(control["many_small"]["effective_gb_s"])
++    shape_irrelevant = abs(one_gb - many_gb) < 25.0
++    size_alone = one_gb >= IMPLICATE_GB_S
++    if verdict == VERDICT_IMPLICATED:
++        text = (
++            f"Effective GB/s rose from {gb_small:.1f} at "
++            f"{at_small['mb_per_dispatch']} MB/dispatch to {gb_lm:.1f} at "
++            f"{at_lm['mb_per_dispatch']} MB (LM head is {LM_HEAD_MB} MB at "
++            f"{LM_HEAD_GB_S} GB/s). Per-dispatch working set is the mechanism. "
++            f"Knee (first point >= {IMPLICATE_GB_S} GB/s): "
++            f"{'none in range' if knee is None else f'{knee:.1f} MB'}. "
++            f"Past the LM-head size the curve "
++            f"{'keeps rising' if keeps_rising else 'does not keep rising'} "
++            f"({gb_large:.1f} GB/s at {largest['mb_per_dispatch']} MB)."
++        )
++        remaining = None
++        favoured = None
++    else:
++        text = (
++            f"The curve saturates in the ~350 GB/s cluster: "
++            f"{gb_small:.1f} GB/s at {at_small['mb_per_dispatch']} MB/dispatch, "
++            f"{gb_lm:.1f} GB/s at {at_lm['mb_per_dispatch']} MB (LM head is "
++            f"{LM_HEAD_MB} MB at {LM_HEAD_GB_S} GB/s), "
++            f"{gb_large:.1f} GB/s at {largest['mb_per_dispatch']} MB. "
++            f"It does not rise toward ~497. Per-dispatch working set is DEAD. "
++            f"Do not rescue it with more concatenation variants."
++        )
++        # Isolated launches have no layer-to-layer producer/consumer edge.
++        # A flat curve here means removing that serialization did not lift
++        # this kernel off the ~350 cluster, so the data favours decode ALU
++        # cost of affine2 q2 over cross-layer dependency serialization.
++        favoured = "decode_alu_cost"
++        remaining = {
++            "candidates": [
++                "decode ALU cost of affine2 q2 (this kernel) versus the Q4 LM head",
++                "cross-layer dependency serialization in the production token graph",
++            ],
++            "favoured": favoured,
++            "why": (
++                "This sweep launches independent GEMVs on a known x; layer N+1 "
++                "does not wait on layer N. The working set still sat in the "
++                "~350 GB/s cluster at the LM head's 337.7 MB and past it "
++                "(saturating near 377 GB/s at 700 MB). Dependency serialization "
++                "is therefore not what holds THIS kernel at 350. A 5 MB launch "
++                "is slower because fixed GPU start-up is not yet amortized; that "
++                "is not the 350→497 gap. The remaining difference between a "
++                "374 GB/s affine2 GEMV at 338 MB and the 497 GB/s Q4 LM head "
++                "at the same bytes is the decode ALU cost of the two codecs."
++            ),
++        }
++    return {
++        "text": text,
++        "knee_mb": knee,
++        "gb_s_at_lm_head_mb": round(gb_lm, 1),
++        "gb_s_at_small_mb": round(gb_small, 1),
++        "gb_s_at_largest_mb": round(gb_large, 1),
++        "keeps_rising_past_lm_head_mb": keeps_rising,
++        "size_alone_reproduces": size_alone,
++        "shape_irrelevant": shape_irrelevant,
++        "remaining_candidates": remaining,
++    }
++
++
++def measurement_from_raw(raw: Mapping[str, Any]) -> dict[str, Any]:
++    if not bool(raw.get("pack_parity_bit_identical", False)):
++        raise PackNotIdentical(
++            "refusing a verdict: packed unit tensor is not bit-identical to "
++            f"production (max_abs_diff={raw.get('pack_parity_max_abs_diff')})"
++        )
++    curve = [_as_point(p) for p in raw["curve"]]
++    if len(curve) < MIN_POINTS:
++        raise TooFewPoints(
++            f"refusing a verdict: {len(curve)} curve points is fewer than {MIN_POINTS}"
++        )
++    ctrl_raw = raw["control"]
++    control = {
++        "total_weight_bytes": int(ctrl_raw["total_weight_bytes"]),
++        "n_unit_tensors": int(ctrl_raw["n_unit_tensors"]),
++        "unit_rows": int(ctrl_raw["unit_rows"]),
++        "one_large": _as_point(ctrl_raw["one_large"]),
++        "many_small": _as_point(ctrl_raw["many_small"]),
++        "max_abs_diff": float(ctrl_raw.get("max_abs_diff", 0.0)),
++        "bit_identical": bool(ctrl_raw.get("bit_identical", False)),
++    }
++    verdict = judge(curve)
++    return {
++        "kernel": raw["kernel"],
++        "codec": raw.get("codec", "HGRAVF01 affine2 q2"),
++        "geometry": raw.get("geometry", "tpr64_tg128"),
++        "projection": raw.get("projection", "mlp.gate_proj.weight"),
++        "group_size": int(raw.get("group_size", 64)),
++        "bits": int(raw.get("bits", 2)),
++        "cols": int(raw.get("cols", 5120)),
++        "unit_rows": int(raw["unit_rows"]),
++        "unit_weight_bytes": int(raw["unit_weight_bytes"]),
++        "bytes_per_row": int(raw.get("bytes_per_row", 0)),
++        "warmup": int(raw.get("warmup", 0)),
++        "reps": int(raw.get("reps", 0)),
++        "pack_parity_max_abs_diff": float(raw.get("pack_parity_max_abs_diff", 0.0)),
++        "pack_parity_bit_identical": True,
++        "curve": curve,
++        "control": control,
++        "verdict": verdict,
++        "git_head": raw.get("git_head", ""),
++        "artifact_root": raw.get("artifact_root", ""),
++        "timing": raw.get("timing", "MTLCommandBuffer GPUStartTime/GPUEndTime"),
++        "arithmetic": raw.get("arithmetic", ""),
++    }
++
++
++def build(measurement: Mapping[str, Any]) -> dict[str, Any]:
++    """Seal a receipt. Refuses a verdict on fewer than five points."""
++    if not measurement.get("pack_parity_bit_identical", False):
++        raise PackNotIdentical(
++            "refusing a verdict: packed unit tensor is not bit-identical to "
++            f"production (max_abs_diff={measurement.get('pack_parity_max_abs_diff')})"
++        )
++    curve = list(measurement["curve"])
++    verdict = judge(curve)
++    finding = _finding(verdict, curve, measurement["control"])
++    return {
++        "schema": SCHEMA,
++        "version": VERSION,
++        "recorded_by": RECORDED_BY,
++        "evidence_class": "DIAGNOSTIC_RELATIVE",
++        "gpu_authority": False,
++        "took_gpu_lease": False,
++        "source": (
++            "crates/hawking-core/examples/dispatch_size_sweep.rs via "
++            "Qwen38HybridDecodeSession::measure_dispatch_size_sweep; "
++            "region GPU timestamps (MTLCommandBuffer GPUStartTime/GPUEndTime)"
++        ),
++        "claim_boundary": CLAIM_BOUNDARY,
++        "clean_gemv_gb_s": CLEAN_GEMV_GB_S,
++        "lm_head_gb_s": LM_HEAD_GB_S,
++        "lm_head_mb": LM_HEAD_MB,
++        "implicate_gb_s": IMPLICATE_GB_S,
++        "refute_ceiling_gb_s": REFUTE_CEILING_GB_S,
++        "production_cluster_gb_s": PRODUCTION_CLUSTER_GB_S,
++        "kernel": measurement["kernel"],
++        "codec": measurement["codec"],
++        "geometry": measurement["geometry"],
++        "projection": measurement["projection"],
++        "group_size": measurement["group_size"],
++        "bits": measurement["bits"],
++        "cols": measurement["cols"],
++        "unit_rows": measurement["unit_rows"],
++        "unit_weight_bytes": measurement["unit_weight_bytes"],
++        "bytes_per_row": measurement.get("bytes_per_row"),
++        "warmup": measurement["warmup"],
++        "reps": measurement["reps"],
++        "pack_parity_max_abs_diff": measurement["pack_parity_max_abs_diff"],
++        "pack_parity_bit_identical": True,
++        "curve": curve,
++        "control": measurement["control"],
++        "verdict": verdict,
++        "finding": finding["text"],
++        "knee_mb": finding["knee_mb"],
++        "gb_s_at_lm_head_mb": finding["gb_s_at_lm_head_mb"],
++        "gb_s_at_small_mb": finding["gb_s_at_small_mb"],
++        "gb_s_at_largest_mb": finding["gb_s_at_largest_mb"],
++        "keeps_rising_past_lm_head_mb": finding["keeps_rising_past_lm_head_mb"],
++        "size_alone_reproduces": finding["size_alone_reproduces"],
++        "shape_irrelevant": finding["shape_irrelevant"],
++        "remaining_candidates": finding["remaining_candidates"],
++        "timing": measurement.get("timing"),
++        "arithmetic": measurement.get("arithmetic"),
++        "git_head": measurement.get("git_head", ""),
++        "artifact_root": measurement.get("artifact_root", ""),
++    }
++
++
++def record(measurement: Mapping[str, Any] | None = None, *, path: Path | None = None) -> Path:
++    if measurement is None:
++        raise TooFewPoints("refusing to record a receipt without a measurement")
++    doc = build(measurement)
++    out = path or RECEIPT
++    out.parent.mkdir(parents=True, exist_ok=True)
++    out.write_text(json.dumps(doc, indent=1, sort_keys=True) + "\n")
++    return out
++
++
++def example_binaries() -> list[Path]:
++    names = ("dispatch_size_sweep",)
++    roots: list[Path] = []
++    env = os.environ.get("CARGO_TARGET_DIR")
++    if env:
++        roots.append(Path(env))
++    roots.extend(
++        [
++            REPO / "target",
++            REPO / "workspace" / "ops" / "build" / "rust",
++        ]
++    )
++    out: list[Path] = []
++    for root in roots:
++        for profile in ("release", "release-fast"):
++            for name in names:
++                p = root / profile / "examples" / name
++                if p.is_file():
++                    out.append(p)
++    return out
++
++
++def run_example(
++    artifact_root: Path,
++    *,
++    warmup: int = 5,
++    reps: int = 11,
++    out: Path | None = None,
++    binary: Path | None = None,
++) -> dict[str, Any]:
++    bins = [binary] if binary is not None else example_binaries()
++    if not bins:
++        raise FileNotFoundError(
++            "dispatch_size_sweep binary not found; build with "
++            "`cargo build --profile release-fast -p hawking-core "
++            "--example dispatch_size_sweep`"
++        )
++    exe = bins[0]
++    out = out or RAW_DEFAULT
++    out.parent.mkdir(parents=True, exist_ok=True)
++    cmd = [
++        str(exe),
++        "--artifact-root",
++        str(artifact_root),
++        "--warmup",
++        str(warmup),
++        "--reps",
++        str(reps),
++        "--out",
++        str(out),
++    ]
++    proc = subprocess.run(cmd, cwd=REPO, capture_output=True, text=True, check=False)
++    if proc.returncode != 0:
++        raise RuntimeError(
++            f"{exe} exited {proc.returncode}\nstdout:\n{proc.stdout}\nstderr:\n{proc.stderr}"
++        )
++    return json.loads(out.read_text())
++
++
++def load_raw(path: Path) -> dict[str, Any]:
++    return json.loads(path.read_text())
++
++
++def main(argv: list[str] | None = None) -> int:
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--record", action="store_true", help="write the sealed receipt")
++    parser.add_argument("--from", dest="raw_path", default=None, help="raw example JSON")
++    parser.add_argument("--measure", action="store_true", help="run the Metal example")
++    parser.add_argument(
++        "--artifact-root",
++        type=Path,
++        default=Path("/Users/scammermike/noetic/NOETIC_PARENT_A"),
++    )
++    parser.add_argument("--warmup", type=int, default=5)
++    parser.add_argument("--reps", type=int, default=11)
++    parser.add_argument("--out", type=Path, default=None)
++    args = parser.parse_args(argv)
++
++    raw: dict[str, Any] | None = None
++    if args.measure:
++        raw = run_example(
++            args.artifact_root,
++            warmup=args.warmup,
++            reps=args.reps,
++            out=RAW_DEFAULT,
++        )
++    elif args.raw_path:
++        raw = load_raw(Path(args.raw_path))
++    elif RAW_DEFAULT.is_file():
++        raw = load_raw(RAW_DEFAULT)
++
++    if raw is None:
++        print(
++            "no measurement: pass --from RAW.json, --measure, or write "
++            f"{RAW_DEFAULT}",
++            file=sys.stderr,
++        )
++        return 2
++
++    measured = measurement_from_raw(raw)
++    if args.record:
++        path = record(measured, path=args.out)
++        print(f"wrote {path} verdict={measured['verdict']}")
++    else:
++        print(
++            f"kernel {measured['kernel']}  points={len(measured['curve'])}  "
++            f"verdict={measured['verdict']}"
++        )
++        for p in measured["curve"]:
++            print(
++                f"  {p['mb_per_dispatch']:7.1f} MB  {p['effective_gb_s']:6.1f} GB/s  "
++                f"{p['gpu_ns_median']} ns  {p['dispatches']} disp"
++            )
++        ctrl = measured["control"]
++        print(
++            f"  control one_large {ctrl['one_large']['effective_gb_s']:.1f}  "
++            f"many_small {ctrl['many_small']['effective_gb_s']:.1f}  "
++            f"bit_identical={ctrl['bit_identical']}"
++        )
++    return 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+diff --git a/tools/future/test_dispatch_size_sweep.py b/tools/future/test_dispatch_size_sweep.py
+new file mode 100644
+index 000000000..429bb349c
+--- /dev/null
++++ b/tools/future/test_dispatch_size_sweep.py
+@@ -0,0 +1,235 @@
++"""The dispatch-size sweep must refuse a verdict on fewer than five points."""
++from __future__ import annotations
++
++import json
++from pathlib import Path
++
++import pytest
++
++from tools.future import dispatch_size_sweep as dss
++
++
++def _point(
++    mb: float,
++    gb_s: float,
++    *,
++    dispatches: int = 1,
++    encoders: int = 1,
++    rows: int | None = None,
++) -> dict:
++    weight_bytes = int(round(mb * 1e6))
++    gpu_ns = int(round(weight_bytes / gb_s))
++    if rows is None:
++        rows = max(2, int(weight_bytes / 1600))
++    return {
++        "label": f"mb_{mb}",
++        "target_mb": mb,
++        "weight_bytes": weight_bytes,
++        "rows": rows,
++        "cols": 5120,
++        "n_source_tensors": max(1, int(round(mb / 27.85))),
++        "dispatches": dispatches,
++        "encoders": encoders,
++        "command_buffers": 1,
++        "gpu_ns_median": gpu_ns,
++        "gpu_ns_reps": [gpu_ns],
++        "effective_gb_s": gb_s,
++        "mb_per_dispatch": mb / dispatches,
++    }
++
++
++def _control(one_gb_s: float = 350.0, many_gb_s: float = 348.0) -> dict:
++    mb = 334.2
++    return {
++        "total_weight_bytes": int(mb * 1e6),
++        "n_unit_tensors": 12,
++        "unit_rows": 17408,
++        "one_large": _point(mb, one_gb_s, dispatches=1),
++        "many_small": _point(mb, many_gb_s, dispatches=12),
++        "max_abs_diff": 0.0,
++        "bit_identical": True,
++    }
++
++
++def _raw(
++    *,
++    points: list[tuple[float, float]] | None = None,
++    pack_ok: bool = True,
++) -> dict:
++    if points is None:
++        points = [
++            (5.0, 330.0),
++            (20.0, 332.0),
++            (50.0, 335.0),
++            (100.0, 336.0),
++            (200.0, 338.0),
++            (337.7, 340.0),
++            (700.0, 342.0),
++        ]
++    curve = [_point(mb, gb) for mb, gb in points]
++    return {
++        "schema": "hawking.future.dispatch_size_sweep.raw.v1",
++        "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
++        "codec": "HGRAVF01 affine2 q2",
++        "geometry": "tpr64_tg128",
++        "projection": "mlp.gate_proj.weight",
++        "group_size": 64,
++        "bits": 2,
++        "cols": 5120,
++        "unit_rows": 17408,
++        "unit_weight_bytes": 27_852_800,
++        "bytes_per_row": 1600,
++        "warmup": 5,
++        "reps": 11,
++        "pack_parity_max_abs_diff": 0.0 if pack_ok else 1e-3,
++        "pack_parity_bit_identical": pack_ok,
++        "curve": curve,
++        "control": _control(),
++        "timing": "MTLCommandBuffer GPUStartTime/GPUEndTime",
++        "arithmetic": "y = affine2_q2(W, x)",
++    }
++
++
++def test_refuses_a_verdict_on_fewer_than_five_points():
++    four = [(5.0, 330.0), (20.0, 332.0), (50.0, 335.0), (337.7, 340.0)]
++    with pytest.raises(dss.TooFewPoints) as caught:
++        dss.judge([_point(mb, gb) for mb, gb in four])
++    assert "5" in str(caught.value)
++    with pytest.raises(dss.TooFewPoints):
++        dss.measurement_from_raw(_raw(points=four))
++
++
++def test_refuses_a_verdict_when_the_packed_unit_tensor_drifted():
++    with pytest.raises(dss.PackNotIdentical):
++        dss.measurement_from_raw(_raw(pack_ok=False))
++    measured = dss.measurement_from_raw(_raw())
++    measured["pack_parity_bit_identical"] = False
++    measured["pack_parity_max_abs_diff"] = 0.5
++    with pytest.raises(dss.PackNotIdentical):
++        dss.build(measured)
++
++
++def test_implicated_when_the_curve_enters_the_lm_head_regime():
++    points = [
++        (5.0, 320.0),
++        (20.0, 332.0),
++        (50.0, 380.0),
++        (100.0, 430.0),
++        (200.0, 470.0),
++        (337.7, 497.4),
++        (700.0, 520.0),
++    ]
++    curve = [_point(mb, gb) for mb, gb in points]
++    assert dss.judge(curve) == dss.VERDICT_IMPLICATED
++    doc = dss.build(dss.measurement_from_raw(_raw(points=points)))
++    assert doc["verdict"] == dss.VERDICT_IMPLICATED
++    assert doc["gb_s_at_lm_head_mb"] >= dss.IMPLICATE_GB_S
++    assert doc["knee_mb"] is not None
++    assert doc["keeps_rising_past_lm_head_mb"] is True
++    assert "mechanism" in doc["finding"].lower()
++
++
++def test_refuted_when_the_curve_stays_near_350():
++    curve = [_point(mb, gb) for mb, gb in [
++        (5.0, 328.0),
++        (20.0, 332.0),
++        (50.0, 334.0),
++        (100.0, 335.0),
++        (200.0, 336.0),
++        (337.7, 338.0),
++        (700.0, 340.0),
++    ]]
++    assert dss.judge(curve) == dss.VERDICT_REFUTED
++    doc = dss.build(dss.measurement_from_raw(_raw()))
++    assert doc["verdict"] == dss.VERDICT_REFUTED
++    assert doc["gb_s_at_lm_head_mb"] < dss.REFUTE_CEILING_GB_S
++    assert "DEAD" in doc["finding"]
++    assert doc["remaining_candidates"]["favoured"] == "decode_alu_cost"
++
++
++def test_a_5mb_overhead_dip_does_not_rescue_the_hypothesis():
++    """Fixed launch cost at 5 MB is not the 350→497 gap. Saturation at ~375 is REFUTED."""
++    points = [
++        (5.0, 223.4),
++        (20.0, 325.9),
++        (50.0, 354.8),
++        (100.0, 365.8),
++        (200.0, 371.0),
++        (337.7, 374.4),
++        (700.0, 376.7),
++    ]
++    curve = [_point(mb, gb) for mb, gb in points]
++    assert dss.judge(curve) == dss.VERDICT_REFUTED
++    doc = dss.build(dss.measurement_from_raw(_raw(points=points)))
++    assert doc["verdict"] == dss.VERDICT_REFUTED
++    assert doc["gb_s_at_lm_head_mb"] == pytest.approx(374.4, abs=0.2)
++    assert doc["knee_mb"] is None
++
++
++def test_refuses_a_forced_binary_in_the_dead_band():
++    # 415 GB/s at 338 MB is neither the 350 cluster nor the LM-head regime.
++    curve = [_point(mb, gb) for mb, gb in [
++        (5.0, 330.0),
++        (20.0, 350.0),
++        (50.0, 370.0),
++        (100.0, 390.0),
++        (200.0, 405.0),
++        (337.7, 415.0),
++        (700.0, 420.0),
++    ]]
++    with pytest.raises(dss.InconclusiveBandwidth) as caught:
++        dss.judge(curve)
++    assert "430" in str(caught.value)
++
++
++def test_gb_s_is_bytes_over_gpu_ns():
++    assert dss.effective_gb_s(350_000_000, 1_000_000) == 350.0
++    weight = 27_852_800
++    ns = int(round(weight / 344.1))
++    got = dss.effective_gb_s(weight, ns)
++    assert abs(got - 344.1) < 0.1
++
++
++def test_receipt_records_the_curve_the_control_and_a_binary_verdict():
++    doc = dss.build(dss.measurement_from_raw(_raw()))
++    assert doc["schema"] == dss.SCHEMA
++    assert doc["evidence_class"] == "DIAGNOSTIC_RELATIVE"
++    assert doc["verdict"] in (dss.VERDICT_IMPLICATED, dss.VERDICT_REFUTED)
++    assert len(doc["curve"]) >= dss.MIN_POINTS
++    assert "effective_gb_s" in doc["curve"][0]
++    assert "mb_per_dispatch" in doc["curve"][0]
++    assert "one_large" in doc["control"]
++    assert "many_small" in doc["control"]
++    assert doc["pack_parity_bit_identical"] is True
++    assert "perfect-locality" in doc["claim_boundary"]
++    assert doc["gpu_authority"] is False
++
++
++def test_record_writes_the_named_receipt(tmp_path: Path):
++    dest = tmp_path / "DISPATCH_SIZE_SWEEP.json"
++    measured = dss.measurement_from_raw(_raw())
++    path = dss.record(measured, path=dest)
++    assert path == dest
++    doc = json.loads(dest.read_text())
++    assert doc["verdict"] == dss.VERDICT_REFUTED
++    assert len(doc["curve"]) >= 5
++
++
++def test_record_without_a_measurement_refuses():
++    with pytest.raises(dss.TooFewPoints):
++        dss.record(None)
++
++
++def test_committed_receipt_if_present_is_a_real_verdict():
++    """Once recorded, the receipt must name the curve and a binary verdict."""
++    if not dss.RECEIPT.is_file():
++        pytest.skip("receipt not recorded yet")
++    doc = json.loads(dss.RECEIPT.read_text())
++    assert doc["schema"] == dss.SCHEMA
++    assert doc["evidence_class"] == "DIAGNOSTIC_RELATIVE"
++    assert doc["verdict"] in (dss.VERDICT_IMPLICATED, dss.VERDICT_REFUTED)
++    assert len(doc["curve"]) >= dss.MIN_POINTS
++    assert doc["pack_parity_bit_identical"] is True
++    assert (
++        dss.judge(doc["curve"]) == doc["verdict"]
++    )

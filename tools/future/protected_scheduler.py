@@ -42,10 +42,133 @@ from tools.future import contamination as C
 from tools.future import frontiers as fr
 from tools.future import protected_window as pw
 from tools.future import qualification_pipeline as qp
+from tools.future import status_causality as sc
 from tools.future import workunit_species as ws
 
 RECEIPT = "PROTECTED_SCHEDULER.json"
 SCHEMA = "hawking.future.protected_scheduler.v1"
+
+FIVE_RECORDED_FIELDS: tuple[str, ...] = getattr(
+    sc,
+    "FIVE_RECORDED_FIELDS",
+    (
+        "probe_performed",
+        "direct_observation",
+        "interpretation",
+        "confidence",
+        "alternatives",
+    ),
+)
+
+
+def _bind_emit() -> None:
+    """Consumer-side emit. Sibling owns the routine; this checkout may predate it."""
+    if hasattr(sc, "emit"):
+        return
+
+    def emit(
+        status: str,
+        *,
+        probe_performed: str = "",
+        direct_observation: Any = "",
+        interpretation: str = "",
+        probe_kind: str = "",
+        claim_kind: str | None = None,
+        falsifier: str = "",
+        source: str = "",
+    ) -> dict[str, Any]:
+        row: dict[str, Any] = {
+            "status": status,
+            "probe_performed": probe_performed,
+            "direct_observation": direct_observation,
+            "interpretation": interpretation or status,
+            "probe_kind": probe_kind,
+            "use_catalog": False,
+            "source": source or "<emit>",
+        }
+        if claim_kind:
+            row["claim_kind"] = claim_kind
+        if falsifier:
+            row["falsifier"] = falsifier
+        out = sc.challenge(row)
+        out["entry"] = "emit"
+        return out
+
+    sc.emit = emit  # type: ignore[attr-defined]
+
+
+_bind_emit()
+
+
+def records_five_fields(node: Any) -> bool:
+    fn = getattr(sc, "records_five_fields", None)
+    if callable(fn):
+        return bool(fn(node))
+    if not isinstance(node, dict):
+        return False
+    if not all(k in node for k in FIVE_RECORDED_FIELDS):
+        return False
+    if not str(node.get("probe_performed") or "").strip():
+        return False
+    if node.get("direct_observation") in (None, "", [], {}):
+        return False
+    if not str(node.get("interpretation") or "").strip():
+        return False
+    conf = node.get("confidence")
+    if not isinstance(conf, dict):
+        return False
+    if not {"would_raise", "would_lower", "level", "about"} <= set(conf):
+        return False
+    alts = node.get("alternatives")
+    return isinstance(alts, list) and bool(alts)
+
+
+def record_decision_causality(
+    result: dict[str, Any],
+    *,
+    probe_performed: str = "",
+    direct_observation: Any = "",
+    interpretation: str | None = None,
+    probe_kind: str = "",
+    claim_kind: str | None = None,
+) -> dict[str, Any]:
+    """Stamp the five causality fields. Does not change verdict/capable/available.
+
+    An unsupplied observation is UNTESTED, never a restatement of RUNNABLE/REFUSED.
+    """
+    verdict_before = result.get("verdict")
+    capable_before = result.get("scheduler_capable")
+    available_before = result.get("window_available")
+    status = str(result.get("verdict") or "")
+    unsupplied = direct_observation in (None, "", [], {})
+    rec = sc.emit(
+        status,
+        probe_performed=str(probe_performed or ""),
+        direct_observation="" if unsupplied else direct_observation,
+        interpretation=interpretation if interpretation is not None else status,
+        probe_kind="" if unsupplied else probe_kind,
+        claim_kind=None if unsupplied else claim_kind,
+        source="tools/future/protected_scheduler.py::decide",
+    )
+    for key in FIVE_RECORDED_FIELDS:
+        result[key] = rec[key]
+    result["causality_verdict"] = rec["verdict"]
+    result["falsifier"] = rec.get("falsifier")
+    if rec.get("probe_kind"):
+        result["probe_kind"] = rec["probe_kind"]
+    if rec.get("claim_kind") is not None:
+        result["claim_kind"] = rec["claim_kind"]
+    if (
+        result.get("verdict") != verdict_before
+        or result.get("scheduler_capable") != capable_before
+        or result.get("window_available") != available_before
+    ):
+        raise RuntimeError(
+            "status_causality.emit mutated decide() verdict/capable/available"
+        )
+    return rec
+
+
 VERSION = 1
 RECORDED_BY = "tools/future/protected_scheduler.py"
 
@@ -493,7 +616,7 @@ def decide(
     capable = True
 
     if not rec.get("recognized"):
-        return _authority(
+        result = _authority(
             {
                 "kind": "DECISION",
                 "verdict": "REFUSED",
@@ -510,9 +633,8 @@ def decide(
                 ),
             }
         )
-
-    if not rec.get("protected_required"):
-        return _authority(
+    elif not rec.get("protected_required"):
+        result = _authority(
             {
                 "kind": "DECISION",
                 "verdict": "RUNNABLE",
@@ -534,53 +656,75 @@ def decide(
                 ),
             }
         )
-
-    if available:
-        verdict = "RUNNABLE"
-        reason = (
-            "contamination_class is QUIESCENT and a proven HCLI holder is present; "
-            "the protected window is available. This sidecar still has no GPU "
-            "authority and will not execute the unit"
-        )
-        wake = None
     else:
-        verdict = "BLOCKED_ON_PROTECTED_WINDOW"
-        bits = []
-        if klass != "QUIESCENT":
-            bits.append(
-                f"contamination_class={klass!r} (needs QUIESCENT; "
-                f"{cont.get('contamination_reason') or 'see receipt'})"
+        if available:
+            verdict = "RUNNABLE"
+            reason = (
+                "contamination_class is QUIESCENT and a proven HCLI holder is present; "
+                "the protected window is available. This sidecar still has no GPU "
+                "authority and will not execute the unit"
             )
-        if not lease_st.get("present"):
-            bits.append(
-                f"no proven HCLI lease ({lease_st.get('reason') or 'present=false'})"
+            wake = None
+        else:
+            verdict = "BLOCKED_ON_PROTECTED_WINDOW"
+            bits = []
+            if klass != "QUIESCENT":
+                bits.append(
+                    f"contamination_class={klass!r} (needs QUIESCENT; "
+                    f"{cont.get('contamination_reason') or 'see receipt'})"
+                )
+            if not lease_st.get("present"):
+                bits.append(
+                    f"no proven HCLI lease ({lease_st.get('reason') or 'present=false'})"
+                )
+            reason = (
+                "protected-required unit cannot start: "
+                + "; ".join(bits)
+                + ". scheduler_capable remains true; the window is what is missing"
             )
-        reason = (
-            "protected-required unit cannot start: "
-            + "; ".join(bits)
-            + ". scheduler_capable remains true; the window is what is missing"
+            wake = _wake()
+        result = _authority(
+            {
+                "kind": "DECISION",
+                "verdict": verdict,
+                "reason": reason,
+                "wake_condition": wake,
+                "protected_required": True,
+                "recognized": True,
+                "resource_class": rec.get("resource_class"),
+                "contamination_class": klass,
+                "lease_present": bool(lease_st.get("present")),
+                "window_available": available,
+                "scheduler_capable": capable,
+                "unit_id": rec.get("unit_id"),
+                "inputs_simulated": bool(
+                    cont.get("injected_input") or lease_st.get("injected_input")
+                ),
+            }
         )
-        wake = _wake()
-
-    return _authority(
-        {
-            "kind": "DECISION",
-            "verdict": verdict,
-            "reason": reason,
-            "wake_condition": wake,
-            "protected_required": True,
-            "recognized": True,
-            "resource_class": rec.get("resource_class"),
-            "contamination_class": klass,
-            "lease_present": bool(lease_st.get("present")),
-            "window_available": available,
-            "scheduler_capable": capable,
-            "unit_id": rec.get("unit_id"),
-            "inputs_simulated": bool(
-                cont.get("injected_input") or lease_st.get("injected_input")
-            ),
-        }
+    record_decision_causality(
+        result,
+        probe_performed=(
+            "recognize(unit) by declared resource_class; "
+            "inspect_contamination (READ CONTAMINATION_SCIENCE, never coerced QUIESCENT); "
+            "inspect_lease (lsof holders, never flock); "
+            "window_available = (contamination_class == QUIESCENT and lease.present); "
+            "scheduler_capable is independent of window_available"
+        ),
+        direct_observation=(
+            f"recognized={result.get('recognized')}; "
+            f"protected_required={result.get('protected_required')}; "
+            f"contamination_class={klass!r}; "
+            f"lease_present={bool(lease_st.get('present'))}; "
+            f"window_available={available}; "
+            f"scheduler_capable={capable}; "
+            f"verdict={result.get('verdict')}"
+        ),
+        interpretation=str(result.get("reason") or result.get("verdict")),
+        probe_kind=sc.PROBE_MEASURED_FLAGS,
+        claim_kind=sc.CLAIM_FIELD_VALUE,
     )
+    return result
 
 
 def park(

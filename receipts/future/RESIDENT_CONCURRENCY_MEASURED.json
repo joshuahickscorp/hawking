@@ -1,0 +1,162 @@
+{
+ "bandwidth_cross_check": {
+  "active_bytes_per_token": 9878901136,
+  "clean_gemv_roof_gb_s": 703.5,
+  "gb_s_by_level": {
+   "1": 361.9,
+   "2": 454.8,
+   "3": 453.2
+  },
+  "lm_head_demonstrated_gb_s": 497.4,
+  "reading": "one session moves ~361 GB/s, inside the 341.9-360.0 band every organ sits in. Adding sessions raises the AGGREGATE well past it and to or beyond the LM head's demonstrated 497.4 - the rung the ladder calls the demonstrated regime, reached by OVERLAP rather than by removing bytes. So the memory system was never saturated by one stream: the dependency chain was holding it back, which is exactly the hypothesis ORGAN_BANDWIDTH left open.",
+  "run_to_run": "THREE runs of this ladder, all three CONCURRENCY_HELPS, and they disagree on the optimum. Ratios against n=1 - A: n2 1.40, n3 1.26 | B: n2 1.25, n3 1.60 | C: n2 1.24, n3 1.35. Every level in every run clears the 1.05 bar by a wide margin, so the VERDICT is robust; best_concurrency is not, and no optimal N should be quoted from this receipt. The n=1 anchor is the stable part: 361.3, 361.9 and 361.5 GB/s across the three runs, which is inside the 341.9-360.0 band every organ sits in and is what makes the aggregate comparison mean anything.",
+  "single_session_organ_band_gb_s": [
+   341.9,
+   360.0
+  ]
+ },
+ "claim_boundary": "Cohort wall clock over verified produced tokens, release profile, GPU lane lock held. Partial GPU occupancy is not available compute and is not measured here. Per-session TPS is reported but is NOT the ranking key: a second session that halves everyone's rate has bought nothing.",
+ "classification": {
+  "bar": "a cohort must produce >5% more AGGREGATE DECODE tokens per second than n=1",
+  "best_concurrency": 2,
+  "denominator_is_not_cohort_wall": "cohort wall is 93% session startup at short generations; ranking on it measures how well N model loads amortise, not whether decode overlaps",
+  "occupancy_is_not_the_target": true,
+  "reading": "if a second session buys nothing, the organs are bandwidth-saturated and ORGAN_BANDWIDTH's dependency-chain hypothesis does not explain the gap to the roof; if it buys throughput, the chain binds and the roof is reachable by overlap rather than by fewer bytes",
+  "useful_work_ratio_vs_n1": {
+   "1": 1.0,
+   "2": 1.2568,
+   "3": 1.2523
+  },
+  "verdict": "CONCURRENCY_HELPS"
+ },
+ "evidence_class": "DIAGNOSTIC_RELATIVE",
+ "gpu_authority": true,
+ "law_scope": {
+  "machine": "M3 Ultra 96 GB",
+  "nx": "sealed-3.14",
+  "refuses_to_universalise": [
+   "Flash",
+   "M5",
+   "FPGA",
+   "CUDA"
+  ],
+  "runtime": "hawking-native qwen3.8 hybrid decode",
+  "why": "a concurrency law is a property of this machine and this body"
+ },
+ "levels": [
+  {
+   "aggregate_decode_tps": 36.6306,
+   "cohort_decode_s": 1.31,
+   "cohort_wall_s": 16.494,
+   "concurrency": 1,
+   "failures": [],
+   "per_session": [
+    {
+     "admitted": true,
+     "decode_steps": 48,
+     "ms_per_token": 27.2996,
+     "session": 0,
+     "tps": 36.631
+    }
+   ],
+   "per_session_decode_tps": [
+    36.631
+   ],
+   "sessions_admitted": 1,
+   "sessions_launched": 1,
+   "startup_share_of_wall": 0.9206,
+   "tokens_produced": 48,
+   "useful_tokens_per_wall_second": 2.9101
+  },
+  {
+   "aggregate_decode_tps": 46.0377,
+   "cohort_decode_s": 2.117,
+   "cohort_wall_s": 24.033,
+   "concurrency": 2,
+   "failures": [],
+   "per_session": [
+    {
+     "admitted": true,
+     "decode_steps": 48,
+     "ms_per_token": 42.7909,
+     "session": 0,
+     "tps": 23.369
+    },
+    {
+     "admitted": true,
+     "decode_steps": 48,
+     "ms_per_token": 44.1145,
+     "session": 1,
+     "tps": 22.668
+    }
+   ],
+   "per_session_decode_tps": [
+    23.369,
+    22.668
+   ],
+   "sessions_admitted": 2,
+   "sessions_launched": 2,
+   "startup_share_of_wall": 0.9119,
+   "tokens_produced": 96,
+   "useful_tokens_per_wall_second": 3.9945
+  },
+  {
+   "aggregate_decode_tps": 45.8739,
+   "cohort_decode_s": 3.161,
+   "cohort_wall_s": 41.996,
+   "concurrency": 3,
+   "failures": [],
+   "per_session": [
+    {
+     "admitted": true,
+     "decode_steps": 48,
+     "ms_per_token": 65.3377,
+     "session": 0,
+     "tps": 15.305
+    },
+    {
+     "admitted": true,
+     "decode_steps": 48,
+     "ms_per_token": 65.8605,
+     "session": 1,
+     "tps": 15.184
+    },
+    {
+     "admitted": true,
+     "decode_steps": 48,
+     "ms_per_token": 64.9977,
+     "session": 2,
+     "tps": 15.385
+    }
+   ],
+   "per_session_decode_tps": [
+    15.305,
+    15.184,
+    15.385
+   ],
+   "sessions_admitted": 3,
+   "sessions_launched": 3,
+   "startup_share_of_wall": 0.9247,
+   "tokens_produced": 144,
+   "useful_tokens_per_wall_second": 3.4289
+  }
+ ],
+ "measurement_provenance": {
+  "absolutes_are_measured_under_load": true,
+  "gpu_lane_lock_held": true,
+  "lane": "g009-concurrency",
+  "loadavg": "{ 7.55 7.42 7.02 }",
+  "measured_at": "2026-08-31T17:25:14Z",
+  "measured_at_source": "WRITE_TIME",
+  "why": "a hardware number that cannot be placed in time cannot be audited against a contention window"
+ },
+ "recorded_by": "tools/future/concurrency_measure.py",
+ "schema": "hawking.future.concurrency_measured.v1",
+ "seal_sha256": "360b097622f79acbfe630c44b0b997713223045eaf69dfd7460f19a1b3cd854b",
+ "version": 1,
+ "what_this_does_not_mean": [
+  "it is NOT single-stream TPS. The 71 target is one conversation's latency; this is aggregate throughput across independent requests, and at n=2 each session is SLOWER (28.5 and 22.7 against 36.6).",
+  "cohort wall stays 92-93% session startup even at 128 tokens, which is why the ranking ignores it",
+  "three levels on one box on one build; the law is scoped and refuses to universalise"
+ ]
+}

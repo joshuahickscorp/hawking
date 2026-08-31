@@ -1,0 +1,1566 @@
+{
+ "accounting": {
+  "adjacent_catalog_not_in_2gb": {
+   "norms.linear_attn": 24960,
+   "state.A_log": 9600,
+   "state.dt_bias": 9600,
+   "total": 44160
+  },
+  "catalog_weights": {
+   "attention.linear_ba": 12535680,
+   "attention.linear_conv1d": 7864704,
+   "attention.linear_out": 802162560,
+   "attention.linear_qkvz": 2139096960,
+   "share_of_token": 0.29979649185953755,
+   "total": 2961659904
+  },
+  "identity": {
+   "geometry": {
+    "hidden_size": 5120,
+    "key_head_dim": 128,
+    "key_heads": 16,
+    "n_deltanet_layers": 48,
+    "qkvz_layout": "per_key_head_Q128_K128_V384_Z384",
+    "qkvz_rows": 16384,
+    "value_head_dim": 128,
+    "value_heads": 48
+   },
+   "model_id": "qwen3.8-27b-sealed-3.14",
+   "resident_identity": "sealed-3.14"
+  },
+  "reconciled": true,
+  "state": {
+   "conv_resident": 5898240,
+   "conv_rw_per_token": 11796480,
+   "dtype": "f32",
+   "in_2gb_bar": false,
+   "in_catalog": false,
+   "recurrent_resident": 150994944,
+   "recurrent_rw_per_token": 301989888,
+   "resident": 156893184,
+   "rw_per_token": 313786368
+  },
+  "token_active_bytes": 9878901136
+ },
+ "answers": {
+  "can_W_be_shared_across_layers": {
+   "W": "UNMEASURED",
+   "answer": "Not from the Q4 scale field (already MEASURED_NEGATIVE). W itself is UNMEASURED on this organ. Cousin of QN-SHARED-BASIS (MLP) and QN-HEAD-REDUNDANCY (GQA). A shared copy plus diagonals has executable economics; capability is the missing measurement.",
+   "net_bytes_if_true": 2092990424,
+   "scale_field": "MEASURED_NEGATIVE",
+   "status": "OPEN"
+  },
+  "can_coefficients_be_generated": {
+   "answer": "A no-W skinny program is OPEN and has executable economics. Emit-W-then-Q4 is REJECTED_DENSE_REMAT (already recorded). Scale-field sharing is MEASURED_NEGATIVE; this program is the UNMEASURED W question, not a retry of the scale Pearson.",
+   "emit_w_status": "ALREADY_FALSIFIED",
+   "net_bytes_if_true": 2134548400,
+   "status": "OPEN"
+  },
+  "can_recurrence_be_learned_with_fewer_params": {
+   "answer": "Yes as a named function replacement (diagonal SSM d_state=16 + skinny in_proj), not as a packing of S. Cousin of NNS-015 (MLP distillation, still open there), not a retry. Capability UNMEASURED. Emit-W lowering is dead.",
+   "net_bytes_if_true": 1213138176,
+   "status": "OPEN"
+  },
+  "do_structured_transitions_fit": {
+   "answer": "The incumbent already IS structured in time (decay + rank-1 Householder + rank-1 write). A stored diagonal/DPLR/banded/orthogonal A is a different mixer. Listed DPLR store of S keeps W and is OPEN as function replacement, not compression.",
+   "incumbent_already_rank1_plus_decay": true,
+   "net_bytes_if_dplr_s": 130939008,
+   "status": "OPEN"
+  },
+  "does_every_token_need_the_full_update": {
+   "answer": "The kernel always updates every element. Whether beta is ever near 0 on real x is UNMEASURED. Per-token predication adds 0 catalog bytes. Skipping whole layers is QN-STATE-MERGING, ALREADY_FALSIFIED.",
+   "layer_merge_status": "ALREADY_FALSIFIED",
+   "skip_fraction": "UNMEASURED",
+   "status": "OPEN"
+  },
+  "is_fused_update_consume_already_one_op": {
+   "answer": "Yes for S: vi_simd updates S and consumes it as h = S^T q in one kernel. FUSE_BA_DELTA additionally folds ba_to_decay, token-identical, 628\u2192580, zero catalog bytes (EXISTING_LEVER). A 7-launch DN PersistentPhysicalRegion is a dispatch judgment, not a 2.96 GB lever.",
+   "catalog_bytes_eliminated": 0,
+   "status": "EXISTING_LEVER"
+  },
+  "is_state_larger_than_the_function": {
+   "answer": "The update can fill 128 dimensions: a rank-r store is not closed under the rank-1 write, and a synthetic isotropic rollout does not concentrate 99% of energy at r=16 (mean=0.9581624780426163). Whether the trained function uses those 128 directions is UNMEASURED on real x. A closed reduction is narrower d, which is a different mixer and also shrinks W. Status OPEN, not licensed.",
+   "net_bytes_if_d64": 1590753408,
+   "status": "OPEN",
+   "trained_function_rank": "UNMEASURED",
+   "update_fills_rank": true
+  },
+  "what_is_already_falsified": {
+   "answer": "Depth-merge of S (QN-STATE-MERGING). Emit-W-then-GEMV (REJECTED_DENSE_REMAT). q/k/v/z bit-descent (DELTANET_QKVZ_PRECISION, NNS-019, NNS-029). Scale-field sharing (DELTANET_REPRESENTATION). Gravity families on DN in/out (NNS-019).",
+   "emit_w": "ALREADY_FALSIFIED",
+   "qkvz_bits": "MEASURED_NEGATIVE",
+   "share_or_merge": "ALREADY_FALSIFIED"
+  },
+  "what_update_does_the_model_need": {
+   "answer": "A recurrent map (q, k, v, decay, beta, S) \u2192 (S', h) that is O(1) in sequence length. The incumbent parameterises that map as a scalar decay, a rank-1 Householder along k, a rank-1 write k v^T, and a readout S^T q. That is a parameterisation, not a requirement. Function preservation is the bar, not reconstructing W_qkvz. z never enters the map. Codes of q/k/v/z are at their entropy floor; more quantization is the wrong lever.",
+   "operator": "S_t = (I - beta k k^T) (decay * S_{t-1}) + beta k v^T; h_t = S_t^T q; gated = RMSNorm(h) * silu(z). decay, beta come from in_proj_ba + A_log + dt_bias.",
+   "parameterisation_not_requirement": true,
+   "z_enters_gated_delta": false
+  }
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T06:44:14Z",
+  "recorded_by": "tools/future/deltanet_state_function.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "candidate_counts": {
+  "already_falsified": 2,
+  "existing_lever": 1,
+  "measured_negative": 1,
+  "n": 10,
+  "open": 6,
+  "rejected_dense_remat": 1
+ },
+ "candidates": [
+  {
+   "byte_model": "Remove qkvz 2139096960 + out 802162560 + conv 7864704 + S 150994944 + conv_state 5898240. Add d=64 qkvz 1069549440 + out 401082240 + conv 3932544 + S 37748736 + conv_state 2949120 + 1920 headers. ba unchanged. A rank-16 factor of the present 128x128 (U,V resident 37748736) is listed only as a non-closed alternative: it requires per-step truncation.",
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 1474564224,
+    "metadata": 1920,
+    "other": 0,
+    "residuals": 0,
+    "state": 40697856,
+    "total": 1515264000
+   },
+   "bytes_removed": {
+    "catalog_weights": 2949124224,
+    "other": 0,
+    "state": 156893184,
+    "total": 3106017408
+   },
+   "cheapest_falsifier": "STATIC, run here: isotropic rank-1 rollout, 256 tokens, 8 heads. Energy at r=16 mean=0.9581624780426163; update_fills_rank=True. A rank-r store of this S is not a compression of the mixer. CHEAP next: SVD of S on real post-norm x after a long prompt; if energy at r=16 is still below 0.99, d=64 is function replacement and needs a generate gate, not a packing. Do not quote the MLP NNS-016 spectrum as this S. Do not rematerialize a dense 128x128 from factors.",
+   "citations": [
+    {
+     "claim_refuted": "That weight-space low-rank / TT / Kronecker factorisation of a single expert tensor is a density win at the coherent point (layers \u2265 1).",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "L>=1: never at the coherent point. L0: already beating the incumbent \u2014 build the organ-and-layer-specific codec. On a new parent, check the Van Loan spectrum before assuming depth behaviour.",
+     "scar_id": "NNS-016",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b (weight-space SVD); qwen3-235b-a22b:F1 (Kronecker) gate/down; L0 is the exception",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet gated-delta S"
+    },
+    {
+     "claim_refuted": "depth-state and KV merging measured negative on this Qwen under the tested conditions",
+     "kind": "MODEL_SPECIFIC",
+     "reopen_condition": "a state topology (recurrent, latent-attention, or a longer-context regime) where merged state preserves capability",
+     "scar_id": "QN-STATE-MERGING",
+     "source_path": "tools/headless/negative_science.py",
+     "surface": "qwen3.8-27b-abliterated kv_state+deltanet_state",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet"
+    }
+   ],
+   "cousin_not_this_object": true,
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "A native smaller-d vi_simd consumes S in-register. Expanding a rank-r factor to dense 128x128 then running incumbent vi_simd is REJECTED_DENSE_REMAT and eliminates zero active bytes of S.",
+   "dispatch_change": {
+    "candidate": 48,
+    "delta": 0,
+    "incumbent": 48,
+    "surface": "same LocalStateMachine, smaller tiles; 48 launches remain"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "extra_flops": {
+    "formula": "gated_delta(d=64)-gated_delta(d=128) + qkvz_gemv(8192x5120)-qkvz_gemv(16384x5120) + out_gemv(5120x3072)-out_gemv(5120x6144)",
+    "per_token": -5763268608,
+    "relative_to": "incumbent_gated_delta_plus_qkvz_plus_out"
+   },
+   "general_physical_refusals": [],
+   "gpu_authority": false,
+   "id": "smaller_state_machine",
+   "index_hits_are_cousins": true,
+   "index_query_modes": [
+    "with_model",
+    "without_model"
+   ],
+   "index_refusals": [
+    {
+     "applies_regardless_of_model": false,
+     "claim_refuted": "Q3_K: 22\u201324% peak, slower \u00b5s than Q4 despite fewer bytes (RECORDED Type-1). QTIP Metal: more ALU than dead Q3 + serial state (RECORDED Type-1 proxy). Learned codebook: random LUT gather punished on Apple GPU. Low-rank residual: SVD energy low; ASVD also dead; doctor atlas LoRA plateau, rank-64 SVD 0.114\u21920.104 at +4.6 bpw.",
+     "general_physical": false,
+     "hypothesis_family": "low_rank",
+     "level": "MODEL_SPECIFIC",
+     "organ": "unrecorded",
+     "queried_model": null,
+     "queried_organ": "deltanet",
+     "queried_slug": "low_rank",
+     "query_mode": "without_model",
+     "reopen_condition": "Footprint-only for Q3_K. QTIP: lane-independent layout + \u226555% peak oracle. Low-rank: residual **measured** low-rank on this parent, or a model trained low-rank. Learned: lookup-free (QTIP-class) only.",
+     "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#q3_k_qtip_metal_learned_codebook_low_rank_residual_as_dense_tps",
+     "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
+     "verdict": "AXIS CLOSED for tps."
+    },
+    {
+     "applies_regardless_of_model": false,
+     "claim_refuted": "component_sensitive_organ_gate_failed",
+     "general_physical": false,
+     "hypothesis_family": "low_rank",
+     "level": "MODEL_SPECIFIC",
+     "organ": "attention",
+     "queried_model": null,
+     "queried_organ": "attention",
+     "queried_slug": "low_rank",
+     "query_mode": "without_model",
+     "reopen_condition": "different genome/configuration, materially different calibration, or direct full-model parity evidence",
+     "scar_id": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl#negative:qwen30-40bd93d6127772553a4f4458dc70295a",
+     "source_path": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl",
+     "verdict": "BURIED"
+    }
+   ],
+   "index_slugs": [
+    "state_merging",
+    "low_rank"
+   ],
+   "licensed": false,
+   "measured": {
+    "coefficients": "isotropic Gaussian q,k,v then L2 like the shader; decay U(0.85,0.99); beta U(0.2,0.9). Not post-norm x and not a generate gate.",
+    "dim": 128,
+    "energy_at_rank": {
+     "1": {
+      "max": 0.4142560886878382,
+      "mean": 0.23654378654268182,
+      "min": 0.16000909405457164,
+      "n": 8,
+      "std": 0.08767532518433059
+     },
+     "128": {
+      "max": 1.0,
+      "mean": 1.0,
+      "min": 1.0,
+      "n": 8,
+      "std": 0.0
+     },
+     "16": {
+      "max": 0.9839061438454332,
+      "mean": 0.9581624780426163,
+      "min": 0.9377427537192011,
+      "n": 8,
+      "std": 0.013618204525008702
+     },
+     "32": {
+      "max": 0.9993113877114148,
+      "mean": 0.9975151104617992,
+      "min": 0.9948100390131173,
+      "n": 8,
+      "std": 0.001269408646755318
+     },
+     "4": {
+      "max": 0.7056416189585988,
+      "mean": 0.5996681980041194,
+      "min": 0.5017428136077751,
+      "n": 8,
+      "std": 0.06993990643963305
+     },
+     "64": {
+      "max": 0.9999993499643101,
+      "mean": 0.9999928687275008,
+      "min": 0.9999831062588768,
+      "n": 8,
+      "std": 5.416380011175549e-06
+     },
+     "8": {
+      "max": 0.8892929484101709,
+      "mean": 0.8289639547267861,
+      "min": 0.7648121370136204,
+      "n": 8,
+      "std": 0.036186174270334666
+     }
+    },
+    "energy_bar": 0.99,
+    "evidence_class": "STATIC_ONLY",
+    "gpu_authority": false,
+    "measured": true,
+    "n_heads": 8,
+    "n_tokens": 256,
+    "note": "If energy at r=16 is below 0.99, the update fills rank under generic inputs and a rank-r store is function replacement, not a compression of this mixer. The trained trajectory is a different measurement.",
+    "numeric_rank": {
+     "max": 100.0,
+     "mean": 92.875,
+     "min": 80.0,
+     "n": 8,
+     "std": 6.527585694573454
+    },
+    "rank_capacity": 128,
+    "seed": 38,
+    "state_init": "S=0",
+    "structurally_low_rank_at_r16": false,
+    "trained_function_rank": "UNMEASURED",
+    "update_fills_rank": true
+   },
+   "mechanism": "Incumbent S is 128x128 f32 per value head, updated by a rank-1 projector plus write. Rank-r factorisation of that S is not invariant under the write: rank grows with tokens unless each step truncates (a different function). A closed reduction is narrower key/value dim at the same head counts, which also shrinks qkvz, out, conv, and S. Named point d=64.",
+   "name": "narrower (d=64) state; rank-r store of 128x128 is not closed",
+   "net_bytes": 1590753408,
+   "note": "NNS-016 is the MLP Kronecker/low-rank cousin, not this S. QN-STATE-MERGING is depth-merge of the present S, a different candidate (share_or_merge_state_across_depth).",
+   "physical_primitive": "LocalStateMachine",
+   "status": "OPEN"
+  },
+  {
+   "byte_model": "Remove q/k/v payload 1336934400 + ba 12535680 + conv 7864704 + A_log 9600 + dt_bias 9600 + S 150994944 + conv_state 5898240. Add in_proj 300812160 + A_diag 147456 + state 147456 + headers 1920. z payload and out_proj are kept.",
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 300959616,
+    "metadata": 1920,
+    "other": 0,
+    "residuals": 0,
+    "state": 147456,
+    "total": 301108992
+   },
+   "bytes_removed": {
+    "catalog_weights": 1357353984,
+    "other": 0,
+    "state": 156893184,
+    "total": 1514247168
+   },
+   "cheapest_falsifier": "This is an architecture change. CHEAP CPU: replace one layer's gated-delta with a fit diagonal SSM on real post-norm x, report h cosine vs incumbent and next-token S trajectory. If cosine fails 0.99, stop before a generate. Do not launder NNS-015 (MLP distillation, not run) as this mixer. Do not emit W_qkvz from the SSM and then Q4 GEMV.",
+   "citations": [
+    {
+     "claim_refuted": "That low-rank + activation-aware correction of the residual beats q3's density-quality point (fewer active bytes at q3 quality, held-out).",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "A distilled/generated operator, trained to match the MLP function, achieves q3 quality at materially fewer active bytes held-out across layers, with Doctor holding. That experiment has not been run.",
+     "scar_id": "NNS-015",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b down_proj L31, real post_swiglu X",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet gated-delta S"
+    },
+    {
+     "claim_refuted": "depth-state and KV merging measured negative on this Qwen under the tested conditions",
+     "kind": "MODEL_SPECIFIC",
+     "reopen_condition": "a state topology (recurrent, latent-attention, or a longer-context regime) where merged state preserves capability",
+     "scar_id": "QN-STATE-MERGING",
+     "source_path": "tools/headless/negative_science.py",
+     "surface": "qwen3.8-27b-abliterated kv_state+deltanet_state",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet"
+    }
+   ],
+   "cousin_not_this_object": true,
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "A native diagonal SSM consumes A, B, C in-register. Materializing a dense 128x128 S from the SSM every token is REJECTED_DENSE_REMAT.",
+   "dispatch_change": {
+    "candidate": 48,
+    "delta": -96,
+    "incumbent": 144,
+    "surface": "one LocalStateMachine per DN layer for the SSM step"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "extra_flops": {
+    "formula": "in_proj_gemv(2304x5120)+ssm(6*d_state*heads*layers)-qkv_gemv-ba_gemv-gated_delta",
+    "per_token": -4250247168,
+    "relative_to": "incumbent_qkv_ba_delta"
+   },
+   "general_physical_refusals": [],
+   "gpu_authority": false,
+   "id": "learned_recurrence",
+   "index_hits_are_cousins": true,
+   "index_query_modes": [
+    "with_model",
+    "without_model"
+   ],
+   "index_refusals": [
+    {
+     "applies_regardless_of_model": false,
+     "claim_refuted": "Q3_K: 22\u201324% peak, slower \u00b5s than Q4 despite fewer bytes (RECORDED Type-1). QTIP Metal: more ALU than dead Q3 + serial state (RECORDED Type-1 proxy). Learned codebook: random LUT gather punished on Apple GPU. Low-rank residual: SVD energy low; ASVD also dead; doctor atlas LoRA plateau, rank-64 SVD 0.114\u21920.104 at +4.6 bpw.",
+     "general_physical": false,
+     "hypothesis_family": "low_rank",
+     "level": "MODEL_SPECIFIC",
+     "organ": "unrecorded",
+     "queried_model": null,
+     "queried_organ": "deltanet",
+     "queried_slug": "low_rank",
+     "query_mode": "without_model",
+     "reopen_condition": "Footprint-only for Q3_K. QTIP: lane-independent layout + \u226555% peak oracle. Low-rank: residual **measured** low-rank on this parent, or a model trained low-rank. Learned: lookup-free (QTIP-class) only.",
+     "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#q3_k_qtip_metal_learned_codebook_low_rank_residual_as_dense_tps",
+     "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
+     "verdict": "AXIS CLOSED for tps."
+    },
+    {
+     "applies_regardless_of_model": false,
+     "claim_refuted": "component_sensitive_organ_gate_failed",
+     "general_physical": false,
+     "hypothesis_family": "low_rank",
+     "level": "MODEL_SPECIFIC",
+     "organ": "attention",
+     "queried_model": null,
+     "queried_organ": "attention",
+     "queried_slug": "low_rank",
+     "query_mode": "without_model",
+     "reopen_condition": "different genome/configuration, materially different calibration, or direct full-model parity evidence",
+     "scar_id": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl#negative:qwen30-40bd93d6127772553a4f4458dc70295a",
+     "source_path": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl",
+     "verdict": "BURIED"
+    }
+   ],
+   "index_slugs": [
+    "low_rank",
+    "qn_state_merging"
+   ],
+   "licensed": false,
+   "mechanism": "Stop generating a rank-1 projector from W_qkvz. Store a per-head diagonal A (d_state=16) and emit B, C, dt from a skinny Q4 map of x. This is function replacement of gated-delta, not a codec of S or of W. z and out_proj stay (output gate / residual). Cousin of NNS-015 (distilled MLP operator), not a retry.",
+   "name": "diagonal SSM of size 16 per value head, Q4 in_proj emits B/C/dt",
+   "net_bytes": 1213138176,
+   "physical_primitive": "LocalStateMachine",
+   "status": "OPEN"
+  },
+  {
+   "byte_model": "Remove dense S 150994944. Add DPLR S 20054016 + headers 1920. Alternatives: diagonal S 1179648; banded b=8 19390464; 8 Householder generators 9437184. W_qkvz unchanged. Incumbent already IS DPLR-in-time; a stored A drops the data-dependent k.",
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 1920,
+    "other": 0,
+    "residuals": 0,
+    "state": 20054016,
+    "total": 20055936
+   },
+   "bytes_removed": {
+    "catalog_weights": 0,
+    "other": 0,
+    "state": 150994944,
+    "total": 150994944
+   },
+   "cheapest_falsifier": "STATIC: the update is already rank-1 + decay; a stored structured A is a different operator. CHEAP CPU: replace S with its DPLR rank-8 SVD truncation after a real prompt and continue the incumbent update; if subsequent h cosine falls below 0.99, truncation is not a compression of this mixer. Do not quote Mamba's stored A as this generated Householder.",
+   "citations": [
+    {
+     "claim_refuted": "That weight-space low-rank / TT / Kronecker factorisation of a single expert tensor is a density win at the coherent point (layers \u2265 1).",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "L>=1: never at the coherent point. L0: already beating the incumbent \u2014 build the organ-and-layer-specific codec. On a new parent, check the Van Loan spectrum before assuming depth behaviour.",
+     "scar_id": "NNS-016",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b (weight-space SVD); qwen3-235b-a22b:F1 (Kronecker) gate/down; L0 is the exception",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet gated-delta S"
+    }
+   ],
+   "cousin_not_this_object": true,
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "A DPLR/diagonal/banded kernel consumes the factors. Expanding them to dense 128x128 then running vi_simd is REJECTED_DENSE_REMAT.",
+   "dispatch_change": {
+    "candidate": 48,
+    "delta": 0,
+    "incumbent": 48,
+    "surface": "replacement LocalStateMachine, same 48 launches"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "extra_flops": {
+    "formula": "DPLR apply + readout vs incumbent dense vi_simd",
+    "per_token": -222068736,
+    "relative_to": "incumbent_gated_delta_per_token"
+   },
+   "general_physical_refusals": [],
+   "gpu_authority": false,
+   "id": "structured_transition",
+   "index_hits_are_cousins": true,
+   "index_query_modes": [
+    "with_model",
+    "without_model"
+   ],
+   "index_refusals": [
+    {
+     "applies_regardless_of_model": false,
+     "claim_refuted": "Q3_K: 22\u201324% peak, slower \u00b5s than Q4 despite fewer bytes (RECORDED Type-1). QTIP Metal: more ALU than dead Q3 + serial state (RECORDED Type-1 proxy). Learned codebook: random LUT gather punished on Apple GPU. Low-rank residual: SVD energy low; ASVD also dead; doctor atlas LoRA plateau, rank-64 SVD 0.114\u21920.104 at +4.6 bpw.",
+     "general_physical": false,
+     "hypothesis_family": "low_rank",
+     "level": "MODEL_SPECIFIC",
+     "organ": "unrecorded",
+     "queried_model": null,
+     "queried_organ": "deltanet",
+     "queried_slug": "low_rank",
+     "query_mode": "without_model",
+     "reopen_condition": "Footprint-only for Q3_K. QTIP: lane-independent layout + \u226555% peak oracle. Low-rank: residual **measured** low-rank on this parent, or a model trained low-rank. Learned: lookup-free (QTIP-class) only.",
+     "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#q3_k_qtip_metal_learned_codebook_low_rank_residual_as_dense_tps",
+     "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
+     "verdict": "AXIS CLOSED for tps."
+    },
+    {
+     "applies_regardless_of_model": false,
+     "claim_refuted": "component_sensitive_organ_gate_failed",
+     "general_physical": false,
+     "hypothesis_family": "low_rank",
+     "level": "MODEL_SPECIFIC",
+     "organ": "attention",
+     "queried_model": null,
+     "queried_organ": "attention",
+     "queried_slug": "low_rank",
+     "query_mode": "without_model",
+     "reopen_condition": "different genome/configuration, materially different calibration, or direct full-model parity evidence",
+     "scar_id": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl#negative:qwen30-40bd93d6127772553a4f4458dc70295a",
+     "source_path": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl",
+     "verdict": "BURIED"
+    },
+    {
+     "applies_regardless_of_model": false,
+     "claim_refuted": "at depth the Van Loan rearrangement spectrum is nearly flat - the top Kronecker component holds 0.27 percent of gate energy - so the rank the 2.5 bpw budget buys (191 of 2048) captures only 27.2 percent of energy: rel_error 0.853 vs the incumbent 0.239 at the same rung.",
+     "general_physical": false,
+     "hypothesis_family": "kronecker",
+     "level": "MODEL_SPECIFIC",
+     "organ": "attention",
+     "queried_model": null,
+     "queried_organ": "attention",
+     "queried_slug": "kronecker",
+     "query_mode": "without_model",
+     "reopen_condition": "any layer whose Van Loan spectrum is not flat; check before assuming depth behaviour transfers to the first block",
+     "scar_id": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json#kronecker_factorisation",
+     "source_path": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+     "verdict": "DEAD for layers >= 1 at the S64 rungs; LIVE and codec-beating on layer 0. The lane's original 'structurally dead, nothing here should be built on' was REFUTED by its verifier."
+    }
+   ],
+   "index_slugs": [
+    "low_rank",
+    "kronecker",
+    "state_merging"
+   ],
+   "licensed": false,
+   "measured": {
+    "banded_resident": 19390464,
+    "diagonal_resident": 1179648,
+    "dplr_resident": 20054016,
+    "householder_resident": 9437184,
+    "incumbent_already_rank1_plus_decay": true
+   },
+   "mechanism": "The incumbent transition is already structured in time: scalar decay times S, then a rank-1 Householder (I - beta k k^T), then a rank-1 write k v^T. There is no stored A. Storing a structured A (diagonal, DPLR, banded, orthogonal generators) or storing S itself in that form is a different mixer, not a packing of the present 128x128. Listed economics store S as DPLR rank-8 (diag + U,V) and keep W_qkvz.",
+   "name": "store S as DPLR / diagonal / banded / Householder generators",
+   "net_bytes": 130939008,
+   "physical_primitive": "LocalStateMachine",
+   "status": "OPEN"
+  },
+  {
+   "byte_model": "Remove 48 qkvz 2139096960. Add T1 696360 + T2 2228264 + 48 f16 diagonals 1572864 + 48 layer embeddings 49152 + headers 1920.",
+   "bytes_added": {
+    "embeddings": 49152,
+    "generator": 2924624,
+    "metadata": 1920,
+    "other": 0,
+    "residuals": 1572864,
+    "state": 0,
+    "total": 4548560
+   },
+   "bytes_removed": {
+    "catalog_weights": 2139096960,
+    "other": 0,
+    "state": 0,
+    "total": 2139096960
+   },
+   "cheapest_falsifier": "STATIC, already run on the scale field (DELTANET_REPRESENTATION shared_transforms_across_layers, consecutive-layer Pearson ~0). That kills the identity residual on scales, not this skinny program on W. CHEAP CPU: fit T1,T2 on one reconstructed qkvz and report rec_out cosine vs incumbent Q4; if it fails 0.99, the program is not this function. A lowering whose native execution is 'emit W, then qwen_uniform_q4' is refused before a fit.",
+   "citations": [
+    {
+     "claim_refuted": "no K below ~2.25 bpw composes coherently for the MLP: the local functional probe dies at held-out activation",
+     "kind": "MODEL_SPECIFIC",
+     "reopen_condition": "a shared-basis point that is coherent at held-out activation AND beats q2f on both density and COMPLETE_TOKEN_NS",
+     "scar_id": "QN-SHARED-BASIS-DENSITY",
+     "source_path": "tools/headless/negative_science.py",
+     "surface": "qwen3.8-27b-abliterated mlp_gate_up+mlp_down",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet"
+    },
+    {
+     "claim_refuted": "Q heads mean cosine 0.0438 and K/V/O similarly near-orthogonal, so there is no shared-head structure to exploit",
+     "kind": "MODEL_SPECIFIC",
+     "reopen_condition": "an organ or model where head cosine similarity is high enough that sharing costs less capability than the bits it saves",
+     "scar_id": "QN-HEAD-REDUNDANCY",
+     "source_path": "tools/headless/negative_science.py",
+     "surface": "qwen3.8-27b-abliterated gqa_attention",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet"
+    }
+   ],
+   "cousin_not_this_object": true,
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "y = diag_l T2 (T1 x) is two skinny GEMVs. Materializing W_l = diag_l T2 T1 then Q4 is REJECTED_DENSE_REMAT.",
+   "dispatch_change": {
+    "candidate": 96,
+    "delta": 48,
+    "incumbent": 48,
+    "surface": "two skinny GEMVs per DN layer unless FusedDecodeCompute folds them; +48 launches if split"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "extra_flops": {
+    "formula": "48*(GEMV 256x5120 + GEMV 16384x256 + 16384 diagonal) - qkvz GEMV",
+    "per_token": -7523794944,
+    "relative_to": "incumbent_qkvz_gemv_per_token"
+   },
+   "general_physical_refusals": [],
+   "gpu_authority": false,
+   "id": "generated_transition_coefficients",
+   "index_hits_are_cousins": true,
+   "index_query_modes": [
+    "with_model",
+    "without_model"
+   ],
+   "index_refusals": [
+    {
+     "applies_regardless_of_model": false,
+     "claim_refuted": "mean pairwise cosine between experts = 1e-4; experts are mutually orthogonal",
+     "general_physical": false,
+     "hypothesis_family": "cross_expert_structure",
+     "level": "MODEL_SPECIFIC",
+     "organ": "deltanet",
+     "queried_model": null,
+     "queried_organ": "deltanet",
+     "queried_slug": "generated_tied_params",
+     "query_mode": "without_model",
+     "reopen_condition": "a future parent measures mean pairwise expert cosine >= 0.10 on its own weights",
+     "scar_id": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json#inter_expert_redundancy",
+     "source_path": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+     "verdict": "dead on arrival: there is no shared component to subtract"
+    },
+    {
+     "applies_regardless_of_model": false,
+     "claim_refuted": "Q80 experts in the measured slice are mutually orthogonal. There is no shared direction to exploit.",
+     "general_physical": false,
+     "hypothesis_family": "cross_expert_structure",
+     "level": "MODEL_SPECIFIC",
+     "organ": "unrecorded",
+     "queried_model": null,
+     "queried_organ": "attention",
+     "queried_slug": "generated_tied_params",
+     "query_mode": "without_model",
+     "reopen_condition": "never on Q80. On DSV4F: do not treat this as settled. A pairwise-cosine measurement on DSV4F experts is the cheap check; only if that mean is materially above ~0.05 would a shared-basis pack be a new premise. Do not skip that measurement by transferring the Q80 number.",
+     "scar_id": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-010",
+     "source_path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+     "verdict": "REFUTED"
+    },
+    {
+     "applies_regardless_of_model": false,
+     "claim_refuted": "mean pairwise cosine between experts = 1e-4; experts are mutually orthogonal",
+     "general_physical": false,
+     "hypothesis_family": "cross_expert_structure",
+     "level": "MODEL_SPECIFIC",
+     "organ": "deltanet",
+     "queried_model": null,
+     "queried_organ": "deltanet",
+     "queried_slug": "cross_expert_structure",
+     "query_mode": "without_model",
+     "reopen_condition": "a future parent measures mean pairwise expert cosine >= 0.10 on its own weights",
+     "scar_id": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json#inter_expert_redundancy",
+     "source_path": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+     "verdict": "dead on arrival: there is no shared component to subtract"
+    },
+    {
+     "applies_regardless_of_model": false,
+     "claim_refuted": "Q80 experts in the measured slice are mutually orthogonal. There is no shared direction to exploit.",
+     "general_physical": false,
+     "hypothesis_family": "cross_expert_structure",
+     "level": "MODEL_SPECIFIC",
+     "organ": "unrecorded",
+     "queried_model": null,
+     "queried_organ": "attention",
+     "queried_slug": "cross_expert_structure",
+     "query_mode": "without_model",
+     "reopen_condition": "never on Q80. On DSV4F: do not treat this as settled. A pairwise-cosine measurement on DSV4F experts is the cheap check; only if that mean is materially above ~0.05 would a shared-basis pack be a new premise. Do not skip that measurement by transferring the Q80 number.",
+     "scar_id": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-010",
+     "source_path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+     "verdict": "REFUTED"
+    }
+   ],
+   "index_slugs": [
+    "generated_tied_params",
+    "cross_expert_structure",
+    "shared_basis"
+   ],
+   "licensed": false,
+   "mechanism": "Store a shared skinny map T2 T1 (5120\u2192256\u219216384) plus per-layer f16 diagonals that emit the fused qkvz activation, then the incumbent rearrange + gated-delta. The generator IS the matvec. Emitting W and then running qwen_uniform_q4 is a different candidate (emit_w_then_ordinary_gemv) and is REJECTED_DENSE_REMAT. Scale-field sharing across layers is already MEASURED_NEGATIVE; W itself is UNMEASURED \u2014 this is that unmeasured W, as a program.",
+   "name": "skinny program emits qkvz activations, never W",
+   "net_bytes": 2134548400,
+   "physical_primitive": "TiledProjection",
+   "status": "OPEN"
+  },
+  {
+   "byte_model": "Catalog bytes unchanged (0 removed, 0 added). RW traffic of S is 301989888/token; a skip fraction p saves p*301989888 RW and p*302579712 flops. Threshold \u03b5 is a scalar, not a tensor. Layer-skip would remove 47/48 of S and is QN-STATE-MERGING, not this candidate.",
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "other": 0,
+    "residuals": 0,
+    "state": 0,
+    "total": 0
+   },
+   "bytes_removed": {
+    "catalog_weights": 0,
+    "other": 0,
+    "state": 0,
+    "total": 0
+   },
+   "cheapest_falsifier": "CHEAP CPU: histogram of beta on a real prompt at several layers. If P(beta < 0.05) \u2248 0, the skip never fires and the candidate dies without a kernel. Do not retry QN-STATE-MERGING as a per-token skip. Do not add a learned skip head that writes a dense W.",
+   "citations": [
+    {
+     "claim_refuted": "depth-state and KV merging measured negative on this Qwen under the tested conditions",
+     "kind": "MODEL_SPECIFIC",
+     "reopen_condition": "a state topology (recurrent, latent-attention, or a longer-context regime) where merged state preserves capability",
+     "scar_id": "QN-STATE-MERGING",
+     "source_path": "tools/headless/negative_science.py",
+     "surface": "qwen3.8-27b-abliterated kv_state+deltanet_state",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet"
+    }
+   ],
+   "cousin_not_this_object": true,
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Predicated vi_simd. No W is written.",
+   "dispatch_change": {
+    "candidate": 48,
+    "delta": 0,
+    "incumbent": 48,
+    "surface": "same 48 launches; predication inside vi_simd, not a skip kernel"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "extra_flops": {
+    "formula": "48*48 compares per token; flop savings = p * gated_delta, p UNMEASURED",
+    "per_token": 2304,
+    "relative_to": "incumbent_gated_delta_per_token"
+   },
+   "general_physical_refusals": [],
+   "gpu_authority": false,
+   "id": "conditional_recurrence",
+   "index_hits_are_cousins": true,
+   "index_query_modes": [
+    "with_model",
+    "without_model"
+   ],
+   "index_refusals": [],
+   "index_slugs": [
+    "state_merging",
+    "qn_state_merging"
+   ],
+   "licensed": false,
+   "mechanism": "Incumbent vi_simd reads and writes every element of S every token. beta is already computed (sigmoid of ba). Predicating the rank-1 write (and optionally the decay) on beta > \u03b5 uses ConditionalPhysicalProgram on the existing coefficient. No new gate weights. Skip rate is UNMEASURED on real x. Skipping whole layers is share_or_merge_state_across_depth, already falsified (QN-STATE-MERGING).",
+   "name": "skip the S update when incumbent beta is near 0",
+   "net_bytes": 0,
+   "physical_primitive": "ConditionalPhysicalProgram",
+   "rw_bytes": {
+    "incumbent_s_rw_per_token": 301989888,
+    "saved_at_skip_fraction_p": "p * 301989888",
+    "skip_fraction": "UNMEASURED"
+   },
+   "status": "OPEN"
+  },
+  {
+   "byte_model": "Remove 48 qkvz 2139096960. Add one copy 44564520 + 47 f16 diagonals 1540096 + headers 1920.",
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 44564520,
+    "metadata": 1920,
+    "other": 0,
+    "residuals": 1540096,
+    "state": 0,
+    "total": 46106536
+   },
+   "bytes_removed": {
+    "catalog_weights": 2139096960,
+    "other": 0,
+    "state": 0,
+    "total": 2139096960
+   },
+   "cheapest_falsifier": "STATIC, already run on scales: sharing is not in the scale field. CHEAP CPU: cosine of reconstructed W_qkvz between consecutive DN layers. If mean cosine is ~0 like GQA heads (QN-HEAD-REDUNDANCY 0.0438), shared W dies without a generate. Do not quote the scale Pearson as a W cosine. Do not materialize W_l = diag_l W_shared as production Q4.",
+   "citations": [
+    {
+     "claim_refuted": "no K below ~2.25 bpw composes coherently for the MLP: the local functional probe dies at held-out activation",
+     "kind": "MODEL_SPECIFIC",
+     "reopen_condition": "a shared-basis point that is coherent at held-out activation AND beats q2f on both density and COMPLETE_TOKEN_NS",
+     "scar_id": "QN-SHARED-BASIS-DENSITY",
+     "source_path": "tools/headless/negative_science.py",
+     "surface": "qwen3.8-27b-abliterated mlp_gate_up+mlp_down",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet"
+    },
+    {
+     "claim_refuted": "Q heads mean cosine 0.0438 and K/V/O similarly near-orthogonal, so there is no shared-head structure to exploit",
+     "kind": "MODEL_SPECIFIC",
+     "reopen_condition": "an organ or model where head cosine similarity is high enough that sharing costs less capability than the bits it saves",
+     "scar_id": "QN-HEAD-REDUNDANCY",
+     "source_path": "tools/headless/negative_science.py",
+     "surface": "qwen3.8-27b-abliterated gqa_attention",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet"
+    }
+   ],
+   "cousin_not_this_object": true,
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "y = diag_l (W_shared x) is one GEMV plus a diagonal. Materializing W_l then Q4 is REJECTED_DENSE_REMAT.",
+   "dispatch_change": {
+    "candidate": 48,
+    "delta": 0,
+    "incumbent": 48,
+    "surface": "same 48 fused GEMVs; diagonal folds into FusedDecodeCompute"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "extra_flops": {
+    "formula": "same qkvz GEMV plus 16384 diagonal muls per DN layer",
+    "per_token": 786432,
+    "relative_to": "incumbent_qkvz_gemv_per_token"
+   },
+   "general_physical_refusals": [],
+   "gpu_authority": false,
+   "id": "shared_transforms_w_unmeasured",
+   "index_hits_are_cousins": true,
+   "index_query_modes": [
+    "with_model",
+    "without_model"
+   ],
+   "index_refusals": [
+    {
+     "applies_regardless_of_model": false,
+     "claim_refuted": "mean pairwise cosine between experts = 1e-4; experts are mutually orthogonal",
+     "general_physical": false,
+     "hypothesis_family": "cross_expert_structure",
+     "level": "MODEL_SPECIFIC",
+     "organ": "deltanet",
+     "queried_model": null,
+     "queried_organ": "deltanet",
+     "queried_slug": "cross_expert_structure",
+     "query_mode": "without_model",
+     "reopen_condition": "a future parent measures mean pairwise expert cosine >= 0.10 on its own weights",
+     "scar_id": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json#inter_expert_redundancy",
+     "source_path": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+     "verdict": "dead on arrival: there is no shared component to subtract"
+    },
+    {
+     "applies_regardless_of_model": false,
+     "claim_refuted": "Q80 experts in the measured slice are mutually orthogonal. There is no shared direction to exploit.",
+     "general_physical": false,
+     "hypothesis_family": "cross_expert_structure",
+     "level": "MODEL_SPECIFIC",
+     "organ": "unrecorded",
+     "queried_model": null,
+     "queried_organ": "attention",
+     "queried_slug": "cross_expert_structure",
+     "query_mode": "without_model",
+     "reopen_condition": "never on Q80. On DSV4F: do not treat this as settled. A pairwise-cosine measurement on DSV4F experts is the cheap check; only if that mean is materially above ~0.05 would a shared-basis pack be a new premise. Do not skip that measurement by transferring the Q80 number.",
+     "scar_id": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-010",
+     "source_path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+     "verdict": "REFUTED"
+    }
+   ],
+   "index_slugs": [
+    "shared_basis",
+    "head_sharing",
+    "cross_expert_structure"
+   ],
+   "licensed": false,
+   "measured": {
+    "W_sharing": "UNMEASURED",
+    "scale_field_sharing": "MEASURED_NEGATIVE",
+    "scale_field_source": "receipts/future/DELTANET_REPRESENTATION.json"
+   },
+   "mechanism": "48 independent qkvz maps, 44.6 MB each. Share one W and a per-layer diagonal on the 16384 fused rows. The Q4 scale field is already MEASURED_NEGATIVE for unconditioned sharing (DELTANET_REPRESENTATION: consecutive-layer Pearson of per-row mean scales ~0). W itself is UNMEASURED on this organ. Cousin of QN-SHARED-BASIS-DENSITY (MLP) and QN-HEAD-REDUNDANCY (GQA), not a DN-head cosine.",
+   "name": "one shared W_qkvz plus per-layer f16 diagonals",
+   "net_bytes": 2092990424,
+   "note": "Status OPEN is the W question. The scale-field residual is already MEASURED_NEGATIVE and is not re-derived here.",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "OPEN"
+  },
+  {
+   "byte_model": "Zero catalog bytes removed or added. A_log and dt_bias (200 B each per layer) are still read. Decay/beta workspace ceases to be a stored round-trip under FUSE_BA_DELTA. Full DN region removes launches, not W or S.",
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "other": 0,
+    "residuals": 0,
+    "state": 0,
+    "total": 0
+   },
+   "bytes_removed": {
+    "catalog_weights": 0,
+    "other": 0,
+    "state": 0,
+    "total": 0
+   },
+   "cheapest_falsifier": "Already run: receipts/future/BA_DELTA_AB.json. 628\u2192580 dispatches, token ids identical, zero fallbacks. STATIC_ONLY here: cited, not re-measured. Enabling the flag in the sealed profile is an ops act. A 7-kernel DN region is DISPATCH_MOTIFS YES_STATE_MACHINE; its inner cut is this lever. Do not retarget 628\u2192500 as a byte plan.",
+   "citations": [
+    {
+     "claim_refuted": "",
+     "kind": "EXISTING_LEVER",
+     "reopen_condition": "",
+     "scar_id": "BA_DELTA_AB",
+     "source_path": "receipts/future/BA_DELTA_AB.json",
+     "surface": "HAWKING_QWEN38_FUSE_BA_DELTA=1 on sealed-3.14",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet gated-delta S"
+    },
+    {
+     "claim_refuted": "",
+     "kind": "EXISTING_JUDGMENT",
+     "reopen_condition": "",
+     "scar_id": "dn_layer_state_machine",
+     "source_path": "receipts/future/DISPATCH_MOTIFS.json",
+     "surface": "sealed-3.14 337 DN launches",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet gated-delta S"
+    }
+   ],
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Same arithmetic, one kernel, no W.",
+   "dispatch_change": {
+    "candidate": 580,
+    "delta": -48,
+    "incumbent": 628,
+    "surface": "HAWKING_QWEN38_FUSE_BA_DELTA=1; 628\u2192580, 48 DN launches. Cited from BA_DELTA_AB, not re-measured."
+   },
+   "evidence_class": "STATIC_ONLY",
+   "extra_flops": {
+    "formula": "same arithmetic; ba_to_decay folds into gated-delta",
+    "per_token": 0,
+    "relative_to": "incumbent_gated_delta_per_token"
+   },
+   "general_physical_refusals": [],
+   "gpu_authority": false,
+   "id": "fused_update_consume",
+   "index_query_modes": [
+    "with_model",
+    "without_model"
+   ],
+   "index_refusals": [],
+   "index_slugs": [
+    "resident_state",
+    "megakernel"
+   ],
+   "licensed": true,
+   "measured": {
+    "catalog_bytes_eliminated": 0,
+    "fuse_ba_delta_dispatches_after": 580,
+    "token_ids_identical_cited": true,
+    "vi_simd_already_update_and_readout": true
+   },
+   "mechanism": "qwen38_gated_delta_decode_vi_simd already applies the rank-1 update and the readout h = S^T q in one LocalStateMachine; S must still be stored for the next token (O(1) recurrence). HAWKING_QWEN38_FUSE_BA_DELTA=1 folds ba_to_decay into that kernel (48 launches, token-identical, default Off). A further PersistentPhysicalRegion over the 7-launch DN sequence is DISPATCH_MOTIFS dn_layer_state_machine (337\u219248), zero catalog bytes. Not a 2.96 GB lever.",
+   "name": "update+consume of S is already one kernel; FUSE_BA_DELTA is in tree",
+   "net_bytes": 0,
+   "physical_primitive": "PersistentPhysicalRegion",
+   "status": "EXISTING_LEVER"
+  },
+  {
+   "byte_model": "Remove 47/48 of S (147849216). Add nothing if the remaining slot is reused. Not a packing of W.",
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "other": 0,
+    "residuals": 0,
+    "state": 0,
+    "total": 0
+   },
+   "bytes_removed": {
+    "catalog_weights": 0,
+    "other": 0,
+    "state": 147849216,
+    "total": 147849216
+   },
+   "cheapest_falsifier": "Already run: QN-STATE-MERGING on this parent (kv_state+deltanet_state). Reopen is a different state topology or a longer-context regime, not a retry of shared S across these 48 layers. Cited, not re-derived.",
+   "citations": [
+    {
+     "claim_refuted": "depth-state and KV merging measured negative on this Qwen under the tested conditions",
+     "kind": "MODEL_SPECIFIC",
+     "reopen_condition": "a state topology (recurrent, latent-attention, or a longer-context regime) where merged state preserves capability",
+     "scar_id": "QN-STATE-MERGING",
+     "source_path": "tools/headless/negative_science.py",
+     "surface": "qwen3.8-27b-abliterated kv_state+deltanet_state",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet"
+    }
+   ],
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "One S buffer, same kernel, different slot.",
+   "dispatch_change": {
+    "candidate": 48,
+    "delta": 0,
+    "incumbent": 48,
+    "surface": "same kernel, different state slot"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "extra_flops": {
+    "formula": "same vi_simd, fewer resident slots",
+    "per_token": 0,
+    "relative_to": "incumbent_gated_delta_per_token"
+   },
+   "general_physical_refusals": [],
+   "gpu_authority": false,
+   "id": "share_or_merge_state_across_depth",
+   "index_query_modes": [
+    "with_model",
+    "without_model"
+   ],
+   "index_refusals": [],
+   "index_slugs": [
+    "state_merging",
+    "qn_state_merging"
+   ],
+   "licensed": false,
+   "mechanism": "Share or merge rec_state across DeltaNet depth, or share KV across GQA depth. Cuts resident S, not W_qkvz.",
+   "name": "one S (or tied S) across several of the 48 DN layers",
+   "net_bytes": 147849216,
+   "physical_primitive": "LocalStateMachine",
+   "status": "ALREADY_FALSIFIED"
+  },
+  {
+   "byte_model": "Would claim to remove 2139096960 and add |\u03b8|. The production path writes W (at least the incumbent 44.6 MB/layer) before the GEMV, so active bytes of W are not eliminated.",
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 2139096960,
+    "metadata": 0,
+    "other": 0,
+    "residuals": 0,
+    "state": 0,
+    "total": 2139096960
+   },
+   "bytes_removed": {
+    "catalog_weights": 2139096960,
+    "other": 0,
+    "state": 0,
+    "total": 2139096960
+   },
+   "cheapest_falsifier": "STATIC: any plan whose native_execution_concept is 'emit W, then qwen_uniform_q4' is REJECTED_DENSE_REMAT before a fit. Predecessor generated_coefficients already recorded this. Not re-derived.",
+   "citations": [
+    {
+     "claim_refuted": "That generating W and running ordinary GEMV eliminates active bytes of W",
+     "kind": "CATEGORY_ERROR",
+     "reopen_condition": "A generator that IS the matvec (no W). That is generated_transition_coefficients, a different candidate.",
+     "scar_id": "REJECTED_DENSE_REMAT",
+     "source_path": "tools/future/ebpw_categories.py",
+     "surface": "production NX",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet gated-delta S"
+    }
+   ],
+   "dense_rematerialization": "REJECTED_DENSE_REMAT",
+   "dense_rematerialization_reason": "Production NX decompresses to a dense weight tensor and then runs ordinary kernels. Verification MAY reconstruct; production must not.",
+   "dispatch_change": {
+    "candidate": 96,
+    "delta": 48,
+    "incumbent": 48,
+    "surface": "emit + GEMV is two operations per layer"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "extra_flops": {
+    "formula": "generate W plus the incumbent qkvz GEMV; not a save",
+    "per_token": 8053063680,
+    "relative_to": "incumbent_qkvz_gemv_per_token"
+   },
+   "general_physical_refusals": [],
+   "gpu_authority": false,
+   "id": "emit_w_then_ordinary_gemv",
+   "index_query_modes": [
+    "with_model",
+    "without_model"
+   ],
+   "index_refusals": [
+    {
+     "applies_regardless_of_model": false,
+     "claim_refuted": "mean pairwise cosine between experts = 1e-4; experts are mutually orthogonal",
+     "general_physical": false,
+     "hypothesis_family": "cross_expert_structure",
+     "level": "MODEL_SPECIFIC",
+     "organ": "deltanet",
+     "queried_model": null,
+     "queried_organ": "deltanet",
+     "queried_slug": "generated_tied_params",
+     "query_mode": "without_model",
+     "reopen_condition": "a future parent measures mean pairwise expert cosine >= 0.10 on its own weights",
+     "scar_id": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json#inter_expert_redundancy",
+     "source_path": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+     "verdict": "dead on arrival: there is no shared component to subtract"
+    },
+    {
+     "applies_regardless_of_model": false,
+     "claim_refuted": "Q80 experts in the measured slice are mutually orthogonal. There is no shared direction to exploit.",
+     "general_physical": false,
+     "hypothesis_family": "cross_expert_structure",
+     "level": "MODEL_SPECIFIC",
+     "organ": "unrecorded",
+     "queried_model": null,
+     "queried_organ": "attention",
+     "queried_slug": "generated_tied_params",
+     "query_mode": "without_model",
+     "reopen_condition": "never on Q80. On DSV4F: do not treat this as settled. A pairwise-cosine measurement on DSV4F experts is the cheap check; only if that mean is materially above ~0.05 would a shared-basis pack be a new premise. Do not skip that measurement by transferring the Q80 number.",
+     "scar_id": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-010",
+     "source_path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+     "verdict": "REFUTED"
+    }
+   ],
+   "index_slugs": [
+    "generated_tied_params"
+   ],
+   "licensed": false,
+   "mechanism": "A compact program emits the 16384x5120 matrix, which is then quantized and consumed by qwen_uniform_q4. That is dense rematerialization of W. The no-W generator is generated_transition_coefficients.",
+   "name": "generate W_qkvz then run incumbent Q4 GEMV",
+   "net_bytes": 0,
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "ALREADY_FALSIFIED"
+  },
+  {
+   "byte_model": "Uniform Q3 of qkvz codes would remove 503316480 and add 0. DELTANET_QKVZ_PRECISION licensed 0 bytes (any_supported false).",
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 0,
+    "other": 0,
+    "residuals": 0,
+    "state": 0,
+    "total": 0
+   },
+   "bytes_removed": {
+    "catalog_weights": 503316480,
+    "other": 0,
+    "state": 0,
+    "total": 503316480
+   },
+   "cheapest_falsifier": "Already run: DELTANET_QKVZ_PRECISION.json. H(q) 3.47 of 4 on every block; any_supported false; k/v rewrite S at ~0.2 rel-fro. NNS-019 (Gravity on DN in/out) and NNS-029 (uniform bit-descent) cited as cousins. Not re-derived.",
+   "citations": [
+    {
+     "claim_refuted": "That existing Gravity expert families (HGRAVB01 / HGRAVR02 / HGRAVS01, or the Q80 mixed gate/up/down bundle) transfer to attention at Q4-equivalent quality.",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "A NEW attention codec family, scored on real BF16 X, clearing mean-row output cosine \u2265 0.990 vs BF16 AND a multi-prompt generate identity gate. lm_head additionally needs top-1 agreement; cosine 0.99 is not token identity.",
+     "scar_id": "NNS-019",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b and qwen3-80b attention GEMVs Q/K/V/O, DeltaNet in/out, lm_head extra (top-1 \u2260 cosine)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet gated-delta S"
+    },
+    {
+     "claim_refuted": "That activation sparsity (~2\u00d7 MLP max) or uniform bit-descent below q3 is a clean path under the Qwen3.8 coherent floor.",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "Sparsity: a Doctor-holding skip pattern that does not compound over 64 layers. Bit-descent: a codec that actually hits the Shannon bound AND a generate gate at that distortion. Neither is a retry of q2 or of unstructured activation skip.",
+     "scar_id": "NNS-029",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b MLP (sparsity); whole artifact (bit-descent)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet gated-delta S"
+    }
+   ],
+   "cousin_not_this_object": true,
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Native row-range GEMV. Not this module's question.",
+   "dispatch_change": {
+    "candidate": 48,
+    "delta": 0,
+    "incumbent": 48,
+    "surface": "row-range Q4/Q3 GEMV, same 48 launches"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "extra_flops": {
+    "formula": "same GEMV, narrower codes; not licensed",
+    "per_token": 0,
+    "relative_to": "incumbent_qkvz_gemv_per_token"
+   },
+   "general_physical_refusals": [],
+   "gpu_authority": false,
+   "id": "qkvz_bit_descent",
+   "index_hits_are_cousins": true,
+   "index_query_modes": [
+    "with_model",
+    "without_model"
+   ],
+   "index_refusals": [
+    {
+     "applies_regardless_of_model": false,
+     "claim_refuted": "component_sensitive_organ_gate_failed",
+     "general_physical": false,
+     "hypothesis_family": "uniform_q3",
+     "level": "MODEL_SPECIFIC",
+     "organ": "attention",
+     "queried_model": null,
+     "queried_organ": "attention",
+     "queried_slug": "uniform_q3",
+     "query_mode": "without_model",
+     "reopen_condition": "different genome/configuration, materially different calibration, or direct full-model parity evidence",
+     "scar_id": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl#negative:qwen30-b43042ec555c494eb9ceca6b0c2f60bb",
+     "source_path": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl",
+     "verdict": "BURIED"
+    }
+   ],
+   "index_slugs": [
+    "uniform_q3",
+    "uniform_subbit_allocation"
+   ],
+   "licensed": false,
+   "measured": {
+    "H_q_bits_floor": 3.47,
+    "any_supported": false,
+    "licensed_bytes_removed": 0,
+    "predecessor": "receipts/future/DELTANET_QKVZ_PRECISION.json"
+   },
+   "mechanism": "Treat DeltaNet as four matrices and spend fewer bits. Codes are at their entropy floor (H(q)\u22483.47 of 4, spread <0.014) and Q3 injures rec_state / gated cosine. Recorded so this module does not fall back to quantization.",
+   "name": "heterogeneous or uniform bit-descent of q/k/v/z (not this question)",
+   "net_bytes": 503316480,
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "MEASURED_NEGATIVE"
+  }
+ ],
+ "claim_boundary": "Static sidecar artifact. No hardware measurement and no generate gate. The 2,961,659,904 figure is catalog stored bytes of the four DeltaNet weight organs. Recurrent state (150,994,944 f32 resident) is geometry, not HQ38M20, and is accounted separately. Candidates are judged on function preservation (state trajectory and downstream logits), not on reconstructing W_qkvz. A synthetic SVD of S under isotropic coefficients is not the trained trajectory. A candidate that unpacks to dense W then runs ordinary GEMV is REJECTED_DENSE_REMAT. A compression ratio with no bytes_removed and bytes_added is not a candidate.",
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "every candidate carries bytes_removed and bytes_added or the module refuses",
+  "recurrent-state resident bytes reconcile to 150,994,944",
+  "the rank-1 + decay update is recorded as a parameterisation, not a requirement",
+  "a synthetic SVD of S under isotropic coefficients is reported so structural low-rank is not assumed",
+  "QN-STATE-MERGING, REJECTED_DENSE_REMAT, and q/k/v/z bit-descent are cited rather than re-derived",
+  "negative_index queried with and without a model so GENERAL_PHYSICAL scars refuse",
+  "FUSE_BA_DELTA is EXISTING_LEVER (zero catalog bytes), not a new representation"
+ ],
+ "gpu_authority": false,
+ "incumbent": {
+  "flops": {
+   "ba_gemv_per_token": 47185920,
+   "gated_delta_per_token": 302579712,
+   "note": "qkvz GEMV dwarfs gated-delta arithmetic. A smaller S without shrinking W_qkvz saves S traffic, not the 8e9-class projection.",
+   "out_gemv_per_token": 3019898880,
+   "qkvz_gemv_per_token": 8053063680
+  },
+  "geometry": {
+   "ba_rows": 96,
+   "conv_channels": 10240,
+   "conv_kernel": 4,
+   "conv_state_elements_per_layer": 30720,
+   "hidden_size": 5120,
+   "k_rows": 2048,
+   "key_head_dim": 128,
+   "key_heads": 16,
+   "n_deltanet_layers": 48,
+   "out_cols": 6144,
+   "out_rows": 5120,
+   "q_rows": 2048,
+   "qkvz_cols": 5120,
+   "qkvz_layout": "per_key_head_Q128_K128_V384_Z384",
+   "qkvz_rows": 16384,
+   "recurrent_state_elements_per_layer": 786432,
+   "v_rows": 6144,
+   "value_head_dim": 128,
+   "value_heads": 48,
+   "values_per_key": 3,
+   "z_rows": 6144
+  },
+  "operator": {
+   "consumed_by": "qwen38_gated_delta_decode_vi_simd",
+   "every_element_rw_every_token": true,
+   "judged_on": "state trajectory and downstream logits; not reconstruction of the stored q/k/v/z matrices",
+   "operator": "S_t = (I - beta k k^T) (decay * S_{t-1}) + beta k v^T; h_t = S_t^T q; gated = RMSNorm(h) * silu(z). decay, beta come from in_proj_ba + A_log + dt_bias.",
+   "parameterisation_not_requirement": true,
+   "physical_primitive": "LocalStateMachine",
+   "roles": {
+    "k": {
+     "enters_conv": true,
+     "enters_gated_delta": true,
+     "enters_state_update": true,
+     "role": "rank-1 projector (I - beta k k^T) AND the write key k v^T",
+     "rows": 2048,
+     "sensitivity_implication": "k appears twice in the update. Equal W-space distortion with q/v/z is not a reason to give k equal bits."
+    },
+    "q": {
+     "enters_conv": true,
+     "enters_gated_delta": true,
+     "enters_state_update": false,
+     "role": "readout: h = S^T q",
+     "rows": 2048,
+     "sensitivity_implication": "Injuring q injures h without rewriting S. Next token still sees an intact S."
+    },
+    "v": {
+     "enters_conv": true,
+     "enters_gated_delta": true,
+     "enters_state_update": true,
+     "role": "write value: beta k v^T",
+     "rows": 6144,
+     "sensitivity_implication": "Injuring v writes a wrong column into S."
+    },
+    "z": {
+     "enters_conv": false,
+     "enters_gated_delta": false,
+     "enters_state_update": false,
+     "role": "output gate after RMSNorm(h); never bound to gated-delta",
+     "rows": 6144,
+     "sensitivity_implication": "Lowering z bits cannot corrupt rec_state. This is source-true, not a measurement. z is 37.5% of linear_qkvz rows."
+    }
+   },
+   "source": "crates/hawking-core/shaders/qwen38_device_activations.metal qwen38_gated_delta_decode_vi / qwen38_gated_delta_decode_vi_simd",
+   "state_not_closed_under_rank_r": "A rank-r factorisation of S is not invariant under a rank-1 write. After T tokens rank(S) can reach min(T, 128) per head unless each step truncates (a different function).",
+   "state_rank_capacity_per_head": 128,
+   "state_rank_growth": "The update is rank-1 per token after a scalar decay. S is a 128x128 matrix per value head (48 heads). It is not a diagonal SSM. 786432 f32 cells per layer are independently addressed.",
+   "update_rank_per_token": 1,
+   "z_enters_gated_delta": false
+  }
+ },
+ "index_consultation": {
+  "general_physical_hits": [
+   {
+    "level": "GENERAL_PHYSICAL",
+    "queried_model": "qwen3.8-27b",
+    "queried_slug": "prefill_over_generated_token_denominator",
+    "query_mode": "with_model",
+    "refused": true,
+    "scar_id": "receipts/future/CAMPAIGN_SCARS.json#PREFILL_OVER_GENERATED_TOKEN_DENOMINATOR",
+    "source_path": "receipts/future/CAMPAIGN_SCARS.json"
+   },
+   {
+    "level": "GENERAL_PHYSICAL",
+    "queried_model": "qwen3.8-27b",
+    "queried_slug": "environment_mismatch_unfused_vs_sealed",
+    "query_mode": "with_model",
+    "refused": true,
+    "scar_id": "receipts/future/CAMPAIGN_SCARS.json#ENVIRONMENT_MISMATCH_UNFUSED_VS_SEALED",
+    "source_path": "receipts/future/CAMPAIGN_SCARS.json"
+   },
+   {
+    "level": "GENERAL_PHYSICAL",
+    "queried_model": "qwen3.8-27b",
+    "queried_slug": "source_instrumented_runtime_binary_stale",
+    "query_mode": "with_model",
+    "refused": true,
+    "scar_id": "receipts/future/CAMPAIGN_SCARS.json#SOURCE_INSTRUMENTED_RUNTIME_BINARY_STALE",
+    "source_path": "receipts/future/CAMPAIGN_SCARS.json"
+   },
+   {
+    "level": "GENERAL_PHYSICAL",
+    "queried_model": "qwen3.8-27b",
+    "queried_slug": "adjacency_is_not_overlap",
+    "query_mode": "with_model",
+    "refused": true,
+    "scar_id": "receipts/future/CAMPAIGN_SCARS.json#ADJACENCY_IS_NOT_OVERLAP",
+    "source_path": "receipts/future/CAMPAIGN_SCARS.json"
+   }
+  ],
+  "general_physical_probe": [
+   {
+    "level": "GENERAL_PHYSICAL",
+    "queried_model": "qwen3.8-27b",
+    "queried_slug": "prefill_over_generated_token_denominator",
+    "query_mode": "with_model",
+    "refused": true,
+    "scar_id": "receipts/future/CAMPAIGN_SCARS.json#PREFILL_OVER_GENERATED_TOKEN_DENOMINATOR",
+    "source_path": "receipts/future/CAMPAIGN_SCARS.json"
+   },
+   {
+    "level": "GENERAL_PHYSICAL",
+    "queried_model": null,
+    "queried_slug": "prefill_over_generated_token_denominator",
+    "query_mode": "without_model",
+    "refused": true,
+    "scar_id": "receipts/future/CAMPAIGN_SCARS.json#PREFILL_OVER_GENERATED_TOKEN_DENOMINATOR",
+    "source_path": "receipts/future/CAMPAIGN_SCARS.json"
+   },
+   {
+    "level": "GENERAL_PHYSICAL",
+    "queried_model": "qwen3.8-27b",
+    "queried_slug": "environment_mismatch_unfused_vs_sealed",
+    "query_mode": "with_model",
+    "refused": true,
+    "scar_id": "receipts/future/CAMPAIGN_SCARS.json#ENVIRONMENT_MISMATCH_UNFUSED_VS_SEALED",
+    "source_path": "receipts/future/CAMPAIGN_SCARS.json"
+   },
+   {
+    "level": "GENERAL_PHYSICAL",
+    "queried_model": null,
+    "queried_slug": "environment_mismatch_unfused_vs_sealed",
+    "query_mode": "without_model",
+    "refused": true,
+    "scar_id": "receipts/future/CAMPAIGN_SCARS.json#ENVIRONMENT_MISMATCH_UNFUSED_VS_SEALED",
+    "source_path": "receipts/future/CAMPAIGN_SCARS.json"
+   },
+   {
+    "level": "GENERAL_PHYSICAL",
+    "queried_model": "qwen3.8-27b",
+    "queried_slug": "source_instrumented_runtime_binary_stale",
+    "query_mode": "with_model",
+    "refused": true,
+    "scar_id": "receipts/future/CAMPAIGN_SCARS.json#SOURCE_INSTRUMENTED_RUNTIME_BINARY_STALE",
+    "source_path": "receipts/future/CAMPAIGN_SCARS.json"
+   },
+   {
+    "level": "GENERAL_PHYSICAL",
+    "queried_model": null,
+    "queried_slug": "source_instrumented_runtime_binary_stale",
+    "query_mode": "without_model",
+    "refused": true,
+    "scar_id": "receipts/future/CAMPAIGN_SCARS.json#SOURCE_INSTRUMENTED_RUNTIME_BINARY_STALE",
+    "source_path": "receipts/future/CAMPAIGN_SCARS.json"
+   },
+   {
+    "level": "GENERAL_PHYSICAL",
+    "queried_model": "qwen3.8-27b",
+    "queried_slug": "adjacency_is_not_overlap",
+    "query_mode": "with_model",
+    "refused": true,
+    "scar_id": "receipts/future/CAMPAIGN_SCARS.json#ADJACENCY_IS_NOT_OVERLAP",
+    "source_path": "receipts/future/CAMPAIGN_SCARS.json"
+   },
+   {
+    "level": "GENERAL_PHYSICAL",
+    "queried_model": null,
+    "queried_slug": "adjacency_is_not_overlap",
+    "query_mode": "without_model",
+    "refused": true,
+    "scar_id": "receipts/future/CAMPAIGN_SCARS.json#ADJACENCY_IS_NOT_OVERLAP",
+    "source_path": "receipts/future/CAMPAIGN_SCARS.json"
+   }
+  ],
+  "general_physical_probe_all_refused": true,
+  "general_physical_scar_ids": [
+   "receipts/future/CAMPAIGN_SCARS.json#ADJACENCY_IS_NOT_OVERLAP",
+   "receipts/future/CAMPAIGN_SCARS.json#ENVIRONMENT_MISMATCH_UNFUSED_VS_SEALED",
+   "receipts/future/CAMPAIGN_SCARS.json#PREFILL_OVER_GENERATED_TOKEN_DENOMINATOR",
+   "receipts/future/CAMPAIGN_SCARS.json#SOURCE_INSTRUMENTED_RUNTIME_BINARY_STALE"
+  ],
+  "modes": [
+   "with_model",
+   "without_model"
+  ],
+  "why_both_modes": "GENERAL_PHYSICAL scars now refuse regardless of the model named. Querying with and without a model is how a process scar stays reachable from a model-specific proposal.",
+  "with_model_hits": 4,
+  "without_model_hits": 20
+ },
+ "negative_findings": [
+  "q/k/v/z bit-descent is not this question and is already MEASURED_NEGATIVE",
+  "a rank-r store of 128x128 S is not closed under the incumbent write",
+  "depth-merge of S is QN-STATE-MERGING, already falsified",
+  "emit-W-then-Q4 is REJECTED_DENSE_REMAT",
+  "scale-field sharing across DN layers is MEASURED_NEGATIVE; W itself remains UNMEASURED",
+  "fused update+consume of S is already the vi_simd kernel; FUSE_BA_DELTA is in tree and eliminates launches, not the 2.96 GB"
+ ],
+ "nomenclature": {
+  "already_falsified": "ALREADY_FALSIFIED",
+  "depends_on_lowering": "DEPENDS_ON_LOWERING",
+  "direct_consume": "DIRECT_CONSUME",
+  "existing_lever": "EXISTING_LEVER",
+  "measured_negative": "MEASURED_NEGATIVE",
+  "open": "OPEN",
+  "rejected_dense_remat": "REJECTED_DENSE_REMAT",
+  "static_only": "this sidecar. Models propose; protected deterministic evidence decides.",
+  "unmeasured": "UNMEASURED"
+ },
+ "open_byte_levers": [
+  {
+   "bytes_added": 1515264000,
+   "bytes_removed": 3106017408,
+   "id": "smaller_state_machine",
+   "licensed": false,
+   "net_bytes": 1590753408,
+   "status": "OPEN"
+  },
+  {
+   "bytes_added": 301108992,
+   "bytes_removed": 1514247168,
+   "id": "learned_recurrence",
+   "licensed": false,
+   "net_bytes": 1213138176,
+   "status": "OPEN"
+  },
+  {
+   "bytes_added": 20055936,
+   "bytes_removed": 150994944,
+   "id": "structured_transition",
+   "licensed": false,
+   "net_bytes": 130939008,
+   "status": "OPEN"
+  },
+  {
+   "bytes_added": 4548560,
+   "bytes_removed": 2139096960,
+   "id": "generated_transition_coefficients",
+   "licensed": false,
+   "net_bytes": 2134548400,
+   "status": "OPEN"
+  },
+  {
+   "bytes_added": 0,
+   "bytes_removed": 0,
+   "id": "conditional_recurrence",
+   "licensed": false,
+   "net_bytes": 0,
+   "status": "OPEN"
+  },
+  {
+   "bytes_added": 46106536,
+   "bytes_removed": 2139096960,
+   "id": "shared_transforms_w_unmeasured",
+   "licensed": false,
+   "net_bytes": 2092990424,
+   "status": "OPEN"
+  }
+ ],
+ "predecessor": [
+  "receipts/future/DELTANET_REPRESENTATION.json",
+  "receipts/future/DELTANET_QKVZ_PRECISION.json"
+ ],
+ "purpose": "Ask what recurrent state update sealed-3.14 DeltaNet actually needs, now that its q/k/v/z codes are at their entropy floor and heterogeneous precision is MEASURED_NEGATIVE. Function preservation, not matrix reconstruction. Executable economics (bytes_removed and bytes_added) on every candidate.",
+ "recovered_implementation": {
+  "catalog_format": "HQ38M20 + HQ30UQ4 (qkvz/ba/out) + f32v2 (conv1d)",
+  "fuse_ba_delta": "qwen38_gated_delta_decode_vi_simd_ba",
+  "gated_delta": "S := (I - beta k k^T)(decay S) + beta k v^T; h := S^T q",
+  "kernel": "qwen38_gated_delta_decode_vi_simd",
+  "state_layout": "value_heads x key_head_dim x value_head_dim",
+  "z_binding": "gated RMSNorm only; not gated-delta; not conv"
+ },
+ "schema": "hawking.future.deltanet_state_function.v1",
+ "seal_sha256": "8221806f190eec2a22171a37110b62b6f4bebfa6ab1029540a57420ce4982924",
+ "spectrum": {
+  "coefficients": "isotropic Gaussian q,k,v then L2 like the shader; decay U(0.85,0.99); beta U(0.2,0.9). Not post-norm x and not a generate gate.",
+  "dim": 128,
+  "energy_at_rank": {
+   "1": {
+    "max": 0.4142560886878382,
+    "mean": 0.23654378654268182,
+    "min": 0.16000909405457164,
+    "n": 8,
+    "std": 0.08767532518433059
+   },
+   "128": {
+    "max": 1.0,
+    "mean": 1.0,
+    "min": 1.0,
+    "n": 8,
+    "std": 0.0
+   },
+   "16": {
+    "max": 0.9839061438454332,
+    "mean": 0.9581624780426163,
+    "min": 0.9377427537192011,
+    "n": 8,
+    "std": 0.013618204525008702
+   },
+   "32": {
+    "max": 0.9993113877114148,
+    "mean": 0.9975151104617992,
+    "min": 0.9948100390131173,
+    "n": 8,
+    "std": 0.001269408646755318
+   },
+   "4": {
+    "max": 0.7056416189585988,
+    "mean": 0.5996681980041194,
+    "min": 0.5017428136077751,
+    "n": 8,
+    "std": 0.06993990643963305
+   },
+   "64": {
+    "max": 0.9999993499643101,
+    "mean": 0.9999928687275008,
+    "min": 0.9999831062588768,
+    "n": 8,
+    "std": 5.416380011175549e-06
+   },
+   "8": {
+    "max": 0.8892929484101709,
+    "mean": 0.8289639547267861,
+    "min": 0.7648121370136204,
+    "n": 8,
+    "std": 0.036186174270334666
+   }
+  },
+  "energy_bar": 0.99,
+  "evidence_class": "STATIC_ONLY",
+  "gpu_authority": false,
+  "measured": true,
+  "n_heads": 8,
+  "n_tokens": 256,
+  "note": "If energy at r=16 is below 0.99, the update fills rank under generic inputs and a rank-r store is function replacement, not a compression of this mixer. The trained trajectory is a different measurement.",
+  "numeric_rank": {
+   "max": 100.0,
+   "mean": 92.875,
+   "min": 80.0,
+   "n": 8,
+   "std": 6.527585694573454
+  },
+  "rank_capacity": 128,
+  "seed": 38,
+  "state_init": "S=0",
+  "structurally_low_rank_at_r16": false,
+  "trained_function_rank": "UNMEASURED",
+  "update_fills_rank": true
+ },
+ "version": 1,
+ "what_this_does_not_prove": [
+  "capability or generate identity of a narrower d, a diagonal SSM, or a shared W",
+  "that isotropic coefficients are the trained trajectory of S",
+  "physical EBPW of a different mixer",
+  "actual_read_bytes_per_token (cache, contention)",
+  "that FUSE_BA_DELTA's TPS delta is a hardware claim of this receipt"
+ ]
+}

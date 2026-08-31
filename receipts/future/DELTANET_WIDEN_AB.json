@@ -1,0 +1,202 @@
+{
+ "absolute_ms_are_measured_under_load": true,
+ "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+ "cited_diagnostic": {
+  "fused_ba_ms": 1.5806,
+  "note": "fair cut is fused-ba minus f4; FUSE_BA_DELTA alone saves no GPU ms",
+  "saving_ms": 0.7016,
+  "source": "receipts/future/DELTANET_ORGAN_DECOMPOSE.json",
+  "unfused_ms": 1.5826,
+  "widen_f4_ms": 0.879
+ },
+ "claim_boundary": "One-process 628-graph A/B of incumbent unfused vi-SIMD against widen_f4 on the real encode_deltanet path, sealed-3.14 fusions (GateUpSwiglu, FUSE_GQA_QKV, FUSE_DN_INPROJ, FUSE_ADD_RMSNORM, FUSE_BA_DELTA off). GPU time is MTLCommandBuffer GPUStartTime/GPUEndTime. Complete-token ms is the median of per-generated-token GPU timestamps, not the isolated organ. Absolute ms are measured-under-load; the A/B ratio is back-to-back in the same process. Parity is token-id equality with fallbacks 0; argmax agreement is not parity. If the cited 0.702 ms organ-level saving does not appear in the complete token, the receipt names where it went and does not promote the diagnostic.",
+ "complete_token": {
+  "incumbent_dispatches_last": 628,
+  "incumbent_gpu_ns_median": 27406541,
+  "incumbent_ms": 27.406541,
+  "incumbent_reps": [
+   27392874,
+   27412541,
+   27425416,
+   27425291,
+   27406541,
+   27389499,
+   27366041
+  ],
+  "widen_f4_dispatches_last": 580,
+  "widen_f4_gpu_ns_median": 26382083,
+  "widen_f4_ms": 26.382083,
+  "widen_f4_reps": [
+   26369583,
+   26369999,
+   26401416,
+   26382083,
+   26362458,
+   26389374,
+   26389000
+  ]
+ },
+ "concurrent_load": {
+  "loadavg": "{ 6.62 7.29 7.72 }",
+  "note": "absolute ms are measured-under-load; the A/B ratio is back-to-back in this process",
+  "uptime": "4:34  up 5 days,  8:31, 3 users, load averages: 6.62 7.29 7.72"
+ },
+ "concurrent_load_start": {
+  "loadavg": "{ 7.27 7.50 7.81 }",
+  "note": "absolute ms are measured-under-load; the A/B ratio is back-to-back in this process",
+  "uptime": "4:33  up 5 days,  8:31, 3 users, load averages: 7.27 7.50 7.81"
+ },
+ "dense_w_materialized": 0,
+ "evidence_class": "SELF_MEASURED_DIRTY",
+ "expected_dispatches": {
+  "incumbent": 628,
+  "widen_f4": 580
+ },
+ "finding": "628-graph A/B, production decode path, token-id identical, fallbacks 0. Complete-token incumbent 27.4065 ms vs widen_f4 26.3821 ms (saved 1.0245 ms). Isolated fair cut fused-ba 1.588 ms vs f4 0.8834 ms (saved 0.7046 ms; cited 0.7016 ms). The organ-level layout saving reached the complete token (1.0245 ms vs isolated fair cut 0.7046 ms). The extra 0.3198 ms is the 48-launch ba_to_decay fold on the chained 628-graph token; isolated family CBs do not pay that encoder tax. Fusing ba_to_decay alone was already measured as no GPU ms on isolated gated-delta. Materiality bar 1.0 ms: clears.",
+ "findings": [
+  {
+   "id": "PRODUCTION_LAUNCHED_WIDEN_F4",
+   "what": "candidate histogram counted 3120 qwen38_gated_delta_decode_vi_simd_ba_f4 dispatches; incumbent counted 3120 qwen38_gated_delta_decode_vi_simd",
+   "why_it_matters": "the 0.702 ms diagnostic was a probe beside production; this A/B is the production encode path"
+  },
+  {
+   "argmax_is_not_parity": true,
+   "fallbacks": 0,
+   "id": "TOKEN_IDENTITY",
+   "parity": true,
+   "token_ids_identical": true,
+   "what": "token-id identical, fallbacks 0"
+  },
+  {
+   "cited_organ_saving_ms": 0.7016,
+   "clears_materiality": true,
+   "complete_token_saving_ms": 1.0245,
+   "id": "ORGAN_SAVING_VS_COMPLETE_TOKEN",
+   "isolated_fair_cut_ms": 0.7046,
+   "reached_the_token": true,
+   "what": "The organ-level layout saving reached the complete token (1.0245 ms vs isolated fair cut 0.7046 ms). The extra 0.3198 ms is the 48-launch ba_to_decay fold on the chained 628-graph token; isolated family CBs do not pay that encoder tax. Fusing ba_to_decay alone was already measured as no GPU ms on isolated gated-delta."
+  }
+ ],
+ "git_head": "bdef75616c4d6d4f9c1c54b03cf70d82cc5cb0fc",
+ "gpu_authority": false,
+ "isolated_gated_delta": {
+  "fused_ba_dispatches": 48,
+  "fused_ba_gpu_ns": 1587999,
+  "fused_ba_ms": 1.587999,
+  "organ": {
+   "incumbent": {
+    "dense_w_materialized": 0,
+    "dispatches": 336,
+    "gpu_ns_max": 6865624,
+    "gpu_ns_median": 6565291,
+    "gpu_ns_min": 6555750,
+    "gpu_ns_reps": [
+     6690124,
+     6570333,
+     6565291,
+     6555750,
+     6865624,
+     6559791,
+     6564999
+    ],
+    "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+    "n_reps": 7,
+    "name": "organ_incumbent_628",
+    "wait_ns_median": 6817542
+   },
+   "widen_f4": {
+    "dense_w_materialized": 0,
+    "dispatches": 288,
+    "gpu_ns_max": 5740625,
+    "gpu_ns_median": 5544333,
+    "gpu_ns_min": 5535541,
+    "gpu_ns_reps": [
+     5548041,
+     5535541,
+     5740625,
+     5536374,
+     5585875,
+     5544333,
+     5542874
+    ],
+    "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+    "n_reps": 7,
+    "name": "organ_widen_f4",
+    "wait_ns_median": 5789709
+   }
+  },
+  "unfused_dispatches": 48,
+  "unfused_gpu_ns": 1582625,
+  "unfused_ms": 1.582625,
+  "widen_f4_dispatches": 48,
+  "widen_f4_gpu_ns": 883375,
+  "widen_f4_ms": 0.883375
+ },
+ "launched": {
+  "incumbent_histogram_count": 3120,
+  "incumbent_kernel": "qwen38_gated_delta_decode_vi_simd",
+  "widen_f4_histogram_count": 3120,
+  "widen_f4_kernel": "qwen38_gated_delta_decode_vi_simd_ba_f4"
+ },
+ "lever": "HAWKING_QWEN38_DN_STATE=widen_f4",
+ "lever_semantics": "launches qwen38_gated_delta_decode_vi_simd_ba_f4 on the real encode_deltanet path; folds ba_to_decay because the kernel consumes projected_ba in-register. Does not require FUSE_BA_DELTA=1. Default production stays unfused vi-SIMD.",
+ "max_new_tokens": 32,
+ "parity": {
+  "argmax_agreement": null,
+  "argmax_agreement_ignored": false,
+  "argmax_is_not_parity": true,
+  "candidate_len": 32,
+  "fallbacks": 0,
+  "first_divergence": null,
+  "incumbent_len": 32,
+  "parity": true,
+  "parity_basis": "token_id_equality",
+  "runs_compared": 14,
+  "token_ids_identical": true,
+  "tokens_compared": 32,
+  "within_arm_identical": {
+   "incumbent": true,
+   "widen_f4": true
+  }
+ },
+ "production_fusions": {
+  "dn_state_kernel_candidate": "widen_f4",
+  "dn_state_kernel_incumbent": "baseline",
+  "fuse_add_rmsnorm": true,
+  "fuse_ba_delta": false,
+  "fuse_dn_inproj": true,
+  "fuse_gqa_qkv": true,
+  "mlp": "GateUpSwiglu"
+ },
+ "recorded_by": "tools/future/deltanet_widen_ab.py",
+ "reps": 7,
+ "saving": {
+  "cited_organ_saving_ms": 0.7016,
+  "clears_materiality": true,
+  "complete_token_incumbent_ms": 27.4065,
+  "complete_token_saving_ms": 1.0245,
+  "complete_token_widen_f4_ms": 26.3821,
+  "displaced_ms": -0.3198,
+  "isolated_fair_cut_ms": 0.7046,
+  "isolated_fused_ba_ms": 1.588,
+  "isolated_unfused_minus_f4_ms": 0.6992,
+  "isolated_unfused_ms": 1.5826,
+  "isolated_widen_f4_ms": 0.8834,
+  "materiality_bar_ms": 1.0,
+  "reached_the_token": true,
+  "where": "The organ-level layout saving reached the complete token (1.0245 ms vs isolated fair cut 0.7046 ms). The extra 0.3198 ms is the 48-launch ba_to_decay fold on the chained 628-graph token; isolated family CBs do not pay that encoder tax. Fusing ba_to_decay alone was already measured as no GPU ms on isolated gated-delta."
+ },
+ "schema": "hawking.future.deltanet_widen_ab.v1",
+ "sealed_env": {
+  "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+  "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+  "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+  "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+ },
+ "session_open_s": 4.557723542,
+ "source": "crates/hawking-core/examples/ascension_qwen38_deltanet_widen_ab.rs; production encode_deltanet on sealed-3.14; incumbent unfused vi-SIMD vs HAWKING_QWEN38_DN_STATE=widen_f4 (fused-ba sibling) back-to-back in one process",
+ "timing": "MTLCommandBuffer GPUStartTime/GPUEndTime",
+ "took_gpu_lease": true,
+ "version": 1,
+ "warmup": 1
+}

@@ -335,3 +335,138 @@ def test_children_and_codex_handoff_cope_with_either_state():
     # Either the handoff is used or its absence is recorded. Never encoded as a
     # test that the file must be missing.
     assert "path" in sources
+
+
+# ---------------------------------------------------------------------------
+# Launch binding. Finding the receipt is not binding it.
+# ---------------------------------------------------------------------------
+
+
+def test_receipt_status_is_not_null_by_accident():
+    """The document carries status; consumers must not read a missing key as null."""
+    doc = json.loads(ri.build().read_text())
+    assert doc["status"] == "ACCEPTED"
+    assert doc["identity_validation"]["status"] == "ACCEPTED"
+    assert doc["residency_status"] == "CURRENT_NONFINAL_HCLI_WORKER"
+    bind = doc["binding"]
+    assert bind["status"] == "ACCEPTED"
+    assert bind["status"] is not None
+    assert bind["residency_status"] == "CURRENT_NONFINAL_HCLI_WORKER"
+
+
+def test_binding_pins_named_fields_or_names_the_missing_one():
+    ident = ri.collect()
+    result = ri.describe_binding(ident)
+    assert set(ri.BIND_PIN_FIELDS) == {
+        "nx_id",
+        "sealed_model_id",
+        "executable_hash",
+        "artifact_root",
+        "tokenizer",
+        "qualification",
+    }
+    for name in result["pins_named"]:
+        assert name in ri.BIND_PIN_FIELDS
+        assert name in result["pins"]
+    if result["bound"]:
+        assert result["missing"] == []
+        assert result["unbound_reason"] is None
+        assert result["agrees_with_incumbent"] is True
+        assert set(result["pins_named"]) == set(ri.BIND_PIN_FIELDS)
+        assert result["pins"]["sealed_model_id"] == result["incumbent"]["id"]
+        assert result["pins"]["nx_id"]["model_id"] == result["incumbent"]["id"]
+        exe = result["pins"]["executable_hash"]["by_role"]
+        assert exe and all(ri._sha256_ok(d) for d in exe.values())
+        assert ri._sha256_ok(result["pins"]["tokenizer"]["sha256"])
+        assert result["pins"]["artifact_root"]
+        assert result["pins"]["qualification"]["role"]
+        assert result["status"] == "ACCEPTED"
+    else:
+        assert result["missing"], "unbound must name the missing field"
+        assert result["unbound_reason"]
+        for field in result["missing"]:
+            if field in {"incumbent", "identity_validation"}:
+                continue
+            assert field in result["unbound_reason"] or field in result["missing"]
+
+
+def test_binding_refuses_when_executable_hash_is_unpinned():
+    ident = ri.collect()
+    ident["executable_hash"] = {
+        "value": ri.UNKNOWN,
+        "missing_evidence": ["found but does not pin an executable hash"],
+        "evidence": [],
+        "claim_class": ri.CLAIM_CLASS,
+    }
+    result = ri.describe_binding(ident)
+    assert result["bound"] is False
+    assert "executable_hash" in result["missing"]
+    assert "executable_hash" in result["unbound_reason"]
+    assert result["status"] == "ACCEPTED"
+
+
+def test_binding_refuses_when_tokenizer_is_unpinned():
+    ident = ri.collect()
+    ident["tokenizer_identity"] = {
+        "value": ri.UNKNOWN,
+        "sha256": ri.UNKNOWN,
+        "missing_evidence": ["tokenizer not hashed"],
+        "evidence": [],
+        "claim_class": ri.CLAIM_CLASS,
+    }
+    result = ri.describe_binding(ident)
+    assert result["bound"] is False
+    assert "tokenizer" in result["missing"]
+    assert "tokenizer" in result["unbound_reason"]
+
+
+def test_binding_refuses_incumbent_disagreement():
+    ident = ri.collect()
+    nx = ident["nx_id"]
+    if isinstance(nx, dict) and isinstance(nx.get("value"), dict):
+        nx = dict(nx)
+        val = dict(nx["value"])
+        val["model_id"] = "not-the-incumbent"
+        nx["value"] = val
+        ident["nx_id"] = nx
+    else:
+        ident["nx_id"] = {"value": {"model_id": "not-the-incumbent"}}
+    result = ri.describe_binding(ident)
+    assert result["bound"] is False
+    assert result["agrees_with_incumbent"] is False
+    assert "incumbent" in result["unbound_reason"]
+    assert result["pins"]["sealed_model_id"] == "not-the-incumbent"
+
+
+def test_launch_binding_from_disk_receipt_does_not_invent_identity():
+    path = ri.build()
+    doc = json.loads(path.read_text())
+    block = ri.launch_binding(integration="tools/future/resident_identity.py")
+    assert block["found"] is True
+    assert block["schema"] == ri.SCHEMA
+    assert block["status"] == "ACCEPTED"
+    assert block["status"] is not None
+    assert block["kind"] == "resident"
+    if block["bound"]:
+        assert block["pins"]["sealed_model_id"] == block["incumbent"]["id"]
+        assert block["incumbent"]["id"] == ri.EXPECTED_INCUMBENT_ID
+        assert set(block["pins_named"]) == set(ri.BIND_PIN_FIELDS)
+        assert doc["binding"]["bound"] is True
+    else:
+        assert block["unbound_reason"]
+        assert block["missing"]
+
+
+def test_launch_binding_missing_receipt_stays_unbound(tmp_path):
+    probe = {
+        "found": False,
+        "path_taken": "not_found",
+        "resolved": None,
+        "doc": None,
+    }
+    block = ri.launch_binding(probe=probe, integration="test")
+    assert block["found"] is False
+    assert block["bound"] is False
+    assert block["status"] is None
+    assert "receipt" in block["missing"]
+    assert "not invented" in block["unbound_reason"]

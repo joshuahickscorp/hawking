@@ -7,6 +7,7 @@ a module which does not write the receipt it claims must be REJECTED, and
 `invoke()` must actually run the module and actually produce the receipt.
 """
 import json
+from pathlib import Path
 
 import pytest
 
@@ -108,3 +109,174 @@ def test_audit_reflects_the_bindings_and_is_not_asserted():
     doc = json.loads(p.read_text())
     counts = doc.get("counts") or {}
     assert isinstance(counts.get("operational", 0), int)
+
+
+_LOCK_RELS = (
+    ".hcli/locks/protected-accelerator-bench.lock",
+    ".hcli/locks/qwen-protected-bench.lock",
+)
+
+
+def _lock_mtime_snapshot() -> dict[str, tuple[int, int] | None]:
+    paths = [REPO / rel for rel in _LOCK_RELS]
+    paths.append(Path("/tmp/hawking_protected_window.lease"))
+    out: dict[str, tuple[int, int] | None] = {}
+    for p in paths:
+        try:
+            st = p.stat()
+            out[str(p)] = (st.st_mtime_ns, st.st_size)
+        except FileNotFoundError:
+            out[str(p)] = None
+    return out
+
+
+def test_protected_scheduler_is_bound_and_callable_through_orchestration():
+    """An unbound module is not resident-callable. This one is bound and called."""
+    key = "protected_scheduler.py"
+    assert key in orch.BINDINGS, "protected_scheduler must be in BINDINGS"
+    frontier, species = orch.BINDINGS[key]
+    assert frontier == "FT.GPU_KERNELS.ready-protected"
+    assert species == "PROTECTED_SCHEDULER"
+
+    locks_dir = REPO / ".hcli" / "locks"
+    existed = locks_dir.exists()
+    before = _lock_mtime_snapshot()
+
+    # Resident path: BINDINGS allowlist, then the module's decision API.
+    report = orch.call_bound(key, "capability_report")
+    assert report["PROTECTED_SCHEDULER_CAPABLE"] is True
+    assert report["PROTECTED_WINDOW_AVAILABLE"] is False
+    assert report["did_not_fabricate_lease"] is True
+    assert report["did_not_flock"] is True
+    assert report["did_not_touch_lock_file"] is True
+
+    probe = {
+        "id": "future.orchestration.protected-probe",
+        "resource_class": "GPU_EXCLUSIVE",
+        "requires_quiescence": True,
+    }
+    decision = orch.call_bound(
+        key,
+        "decide",
+        probe,
+        contamination={"contamination_class": "HEAVY"},
+        lease={"present": False, "holders": {"pids": []}},
+    )
+    assert decision["scheduler_capable"] is True
+    assert decision["window_available"] is False
+    assert decision["verdict"] == "BLOCKED_ON_PROTECTED_WINDOW"
+    parked = orch.call_bound(
+        key,
+        "park",
+        probe,
+        contamination={"contamination_class": "HEAVY"},
+        lease={"present": False, "holders": {"pids": []}},
+    )
+    assert parked["parked"] is True
+    assert parked["scheduler_capable"] is True
+
+    from tools.future import protected_scheduler as ps
+    from tools.future import qualification_pipeline as qp
+
+    with pytest.raises(ps.SchedulerRefused):
+        orch.call_bound(key, "acquire_lease")
+    with pytest.raises(ps.SchedulerRefused):
+        orch.call_bound(key, "seize_lease")
+    with pytest.raises(qp.AuthorityBoundaryError):
+        orch.call_bound(key, "refuse_flock")
+
+    after = _lock_mtime_snapshot()
+    assert after == before
+    if not existed:
+        assert not locks_dir.exists(), "bound call must not create .hcli/locks"
+
+    # invoke() would call build() and rewrite PROTECTED_SCHEDULER.json from a
+    # module this lane cannot edit. Routing is still declared on the binding.
+    wu = orch.emit_workunit(key)
+    assert wu["frontier_item"] == frontier
+    assert wu["species"] == species
+    assert wu["module"] == "tools/future/protected_scheduler.py"
+    assert wu["gpu_authority"] is False
+    assert wu["evidence_class"] == "STATIC_ONLY"
+    assert wu["output_contract"] == "receipts/future/PROTECTED_SCHEDULER.json"
+    receipt = REPO / "receipts" / "future" / "PROTECTED_SCHEDULER.json"
+    assert receipt.is_file()
+    doc = json.loads(receipt.read_text())
+    assert doc["capability"]["PROTECTED_SCHEDULER_CAPABLE"] is True
+    assert doc["capability"]["PROTECTED_WINDOW_AVAILABLE"] is False
+    assert doc["gpu_authority"] is False
+    assert doc["did_not_fabricate_lease"] is True
+    assert doc["did_not_flock"] is True
+    assert doc["did_not_touch_lock_file"] is True
+
+    after_emit = _lock_mtime_snapshot()
+    assert after_emit == before
+    if not existed:
+        assert not locks_dir.exists()
+
+
+def test_call_bound_fails_closed_on_unbound_or_missing_fn():
+    with pytest.raises(orch.UnknownBinding):
+        orch.call_bound("not_a_real_module.py", "capability_report")
+    with pytest.raises(orch.UnknownBinding):
+        orch.bound_module("not_a_real_module.py")
+    with pytest.raises(orch.BindingError):
+        orch.call_bound("protected_scheduler.py", "this_function_does_not_exist")
+
+
+def test_mutation_engine_is_bound_and_callable_through_orchestration(tmp_path):
+    """An unbound engine is not resident-callable. This one is bound and called.
+
+    autonomy_run.py is not edited. The resident reaches propose/apply/
+    evidence/rollback/verdict through BINDINGS (resident_mutation_engine
+    / call_bound). invoke() would rewrite MUTATION_ENGINE.json from a
+    module this lane cannot edit.
+    """
+    key = "mutation_engine.py"
+    assert key in orch.BINDINGS, "mutation_engine must be in BINDINGS"
+    frontier, species = orch.BINDINGS[key]
+    assert frontier == "FT.HCLI_SELF.emit-workunits"
+    assert species == "MUTATION_ENGINE"
+
+    locks_dir = REPO / ".hcli" / "locks"
+    existed = locks_dir.exists()
+    before = _lock_mtime_snapshot()
+
+    from tools.future import mutation_engine as me
+
+    me.unbind()
+    try:
+        engine = orch.resident_mutation_engine(tmp_path)
+        assert engine is me._need()
+        proposed = orch.call_bound(key, "propose", "FT.HCLI_SELF.emit-workunits")
+        assert proposed["mutation_class"] == me.PIPELINE_SELF
+        assert proposed["state"] == "PROPOSED"
+        applied = orch.call_bound(key, "apply", proposed)
+        assert applied["state"] == "APPLIED"
+        assert applied["before_digest"] != applied["after_digest"]
+        ev = orch.call_bound(key, "evidence", proposed)
+        assert ev["digest_changed"] is True
+        decided = orch.call_bound(key, "verdict", proposed)
+        assert decided["verdict"] in me.VERDICTS
+        if decided["verdict"] == me.VERDICT_KEPT:
+            undone = orch.call_bound(key, "rollback", proposed)
+            assert undone["digest_match"] is True
+        else:
+            assert decided["verdict"] == me.VERDICT_ROLLED_BACK
+            assert decided.get("digest_match") is True
+    finally:
+        orch.call_bound(key, "unbind")
+
+    after = _lock_mtime_snapshot()
+    assert after == before
+    if not existed:
+        assert not locks_dir.exists(), "bound mutation_engine must not create .hcli/locks"
+
+    wu = orch.emit_workunit(key)
+    assert wu["frontier_item"] == frontier
+    assert wu["species"] == species
+    assert wu["module"] == "tools/future/mutation_engine.py"
+    assert wu["output_contract"] == "receipts/future/MUTATION_ENGINE.json"
+    assert wu["gpu_authority"] is False
+    receipt = REPO / "receipts" / "future" / "MUTATION_ENGINE.json"
+    assert receipt.is_file()

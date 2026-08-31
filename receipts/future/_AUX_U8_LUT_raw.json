@@ -1,0 +1,811 @@
+{
+  "absolute_gb_s_are_measured_under_load": true,
+  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "bytes_removed_this_layer": 8355840,
+  "chosen_placement": "threadgroup",
+  "concurrent_load": {
+    "loadavg": "{ 7.39 6.74 7.25 }",
+    "note": "absolute GB/s is measured-under-load; A/B is back-to-back in one process",
+    "top_cpu": [
+      {
+        "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+        "cpu_pct": 188.2,
+        "pid": 19615,
+        "rss_kib": 217664
+      },
+      {
+        "comm": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+        "cpu_pct": 101.5,
+        "pid": 19384,
+        "rss_kib": 4877440
+      },
+      {
+        "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/corespotlightd",
+        "cpu_pct": 25.0,
+        "pid": 605,
+        "rss_kib": 189600
+      },
+      {
+        "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+        "cpu_pct": 21.7,
+        "pid": 180,
+        "rss_kib": 57680
+      },
+      {
+        "comm": "/usr/libexec/trustd",
+        "cpu_pct": 18.6,
+        "pid": 557,
+        "rss_kib": 17712
+      },
+      {
+        "comm": "powermetrics",
+        "cpu_pct": 15.7,
+        "pid": 25867,
+        "rss_kib": 2512
+      },
+      {
+        "comm": "/System/Library/ExtensionKit/Extensions/WallpaperAerialsExtension.appex/Contents/MacOS/WallpaperAerialsExtension",
+        "cpu_pct": 9.6,
+        "pid": 624,
+        "rss_kib": 29488
+      },
+      {
+        "comm": "/bin/zsh",
+        "cpu_pct": 8.8,
+        "pid": 19639,
+        "rss_kib": 4864
+      },
+      {
+        "comm": "/usr/libexec/syspolicyd",
+        "cpu_pct": 6.8,
+        "pid": 272,
+        "rss_kib": 28288
+      },
+      {
+        "comm": "/usr/sbin/mDNSResponder",
+        "cpu_pct": 6.4,
+        "pid": 235,
+        "rss_kib": 12592
+      },
+      {
+        "comm": "/System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService",
+        "cpu_pct": 4.5,
+        "pid": 72077,
+        "rss_kib": 23824
+      },
+      {
+        "comm": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+        "cpu_pct": 3.5,
+        "pid": 19545,
+        "rss_kib": 55024
+      }
+    ],
+    "uptime": "5:11  up 5 days,  9:08, 3 users, load averages: 7.39 6.74 7.25"
+  },
+  "concurrent_load_end": {
+    "loadavg": "{ 7.39 6.74 7.25 }",
+    "note": "absolute GB/s is measured-under-load; A/B is back-to-back in one process",
+    "top_cpu": [
+      {
+        "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+        "cpu_pct": 184.4,
+        "pid": 19615,
+        "rss_kib": 277616
+      },
+      {
+        "comm": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+        "cpu_pct": 102.3,
+        "pid": 19384,
+        "rss_kib": 4878096
+      },
+      {
+        "comm": "workspace/ops/build/rust/release-fast/examples/aux_u8_lut_ab",
+        "cpu_pct": 23.0,
+        "pid": 19645,
+        "rss_kib": 185904
+      },
+      {
+        "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+        "cpu_pct": 20.3,
+        "pid": 180,
+        "rss_kib": 57680
+      },
+      {
+        "comm": "/System/Library/Frameworks/Metal.framework/Versions/A/XPCServices/MTLCompilerService.xpc/Contents/MacOS/MTLCompilerService",
+        "cpu_pct": 18.5,
+        "pid": 19688,
+        "rss_kib": 34400
+      },
+      {
+        "comm": "/System/Library/ExtensionKit/Extensions/WallpaperAerialsExtension.appex/Contents/MacOS/WallpaperAerialsExtension",
+        "cpu_pct": 12.8,
+        "pid": 624,
+        "rss_kib": 27840
+      },
+      {
+        "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/corespotlightd",
+        "cpu_pct": 8.6,
+        "pid": 605,
+        "rss_kib": 189600
+      },
+      {
+        "comm": "/usr/libexec/trustd",
+        "cpu_pct": 7.5,
+        "pid": 557,
+        "rss_kib": 17712
+      },
+      {
+        "comm": "powermetrics",
+        "cpu_pct": 5.8,
+        "pid": 25867,
+        "rss_kib": 2512
+      },
+      {
+        "comm": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+        "cpu_pct": 4.5,
+        "pid": 19545,
+        "rss_kib": 55024
+      },
+      {
+        "comm": "/bin/zsh",
+        "cpu_pct": 3.3,
+        "pid": 19639,
+        "rss_kib": 4864
+      },
+      {
+        "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTDecoderXPCService.xpc/Contents/MacOS/VTDecoderXPCService",
+        "cpu_pct": 3.3,
+        "pid": 94939,
+        "rss_kib": 56000
+      }
+    ],
+    "uptime": "5:11  up 5 days,  9:08, 3 users, load averages: 7.39 6.74 7.25"
+  },
+  "example": "aux_u8_lut_ab",
+  "exp_variant": {
+    "aux_bytes": 8355840,
+    "aux_dtype": "u8 log-scale + u8 linear bias",
+    "code_bytes": 66846720,
+    "command_buffers": 1,
+    "dispatches": 3,
+    "effective_gb_s": 267.26904404813524,
+    "encoders": 1,
+    "endpoint_bytes": 48,
+    "gpu_ns_median": 281374,
+    "gpu_ns_reps": [
+      281375,
+      281875,
+      279875,
+      281374,
+      280458,
+      282041,
+      279416,
+      280499,
+      283500,
+      281041,
+      283416
+    ],
+    "gpu_us_median": 281.374,
+    "kernel": "aux_u8_native_affine_q2_geo_tpr64_tg128",
+    "label": "native_u8_aux_exp",
+    "lut_table_bytes": 6144,
+    "materializes_f16_aux": false,
+    "weight_bytes": 75202560
+  },
+  "git_head": "2d93a4bf8cbe65bd370f12293a7ca0ffe50f36c9",
+  "incumbent": {
+    "aux_bytes": 16711680,
+    "aux_dtype": "f16 scale + f16 bias",
+    "code_bytes": 66846720,
+    "command_buffers": 1,
+    "dispatches": 3,
+    "effective_gb_s": 330.7619228576857,
+    "encoders": 1,
+    "gpu_ns_median": 252624,
+    "gpu_ns_reps": [
+      251583,
+      252374,
+      252791,
+      252458,
+      253166,
+      254624,
+      253000,
+      251500,
+      252624,
+      253916,
+      251499
+    ],
+    "gpu_us_median": 252.624,
+    "kernel": "aux_u8_incumbent_affine_q2_geo_tpr64_tg128",
+    "label": "incumbent_f16_aux",
+    "weight_bytes": 83558400
+  },
+  "layer": 3,
+  "lut_table_bytes_this_layer": 6144,
+  "lut_variant": {
+    "chosen_because": "lowest median GPUStartTime/GPUEndTime among constant/threadgroup/device",
+    "command_buffers": 1,
+    "dispatches": 3,
+    "effective_gb_s": 288.6854510556622,
+    "encoders": 1,
+    "gpu_ns_median": 260500,
+    "gpu_ns_reps": [
+      259083,
+      260500,
+      259249,
+      261250,
+      260708,
+      260250,
+      258208,
+      265000,
+      260250,
+      261124,
+      261000
+    ],
+    "gpu_us_median": 260.5,
+    "kernel": "aux_u8_lut_threadgroup_affine_q2_geo_tpr64_tg128",
+    "label": "lut_u8_threadgroup",
+    "lut_table_bytes": 6144,
+    "materializes_f16_aux": false,
+    "output_bytes_equal_vs_exp": true,
+    "placement": "threadgroup",
+    "vs_exp": {
+      "bytes_equal": true,
+      "cosine": 1.0,
+      "first_mismatch_index": null,
+      "max_abs_diff": 0.0,
+      "n_elem": 39936,
+      "n_mismatch": 0,
+      "relfro": 0.0
+    },
+    "weight_bytes": 75202560
+  },
+  "lut_vs_exp_output": {
+    "bytes_equal": true,
+    "chosen": {
+      "bytes_equal": true,
+      "cosine": 1.0,
+      "first_mismatch_index": null,
+      "max_abs_diff": 0.0,
+      "n_elem": 39936,
+      "n_mismatch": 0,
+      "relfro": 0.0
+    },
+    "constant": {
+      "bytes_equal": true,
+      "cosine": 1.0,
+      "first_mismatch_index": null,
+      "max_abs_diff": 0.0,
+      "n_elem": 39936,
+      "n_mismatch": 0,
+      "relfro": 0.0
+    },
+    "device": {
+      "bytes_equal": true,
+      "cosine": 1.0,
+      "first_mismatch_index": null,
+      "max_abs_diff": 0.0,
+      "n_elem": 39936,
+      "n_mismatch": 0,
+      "relfro": 0.0
+    },
+    "note": "LUT is an exact reindexing of the Metal exp used to fill the table. Bit-identity vs the in-loop exp-variant is the proof the table did not move the error.",
+    "threadgroup": {
+      "bytes_equal": true,
+      "cosine": 1.0,
+      "first_mismatch_index": null,
+      "max_abs_diff": 0.0,
+      "n_elem": 39936,
+      "n_mismatch": 0,
+      "relfro": 0.0
+    }
+  },
+  "native_consumer": {
+    "bias_buffer": "u8",
+    "codes": "incumbent 2-bit kept",
+    "decode_exp": "in-register log-scale exp + linear bias",
+    "decode_lut": "256-entry table indexed by u8; tables filled with Metal exp",
+    "forbidden_shape": "expand u8 aux to f16 then feed the ordinary kernel",
+    "materializes_f16_aux": false,
+    "scale_buffer": "u8"
+  },
+  "native_u8": {
+    "aux_bytes": 8355840,
+    "aux_dtype": "u8 log-scale + u8 linear bias",
+    "code_bytes": 66846720,
+    "command_buffers": 1,
+    "dispatches": 3,
+    "effective_gb_s": 267.26904404813524,
+    "encoders": 1,
+    "endpoint_bytes": 48,
+    "gpu_ns_median": 281374,
+    "gpu_ns_reps": [
+      281375,
+      281875,
+      279875,
+      281374,
+      280458,
+      282041,
+      279416,
+      280499,
+      283500,
+      281041,
+      283416
+    ],
+    "gpu_us_median": 281.374,
+    "kernel": "aux_u8_native_affine_q2_geo_tpr64_tg128",
+    "label": "native_u8_aux_exp",
+    "lut_table_bytes": 6144,
+    "materializes_f16_aux": false,
+    "weight_bytes": 75202560
+  },
+  "occupancy": {
+    "exp_variant": {
+      "gpu_cores": 60,
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_max_threads": 0.125,
+      "registers_note": "Metal pipeline state does not report register count on this toolchain",
+      "registers_per_thread": null,
+      "thread_execution_width": 32,
+      "threadgroups": 8704,
+      "threadgroups_per_core": 145.06666666666666,
+      "threads_per_threadgroup": 128
+    },
+    "incumbent": {
+      "gpu_cores": 60,
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_max_threads": 0.125,
+      "registers_note": "Metal pipeline state does not report register count on this toolchain",
+      "registers_per_thread": null,
+      "thread_execution_width": 32,
+      "threadgroups": 8704,
+      "threadgroups_per_core": 145.06666666666666,
+      "threads_per_threadgroup": 128
+    },
+    "lut_constant": {
+      "gpu_cores": 60,
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_max_threads": 0.125,
+      "registers_note": "Metal pipeline state does not report register count on this toolchain",
+      "registers_per_thread": null,
+      "thread_execution_width": 32,
+      "threadgroups": 8704,
+      "threadgroups_per_core": 145.06666666666666,
+      "threads_per_threadgroup": 128
+    },
+    "lut_device": {
+      "gpu_cores": 60,
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_max_threads": 0.125,
+      "registers_note": "Metal pipeline state does not report register count on this toolchain",
+      "registers_per_thread": null,
+      "thread_execution_width": 32,
+      "threadgroups": 8704,
+      "threadgroups_per_core": 145.06666666666666,
+      "threads_per_threadgroup": 128
+    },
+    "lut_threadgroup": {
+      "gpu_cores": 60,
+      "max_total_threads_per_threadgroup": 1024,
+      "occupancy_of_max_threads": 0.125,
+      "registers_note": "Metal pipeline state does not report register count on this toolchain",
+      "registers_per_thread": null,
+      "thread_execution_width": 32,
+      "threadgroups": 8704,
+      "threadgroups_per_core": 145.06666666666666,
+      "threads_per_threadgroup": 128
+    }
+  },
+  "output_cosine_mean": 0.9998673733400754,
+  "paired_reps": [
+    {
+      "delta_exp_minus_incumbent_gpu_ns": 29792,
+      "delta_lut_constant_minus_incumbent_gpu_ns": 6833,
+      "delta_lut_device_minus_incumbent_gpu_ns": 8417,
+      "delta_lut_threadgroup_minus_incumbent_gpu_ns": 7500,
+      "exp_gpu_ns": 281375,
+      "incumbent_gpu_ns": 251583,
+      "lut_constant_gpu_ns": 258416,
+      "lut_device_gpu_ns": 260000,
+      "lut_threadgroup_gpu_ns": 259083
+    },
+    {
+      "delta_exp_minus_incumbent_gpu_ns": 29501,
+      "delta_lut_constant_minus_incumbent_gpu_ns": 8376,
+      "delta_lut_device_minus_incumbent_gpu_ns": 9000,
+      "delta_lut_threadgroup_minus_incumbent_gpu_ns": 8126,
+      "exp_gpu_ns": 281875,
+      "incumbent_gpu_ns": 252374,
+      "lut_constant_gpu_ns": 260750,
+      "lut_device_gpu_ns": 261374,
+      "lut_threadgroup_gpu_ns": 260500
+    },
+    {
+      "delta_exp_minus_incumbent_gpu_ns": 27084,
+      "delta_lut_constant_minus_incumbent_gpu_ns": 6458,
+      "delta_lut_device_minus_incumbent_gpu_ns": 7709,
+      "delta_lut_threadgroup_minus_incumbent_gpu_ns": 6458,
+      "exp_gpu_ns": 279875,
+      "incumbent_gpu_ns": 252791,
+      "lut_constant_gpu_ns": 259249,
+      "lut_device_gpu_ns": 260500,
+      "lut_threadgroup_gpu_ns": 259249
+    },
+    {
+      "delta_exp_minus_incumbent_gpu_ns": 28916,
+      "delta_lut_constant_minus_incumbent_gpu_ns": 7250,
+      "delta_lut_device_minus_incumbent_gpu_ns": 8542,
+      "delta_lut_threadgroup_minus_incumbent_gpu_ns": 8792,
+      "exp_gpu_ns": 281374,
+      "incumbent_gpu_ns": 252458,
+      "lut_constant_gpu_ns": 259708,
+      "lut_device_gpu_ns": 261000,
+      "lut_threadgroup_gpu_ns": 261250
+    },
+    {
+      "delta_exp_minus_incumbent_gpu_ns": 27292,
+      "delta_lut_constant_minus_incumbent_gpu_ns": 9584,
+      "delta_lut_device_minus_incumbent_gpu_ns": 7417,
+      "delta_lut_threadgroup_minus_incumbent_gpu_ns": 7542,
+      "exp_gpu_ns": 280458,
+      "incumbent_gpu_ns": 253166,
+      "lut_constant_gpu_ns": 262750,
+      "lut_device_gpu_ns": 260583,
+      "lut_threadgroup_gpu_ns": 260708
+    },
+    {
+      "delta_exp_minus_incumbent_gpu_ns": 27417,
+      "delta_lut_constant_minus_incumbent_gpu_ns": 6251,
+      "delta_lut_device_minus_incumbent_gpu_ns": 2125,
+      "delta_lut_threadgroup_minus_incumbent_gpu_ns": 5626,
+      "exp_gpu_ns": 282041,
+      "incumbent_gpu_ns": 254624,
+      "lut_constant_gpu_ns": 260875,
+      "lut_device_gpu_ns": 256749,
+      "lut_threadgroup_gpu_ns": 260250
+    },
+    {
+      "delta_exp_minus_incumbent_gpu_ns": 26416,
+      "delta_lut_constant_minus_incumbent_gpu_ns": 7291,
+      "delta_lut_device_minus_incumbent_gpu_ns": 6541,
+      "delta_lut_threadgroup_minus_incumbent_gpu_ns": 5208,
+      "exp_gpu_ns": 279416,
+      "incumbent_gpu_ns": 253000,
+      "lut_constant_gpu_ns": 260291,
+      "lut_device_gpu_ns": 259541,
+      "lut_threadgroup_gpu_ns": 258208
+    },
+    {
+      "delta_exp_minus_incumbent_gpu_ns": 28999,
+      "delta_lut_constant_minus_incumbent_gpu_ns": 12458,
+      "delta_lut_device_minus_incumbent_gpu_ns": 10833,
+      "delta_lut_threadgroup_minus_incumbent_gpu_ns": 13500,
+      "exp_gpu_ns": 280499,
+      "incumbent_gpu_ns": 251500,
+      "lut_constant_gpu_ns": 263958,
+      "lut_device_gpu_ns": 262333,
+      "lut_threadgroup_gpu_ns": 265000
+    },
+    {
+      "delta_exp_minus_incumbent_gpu_ns": 30876,
+      "delta_lut_constant_minus_incumbent_gpu_ns": 10750,
+      "delta_lut_device_minus_incumbent_gpu_ns": 7125,
+      "delta_lut_threadgroup_minus_incumbent_gpu_ns": 7626,
+      "exp_gpu_ns": 283500,
+      "incumbent_gpu_ns": 252624,
+      "lut_constant_gpu_ns": 263374,
+      "lut_device_gpu_ns": 259749,
+      "lut_threadgroup_gpu_ns": 260250
+    },
+    {
+      "delta_exp_minus_incumbent_gpu_ns": 27125,
+      "delta_lut_constant_minus_incumbent_gpu_ns": 99625,
+      "delta_lut_device_minus_incumbent_gpu_ns": 7042,
+      "delta_lut_threadgroup_minus_incumbent_gpu_ns": 7208,
+      "exp_gpu_ns": 281041,
+      "incumbent_gpu_ns": 253916,
+      "lut_constant_gpu_ns": 353541,
+      "lut_device_gpu_ns": 260958,
+      "lut_threadgroup_gpu_ns": 261124
+    },
+    {
+      "delta_exp_minus_incumbent_gpu_ns": 31917,
+      "delta_lut_constant_minus_incumbent_gpu_ns": 33875,
+      "delta_lut_device_minus_incumbent_gpu_ns": 11001,
+      "delta_lut_threadgroup_minus_incumbent_gpu_ns": 9501,
+      "exp_gpu_ns": 283416,
+      "incumbent_gpu_ns": 251499,
+      "lut_constant_gpu_ns": 285374,
+      "lut_device_gpu_ns": 262500,
+      "lut_threadgroup_gpu_ns": 261000
+    }
+  ],
+  "placements": {
+    "constant": {
+      "address_space": "constant float[256] via set_bytes",
+      "command_buffers": 1,
+      "dispatches": 3,
+      "effective_gb_s": 288.27047436511737,
+      "encoders": 1,
+      "gpu_ns_median": 260875,
+      "gpu_ns_reps": [
+        258416,
+        260750,
+        259249,
+        259708,
+        262750,
+        260875,
+        260291,
+        263958,
+        263374,
+        353541,
+        285374
+      ],
+      "gpu_us_median": 260.875,
+      "kernel": "aux_u8_lut_constant_affine_q2_geo_tpr64_tg128",
+      "label": "lut_u8_constant",
+      "lut_table_bytes": 6144,
+      "materializes_f16_aux": false,
+      "placement": "constant",
+      "vs_exp": {
+        "bytes_equal": true,
+        "cosine": 1.0,
+        "first_mismatch_index": null,
+        "max_abs_diff": 0.0,
+        "n_elem": 39936,
+        "n_mismatch": 0,
+        "relfro": 0.0
+      },
+      "weight_bytes": 75202560
+    },
+    "device": {
+      "address_space": "device const float[256], hardware cache",
+      "command_buffers": 1,
+      "dispatches": 3,
+      "effective_gb_s": 288.59349995970575,
+      "encoders": 1,
+      "gpu_ns_median": 260583,
+      "gpu_ns_reps": [
+        260000,
+        261374,
+        260500,
+        261000,
+        260583,
+        256749,
+        259541,
+        262333,
+        259749,
+        260958,
+        262500
+      ],
+      "gpu_us_median": 260.583,
+      "kernel": "aux_u8_lut_device_affine_q2_geo_tpr64_tg128",
+      "label": "lut_u8_device",
+      "lut_table_bytes": 6144,
+      "materializes_f16_aux": false,
+      "placement": "device",
+      "vs_exp": {
+        "bytes_equal": true,
+        "cosine": 1.0,
+        "first_mismatch_index": null,
+        "max_abs_diff": 0.0,
+        "n_elem": 39936,
+        "n_mismatch": 0,
+        "relfro": 0.0
+      },
+      "weight_bytes": 75202560
+    },
+    "threadgroup": {
+      "address_space": "threadgroup float[256] cooperative copy from device",
+      "command_buffers": 1,
+      "dispatches": 3,
+      "effective_gb_s": 288.6854510556622,
+      "encoders": 1,
+      "gpu_ns_median": 260500,
+      "gpu_ns_reps": [
+        259083,
+        260500,
+        259249,
+        261250,
+        260708,
+        260250,
+        258208,
+        265000,
+        260250,
+        261124,
+        261000
+      ],
+      "gpu_us_median": 260.5,
+      "kernel": "aux_u8_lut_threadgroup_affine_q2_geo_tpr64_tg128",
+      "label": "lut_u8_threadgroup",
+      "lut_table_bytes": 6144,
+      "materializes_f16_aux": false,
+      "placement": "threadgroup",
+      "vs_exp": {
+        "bytes_equal": true,
+        "cosine": 1.0,
+        "first_mismatch_index": null,
+        "max_abs_diff": 0.0,
+        "n_elem": 39936,
+        "n_mismatch": 0,
+        "relfro": 0.0
+      },
+      "weight_bytes": 75202560
+    }
+  },
+  "projections": [
+    {
+      "bias_max": -0.0010957717895507812,
+      "bias_min": -0.1705322265625,
+      "code_bytes": 22282240,
+      "cols": 5120,
+      "endpoint_bytes": 16,
+      "group_size": 64,
+      "groups": 1392640,
+      "incumbent_aux_bytes": 5570560,
+      "incumbent_weight_bytes": 27852800,
+      "lut_constant_vs_exp": {
+        "bytes_equal": true,
+        "cosine": 1.0000000000000002,
+        "first_mismatch_index": null,
+        "max_abs_diff": 0.0,
+        "n_elem": 17408,
+        "n_mismatch": 0,
+        "relfro": 0.0
+      },
+      "lut_device_vs_exp": {
+        "bytes_equal": true,
+        "cosine": 1.0000000000000002,
+        "first_mismatch_index": null,
+        "max_abs_diff": 0.0,
+        "n_elem": 17408,
+        "n_mismatch": 0,
+        "relfro": 0.0
+      },
+      "lut_materializes_f16_aux": false,
+      "lut_table_bytes": 2048,
+      "lut_threadgroup_vs_exp": {
+        "bytes_equal": true,
+        "cosine": 1.0000000000000002,
+        "first_mismatch_index": null,
+        "max_abs_diff": 0.0,
+        "n_elem": 17408,
+        "n_mismatch": 0,
+        "relfro": 0.0
+      },
+      "name": "language_model.model.layers.3.mlp.gate_proj.weight",
+      "native_aux_bytes": 2785280,
+      "native_binds": "device const uchar* scales_u8 / biases_u8",
+      "native_materializes_f16_aux": false,
+      "native_weight_bytes": 25067520,
+      "output_cosine_exp_vs_incumbent": 0.9999697607043455,
+      "output_cosine_lut_constant_vs_incumbent": 0.9999697607043455,
+      "output_cosine_lut_device_vs_incumbent": 0.9999697607043455,
+      "output_cosine_lut_threadgroup_vs_incumbent": 0.9999697607043455,
+      "output_relfro_exp_vs_incumbent": 0.007776788276791196,
+      "output_relfro_lut_constant_vs_incumbent": 0.007776788276791196,
+      "output_relfro_lut_device_vs_incumbent": 0.007776788276791196,
+      "output_relfro_lut_threadgroup_vs_incumbent": 0.007776788276791196,
+      "rows": 17408,
+      "scale_lmax": -2.474221749687984,
+      "scale_lmin": -5.050100177681711
+    },
+    {
+      "bias_max": 0.00138092041015625,
+      "bias_min": -0.13671875,
+      "code_bytes": 22282240,
+      "cols": 5120,
+      "endpoint_bytes": 16,
+      "group_size": 64,
+      "groups": 1392640,
+      "incumbent_aux_bytes": 5570560,
+      "incumbent_weight_bytes": 27852800,
+      "lut_constant_vs_exp": {
+        "bytes_equal": true,
+        "cosine": 1.0,
+        "first_mismatch_index": null,
+        "max_abs_diff": 0.0,
+        "n_elem": 17408,
+        "n_mismatch": 0,
+        "relfro": 0.0
+      },
+      "lut_device_vs_exp": {
+        "bytes_equal": true,
+        "cosine": 1.0,
+        "first_mismatch_index": null,
+        "max_abs_diff": 0.0,
+        "n_elem": 17408,
+        "n_mismatch": 0,
+        "relfro": 0.0
+      },
+      "lut_materializes_f16_aux": false,
+      "lut_table_bytes": 2048,
+      "lut_threadgroup_vs_exp": {
+        "bytes_equal": true,
+        "cosine": 1.0,
+        "first_mismatch_index": null,
+        "max_abs_diff": 0.0,
+        "n_elem": 17408,
+        "n_mismatch": 0,
+        "relfro": 0.0
+      },
+      "name": "language_model.model.layers.3.mlp.up_proj.weight",
+      "native_aux_bytes": 2785280,
+      "native_binds": "device const uchar* scales_u8 / biases_u8",
+      "native_materializes_f16_aux": false,
+      "native_weight_bytes": 25067520,
+      "output_cosine_exp_vs_incumbent": 0.9999780261536382,
+      "output_cosine_lut_constant_vs_incumbent": 0.9999780261536382,
+      "output_cosine_lut_device_vs_incumbent": 0.9999780261536382,
+      "output_cosine_lut_threadgroup_vs_incumbent": 0.9999780261536382,
+      "output_relfro_exp_vs_incumbent": 0.0066293657007670675,
+      "output_relfro_lut_constant_vs_incumbent": 0.0066293657007670675,
+      "output_relfro_lut_device_vs_incumbent": 0.0066293657007670675,
+      "output_relfro_lut_threadgroup_vs_incumbent": 0.0066293657007670675,
+      "rows": 17408,
+      "scale_lmax": -2.9011103632232236,
+      "scale_lmin": -5.128061719151423
+    },
+    {
+      "bias_max": 0.0014429092407226562,
+      "bias_min": -0.6044921875,
+      "code_bytes": 22282240,
+      "cols": 17408,
+      "endpoint_bytes": 16,
+      "group_size": 64,
+      "groups": 1392640,
+      "incumbent_aux_bytes": 5570560,
+      "incumbent_weight_bytes": 27852800,
+      "lut_constant_vs_exp": {
+        "bytes_equal": true,
+        "cosine": 1.0,
+        "first_mismatch_index": null,
+        "max_abs_diff": 0.0,
+        "n_elem": 5120,
+        "n_mismatch": 0,
+        "relfro": 0.0
+      },
+      "lut_device_vs_exp": {
+        "bytes_equal": true,
+        "cosine": 1.0,
+        "first_mismatch_index": null,
+        "max_abs_diff": 0.0,
+        "n_elem": 5120,
+        "n_mismatch": 0,
+        "relfro": 0.0
+      },
+      "lut_materializes_f16_aux": false,
+      "lut_table_bytes": 2048,
+      "lut_threadgroup_vs_exp": {
+        "bytes_equal": true,
+        "cosine": 1.0,
+        "first_mismatch_index": null,
+        "max_abs_diff": 0.0,
+        "n_elem": 5120,
+        "n_mismatch": 0,
+        "relfro": 0.0
+      },
+      "name": "language_model.model.layers.3.mlp.down_proj.weight",
+      "native_aux_bytes": 2785280,
+      "native_binds": "device const uchar* scales_u8 / biases_u8",
+      "native_materializes_f16_aux": false,
+      "native_weight_bytes": 25067520,
+      "output_cosine_exp_vs_incumbent": 0.9996543331622423,
+      "output_cosine_lut_constant_vs_incumbent": 0.9996543331622423,
+      "output_cosine_lut_device_vs_incumbent": 0.9996543331622423,
+      "output_cosine_lut_threadgroup_vs_incumbent": 0.9996543331622423,
+      "output_relfro_exp_vs_incumbent": 0.02629999837482214,
+      "output_relfro_lut_constant_vs_incumbent": 0.02629999837482214,
+      "output_relfro_lut_device_vs_incumbent": 0.02629999837482214,
+      "output_relfro_lut_threadgroup_vs_incumbent": 0.02629999837482214,
+      "rows": 5120,
+      "scale_lmax": -1.1973217943268557,
+      "scale_lmin": -5.264354781578675
+    }
+  ],
+  "reps": 11,
+  "schema": "hawking.future.aux_u8_lut.raw.v1",
+  "shader": "crates/hawking-core/examples/aux_u8_lut_ab.metal",
+  "timing": "MTLCommandBuffer GPUStartTime/GPUEndTime",
+  "warmup": 5
+}

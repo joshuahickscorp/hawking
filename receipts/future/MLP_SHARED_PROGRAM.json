@@ -1,0 +1,2468 @@
+{
+ "answers": {
+  "do_the_bytes_clear_one_percent_of_complete_token_time": "YES as a projection: replacing 5.35 GB of MLP with tens of MB of program would clear the S020 1% bar. Function does not hold, so the candidate is MEASURED_NEGATIVE and the economics verdict is IMMATERIAL.",
+  "does_shared_both_move_the_independent_information_into_core_plus_residual": "NO at affordable size. A 32-channel output-sparse residual on top of rank-64 bases still sits at ~0.92 held-out relative L2. A residual large enough to carry F is no longer a sparse residual.",
+  "is_independent_consumption_of_x_necessary_at_affordable_rank": "YES on this cheap round. All three factorized programs, at ranks 8\u201364, have held-out relative L2 \u2248 0.9, indistinguishable from a slightly-better-than-mean predictor. Oracle PCA of F itself is already above the kill at these ranks, so no core through a small latent can replace F.",
+  "should_round_2_go_wider_on_these_shapes": "NO. The cheap round is the kill. A different function_replacement (full-width structured nonlinear: Monarch, butterfly, distilled operator that is not an r-dimensional bottleneck) is a different experiment."
+ },
+ "anti_fabrication": {
+  "detectors": [
+   "UNBILLED_SHARED_BASIS",
+   "TRAIN_REPORTED_AS_HELD_OUT",
+   "REJECTED_DENSE_REMAT",
+   "SYNTHETIC_ROW",
+   "HELD_OUT_PROMPT_LEAK"
+  ],
+  "loud_exceptions": [
+   "UnbilledSharedBasis",
+   "TrainReportedAsHeldOut",
+   "RematConsumer",
+   "CorpusUnavailable"
+  ],
+  "rule": "emit_candidate is the only constructor. A shared basis with 0 embeddings bytes raises UnbilledSharedBasis. A train-set figure labelled held-out raises TrainReportedAsHeldOut. A consumer that rematerializes dense W raises RematConsumer. A return-flag nobody checks is not a guard."
+ },
+ "baselines": {
+  "held_out_split": "hold",
+  "mean_held_out_relative_l2": 0.970246,
+  "mean_train_relative_l2_diagnostic": 0.965062,
+  "note": "baselines are held-out; they are not candidates",
+  "zero_held_out_relative_l2": 1.0
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T07:05:56Z",
+  "recorded_by": "tools/future/mlp_shared_program.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "candidate_counts": {
+  "measured_negative": 17,
+  "n": 17,
+  "open": 0,
+  "rejected_dense_remat": 0
+ },
+ "candidates": [
+  {
+   "algebra": "z = V x; y = P program(z)",
+   "byte_breakdown": {
+    "element_bytes": 2,
+    "hidden": 5120,
+    "metadata_bytes": 16384,
+    "n_layers": 64,
+    "per_layer_core_bytes": 81920,
+    "per_layer_residual_bytes": 0,
+    "rank_in": 8,
+    "rank_out": 8,
+    "residual_k": 0,
+    "shared_input_basis_bytes": 81920,
+    "shared_output_basis_bytes": 0
+   },
+   "bytes_added": {
+    "embeddings": 81920,
+    "generator": 5242880,
+    "metadata": 16384,
+    "residuals": 0,
+    "state": 0,
+    "total": 5341184
+   },
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer": {
+    "algebra": "z = V x (V resident, once per token); y_l = P_l z",
+    "also": [
+     "StationaryRepresentation"
+    ],
+    "consumes_directly": true,
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "shape": "SHARED_INPUT",
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "y = P (V x) is two matvecs. Materializing P V into W is REJECTED_DENSE_REMAT and would also erase the sharing."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused TiledProjection per layer. ASSUMPTION. Unfused 3-op lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION."
+    },
+    "bytes_added": {
+     "embeddings": 81920,
+     "generator": 5242880,
+     "metadata": 16384,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 5341184,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "shared_input_r8",
+    "live": false,
+    "net_bytes": -5342454592,
+    "predicted_ms_delta": -15.5259,
+    "predicted_ms_delta_range": [
+     -23.9143,
+     -10.7408
+    ],
+    "predicted_ms_saved": 15.5259,
+    "predicted_token_ms": 13.1961,
+    "predicted_tps": 75.78,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.9143,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.0155,
+     "byte_ms_delta": -15.5259,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5342454592,
+    "predicted_ms_saved": 15.5259,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.952312,
+   "held_out_relative_l2": 0.951176,
+   "held_out_split": "hold",
+   "id": "shared_input_r8",
+   "n_layers_billed": 64,
+   "oracle_output_basis_hold": null,
+   "program": "linear",
+   "rank_in": 8,
+   "rank_out": 8,
+   "residual_k": 0,
+   "shape": "SHARED_INPUT",
+   "status": "MEASURED_NEGATIVE",
+   "train_relative_fro_diagnostic": 0.934822,
+   "train_relative_l2_diagnostic": 0.934575,
+   "train_split": "train",
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W, and does not reconstruct a dense weight tensor"
+  },
+  {
+   "algebra": "z = V x; y = P program(z)",
+   "byte_breakdown": {
+    "element_bytes": 2,
+    "hidden": 5120,
+    "metadata_bytes": 16384,
+    "n_layers": 64,
+    "per_layer_core_bytes": 163840,
+    "per_layer_residual_bytes": 0,
+    "rank_in": 16,
+    "rank_out": 16,
+    "residual_k": 0,
+    "shared_input_basis_bytes": 163840,
+    "shared_output_basis_bytes": 0
+   },
+   "bytes_added": {
+    "embeddings": 163840,
+    "generator": 10485760,
+    "metadata": 16384,
+    "residuals": 0,
+    "state": 0,
+    "total": 10665984
+   },
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer": {
+    "algebra": "z = V x (V resident, once per token); y_l = P_l z",
+    "also": [
+     "StationaryRepresentation"
+    ],
+    "consumes_directly": true,
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "shape": "SHARED_INPUT",
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "y = P (V x) is two matvecs. Materializing P V into W is REJECTED_DENSE_REMAT and would also erase the sharing."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused TiledProjection per layer. ASSUMPTION. Unfused 3-op lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION."
+    },
+    "bytes_added": {
+     "embeddings": 163840,
+     "generator": 10485760,
+     "metadata": 16384,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 10665984,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "shared_input_r16",
+    "live": false,
+    "net_bytes": -5337129792,
+    "predicted_ms_delta": -15.5104,
+    "predicted_ms_delta_range": [
+     -23.8905,
+     -10.7301
+    ],
+    "predicted_ms_saved": 15.5104,
+    "predicted_token_ms": 13.2116,
+    "predicted_tps": 75.691,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.8905,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.031,
+     "byte_ms_delta": -15.5104,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5337129792,
+    "predicted_ms_saved": 15.5104,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.940334,
+   "held_out_relative_l2": 0.939222,
+   "held_out_split": "hold",
+   "id": "shared_input_r16",
+   "n_layers_billed": 64,
+   "oracle_output_basis_hold": null,
+   "program": "linear",
+   "rank_in": 16,
+   "rank_out": 16,
+   "residual_k": 0,
+   "shape": "SHARED_INPUT",
+   "status": "MEASURED_NEGATIVE",
+   "train_relative_fro_diagnostic": 0.916337,
+   "train_relative_l2_diagnostic": 0.915942,
+   "train_split": "train",
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W, and does not reconstruct a dense weight tensor"
+  },
+  {
+   "algebra": "z = V x; y = P program(z)",
+   "byte_breakdown": {
+    "element_bytes": 2,
+    "hidden": 5120,
+    "metadata_bytes": 16384,
+    "n_layers": 64,
+    "per_layer_core_bytes": 327680,
+    "per_layer_residual_bytes": 0,
+    "rank_in": 32,
+    "rank_out": 32,
+    "residual_k": 0,
+    "shared_input_basis_bytes": 327680,
+    "shared_output_basis_bytes": 0
+   },
+   "bytes_added": {
+    "embeddings": 327680,
+    "generator": 20971520,
+    "metadata": 16384,
+    "residuals": 0,
+    "state": 0,
+    "total": 21315584
+   },
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer": {
+    "algebra": "z = V x (V resident, once per token); y_l = P_l z",
+    "also": [
+     "StationaryRepresentation"
+    ],
+    "consumes_directly": true,
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "shape": "SHARED_INPUT",
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "y = P (V x) is two matvecs. Materializing P V into W is REJECTED_DENSE_REMAT and would also erase the sharing."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused TiledProjection per layer. ASSUMPTION. Unfused 3-op lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION."
+    },
+    "bytes_added": {
+     "embeddings": 327680,
+     "generator": 20971520,
+     "metadata": 16384,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 21315584,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "shared_input_r32",
+    "live": false,
+    "net_bytes": -5326480192,
+    "predicted_ms_delta": -15.4795,
+    "predicted_ms_delta_range": [
+     -23.8428,
+     -10.7086
+    ],
+    "predicted_ms_saved": 15.4795,
+    "predicted_token_ms": 13.2425,
+    "predicted_tps": 75.514,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.8428,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.0619,
+     "byte_ms_delta": -15.4795,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5326480192,
+    "predicted_ms_saved": 15.4795,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.930677,
+   "held_out_relative_l2": 0.929196,
+   "held_out_split": "hold",
+   "id": "shared_input_r32",
+   "n_layers_billed": 64,
+   "oracle_output_basis_hold": null,
+   "program": "linear",
+   "rank_in": 32,
+   "rank_out": 32,
+   "residual_k": 0,
+   "shape": "SHARED_INPUT",
+   "status": "MEASURED_NEGATIVE",
+   "train_relative_fro_diagnostic": 0.896203,
+   "train_relative_l2_diagnostic": 0.895763,
+   "train_split": "train",
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W, and does not reconstruct a dense weight tensor"
+  },
+  {
+   "algebra": "z = V x; y = P program(z)",
+   "byte_breakdown": {
+    "element_bytes": 2,
+    "hidden": 5120,
+    "metadata_bytes": 16384,
+    "n_layers": 64,
+    "per_layer_core_bytes": 655360,
+    "per_layer_residual_bytes": 0,
+    "rank_in": 64,
+    "rank_out": 64,
+    "residual_k": 0,
+    "shared_input_basis_bytes": 655360,
+    "shared_output_basis_bytes": 0
+   },
+   "bytes_added": {
+    "embeddings": 655360,
+    "generator": 41943040,
+    "metadata": 16384,
+    "residuals": 0,
+    "state": 0,
+    "total": 42614784
+   },
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer": {
+    "algebra": "z = V x (V resident, once per token); y_l = P_l z",
+    "also": [
+     "StationaryRepresentation"
+    ],
+    "consumes_directly": true,
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "shape": "SHARED_INPUT",
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "y = P (V x) is two matvecs. Materializing P V into W is REJECTED_DENSE_REMAT and would also erase the sharing."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused TiledProjection per layer. ASSUMPTION. Unfused 3-op lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION."
+    },
+    "bytes_added": {
+     "embeddings": 655360,
+     "generator": 41943040,
+     "metadata": 16384,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 42614784,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "shared_input_r64",
+    "live": false,
+    "net_bytes": -5305180992,
+    "predicted_ms_delta": -15.4176,
+    "predicted_ms_delta_range": [
+     -23.7475,
+     -10.6658
+    ],
+    "predicted_ms_saved": 15.4176,
+    "predicted_token_ms": 13.3044,
+    "predicted_tps": 75.163,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.7475,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.1238,
+     "byte_ms_delta": -15.4176,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5305180992,
+    "predicted_ms_saved": 15.4176,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.918527,
+   "held_out_relative_l2": 0.915642,
+   "held_out_split": "hold",
+   "id": "shared_input_r64",
+   "n_layers_billed": 64,
+   "oracle_output_basis_hold": null,
+   "program": "linear",
+   "rank_in": 64,
+   "rank_out": 64,
+   "residual_k": 0,
+   "shape": "SHARED_INPUT",
+   "status": "MEASURED_NEGATIVE",
+   "train_relative_fro_diagnostic": 0.867817,
+   "train_relative_l2_diagnostic": 0.866877,
+   "train_split": "train",
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W, and does not reconstruct a dense weight tensor"
+  },
+  {
+   "algebra": "z = V x; y = P program(z)",
+   "byte_breakdown": {
+    "element_bytes": 2,
+    "hidden": 5120,
+    "metadata_bytes": 16384,
+    "n_layers": 64,
+    "per_layer_core_bytes": 327680,
+    "per_layer_residual_bytes": 0,
+    "rank_in": 32,
+    "rank_out": 32,
+    "residual_k": 0,
+    "shared_input_basis_bytes": 327680,
+    "shared_output_basis_bytes": 0
+   },
+   "bytes_added": {
+    "embeddings": 327680,
+    "generator": 20971520,
+    "metadata": 16384,
+    "residuals": 0,
+    "state": 0,
+    "total": 21315584
+   },
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer": {
+    "algebra": "z = V x (V resident, once per token); y_l = P_l z",
+    "also": [
+     "StationaryRepresentation"
+    ],
+    "consumes_directly": true,
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "shape": "SHARED_INPUT",
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "y = P (V x) is two matvecs. Materializing P V into W is REJECTED_DENSE_REMAT and would also erase the sharing."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused TiledProjection per layer. ASSUMPTION. Unfused 3-op lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION."
+    },
+    "bytes_added": {
+     "embeddings": 327680,
+     "generator": 20971520,
+     "metadata": 16384,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 21315584,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "shared_input_r32_silu_readout",
+    "live": false,
+    "net_bytes": -5326480192,
+    "predicted_ms_delta": -15.4795,
+    "predicted_ms_delta_range": [
+     -23.8428,
+     -10.7086
+    ],
+    "predicted_ms_saved": 15.4795,
+    "predicted_token_ms": 13.2425,
+    "predicted_tps": 75.514,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.8428,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.0619,
+     "byte_ms_delta": -15.4795,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5326480192,
+    "predicted_ms_saved": 15.4795,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.938941,
+   "held_out_relative_l2": 0.937872,
+   "held_out_split": "hold",
+   "id": "shared_input_r32_silu_readout",
+   "n_layers_billed": 64,
+   "oracle_output_basis_hold": null,
+   "program": "silu_readout",
+   "rank_in": 32,
+   "rank_out": 32,
+   "residual_k": 0,
+   "shape": "SHARED_INPUT",
+   "status": "MEASURED_NEGATIVE",
+   "train_relative_fro_diagnostic": 0.906939,
+   "train_relative_l2_diagnostic": 0.907061,
+   "train_split": "train",
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W, and does not reconstruct a dense weight tensor"
+  },
+  {
+   "algebra": "z = C x; y = B z",
+   "byte_breakdown": {
+    "element_bytes": 2,
+    "hidden": 5120,
+    "metadata_bytes": 16384,
+    "n_layers": 64,
+    "per_layer_core_bytes": 81920,
+    "per_layer_residual_bytes": 0,
+    "rank_in": 8,
+    "rank_out": 8,
+    "residual_k": 0,
+    "shared_input_basis_bytes": 0,
+    "shared_output_basis_bytes": 81920
+   },
+   "bytes_added": {
+    "embeddings": 81920,
+    "generator": 5242880,
+    "metadata": 16384,
+    "residuals": 0,
+    "state": 0,
+    "total": 5341184
+   },
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer": {
+    "algebra": "z_l = C_l x; y = B z_l (B resident, model scope)",
+    "also": [
+     "StationaryRepresentation"
+    ],
+    "consumes_directly": true,
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "shape": "SHARED_OUTPUT",
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "y = B (C x) is two matvecs. Materializing B C into W is REJECTED_DENSE_REMAT and would also erase the sharing."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused TiledProjection per layer. ASSUMPTION. Unfused 3-op lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION."
+    },
+    "bytes_added": {
+     "embeddings": 81920,
+     "generator": 5242880,
+     "metadata": 16384,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 5341184,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "shared_output_r8",
+    "live": false,
+    "net_bytes": -5342454592,
+    "predicted_ms_delta": -15.5259,
+    "predicted_ms_delta_range": [
+     -23.9143,
+     -10.7408
+    ],
+    "predicted_ms_saved": 15.5259,
+    "predicted_token_ms": 13.1961,
+    "predicted_tps": 75.78,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.9143,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.0155,
+     "byte_ms_delta": -15.5259,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5342454592,
+    "predicted_ms_saved": 15.5259,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.936583,
+   "held_out_relative_l2": 0.934996,
+   "held_out_split": "hold",
+   "id": "shared_output_r8",
+   "n_layers_billed": 64,
+   "oracle_output_basis_hold": 0.931328,
+   "program": "linear",
+   "rank_in": 8,
+   "rank_out": 8,
+   "residual_k": 0,
+   "shape": "SHARED_OUTPUT",
+   "status": "MEASURED_NEGATIVE",
+   "train_relative_fro_diagnostic": 0.91699,
+   "train_relative_l2_diagnostic": 0.916197,
+   "train_split": "train",
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W, and does not reconstruct a dense weight tensor"
+  },
+  {
+   "algebra": "z = C x; y = B z",
+   "byte_breakdown": {
+    "element_bytes": 2,
+    "hidden": 5120,
+    "metadata_bytes": 16384,
+    "n_layers": 64,
+    "per_layer_core_bytes": 163840,
+    "per_layer_residual_bytes": 0,
+    "rank_in": 16,
+    "rank_out": 16,
+    "residual_k": 0,
+    "shared_input_basis_bytes": 0,
+    "shared_output_basis_bytes": 163840
+   },
+   "bytes_added": {
+    "embeddings": 163840,
+    "generator": 10485760,
+    "metadata": 16384,
+    "residuals": 0,
+    "state": 0,
+    "total": 10665984
+   },
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer": {
+    "algebra": "z_l = C_l x; y = B z_l (B resident, model scope)",
+    "also": [
+     "StationaryRepresentation"
+    ],
+    "consumes_directly": true,
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "shape": "SHARED_OUTPUT",
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "y = B (C x) is two matvecs. Materializing B C into W is REJECTED_DENSE_REMAT and would also erase the sharing."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused TiledProjection per layer. ASSUMPTION. Unfused 3-op lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION."
+    },
+    "bytes_added": {
+     "embeddings": 163840,
+     "generator": 10485760,
+     "metadata": 16384,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 10665984,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "shared_output_r16",
+    "live": false,
+    "net_bytes": -5337129792,
+    "predicted_ms_delta": -15.5104,
+    "predicted_ms_delta_range": [
+     -23.8905,
+     -10.7301
+    ],
+    "predicted_ms_saved": 15.5104,
+    "predicted_token_ms": 13.2116,
+    "predicted_tps": 75.691,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.8905,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.031,
+     "byte_ms_delta": -15.5104,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5337129792,
+    "predicted_ms_saved": 15.5104,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.931057,
+   "held_out_relative_l2": 0.929477,
+   "held_out_split": "hold",
+   "id": "shared_output_r16",
+   "n_layers_billed": 64,
+   "oracle_output_basis_hold": 0.922925,
+   "program": "linear",
+   "rank_in": 16,
+   "rank_out": 16,
+   "residual_k": 0,
+   "shape": "SHARED_OUTPUT",
+   "status": "MEASURED_NEGATIVE",
+   "train_relative_fro_diagnostic": 0.901589,
+   "train_relative_l2_diagnostic": 0.901003,
+   "train_split": "train",
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W, and does not reconstruct a dense weight tensor"
+  },
+  {
+   "algebra": "z = C x; y = B z",
+   "byte_breakdown": {
+    "element_bytes": 2,
+    "hidden": 5120,
+    "metadata_bytes": 16384,
+    "n_layers": 64,
+    "per_layer_core_bytes": 327680,
+    "per_layer_residual_bytes": 0,
+    "rank_in": 32,
+    "rank_out": 32,
+    "residual_k": 0,
+    "shared_input_basis_bytes": 0,
+    "shared_output_basis_bytes": 327680
+   },
+   "bytes_added": {
+    "embeddings": 327680,
+    "generator": 20971520,
+    "metadata": 16384,
+    "residuals": 0,
+    "state": 0,
+    "total": 21315584
+   },
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer": {
+    "algebra": "z_l = C_l x; y = B z_l (B resident, model scope)",
+    "also": [
+     "StationaryRepresentation"
+    ],
+    "consumes_directly": true,
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "shape": "SHARED_OUTPUT",
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "y = B (C x) is two matvecs. Materializing B C into W is REJECTED_DENSE_REMAT and would also erase the sharing."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused TiledProjection per layer. ASSUMPTION. Unfused 3-op lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION."
+    },
+    "bytes_added": {
+     "embeddings": 327680,
+     "generator": 20971520,
+     "metadata": 16384,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 21315584,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "shared_output_r32",
+    "live": false,
+    "net_bytes": -5326480192,
+    "predicted_ms_delta": -15.4795,
+    "predicted_ms_delta_range": [
+     -23.8428,
+     -10.7086
+    ],
+    "predicted_ms_saved": 15.4795,
+    "predicted_token_ms": 13.2425,
+    "predicted_tps": 75.514,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.8428,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.0619,
+     "byte_ms_delta": -15.4795,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5326480192,
+    "predicted_ms_saved": 15.4795,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.925779,
+   "held_out_relative_l2": 0.924085,
+   "held_out_split": "hold",
+   "id": "shared_output_r32",
+   "n_layers_billed": 64,
+   "oracle_output_basis_hold": 0.912267,
+   "program": "linear",
+   "rank_in": 32,
+   "rank_out": 32,
+   "residual_k": 0,
+   "shape": "SHARED_OUTPUT",
+   "status": "MEASURED_NEGATIVE",
+   "train_relative_fro_diagnostic": 0.880406,
+   "train_relative_l2_diagnostic": 0.880578,
+   "train_split": "train",
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W, and does not reconstruct a dense weight tensor"
+  },
+  {
+   "algebra": "z = C x; y = B z",
+   "byte_breakdown": {
+    "element_bytes": 2,
+    "hidden": 5120,
+    "metadata_bytes": 16384,
+    "n_layers": 64,
+    "per_layer_core_bytes": 655360,
+    "per_layer_residual_bytes": 0,
+    "rank_in": 64,
+    "rank_out": 64,
+    "residual_k": 0,
+    "shared_input_basis_bytes": 0,
+    "shared_output_basis_bytes": 655360
+   },
+   "bytes_added": {
+    "embeddings": 655360,
+    "generator": 41943040,
+    "metadata": 16384,
+    "residuals": 0,
+    "state": 0,
+    "total": 42614784
+   },
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer": {
+    "algebra": "z_l = C_l x; y = B z_l (B resident, model scope)",
+    "also": [
+     "StationaryRepresentation"
+    ],
+    "consumes_directly": true,
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "shape": "SHARED_OUTPUT",
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "y = B (C x) is two matvecs. Materializing B C into W is REJECTED_DENSE_REMAT and would also erase the sharing."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused TiledProjection per layer. ASSUMPTION. Unfused 3-op lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION."
+    },
+    "bytes_added": {
+     "embeddings": 655360,
+     "generator": 41943040,
+     "metadata": 16384,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 42614784,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "shared_output_r64",
+    "live": false,
+    "net_bytes": -5305180992,
+    "predicted_ms_delta": -15.4176,
+    "predicted_ms_delta_range": [
+     -23.7475,
+     -10.6658
+    ],
+    "predicted_ms_saved": 15.4176,
+    "predicted_token_ms": 13.3044,
+    "predicted_tps": 75.163,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.7475,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.1238,
+     "byte_ms_delta": -15.4176,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5305180992,
+    "predicted_ms_saved": 15.4176,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.919023,
+   "held_out_relative_l2": 0.917181,
+   "held_out_split": "hold",
+   "id": "shared_output_r64",
+   "n_layers_billed": 64,
+   "oracle_output_basis_hold": 0.894806,
+   "program": "linear",
+   "rank_in": 64,
+   "rank_out": 64,
+   "residual_k": 0,
+   "shape": "SHARED_OUTPUT",
+   "status": "MEASURED_NEGATIVE",
+   "train_relative_fro_diagnostic": 0.847476,
+   "train_relative_l2_diagnostic": 0.84869,
+   "train_split": "train",
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W, and does not reconstruct a dense weight tensor"
+  },
+  {
+   "algebra": "z = V x; h = Core z; y = B h + S x",
+   "byte_breakdown": {
+    "element_bytes": 2,
+    "hidden": 5120,
+    "metadata_bytes": 16384,
+    "n_layers": 64,
+    "per_layer_core_bytes": 128,
+    "per_layer_residual_bytes": 0,
+    "rank_in": 8,
+    "rank_out": 8,
+    "residual_k": 0,
+    "shared_input_basis_bytes": 81920,
+    "shared_output_basis_bytes": 81920
+   },
+   "bytes_added": {
+    "embeddings": 163840,
+    "generator": 8192,
+    "metadata": 16384,
+    "residuals": 0,
+    "state": 0,
+    "total": 188416
+   },
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer": {
+    "algebra": "z = V x; h_l = Core_l z; y = B h_l",
+    "also": [
+     "StationaryRepresentation",
+     "TiledProjection"
+    ],
+    "consumes_directly": true,
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "shape": "SHARED_BOTH",
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "The program is the kernel: shared bases stay resident, the core is r x r, the residual is a skipped subset of outputs. Rebuilding W_l = B Core_l V^T (+ S_l) then GEMV is REJECTED_DENSE_REMAT."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused TiledProjection per layer. ASSUMPTION. Unfused 3-op lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION."
+    },
+    "bytes_added": {
+     "embeddings": 163840,
+     "generator": 8192,
+     "metadata": 16384,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 188416,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "shared_both_r8",
+    "live": false,
+    "net_bytes": -5347607360,
+    "predicted_ms_delta": -15.5409,
+    "predicted_ms_delta_range": [
+     -23.9374,
+     -10.7511
+    ],
+    "predicted_ms_saved": 15.5409,
+    "predicted_token_ms": 13.1811,
+    "predicted_tps": 75.866,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.9374,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.0005,
+     "byte_ms_delta": -15.5409,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5347607360,
+    "predicted_ms_saved": 15.5409,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.956417,
+   "held_out_relative_l2": 0.955393,
+   "held_out_split": "hold",
+   "id": "shared_both_r8",
+   "n_layers_billed": 64,
+   "oracle_output_basis_hold": 0.93179,
+   "program": "linear",
+   "rank_in": 8,
+   "rank_out": 8,
+   "residual_k": 0,
+   "shape": "SHARED_BOTH",
+   "status": "MEASURED_NEGATIVE",
+   "train_relative_fro_diagnostic": 0.940205,
+   "train_relative_l2_diagnostic": 0.939999,
+   "train_split": "train",
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W, and does not reconstruct a dense weight tensor"
+  },
+  {
+   "algebra": "z = V x; h = Core z; y = B h + S x",
+   "byte_breakdown": {
+    "element_bytes": 2,
+    "hidden": 5120,
+    "metadata_bytes": 24576,
+    "n_layers": 64,
+    "per_layer_core_bytes": 128,
+    "per_layer_residual_bytes": 327680,
+    "rank_in": 8,
+    "rank_out": 8,
+    "residual_k": 32,
+    "shared_input_basis_bytes": 81920,
+    "shared_output_basis_bytes": 81920
+   },
+   "bytes_added": {
+    "embeddings": 163840,
+    "generator": 8192,
+    "metadata": 24576,
+    "residuals": 20971520,
+    "state": 0,
+    "total": 21168128
+   },
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer": {
+    "algebra": "z = V x; h_l = Core_l z; y = B h_l + S_l x (SparseSkip on residual channels)",
+    "also": [
+     "StationaryRepresentation",
+     "TiledProjection",
+     "SparseSkip"
+    ],
+    "consumes_directly": true,
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "shape": "SHARED_BOTH",
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "The program is the kernel: shared bases stay resident, the core is r x r, the residual is a skipped subset of outputs. Rebuilding W_l = B Core_l V^T (+ S_l) then GEMV is REJECTED_DENSE_REMAT."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused TiledProjection per layer. ASSUMPTION. Unfused 3-op lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION."
+    },
+    "bytes_added": {
+     "embeddings": 163840,
+     "generator": 8192,
+     "metadata": 24576,
+     "residuals": 20971520,
+     "state": 0
+    },
+    "bytes_added_total": 21168128,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "shared_both_r8_k32_linear_plus_sparse_residual",
+    "live": false,
+    "net_bytes": -5326627648,
+    "predicted_ms_delta": -15.4799,
+    "predicted_ms_delta_range": [
+     -23.8435,
+     -10.7089
+    ],
+    "predicted_ms_saved": 15.4799,
+    "predicted_token_ms": 13.2421,
+    "predicted_tps": 75.517,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.8435,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.0615,
+     "byte_ms_delta": -15.4799,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5326627648,
+    "predicted_ms_saved": 15.4799,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.940632,
+   "held_out_relative_l2": 0.939392,
+   "held_out_split": "hold",
+   "id": "shared_both_r8_k32_linear_plus_sparse_residual",
+   "n_layers_billed": 64,
+   "oracle_output_basis_hold": 0.93179,
+   "program": "linear_plus_sparse_residual",
+   "rank_in": 8,
+   "rank_out": 8,
+   "residual_k": 32,
+   "shape": "SHARED_BOTH",
+   "status": "MEASURED_NEGATIVE",
+   "train_relative_fro_diagnostic": 0.921342,
+   "train_relative_l2_diagnostic": 0.920814,
+   "train_split": "train",
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W, and does not reconstruct a dense weight tensor"
+  },
+  {
+   "algebra": "z = V x; h = Core z; y = B h + S x",
+   "byte_breakdown": {
+    "element_bytes": 2,
+    "hidden": 5120,
+    "metadata_bytes": 16384,
+    "n_layers": 64,
+    "per_layer_core_bytes": 512,
+    "per_layer_residual_bytes": 0,
+    "rank_in": 16,
+    "rank_out": 16,
+    "residual_k": 0,
+    "shared_input_basis_bytes": 163840,
+    "shared_output_basis_bytes": 163840
+   },
+   "bytes_added": {
+    "embeddings": 327680,
+    "generator": 32768,
+    "metadata": 16384,
+    "residuals": 0,
+    "state": 0,
+    "total": 376832
+   },
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer": {
+    "algebra": "z = V x; h_l = Core_l z; y = B h_l",
+    "also": [
+     "StationaryRepresentation",
+     "TiledProjection"
+    ],
+    "consumes_directly": true,
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "shape": "SHARED_BOTH",
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "The program is the kernel: shared bases stay resident, the core is r x r, the residual is a skipped subset of outputs. Rebuilding W_l = B Core_l V^T (+ S_l) then GEMV is REJECTED_DENSE_REMAT."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused TiledProjection per layer. ASSUMPTION. Unfused 3-op lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION."
+    },
+    "bytes_added": {
+     "embeddings": 327680,
+     "generator": 32768,
+     "metadata": 16384,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 376832,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "shared_both_r16",
+    "live": false,
+    "net_bytes": -5347418944,
+    "predicted_ms_delta": -15.5403,
+    "predicted_ms_delta_range": [
+     -23.9365,
+     -10.7507
+    ],
+    "predicted_ms_saved": 15.5403,
+    "predicted_token_ms": 13.1817,
+    "predicted_tps": 75.863,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.9365,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.0011,
+     "byte_ms_delta": -15.5403,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5347418944,
+    "predicted_ms_saved": 15.5403,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.949009,
+   "held_out_relative_l2": 0.947662,
+   "held_out_split": "hold",
+   "id": "shared_both_r16",
+   "n_layers_billed": 64,
+   "oracle_output_basis_hold": 0.924,
+   "program": "linear",
+   "rank_in": 16,
+   "rank_out": 16,
+   "residual_k": 0,
+   "shape": "SHARED_BOTH",
+   "status": "MEASURED_NEGATIVE",
+   "train_relative_fro_diagnostic": 0.929174,
+   "train_relative_l2_diagnostic": 0.928547,
+   "train_split": "train",
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W, and does not reconstruct a dense weight tensor"
+  },
+  {
+   "algebra": "z = V x; h = Core z; y = B h + S x",
+   "byte_breakdown": {
+    "element_bytes": 2,
+    "hidden": 5120,
+    "metadata_bytes": 24576,
+    "n_layers": 64,
+    "per_layer_core_bytes": 512,
+    "per_layer_residual_bytes": 327680,
+    "rank_in": 16,
+    "rank_out": 16,
+    "residual_k": 32,
+    "shared_input_basis_bytes": 163840,
+    "shared_output_basis_bytes": 163840
+   },
+   "bytes_added": {
+    "embeddings": 327680,
+    "generator": 32768,
+    "metadata": 24576,
+    "residuals": 20971520,
+    "state": 0,
+    "total": 21356544
+   },
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer": {
+    "algebra": "z = V x; h_l = Core_l z; y = B h_l + S_l x (SparseSkip on residual channels)",
+    "also": [
+     "StationaryRepresentation",
+     "TiledProjection",
+     "SparseSkip"
+    ],
+    "consumes_directly": true,
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "shape": "SHARED_BOTH",
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "The program is the kernel: shared bases stay resident, the core is r x r, the residual is a skipped subset of outputs. Rebuilding W_l = B Core_l V^T (+ S_l) then GEMV is REJECTED_DENSE_REMAT."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused TiledProjection per layer. ASSUMPTION. Unfused 3-op lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION."
+    },
+    "bytes_added": {
+     "embeddings": 327680,
+     "generator": 32768,
+     "metadata": 24576,
+     "residuals": 20971520,
+     "state": 0
+    },
+    "bytes_added_total": 21356544,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "shared_both_r16_k32_linear_plus_sparse_residual",
+    "live": false,
+    "net_bytes": -5326439232,
+    "predicted_ms_delta": -15.4793,
+    "predicted_ms_delta_range": [
+     -23.8426,
+     -10.7086
+    ],
+    "predicted_ms_saved": 15.4793,
+    "predicted_token_ms": 13.2427,
+    "predicted_tps": 75.514,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.8426,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.0621,
+     "byte_ms_delta": -15.4793,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5326439232,
+    "predicted_ms_saved": 15.4793,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.936781,
+   "held_out_relative_l2": 0.935449,
+   "held_out_split": "hold",
+   "id": "shared_both_r16_k32_linear_plus_sparse_residual",
+   "n_layers_billed": 64,
+   "oracle_output_basis_hold": 0.924,
+   "program": "linear_plus_sparse_residual",
+   "rank_in": 16,
+   "rank_out": 16,
+   "residual_k": 32,
+   "shape": "SHARED_BOTH",
+   "status": "MEASURED_NEGATIVE",
+   "train_relative_fro_diagnostic": 0.912988,
+   "train_relative_l2_diagnostic": 0.912343,
+   "train_split": "train",
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W, and does not reconstruct a dense weight tensor"
+  },
+  {
+   "algebra": "z = V x; h = Core z; y = B h + S x",
+   "byte_breakdown": {
+    "element_bytes": 2,
+    "hidden": 5120,
+    "metadata_bytes": 16384,
+    "n_layers": 64,
+    "per_layer_core_bytes": 2048,
+    "per_layer_residual_bytes": 0,
+    "rank_in": 32,
+    "rank_out": 32,
+    "residual_k": 0,
+    "shared_input_basis_bytes": 327680,
+    "shared_output_basis_bytes": 327680
+   },
+   "bytes_added": {
+    "embeddings": 655360,
+    "generator": 131072,
+    "metadata": 16384,
+    "residuals": 0,
+    "state": 0,
+    "total": 802816
+   },
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer": {
+    "algebra": "z = V x; h_l = Core_l z; y = B h_l",
+    "also": [
+     "StationaryRepresentation",
+     "TiledProjection"
+    ],
+    "consumes_directly": true,
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "shape": "SHARED_BOTH",
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "The program is the kernel: shared bases stay resident, the core is r x r, the residual is a skipped subset of outputs. Rebuilding W_l = B Core_l V^T (+ S_l) then GEMV is REJECTED_DENSE_REMAT."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused TiledProjection per layer. ASSUMPTION. Unfused 3-op lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION."
+    },
+    "bytes_added": {
+     "embeddings": 655360,
+     "generator": 131072,
+     "metadata": 16384,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 802816,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "shared_both_r32",
+    "live": false,
+    "net_bytes": -5346992960,
+    "predicted_ms_delta": -15.5391,
+    "predicted_ms_delta_range": [
+     -23.9346,
+     -10.7499
+    ],
+    "predicted_ms_saved": 15.5391,
+    "predicted_token_ms": 13.1829,
+    "predicted_tps": 75.856,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.9346,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.0023,
+     "byte_ms_delta": -15.5391,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5346992960,
+    "predicted_ms_saved": 15.5391,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.936813,
+   "held_out_relative_l2": 0.935439,
+   "held_out_split": "hold",
+   "id": "shared_both_r32",
+   "n_layers_billed": 64,
+   "oracle_output_basis_hold": 0.912019,
+   "program": "linear",
+   "rank_in": 32,
+   "rank_out": 32,
+   "residual_k": 0,
+   "shape": "SHARED_BOTH",
+   "status": "MEASURED_NEGATIVE",
+   "train_relative_fro_diagnostic": 0.9104,
+   "train_relative_l2_diagnostic": 0.909859,
+   "train_split": "train",
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W, and does not reconstruct a dense weight tensor"
+  },
+  {
+   "algebra": "z = V x; h = Core z; y = B h + S x",
+   "byte_breakdown": {
+    "element_bytes": 2,
+    "hidden": 5120,
+    "metadata_bytes": 24576,
+    "n_layers": 64,
+    "per_layer_core_bytes": 2048,
+    "per_layer_residual_bytes": 327680,
+    "rank_in": 32,
+    "rank_out": 32,
+    "residual_k": 32,
+    "shared_input_basis_bytes": 327680,
+    "shared_output_basis_bytes": 327680
+   },
+   "bytes_added": {
+    "embeddings": 655360,
+    "generator": 131072,
+    "metadata": 24576,
+    "residuals": 20971520,
+    "state": 0,
+    "total": 21782528
+   },
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer": {
+    "algebra": "z = V x; h_l = Core_l z; y = B h_l + S_l x (SparseSkip on residual channels)",
+    "also": [
+     "StationaryRepresentation",
+     "TiledProjection",
+     "SparseSkip"
+    ],
+    "consumes_directly": true,
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "shape": "SHARED_BOTH",
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "The program is the kernel: shared bases stay resident, the core is r x r, the residual is a skipped subset of outputs. Rebuilding W_l = B Core_l V^T (+ S_l) then GEMV is REJECTED_DENSE_REMAT."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused TiledProjection per layer. ASSUMPTION. Unfused 3-op lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION."
+    },
+    "bytes_added": {
+     "embeddings": 655360,
+     "generator": 131072,
+     "metadata": 24576,
+     "residuals": 20971520,
+     "state": 0
+    },
+    "bytes_added_total": 21782528,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "shared_both_r32_k32_linear_plus_sparse_residual",
+    "live": false,
+    "net_bytes": -5326013248,
+    "predicted_ms_delta": -15.4781,
+    "predicted_ms_delta_range": [
+     -23.8407,
+     -10.7077
+    ],
+    "predicted_ms_saved": 15.4781,
+    "predicted_token_ms": 13.2439,
+    "predicted_tps": 75.506,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.8407,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.0633,
+     "byte_ms_delta": -15.4781,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5326013248,
+    "predicted_ms_saved": 15.4781,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.929385,
+   "held_out_relative_l2": 0.927932,
+   "held_out_split": "hold",
+   "id": "shared_both_r32_k32_linear_plus_sparse_residual",
+   "n_layers_billed": 64,
+   "oracle_output_basis_hold": 0.912019,
+   "program": "linear_plus_sparse_residual",
+   "rank_in": 32,
+   "rank_out": 32,
+   "residual_k": 32,
+   "shape": "SHARED_BOTH",
+   "status": "MEASURED_NEGATIVE",
+   "train_relative_fro_diagnostic": 0.899129,
+   "train_relative_l2_diagnostic": 0.898481,
+   "train_split": "train",
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W, and does not reconstruct a dense weight tensor"
+  },
+  {
+   "algebra": "z = V x; h = Core z; y = B h + S x",
+   "byte_breakdown": {
+    "element_bytes": 2,
+    "hidden": 5120,
+    "metadata_bytes": 16384,
+    "n_layers": 64,
+    "per_layer_core_bytes": 8192,
+    "per_layer_residual_bytes": 0,
+    "rank_in": 64,
+    "rank_out": 64,
+    "residual_k": 0,
+    "shared_input_basis_bytes": 655360,
+    "shared_output_basis_bytes": 655360
+   },
+   "bytes_added": {
+    "embeddings": 1310720,
+    "generator": 524288,
+    "metadata": 16384,
+    "residuals": 0,
+    "state": 0,
+    "total": 1851392
+   },
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer": {
+    "algebra": "z = V x; h_l = Core_l z; y = B h_l",
+    "also": [
+     "StationaryRepresentation",
+     "TiledProjection"
+    ],
+    "consumes_directly": true,
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "shape": "SHARED_BOTH",
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "The program is the kernel: shared bases stay resident, the core is r x r, the residual is a skipped subset of outputs. Rebuilding W_l = B Core_l V^T (+ S_l) then GEMV is REJECTED_DENSE_REMAT."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused TiledProjection per layer. ASSUMPTION. Unfused 3-op lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION."
+    },
+    "bytes_added": {
+     "embeddings": 1310720,
+     "generator": 524288,
+     "metadata": 16384,
+     "residuals": 0,
+     "state": 0
+    },
+    "bytes_added_total": 1851392,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "shared_both_r64",
+    "live": false,
+    "net_bytes": -5345944384,
+    "predicted_ms_delta": -15.536,
+    "predicted_ms_delta_range": [
+     -23.9299,
+     -10.7478
+    ],
+    "predicted_ms_saved": 15.536,
+    "predicted_token_ms": 13.186,
+    "predicted_tps": 75.838,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.9299,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.0054,
+     "byte_ms_delta": -15.536,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5345944384,
+    "predicted_ms_saved": 15.536,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.927061,
+   "held_out_relative_l2": 0.925285,
+   "held_out_split": "hold",
+   "id": "shared_both_r64",
+   "n_layers_billed": 64,
+   "oracle_output_basis_hold": 0.895153,
+   "program": "linear",
+   "rank_in": 64,
+   "rank_out": 64,
+   "residual_k": 0,
+   "shape": "SHARED_BOTH",
+   "status": "MEASURED_NEGATIVE",
+   "train_relative_fro_diagnostic": 0.887881,
+   "train_relative_l2_diagnostic": 0.887729,
+   "train_split": "train",
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W, and does not reconstruct a dense weight tensor"
+  },
+  {
+   "algebra": "z = V x; h = Core z; y = B h + S x",
+   "byte_breakdown": {
+    "element_bytes": 2,
+    "hidden": 5120,
+    "metadata_bytes": 24576,
+    "n_layers": 64,
+    "per_layer_core_bytes": 8192,
+    "per_layer_residual_bytes": 327680,
+    "rank_in": 64,
+    "rank_out": 64,
+    "residual_k": 32,
+    "shared_input_basis_bytes": 655360,
+    "shared_output_basis_bytes": 655360
+   },
+   "bytes_added": {
+    "embeddings": 1310720,
+    "generator": 524288,
+    "metadata": 24576,
+    "residuals": 20971520,
+    "state": 0,
+    "total": 22831104
+   },
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer": {
+    "algebra": "z = V x; h_l = Core_l z; y = B h_l + S_l x (SparseSkip on residual channels)",
+    "also": [
+     "StationaryRepresentation",
+     "TiledProjection",
+     "SparseSkip"
+    ],
+    "consumes_directly": true,
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "shape": "SHARED_BOTH",
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "The program is the kernel: shared bases stay resident, the core is r x r, the residual is a skipped subset of outputs. Rebuilding W_l = B Core_l V^T (+ S_l) then GEMV is REJECTED_DENSE_REMAT."
+   },
+   "consumer_status": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 350.0,
+     "bandwidth_gb_s_range": [
+      223.4,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+     "bandwidth_regime": "unknown_new_representation",
+     "dispatch_class": "mlp_gqa_norm_fusion",
+     "dispatch_delta_note": "0 extra dispatches: fused TiledProjection per layer. ASSUMPTION. Unfused 3-op lowering would add launches.",
+     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+     "element_bytes": 2,
+     "element_bytes_note": "program billed at f16; the fit itself is f32. ASSUMPTION."
+    },
+    "bytes_added": {
+     "embeddings": 1310720,
+     "generator": 524288,
+     "metadata": 24576,
+     "residuals": 20971520,
+     "state": 0
+    },
+    "bytes_added_total": 22831104,
+    "bytes_removed": 5347795776,
+    "consuming_primitive": "TiledProjection",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "shared_both_r64_k32_linear_plus_sparse_residual",
+    "live": false,
+    "net_bytes": -5324964672,
+    "predicted_ms_delta": -15.475,
+    "predicted_ms_delta_range": [
+     -23.836,
+     -10.7056
+    ],
+    "predicted_ms_saved": 15.475,
+    "predicted_token_ms": 13.247,
+    "predicted_tps": 75.489,
+    "s020_section_20": {
+     "bar_ms": 0.2872,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 23.836,
+     "reusable_family": true
+    },
+    "status": "MEASURED_NEGATIVE",
+    "terms": {
+     "byte_added_ms": 0.0664,
+     "byte_ms_delta": -15.475,
+     "byte_removed_ms": -15.5414,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "IMMATERIAL",
+    "verdict_reasons": [
+     "not_live:MEASURED_NEGATIVE"
+    ]
+   },
+   "economics_if_function_held": {
+    "clears_time_bar": true,
+    "net_bytes": -5324964672,
+    "predicted_ms_saved": 15.475,
+    "verdict": "MATERIAL"
+   },
+   "error_authority": "held_out_relative_l2",
+   "held_out_kill_rel": 0.25,
+   "held_out_relative_fro_diagnostic": 0.921199,
+   "held_out_relative_l2": 0.919475,
+   "held_out_split": "hold",
+   "id": "shared_both_r64_k32_linear_plus_sparse_residual",
+   "n_layers_billed": 64,
+   "oracle_output_basis_hold": 0.895153,
+   "program": "linear_plus_sparse_residual",
+   "rank_in": 64,
+   "rank_out": 64,
+   "residual_k": 32,
+   "shape": "SHARED_BOTH",
+   "status": "MEASURED_NEGATIVE",
+   "train_relative_fro_diagnostic": 0.878258,
+   "train_relative_l2_diagnostic": 0.878083,
+   "train_split": "train",
+   "weight_reconstruction_error": null,
+   "weight_reconstruction_note": "not authority; this experiment scores F, not W, and does not reconstruct a dense weight tensor"
+  }
+ ],
+ "claim_boundary": "Static sidecar artifact. No hardware measurement and no generate gate. Held-out errors are CPU arithmetic on the sealed-3.14 MLP teacher corpus (real post_attn_norm X, exact affine-Q2 SwiGLU F(X), split by prompt_id). They are not capability and not a protected complete-token number. Predicted ms/token is executable_economics arithmetic over cited organ times with a stated bandwidth-regime ASSUMPTION. gpu_authority is false. evidence_class is STATIC_ONLY.",
+ "corpus": {
+  "disjoint": true,
+  "layer": 38,
+  "layer_role": "typical",
+  "n_hold": 2511,
+  "n_train": 8758,
+  "payload_dir": "/Users/scammermike/Downloads/hawking/workspace/ops/local/scratch/mlp_teacher_corpus",
+  "receipt": "receipts/future/MLP_TEACHER_CORPUS.json",
+  "split_unit": "prompt_id",
+  "why_layer": "Layer 38 is the teacher-corpus typical H(q) representative (closest to the 64-layer mean among layers other than 0). Layer 0 is a high-entropy outlier and is not typical.",
+  "x_sha256": "ac92446ecb711ef84dd2fda04c249b185da523d714f77e879efc82834b04f8d9",
+  "y_sha256": "53928f933050d25522991d884f531bc37f567ec1cd92d106bfef7c1a4e742fe2"
+ },
+ "element_bytes": 2,
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "three named shapes fitted on the real teacher corpus, held out by prompt",
+  "shared bases billed once at model scope in bytes_added.embeddings",
+  "executable_economics.score used for ms/token; five-field added ledger",
+  "native-consumer sketches on atlas primitives; remat-then-GEMV refused",
+  "negative_index queried; proposal families not refused; W-space scars cited as cousins",
+  "train-set figure cannot be reported as held-out (loud exception)"
+ ],
+ "git_head": "7531e9f33b9c2ee1a6318f20390459d0518344b3",
+ "go_wider": false,
+ "gpu_authority": false,
+ "index": {
+  "cousins_not_this_object": [
+   "QN-SHARED-BASIS-DENSITY is weight-space shared B,C on a different parent; mlp_code_information names it a cousin of activation-space V, not a kill of F.",
+   "NS-global-dense-lowrank-qwen38 is SVD-of-W on this parent. This experiment fits F on real X and would have been refused only if labelled that family."
+  ],
+  "model": "qwen3.8-27b",
+  "note": "GENERAL_PHYSICAL scars refuse whatever model is named. The proposal families shared_input_transforms and function_replacement are not refused. synthetic_activation is a method scar: this module refuses to fit on Gaussian X.",
+  "organ": "mlp",
+  "proceed": true,
+  "proposal_refused": [],
+  "queries": [
+   {
+    "hypothesis_family": "shared_input_transforms",
+    "model": "qwen3.8-27b",
+    "n_hits": 0,
+    "organ": "mlp",
+    "top": []
+   },
+   {
+    "hypothesis_family": "function_replacement",
+    "model": "qwen3.8-27b",
+    "n_hits": 0,
+    "organ": "mlp",
+    "top": []
+   },
+   {
+    "hypothesis_family": "generated_programs",
+    "model": "qwen3.8-27b",
+    "n_hits": 0,
+    "organ": "mlp",
+    "top": []
+   },
+   {
+    "hypothesis_family": "factorized_programs",
+    "model": "qwen3.8-27b",
+    "n_hits": 0,
+    "organ": "mlp",
+    "top": []
+   },
+   {
+    "hypothesis_family": "shared_basis",
+    "model": "qwen3.8-27b",
+    "n_hits": 0,
+    "organ": "mlp",
+    "top": []
+   },
+   {
+    "hypothesis_family": "low_rank",
+    "model": "qwen3.8-27b",
+    "n_hits": 1,
+    "organ": "mlp",
+    "top": [
+     {
+      "hypothesis_family": "low_rank",
+      "level": "MODEL_SPECIFIC",
+      "reopen_condition": "Do not cite 5.9\u00d7. Reopen a recon-cost claim only on a named launch geometry with GPU timestamps, same-vehicle, real X. Cheap codecs previously rejected for recon cost are quality-eligible at tpr64.",
+      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-011",
+      "verdict": "LIVE_REOPEN_HOLDS"
+     }
+    ]
+   },
+   {
+    "hypothesis_family": "global_dense_lowrank",
+    "model": "qwen3.8-27b",
+    "n_hits": 1,
+    "organ": "mlp",
+    "top": [
+     {
+      "hypothesis_family": "global_dense_lowrank",
+      "level": "MODEL_SPECIFIC",
+      "reopen_condition": "the new architecture invalidates the old premise (bible \u00a719)",
+      "scar_id": "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json#NS-global-dense-lowrank-qwen38",
+      "verdict": "DEAD on that dense body. Does NOT automatically kill cross-expert low-rank structure in MoE."
+     }
+    ]
+   },
+   {
+    "hypothesis_family": "synthetic_activation",
+    "model": "qwen3.8-27b",
+    "n_hits": 2,
+    "organ": "mlp",
+    "top": [
+     {
+      "hypothesis_family": "synthetic_activation",
+      "level": "MODEL_SPECIFIC",
+      "reopen_condition": "never as a promotion or ranking path. Synthetic X is allowed only as a kernel numeric fixture, never as a codec-selection or sub-bit evidence input.",
+      "scar_id": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-009",
+      "verdict": "REFUTED"
+     },
+     {
+      "hypothesis_family": "synthetic_activation",
+      "level": "MODEL_SPECIFIC",
+      "reopen_condition": "Real teacher-forced / captured-BF16 X. Down_proj on post-SwiGLU X, not layer hidden (NS-012).",
+      "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#activation_aware_vs_synthetic_evaluation_trap",
+      "verdict": "KILLS. Same mechanism as #4, first-class graveyard class."
+     }
+    ]
+   }
+  ],
+  "refusals": [
+   {
+    "hypothesis_family": "global_dense_lowrank",
+    "level": "MODEL_SPECIFIC",
+    "reason": "known-dead hypothesis; rediscovery is not free. Reopen only under the cited reopen_condition.",
+    "reopen_condition": "the new architecture invalidates the old premise (bible \u00a719)",
+    "scar_id": "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json#NS-global-dense-lowrank-qwen38"
+   },
+   {
+    "hypothesis_family": "synthetic_activation",
+    "level": "MODEL_SPECIFIC",
+    "reason": "known-dead hypothesis; rediscovery is not free. Reopen only under the cited reopen_condition.",
+    "reopen_condition": "never as a promotion or ranking path. Synthetic X is allowed only as a kernel numeric fixture, never as a codec-selection or sub-bit evidence input.",
+    "scar_id": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-009"
+   }
+  ]
+ },
+ "metric": {
+  "authority": "held_out_relative_l2",
+  "formula": "E_x ||F(x) - F_hat(x)|| / E_x ||F(x)||",
+  "kill_rel": 0.25,
+  "relative_frobenius": "diagnostic only",
+  "split": "prompt_id hold set of the teacher corpus",
+  "weight_reconstruction": "diagnostic only; not authority; not scored"
+ },
+ "n_layers_billed": 64,
+ "n_survivors": 0,
+ "negative_findings": [
+  "SHARED_INPUT linear r=8..64 held-out relative L2 stays above 0.91",
+  "SHARED_OUTPUT linear r=8..64 held-out relative L2 stays above 0.91",
+  "SHARED_BOTH + k=32 residual does not leave the 0.9 band",
+  "oracle PCA of F at r=64 is already ~0.89 held-out: the output is not low-rank",
+  "a silu readout of the same latent is not better than linear"
+ ],
+ "next": "Do not widen SHARED_INPUT / SHARED_OUTPUT / SHARED_BOTH at higher rank or more layers. The geometric lower bound (oracle PCA of F) is already above the kill. The live path is a different function_replacement that is not an r-dimensional bottleneck.",
+ "nomenclature": {
+  "direct_consume": "DIRECT_CONSUME",
+  "held_out_authority": "held_out_relative_l2",
+  "measured_negative": "MEASURED_NEGATIVE",
+  "open": "OPEN",
+  "rejected_dense_remat": "REJECTED_DENSE_REMAT",
+  "static_only": "this sidecar. Models propose; protected deterministic evidence decides."
+ },
+ "oracle_output_pca": [
+  {
+   "held_out_relative_l2": 0.931147,
+   "held_out_split": "hold",
+   "note": "oracle: coefficients are Y itself in the shared output basis. No core can beat this at this rank.",
+   "rank": 8,
+   "train_relative_l2_diagnostic": 0.915775
+  },
+  {
+   "held_out_relative_l2": 0.923938,
+   "held_out_split": "hold",
+   "note": "oracle: coefficients are Y itself in the shared output basis. No core can beat this at this rank.",
+   "rank": 16,
+   "train_relative_l2_diagnostic": 0.900186
+  },
+  {
+   "held_out_relative_l2": 0.91206,
+   "held_out_split": "hold",
+   "note": "oracle: coefficients are Y itself in the shared output basis. No core can beat this at this rank.",
+   "rank": 32,
+   "train_relative_l2_diagnostic": 0.878846
+  },
+  {
+   "held_out_relative_l2": 0.895354,
+   "held_out_split": "hold",
+   "note": "oracle: coefficients are Y itself in the shared output basis. No core can beat this at this rank.",
+   "rank": 64,
+   "train_relative_l2_diagnostic": 0.846087
+  }
+ ],
+ "purpose": "Test whether sealed-3.14 MLP F admits a shared compact program (shared input transform, shared output basis, or both) on the real teacher corpus, billed once, consumed natively, scored on held-out function error.",
+ "ranks": [
+  8,
+  16,
+  32,
+  64
+ ],
+ "recorded_by": "tools/future/mlp_shared_program.py",
+ "residual_ks": [
+  0,
+  32
+ ],
+ "round": "cheap_first",
+ "schema": "hawking.future.mlp_shared_program.v1",
+ "seal_sha256": "d2b4c787c60ddaeb7b65c1b0ea71854daa74aaf1bd5de82b6e6b42ec98c7a73b",
+ "selftest": {
+  "held_out_leak_codes": [
+   "TrainReportedAsHeldOut"
+  ],
+  "held_out_leak_refused": true,
+  "honest_fixture_emit_ok": true,
+  "remat_codes": [
+   "REJECTED_DENSE_REMAT"
+  ],
+  "remat_consumer_refused": true,
+  "unbilled_codes": [
+   "UnbilledSharedBasis"
+  ],
+  "unbilled_shared_basis_refused": true
+ },
+ "shape_verdicts": [
+  {
+   "best_held_out_relative_l2": 0.915642,
+   "best_id": "shared_input_r64",
+   "best_rank_in": 64,
+   "bytes_added_total_at_best": 42614784,
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer_status": "DIRECT_CONSUME",
+   "n_rows": 5,
+   "native_consumer": {
+    "algebra": "z = V x (V resident, once per token); y_l = P_l z",
+    "also": [
+     "StationaryRepresentation"
+    ],
+    "consumes_directly": true,
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "shape": "SHARED_INPUT",
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "y = P (V x) is two matvecs. Materializing P V into W is REJECTED_DENSE_REMAT and would also erase the sharing."
+   },
+   "shape": "SHARED_INPUT",
+   "status": "MEASURED_NEGATIVE",
+   "why": "held-out relative L2 0.915642 at r=64 is above the 0.25 kill on every cheap rank; do not go wider on this factorization. Bytes would have cleared the 1% bar if F had held."
+  },
+  {
+   "best_held_out_relative_l2": 0.917181,
+   "best_id": "shared_output_r64",
+   "best_rank_in": 64,
+   "bytes_added_total_at_best": 42614784,
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer_status": "DIRECT_CONSUME",
+   "n_rows": 4,
+   "native_consumer": {
+    "algebra": "z_l = C_l x; y = B z_l (B resident, model scope)",
+    "also": [
+     "StationaryRepresentation"
+    ],
+    "consumes_directly": true,
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "shape": "SHARED_OUTPUT",
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "y = B (C x) is two matvecs. Materializing B C into W is REJECTED_DENSE_REMAT and would also erase the sharing."
+   },
+   "shape": "SHARED_OUTPUT",
+   "status": "MEASURED_NEGATIVE",
+   "why": "held-out relative L2 0.917181 at r=64 is above the 0.25 kill on every cheap rank; do not go wider on this factorization. Bytes would have cleared the 1% bar if F had held."
+  },
+  {
+   "best_held_out_relative_l2": 0.919475,
+   "best_id": "shared_both_r64_k32_linear_plus_sparse_residual",
+   "best_rank_in": 64,
+   "bytes_added_total_at_best": 22831104,
+   "clears_s020_time_bar_if_function_held": true,
+   "consumer_status": "DIRECT_CONSUME",
+   "n_rows": 8,
+   "native_consumer": {
+    "algebra": "z = V x; h_l = Core_l z; y = B h_l + S_l x (SparseSkip on residual channels)",
+    "also": [
+     "StationaryRepresentation",
+     "TiledProjection",
+     "SparseSkip"
+    ],
+    "consumes_directly": true,
+    "primitive": "TiledProjection",
+    "rematerialize_dense_W": false,
+    "runs_ordinary_gemv": false,
+    "shape": "SHARED_BOTH",
+    "status": "DIRECT_CONSUME",
+    "why_not_gemv": "The program is the kernel: shared bases stay resident, the core is r x r, the residual is a skipped subset of outputs. Rebuilding W_l = B Core_l V^T (+ S_l) then GEMV is REJECTED_DENSE_REMAT."
+   },
+   "shape": "SHARED_BOTH",
+   "status": "MEASURED_NEGATIVE",
+   "why": "held-out relative L2 0.919475 at r=64 is above the 0.25 kill on every cheap rank; do not go wider on this factorization. Bytes would have cleared the 1% bar if F had held."
+  }
+ ],
+ "survivors": [],
+ "version": 1,
+ "what_this_does_not_prove": [
+  "that a full-width structured nonlinear (Monarch/butterfly) cannot replace F",
+  "that sharing across the four captured layers would appear at a rank the cheap round did not try \u2014 oracle PCA of F already kills that hope at r<=64",
+  "capability at generate",
+  "a protected TPS or complete-token number",
+  "that weight-space shared bases (QN-SHARED-BASIS) were re-tested; they were not; this object is F"
+ ]
+}

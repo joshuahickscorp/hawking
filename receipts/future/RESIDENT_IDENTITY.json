@@ -3,10 +3,64 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T21:45:42Z",
+  "recorded_at": "2026-08-31T09:54:38Z",
   "recorded_by": "tools/future/resident_identity.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
+ },
+ "binding": {
+  "agrees_with_incumbent": true,
+  "bound": true,
+  "incumbent": {
+   "artifact_path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+   "id": "qwen3.8-27b-sealed-3.14",
+   "load": "ON_DISK",
+   "residency_status": "CURRENT_NONFINAL_HCLI_WORKER",
+   "role": "CURRENT_NONFINAL_HCLI_WORKER",
+   "source": "receipts/future/SUCCESSION_TRIAL.json"
+  },
+  "missing": [],
+  "pins": {
+   "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+   "executable_hash": {
+    "by_role": {
+     "binary": "d34044cffae8f32055cca40aae27ec62beb44f043df081293126da89e51b8e76",
+     "resident_binary": "2d5fd0f157fb7987f307782d3a12abf2efadd6a0e14a787740e51adb101ac3f8"
+    },
+    "seal_declared_sha256_16": "d34044cffae8f320",
+    "seal_matching_role": "binary"
+   },
+   "nx_id": {
+    "model_id": "qwen3.8-27b-sealed-3.14",
+    "protocol": "hawking.qwen38.resident.v1",
+    "resident_identity": "sealed-3.14"
+   },
+   "qualification": {
+    "identity_sufficient": false,
+    "identity_validation": "ACCEPTED",
+    "label": "noetic-sealed-3.14",
+    "path": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+    "residency_status": "CURRENT_NONFINAL_HCLI_WORKER",
+    "role": "CONTROL_HISTORICAL_NOT_CURRENT_PROOF"
+   },
+   "sealed_model_id": "qwen3.8-27b-sealed-3.14",
+   "tokenizer": {
+    "declared_prefix_match": true,
+    "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+    "sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3"
+   }
+  },
+  "pins_named": [
+   "nx_id",
+   "sealed_model_id",
+   "executable_hash",
+   "artifact_root",
+   "tokenizer",
+   "qualification"
+  ],
+  "residency_status": "CURRENT_NONFINAL_HCLI_WORKER",
+  "status": "ACCEPTED",
+  "unbound_reason": null
  },
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "claim_class": "STATIC_ONLY",
@@ -18,7 +72,8 @@
   "residency_status is CURRENT_NONFINAL_HCLI_WORKER so nothing downstream mistakes 27B for a Singularity.",
   "Negative controls fire: invented measurement slot REJECTED; zero-weakness identity REJECTED; hardware numeric keys refused.",
   "Host tokenizer/binary hashed when present; UNKNOWN with the missing path named when not. Sparse checkout is not encoded as absence.",
-  "Machine genome cited as a prior; measure_bandwidth was not invoked."
+  "Machine genome cited as a prior; measure_bandwidth was not invoked.",
+  "Launch binding pins nx_id, sealed_model_id, executable_hash, artifact_root, tokenizer, and qualification against the succession incumbent; a missing pin stays unbound with the field named."
  ],
  "gpu_authority": false,
  "identity": {
@@ -654,7 +709,8 @@
    "note": "empty list is NONE_RECORDED_ON_DISK (we looked), not UNKNOWN",
    "status": "RECORDED",
    "value": [
-    "receipts/future/SUCCESSION.json"
+    "receipts/future/SUCCESSION.json",
+    "receipts/future/SUCCESSION_TRIAL.json"
    ]
   },
   "claim_class": "STATIC_ONLY",
@@ -1285,6 +1341,10 @@
       "n": 1
      },
      {
+      "family": "adjacency_is_not_overlap",
+      "n": 1
+     },
+     {
       "family": "ane_coreml_ffn",
       "n": 1
      },
@@ -1333,6 +1393,10 @@
       "n": 1
      },
      {
+      "family": "catalog_addressing_not_primary_703_530_cause",
+      "n": 1
+     },
+     {
       "family": "cb_encoder_dispatch_topology_collapse_as_the_token_lever",
       "n": 1
      },
@@ -1346,6 +1410,10 @@
      },
      {
       "family": "complete_bpw_predicts_coherence_that_complete_or_active_bpw_predicts_coherence_denser_is_worse_cheaper_is_worse_the_number_is_the_capability",
+      "n": 1
+     },
+     {
+      "family": "complete_vs_decode_gap_prefill_accounting_not_ceremony",
       "n": 1
      },
      {
@@ -1442,6 +1510,14 @@
      },
      {
       "family": "entropy_coded_pq_indices_entropy_coding_of_trained_pq_indices",
+      "n": 1
+     },
+     {
+      "family": "environment_mismatch_unfused_vs_sealed",
+      "n": 1
+     },
+     {
+      "family": "event_timestamp_unit_mismatch",
       "n": 1
      },
      {
@@ -1757,7 +1833,15 @@
       "n": 1
      },
      {
+      "family": "prefill_over_generated_token_denominator",
+      "n": 1
+     },
+     {
       "family": "present_an_isolated_organ_product_e_g_192_ms_48_10_gate_up_down_as_a_token_time",
+      "n": 1
+     },
+     {
+      "family": "priority_zero_falsy_or_default",
       "n": 1
      },
      {
@@ -1941,7 +2025,15 @@
       "n": 1
      },
      {
+      "family": "shared_index_bare_commit_sweeps_foreign_stage",
+      "n": 1
+     },
+     {
       "family": "single_family_representation_across_gate_proj_up_proj_down_proj",
+      "n": 1
+     },
+     {
+      "family": "source_instrumented_runtime_binary_stale",
       "n": 1
      },
      {
@@ -1990,6 +2082,10 @@
      },
      {
       "family": "ternary_factorization_ternary_factorization_instead_of_vq",
+      "n": 1
+     },
+     {
+      "family": "tested_geometry_not_primary_530_337_cause",
       "n": 1
      },
      {
@@ -2108,11 +2204,11 @@
      },
      {
       "model": "qwen3.8-27b",
-      "n": 39
+      "n": 42
      },
      {
       "model": "unrecorded",
-      "n": 78
+      "n": 85
      }
     ],
     "by_source": [
@@ -2164,6 +2260,20 @@
       "n_unparsed": 0,
       "origin": "disk",
       "path": "receipts/ascent-2026-08-18/PHASE_B_HYBRID_REFUTED.json"
+     },
+     {
+      "n_parsed": 7,
+      "n_scars": 7,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "receipts/future/CAMPAIGN_SCARS.json"
+     },
+     {
+      "n_parsed": 3,
+      "n_scars": 3,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "receipts/future/TPS_FALSIFICATIONS.jsonl"
      },
      {
       "n_parsed": 1,
@@ -2343,15 +2453,15 @@
      "ramanujan.scaffold.core.stores Graveyard (in-process bury/revive, not a corpus index).",
      "Worktrees and grok/* branches the noetic sweeper walked; this index is HEAD + disk only."
     ],
-    "n_parsed": 646,
-    "n_refuse_eligible": 576,
-    "n_scars": 653,
-    "n_sources": 31,
+    "n_parsed": 656,
+    "n_refuse_eligible": 586,
+    "n_scars": 663,
+    "n_sources": 33,
     "n_unparsed": 7
    },
    "missing_evidence": [],
-   "n": 39,
-   "n_refuse_eligible": 24,
+   "n": 49,
+   "n_refuse_eligible": 34,
    "note": "compact projection of NEGATIVE_SCIENCE_INDEX; not the full corpus dump",
    "query": {
     "model": "qwen3.8-27b"
@@ -2461,6 +2571,86 @@
      "scar_id": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-038",
      "source_path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
      "verdict": "CATEGORY_ERROR"
+    },
+    {
+     "hypothesis_family": "adjacency_is_not_overlap",
+     "level": "GENERAL_PHYSICAL",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/CAMPAIGN_SCARS.json#ADJACENCY_IS_NOT_OVERLAP",
+     "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+     "verdict": "FALSIFIED"
+    },
+    {
+     "hypothesis_family": "environment_mismatch_unfused_vs_sealed",
+     "level": "GENERAL_PHYSICAL",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/CAMPAIGN_SCARS.json#ENVIRONMENT_MISMATCH_UNFUSED_VS_SEALED",
+     "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+     "verdict": "FALSIFIED"
+    },
+    {
+     "hypothesis_family": "event_timestamp_unit_mismatch",
+     "level": "GENERAL_PHYSICAL",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/CAMPAIGN_SCARS.json#EVENT_TIMESTAMP_UNIT_MISMATCH",
+     "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+     "verdict": "FALSIFIED"
+    },
+    {
+     "hypothesis_family": "prefill_over_generated_token_denominator",
+     "level": "GENERAL_PHYSICAL",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/CAMPAIGN_SCARS.json#PREFILL_OVER_GENERATED_TOKEN_DENOMINATOR",
+     "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+     "verdict": "FALSIFIED"
+    },
+    {
+     "hypothesis_family": "priority_zero_falsy_or_default",
+     "level": "GENERAL_PHYSICAL",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/CAMPAIGN_SCARS.json#PRIORITY_ZERO_FALSY_OR_DEFAULT",
+     "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+     "verdict": "FALSIFIED"
+    },
+    {
+     "hypothesis_family": "shared_index_bare_commit_sweeps_foreign_stage",
+     "level": "GENERAL_PHYSICAL",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/CAMPAIGN_SCARS.json#SHARED_INDEX_BARE_COMMIT_SWEEPS_FOREIGN_STAGE",
+     "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+     "verdict": "FALSIFIED"
+    },
+    {
+     "hypothesis_family": "source_instrumented_runtime_binary_stale",
+     "level": "GENERAL_PHYSICAL",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/CAMPAIGN_SCARS.json#SOURCE_INSTRUMENTED_RUNTIME_BINARY_STALE",
+     "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+     "verdict": "FALSIFIED"
+    },
+    {
+     "hypothesis_family": "catalog_addressing_not_primary_703_530_cause",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/TPS_FALSIFICATIONS.jsonl#CATALOG_ADDRESSING_NOT_PRIMARY_703_530_CAUSE",
+     "source_path": "receipts/future/TPS_FALSIFICATIONS.jsonl",
+     "verdict": "FALSIFIED"
+    },
+    {
+     "hypothesis_family": "complete_vs_decode_gap_prefill_accounting_not_ceremony",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/TPS_FALSIFICATIONS.jsonl#COMPLETE_VS_DECODE_GAP_PREFILL_ACCOUNTING_NOT_CEREMONY",
+     "source_path": "receipts/future/TPS_FALSIFICATIONS.jsonl",
+     "verdict": "FALSIFIED"
+    },
+    {
+     "hypothesis_family": "tested_geometry_not_primary_530_337_cause",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/TPS_FALSIFICATIONS.jsonl#TESTED_GEOMETRY_NOT_PRIMARY_530_337_CAUSE",
+     "source_path": "receipts/future/TPS_FALSIFICATIONS.jsonl",
+     "verdict": "FALSIFIED"
     },
     {
      "hypothesis_family": "synthetic_activation",
@@ -3317,7 +3507,8 @@
   }
  },
  "schema": "hawking.future.resident_identity.v1",
- "seal_sha256": "99deb184352ea90e00d8bd87c2a89a36b96861372e6aba3a0f7ce5ed13a0f8ef",
+ "seal_sha256": "d47b8aa4d6704c48ca22c6f1365521335bcbe65fd5735ccb2a729dddec1dfe5e",
+ "status": "ACCEPTED",
  "version": 1,
  "work_unit": {
   "assigned_runtime": null,

@@ -1,0 +1,316 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T03:24:46Z",
+  "recorded_by": "tools/future/artifact_identity.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "default_binary": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+ "default_source": "crates/hawking-core/examples/ascension_qwen38_resident.rs",
+ "evidence_class": "STATIC_ONLY",
+ "fusion_flag_keys": [
+  "HAWKING_QWEN38_FUSE_ADD_RMSNORM",
+  "HAWKING_QWEN38_FUSE_GQA_QKV",
+  "HAWKING_QWEN38_FUSE_DN_INPROJ",
+  "HAWKING_QWEN38_FUSE_MLP"
+ ],
+ "gaps_closed": [
+  "artifact identity (path, sha256, mtime, commit, dirty, flags, env, nx) is a call, not a post-mortem receipt",
+  "stale binary is a raise, not a warning",
+  "env hash over fusion flags + HAWKING_* + serving mode + measurement mode",
+  "mismatched env hash cannot inherit the incumbent label"
+ ],
+ "gpu_authority": false,
+ "historical_stale_finding": {
+  "binary_mtime": "2026-08-26T17:31:14.601767",
+  "binary_path": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+  "instrumentation_landed_in": [
+   "8b6f50270 2026-08-27 Harden HCLI model-neutral science and protected benchmarks"
+  ],
+  "law": "A capability present in source is not a capability present in the running system. Probe the artifact that serves, not the file that describes it.",
+  "missing_from_binary": [
+   "dispatches",
+   "dispatches_per_generated_token",
+   "active_bytes_per_token",
+   "active_weight_bytes_per_generated_token",
+   "actual_read_bytes_per_token",
+   "actual_read_bytes_status",
+   "gpu_ns_per_generated_token",
+   "resident_weight_bytes"
+  ],
+  "scar_id": "SOURCE_INSTRUMENTED_RUNTIME_BINARY_STALE",
+  "source_receipt": "receipts/future/RESIDENT_BINARY_DRIFT.json"
+ },
+ "incumbent_label": "sealed-3.14-production",
+ "instrumentation_fields": [
+  "dispatches",
+  "dispatches_per_generated_token",
+  "active_bytes_per_token",
+  "active_weight_bytes_per_generated_token",
+  "actual_read_bytes_per_token",
+  "actual_read_bytes_status",
+  "gpu_ns_per_generated_token",
+  "resident_weight_bytes"
+ ],
+ "labels": {
+  "fused_but_probe_serving": {
+   "env_hash": "96cd8834e1e303f21620c7964fde02ae818f1d31454c1278f57254bd41c11aed",
+   "incumbent_label": "sealed-3.14-production",
+   "inherited_incumbent": false,
+   "label": "env:96cd8834e1e3",
+   "rule": "A benchmark whose env hash does not match the sealed config must not inherit the incumbent label automatically.",
+   "sealed_env_hash": "7f677c8208a879575c8c604f40c573da3d58fa314b6e58e48317ba384789771b"
+  },
+  "sealed_fusion_resident": {
+   "env_hash": "7f677c8208a879575c8c604f40c573da3d58fa314b6e58e48317ba384789771b",
+   "incumbent_label": "sealed-3.14-production",
+   "inherited_incumbent": true,
+   "label": "sealed-3.14-production",
+   "rule": "A benchmark whose env hash does not match the sealed config must not inherit the incumbent label automatically.",
+   "sealed_env_hash": "7f677c8208a879575c8c604f40c573da3d58fa314b6e58e48317ba384789771b"
+  },
+  "unfused_probe": {
+   "env_hash": "2b4eb3440bff5f24026d438966d96a4a6ef038741f652bce3c61040eb794cdc3",
+   "incumbent_label": "sealed-3.14-production",
+   "inherited_incumbent": false,
+   "label": "env:2b4eb3440bff",
+   "rule": "A benchmark whose env hash does not match the sealed config must not inherit the incumbent label automatically.",
+   "sealed_env_hash": "7f677c8208a879575c8c604f40c573da3d58fa314b6e58e48317ba384789771b"
+  }
+ },
+ "live_inspect_error": null,
+ "live_inspect_refuse_stale_false": {
+  "benchmark_label": {
+   "env_hash": "7f677c8208a879575c8c604f40c573da3d58fa314b6e58e48317ba384789771b",
+   "incumbent_label": "sealed-3.14-production",
+   "inherited_incumbent": true,
+   "label": "sealed-3.14-production",
+   "rule": "A benchmark whose env hash does not match the sealed config must not inherit the incumbent label automatically.",
+   "sealed_env_hash": "7f677c8208a879575c8c604f40c573da3d58fa314b6e58e48317ba384789771b"
+  },
+  "binary": {
+   "bytes": 6481704,
+   "mtime_unix": 1787779874.6017668,
+   "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+   "rel": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+   "sha256": "2d5fd0f157fb7987f307782d3a12abf2efadd6a0e14a787740e51adb101ac3f8"
+  },
+  "environment": {
+   "env_hash": "7f677c8208a879575c8c604f40c573da3d58fa314b6e58e48317ba384789771b",
+   "fusion_flags": {
+    "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+    "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+    "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+    "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+   },
+   "hawking_toggles": {
+    "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+    "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+    "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+    "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+   },
+   "measurement_mode": "DIAGNOSTIC_RELATIVE",
+   "n_fusion_flags": 4,
+   "n_hawking_toggles": 4,
+   "serving_mode": "resident"
+  },
+  "feature_flags": {
+   "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+   "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+   "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+   "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+  },
+  "field_introduced_unix": {
+   "active_bytes_per_token": 1784772412.0,
+   "active_weight_bytes_per_generated_token": 1788043115.0,
+   "actual_read_bytes_per_token": 1788043115.0,
+   "actual_read_bytes_status": 1788139129.0,
+   "dispatches": 1787808226.0,
+   "dispatches_per_generated_token": 1787808226.0,
+   "gpu_ns_per_generated_token": 1787808226.0,
+   "resident_weight_bytes": 1785796352.0
+  },
+  "fields_in_binary": {
+   "active_bytes_per_token": false,
+   "active_weight_bytes_per_generated_token": false,
+   "actual_read_bytes_per_token": false,
+   "actual_read_bytes_status": false,
+   "dispatches": true,
+   "dispatches_per_generated_token": false,
+   "gpu_ns_per_generated_token": false,
+   "resident_weight_bytes": false
+  },
+  "interpreted_fields": [
+   "dispatches",
+   "dispatches_per_generated_token",
+   "active_bytes_per_token",
+   "active_weight_bytes_per_generated_token",
+   "actual_read_bytes_per_token",
+   "actual_read_bytes_status",
+   "gpu_ns_per_generated_token",
+   "resident_weight_bytes"
+  ],
+  "measurement_mode": "DIAGNOSTIC_RELATIVE",
+  "nx": {
+   "claim_class": "STATIC_ONLY",
+   "evidence": [
+    "hcli/hawking-native.sealed-3.14.json#model_id",
+    "hcli/hawking-native.sealed-3.14.json#resident_identity"
+   ],
+   "missing_evidence": [],
+   "profile_sha256": "d0ccab6562eebde05f81fbc9e7d40698f4aa9a83ae8e19606a7372a1f3abb7ce",
+   "source_state": "ON_DISK",
+   "value": {
+    "model_id": "qwen3.8-27b-sealed-3.14",
+    "profile_schema": "hcli.provider.profile.v1",
+    "protocol": "hawking.qwen38.resident.v1",
+    "resident_identity": "sealed-3.14"
+   }
+  },
+  "refuse_rule": "RAISE when binary mtime predates the source commit that introduced a field being read. Source reality is not running-artifact reality.",
+  "refused": false,
+  "resident_identity": {
+   "claim_class": "STATIC_ONLY",
+   "evidence": [
+    "hcli/hawking-native.sealed-3.14.json#model_id",
+    "hcli/hawking-native.sealed-3.14.json#resident_identity"
+   ],
+   "missing_evidence": [],
+   "profile_sha256": "d0ccab6562eebde05f81fbc9e7d40698f4aa9a83ae8e19606a7372a1f3abb7ce",
+   "source_state": "ON_DISK",
+   "value": {
+    "model_id": "qwen3.8-27b-sealed-3.14",
+    "profile_schema": "hcli.provider.profile.v1",
+    "protocol": "hawking.qwen38.resident.v1",
+    "resident_identity": "sealed-3.14"
+   }
+  },
+  "serving_mode": "resident",
+  "source": {
+   "commit": "8b6f502705212beb28b6922949605a59aeb9fc89",
+   "commit_iso": "2026-08-27T01:23:46-04:00",
+   "commit_unix": 1787808226.0,
+   "dirty": true,
+   "path": "crates/hawking-core/examples/ascension_qwen38_resident.rs"
+  },
+  "stale_fields": [
+   {
+    "binary_mtime_unix": 1787779874.6017668,
+    "delta_s": 28351.398233175278,
+    "field": "dispatches",
+    "field_introduced_unix": 1787808226.0,
+    "in_binary": true
+   },
+   {
+    "binary_mtime_unix": 1787779874.6017668,
+    "delta_s": 28351.398233175278,
+    "field": "dispatches_per_generated_token",
+    "field_introduced_unix": 1787808226.0,
+    "in_binary": false
+   },
+   {
+    "binary_mtime_unix": 1787779874.6017668,
+    "delta_s": 263240.3982331753,
+    "field": "active_weight_bytes_per_generated_token",
+    "field_introduced_unix": 1788043115.0,
+    "in_binary": false
+   },
+   {
+    "binary_mtime_unix": 1787779874.6017668,
+    "delta_s": 263240.3982331753,
+    "field": "actual_read_bytes_per_token",
+    "field_introduced_unix": 1788043115.0,
+    "in_binary": false
+   },
+   {
+    "binary_mtime_unix": 1787779874.6017668,
+    "delta_s": 359254.3982331753,
+    "field": "actual_read_bytes_status",
+    "field_introduced_unix": 1788139129.0,
+    "in_binary": false
+   },
+   {
+    "binary_mtime_unix": 1787779874.6017668,
+    "delta_s": 28351.398233175278,
+    "field": "gpu_ns_per_generated_token",
+    "field_introduced_unix": 1787808226.0,
+    "in_binary": false
+   }
+  ]
+ },
+ "negative_findings": [
+  "the serving binary that motivated this helper predated 8b6f50270 by a day",
+  "the first production dispatch count of this campaign was the unfused graph",
+  "a fused env with serving_mode=probe still must not inherit the incumbent (serving mode is in the hash)"
+ ],
+ "nx": {
+  "claim_class": "STATIC_ONLY",
+  "evidence": [
+   "hcli/hawking-native.sealed-3.14.json#model_id",
+   "hcli/hawking-native.sealed-3.14.json#resident_identity"
+  ],
+  "missing_evidence": [],
+  "profile_sha256": "d0ccab6562eebde05f81fbc9e7d40698f4aa9a83ae8e19606a7372a1f3abb7ce",
+  "source_state": "ON_DISK",
+  "value": {
+   "model_id": "qwen3.8-27b-sealed-3.14",
+   "profile_schema": "hcli.provider.profile.v1",
+   "protocol": "hawking.qwen38.resident.v1",
+   "resident_identity": "sealed-3.14"
+  }
+ },
+ "purpose": "Make runtime artifact identity automatic, and make environment part of experiment identity. A profiler that does not call this before interpreting instrumentation is the defect SOURCE_INSTRUMENTED_RUNTIME_BINARY_STALE.",
+ "recovered_implementation": [
+  "tools/future/resident_binary_drift.py compared strings(binary) to source after the fact",
+  "tools/future/resident_token_budget.py named the unfused-vs-sealed env split",
+  "tools/future/resident_identity.py persists nx_id for the incumbent",
+  "nothing refused a binary older than the field it was about to read"
+ ],
+ "refuse_rule": "inspect_artifact RAISES StaleBinaryError when the binary mtime predates the source commit that introduced a field being read. It does not warn.",
+ "resident_callable": {
+  "entry_point": "tools.future.artifact_identity.inspect_artifact",
+  "env": "tools.future.artifact_identity.environment_identity",
+  "fails_closed": "StaleBinaryError; mismatched env keeps its own label",
+  "label": "tools.future.artifact_identity.benchmark_label",
+  "receipt": "receipts/future/ARTIFACT_IDENTITY.json"
+ },
+ "schema": "hawking.future.artifact_identity.v1",
+ "seal_sha256": "374bc5f97e692550338a287ae2390d1761b5d932419d6824a4994604d43d6918",
+ "sealed_does_inherit_incumbent": true,
+ "sealed_environment": {
+  "env_hash": "7f677c8208a879575c8c604f40c573da3d58fa314b6e58e48317ba384789771b",
+  "fusion_flags": {
+   "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+   "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+   "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+   "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+  },
+  "hawking_toggles": {
+   "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+   "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+   "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+   "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+  },
+  "incumbent_label": "sealed-3.14-production",
+  "is_sealed": true,
+  "measurement_mode": "DIAGNOSTIC_RELATIVE",
+  "n_fusion_flags": 4,
+  "n_hawking_toggles": 4,
+  "serving_mode": "resident"
+ },
+ "unfused_does_not_inherit_incumbent": true,
+ "unfused_probe_environment": {
+  "env_hash": "2b4eb3440bff5f24026d438966d96a4a6ef038741f652bce3c61040eb794cdc3",
+  "fusion_flags": {},
+  "hawking_toggles": {},
+  "measurement_mode": "DIAGNOSTIC_RELATIVE",
+  "n_fusion_flags": 0,
+  "n_hawking_toggles": 0,
+  "serving_mode": "probe"
+ },
+ "version": 1
+}

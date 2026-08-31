@@ -7,6 +7,15 @@ JSONL contract.
 """
 from __future__ import annotations
 
+import sys
+from pathlib import Path as _CausalityPath
+_CAUSALITY_ROOT = _CausalityPath(__file__).resolve().parents[2]
+if str(_CAUSALITY_ROOT) not in sys.path:
+    sys.path.insert(0, str(_CAUSALITY_ROOT))
+from tools.future import status_causality as sc
+
+import sys
+
 import os
 import time
 import uuid
@@ -26,6 +35,183 @@ DEFAULT_PROMPTS = (
     ("tool_planning", "Name one read-only filesystem check a verifier could perform."),
 )
 
+
+FIVE_RECORDED_FIELDS: tuple[str, ...] = getattr(
+    sc,
+    "FIVE_RECORDED_FIELDS",
+    (
+        "probe_performed",
+        "direct_observation",
+        "interpretation",
+        "confidence",
+        "alternatives",
+    ),
+)
+
+
+def _bind_emit() -> None:
+    if hasattr(sc, "emit"):
+        return
+
+    def emit(
+        status: str,
+        *,
+        probe_performed: str = "",
+        direct_observation: Any = "",
+        interpretation: str = "",
+        probe_kind: str = "",
+        claim_kind: str | None = None,
+        falsifier: str = "",
+        source: str = "",
+    ) -> dict[str, Any]:
+        row: dict[str, Any] = {
+            "status": status,
+            "probe_performed": probe_performed,
+            "direct_observation": direct_observation,
+            "interpretation": interpretation or status,
+            "probe_kind": probe_kind,
+            "use_catalog": False,
+            "source": source or "<emit>",
+        }
+        if claim_kind:
+            row["claim_kind"] = claim_kind
+        if falsifier:
+            row["falsifier"] = falsifier
+        out = sc.challenge(row)
+        out["entry"] = "emit"
+        return out
+
+    sc.emit = emit  # type: ignore[attr-defined]
+
+
+_bind_emit()
+
+
+def records_five_fields(node: Any) -> bool:
+    fn = getattr(sc, "records_five_fields", None)
+    if callable(fn):
+        return bool(fn(node))
+    if not isinstance(node, dict):
+        return False
+    if not all(k in node for k in FIVE_RECORDED_FIELDS):
+        return False
+    if not str(node.get("probe_performed") or "").strip():
+        return False
+    if node.get("direct_observation") in (None, "", [], {}):
+        return False
+    if not str(node.get("interpretation") or "").strip():
+        return False
+    conf = node.get("confidence")
+    if not isinstance(conf, dict):
+        return False
+    if not {"would_raise", "would_lower", "level", "about"} <= set(conf):
+        return False
+    alts = node.get("alternatives")
+    return isinstance(alts, list) and bool(alts)
+
+
+def _record_gate_causality(
+    report: Dict[str, Any],
+    *,
+    probe_performed: str = "",
+    direct_observation: Any = "",
+    interpretation: str | None = None,
+    probe_kind: str = "",
+    claim_kind: str | None = None,
+    source: str = "",
+) -> dict[str, Any]:
+    """Stamp the five causality fields. Does not change status/qualification/checks.
+
+    An unsupplied observation is UNTESTED, never a restatement of PASSED/FAILED.
+    OVERREACHING is recorded beside the verdict; it does not override it.
+    """
+    status_before = report.get("status")
+    qual_before = report.get("qualification")
+    checks_before = dict(report["checks"]) if isinstance(report.get("checks"), dict) else report.get("checks")
+    status = str(report.get("status") or "")
+    unsupplied = direct_observation in (None, "", [], {})
+    rec = sc.emit(
+        status,
+        probe_performed=str(probe_performed or ""),
+        direct_observation="" if unsupplied else direct_observation,
+        interpretation=interpretation if interpretation is not None else status,
+        probe_kind="" if unsupplied else probe_kind,
+        claim_kind=None if unsupplied else claim_kind,
+        source=source,
+    )
+    for key in FIVE_RECORDED_FIELDS:
+        report[key] = rec[key]
+    report["causality_verdict"] = rec["verdict"]
+    report["falsifier"] = rec.get("falsifier")
+    if rec.get("probe_kind"):
+        report["probe_kind"] = rec["probe_kind"]
+    if rec.get("claim_kind") is not None:
+        report["claim_kind"] = rec["claim_kind"]
+    checks_after = dict(report["checks"]) if isinstance(report.get("checks"), dict) else report.get("checks")
+    if (
+        report.get("status") != status_before
+        or report.get("qualification") != qual_before
+        or checks_after != checks_before
+    ):
+        raise RuntimeError("status_causality.emit mutated the gate verdict")
+    return rec
+
+
+
+def causality_payload(report: Dict[str, Any]) -> Dict[str, Any]:
+    checks = report.get("checks") if isinstance(report.get("checks"), dict) else {}
+    errors = report.get("errors") or []
+    rows = report.get("requests") or []
+    ready = report.get("ready") if isinstance(report.get("ready"), dict) else {}
+    final_health = report.get("final_health") if isinstance(report.get("final_health"), dict) else {}
+    unmet = [name for name, value in checks.items() if value is not True]
+    if not checks and not errors and not rows:
+        return {
+            "probe_performed": "",
+            "direct_observation": "",
+            "interpretation": str(report.get("status") or ""),
+            "probe_kind": "",
+            "claim_kind": None,
+        }
+    pids = sorted({row.get("pid") for row in rows if isinstance(row, dict) and row.get("pid") is not None})
+    isolation = [
+        row.get("isolation_probe")
+        for row in rows
+        if isinstance(row, dict) and row.get("isolation_probe")
+    ]
+    status = str(report.get("status") or "")
+    return {
+        "probe_performed": (
+            "HawkingNativeConnector.start + sequential complete_payload of "
+            f"requested_count={report.get('requested_count')} prompts against "
+            f"profile {report.get('profile_path')}; recorded per-request pid, "
+            "model_open_count, weight_upload_count, fallbacks, restart_count, "
+            "response id, nonempty text, and one isolation sentinel at index 5"
+        ),
+        "direct_observation": (
+            f"ready.pid={ready.get('pid')!r}; ready.model_open_count={ready.get('model_open_count')!r}; "
+            f"ready.weight_upload_count={ready.get('weight_upload_count')!r}; "
+            f"n_requests={len(rows)}; n_errors={len(errors)}; pids={pids}; "
+            f"final_health={final_health}; isolation_probe={isolation}; "
+            f"checks={{{', '.join(f'{k}={v!r}' for k, v in sorted(checks.items()))}}}; unmet={unmet!r}"
+        ),
+        "interpretation": (
+            "every named residency lifecycle check in this run's measured flags was True"
+            if status == "PASSED"
+            else f"one or more named residency lifecycle checks did not hold: {unmet or ['no checks recorded']}"
+        ),
+        "probe_kind": sc.PROBE_MEASURED_FLAGS,
+        "claim_kind": sc.CLAIM_FIELD_VALUE if status == "PASSED" else sc.CLAIM_MEASURED_UNMET,
+    }
+
+
+def record_resident_causality(report: Dict[str, Any], **kwargs: Any) -> dict[str, Any]:
+    payload = kwargs or causality_payload(report)
+    return _record_gate_causality(
+        report,
+        source="hcli/agentos/resident_gate.py::run_resident_gate",
+        **payload,
+    )
 
 def _profile_path(profile: Optional[str], repo_root: Optional[Path]) -> Path:
     value = profile or os.environ.get("HCLI_HAWKING_NATIVE_CONFIG")
@@ -117,6 +303,8 @@ def run_resident_gate(
         report["status"] = "FAILED"
         report["errors"].append({"type": "ConfigurationError", "error": "resident-gate requires a resident profile mode"})
         report["finished_at"] = time.time()
+        payload = causality_payload(report)
+        record_resident_causality(report, **payload)
         _write_receipt(report, emit, repo)
         return report
 
@@ -214,8 +402,10 @@ def run_resident_gate(
     }
     report["status"] = "PASSED" if all(report["checks"].values()) else "FAILED"
     report["finished_at"] = time.time()
+    payload = causality_payload(report)
+    record_resident_causality(report, **payload)
     _write_receipt(report, emit, repo)
     return report
 
 
-__all__ = ["DEFAULT_COUNT", "DEFAULT_PROMPTS", "SCHEMA", "run_resident_gate"]
+__all__ = ["DEFAULT_COUNT", "DEFAULT_PROMPTS", "SCHEMA", "causality_payload", "record_resident_causality", "records_five_fields", "run_resident_gate"]

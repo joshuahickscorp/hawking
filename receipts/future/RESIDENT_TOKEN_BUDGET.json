@@ -43,11 +43,16 @@
     "status": "UNKNOWN"
    },
    "dispatch_cost": {
-    "caveat": "the marginal cost is measured over the 336 dispatches fusion removed; extrapolating it to all 628 assumes the remaining ones cost the same, which is not proven",
+    "and_that_assumption_is_now_REFUTED": "receipts/future/BA_DELTA_AB.json measured a second class. FUSE_BA_DELTA removes 48 DeltaNet launches at about 2.9 us each, against 6.25 us for the MLP/GQA/norm class. There is no single marginal dispatch cost, so the dispatch term is a RANGE, not the 3.93 ms point estimate above.",
+    "caveat": "the marginal cost is measured over the 336 dispatches fusion removed; extrapolating it to all 628 assumes the remaining ones cost the same",
     "count_per_token": 628.0,
     "marginal_us": 6.25,
     "ms": 3.925,
     "overlaps": "sits inside gpu_time_total, not beside it",
+    "range_ms_at_2_9_to_6_25_us": [
+     1.811,
+     3.925
+    ],
     "share": 0.138,
     "status": "MEASURED_BY_PAIRED_AB"
    },
@@ -92,6 +97,7 @@
     "status": "UNKNOWN"
    },
    "weight_bytes_time": {
+    "and_it_cannot_be_measured_here": "receipts/future/MEMORY_TRAFFIC_PROBE.json enumerated every counter surface on this M3 Ultra. MTLDevice.counterSets is ['timestamp'] alone; stageutilization and statistic are absent from the device; dispatch-boundary sampling resolves to [0,0]; GPURawCounter fails to instantiate without the Instruments entitlement. Nothing reports DRAM bytes to an ordinary Metal process, so this bound cannot be confirmed OR refuted from inside the process. It stays a bound.",
     "overlaps": "sits inside gpu_time_total",
     "status": "BOUNDED_NOT_MEASURED",
     "upper_bound_ms": 14.043,

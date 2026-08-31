@@ -1,0 +1,68 @@
+{
+ "claim_boundary": "Three consecutive generations on one build on a contended box. The GPU/wall RATIO is the claim and it is stable to five decimal places across runs; the absolute TPS is DIAGNOSTIC_RELATIVE. This says nothing about what the 28 ms of GPU time is made of \u2014 only that it is GPU time.",
+ "corrects": {
+  "consequence": "The entire class in \u00a711 \u2014 CPU submission, command buffers, readbacks, synchronization, state movement, host transforms, reporting, allocation, lock contention \u2014 is bounded at 0.9894 ms in TOTAL. Deleting all of it moves 34.4312 to 35.65 TPS, a gain of 1.214. Not the unlock. This lane should not be run.",
+  "measured_answer": "host gap is 0.9894 ms, 3.4% of the token, reproducible to within 0.001 across three runs",
+  "premise": "S019 \u00a710: region timing explains ~9.67 ms of GPU work against ~28.2 ms wall, so ~18 ms may live outside measured GPU regions and hold the 71-TPS unlock",
+  "why_it_is_wrong": "9.67 ms was the UNEXPLAINED RESIDUAL in receipts/future/RESIDENT_TOKEN_BUDGET.json \u2014 the token minus bytes-at-clean-roof minus dispatch minus host gap. It was never the total GPU work. That receipt already recorded GPU at 27.64 ms of a 28.44 ms token, and ORGAN_BANDWIDTH covered 27.73 ms of a 27.83 ms GPU span across four organs."
+ },
+ "derived": {
+  "decode_gpu_ms_per_token": 28.054,
+  "decode_tps_mean": 34.4312,
+  "decode_wall_ms_per_token": 29.0434,
+  "dispatches_per_decode_step": 628.0,
+  "gpu_share_max": 0.96652,
+  "gpu_share_mean": 0.96593,
+  "gpu_share_min": 0.96554,
+  "host_gap_ms_per_token": 0.9894,
+  "n_runs": 3,
+  "tps_gain_from_deleting_all_host_work": 1.214,
+  "tps_if_host_gap_were_zero": 35.65
+ },
+ "evidence_class": "DIAGNOSTIC_RELATIVE",
+ "gpu_authority": false,
+ "measurement": {
+  "binary": "workspace/ops/build/rust/release/examples/ascension_qwen38_resident",
+  "env": "sealed fusion (ADD_RMSNORM, GQA_QKV, DN_INPROJ, MLP=swiglu)",
+  "n_new_tokens": 256,
+  "runs": [
+   {
+    "decode_steps": 255,
+    "gpu_ms": 28.0527,
+    "prefill_wall_ns": 337953584,
+    "protocol_overhead_ms": 6.7198,
+    "tps": 34.4537,
+    "wall_ms": 29.0245
+   },
+   {
+    "decode_steps": 255,
+    "gpu_ms": 28.0598,
+    "prefill_wall_ns": 337291333,
+    "protocol_overhead_ms": 6.7182,
+    "tps": 34.4172,
+    "wall_ms": 29.0552
+   },
+   {
+    "decode_steps": 255,
+    "gpu_ms": 28.0495,
+    "prefill_wall_ns": 339441042,
+    "protocol_overhead_ms": 6.8509,
+    "tps": 34.4227,
+    "wall_ms": 29.0506
+   }
+  ],
+  "warmup_discarded": true
+ },
+ "note_on_protocol_overhead": {
+  "ms": 6.763,
+  "per_token_at_n_256": 0.0264,
+  "what": "client wall minus the resident's own reported wall, i.e. JSONL protocol and process boundary for a whole request",
+  "why_it_is_not_the_target": "it is per REQUEST, not per token; at N=256 it is 0.026 ms/token and it does not scale with generation length"
+ },
+ "recorded_by": "tools/future/wall_gpu_reconciliation.py",
+ "schema": "hawking.future.wall_gpu_reconciliation.v1",
+ "took_gpu_lease": false,
+ "verdict": "NO_LARGE_NON_GPU_TERM",
+ "version": 1,
+ "where_the_target_actually_is": "Inside GPU time. ORGAN_BANDWIDTH shows MLP, DeltaNet and GQA all at ~350 GB/s against a 703.5 GB/s clean roof while the LM head reaches 497. The highest-EV experiment is S019 \u00a77 \u2014 one representative MLP layer laid out for contiguous consumption in one or few fused regions with identical arithmetic. If it rises toward the LM-head regime, granularity is implicated; if it stays at 350, that hypothesis dies too and the next is representation decode cost."
+}

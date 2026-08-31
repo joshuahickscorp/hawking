@@ -7,6 +7,13 @@ production model runtime is sovereign.
 """
 from __future__ import annotations
 
+import sys
+from pathlib import Path as _CausalityPath
+_CAUSALITY_ROOT = _CausalityPath(__file__).resolve().parents[2]
+if str(_CAUSALITY_ROOT) not in sys.path:
+    sys.path.insert(0, str(_CAUSALITY_ROOT))
+from tools.future import status_causality as sc
+
 import argparse
 import io
 import json
@@ -33,6 +40,127 @@ _TOOL_STARTED = "recovery-tool-started.json"
 _REASONING = "recovery-reasoning.json"
 _SAFE_ARTIFACT = "recovery-safe-artifact.txt"
 _GATE_RECEIPT = "recovery-gate.json"
+
+
+FIVE_RECORDED_FIELDS: tuple[str, ...] = getattr(
+    sc,
+    "FIVE_RECORDED_FIELDS",
+    (
+        "probe_performed",
+        "direct_observation",
+        "interpretation",
+        "confidence",
+        "alternatives",
+    ),
+)
+
+
+def _bind_emit() -> None:
+    if hasattr(sc, "emit"):
+        return
+
+    def emit(
+        status: str,
+        *,
+        probe_performed: str = "",
+        direct_observation: Any = "",
+        interpretation: str = "",
+        probe_kind: str = "",
+        claim_kind: str | None = None,
+        falsifier: str = "",
+        source: str = "",
+    ) -> dict[str, Any]:
+        row: dict[str, Any] = {
+            "status": status,
+            "probe_performed": probe_performed,
+            "direct_observation": direct_observation,
+            "interpretation": interpretation or status,
+            "probe_kind": probe_kind,
+            "use_catalog": False,
+            "source": source or "<emit>",
+        }
+        if claim_kind:
+            row["claim_kind"] = claim_kind
+        if falsifier:
+            row["falsifier"] = falsifier
+        out = sc.challenge(row)
+        out["entry"] = "emit"
+        return out
+
+    sc.emit = emit  # type: ignore[attr-defined]
+
+
+_bind_emit()
+
+
+def records_five_fields(node: Any) -> bool:
+    fn = getattr(sc, "records_five_fields", None)
+    if callable(fn):
+        return bool(fn(node))
+    if not isinstance(node, dict):
+        return False
+    if not all(k in node for k in FIVE_RECORDED_FIELDS):
+        return False
+    if not str(node.get("probe_performed") or "").strip():
+        return False
+    if node.get("direct_observation") in (None, "", [], {}):
+        return False
+    if not str(node.get("interpretation") or "").strip():
+        return False
+    conf = node.get("confidence")
+    if not isinstance(conf, dict):
+        return False
+    if not {"would_raise", "would_lower", "level", "about"} <= set(conf):
+        return False
+    alts = node.get("alternatives")
+    return isinstance(alts, list) and bool(alts)
+
+
+def _record_gate_causality(
+    report: Dict[str, Any],
+    *,
+    probe_performed: str = "",
+    direct_observation: Any = "",
+    interpretation: str | None = None,
+    probe_kind: str = "",
+    claim_kind: str | None = None,
+    source: str = "",
+) -> dict[str, Any]:
+    """Stamp the five causality fields. Does not change status/qualification/checks.
+
+    An unsupplied observation is UNTESTED, never a restatement of PASSED/FAILED.
+    OVERREACHING is recorded beside the verdict; it does not override it.
+    """
+    status_before = report.get("status")
+    qual_before = report.get("qualification")
+    checks_before = dict(report["checks"]) if isinstance(report.get("checks"), dict) else report.get("checks")
+    status = str(report.get("status") or "")
+    unsupplied = direct_observation in (None, "", [], {})
+    rec = sc.emit(
+        status,
+        probe_performed=str(probe_performed or ""),
+        direct_observation="" if unsupplied else direct_observation,
+        interpretation=interpretation if interpretation is not None else status,
+        probe_kind="" if unsupplied else probe_kind,
+        claim_kind=None if unsupplied else claim_kind,
+        source=source,
+    )
+    for key in FIVE_RECORDED_FIELDS:
+        report[key] = rec[key]
+    report["causality_verdict"] = rec["verdict"]
+    report["falsifier"] = rec.get("falsifier")
+    if rec.get("probe_kind"):
+        report["probe_kind"] = rec["probe_kind"]
+    if rec.get("claim_kind") is not None:
+        report["claim_kind"] = rec["claim_kind"]
+    checks_after = dict(report["checks"]) if isinstance(report.get("checks"), dict) else report.get("checks")
+    if (
+        report.get("status") != status_before
+        or report.get("qualification") != qual_before
+        or checks_after != checks_before
+    ):
+        raise RuntimeError("status_causality.emit mutated the gate verdict")
+    return rec
 
 
 def _module_environment() -> Dict[str, str]:
@@ -222,6 +350,60 @@ def _nonsense_case(workspace: Path) -> Dict[str, Any]:
     }
 
 
+
+def causality_payload(report: Dict[str, Any]) -> Dict[str, Any]:
+    checks = report.get("checks") if isinstance(report.get("checks"), dict) else {}
+    recovery = report.get("recovery") if isinstance(report.get("recovery"), dict) else {}
+    controls = report.get("controls") if isinstance(report.get("controls"), dict) else {}
+    unmet = [name for name, value in checks.items() if value is not True]
+    control_status = {
+        name: (value.get("status") if isinstance(value, dict) else value)
+        for name, value in controls.items()
+    }
+    if not checks and not recovery:
+        return {
+            "probe_performed": "",
+            "direct_observation": "",
+            "interpretation": str(report.get("status") or ""),
+            "probe_kind": "",
+            "claim_kind": None,
+        }
+    status = str(report.get("status") or "")
+    return {
+        "probe_performed": (
+            "disposable fixture: spawn AgentOS host + fixture resident, SIGKILL resident "
+            "and host, recover_mission + continue_mission; negative controls for "
+            "malformed JSON, unreachable web.fetch, benchmark.run without confirm, "
+            "nonsense provider that must not self-certify"
+        ),
+        "direct_observation": (
+            f"recovery.status={recovery.get('status')!r}; "
+            f"host_started={recovery.get('host_started')!r}; "
+            f"resident_killed={recovery.get('resident_killed')!r}; "
+            f"host_killed={recovery.get('host_killed')!r}; "
+            f"safe_work_unit_verified={recovery.get('safe_work_unit_verified')!r}; "
+            f"artifact_persisted={recovery.get('artifact_persisted')!r}; "
+            f"control_status={control_status}; "
+            f"checks={{{', '.join(f'{k}={v!r}' for k, v in sorted(checks.items()))}}}; unmet={unmet!r}"
+        ),
+        "interpretation": (
+            "fixture recovery completed a verified WorkUnit and every negative control rejected"
+            if status == "PASSED"
+            else f"recovery/control checks unmet: {unmet or ['no checks recorded']}"
+        ),
+        "probe_kind": sc.PROBE_MEASURED_FLAGS,
+        "claim_kind": sc.CLAIM_FIELD_VALUE if status == "PASSED" else sc.CLAIM_MEASURED_UNMET,
+    }
+
+
+def record_recovery_causality(report: Dict[str, Any], **kwargs: Any) -> dict[str, Any]:
+    payload = kwargs or causality_payload(report)
+    return _record_gate_causality(
+        report,
+        source="hcli/agentos/recovery.py::run_recovery_gate",
+        **payload,
+    )
+
 def run_recovery_gate(
     workspace: Optional[str | os.PathLike[str]] = None,
     *,
@@ -345,6 +527,8 @@ def run_recovery_gate(
         "next_action": "run the same gate against each configured production provider and persist its receipts before claiming unattended sovereignty",
     }
     receipt_path = root / ".hcli" / "receipts" / _GATE_RECEIPT
+    payload = causality_payload(report)
+    record_recovery_causality(report, **payload)
     atomic_write_json(receipt_path, report)
     report["receipt_path"] = str(receipt_path)
     if emit:
@@ -369,7 +553,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     return 0 if report.get("status") == "PASSED" else 1
 
 
-__all__ = ["SCHEMA", "main", "run_recovery_gate"]
+__all__ = ["SCHEMA", "causality_payload", "main", "record_recovery_causality", "records_five_fields", "run_recovery_gate"]
 
 
 if __name__ == "__main__":

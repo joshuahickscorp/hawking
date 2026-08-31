@@ -124,13 +124,13 @@ def test_generic_and_flash_facts_are_separate_and_not_merged():
     assert "GENERIC_NR_NX_PIPELINE_CALLABLE" in doc
     assert "FLASH_NX_READY" in doc
     assert doc["facts_are_independent"] is True
-    assert doc["GENERIC_NR_NX_PIPELINE_CALLABLE"] is False
     assert doc["FLASH_NX_READY"] is False
     assert doc["flash"]["FLASH_NX_READY"] is False
-    assert not (
-        doc["GENERIC_NR_NX_PIPELINE_CALLABLE"] is True and doc["FLASH_NX_READY"] is False
-        and doc.get("first_nx_lower_failure") is None
-    )
+    # generic True does not make FLASH True; they are independent facts.
+    if doc["GENERIC_NR_NX_PIPELINE_CALLABLE"] is True:
+        assert doc.get("first_nx_lower_failure") is None
+        nx_stage = next(s for s in doc["stages"] if s["stage"] == "NoeticExecutable")
+        assert nx_stage["status"] == nng.PASSED
 
 
 def test_stages_are_complete_never_skipped():
@@ -147,13 +147,17 @@ def test_stages_are_complete_never_skipped():
 
 def test_pipeline_callable_is_false_because_a_stage_did_not_pass():
     doc = _receipt()
-    assert nng.generic_pipeline_callable(doc["stages"]) is False
-    assert doc["GENERIC_NR_NX_PIPELINE_CALLABLE"] is False
+    live = nng.generic_pipeline_callable(doc["stages"])
+    assert doc["GENERIC_NR_NX_PIPELINE_CALLABLE"] is live
     failed = [s for s in doc["stages"] if s["status"] != nng.PASSED]
-    assert failed, "callable is False; at least one stage must not have passed"
-    first = doc["first_failing_stage"]
-    assert first is not None
-    assert first["stage"] == failed[0]["stage"]
+    if live:
+        assert not failed
+        assert doc["first_failing_stage"] is None
+    else:
+        assert failed, "callable is False; at least one stage must not have passed"
+        first = doc["first_failing_stage"]
+        assert first is not None
+        assert first["stage"] == failed[0]["stage"]
 
 
 def test_skipped_stage_cannot_be_declared_callable():
@@ -432,7 +436,11 @@ def test_physical_graph_stage_parameterized_or_named_failure():
     choice = doc["specimen"]
     pgc = next(s for s in doc["stages"] if s["stage"] == "PhysicalGraphCompiler")
     path = Path(str(choice.get("specimen_path") or ""))
-    if choice.get("ok") and path.is_dir() and (path / "model.safetensors").is_file():
+    weights_present = path.is_dir() and (
+        (path / "model.safetensors").is_file()
+        or (path / "model.safetensors.index.json").is_file()
+    )
+    if choice.get("ok") and weights_present:
         assert pgc["invoked"] is True
         ev = pgc["evidence"] or {}
         plan = ev.get("collapse_plan") or []
@@ -465,8 +473,13 @@ def test_check_nx_verifier_was_invoked():
     doc = _receipt()
     ver = next(s for s in doc["stages"] if s["stage"] == "Verifier")
     assert ver["invoked"] is True
-    assert ver["status"] != nng.PASSED
     assert ver["evidence"]["promotable"] is False
+    nx_stage = next(s for s in doc["stages"] if s["stage"] == "NoeticExecutable")
+    if nx_stage["status"] == nng.PASSED:
+        assert ver["status"] == nng.PASSED
+        assert ver["evidence"].get("packer_owned_ok") is True
+    else:
+        assert ver["status"] != nng.PASSED
 
 
 def test_architecture_recognizer_ran_or_refused_without_skipping():
@@ -692,10 +705,430 @@ def test_run_on_unfit_specimen_names_the_stage():
 
 def test_callable_on_and_receipt_agree_on_unmet_nx():
     doc = _receipt()
-    pre = doc["preflight"]
-    assert pre["ok"] is False
-    assert pre["first_failing_stage"]
-    assert doc["GENERIC_NR_NX_PIPELINE_CALLABLE"] is False
+    live = nng.generic_pipeline_callable(doc["stages"])
+    assert doc["GENERIC_NR_NX_PIPELINE_CALLABLE"] is live
+    if live:
+        assert doc["FLASH_NX_READY"] is False
+        nx_stage = next(s for s in doc["stages"] if s["stage"] == "NoeticExecutable")
+        assert nx_stage["status"] == nng.PASSED
+        assert nx_stage["evidence"]["did_not_execute_first_noetic_executable"] is True
+        packed = Path(str((nx_stage.get("evidence") or {}).get("packed_path") or ""))
+        assert packed.is_file()
+    else:
+        assert doc["first_failing_stage"] is not None
+
+
+def _name_only_kernel(organ: str = "mlp_down") -> dict:
+    return {
+        "kernel_identity": f"name_only_{organ}",
+        "organ_identity": organ,
+        "representation_identity": "q2_affine",
+        "compiled_identity": {
+            "kind": "ABSENT",
+            "value": None,
+            "absent_reason": "synthetic name-only kernel; not compiled",
+        },
+        "specialization": {"kind": "DERIVED", "group_size": 64},
+    }
+
+
+def _compiled_shape_kernel(organ: str = "mlp_down", cols: int = 64, *, parametric: bool = False) -> dict:
+    spec: dict = {"kind": "DERIVED", "specialized_cols": cols}
+    if parametric:
+        spec["shape_constraints"] = {"cols": [cols]}
+    return {
+        "kernel_identity": f"compiled_{organ}_{cols}",
+        "organ_identity": organ,
+        "representation_identity": "q2_affine",
+        "compiled_identity": {"kind": "MEASURED", "value": "deadbeef" * 4},
+        "specialization": spec,
+    }
+
+
+def test_shared_organ_name_is_not_a_compiled_kernel():
+    """NEGATIVE CONTROL: a shared organ ROLE is not a compiled kernel for this body."""
+    kernel = _name_only_kernel("mlp_down")
+    shapes = nng.organ_shapes_from_config(_dense_cfg())
+    judged = nng.is_compiled_kernel_for_body(
+        kernel,
+        specimen_id="synth-dense",
+        organ="mlp_down",
+        organ_shape=shapes.get("mlp_down"),
+    )
+    assert judged["ok"] is False
+    assert judged["role_match"] is True
+    assert judged["specimen_id_match"] is False
+    assert judged["shape_constraints_satisfied"] is False
+    assert judged["compiled_identity_present"] is False
+    assert nng.NAME_IS_NOT_A_COMPILED_KERNEL in judged["why"]
+    planned = nng.plan_kernels_for_specimen(
+        ["mlp_down", "mlp_gate_up", "gqa_attention"],
+        specimen_id="synth-dense",
+        config=_dense_cfg(),
+        kernels=[kernel, _name_only_kernel("mlp_gate_up"), _name_only_kernel("gqa_attention")],
+        library_specimen_field=None,
+    )
+    assert planned["n_compiled"] == 0
+    assert planned["n_native_unmeasured"] == 3
+    assert planned["name_is_not_a_compiled_kernel"] is True
+    for slot in planned["plan"]:
+        assert slot["status"] == nng.NATIVE_UNMEASURED
+        assert slot["occupying"]["kind"] == nng.NATIVE_UNMEASURED
+        assert slot["occupying"]["compiled_kernel"] is None
+        assert slot["name_is_not_a_compiled_kernel"] is True
+        assert nng.NAME_IS_NOT_A_COMPILED_KERNEL in slot["why"]
+
+
+def test_undeclared_shape_is_not_a_parametric_wildcard():
+    """NEGATIVE CONTROL: omitting specialized_cols does not mean 'any shape'."""
+    kernel = _name_only_kernel("mlp_down")
+    kernel["compiled_identity"] = {"kind": "MEASURED", "value": "abc123"}
+    shapes = nng.organ_shapes_from_config(_dense_cfg())
+    judged = nng.is_compiled_kernel_for_body(
+        kernel,
+        specimen_id="synth-dense",
+        organ="mlp_down",
+        organ_shape=shapes.get("mlp_down"),
+    )
+    assert judged["compiled_identity_present"] is True
+    assert judged["shape_constraints_satisfied"] is False
+    assert judged["ok"] is False
+    assert nng.NAME_IS_NOT_A_COMPILED_KERNEL in judged["why"]
+
+
+def test_shape_mismatch_is_not_a_compiled_kernel():
+    """NEGATIVE CONTROL: parent specialized_cols 5120 is not this body's 64/128."""
+    kernel = _compiled_shape_kernel("mlp_down", cols=5120)
+    shapes = nng.organ_shapes_from_config(_dense_cfg())
+    judged = nng.is_compiled_kernel_for_body(
+        kernel,
+        specimen_id="synth-dense",
+        organ="mlp_down",
+        organ_shape=shapes.get("mlp_down"),
+    )
+    assert judged["role_match"] is True
+    assert judged["compiled_identity_present"] is True
+    assert judged["shape_constraints_satisfied"] is False
+    assert judged["ok"] is False
+    assert nng.NAME_IS_NOT_A_COMPILED_KERNEL in judged["why"]
+
+
+def test_compiled_kernel_requires_identity_or_shapes_and_present_compiled_identity():
+    """Inverse: declared cols that this organ satisfies plus a present compiled_identity."""
+    kernel = _compiled_shape_kernel("mlp_down", cols=64)
+    shapes = nng.organ_shapes_from_config(_dense_cfg())
+    judged = nng.is_compiled_kernel_for_body(
+        kernel,
+        specimen_id="synth-dense",
+        organ="mlp_down",
+        organ_shape=shapes.get("mlp_down"),
+    )
+    assert judged["ok"] is True
+    assert judged["shape_constraints_satisfied"] is True
+    assert judged["compiled_identity_present"] is True
+    assert nng.NAME_IS_NOT_A_COMPILED_KERNEL not in judged["why"]
+
+
+def test_plan_then_compile_emits_native_unmeasured_for_unseen_body():
+    lib = {
+        "kernels": [
+            _name_only_kernel("mlp_down"),
+            _name_only_kernel("mlp_gate_up"),
+            _compiled_shape_kernel("mlp_down", cols=5120),
+        ],
+        "specimen": None,
+    }
+    row = nng.stage_kernel_planner(
+        ["mlp_down", "mlp_gate_up", "embed"],
+        specimen_id="unseen-body",
+        config=_dense_cfg(),
+        library_doc=lib,
+    )
+    assert row["status"] == nng.PASSED
+    assert row["invoked"] is True
+    ev = row["evidence"]
+    assert ev["route"] == nng.KERNEL_PLANNER_ROUTE_PLAN_THEN_COMPILE
+    assert ev["name_is_not_a_compiled_kernel"] is True
+    assert ev["n_compiled"] == 0
+    assert ev["n_native_unmeasured"] == 3
+    assert nng.NAME_IS_NOT_A_COMPILED_KERNEL in row["why"]
+    organs = {slot["organ"]: slot for slot in ev["plan"]}
+    assert set(organs) == {"mlp_down", "mlp_gate_up", "embed"}
+    for slot in ev["plan"]:
+        assert slot["status"] == nng.NATIVE_UNMEASURED
+
+
+def test_shape_parametric_route_when_library_declares_constraints_and_is_compiled():
+    kernel = _compiled_shape_kernel("mlp_down", cols=64, parametric=True)
+    lib = {"kernels": [kernel], "specimen": None}
+    row = nng.stage_kernel_planner(
+        ["mlp_down"],
+        specimen_id="synth-dense",
+        config=_dense_cfg(),
+        library_doc=lib,
+    )
+    assert row["status"] == nng.PASSED
+    ev = row["evidence"]
+    assert ev["route"] == nng.KERNEL_PLANNER_ROUTE_SHAPE_PARAMETRIC
+    assert ev["n_compiled"] == 1
+    assert ev["plan"][0]["status"] == nng.COMPILED
+    assert ev["plan"][0]["occupying"]["compiled_kernel"] == kernel["kernel_identity"]
+
+
+def test_missing_library_is_refused_not_empty_success(monkeypatch):
+    """NEGATIVE CONTROL: an unreachable library is REFUSED, not an empty pass."""
+    monkeypatch.setattr(nng.nx_audit, "evidence_path", lambda rel: None)
+    row = nng.stage_kernel_planner(
+        ["mlp_down"],
+        specimen_id="x",
+        config=_dense_cfg(),
+    )
+    assert row["status"] == nng.REFUSED
+    assert row["status"] != "SKIPPED"
+    assert row["error"] == "missing_kernel_library"
+    assert "empty success" in row["why"]
+
+
+def test_empty_organs_is_failed_not_skipped():
+    row = nng.stage_kernel_planner(
+        [],
+        specimen_id="x",
+        config=_dense_cfg(),
+        library_doc={"kernels": [_name_only_kernel()]},
+    )
+    assert row["status"] == nng.FAILED
+    assert row["status"] != "SKIPPED"
+    assert row["error"] == "no_organs"
+
+
+def test_live_library_forces_plan_then_compile_for_this_body():
+    """Library evidence that chose the route: no specimen field, no compiled identity,
+    specialized_cols are the parent 5120/17408, not this body's 1024/3072."""
+    doc, _path, err = nng.load_kernel_library()
+    if doc is None:
+        ok, why = nng.kernel_library_is_readable()
+        assert ok is False
+        assert why and "empty success" in why
+        return
+    assert doc.get("specimen") is None
+    kernels = [k for k in (doc.get("kernels") or []) if isinstance(k, dict)]
+    assert kernels
+    n_compiled = sum(1 for k in kernels if nng._compiled_identity_present(k))
+    assert n_compiled == 0
+    declared = sorted({c for k in kernels if (c := nng._declared_specialized_cols(k)) is not None})
+    assert 5120 in declared
+    assert 17408 in declared
+    shapes = nng.organ_shapes_from_config(
+        {
+            "hidden_size": 1024,
+            "intermediate_size": 3072,
+            "vocab_size": 151936,
+            "num_attention_heads": 16,
+            "num_key_value_heads": 8,
+            "head_dim": 128,
+        }
+    )
+    route = nng.kernel_planner_route(
+        kernels,
+        specimen_id=nng.QWEN06_ID,
+        organ_shapes=shapes,
+        library_specimen_field=doc.get("specimen"),
+    )
+    assert route["route"] == nng.KERNEL_PLANNER_ROUTE_PLAN_THEN_COMPILE
+    assert route["n_compiled_identity_present"] == 0
+    assert route["n_parametric_range_declared"] == 0
+    assert route["shape_overlap"] == []
+    assert 1024 in route["specimen_extents"]
+    assert 3072 in route["specimen_extents"]
+    planned = nng.plan_kernels_for_specimen(
+        ["gqa_attention", "mlp_down", "mlp_gate_up"],
+        specimen_id=nng.QWEN06_ID,
+        config={
+            "hidden_size": 1024,
+            "intermediate_size": 3072,
+            "vocab_size": 151936,
+            "num_attention_heads": 16,
+            "num_key_value_heads": 8,
+            "head_dim": 128,
+        },
+        kernels=kernels,
+        library_specimen_field=doc.get("specimen"),
+    )
+    assert planned["n_compiled"] == 0
+    assert planned["name_is_not_a_compiled_kernel"] is True
+    assert set(planned["intersection"]) == {"gqa_attention", "mlp_down", "mlp_gate_up"}
+
+
+def test_callable_on_kernel_planner_ready_when_library_exists():
+    judged = nng.callable_on(_probe_of("synth-dense", _dense_names(), _dense_cfg()))
+    preview = {r["stage"]: r for r in judged["stage_preview"]}
+    ok, _why = nng.kernel_library_is_readable()
+    if ok:
+        assert preview["KernelPlanner"]["ready"] is True
+        assert preview["DeviceCompiler"]["ready"] is True
+        assert judged["first_failing_stage"] == "NoeticExecutable"
+    else:
+        assert preview["KernelPlanner"]["ready"] is False
+        assert judged["first_failing_stage"] == "KernelPlanner"
+
+
+def test_receipt_kernel_planner_passed_and_is_not_first_fail():
+    doc = _receipt()
+    kp = next(s for s in doc["stages"] if s["stage"] == "KernelPlanner")
+    if doc["specimen"].get("ok") and nng.kernel_library_is_readable()[0]:
+        assert kp["status"] == nng.PASSED
+        assert kp["invoked"] is True
+        ev = kp["evidence"] or {}
+        assert ev.get("route") == nng.KERNEL_PLANNER_ROUTE_PLAN_THEN_COMPILE
+        assert ev.get("name_is_not_a_compiled_kernel") is True
+        assert nng.NAME_IS_NOT_A_COMPILED_KERNEL in kp["why"]
+        assert ev.get("n_compiled") == 0
+        assert ev.get("n_native_unmeasured") == len(ev.get("plan") or [])
+        assert doc["kernel_planner_route"] == nng.KERNEL_PLANNER_ROUTE_PLAN_THEN_COMPILE
+        first = doc["first_failing_stage"]
+        if first is not None:
+            assert first["stage"] != "KernelPlanner"
+        else:
+            assert nng.generic_pipeline_callable(doc["stages"]) is True
+        dc_row = next(s for s in doc["stages"] if s["stage"] == "DeviceCompiler")
+        assert dc_row["invoked"] is True
+        assert dc_row["status"] != "SKIPPED"
+        assert (dc_row.get("evidence") or {}).get("kernel_plan_received") is True
+        assert (dc_row.get("evidence") or {}).get("entry_point") == (
+            "tools.future.device_compiler.lower_plan"
+        )
+        blocker = (dc_row.get("evidence") or {}).get("qwen3_dense_gguf_blocker") or {}
+        if doc["adaptation"].get("model_type") == "qwen3" or doc["adaptation"].get("family") == "dense_swiglu_transformer":
+            assert blocker.get("id") == "QWEN3_DENSE_GGUF_MATCH_ARM_ABSENT"
+            assert blocker.get("did_not_map_dense_onto_moe_arm") is True
+            assert blocker.get("includes_qwen3_dense") is False
+        for slot in (dc_row.get("evidence") or {}).get("plan") or []:
+            if slot.get("status") == nng.COMPILED:
+                identity = slot.get("compiled_identity") or {}
+                assert identity.get("kind") == "METAL_PIPELINE"
+                assert identity.get("shader_hash")
+                assert identity.get("entry_point")
+                assert identity.get("shader_hash") != identity.get("source_sha256")
+            else:
+                assert slot.get("status") == nng.NATIVE_UNMEASURED
+                assert slot.get("compiled_identity") is None
+        if dc_row["status"] == nng.PASSED:
+            assert dc_row["error"] is None
+            assert (dc_row.get("evidence") or {}).get("n_compiled", 0) > 0
+            if doc["first_failing_stage"] is not None:
+                assert doc["first_failing_stage"]["stage"] != "DeviceCompiler"
+            nx_stage = next(s for s in doc["stages"] if s["stage"] == "NoeticExecutable")
+            assert (nx_stage.get("evidence") or {}).get("nx_fragment_received") is True
+            assert nx_stage["evidence"]["did_not_execute_first_noetic_executable"] is True
+            if nx_stage["status"] == nng.PASSED:
+                assert nx_stage["error"] is None
+                ident = (nx_stage.get("evidence") or {}).get("identity") or {}
+                assert ident.get("n_compiled_organs", 0) > 0
+                assert ident.get("did_not_hardlink") is True
+                packed = Path(str((nx_stage.get("evidence") or {}).get("packed_path") or ""))
+                assert packed.is_file()
+                if doc["first_failing_stage"] is not None:
+                    assert doc["first_failing_stage"]["stage"] != "NoeticExecutable"
+            else:
+                assert nx_stage["status"] in {nng.FAILED, nng.REFUSED, nng.BLOCKED}
+                assert nx_stage["status"] != "SKIPPED"
+                assert doc["first_failing_stage"]["stage"] == "NoeticExecutable"
+        else:
+            assert dc_row["status"] in {nng.FAILED, nng.REFUSED, nng.BLOCKED}
+            assert doc["first_failing_stage"]["stage"] == "DeviceCompiler"
+            assert (dc_row.get("evidence") or {}).get("n_compiled", 0) == 0
+    else:
+        assert kp["status"] in {nng.FAILED, nng.REFUSED, nng.BLOCKED}
+        assert kp["status"] != "SKIPPED"
+
+
+def test_device_compiler_refuses_placeholder_on_the_generic_path():
+    """NEGATIVE CONTROL: a placeholder identity cannot become a COMPILED organ."""
+    from tools.future import device_compiler as dcomp
+
+    plan = {
+        "route": nng.KERNEL_PLANNER_ROUTE_PLAN_THEN_COMPILE,
+        "plan": [
+            {
+                "organ": "mlp_down",
+                "status": nng.NATIVE_UNMEASURED,
+                "occupying": {"kind": nng.NATIVE_UNMEASURED, "compiled_kernel": None},
+                "specimen_shape": {"rows": 64, "cols": 128, "extents": [64, 128]},
+                "why": nng.NAME_IS_NOT_A_COMPILED_KERNEL,
+            }
+        ],
+        "n_compiled": 0,
+        "n_native_unmeasured": 1,
+    }
+    native = {
+        "path": nng.NATIVE_LOADER,
+        "architectures": ["qwen2", "qwen3moe"],
+        "includes_qwen2": True,
+        "includes_qwen3moe": True,
+        "includes_qwen3_dense": False,
+        "includes_falcon_h1": False,
+    }
+
+    class _Lie:
+        def compile_jobs(self, jobs):
+            from pathlib import Path
+
+            results = []
+            for job in jobs:
+                Path(job.archive_path).write_text(job.source)
+                results.append(
+                    {
+                        "id": job.organ,
+                        "ok": True,
+                        "entry_point": job.entry_point,
+                        "function_found": True,
+                        "pipeline_created": True,
+                        "pipeline_object": dcomp.PIPELINE_OBJECT,
+                        "archive_sha256": job.source_sha256,
+                        "archive_bytes": len(job.source),
+                        "archive_path": job.archive_path,
+                        "source_sha256": job.source_sha256,
+                    }
+                )
+            return {"ok": True, "results": results, "backend": "lying"}
+
+    lowering = dcomp.lower_plan(
+        plan,
+        family="dense_swiglu_transformer",
+        config={"hidden_size": 64, "intermediate_size": 128, "model_type": "qwen3"},
+        native_architectures=native["architectures"],
+        model_type="qwen3",
+        backend=_Lie(),
+    )
+    assert lowering["n_compiled"] == 0
+    assert lowering["plan"][0]["status"] == nng.NATIVE_UNMEASURED
+    row = nng.stage_device_compiler(
+        native,
+        family="dense_swiglu_transformer",
+        kernel_plan=plan,
+        config={"hidden_size": 64, "intermediate_size": 128, "model_type": "qwen3"},
+        specimen_id="synth",
+        model_type="qwen3",
+    )
+    assert row["invoked"] is True
+    assert row["status"] != nng.PASSED or (row.get("evidence") or {}).get("n_compiled", 0) > 0
+    # Live Metal may pass this tiny plan; a pass must still carry genuine identity.
+    if row["status"] == nng.PASSED:
+        for slot in (row.get("evidence") or {}).get("plan") or []:
+            if slot.get("status") == nng.COMPILED:
+                ident = slot.get("compiled_identity") or {}
+                assert ident.get("shader_hash") != ident.get("source_sha256")
+                assert ident.get("kind") == "METAL_PIPELINE"
+    else:
+        assert row["status"] in {nng.FAILED, nng.REFUSED, nng.BLOCKED}
+        assert row["status"] != "SKIPPED"
+
+
+def test_device_compiler_module_is_the_authority():
+    src = Path(nng.__file__).read_text()
+    assert "from tools.future import device_compiler as dcomp" in src
+    assert "MTLCreateSystemDefaultDevice" not in src
+    assert nng.dcomp.lower_plan is not None
 
 
 def test_no_pytest_skip_in_this_file():

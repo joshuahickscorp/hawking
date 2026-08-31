@@ -1,29 +1,47 @@
 {
  "bench": {
   "gpu_authority": false,
-  "machine": "Apple host CPU; receipt/header metadata only",
-  "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T21:57:11Z",
-  "recorded_by": "tools/future/mutation_engine.py",
-  "rule": "no hardware measurement claim without hardware",
-  "state": "UNKNOWN"
+  "machine": "Apple M3 Ultra",
+  "measurement_state": "SELF_MEASURED_DIRTY",
+  "recorded_at": "2026-08-31T09:24:07Z",
+  "recorded_by": "tools/future/mutation_trial.py",
+  "rule": "lease_calls is a flock count, not a GPU rate. Hardware numbers live in receipts/future/MUTATION_TRIAL.json. This receipt does not restate them.",
+  "state": "MEASURED",
+  "took_gpu_lease": true
  },
  "ceremony_key": "HAWKING_METAL_PIPELINE_CACHE_REUSE",
- "claim_boundary": "Static sidecar artifact. No hardware measurement. A mutation whose verdict needs protected measurement is parked BLOCKED_ON_PROTECTED_WINDOW and may only be INCONCLUSIVE here. SELF_MEASURED_DIRTY cannot KEPT.",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. A mutation whose verdict needs protected measurement is parked BLOCKED_ON_PROTECTED_WINDOW and may only be INCONCLUSIVE here. SELF_MEASURED_DIRTY cannot KEPT. Driven by tools/future/mutation_trial.py under an HCLI flock.",
  "completable_here": [
-  "PIPELINE_SELF"
+  "PIPELINE_SELF",
+  "KERNEL_OR_GPU",
+  "TOKEN_RATE",
+  "REPRESENTATION_BPW"
  ],
- "evidence_class": "STATIC_ONLY",
+ "driven_by": {
+  "bindings": "tools/future/orchestration.py BINDINGS[mutation_engine.py]",
+  "constructor": "tools.future.orchestration.resident_mutation_engine",
+  "module": "tools/future/mutation_trial.py",
+  "receipt": "receipts/future/MUTATION_TRIAL.json",
+  "trial_verdict": "PASS",
+  "verified_classes": [
+   "KERNEL_OR_GPU",
+   "PIPELINE_SELF",
+   "REPRESENTATION_BPW",
+   "TOKEN_RATE"
+  ]
+ },
+ "engine_apply_lease_calls": 0,
+ "evidence_class": "SELF_MEASURED_DIRTY",
  "fusion_env_key": "HAWKING_FUSE_GQA_QKV",
  "gaps_closed": [
   "no propose/apply/evidence/rollback/verdict engine existed; autonomy_run only verifies",
-  "KERNEL_OR_GPU and TOKEN_RATE had no honest INCONCLUSIVE parking path",
-  "rollback was declared in succession/hcli but not driven as a resident mutation cycle",
-  "same-file mutation conflict was a planner cell rule, not an apply-time lock",
-  "Codex-target refusal existed as a checker, not as a pre-apply gate on a mutation",
-  "PIPELINE_SELF had no reversible policy artifact and no work-completed measurement"
+  "orchestration BINDINGS now names mutation_engine.py and the resident calls it there",
+  "a trial driver took the HCLI exclusive flock (lease_calls > 0)",
+  "KERNEL_OR_GPU / TOKEN_RATE / REPRESENTATION_BPW measured under that lease",
+  "rollback was driven as a resident mutation cycle (digest match)"
  ],
  "gpu_authority": false,
+ "lease_calls": 1,
  "mutation_classes": [
   "KERNEL_OR_GPU",
   "REPRESENTATION_BPW",
@@ -32,28 +50,26 @@
   "RESIDENT_ARTIFACT"
  ],
  "needs_protected": [
-  "RESIDENT_ARTIFACT",
   "KERNEL_OR_GPU",
+  "REPRESENTATION_BPW",
   "TOKEN_RATE",
-  "REPRESENTATION_BPW"
+  "RESIDENT_ARTIFACT"
  ],
  "negative_findings": [
-  "KERNEL_OR_GPU / TOKEN_RATE / REPRESENTATION_BPW performance cannot be measured here",
-  "contamination is not QUIESCENT; SELF_MEASURED_DIRTY cannot KEPT and cannot promote",
-  "this sidecar has no GPU lease and acquire_lease is never called (lease_calls=0)",
-  "orchestration BINDINGS does not yet name mutation_engine.py (WRITE list forbids editing it)",
-  "autonomy_run.py is not yet driven by this engine (WRITE list forbids editing it)",
-  "RESIDENT_ARTIFACT cannot promote: succession verdict is REFUSE_INSUFFICIENT_EVIDENCE",
-  "a live resident body was not mutated; overlays live in a reversible lab scope"
+  "gpu_authority remains false: trial evidence is SELF_MEASURED_DIRTY, not PROTECTED_ABSOLUTE",
+  "autonomy_run.py is not yet driven by this engine (WRITE list forbids editing it); the engine is reachable through orchestration BINDINGS and mutation_trial drives propose/apply through call_bound",
+  "mutation_engine.apply still does not call acquire_lease (engine_lease_calls=0); the trial driver does (trial_lease_calls=1)",
+  "a live resident body was not mutated; overlays live in a reversible lab scope",
+  "contamination is not proven QUIESCENT"
  ],
  "next_workunits": [
-  "bind mutation_engine.py in tools/future/orchestration.py BINDINGS (outside this lane's WRITE list)",
-  "drive propose/apply from autonomy_run.py instead of only orchestration.invoke of read-only capabilities (outside this WRITE list)",
-  "measure KERNEL_OR_GPU / TOKEN_RATE under a real HCLI protected window this sidecar must not seize"
+  "drive propose/apply from autonomy_run.py (outside this WRITE list) now that BINDINGS names the engine; SAFE_CAPABILITIES still omits it",
+  "re-measure under QUIESCENT contamination for PROTECTED_ABSOLUTE"
  ],
  "parking": "BLOCKED_ON_PROTECTED_WINDOW",
  "proofs": {
   "all_hold": true,
+  "bindings_name_mutation_engine": true,
   "dirty_cannot_promote": {
    "holds": true
   },
@@ -107,28 +123,19 @@
    "parking": "BLOCKED_ON_PROTECTED_WINDOW",
    "verdict": "INCONCLUSIVE"
   },
+  "trial_lease_calls": 1,
+  "trial_took_hcli_lock": true,
   "unbound_refuses": {
    "holds": true
   }
  },
  "purpose": "Give the resident a reversible mutation cycle so autonomy can propose, apply, measure, and roll back real changes instead of only verifying receipts.",
  "recovered_implementation": [
-  "tools/future/mutation_surface.py \u2014 owner/intersects_codex/check_disjoint (partition)",
-  "tools/future/autonomy_run.py \u2014 verifier loop, REFILL_* constants, seen_identity-at-launch",
-  "tools/future/candidate_planner.py \u2014 IncompatibleMutationError, HOST_CEREMONY_KEYS, STEM_SYNONYM",
-  "tools/future/dirty_measure.py \u2014 SELF_MEASURED_DIRTY, offer_for_promotion, MAGNITUDE_FIELDS",
-  "tools/future/contamination.py \u2014 PromotionRefused",
-  "tools/future/protected_window.py \u2014 acquire_lease raises; never called here",
-  "tools/future/succession.py \u2014 LADDER_RUNGS, REFUSE_INSUFFICIENT_EVIDENCE",
-  "tools/future/sandbox.py \u2014 reversible local science (cited, not forked)",
-  "hcli/mutation.py \u2014 snapshot/rollback/content_fingerprint algorithm recovered",
-  "tools/future/adaptive_verification.py \u2014 fail-closed screens, not-yet-dead is not verified",
-  "tools/future/frontiers.py \u2014 admit/next_work/refill (busywork identity)",
-  "tools/future/orchestration.py \u2014 invoke/BINDINGS (read; this module is not bound here)",
-  "tools/future/qualification_pipeline.py \u2014 AuthorityBoundaryError, no GPU seize",
-  "tools/future/accelerator_workunits.py \u2014 GPU species emitted SLEEPING",
-  "tools/future/codex_behaviors.py \u2014 mutation_scope on WorkUnit species",
-  "tools/future/_common.py \u2014 write_receipt, HARDWARE_FIELDS"
+  "tools/future/mutation_engine.py \u2014 propose/apply/evidence/rollback/verdict",
+  "tools/future/orchestration.py \u2014 BINDINGS now names mutation_engine.py",
+  "tools/future/mutation_trial.py \u2014 driver; takes the HCLI flock; measures three classes",
+  "tools/future/protected_window.py \u2014 acquire_lease raises; never called from apply",
+  "hcli/agentos/protected_accelerator_benchmark.py \u2014 LOCK_NAME / _try_lock (cited)"
  ],
  "recovered_loop_constants": {
   "identity_committed_at": "launch",
@@ -139,14 +146,15 @@
   "unit_budget_s": 600
  },
  "resident_callable": {
-  "entry_point": "tools.future.mutation_engine.propose(frontier)",
+  "entry_point": "tools.future.orchestration.resident_mutation_engine(scope)",
   "fails_closed": "unbound engine, absent frontier, Codex target, same-file conflict, no-op change, dirty KEPT, hardware fields: all raise; never a success shape",
   "frontier": "FT.HCLI_SELF.emit-workunits",
   "receipt": "receipts/future/MUTATION_ENGINE.json",
-  "workunit": "one CPU_ANALYSIS unit; bind a reversible scope, then propose/apply/evidence/rollback/verdict. PIPELINE_SELF is completable as work-completed counts; KERNEL_OR_GPU and TOKEN_RATE park BLOCKED_ON_PROTECTED_WINDOW."
+  "workunit": "BINDINGS-reachable propose/apply/evidence/rollback/verdict. mutation_trial.py is the driver that takes the HCLI lease and measures KERNEL_OR_GPU / TOKEN_RATE / REPRESENTATION_BPW."
  },
  "schema": "hawking.future.mutation_engine.v1",
- "seal_sha256": "aad5980ea37f5ec9fccd4ea052ad1a828a49c1ac69aa020bf9e22b5018399bb2",
+ "seal_sha256": "c961609d5dd208a5b8b2b1094a9882401fd249ffafe44a19704b0194b5cafb0e",
+ "took_gpu_lease": true,
  "trial_table": {
   "refill_count": 4,
   "refill_ids": 25,

@@ -1,0 +1,840 @@
+{
+ "accounting": {
+  "auxiliary_bytes": 1069605696,
+  "auxiliary_share_of_mlp": 0.20000870280054614,
+  "bias_bytes": 534773760,
+  "bias_share_of_auxiliary": 0.4999728049316596,
+  "code_bytes": 4278190080,
+  "group_size": 64,
+  "header_bytes": 58176,
+  "header_bytes_per_tensor": [
+   303
+  ],
+  "header_share_of_auxiliary": 5.439013668079793e-05,
+  "identity": {
+   "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+   "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+   "geometry": {
+    "hidden_size": 5120,
+    "intermediate_size": 17408,
+    "num_hidden_layers": 64
+   },
+   "model_id": "qwen3.8-27b-sealed-3.14",
+   "resident_identity": "sealed-3.14"
+  },
+  "incumbent_packing": {
+   "bias_dtype": "f16",
+   "bytes_per_group_aux": 4,
+   "family": "affine_q2_group64_ls",
+   "fit": "ls",
+   "reconstruction": "w = float(q) * scale + bias, q unsigned in {0,1,2,3}",
+   "representation": "affine_q2_group64_fp16_scale_bias",
+   "scale_dtype": "f16"
+  },
+  "n_groups": 267386880,
+  "n_parameters": 17112760320,
+  "n_tensors": 192,
+  "reconciled": true,
+  "scale_bytes": 534773760,
+  "scale_share_of_auxiliary": 0.4999728049316596,
+  "stored_bytes": 5347795776,
+  "target": 1069605696
+ },
+ "answers": {
+  "are_biases_necessary": {
+   "answer": "YES at this packing: dropping them is W rel-fro ~1.7; tying to -1.5*scale is ~0.30. They are not independently random either (bias/scale median \u2248 -1.5) and 8-bit bias is nearly lossless on W.",
+   "drop_status": "MEASURED_NEGATIVE",
+   "tie_status": "MEASURED_NEGATIVE",
+   "u8_status": "OPEN"
+  },
+  "are_scales_independently_random": {
+   "answer": "NO. Exploitable structure exists, but most of it is a DC plus a small f16 alphabet, not a shared curve across layers.",
+   "cross_layer": {
+    "mlp.down": {
+     "max": 0.46908515668479234,
+     "mean": 0.23323047206020348,
+     "min": -0.02068176033274037,
+     "n_pairs": 63
+    },
+    "mlp.gate": {
+     "max": 0.031792647248828514,
+     "mean": 0.014621581025760813,
+     "min": 0.003210342336195883,
+     "n_pairs": 63
+    },
+    "mlp.up": {
+     "max": 0.022648162722202277,
+     "mean": 0.00924804905334278,
+     "min": -0.0010212384021962124,
+     "n_pairs": 63
+    }
+   },
+   "cross_tensor_gate_vs_up": {
+    "max": 0.3087914642289753,
+    "mean": 0.12435379200863682,
+    "min": 0.057690584588160246,
+    "n_layers": 64,
+    "note": "down has a transposed shape (5120 x 17408 vs 17408 x 5120); no elementwise Pearson."
+   },
+   "f16_bitwidth": 16,
+   "lag1_along_groups": {
+    "mlp.down": 0.2658812395763189,
+    "mlp.gate": 0.2661004251001548,
+    "mlp.up": 0.14736243736356758
+   },
+   "lag1_along_rows": {
+    "mlp.down": 0.005481375665282816,
+    "mlp.gate": 0.015188132629530903,
+    "mlp.up": 0.009831471990181776
+   },
+   "scale_shannon_bits": 10.000404381899381,
+   "scale_unique_f16": 6226
+  },
+  "can_a_tiny_program_generate_them": {
+   "answer": "NO. A smooth curve of group index is the DC. Generating the residual is storing S.",
+   "dense_rematerialization": "DEPENDS_ON_LOWERING",
+   "status": "MEASURED_NEGATIVE"
+  },
+  "can_group_size_change": {
+   "answer": "Byte curve is exact and monotone in 1/G. Capability is UNMEASURED. Smaller G grows the 1.07 GB; larger G is OPEN and is the only exact-byte lever besides u8 aux.",
+   "capability": "UNMEASURED",
+   "status": "OPEN"
+  },
+  "can_groups_share_scale_structure": {
+   "answer": "A per-tensor rank-1 (row gain \u00d7 group curve) is the DC, not the variation. Sharing variation across tensors/layers is measured negative. u8 of the per-group scalar is the structure that actually bites.",
+   "candidates": [
+    "shared_scale_basis",
+    "per_tensor_curve_plus_residual",
+    "quantize_aux_u8"
+   ],
+   "status": {
+    "per_tensor_curve_plus_residual": "MEASURED_NEGATIVE",
+    "quantize_aux_u8": "OPEN",
+    "shared_scale_basis": "MEASURED_NEGATIVE"
+   }
+  },
+  "can_headers_be_packed_harder": {
+   "answer": "YES, and it does not matter. Measured header bytes are 58,176 (192 * 303). A 32-byte binary header saves 52,032 bytes, 0.005% of the auxiliary.",
+   "bytes_eliminated_if_true": 52032,
+   "header_bytes": 58176,
+   "status": "OPEN"
+  },
+  "can_scale_vectors_be_factorized": {
+   "answer": "NO at a rank that saves bytes without a ~0.25 W rel-fro hit. The group axis is short and the centered spectrum is slow.",
+   "status": "MEASURED_NEGATIVE"
+  },
+  "can_scales_be_predicted_from_codes": {
+   "answer": "NO at linear statistics of the 2-bit payload.",
+   "measured": {
+    "bias_r2_qmean_qvar": 0.5776185368834906,
+    "corr_scale_qmean": -0.0012645556118098783,
+    "corr_scale_qvar": -0.5865616803422122,
+    "q_mean": 1.4997005860010784,
+    "scale_r2_qmean_qvar": 0.34917241577248515
+   },
+   "status": "MEASURED_NEGATIVE"
+  }
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T03:14:43Z",
+  "recorded_by": "tools/future/mlp_auxiliary_information.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "candidate_counts": {
+  "already_falsified": 0,
+  "measured_negative": 9,
+  "n": 12,
+  "open": 3,
+  "rejected_dense_remat": 0
+ },
+ "candidates": [
+  {
+   "byte_model": "n_groups=267386880 currently * 2 f16 = 534773760 scale + 534773760 bias. u8 scale: 267386880*1 + 192*4 endpoint bytes. u8 both: 267386880*2 + 192*8.",
+   "bytes_eliminated_breakdown": {
+    "endpoints_cost_bytes": 1536,
+    "u8_bias_keep_f16_scale": 267386880,
+    "u8_both": 534773760,
+    "u8_scale_keep_f16_bias": 267386880
+   },
+   "bytes_eliminated_if_true": 534773760,
+   "cheapest_falsifier": "STATIC, already partially run: sampled-group rel-fro of u8-log scale vs incumbent affine W is 0.004283562110675297. Kill if that rel-fro on held-out groups of more layers exceeds the incumbent-vs-bf16 floor by a gap that a generate probe would feel. CHEAP CPU next: decode 4 layers of real post-norm X with u8 aux vs f16 aux; if output rel-fro moves like NNS-029's uniform-Q2 injury, the candidate dies without a generate gate. Do not unpack to dense W.",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Native affine2 already dequants in-register from f16 aux widened to f32. A u8 aux is the same primitive with a cheaper load. Expanding u8 back to an f16 buffer then binding the incumbent kernel is not dense-W remat, but it is also not an active-byte win: the token still reads the f16 aux.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "quantize_aux_u8",
+   "index_refusals": [],
+   "index_slugs": [
+    "entropy_coded_pq",
+    "post_hoc_frozen_codec"
+   ],
+   "measured_relfro_vs_incumbent_W": {
+    "u8_linear_bias_keep_scale": 0.009629028037240311,
+    "u8_log_scale_and_u8_bias": 0.01066766035111535,
+    "u8_log_scale_keep_bias": 0.004283562110675297
+   },
+   "mechanism": "The f16 scale alphabet is small (6226 unique patterns, Shannon 10.0004 bits) and positive. Replace each f16 scale with a u8 log-minmax code and two f16 endpoints per tensor; same for signed bias with linear minmax. The affine kernel dequants u8\u2192f32 in-register (s = exp(lmin + u8*(lmax-lmin)/255)) and never writes f16 aux.",
+   "name": "store scale/bias as u8 (log or linear) plus two endpoints",
+   "note": "NNS-022 killed rANS on Lloyd-optimal *weight-code* indices as an active-byte lever. A u8 code of the *scale scalar* is a different object: 1 value per group, not a PQ index of W.",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "OPEN"
+  },
+  {
+   "byte_model": "|B| * K * 2 + n_tensors * K * n_rows * 2. Incumbent scale bytes 534773760. A K=1 shared DC is collapse_to_global_scale.",
+   "bytes_eliminated_if_true": 534773760,
+   "cheapest_falsifier": "STATIC, run here: centered pairwise cosine of scale vectors across layers is ~0.02 (raw cosine ~0.97 is the DC). gate\u2194up Pearson 0.12435379200863682. Cross-layer Pearson gate 0.014621581025760813, down 0.23323047206020348. A shared *variation* basis is not in the arrays. Reopen only if a K-basis on a new packing, not a retry of unconditioned W-space sharing.",
+   "citations": [
+    {
+     "claim_refuted": "the KERNEL is competent and the byte win does translate to nanoseconds, but no K below ~2.25 bpw composes coherently for the MLP: the local functional probe dies at held-out activation",
+     "kind": "MODEL_SPECIFIC",
+     "reopen_condition": "a shared-basis point that is coherent at held-out activation AND beats q2f on both density and COMPLETE_TOKEN_NS",
+     "scar_id": "QN-SHARED-BASIS-DENSITY",
+     "source_path": "tools/headless/negative_science.py",
+     "surface": "qwen3.8-27b mlp_gate_up+mlp_down (QN catalog; abliterated sibling of this parent)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP scale/bias arrays"
+    }
+   ],
+   "cousin_not_this_object": true,
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Affine2 already indexes scale[row, group]. A shared-basis consumer computes scale = B @ c in-register per group. Writing a dense S then binding incumbent is not an active-byte win. Writing dense W is REJECTED_DENSE_REMAT.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "shared_scale_basis",
+   "index_hits_are_cousins": true,
+   "index_refusals": [
+    {
+     "applies_to_this_object": false,
+     "claim_refuted": "held-out activation reconstruction fails; not coherent",
+     "hypothesis_family": "shared_basis",
+     "organ": "down",
+     "queried_organ": "gate",
+     "queried_slug": "shared_basis",
+     "reopen_condition": "a shared-basis point that is coherent at held-out activation AND beats",
+     "scar_id": "tools/headless/negative_science.py#QN-SHARED-BASIS-DENSITY",
+     "source_path": "tools/headless/negative_science.py",
+     "verdict": "NEGATIVE",
+     "why_not_this_object": "Index family matches a weight-space or codec scar on this parent. The object here is the f16 scale/bias array of affine-Q2, not W and not a different codec."
+    }
+   ],
+   "index_slugs": [
+    "shared_basis",
+    "qn_shared_k_hybrid"
+   ],
+   "mechanism": "One (or K) shared templates B of length groups_per_row, local coefficients per tensor: S_{l,o} \u2248 B C_{l,o}. Would store B once plus small C instead of 192 independent scale arrays.",
+   "name": "shared scale basis across tensors / layers",
+   "note": "QN-SHARED-BASIS-DENSITY is unconditioned sharing of W, not of the scale array. Cited as a cousin so it is not re-proposed as if this measurement were that scar. Status is MEASURED_NEGATIVE from the scale arrays themselves.",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "MEASURED_NEGATIVE"
+  },
+  {
+   "byte_model": "per tensor, n_rows*2 + groups_per_row*2 for the rank-1, plus |R|. Gate/up: 17408+80 f16 = 34,976 bytes vs 2,785,280. If R is dropped, that is the whole save; if R is f16 of the same shape, zero bytes are eliminated.",
+   "bytes_eliminated_if_true": 534773760,
+   "cheapest_falsifier": "STATIC, run here: uncentered SVD rank-1 captures ~98% of raw energy because scales sit at ~0.011 (DC). Centered rank-1 is ~0.2709807027131319 of *variation*. Dropping the residual reconstructs incumbent W at rel-fro 0.2864141383292485. That is not a drop-in. A residual that is itself f16 of the same shape saves nothing.",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "scale = gain[row]*curve[group] is in-register. Materializing S or W is not the production path.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "per_tensor_curve_plus_residual",
+   "index_hits_are_cousins": true,
+   "index_refusals": [
+    {
+     "applies_to_this_object": false,
+     "claim_refuted": "held-out activation reconstruction fails",
+     "hypothesis_family": "low_rank",
+     "organ": "down",
+     "queried_organ": "gate",
+     "queried_slug": "low_rank",
+     "reopen_condition": "a correction whose extra bpw keeps the body under 2.25 while rel_fro",
+     "scar_id": "tools/headless/negative_science.py#QN-LOWRANK-HEALING",
+     "source_path": "tools/headless/negative_science.py",
+     "verdict": "NEGATIVE",
+     "why_not_this_object": "Index family matches a weight-space or codec scar on this parent. The object here is the f16 scale/bias array of affine-Q2, not W and not a different codec."
+    }
+   ],
+   "index_slugs": [
+    "low_rank"
+   ],
+   "measured_relfro_vs_incumbent_W": {
+    "rank1_scale_keep_bias": 0.2864141383292485
+   },
+   "mechanism": "Per tensor, store a groups_per_row curve and a per-row gain (rank-1 separable S \u2248 row_gain \u2297 col_curve) plus a residual. A win requires the residual to be cheap or droppable.",
+   "name": "per-tensor scale curve plus residual",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "MEASURED_NEGATIVE"
+  },
+  {
+   "byte_model": "eliminate 534773760 scale bytes (and possibly 534773760 bias) at zero extra storage. The 2-bit payload is already counted.",
+   "bytes_eliminated_if_true": 534773760,
+   "cheapest_falsifier": "STATIC, run here: corr(scale, mean q) -0.0012645556118098783; OLS R\u00b2 of scale on (1, mean q, var q) 0.34917241577248515. The codes do not determine the LS scale. A nonlinear predictor that beats this R\u00b2 on held-out groups would reopen; a linear restatement would not.",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Codes are already in-register in affine2. A predicted scale is an extra ALU on those bits. Predicting S into a dense f16 buffer is not an active-byte win.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "predict_scale_from_code_stats",
+   "index_refusals": [],
+   "index_slugs": [],
+   "measured": {
+    "bias_r2_qmean_qvar": 0.5776185368834906,
+    "corr_scale_qmean": -0.0012645556118098783,
+    "corr_scale_qvar": -0.5865616803422122,
+    "q_mean": 1.4997005860010784,
+    "scale_r2_qmean_qvar": 0.34917241577248515
+   },
+   "mechanism": "If scale is a function of the already-stored 2-bit payload (group mean q, var q, histogram), the f16 scale array is redundant and the kernel can compute it from the codes.",
+   "name": "predict scale/bias from 2-bit code statistics",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "MEASURED_NEGATIVE"
+  },
+  {
+   "byte_model": "per tensor, k*(n_rows + groups_per_row)*2 bytes. k=8 gate/up: 8*(17408+80)*2 = 279,808 vs 2,785,280. Across 192 tensors a k that preserved W would have to be large: groups_per_row is 80 (gate/up) or 272 (down), and centered energy at k=32 is ~0.61203010706231.",
+   "bytes_eliminated_if_true": null,
+   "bytes_eliminated_if_true_note": "Exact only after choosing k. k=8 on all tensors, dropping the residual, is a lossy save of most of the scale bytes and is MEASURED_NEGATIVE on W rel-fro.",
+   "cheapest_falsifier": "STATIC, run here: centered SVD energy of the scale matrix is rank-1 ~0.2709807027131319, rank-32 ~0.61203010706231. Rank-1 W rel-fro 0.2864141383292485. The group axis is short (80 or 272) and nearly full-rank in the variation. QN-LOWRANK-HEALING / NNS-016 are cousins on W, not this matrix; they are cited so a W-rank retry is not laundered as a scale-rank idea.",
+   "citations": [
+    {
+     "claim_refuted": "no distributed correction under the 1.0 bpw budget restored held-out activations on real X; even r=256 at 1.035 extra bpw pushed the body to 2.285 > 2.25 with rel_fro 0.4798",
+     "kind": "MODEL_SPECIFIC",
+     "reopen_condition": "a correction whose extra bpw keeps the body under 2.25 while rel_fro on real held-out X drops below the q2f baseline",
+     "scar_id": "QN-LOWRANK-HEALING",
+     "source_path": "tools/headless/negative_science.py",
+     "surface": "qwen3.8-27b mlp_gate_up+mlp_down (QN catalog; abliterated sibling of this parent)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP scale/bias arrays"
+    }
+   ],
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Two skinny inner products for a scalar scale are a direct consumer. U@V written as dense S or dense W is not.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "low_rank_scale_matrix",
+   "index_hits_are_cousins": true,
+   "index_refusals": [
+    {
+     "applies_to_this_object": false,
+     "claim_refuted": "held-out activation reconstruction fails",
+     "hypothesis_family": "low_rank",
+     "organ": "down",
+     "queried_organ": "gate",
+     "queried_slug": "low_rank",
+     "reopen_condition": "a correction whose extra bpw keeps the body under 2.25 while rel_fro",
+     "scar_id": "tools/headless/negative_science.py#QN-LOWRANK-HEALING",
+     "source_path": "tools/headless/negative_science.py",
+     "verdict": "NEGATIVE",
+     "why_not_this_object": "Index family matches a weight-space or codec scar on this parent. The object here is the f16 scale/bias array of affine-Q2, not W and not a different codec."
+    },
+    {
+     "applies_to_this_object": false,
+     "claim_refuted": "Qwen3.8 dense low-rank failure (legacy, retired patient)",
+     "hypothesis_family": "global_dense_lowrank",
+     "organ": "unrecorded",
+     "queried_organ": "mlp",
+     "queried_slug": "global_dense_lowrank",
+     "reopen_condition": "the new architecture invalidates the old premise (bible \u00a719)",
+     "scar_id": "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json#NS-global-dense-lowrank-qwen38",
+     "source_path": "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json",
+     "verdict": "DEAD on that dense body. Does NOT automatically kill cross-expert low-rank structure in MoE.",
+     "why_not_this_object": "Index family matches a weight-space or codec scar on this parent. The object here is the f16 scale/bias array of affine-Q2, not W and not a different codec."
+    }
+   ],
+   "index_slugs": [
+    "low_rank",
+    "kronecker",
+    "global_dense_lowrank"
+   ],
+   "mechanism": "S \u2248 U_k \u03a3_k V_k with k << min(rows, groups_per_row). Store the factors. Affine2 would form scale[row,group] from the factors in-register.",
+   "name": "low-rank factorization of the group \u00d7 row scale matrix",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "MEASURED_NEGATIVE"
+  },
+  {
+   "byte_model": "O(degree + n_rows) f16 per tensor. Degree-3 plus row gain is ~34,824 bytes/tensor vs 2,785,280. Across 192 tensors that would drop scale storage to tens of MB *if* the curve were the scale. It is not.",
+   "bytes_eliminated_if_true": 534773760,
+   "cheapest_falsifier": "STATIC, run here: rank-1 / row-gain\u00d7curve W rel-fro 0.2864141383292485; lag-1 along groups is only 0.2661004251001548 (gate) / 0.2658812395763189 (down), so a smooth curve of group index cannot be the scale. A program that emits the residual (i.e. memorizes S) is not tiny.",
+   "dense_rematerialization": "DEPENDS_ON_LOWERING",
+   "dense_rematerialization_reason": "In-register evaluation is DIRECT_CONSUME / FusedDecodeCompute. The cheap lowering \u2014 run the program, write the incumbent f16 scale buffer, bind affine2 \u2014 is not dense-W remat, but it eliminates zero *active* bytes. Load-time generation that still reads 534 MB of scales per token is not this candidate.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "parametric_scale_program",
+   "index_refusals": [],
+   "index_slugs": [
+    "generated_tied_params"
+   ],
+   "mechanism": "A per-tensor polynomial or Fourier of group index, times a per-row gain, emits scale[row,group] in-register. Residual stored only if needed.",
+   "name": "tiny program / fitted curve generates scales",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "MEASURED_NEGATIVE"
+  },
+  {
+   "byte_model": "aux(G) = 4*17112760320/G + 58176. Incumbent G=64 \u2192 1069605696. G=128 \u2192 534831936; G=256 \u2192 267445056; G=1024 \u2192 66904896.",
+   "bytes_eliminated_breakdown": {
+    "1024": 1002700800,
+    "128": 534773760,
+    "16": -3208642560,
+    "256": 802160640,
+    "32": -1069547520,
+    "512": 935854080,
+    "64": 0,
+    "8": -7486832640
+   },
+   "bytes_eliminated_if_true": 534773760,
+   "capability": "UNMEASURED",
+   "cheapest_falsifier": "CHEAP CPU: LS-refit one gate and one down tensor at G=128 and G=256 from the parent bf16 (or from incumbent reconstruction as a weaker proxy), report group-wise rel-fro vs G=64. If the W rel-fro jump is in the NNS-029 uniform-Q2 band (~0.58 vs q3 0.20), G dies without a generate. Capability is UNMEASURED here; this receipt only owns the byte curve.",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Codes stay 2-bit packed. Affine2 already consumes per-group scale/bias in-register. A new G is a bind / kernel-specialization change, not a dense W. MIX_REPORT's g32 minmax was a different fit at a *smaller* G.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "larger_group_size",
+   "index_refusals": [],
+   "index_slugs": [
+    "uniform_q2"
+   ],
+   "mechanism": "Auxiliary bytes = 4 * n_params / G + headers. Larger G shares one LS scale/bias across more weights. Affine2 already binds group_size 32 or 64; 128/256/512/1024 are the same primitive with a different G. Smaller G *increases* the 1.07 GB and is not an attack on it. gcd(hidden, intermediate)=1024 is the largest G that tiles both gate/up and down.",
+   "name": "change group size (byte curve is exact; capability is not)",
+   "note": "Collapsing to one group per tensor is collapse_to_global_scale, measured negative on these arrays. Intermediate G is not that.",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "OPEN"
+  },
+  {
+   "byte_model": "eliminate 534773760 bias bytes; kernel uses one aux buffer.",
+   "bytes_eliminated_if_true": 534773760,
+   "cheapest_falsifier": "STATIC, run here: tying bias to -1.5*scale reconstructs incumbent W at rel-fro 0.32035192278634433. The residual of the centering term is the LS offset and is not optional at this precision. 8-bit *independent* bias (quantize_aux_u8) is the remaining lever on this buffer.",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "affine2_w(q, scale, -1.5*scale) is a one-buffer form of the same kernel. No dense W.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "tie_bias_to_minus_half_codes",
+   "index_refusals": [],
+   "index_slugs": [
+    "posthoc_scalar_gain"
+   ],
+   "measured_bias_over_scale_median": -1.5000355932861567,
+   "measured_relfro_vs_incumbent_W": {
+    "tied_bias": 0.32035192278634433
+   },
+   "mechanism": "q \u2208 {0,1,2,3} has mean 1.5. Measured bias/scale median is -1.5000355932861567, i.e. the LS fit already centers. If the residual of bias + 1.5*scale were negligible, bias need not be stored: w = scale * (q - 1.5).",
+   "name": "tie bias = -1.5 * scale (unsigned-q centering)",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "MEASURED_NEGATIVE"
+  },
+  {
+   "byte_model": "eliminate 534773760 bias bytes.",
+   "bytes_eliminated_if_true": 534773760,
+   "cheapest_falsifier": "STATIC, run here: drop-bias W rel-fro 1.7533035566157489. The offset is first-order in the reconstruction (unsigned q is not centered). Not a precision nits; the bias is necessary at this packing. Recovering it from codes is predict_scale_from_code_stats, also measured negative.",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Same kernel with bias=0. No dense W.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "drop_bias",
+   "index_refusals": [],
+   "index_slugs": [],
+   "measured_relfro_vs_incumbent_W": {
+    "drop_bias": 1.7533035566157489
+   },
+   "mechanism": "w = q * scale, unsigned q, no bias buffer.",
+   "name": "drop the affine offset entirely",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "MEASURED_NEGATIVE"
+  },
+  {
+   "byte_model": "192 * 4 bytes of f16 scale+bias vs 1069547520. Almost the entire auxiliary, minus headers.",
+   "bytes_eliminated_if_true": 1069546752,
+   "cheapest_falsifier": "STATIC, run here: global-scale W rel-fro 0.3313789532631707. Cousin, not a launder: NNS-029 killed *uniform Q2* on this MLP (rel-fro 0.578 vs q3 0.198) \u2014 a different codec, same 'one scale, 2-bit codes' shape. Do not retry as if the scale array had no per-group information.",
+   "citations": [
+    {
+     "claim_refuted": "That activation sparsity (~2\u00d7 MLP max) or uniform bit-descent below q3 is a clean path under the Qwen3.8 coherent floor.",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "Sparsity: a Doctor-holding skip pattern that does not compound over 64 layers. Bit-descent: a codec that actually hits the Shannon bound AND a generate gate at that distortion. Neither is a retry of q2 or of unstructured activation skip.",
+     "scar_id": "NNS-029",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b MLP (sparsity); whole artifact (bit-descent)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP scale/bias arrays"
+    }
+   ],
+   "cousin_not_this_object": true,
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "One scale broadcast. No dense W.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "collapse_to_global_scale",
+   "index_refusals": [],
+   "index_slugs": [
+    "uniform_q2"
+   ],
+   "measured_relfro_vs_incumbent_W": {
+    "global_scale_keep_bias": 0.3313789532631707
+   },
+   "mechanism": "Replace per-group scales with the tensor mean. This is G = n_cols, i.e. one group per row would still be per-row; the extreme here is one scale for the whole tensor.",
+   "name": "one scale (and optional bias) per tensor",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "MEASURED_NEGATIVE"
+  },
+  {
+   "byte_model": "S_0 + sum |\u0394_l|. Incumbent 534773760. If \u0394 \u2248 S, zero save.",
+   "bytes_eliminated_if_true": 526417920,
+   "cheapest_falsifier": "STATIC, run here: consecutive-layer Pearson of scale vectors is 0.014621581025760813 (gate), 0.00924804905334278 (up), 0.23323047206020348 (down). Gate/up residuals are the parent. Down is weakly correlated (~0.23) and still not a byte win without a residual codec. NNS-016 (near-full-rank W depth) is a cousin on a different matrix.",
+   "citations": [
+    {
+     "claim_refuted": "That weight-space low-rank / TT / Kronecker factorisation of a single expert tensor is a density win at the coherent point (layers \u2265 1).",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "L>=1: never at the coherent point. L0: already beating the incumbent \u2014 build the organ-and-layer-specific codec. On a new parent, check the Van Loan spectrum before assuming depth behaviour.",
+     "scar_id": "NNS-016",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b (weight-space SVD); qwen3-235b-a22b:F1 (Kronecker) gate/down; L0 is the exception",
+     "this_specimen": "qwen3.8-27b sealed-3.14 affine-Q2 MLP scale/bias arrays"
+    }
+   ],
+   "dense_rematerialization": "DEPENDS_ON_LOWERING",
+   "dense_rematerialization_reason": "Predicting S_l into the incumbent f16 buffer then running affine2 is not an active-byte win. Direct consume would evaluate P in-register. Predicting W_l is generated_weights and REJECTED_DENSE_REMAT.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "cross_layer_scale_delta",
+   "index_refusals": [],
+   "index_slugs": [
+    "cross_expert_structure"
+   ],
+   "measured": {
+    "cross_layer_pearson": {
+     "mlp.down": {
+      "max": 0.46908515668479234,
+      "mean": 0.23323047206020348,
+      "min": -0.02068176033274037,
+      "n_pairs": 63
+     },
+     "mlp.gate": {
+      "max": 0.031792647248828514,
+      "mean": 0.014621581025760813,
+      "min": 0.003210342336195883,
+      "n_pairs": 63
+     },
+     "mlp.up": {
+      "max": 0.022648162722202277,
+      "mean": 0.00924804905334278,
+      "min": -0.0010212384021962124,
+      "n_pairs": 63
+     }
+    }
+   },
+   "mechanism": "S_l = P(S_{l-1}) + \u0394_l with P = identity or a scale. A win requires ||\u0394|| << ||S|| so residuals compress.",
+   "name": "store layer-0 scales plus per-layer residuals",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "MEASURED_NEGATIVE"
+  },
+  {
+   "byte_model": "192 * 303 = 58176 measured. 192 * 32 = 6144. Save 52032.",
+   "bytes_eliminated_if_true": 52032,
+   "cheapest_falsifier": "STATIC, already run: header bytes are exactly 58,176. The save cannot exceed that. Not a 1.07 GB lever. Do not spend a generate gate on JSON.",
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "Headers are not in the GEMV. Packing them is LayoutTransform of a sidecar, not a weight remat. They are 0.0054% of the auxiliary and 0.0011% of the token.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "pack_headers",
+   "index_refusals": [],
+   "index_slugs": [],
+   "measured_header_bytes": 58176,
+   "mechanism": "Every HGRAVF01 begins with magic + u32 JSON length + a 291-byte JSON object (schema, representation, shape, group_size, byte counts). A 32-byte binary header (magic, rows, cols, group, groups, payload lengths) carries the same facts.",
+   "name": "pack the 303-byte JSON headers harder",
+   "note": "Real, exact, and too small to move the token.",
+   "physical_primitive": "LayoutTransform",
+   "status": "OPEN"
+  }
+ ],
+ "claim_boundary": "Static sidecar artifact. No hardware measurement and no generate gate. Numbers are catalog-header byte counts plus CPU statistics on the real HGRAVF01 scale/bias arrays (and, where named, 2-bit codes) of sealed-3.14. Weight-space rel-fro is incumbent-affine reconstruction vs a cheap stand-in on sampled groups; it is a STATIC filter, not capability. A candidate that only rematerializes a dense W, or that expands a compressed aux array back to the incumbent f16 buffer before the kernel, does not eliminate active bytes.",
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "scale+bias+header re-measured from 192 HGRAVF01 headers and refused unless they sum to 1,069,605,696",
+  "entropy, lag-1, cross-layer, cross-tensor, SVD, code-prediction R\u00b2, and W rel-fro taken on the real arrays",
+  "group-size byte curve exact on gcd(hidden, intermediate)=1024",
+  "headers counted: 58,176 bytes, not 'some overhead'",
+  "negative_index queried; W-space scars cited as cousins, not laundered as scale-array kills"
+ ],
+ "gpu_authority": false,
+ "group_size_curve": [
+  {
+   "auxiliary_bytes": 8556438336,
+   "bytes_eliminated_vs_incumbent": -7486832640,
+   "capability": "UNMEASURED",
+   "code_bytes": 4278190080,
+   "group_size": 8,
+   "header_bytes": 58176,
+   "incumbent": false,
+   "mlp_active_bytes": 12834628416,
+   "n_groups": 2139095040,
+   "scale_bias_bytes": 8556380160
+  },
+  {
+   "auxiliary_bytes": 4278248256,
+   "bytes_eliminated_vs_incumbent": -3208642560,
+   "capability": "UNMEASURED",
+   "code_bytes": 4278190080,
+   "group_size": 16,
+   "header_bytes": 58176,
+   "incumbent": false,
+   "mlp_active_bytes": 8556438336,
+   "n_groups": 1069547520,
+   "scale_bias_bytes": 4278190080
+  },
+  {
+   "auxiliary_bytes": 2139153216,
+   "bytes_eliminated_vs_incumbent": -1069547520,
+   "capability": "UNMEASURED",
+   "code_bytes": 4278190080,
+   "group_size": 32,
+   "header_bytes": 58176,
+   "incumbent": false,
+   "mlp_active_bytes": 6417343296,
+   "n_groups": 534773760,
+   "scale_bias_bytes": 2139095040
+  },
+  {
+   "auxiliary_bytes": 1069605696,
+   "bytes_eliminated_vs_incumbent": 0,
+   "capability": "UNMEASURED",
+   "code_bytes": 4278190080,
+   "group_size": 64,
+   "header_bytes": 58176,
+   "incumbent": true,
+   "mlp_active_bytes": 5347795776,
+   "n_groups": 267386880,
+   "scale_bias_bytes": 1069547520
+  },
+  {
+   "auxiliary_bytes": 534831936,
+   "bytes_eliminated_vs_incumbent": 534773760,
+   "capability": "UNMEASURED",
+   "code_bytes": 4278190080,
+   "group_size": 128,
+   "header_bytes": 58176,
+   "incumbent": false,
+   "mlp_active_bytes": 4813022016,
+   "n_groups": 133693440,
+   "scale_bias_bytes": 534773760
+  },
+  {
+   "auxiliary_bytes": 267445056,
+   "bytes_eliminated_vs_incumbent": 802160640,
+   "capability": "UNMEASURED",
+   "code_bytes": 4278190080,
+   "group_size": 256,
+   "header_bytes": 58176,
+   "incumbent": false,
+   "mlp_active_bytes": 4545635136,
+   "n_groups": 66846720,
+   "scale_bias_bytes": 267386880
+  },
+  {
+   "auxiliary_bytes": 133751616,
+   "bytes_eliminated_vs_incumbent": 935854080,
+   "capability": "UNMEASURED",
+   "code_bytes": 4278190080,
+   "group_size": 512,
+   "header_bytes": 58176,
+   "incumbent": false,
+   "mlp_active_bytes": 4411941696,
+   "n_groups": 33423360,
+   "scale_bias_bytes": 133693440
+  },
+  {
+   "auxiliary_bytes": 66904896,
+   "bytes_eliminated_vs_incumbent": 1002700800,
+   "capability": "UNMEASURED",
+   "code_bytes": 4278190080,
+   "group_size": 1024,
+   "header_bytes": 58176,
+   "incumbent": false,
+   "mlp_active_bytes": 4345094976,
+   "n_groups": 16711680,
+   "scale_bias_bytes": 66846720
+  }
+ ],
+ "measurements": {
+  "bias_shannon_bits": 10.47886943890046,
+  "bias_unique_f16": 11946,
+  "by_organ": {
+   "mlp.down": {
+    "bias_over_scale_median": -1.4998518861830235,
+    "bias_shannon_bits": 10.473083870317069,
+    "centered_svd_rank1": 0.27711771958274767,
+    "centered_svd_rank16": 0.38330234424211085,
+    "centered_svd_rank32": 0.4421934641432017,
+    "centered_svd_rank8": 0.3481482678325847,
+    "corr_scale_bias": -0.6698125576542509,
+    "groups_per_row": [
+     272
+    ],
+    "lag1_along_groups": 0.2658812395763189,
+    "lag1_along_rows": 0.005481375665282816,
+    "mean_scale": 0.012105191985028796,
+    "n_tensors": 64,
+    "rows": [
+     5120
+    ],
+    "scale_shannon_bits": 9.959950563053448,
+    "scale_unique_f16_mean": 3002.3125,
+    "uncentered_svd_rank1": 0.9795855330303311
+   },
+   "mlp.gate": {
+    "bias_over_scale_median": -1.5000355932861567,
+    "bias_shannon_bits": 10.452315120026771,
+    "centered_svd_rank1": 0.2709807027131319,
+    "centered_svd_rank16": 0.461639569606632,
+    "centered_svd_rank32": 0.61203010706231,
+    "centered_svd_rank8": 0.3783106370829046,
+    "corr_scale_bias": -0.6711619127492154,
+    "groups_per_row": [
+     80
+    ],
+    "lag1_along_groups": 0.2661004251001548,
+    "lag1_along_rows": 0.015188132629530903,
+    "mean_scale": 0.012242384473211132,
+    "n_tensors": 64,
+    "rows": [
+     17408
+    ],
+    "scale_shannon_bits": 9.933261116365522,
+    "scale_unique_f16_mean": 2593.953125,
+    "uncentered_svd_rank1": 0.9802420753985643
+   },
+   "mlp.up": {
+    "bias_over_scale_median": -1.4997896254062653,
+    "bias_shannon_bits": 10.391732132747723,
+    "centered_svd_rank1": 0.15104240720393136,
+    "centered_svd_rank16": 0.3468257640488446,
+    "centered_svd_rank32": 0.5234021292999387,
+    "centered_svd_rank8": 0.2533500185236335,
+    "corr_scale_bias": -0.6334366779295195,
+    "groups_per_row": [
+     80
+    ],
+    "lag1_along_groups": 0.14736243736356758,
+    "lag1_along_rows": 0.009831471990181776,
+    "mean_scale": 0.012215281036333181,
+    "n_tensors": 64,
+    "rows": [
+     17408
+    ],
+    "scale_shannon_bits": 9.829215320092917,
+    "scale_unique_f16_mean": 2048.640625,
+    "uncentered_svd_rank1": 0.9820057405158877
+   }
+  },
+  "code_prediction": {
+   "bias_r2_qmean_qvar": 0.5776185368834906,
+   "corr_bias_qmean": -0.6484576112458802,
+   "corr_scale_qmean": -0.0012645556118098783,
+   "corr_scale_qvar": -0.5865616803422122,
+   "n_groups_per_tensor": 32768,
+   "n_tensors": 12,
+   "q_mean": 1.4997005860010784,
+   "scale_r2_qmean_qvar": 0.34917241577248515
+  },
+  "cross_layer_pearson": {
+   "mlp.down": {
+    "max": 0.46908515668479234,
+    "mean": 0.23323047206020348,
+    "min": -0.02068176033274037,
+    "n_pairs": 63
+   },
+   "mlp.gate": {
+    "max": 0.031792647248828514,
+    "mean": 0.014621581025760813,
+    "min": 0.003210342336195883,
+    "n_pairs": 63
+   },
+   "mlp.up": {
+    "max": 0.022648162722202277,
+    "mean": 0.00924804905334278,
+    "min": -0.0010212384021962124,
+    "n_pairs": 63
+   }
+  },
+  "cross_tensor_pearson": {
+   "gate_vs_up": {
+    "max": 0.3087914642289753,
+    "mean": 0.12435379200863682,
+    "min": 0.057690584588160246,
+    "n_layers": 64,
+    "note": "down has a transposed shape (5120 x 17408 vs 17408 x 5120); no elementwise Pearson."
+   }
+  },
+  "n_tensors_measured": 192,
+  "note": "Shannon entropy is over f16 bit patterns across every MLP scale (resp. bias) value. SVD is of the (rows x groups_per_row) scale matrix. Reconstruction rel-fro is sampled groups of incumbent w=q*s+b versus a stand-in; it is not a generate gate.",
+  "reconstruction_groups_per_tensor": 8192,
+  "reconstruction_relfro": {
+   "drop_bias_relfro": 1.7533035566157489,
+   "global_scale_keep_bias_relfro": 0.3313789532631707,
+   "global_scale_tied_bias_relfro": 0.3386927095761157,
+   "n_groups_per_tensor": 8192,
+   "n_tensors": 12,
+   "rank1_scale_keep_bias_relfro": 0.2864141383292485,
+   "tied_bias_relfro": 0.32035192278634433,
+   "u8_both_linear_relfro": 0.01171340095479609,
+   "u8_linear_bias_keep_scale_relfro": 0.009629028037240311,
+   "u8_linear_scale_keep_bias_relfro": 0.006484073759040961,
+   "u8_log_scale_keep_bias_relfro": 0.004283562110675297,
+   "u8_log_scale_u8_bias_relfro": 0.01066766035111535
+  },
+  "sample_layers": [
+   0,
+   21,
+   42,
+   63
+  ],
+  "scale_f16_bitwidth": 16,
+  "scale_shannon_bits": 10.000404381899381,
+  "scale_unique_f16": 6226
+ },
+ "negative_findings": [
+  "Most of the 1.07 GB is two f16 arrays of 267,386,880 groups, not headers",
+  "Scales are not white: ~9.8 bits Shannon, ~2.7k unique f16s per tensor, lag-1 along groups 0.15\u20130.56",
+  "The structure that looks like rank-1 in raw energy is the DC (all scales \u2248 0.011); centered rank-1 is ~30%",
+  "Cross-layer Pearson of gate/up scales is ~0.01; sharing S across depth is not in the arrays",
+  "bias \u2248 -1.5*scale in the median, but the residual is first-order (tied W rel-fro ~0.30; drop ~1.7)",
+  "2-bit code mean does not predict scale (corr ~0, R\u00b2 ~0.36 from mean+var)",
+  "The only OPEN byte levers on this 1.07 GB are u8 aux, larger G, and a 52 KB header pack"
+ ],
+ "nomenclature": {
+  "already_falsified": "ALREADY_FALSIFIED",
+  "depends_on_lowering": "DEPENDS_ON_LOWERING",
+  "direct_consume": "DIRECT_CONSUME",
+  "measured_negative": "MEASURED_NEGATIVE",
+  "open": "OPEN",
+  "rejected_dense_remat": "REJECTED_DENSE_REMAT",
+  "static_only": "this sidecar. Models propose; protected deterministic evidence decides."
+ },
+ "open_byte_levers": [
+  {
+   "bytes_eliminated_if_true": 534773760,
+   "id": "quantize_aux_u8",
+   "status": "OPEN"
+  },
+  {
+   "bytes_eliminated_if_true": 534773760,
+   "id": "larger_group_size",
+   "status": "OPEN"
+  },
+  {
+   "bytes_eliminated_if_true": 52032,
+   "id": "pack_headers",
+   "status": "OPEN"
+  }
+ ],
+ "purpose": "Attack the 1,069,605,696 MLP scale/bias/header bytes of sealed-3.14 by measuring the real HGRAVF01 arrays, not by treating them as unavoidable bookkeeping.",
+ "recovered_implementation": {
+  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "catalog_format": "HQ38M20 + HGRAVF01 affine_q2_group64_fp16_scale_bias",
+  "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+  "reconstruction": "w = float(q)*scale + bias, q unsigned in {0,1,2,3}"
+ },
+ "schema": "hawking.future.mlp_auxiliary_information.v1",
+ "seal_sha256": "63632721dc5f6776d089f2bfa58ec4ebd4513972641019435098926dd23bf691",
+ "version": 1,
+ "what_this_does_not_prove": [
+  "capability of u8 aux or of a larger group size (no generate gate)",
+  "physical EBPW of a different packing",
+  "actual_read_bytes_per_token (cache, contention)",
+  "that a W-space rel-fro of 0.01 is inaudible at generate"
+ ]
+}

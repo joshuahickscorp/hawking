@@ -15,6 +15,7 @@ import pytest
 from tools.future import contamination as C
 from tools.future import qualification_pipeline as qp
 from tools.future import repro_science as rs
+from tools.future import status_causality as sc
 from tools.future._common import HARDWARE_FIELDS, RECEIPTS, HardwareClaimError, _assert_no_hardware_claims
 
 
@@ -714,3 +715,95 @@ def test_pipeline_does_not_import_sibling_lanes_it_must_not_rewrite():
     assert not any("global_frontier" in m for m in imported)
     assert not any("mutation_surface" in m for m in imported)
     assert not any("odyssey2_law_store" in m for m in imported)
+
+
+# ---------------------------------------------------------------------------
+# G007 consumer: run_static_preflight records the five causality fields.
+# ---------------------------------------------------------------------------
+
+
+def test_run_static_preflight_records_the_five_causality_fields(monkeypatch):
+    """A coverage number no test defends will drift back to zero."""
+    monkeypatch.setattr(
+        qp.skv,
+        "scan",
+        lambda repo=None: {
+            **_preflight(errors=[{"severity": "ERROR", "check": "binding_index",
+                                  "kernel": "drop_k", "message": "index mismatch"}]),
+            "evidence_class": "STATIC_ONLY",
+        },
+    )
+    r = qp.run_static_preflight()
+    assert qp.records_five_fields(r)
+    src = pathlib.Path(qp.__file__).read_text()
+    assert "sc.emit(" in src
+    assert r["status"] == "BLOCKED"
+    assert r["blocking_defect_count"] == 1
+    assert r["would_waste_a_protected_window"] is True
+    assert "static_kernel_verify.scan" in r["probe_performed"]
+    assert r["direct_observation"] != r["status"]
+    assert "blocking_defect_count=" in r["direct_observation"]
+    assert r["causality_verdict"] in {sc.SUPPORTED, sc.OVERREACHING, sc.UNTESTED}
+
+
+def test_unsupplied_observation_records_untested_not_a_restatement():
+    result = {
+        "status": "BLOCKED",
+        "blocking_defect_count": 1,
+        "would_waste_a_protected_window": True,
+    }
+    rec = qp.record_preflight_causality(
+        result, probe_performed="", direct_observation=""
+    )
+    assert rec["verdict"] == sc.UNTESTED
+    assert rec["direct_observation"] in ("", None)
+    assert rec["direct_observation"] != "BLOCKED"
+    assert "BLOCKED" not in str(rec["direct_observation"] or "")
+    assert result["status"] == "BLOCKED"
+    assert result["blocking_defect_count"] == 1
+    assert rec["interpretation"] != rec["direct_observation"]
+
+
+def test_overreaching_does_not_override_preflight_counts(monkeypatch):
+    def overreach(status, **kwargs):
+        return {
+            "probe_performed": kwargs.get("probe_performed") or "p",
+            "direct_observation": kwargs.get("direct_observation") or "o",
+            "interpretation": kwargs.get("interpretation") or status,
+            "confidence": {
+                "level": "LOW",
+                "about": "a",
+                "would_raise": "b",
+                "would_lower": "c",
+            },
+            "alternatives": [
+                {
+                    "hypothetical": "h",
+                    "consistent_with_observation": True,
+                    "consistent_with_claim": False,
+                }
+            ],
+            "verdict": sc.OVERREACHING,
+            "falsifier": "f",
+            "probe_kind": sc.PROBE_MEASURED_FLAGS,
+            "claim_kind": sc.CLAIM_OBJECT_ABSENCE,
+        }
+
+    monkeypatch.setattr(qp.sc, "emit", overreach)
+    monkeypatch.setattr(
+        qp.skv,
+        "scan",
+        lambda repo=None: {**_preflight(), "evidence_class": "STATIC_ONLY"},
+    )
+    r = qp.run_static_preflight()
+    assert r["blocking_defect_count"] == 0
+    assert r["would_waste_a_protected_window"] is False
+    assert r["status"] == "STATIC_ONLY"
+    assert r["causality_verdict"] == sc.OVERREACHING
+
+
+def test_coverage_receipt_names_qualification_pipeline_as_recording():
+    path = RECEIPTS / "STATUS_CAUSALITY_COVERAGE.json"
+    doc = json.loads(path.read_text())
+    assert "qualification_pipeline" in doc["recording_five_fields"]
+    assert doc["n_gates"] == 18

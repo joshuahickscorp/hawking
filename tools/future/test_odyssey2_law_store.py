@@ -6,10 +6,12 @@ transfer_candidates() must RAISE, not set a flag.
 from __future__ import annotations
 
 import json
+import pathlib
 
 import pytest
 
 from tools.future import odyssey2_law_store as ols
+from tools.future import status_causality as sc
 from tools.future._common import RECEIPTS, HardwareClaimError
 
 
@@ -433,3 +435,75 @@ def test_failed_atlas_index_excludes_live_layer_zero():
     assert "inter_expert_redundancy" in failed
     assert "expert_merging_omitted_from_survivors" in failed
     assert "layer_zero_is_a_different_source" not in failed
+
+
+# ---------------------------------------------------------------------------
+# G007 consumer: build records the five causality fields.
+# ---------------------------------------------------------------------------
+
+
+def test_build_records_the_five_causality_fields():
+    """A coverage number no test defends will drift back to zero."""
+    out = ols.build()
+    doc = json.loads(out.read_text())
+    assert ols.records_five_fields(doc)
+    src = pathlib.Path(ols.__file__).read_text()
+    assert "sc.emit(" in src
+    assert doc["schools"]["Flash"]["physical_status"] == "metadata_only_weights_not_present"
+    assert "SCHOOLS" in doc["probe_performed"] or "physical_status" in doc["probe_performed"]
+    assert doc["direct_observation"] != "WEIGHTS_NOT_PRESENT"
+    assert "physical_status=" in doc["direct_observation"]
+    assert doc["causality_verdict"] in {sc.SUPPORTED, sc.OVERREACHING, sc.UNTESTED}
+
+
+def test_unsupplied_observation_records_untested_not_a_restatement():
+    result = {"schools": {"Flash": {"physical_status": "metadata_only_weights_not_present"}}}
+    rec = ols.record_law_store_causality(
+        result, probe_performed="", direct_observation=""
+    )
+    assert rec["verdict"] == sc.UNTESTED
+    assert rec["direct_observation"] in ("", None)
+    assert rec["direct_observation"] != "WEIGHTS_NOT_PRESENT"
+    assert rec["direct_observation"] != "metadata_only_weights_not_present"
+    assert result["schools"]["Flash"]["physical_status"] == "metadata_only_weights_not_present"
+    assert rec["interpretation"] != rec["direct_observation"]
+
+
+def test_overreaching_does_not_override_flash_physical_status(monkeypatch):
+    def overreach(status, **kwargs):
+        return {
+            "probe_performed": kwargs.get("probe_performed") or "p",
+            "direct_observation": kwargs.get("direct_observation") or "o",
+            "interpretation": kwargs.get("interpretation") or status,
+            "confidence": {
+                "level": "LOW",
+                "about": "a",
+                "would_raise": "b",
+                "would_lower": "c",
+            },
+            "alternatives": [
+                {
+                    "hypothetical": "h",
+                    "consistent_with_observation": True,
+                    "consistent_with_claim": False,
+                }
+            ],
+            "verdict": sc.OVERREACHING,
+            "falsifier": "f",
+            "probe_kind": sc.PROBE_METADATA,
+            "claim_kind": sc.CLAIM_OBJECT_ABSENCE,
+        }
+
+    monkeypatch.setattr(ols.sc, "emit", overreach)
+    out = ols.build()
+    doc = json.loads(out.read_text())
+    assert doc["schools"]["Flash"]["physical_status"] == "metadata_only_weights_not_present"
+    assert doc["causality_verdict"] == sc.OVERREACHING
+    assert ols.SCHOOLS["Flash"]["physical_status"] == "metadata_only_weights_not_present"
+
+
+def test_coverage_receipt_names_odyssey2_law_store_as_recording():
+    path = RECEIPTS / "STATUS_CAUSALITY_COVERAGE.json"
+    doc = json.loads(path.read_text())
+    assert "odyssey2_law_store" in doc["recording_five_fields"]
+    assert doc["n_gates"] == 18

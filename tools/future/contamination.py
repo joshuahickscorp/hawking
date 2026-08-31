@@ -32,9 +32,122 @@ from collections.abc import Iterable, Mapping
 from typing import Any
 
 from tools.future._common import write_receipt, load_json, REPO
+from tools.future import status_causality as sc
 
 RECEIPT = "CONTAMINATION_SCIENCE.json"
 SCHEMA = "hawking.future.contamination.v1"
+
+FIVE_RECORDED_FIELDS: tuple[str, ...] = getattr(
+    sc,
+    "FIVE_RECORDED_FIELDS",
+    (
+        "probe_performed",
+        "direct_observation",
+        "interpretation",
+        "confidence",
+        "alternatives",
+    ),
+)
+
+
+def _bind_emit() -> None:
+    """Consumer-side emit. Sibling owns the routine; this checkout may predate it."""
+    if hasattr(sc, "emit"):
+        return
+
+    def emit(
+        status: str,
+        *,
+        probe_performed: str = "",
+        direct_observation: Any = "",
+        interpretation: str = "",
+        probe_kind: str = "",
+        claim_kind: str | None = None,
+        falsifier: str = "",
+        source: str = "",
+    ) -> dict[str, Any]:
+        row: dict[str, Any] = {
+            "status": status,
+            "probe_performed": probe_performed,
+            "direct_observation": direct_observation,
+            "interpretation": interpretation or status,
+            "probe_kind": probe_kind,
+            "use_catalog": False,
+            "source": source or "<emit>",
+        }
+        if claim_kind:
+            row["claim_kind"] = claim_kind
+        if falsifier:
+            row["falsifier"] = falsifier
+        out = sc.challenge(row)
+        out["entry"] = "emit"
+        return out
+
+    sc.emit = emit  # type: ignore[attr-defined]
+
+
+_bind_emit()
+
+
+def records_five_fields(node: Any) -> bool:
+    fn = getattr(sc, "records_five_fields", None)
+    if callable(fn):
+        return bool(fn(node))
+    if not isinstance(node, dict):
+        return False
+    if not all(k in node for k in FIVE_RECORDED_FIELDS):
+        return False
+    if not str(node.get("probe_performed") or "").strip():
+        return False
+    if node.get("direct_observation") in (None, "", [], {}):
+        return False
+    if not str(node.get("interpretation") or "").strip():
+        return False
+    conf = node.get("confidence")
+    if not isinstance(conf, dict):
+        return False
+    if not {"would_raise", "would_lower", "level", "about"} <= set(conf):
+        return False
+    alts = node.get("alternatives")
+    return isinstance(alts, list) and bool(alts)
+
+
+def record_contamination_causality(
+    result: dict[str, Any],
+    *,
+    probe_performed: str = "",
+    direct_observation: Any = "",
+    interpretation: str | None = None,
+    probe_kind: str = "",
+    claim_kind: str | None = None,
+) -> dict[str, Any]:
+    """Stamp the five causality fields. Does not change contamination_class.
+
+    An unsupplied observation is UNTESTED, never a restatement of HEAVY/QUIESCENT.
+    """
+    class_before = result.get("contamination_class")
+    status = str(result.get("contamination_class") or "")
+    unsupplied = direct_observation in (None, "", [], {})
+    rec = sc.emit(
+        status,
+        probe_performed=str(probe_performed or ""),
+        direct_observation="" if unsupplied else direct_observation,
+        interpretation=interpretation if interpretation is not None else status,
+        probe_kind="" if unsupplied else probe_kind,
+        claim_kind=None if unsupplied else claim_kind,
+        source="tools/future/contamination.py::build",
+    )
+    for key in FIVE_RECORDED_FIELDS:
+        result[key] = rec[key]
+    result["causality_verdict"] = rec["verdict"]
+    result["falsifier"] = rec.get("falsifier")
+    if rec.get("probe_kind"):
+        result["probe_kind"] = rec["probe_kind"]
+    if rec.get("claim_kind") is not None:
+        result["claim_kind"] = rec["claim_kind"]
+    if result.get("contamination_class") != class_before:
+        raise RuntimeError("status_causality.emit mutated contamination_class")
+    return rec
 
 # Recovered thresholds. Do not silently retune: QUIESCENT is earned, not guessed.
 # tools/accelerator/bench.py machine_quiescence
@@ -995,6 +1108,25 @@ def build() -> Path:
             "This sidecar did not run a benchmark and cannot produce PROTECTED_ABSOLUTE.",
         ],
     }
+    probes = (snap.get("probes") or {}) if isinstance(snap.get("probes"), dict) else {}
+    probe_names = sorted(str(k) for k in probes)
+    evidence = klass.get("contamination_evidence") or []
+    record_contamination_causality(
+        doc,
+        probe_performed=(
+            "snapshot() then classify_contamination(snap): loadavg, process "
+            "cpu%/rss, memory pressure, optional gpu occupancy; classify by "
+            "QUIET_*/HEAVY_* thresholds with UNKNOWN on a failed required probe"
+        ),
+        direct_observation=(
+            f"contamination_class={klass['contamination_class']}; "
+            f"required_probes={klass.get('required_probes')}; "
+            f"n_evidence={len(evidence)}; probes_run={probe_names}"
+        ),
+        interpretation=str(klass.get("contamination_reason") or klass["contamination_class"]),
+        probe_kind=sc.PROBE_MEASURED_FLAGS,
+        claim_kind=sc.CLAIM_FIELD_VALUE,
+    )
     return write_receipt(RECEIPT, doc, "tools/future/contamination.py")
 
 

@@ -1,0 +1,2456 @@
+{
+ "acceptance": {
+  "argmax_is_not_parity": true,
+  "collapsed_series": "REFUSED",
+  "cosine_bar": 0.99,
+  "fitted_heldout_rule": "A DeltaNet candidate may be called FITTED_HELDOUT only if every clause holds. (1) The divergence curve reports THREE separate series \u2014 state_error, output_error, logit_effect \u2014 at every named horizon; a single collapsed 'error' is refused, not scored. (2) Required horizons {1, 4, 16, 64, 128, 256} are each either RUN or explicitly SKIPPED (SKIPPED_FOR_COST or SKIPPED_INSUFFICIENT_SEQUENCE); a horizon that is silently omitted is a refuse. FITTED_HELDOUT additionally requires every required horizon RUN \u2014 a skip of 64 or longer is INCOMPLETE, not a fit. (3) A one-step-only number is not admissible evidence for a recurrent claim: demand_fitted_heldout raises OneStepOnlyRefuse rather than returning a verdict. (4) Argmax agreement is not parity: logit_effect must carry relative_l2 (and cosine) independently, and a candidate that preserves argmax while drifting in logit space has not been validated. (5) The curve shape on every series is PLATEAU (or FLAT_ZERO) from horizon 1. COMPOUNDING cannot support a promotion. ONSET_THEN_PLATEAU (exact until the recurrent rank fills, then a residual that sits) is the same refuse: the one-step and even 16-step number was silent about the function. (6) At every RUN required horizon, including the longest: state relative L2 <= 0.01, output relative L2 <= 0.01, logit relative L2 <= 0.01. Cosine of each series is reported; clearing argmax without clearing logit relative L2 is a fail. (7) Held-out means held-out PROMPTS. A train-set number reported as held-out is refused. (8) Executable economics (bytes_removed AND bytes_added, extra FLOPs, dispatch delta, consuming primitive) scored by tools/future/executable_economics.py; a compression ratio is not a candidate. (9) This is STATIC operator evidence, not a generate identity gate and not capability. The capability-information-map 0.28% token licence is a residual budget to allocate, never a byte win of this lane.",
+  "held_out_unit": "prompt_id",
+  "logit_bar": 0.01,
+  "one_step_only_admissible": false,
+  "output_bar": 0.01,
+  "plateau_growth_bar": 2.0,
+  "plus_horizons": [
+   512,
+   1024
+  ],
+  "required_horizons": [
+   1,
+   4,
+   16,
+   64,
+   128,
+   256
+  ],
+  "series": [
+   "state_error",
+   "output_error",
+   "logit_effect"
+  ],
+  "silent_horizon_omission": "REFUSED",
+  "state_bar": 0.01
+ },
+ "answers": {
+  "did_t1dngen_land": {
+   "answer": "NO",
+   "status": "NOT_LANDED"
+  },
+  "do_cheap_controls_plateau": {
+   "answer": {
+    "identity_control": "FLAT_ZERO",
+    "lower_rank_transition_rank8": "PLATEAU",
+    "truncated_state_rank16": "ONSET_THEN_PLATEAU"
+   },
+   "note": "Identity must be FLAT_ZERO (harness check). Truncated rank-16 is the load-bearing negative: relative L2 is 0 at horizons 1, 4 and 16 (rank(S) has not yet exceeded 16) and then sits near 0.1 \u2014 a one-step or 16-step number would have promoted it. Lower-rank transition is wrong from step 1 and plateaus there (a different mixer, not a diverging approximation)."
+  },
+  "is_argmax_parity": {
+   "answer": "NO. logit_effect.relative_l2 is required; argmax agreement is not parity.",
+   "argmax_is_not_parity": true
+  },
+  "is_one_step_admissible": {
+   "answer": "NO. demand_fitted_heldout raises OneStepOnlyRefuse.",
+   "one_step_only_admissible": false
+  },
+  "what_shape_can_promote": {
+   "answer": "Only PLATEAU (or FLAT_ZERO of a real candidate that also clears the absolute bars on all three series at every required horizon). COMPOUNDING cannot support FITTED_HELDOUT. ONSET_THEN_PLATEAU cannot either: a family that is exact until rank fills and then sits is the failure mode one-step validation exists to miss.",
+   "not_promotable": [
+    "COMPOUNDING",
+    "ONSET_THEN_PLATEAU"
+   ],
+   "promotable": [
+    "PLATEAU",
+    "FLAT_ZERO"
+   ]
+  }
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T13:47:42Z",
+  "recorded_by": "tools/future/deltanet_multistep.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "capability_residual_budget": {
+  "bytes": 27688960,
+  "deltanet_slice_bytes": 15728640,
+  "not_a_win": true,
+  "share_of_token": 0.0028028380503877935,
+  "source": "receipts/future/CAPABILITY_INFORMATION_MAP.json",
+  "use": "ALLOCATE a residual bit budget. Not a byte win of this lane. Sensitivity is not uniform; at a strict bar it only licences 0.28% of the token."
+ },
+ "cited": {
+  "cited_deltanet_bytes": 2961659904,
+  "cited_deltanet_ms": 8.227,
+  "cited_resident_tps": 34.82,
+  "cited_token_bytes": 9878901136,
+  "cited_token_ms": 28.722,
+  "mlp_bytes": 5347795776,
+  "mlp_ms": 15.541,
+  "note": "Cited, not re-measured. Keys are cited_* so this sidecar cannot assert a hardware field (tps, token_ns, ...).",
+  "source": "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement and no generate gate. The 2,961,659,904 / 8.227 ms / 34.82 TPS figures are cited from DELTANET_REPRESENTATION and RESIDENT_71TPS_CAUSAL_BUDGET; they are not re-measured here. Multi-step errors are CPU arithmetic of the incumbent gated-delta operator rolled from a shared S=0 on held-out-by-prompt teacher-corpus residual-stream rows (L38 post_attn_norm) mapped through a seeded STATIC coefficient map. That map is not W_qkvz. The trained q/k/v trajectory is UNMEASURED. Argmax agreement is reported and is not parity. A one-step-only number is not admissible evidence for a recurrent claim. evidence_class is STATIC_ONLY. gpu_authority is false.",
+ "controls": [
+  {
+   "argmax_is_not_parity": true,
+   "coefficients": "seeded STATIC map of real residual-stream X through the shader L2 recipe; not W_qkvz. Trained q/k/v trajectory UNMEASURED.",
+   "curve": {
+    "argmax_is_not_parity": true,
+    "authority": "max_relative_l2_across_held_out_prompts",
+    "horizons_named": [
+     {
+      "horizon": 1,
+      "status": "RUN"
+     },
+     {
+      "horizon": 4,
+      "status": "RUN"
+     },
+     {
+      "horizon": 16,
+      "status": "RUN"
+     },
+     {
+      "horizon": 64,
+      "status": "RUN"
+     },
+     {
+      "horizon": 128,
+      "status": "RUN"
+     },
+     {
+      "horizon": 256,
+      "status": "RUN"
+     },
+     {
+      "horizon": 512,
+      "status": "RUN"
+     },
+     {
+      "detail": "sequence length 526 < horizon 1024",
+      "horizon": 1024,
+      "reason": "SKIPPED_INSUFFICIENT_SEQUENCE",
+      "status": "SKIPPED"
+     }
+    ],
+    "horizons_plus": [
+     512,
+     1024
+    ],
+    "horizons_required": [
+     1,
+     4,
+     16,
+     64,
+     128,
+     256
+    ],
+    "horizons_run": [
+     1,
+     4,
+     16,
+     64,
+     128,
+     256,
+     512
+    ],
+    "horizons_skipped": [
+     {
+      "detail": "sequence length 526 < horizon 1024",
+      "horizon": 1024,
+      "reason": "SKIPPED_INSUFFICIENT_SEQUENCE"
+     }
+    ],
+    "n_sequences": 2,
+    "one_step_only_admissible": false,
+    "per_horizon": [
+     {
+      "horizon": 1,
+      "logit_effect": {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      "output_error": {
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      "state_error": {
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      }
+     },
+     {
+      "horizon": 4,
+      "logit_effect": {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      "output_error": {
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      "state_error": {
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      }
+     },
+     {
+      "horizon": 16,
+      "logit_effect": {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      "output_error": {
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      "state_error": {
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      }
+     },
+     {
+      "horizon": 64,
+      "logit_effect": {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      "output_error": {
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      "state_error": {
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      }
+     },
+     {
+      "horizon": 128,
+      "logit_effect": {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      "output_error": {
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      "state_error": {
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      }
+     },
+     {
+      "horizon": 256,
+      "logit_effect": {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      "output_error": {
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      "state_error": {
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      }
+     },
+     {
+      "horizon": 512,
+      "logit_effect": {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "n_sequences": 1,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      "output_error": {
+       "n_sequences": 1,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      "state_error": {
+       "n_sequences": 1,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      }
+     }
+    ],
+    "series": {
+     "logit_effect": [
+      {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "horizon": 1,
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "horizon": 4,
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "horizon": 16,
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "horizon": 64,
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "horizon": 128,
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "horizon": 256,
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "horizon": 512,
+       "n_sequences": 1,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      }
+     ],
+     "output_error": [
+      {
+       "horizon": 1,
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      {
+       "horizon": 4,
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      {
+       "horizon": 16,
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      {
+       "horizon": 64,
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      {
+       "horizon": 128,
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      {
+       "horizon": 256,
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      {
+       "horizon": 512,
+       "n_sequences": 1,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      }
+     ],
+     "state_error": [
+      {
+       "horizon": 1,
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      {
+       "horizon": 4,
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      {
+       "horizon": 16,
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      {
+       "horizon": 64,
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      {
+       "horizon": 128,
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      {
+       "horizon": 256,
+       "n_sequences": 2,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      },
+      {
+       "horizon": 512,
+       "n_sequences": 1,
+       "relative_l2": 0.0,
+       "relative_l2_max": 0.0,
+       "relative_l2_mean": 0.0
+      }
+     ]
+    },
+    "shape": {
+     "by_series": {
+      "logit_effect": "FLAT_ZERO",
+      "output_error": "FLAT_ZERO",
+      "state_error": "FLAT_ZERO"
+     },
+     "overall": "FLAT_ZERO"
+    }
+   },
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 360.0,
+     "bandwidth_gb_s_range": [
+      360.0,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "nominal is the production DeltaNet organ rate (Q4). The high end is the LM head's demonstrated 497.4, also Q4, which DeltaNet has not been shown to reach. Including 497.4 in the range is an ASSUMPTION, not a prediction.",
+     "bandwidth_regime": "production_deltanet",
+     "cited_token_ms": 28.722,
+     "dispatch_class": "deltanet_ba",
+     "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
+     "dispatch_us_nominal": 2.884,
+     "dispatch_us_range": [
+      2.884,
+      2.884
+     ],
+     "flop_model": "extra FLOPs scored as extra_flops * n_output_elements / EFFECTIVE_FLOP_S, the MLP GEMV-dressed rate (2.202 TFLOP/s). ASSUMPTION: same cost-per-FLOP as the incumbent MAC (mostly wait-on-memory). Range [0, 4.0x] covers hidden-under-bandwidth to decode-ALU-like.",
+     "flop_ms_range": [
+      0.0,
+      0.0
+     ],
+     "host_gap_floor_ms": 0.989,
+     "incremental_byte_rate_gb_s": 344.1,
+     "organ_average_gb_s": 360.0,
+     "stream_billing_gb_s": 344.1,
+     "stream_class": "activation",
+     "stream_on_critical_path": true,
+     "stream_rate_source": "ECONOMICS_CALIBRATION.json"
+    },
+    "bytes_added": {
+     "embeddings": 0,
+     "generator": 0,
+     "metadata": 0,
+     "residuals": 0,
+     "state": 0,
+     "total": 0
+    },
+    "bytes_added_supplied": true,
+    "bytes_removed": 0,
+    "consuming_primitive": "LocalStateMachine",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "identity_control",
+    "lane_material": {
+     "bar": "MATERIAL means >= 1 ms of cited token time, or >= 5% of model bytes, or a reusable family, or a decisive falsifier. Cited token time is 28.722 ms; 5% of 9878901136 bytes is 493945056. This is not a hardware measurement.",
+     "clears": true,
+     "decisive_falsifier": true,
+     "five_percent_bytes": false,
+     "one_ms": false,
+     "reusable_family": false
+    },
+    "live": true,
+    "n_output_elements": 1036800,
+    "net_bytes": 0,
+    "ok": true,
+    "organ": "deltanet",
+    "predicted_ms_delta": 0.0,
+    "predicted_ms_delta_range": [
+     0.0,
+     0.0
+    ],
+    "predicted_ms_saved": -0.0,
+    "predicted_token_ms": 28.722,
+    "predicted_token_ms_range": [
+     28.722,
+     28.722
+    ],
+    "predicted_tps": 34.816516955643756,
+    "predicted_tps_range": [
+     34.816516955643756,
+     34.816516955643756
+    ],
+    "retime_organ": false,
+    "s020_section_20": {
+     "bar_frac": 0.01,
+     "bar_ms": 0.28722000000000003,
+     "clears_time_bar": false,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 0.0,
+     "reusable_family": false
+    },
+    "status": "EXISTING_LEVER",
+    "stream_class": "activation",
+    "terms": {
+     "byte_added_ms": 0.0,
+     "byte_ms_delta": 0.0,
+     "byte_removed_ms": -0.0,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "MATERIAL",
+    "verdict_reasons": [
+     "high_information_falsifier"
+    ]
+   },
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "held_out_unit": "prompt_id",
+   "id": "identity_control",
+   "n_sequences": 2,
+   "name": "identity control (candidate = reference gated-delta)",
+   "note": "Must be FLAT_ZERO. A non-zero identity curve is a harness bug.",
+   "one_step_only_admissible": false,
+   "per_sequence_shapes": [
+    {
+     "by_series": {
+      "logit_effect": "FLAT_ZERO",
+      "output_error": "FLAT_ZERO",
+      "state_error": "FLAT_ZERO"
+     },
+     "overall": "FLAT_ZERO"
+    },
+    {
+     "by_series": {
+      "logit_effect": "FLAT_ZERO",
+      "output_error": "FLAT_ZERO",
+      "state_error": "FLAT_ZERO"
+     },
+     "overall": "FLAT_ZERO"
+    }
+   ],
+   "rank": null,
+   "report_as": "held_out",
+   "sequences": [
+    {
+     "capability_domain": "code",
+     "horizons_run": [
+      1,
+      4,
+      16,
+      64,
+      128,
+      256,
+      512
+     ],
+     "layer": 38,
+     "n_tokens": 526,
+     "prompt_id": "code:14",
+     "shape": {
+      "by_series": {
+       "logit_effect": "FLAT_ZERO",
+       "output_error": "FLAT_ZERO",
+       "state_error": "FLAT_ZERO"
+      },
+      "overall": "FLAT_ZERO"
+     },
+     "split": "hold"
+    },
+    {
+     "capability_domain": "code",
+     "horizons_run": [
+      1,
+      4,
+      16,
+      64,
+      128,
+      256
+     ],
+     "layer": 38,
+     "n_tokens": 496,
+     "prompt_id": "code:15",
+     "shape": {
+      "by_series": {
+       "logit_effect": "FLAT_ZERO",
+       "output_error": "FLAT_ZERO",
+       "state_error": "FLAT_ZERO"
+      },
+      "overall": "FLAT_ZERO"
+     },
+     "split": "hold"
+    }
+   ],
+   "status": "CONTROL",
+   "verdict": {
+    "argmax_agreement_by_horizon": {
+     "1": 1.0,
+     "128": 1.0,
+     "16": 1.0,
+     "256": 1.0,
+     "4": 1.0,
+     "64": 1.0
+    },
+    "argmax_is_not_parity": true,
+    "bars": {
+     "cosine_bar": 0.99,
+     "logit_effect": 0.01,
+     "output_error": 0.01,
+     "plateau_growth_bar": 2.0,
+     "state_error": 0.01
+    },
+    "horizons_run": [
+     1,
+     4,
+     16,
+     64,
+     128,
+     256,
+     512
+    ],
+    "one_step_only_admissible": false,
+    "reasons": [],
+    "rule": "see acceptance.fitted_heldout_rule",
+    "shape": {
+     "by_series": {
+      "logit_effect": "FLAT_ZERO",
+      "output_error": "FLAT_ZERO",
+      "state_error": "FLAT_ZERO"
+     },
+     "overall": "FLAT_ZERO"
+    },
+    "status": "FITTED_HELDOUT"
+   },
+   "verdict_error": null
+  },
+  {
+   "argmax_is_not_parity": true,
+   "coefficients": "seeded STATIC map of real residual-stream X through the shader L2 recipe; not W_qkvz. Trained q/k/v trajectory UNMEASURED.",
+   "curve": {
+    "argmax_is_not_parity": true,
+    "authority": "max_relative_l2_across_held_out_prompts",
+    "horizons_named": [
+     {
+      "horizon": 1,
+      "status": "RUN"
+     },
+     {
+      "horizon": 4,
+      "status": "RUN"
+     },
+     {
+      "horizon": 16,
+      "status": "RUN"
+     },
+     {
+      "horizon": 64,
+      "status": "RUN"
+     },
+     {
+      "horizon": 128,
+      "status": "RUN"
+     },
+     {
+      "horizon": 256,
+      "status": "RUN"
+     },
+     {
+      "horizon": 512,
+      "status": "RUN"
+     },
+     {
+      "detail": "sequence length 526 < horizon 1024",
+      "horizon": 1024,
+      "reason": "SKIPPED_INSUFFICIENT_SEQUENCE",
+      "status": "SKIPPED"
+     }
+    ],
+    "horizons_plus": [
+     512,
+     1024
+    ],
+    "horizons_required": [
+     1,
+     4,
+     16,
+     64,
+     128,
+     256
+    ],
+    "horizons_run": [
+     1,
+     4,
+     16,
+     64,
+     128,
+     256,
+     512
+    ],
+    "horizons_skipped": [
+     {
+      "detail": "sequence length 526 < horizon 1024",
+      "horizon": 1024,
+      "reason": "SKIPPED_INSUFFICIENT_SEQUENCE"
+     }
+    ],
+    "n_sequences": 2,
+    "one_step_only_admissible": false,
+    "per_horizon": [
+     {
+      "horizon": 1,
+      "logit_effect": {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "n_sequences": 2,
+       "relative_l2": 1.0895240420929528e-07,
+       "relative_l2_max": 1.0895240420929528e-07,
+       "relative_l2_mean": 1.0651546825979918e-07
+      },
+      "output_error": {
+       "n_sequences": 2,
+       "relative_l2": 5.973772842880551e-08,
+       "relative_l2_max": 5.973772842880551e-08,
+       "relative_l2_mean": 5.3984693780286766e-08
+      },
+      "state_error": {
+       "n_sequences": 2,
+       "relative_l2": 8.471387569089827e-09,
+       "relative_l2_max": 8.471387569089827e-09,
+       "relative_l2_mean": 8.454393122306396e-09
+      }
+     },
+     {
+      "horizon": 4,
+      "logit_effect": {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "n_sequences": 2,
+       "relative_l2": 2.0505346871916354e-07,
+       "relative_l2_max": 2.0505346871916354e-07,
+       "relative_l2_mean": 1.8999741817161775e-07
+      },
+      "output_error": {
+       "n_sequences": 2,
+       "relative_l2": 1.5869492087013263e-07,
+       "relative_l2_max": 1.5869492087013263e-07,
+       "relative_l2_mean": 1.5624154011794913e-07
+      },
+      "state_error": {
+       "n_sequences": 2,
+       "relative_l2": 4.504716738530015e-08,
+       "relative_l2_max": 4.504716738530015e-08,
+       "relative_l2_mean": 4.461632168897941e-08
+      }
+     },
+     {
+      "horizon": 16,
+      "logit_effect": {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "n_sequences": 2,
+       "relative_l2": 2.6369497596095316e-07,
+       "relative_l2_max": 2.6369497596095316e-07,
+       "relative_l2_mean": 2.5969648171367213e-07
+      },
+      "output_error": {
+       "n_sequences": 2,
+       "relative_l2": 2.2380506915592495e-07,
+       "relative_l2_max": 2.2380506915592495e-07,
+       "relative_l2_mean": 2.1119954927604903e-07
+      },
+      "state_error": {
+       "n_sequences": 2,
+       "relative_l2": 9.286792427515393e-08,
+       "relative_l2_max": 9.286792427515393e-08,
+       "relative_l2_mean": 9.284504911641958e-08
+      }
+     },
+     {
+      "horizon": 64,
+      "logit_effect": {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "n_sequences": 2,
+       "relative_l2": 0.12735988790500838,
+       "relative_l2_max": 0.12735988790500838,
+       "relative_l2_mean": 0.12149192059155961
+      },
+      "output_error": {
+       "n_sequences": 2,
+       "relative_l2": 0.1270549876016665,
+       "relative_l2_max": 0.1270549876016665,
+       "relative_l2_mean": 0.12227551311253057
+      },
+      "state_error": {
+       "n_sequences": 2,
+       "relative_l2": 0.10178632562710511,
+       "relative_l2_max": 0.10178632562710511,
+       "relative_l2_mean": 0.08550698624014129
+      }
+     },
+     {
+      "horizon": 128,
+      "logit_effect": {
+       "argmax_agreement": 0.5,
+       "argmax_agreement_min": 0.0,
+       "argmax_is_not_parity": true,
+       "n_sequences": 2,
+       "relative_l2": 0.14806422779989703,
+       "relative_l2_max": 0.14806422779989703,
+       "relative_l2_mean": 0.1342257943680667
+      },
+      "output_error": {
+       "n_sequences": 2,
+       "relative_l2": 0.14332212576597264,
+       "relative_l2_max": 0.14332212576597264,
+       "relative_l2_mean": 0.12919545024229875
+      },
+      "state_error": {
+       "n_sequences": 2,
+       "relative_l2": 0.09430798766073004,
+       "relative_l2_max": 0.09430798766073004,
+       "relative_l2_mean": 0.0893010659594874
+      }
+     },
+     {
+      "horizon": 256,
+      "logit_effect": {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "n_sequences": 2,
+       "relative_l2": 0.10794458878846684,
+       "relative_l2_max": 0.10794458878846684,
+       "relative_l2_mean": 0.1070806745388159
+      },
+      "output_error": {
+       "n_sequences": 2,
+       "relative_l2": 0.10792817803424422,
+       "relative_l2_max": 0.10792817803424422,
+       "relative_l2_mean": 0.10586868587828871
+      },
+      "state_error": {
+       "n_sequences": 2,
+       "relative_l2": 0.09123879393619647,
+       "relative_l2_max": 0.09123879393619647,
+       "relative_l2_mean": 0.0832965082664511
+      }
+     },
+     {
+      "horizon": 512,
+      "logit_effect": {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "n_sequences": 1,
+       "relative_l2": 0.11369646782934752,
+       "relative_l2_max": 0.11369646782934752,
+       "relative_l2_mean": 0.11369646782934752
+      },
+      "output_error": {
+       "n_sequences": 1,
+       "relative_l2": 0.11271698682750204,
+       "relative_l2_max": 0.11271698682750204,
+       "relative_l2_mean": 0.11271698682750204
+      },
+      "state_error": {
+       "n_sequences": 1,
+       "relative_l2": 0.08081998344471701,
+       "relative_l2_max": 0.08081998344471701,
+       "relative_l2_mean": 0.08081998344471701
+      }
+     }
+    ],
+    "series": {
+     "logit_effect": [
+      {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "horizon": 1,
+       "n_sequences": 2,
+       "relative_l2": 1.0895240420929528e-07,
+       "relative_l2_max": 1.0895240420929528e-07,
+       "relative_l2_mean": 1.0651546825979918e-07
+      },
+      {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "horizon": 4,
+       "n_sequences": 2,
+       "relative_l2": 2.0505346871916354e-07,
+       "relative_l2_max": 2.0505346871916354e-07,
+       "relative_l2_mean": 1.8999741817161775e-07
+      },
+      {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "horizon": 16,
+       "n_sequences": 2,
+       "relative_l2": 2.6369497596095316e-07,
+       "relative_l2_max": 2.6369497596095316e-07,
+       "relative_l2_mean": 2.5969648171367213e-07
+      },
+      {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "horizon": 64,
+       "n_sequences": 2,
+       "relative_l2": 0.12735988790500838,
+       "relative_l2_max": 0.12735988790500838,
+       "relative_l2_mean": 0.12149192059155961
+      },
+      {
+       "argmax_agreement": 0.5,
+       "argmax_agreement_min": 0.0,
+       "argmax_is_not_parity": true,
+       "horizon": 128,
+       "n_sequences": 2,
+       "relative_l2": 0.14806422779989703,
+       "relative_l2_max": 0.14806422779989703,
+       "relative_l2_mean": 0.1342257943680667
+      },
+      {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "horizon": 256,
+       "n_sequences": 2,
+       "relative_l2": 0.10794458878846684,
+       "relative_l2_max": 0.10794458878846684,
+       "relative_l2_mean": 0.1070806745388159
+      },
+      {
+       "argmax_agreement": 1.0,
+       "argmax_agreement_min": 1.0,
+       "argmax_is_not_parity": true,
+       "horizon": 512,
+       "n_sequences": 1,
+       "relative_l2": 0.11369646782934752,
+       "relative_l2_max": 0.11369646782934752,
+       "relative_l2_mean": 0.11369646782934752
+      }
+     ],
+     "output_error": [
+      {
+       "horizon": 1,
+       "n_sequences": 2,
+       "relative_l2": 5.973772842880551e-08,
+       "relative_l2_max": 5.973772842880551e-08,
+       "relative_l2_mean": 5.3984693780286766e-08
+      },
+      {
+       "horizon": 4,
+       "n_sequences": 2,
+       "relative_l2": 1.5869492087013263e-07,
+       "relative_l2_max": 1.5869492087013263e-07,
+       "relative_l2_mean": 1.5624154011794913e-07
+      },
+      {
+       "horizon": 16,
+       "n_sequences": 2,
+       "relative_l2": 2.2380506915592495e-07,
+       "relative_l2_max": 2.2380506915592495e-07,
+       "relative_l2_mean": 2.1119954927604903e-07
+      },
+      {
+       "horizon": 64,
+       "n_sequences": 2,
+       "relative_l2": 0.1270549876016665,
+       "relative_l2_max": 0.1270549876016665,
+       "relative_l2_mean": 0.12227551311253057
+      },
+      {
+       "horizon": 128,
+       "n_sequences": 2,
+       "relative_l2": 0.14332212576597264,
+       "relative_l2_max": 0.14332212576597264,
+       "relative_l2_mean": 0.12919545024229875
+      },
+      {
+       "horizon": 256,
+       "n_sequences": 2,
+       "relative_l2": 0.10792817803424422,
+       "relative_l2_max": 0.10792817803424422,
+       "relative_l2_mean": 0.10586868587828871
+      },
+      {
+       "horizon": 512,
+       "n_sequences": 1,
+       "relative_l2": 0.11271698682750204,
+       "relative_l2_max": 0.11271698682750204,
+       "relative_l2_mean": 0.11271698682750204
+      }
+     ],
+     "state_error": [
+      {
+       "horizon": 1,
+       "n_sequences": 2,
+       "relative_l2": 8.471387569089827e-09,
+       "relative_l2_max": 8.471387569089827e-09,
+       "relative_l2_mean": 8.454393122306396e-09
+      },
+      {
+       "horizon": 4,
+       "n_sequences": 2,
+       "relative_l2": 4.504716738530015e-08,
+       "relative_l2_max": 4.504716738530015e-08,
+       "relative_l2_mean": 4.461632168897941e-08
+      },
+      {
+       "horizon": 16,
+       "n_sequences": 2,
+       "relative_l2": 9.286792427515393e-08,
+       "relative_l2_max": 9.286792427515393e-08,
+       "relative_l2_mean": 9.284504911641958e-08
+      },
+      {
+       "horizon": 64,
+       "n_sequences": 2,
+       "relative_l2": 0.10178632562710511,
+       "relative_l2_max": 0.10178632562710511,
+       "relative_l2_mean": 0.08550698624014129
+      },
+      {
+       "horizon": 128,
+       "n_sequences": 2,
+       "relative_l2": 0.09430798766073004,
+       "relative_l2_max": 0.09430798766073004,
+       "relative_l2_mean": 0.0893010659594874
+      },
+      {
+       "horizon": 256,
+       "n_sequences": 2,
+       "relative_l2": 0.09123879393619647,
+       "relative_l2_max": 0.09123879393619647,
+       "relative_l2_mean": 0.0832965082664511
+      },
+      {
+       "horizon": 512,
+       "n_sequences": 1,
+       "relative_l2": 0.08081998344471701,
+       "relative_l2_max": 0.08081998344471701,
+       "relative_l2_mean": 0.08081998344471701
+      }
+     ]
+    },
+    "shape": {
+     "by_series": {
+      "logit_effect": "ONSET_THEN_PLATEAU",
+      "output_error": "ONSET_THEN_PLATEAU",
+      "state_error": "ONSET_THEN_PLATEAU"
+     },
+     "overall": "ONSET_THEN_PLATEAU"
+    }
+   },
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 360.0,
+     "bandwidth_gb_s_range": [
+      360.0,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "nominal is the production DeltaNet organ rate (Q4). The high end is the LM head's demonstrated 497.4, also Q4, which DeltaNet has not been shown to reach. Including 497.4 in the range is an ASSUMPTION, not a prediction.",
+     "bandwidth_regime": "production_deltanet",
+     "cited_token_ms": 28.722,
+     "dispatch_class": "deltanet_ba",
+     "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
+     "dispatch_us_nominal": 2.884,
+     "dispatch_us_range": [
+      2.884,
+      2.884
+     ],
+     "flop_model": "extra FLOPs scored as extra_flops * n_output_elements / EFFECTIVE_FLOP_S, the MLP GEMV-dressed rate (2.202 TFLOP/s). ASSUMPTION: same cost-per-FLOP as the incumbent MAC (mostly wait-on-memory). Range [0, 4.0x] covers hidden-under-bandwidth to decode-ALU-like.",
+     "flop_ms_range": [
+      0.0,
+      0.0
+     ],
+     "host_gap_floor_ms": 0.989,
+     "incremental_byte_rate_gb_s": 344.1,
+     "organ_average_gb_s": 360.0,
+     "stream_billing_gb_s": 344.1,
+     "stream_class": "activation",
+     "stream_on_critical_path": true,
+     "stream_rate_source": "ECONOMICS_CALIBRATION.json"
+    },
+    "bytes_added": {
+     "embeddings": 0,
+     "generator": 0,
+     "metadata": 1920,
+     "other": 0,
+     "residuals": 0,
+     "state": 37748736,
+     "total": 37750656
+    },
+    "bytes_added_supplied": true,
+    "bytes_removed": 150994944,
+    "consuming_primitive": "LocalStateMachine",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "truncated_state_rank16",
+    "lane_material": {
+     "bar": "MATERIAL means >= 1 ms of cited token time, or >= 5% of model bytes, or a reusable family, or a decisive falsifier. Cited token time is 28.722 ms; 5% of 9878901136 bytes is 493945056. This is not a hardware measurement.",
+     "clears": true,
+     "decisive_falsifier": true,
+     "five_percent_bytes": false,
+     "one_ms": false,
+     "reusable_family": true
+    },
+    "live": true,
+    "n_output_elements": 1036800,
+    "net_bytes": -113244288,
+    "ok": true,
+    "organ": "deltanet",
+    "predicted_ms_delta": -0.3291028421970357,
+    "predicted_ms_delta_range": [
+     -0.3291028421970357,
+     -0.3291028421970357
+    ],
+    "predicted_ms_saved": 0.3291028421970357,
+    "predicted_token_ms": 28.392897157802967,
+    "predicted_token_ms_range": [
+     28.392897157802967,
+     28.392897157802967
+    ],
+    "predicted_tps": 35.220076149403404,
+    "predicted_tps_range": [
+     35.220076149403404,
+     35.220076149403404
+    ],
+    "retime_organ": false,
+    "s020_section_20": {
+     "bar_frac": 0.01,
+     "bar_ms": 0.28722000000000003,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 0.3291028421970357,
+     "reusable_family": true
+    },
+    "status": "OPEN",
+    "stream_class": "activation",
+    "terms": {
+     "byte_added_ms": 0.10970838709677418,
+     "byte_ms_delta": -0.3291028421970357,
+     "byte_removed_ms": -0.4388112292938099,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "MATERIAL",
+    "verdict_reasons": [
+     "clears_s020_section_20_time_bar",
+     "reusable_representation_family",
+     "high_information_falsifier"
+    ]
+   },
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "held_out_unit": "prompt_id",
+   "id": "truncated_state_rank16",
+   "n_sequences": 2,
+   "name": "truncate S to rank 16 after every incumbent write, readout from the store",
+   "note": "A rank-16 store of 128x128 is not closed under the rank-1 write (DELTANET_STATE_FUNCTION). Expanding U,V to dense S then running vi_simd is REJECTED_DENSE_REMAT; this control consumes the truncated S natively. The curve is the question.",
+   "one_step_only_admissible": false,
+   "per_sequence_shapes": [
+    {
+     "by_series": {
+      "logit_effect": "ONSET_THEN_PLATEAU",
+      "output_error": "ONSET_THEN_PLATEAU",
+      "state_error": "ONSET_THEN_PLATEAU"
+     },
+     "overall": "ONSET_THEN_PLATEAU"
+    },
+    {
+     "by_series": {
+      "logit_effect": "ONSET_THEN_PLATEAU",
+      "output_error": "ONSET_THEN_PLATEAU",
+      "state_error": "ONSET_THEN_PLATEAU"
+     },
+     "overall": "ONSET_THEN_PLATEAU"
+    }
+   ],
+   "rank": 16,
+   "report_as": "held_out",
+   "sequences": [
+    {
+     "capability_domain": "code",
+     "horizons_run": [
+      1,
+      4,
+      16,
+      64,
+      128,
+      256,
+      512
+     ],
+     "layer": 38,
+     "n_tokens": 526,
+     "prompt_id": "code:14",
+     "shape": {
+      "by_series": {
+       "logit_effect": "ONSET_THEN_PLATEAU",
+       "output_error": "ONSET_THEN_PLATEAU",
+       "state_error": "ONSET_THEN_PLATEAU"
+      },
+      "overall": "ONSET_THEN_PLATEAU"
+     },
+     "split": "hold"
+    },
+    {
+     "capability_domain": "code",
+     "horizons_run": [
+      1,
+      4,
+      16,
+      64,
+      128,
+      256
+     ],
+     "layer": 38,
+     "n_tokens": 496,
+     "prompt_id": "code:15",
+     "shape": {
+      "by_series": {
+       "logit_effect": "ONSET_THEN_PLATEAU",
+       "output_error": "ONSET_THEN_PLATEAU",
+       "state_error": "ONSET_THEN_PLATEAU"
+      },
+      "overall": "ONSET_THEN_PLATEAU"
+     },
+     "split": "hold"
+    }
+   ],
+   "status": "MEASURED_NEGATIVE",
+   "verdict": {
+    "argmax_agreement_by_horizon": {
+     "1": 1.0,
+     "128": 0.5,
+     "16": 1.0,
+     "256": 1.0,
+     "4": 1.0,
+     "64": 1.0
+    },
+    "argmax_is_not_parity": true,
+    "bars": {
+     "cosine_bar": 0.99,
+     "logit_effect": 0.01,
+     "output_error": 0.01,
+     "plateau_growth_bar": 2.0,
+     "state_error": 0.01
+    },
+    "horizons_run": [
+     1,
+     4,
+     16,
+     64,
+     128,
+     256,
+     512
+    ],
+    "one_step_only_admissible": false,
+    "reasons": [
+     "shape:ONSET_THEN_PLATEAU",
+     "state_error@64>0.01",
+     "output_error@64>0.01",
+     "logit_effect@64>0.01",
+     "argmax_survived@64_but_logit_relative_l2_failed (argmax is not parity)",
+     "state_error@128>0.01",
+     "output_error@128>0.01",
+     "logit_effect@128>0.01",
+     "state_error@256>0.01",
+     "output_error@256>0.01",
+     "logit_effect@256>0.01",
+     "argmax_survived@256_but_logit_relative_l2_failed (argmax is not parity)"
+    ],
+    "rule": "see acceptance.fitted_heldout_rule",
+    "shape": {
+     "by_series": {
+      "logit_effect": "ONSET_THEN_PLATEAU",
+      "output_error": "ONSET_THEN_PLATEAU",
+      "state_error": "ONSET_THEN_PLATEAU"
+     },
+     "overall": "ONSET_THEN_PLATEAU"
+    },
+    "status": "MEASURED_NEGATIVE"
+   },
+   "verdict_error": null
+  },
+  {
+   "argmax_is_not_parity": true,
+   "coefficients": "seeded STATIC map of real residual-stream X through the shader L2 recipe; not W_qkvz. Trained q/k/v trajectory UNMEASURED.",
+   "curve": {
+    "argmax_is_not_parity": true,
+    "authority": "max_relative_l2_across_held_out_prompts",
+    "horizons_named": [
+     {
+      "horizon": 1,
+      "status": "RUN"
+     },
+     {
+      "horizon": 4,
+      "status": "RUN"
+     },
+     {
+      "horizon": 16,
+      "status": "RUN"
+     },
+     {
+      "horizon": 64,
+      "status": "RUN"
+     },
+     {
+      "horizon": 128,
+      "status": "RUN"
+     },
+     {
+      "horizon": 256,
+      "status": "RUN"
+     },
+     {
+      "horizon": 512,
+      "status": "RUN"
+     },
+     {
+      "detail": "sequence length 526 < horizon 1024",
+      "horizon": 1024,
+      "reason": "SKIPPED_INSUFFICIENT_SEQUENCE",
+      "status": "SKIPPED"
+     }
+    ],
+    "horizons_plus": [
+     512,
+     1024
+    ],
+    "horizons_required": [
+     1,
+     4,
+     16,
+     64,
+     128,
+     256
+    ],
+    "horizons_run": [
+     1,
+     4,
+     16,
+     64,
+     128,
+     256,
+     512
+    ],
+    "horizons_skipped": [
+     {
+      "detail": "sequence length 526 < horizon 1024",
+      "horizon": 1024,
+      "reason": "SKIPPED_INSUFFICIENT_SEQUENCE"
+     }
+    ],
+    "n_sequences": 2,
+    "one_step_only_admissible": false,
+    "per_horizon": [
+     {
+      "horizon": 1,
+      "logit_effect": {
+       "argmax_agreement": 0.0,
+       "argmax_agreement_min": 0.0,
+       "argmax_is_not_parity": true,
+       "n_sequences": 2,
+       "relative_l2": 1.198188553582742,
+       "relative_l2_max": 1.198188553582742,
+       "relative_l2_mean": 1.197770975396078
+      },
+      "output_error": {
+       "n_sequences": 2,
+       "relative_l2": 1.2047742088767042,
+       "relative_l2_max": 1.2047742088767042,
+       "relative_l2_mean": 1.2043953746309526
+      },
+      "state_error": {
+       "n_sequences": 2,
+       "relative_l2": 0.9673911497157759,
+       "relative_l2_max": 0.9673911497157759,
+       "relative_l2_mean": 0.9673850783858382
+      }
+     },
+     {
+      "horizon": 4,
+      "logit_effect": {
+       "argmax_agreement": 0.0,
+       "argmax_agreement_min": 0.0,
+       "argmax_is_not_parity": true,
+       "n_sequences": 2,
+       "relative_l2": 0.9426353379160353,
+       "relative_l2_max": 0.9426353379160353,
+       "relative_l2_mean": 0.9420709941408018
+      },
+      "output_error": {
+       "n_sequences": 2,
+       "relative_l2": 0.9421212895259464,
+       "relative_l2_max": 0.9421212895259464,
+       "relative_l2_mean": 0.9415143597510538
+      },
+      "state_error": {
+       "n_sequences": 2,
+       "relative_l2": 0.9702725434429127,
+       "relative_l2_max": 0.9702725434429127,
+       "relative_l2_mean": 0.9702668703925302
+      }
+     },
+     {
+      "horizon": 16,
+      "logit_effect": {
+       "argmax_agreement": 0.0,
+       "argmax_agreement_min": 0.0,
+       "argmax_is_not_parity": true,
+       "n_sequences": 2,
+       "relative_l2": 1.2253933403169721,
+       "relative_l2_max": 1.2253933403169721,
+       "relative_l2_mean": 1.2105203202078862
+      },
+      "output_error": {
+       "n_sequences": 2,
+       "relative_l2": 1.2343330129097725,
+       "relative_l2_max": 1.2343330129097725,
+       "relative_l2_mean": 1.1897393538246281
+      },
+      "state_error": {
+       "n_sequences": 2,
+       "relative_l2": 0.9958458716687149,
+       "relative_l2_max": 0.9958458716687149,
+       "relative_l2_mean": 0.994723267969452
+      }
+     },
+     {
+      "horizon": 64,
+      "logit_effect": {
+       "argmax_agreement": 0.0,
+       "argmax_agreement_min": 0.0,
+       "argmax_is_not_parity": true,
+       "n_sequences": 2,
+       "relative_l2": 1.4388156770963743,
+       "relative_l2_max": 1.4388156770963743,
+       "relative_l2_mean": 1.3783982259428904
+      },
+      "output_error": {
+       "n_sequences": 2,
+       "relative_l2": 1.4098398131175185,
+       "relative_l2_max": 1.4098398131175185,
+       "relative_l2_mean": 1.375003812936367
+      },
+      "state_error": {
+       "n_sequences": 2,
+       "relative_l2": 1.0350953439974926,
+       "relative_l2_max": 1.0350953439974926,
+       "relative_l2_mean": 1.0333065097068659
+      }
+     },
+     {
+      "horizon": 128,
+      "logit_effect": {
+       "argmax_agreement": 0.0,
+       "argmax_agreement_min": 0.0,
+       "argmax_is_not_parity": true,
+       "n_sequences": 2,
+       "relative_l2": 1.252720924734072,
+       "relative_l2_max": 1.252720924734072,
+       "relative_l2_mean": 1.165212319127403
+      },
+      "output_error": {
+       "n_sequences": 2,
+       "relative_l2": 1.1984832232354492,
+       "relative_l2_max": 1.1984832232354492,
+       "relative_l2_mean": 1.169872706374135
+      },
+      "state_error": {
+       "n_sequences": 2,
+       "relative_l2": 1.042186028979092,
+       "relative_l2_max": 1.042186028979092,
+       "relative_l2_mean": 1.0194650781856691
+      }
+     },
+     {
+      "horizon": 256,
+      "logit_effect": {
+       "argmax_agreement": 0.0,
+       "argmax_agreement_min": 0.0,
+       "argmax_is_not_parity": true,
+       "n_sequences": 2,
+       "relative_l2": 1.1901358783212914,
+       "relative_l2_max": 1.1901358783212914,
+       "relative_l2_mean": 1.110661852446841
+      },
+      "output_error": {
+       "n_sequences": 2,
+       "relative_l2": 1.2578324016259976,
+       "relative_l2_max": 1.2578324016259976,
+       "relative_l2_mean": 1.1192287079159753
+      },
+      "state_error": {
+       "n_sequences": 2,
+       "relative_l2": 1.031418781181133,
+       "relative_l2_max": 1.031418781181133,
+       "relative_l2_mean": 1.0284694201727298
+      }
+     },
+     {
+      "horizon": 512,
+      "logit_effect": {
+       "argmax_agreement": 0.0,
+       "argmax_agreement_min": 0.0,
+       "argmax_is_not_parity": true,
+       "n_sequences": 1,
+       "relative_l2": 1.2748398191711399,
+       "relative_l2_max": 1.2748398191711399,
+       "relative_l2_mean": 1.2748398191711399
+      },
+      "output_error": {
+       "n_sequences": 1,
+       "relative_l2": 1.2453225618806332,
+       "relative_l2_max": 1.2453225618806332,
+       "relative_l2_mean": 1.2453225618806332
+      },
+      "state_error": {
+       "n_sequences": 1,
+       "relative_l2": 1.0303277852682062,
+       "relative_l2_max": 1.0303277852682062,
+       "relative_l2_mean": 1.0303277852682062
+      }
+     }
+    ],
+    "series": {
+     "logit_effect": [
+      {
+       "argmax_agreement": 0.0,
+       "argmax_agreement_min": 0.0,
+       "argmax_is_not_parity": true,
+       "horizon": 1,
+       "n_sequences": 2,
+       "relative_l2": 1.198188553582742,
+       "relative_l2_max": 1.198188553582742,
+       "relative_l2_mean": 1.197770975396078
+      },
+      {
+       "argmax_agreement": 0.0,
+       "argmax_agreement_min": 0.0,
+       "argmax_is_not_parity": true,
+       "horizon": 4,
+       "n_sequences": 2,
+       "relative_l2": 0.9426353379160353,
+       "relative_l2_max": 0.9426353379160353,
+       "relative_l2_mean": 0.9420709941408018
+      },
+      {
+       "argmax_agreement": 0.0,
+       "argmax_agreement_min": 0.0,
+       "argmax_is_not_parity": true,
+       "horizon": 16,
+       "n_sequences": 2,
+       "relative_l2": 1.2253933403169721,
+       "relative_l2_max": 1.2253933403169721,
+       "relative_l2_mean": 1.2105203202078862
+      },
+      {
+       "argmax_agreement": 0.0,
+       "argmax_agreement_min": 0.0,
+       "argmax_is_not_parity": true,
+       "horizon": 64,
+       "n_sequences": 2,
+       "relative_l2": 1.4388156770963743,
+       "relative_l2_max": 1.4388156770963743,
+       "relative_l2_mean": 1.3783982259428904
+      },
+      {
+       "argmax_agreement": 0.0,
+       "argmax_agreement_min": 0.0,
+       "argmax_is_not_parity": true,
+       "horizon": 128,
+       "n_sequences": 2,
+       "relative_l2": 1.252720924734072,
+       "relative_l2_max": 1.252720924734072,
+       "relative_l2_mean": 1.165212319127403
+      },
+      {
+       "argmax_agreement": 0.0,
+       "argmax_agreement_min": 0.0,
+       "argmax_is_not_parity": true,
+       "horizon": 256,
+       "n_sequences": 2,
+       "relative_l2": 1.1901358783212914,
+       "relative_l2_max": 1.1901358783212914,
+       "relative_l2_mean": 1.110661852446841
+      },
+      {
+       "argmax_agreement": 0.0,
+       "argmax_agreement_min": 0.0,
+       "argmax_is_not_parity": true,
+       "horizon": 512,
+       "n_sequences": 1,
+       "relative_l2": 1.2748398191711399,
+       "relative_l2_max": 1.2748398191711399,
+       "relative_l2_mean": 1.2748398191711399
+      }
+     ],
+     "output_error": [
+      {
+       "horizon": 1,
+       "n_sequences": 2,
+       "relative_l2": 1.2047742088767042,
+       "relative_l2_max": 1.2047742088767042,
+       "relative_l2_mean": 1.2043953746309526
+      },
+      {
+       "horizon": 4,
+       "n_sequences": 2,
+       "relative_l2": 0.9421212895259464,
+       "relative_l2_max": 0.9421212895259464,
+       "relative_l2_mean": 0.9415143597510538
+      },
+      {
+       "horizon": 16,
+       "n_sequences": 2,
+       "relative_l2": 1.2343330129097725,
+       "relative_l2_max": 1.2343330129097725,
+       "relative_l2_mean": 1.1897393538246281
+      },
+      {
+       "horizon": 64,
+       "n_sequences": 2,
+       "relative_l2": 1.4098398131175185,
+       "relative_l2_max": 1.4098398131175185,
+       "relative_l2_mean": 1.375003812936367
+      },
+      {
+       "horizon": 128,
+       "n_sequences": 2,
+       "relative_l2": 1.1984832232354492,
+       "relative_l2_max": 1.1984832232354492,
+       "relative_l2_mean": 1.169872706374135
+      },
+      {
+       "horizon": 256,
+       "n_sequences": 2,
+       "relative_l2": 1.2578324016259976,
+       "relative_l2_max": 1.2578324016259976,
+       "relative_l2_mean": 1.1192287079159753
+      },
+      {
+       "horizon": 512,
+       "n_sequences": 1,
+       "relative_l2": 1.2453225618806332,
+       "relative_l2_max": 1.2453225618806332,
+       "relative_l2_mean": 1.2453225618806332
+      }
+     ],
+     "state_error": [
+      {
+       "horizon": 1,
+       "n_sequences": 2,
+       "relative_l2": 0.9673911497157759,
+       "relative_l2_max": 0.9673911497157759,
+       "relative_l2_mean": 0.9673850783858382
+      },
+      {
+       "horizon": 4,
+       "n_sequences": 2,
+       "relative_l2": 0.9702725434429127,
+       "relative_l2_max": 0.9702725434429127,
+       "relative_l2_mean": 0.9702668703925302
+      },
+      {
+       "horizon": 16,
+       "n_sequences": 2,
+       "relative_l2": 0.9958458716687149,
+       "relative_l2_max": 0.9958458716687149,
+       "relative_l2_mean": 0.994723267969452
+      },
+      {
+       "horizon": 64,
+       "n_sequences": 2,
+       "relative_l2": 1.0350953439974926,
+       "relative_l2_max": 1.0350953439974926,
+       "relative_l2_mean": 1.0333065097068659
+      },
+      {
+       "horizon": 128,
+       "n_sequences": 2,
+       "relative_l2": 1.042186028979092,
+       "relative_l2_max": 1.042186028979092,
+       "relative_l2_mean": 1.0194650781856691
+      },
+      {
+       "horizon": 256,
+       "n_sequences": 2,
+       "relative_l2": 1.031418781181133,
+       "relative_l2_max": 1.031418781181133,
+       "relative_l2_mean": 1.0284694201727298
+      },
+      {
+       "horizon": 512,
+       "n_sequences": 1,
+       "relative_l2": 1.0303277852682062,
+       "relative_l2_max": 1.0303277852682062,
+       "relative_l2_mean": 1.0303277852682062
+      }
+     ]
+    },
+    "shape": {
+     "by_series": {
+      "logit_effect": "PLATEAU",
+      "output_error": "PLATEAU",
+      "state_error": "PLATEAU"
+     },
+     "overall": "PLATEAU"
+    }
+   },
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "economics": {
+    "assumptions": {
+     "bandwidth_gb_s_nominal": 360.0,
+     "bandwidth_gb_s_range": [
+      360.0,
+      497.4
+     ],
+     "bandwidth_is_assumption": true,
+     "bandwidth_note": "nominal is the production DeltaNet organ rate (Q4). The high end is the LM head's demonstrated 497.4, also Q4, which DeltaNet has not been shown to reach. Including 497.4 in the range is an ASSUMPTION, not a prediction.",
+     "bandwidth_regime": "production_deltanet",
+     "cited_token_ms": 28.722,
+     "dispatch_class": "deltanet_ba",
+     "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
+     "dispatch_us_nominal": 2.884,
+     "dispatch_us_range": [
+      2.884,
+      2.884
+     ],
+     "flop_model": "extra FLOPs scored as extra_flops * n_output_elements / EFFECTIVE_FLOP_S, the MLP GEMV-dressed rate (2.202 TFLOP/s). ASSUMPTION: same cost-per-FLOP as the incumbent MAC (mostly wait-on-memory). Range [0, 4.0x] covers hidden-under-bandwidth to decode-ALU-like.",
+     "flop_ms_range": [
+      0.0,
+      0.0
+     ],
+     "host_gap_floor_ms": 0.989,
+     "incremental_byte_rate_gb_s": 344.1,
+     "organ_average_gb_s": 360.0,
+     "stream_billing_gb_s": 344.1,
+     "stream_class": "activation",
+     "stream_on_critical_path": true,
+     "stream_rate_source": "ECONOMICS_CALIBRATION.json"
+    },
+    "bytes_added": {
+     "embeddings": 0,
+     "generator": 0,
+     "metadata": 1920,
+     "other": 0,
+     "residuals": 0,
+     "state": 9437184,
+     "total": 9439104
+    },
+    "bytes_added_supplied": true,
+    "bytes_removed": 150994944,
+    "consuming_primitive": "LocalStateMachine",
+    "dispatch_delta": 0.0,
+    "extra_flops_per_output_element": 0.0,
+    "id": "lower_rank_transition_rank8",
+    "lane_material": {
+     "bar": "MATERIAL means >= 1 ms of cited token time, or >= 5% of model bytes, or a reusable family, or a decisive falsifier. Cited token time is 28.722 ms; 5% of 9878901136 bytes is 493945056. This is not a hardware measurement.",
+     "clears": true,
+     "decisive_falsifier": true,
+     "five_percent_bytes": false,
+     "one_ms": false,
+     "reusable_family": true
+    },
+    "live": true,
+    "n_output_elements": 1036800,
+    "net_bytes": -141555840,
+    "ok": true,
+    "organ": "deltanet",
+    "predicted_ms_delta": -0.41137994768962505,
+    "predicted_ms_delta_range": [
+     -0.41137994768962505,
+     -0.41137994768962505
+    ],
+    "predicted_ms_saved": 0.41137994768962505,
+    "predicted_token_ms": 28.310620052310377,
+    "predicted_token_ms_range": [
+     28.310620052310377,
+     28.310620052310377
+    ],
+    "predicted_tps": 35.322433706936486,
+    "predicted_tps_range": [
+     35.322433706936486,
+     35.322433706936486
+    ],
+    "retime_organ": false,
+    "s020_section_20": {
+     "bar_frac": 0.01,
+     "bar_ms": 0.28722000000000003,
+     "clears_time_bar": true,
+     "high_information_falsifier": true,
+     "plausible_ms_saved": 0.41137994768962505,
+     "reusable_family": true
+    },
+    "status": "OPEN",
+    "stream_class": "activation",
+    "terms": {
+     "byte_added_ms": 0.027431281604184826,
+     "byte_ms_delta": -0.41137994768962505,
+     "byte_removed_ms": -0.4388112292938099,
+     "dispatch_ms_delta": 0.0,
+     "flop_ms_delta": 0.0
+    },
+    "verdict": "MATERIAL",
+    "verdict_reasons": [
+     "clears_s020_section_20_time_bar",
+     "reusable_representation_family",
+     "high_information_falsifier"
+    ]
+   },
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "held_out_unit": "prompt_id",
+   "id": "lower_rank_transition_rank8",
+   "n_sequences": 2,
+   "name": "project k onto a fixed rank-8 orthonormal basis before the incumbent write",
+   "note": "Lower-rank transition: the write key is forced into 8 directions. This is a different mixer, not a packing of W_qkvz. W is unchanged in the economics so the byte model is honest about S, not a fake qkvz win.",
+   "one_step_only_admissible": false,
+   "per_sequence_shapes": [
+    {
+     "by_series": {
+      "logit_effect": "PLATEAU",
+      "output_error": "PLATEAU",
+      "state_error": "PLATEAU"
+     },
+     "overall": "PLATEAU"
+    },
+    {
+     "by_series": {
+      "logit_effect": "PLATEAU",
+      "output_error": "PLATEAU",
+      "state_error": "PLATEAU"
+     },
+     "overall": "PLATEAU"
+    }
+   ],
+   "rank": 8,
+   "report_as": "held_out",
+   "sequences": [
+    {
+     "capability_domain": "code",
+     "horizons_run": [
+      1,
+      4,
+      16,
+      64,
+      128,
+      256,
+      512
+     ],
+     "layer": 38,
+     "n_tokens": 526,
+     "prompt_id": "code:14",
+     "shape": {
+      "by_series": {
+       "logit_effect": "PLATEAU",
+       "output_error": "PLATEAU",
+       "state_error": "PLATEAU"
+      },
+      "overall": "PLATEAU"
+     },
+     "split": "hold"
+    },
+    {
+     "capability_domain": "code",
+     "horizons_run": [
+      1,
+      4,
+      16,
+      64,
+      128,
+      256
+     ],
+     "layer": 38,
+     "n_tokens": 496,
+     "prompt_id": "code:15",
+     "shape": {
+      "by_series": {
+       "logit_effect": "PLATEAU",
+       "output_error": "PLATEAU",
+       "state_error": "PLATEAU"
+      },
+      "overall": "PLATEAU"
+     },
+     "split": "hold"
+    }
+   ],
+   "status": "MEASURED_NEGATIVE",
+   "verdict": {
+    "argmax_agreement_by_horizon": {
+     "1": 0.0,
+     "128": 0.0,
+     "16": 0.0,
+     "256": 0.0,
+     "4": 0.0,
+     "64": 0.0
+    },
+    "argmax_is_not_parity": true,
+    "bars": {
+     "cosine_bar": 0.99,
+     "logit_effect": 0.01,
+     "output_error": 0.01,
+     "plateau_growth_bar": 2.0,
+     "state_error": 0.01
+    },
+    "horizons_run": [
+     1,
+     4,
+     16,
+     64,
+     128,
+     256,
+     512
+    ],
+    "one_step_only_admissible": false,
+    "reasons": [
+     "state_error@1>0.01",
+     "output_error@1>0.01",
+     "logit_effect@1>0.01",
+     "state_error@4>0.01",
+     "output_error@4>0.01",
+     "logit_effect@4>0.01",
+     "state_error@16>0.01",
+     "output_error@16>0.01",
+     "logit_effect@16>0.01",
+     "state_error@64>0.01",
+     "output_error@64>0.01",
+     "logit_effect@64>0.01",
+     "state_error@128>0.01",
+     "output_error@128>0.01",
+     "logit_effect@128>0.01",
+     "state_error@256>0.01",
+     "output_error@256>0.01",
+     "logit_effect@256>0.01"
+    ],
+    "rule": "see acceptance.fitted_heldout_rule",
+    "shape": {
+     "by_series": {
+      "logit_effect": "PLATEAU",
+      "output_error": "PLATEAU",
+      "state_error": "PLATEAU"
+     },
+     "overall": "PLATEAU"
+    },
+    "status": "MEASURED_NEGATIVE"
+   },
+   "verdict_error": null
+  }
+ ],
+ "evidence_class": "STATIC_ONLY",
+ "findings": [
+  "identity_control: status=CONTROL shape=FLAT_ZERO run=[1, 4, 16, 64, 128, 256, 512]",
+  "truncated_state_rank16: status=MEASURED_NEGATIVE shape=ONSET_THEN_PLATEAU run=[1, 4, 16, 64, 128, 256, 512]",
+  "lower_rank_transition_rank8: status=MEASURED_NEGATIVE shape=PLATEAU run=[1, 4, 16, 64, 128, 256, 512]",
+  "generated_transition_coefficients: NOT_LANDED (landed=False)"
+ ],
+ "gaps_closed": [
+  "the six S020 families are enumerated with judged/blocked status, so an unjudged family cannot read as judged by omission",
+  "state, output and logit errors are three series; collapsing them raises",
+  "a one-step-only number raises rather than returning a verdict",
+  "every named horizon is RUN or SKIPPED; silent omission raises",
+  "argmax agreement is reported and is not treated as parity",
+  "held-out is by prompt_id; train reported as held-out raises",
+  "every candidate is scored by executable_economics (bytes_removed AND bytes_added)",
+  "t1dngen is probed on disk; absence is NOT_LANDED, not a fake curve",
+  "FITTED_HELDOUT rule is in the receipt, not tribal knowledge"
+ ],
+ "generated_transition": {
+  "argmax_is_not_parity": true,
+  "claimed_economics": {
+   "bytes_added": {
+    "embeddings": 49152,
+    "generator": 2924624,
+    "metadata": 1920,
+    "other": 0,
+    "residuals": 1572864,
+    "state": 0,
+    "total": 4548560
+   },
+   "bytes_removed": {
+    "catalog_weights": 2139096960,
+    "other": 0,
+    "state": 0,
+    "total": 2139096960
+   },
+   "consuming_primitive": "TiledProjection",
+   "dispatch_delta": 48,
+   "id": "generated_transition_coefficients",
+   "net_bytes": 2134548400,
+   "note": "Claimed skinny program T2 T1 (5120\u2192256\u219216384) plus per-layer f16 diagonals. ~2.14 GB removed, ~4.5 MB added. Capability UNMEASURED until a multi-step curve exists. One-step of this claim is not evidence.",
+   "source": "receipts/future/DELTANET_STATE_FUNCTION.json"
+  },
+  "curve": null,
+  "discovery": {
+   "candidate_id": "generated_transition_coefficients",
+   "landed": false,
+   "note": "A generated-transition candidate is only evaluable when a fitted program (T1/T2 or equivalent) is on disk. A byte claim without a program is not a curve.",
+   "receipts_probed": [
+    {
+     "has_program": false,
+     "landed": true,
+     "rel": "receipts/future/DELTANET_GENERATED_TRANSITION.json",
+     "source": "disk"
+    },
+    {
+     "has_program": false,
+     "landed": false,
+     "rel": "receipts/future/GENERATED_TRANSITION.json",
+     "source": "missing"
+    },
+    {
+     "has_program": false,
+     "landed": false,
+     "rel": "receipts/future/T1DNGEN.json",
+     "source": "missing"
+    },
+    {
+     "has_program": false,
+     "landed": false,
+     "rel": "receipts/future/DELTANET_GENERATED_TRANSITION_FIT.json",
+     "source": "missing"
+    }
+   ],
+   "scratch_probed": [
+    {
+     "exists": false,
+     "is_dir": false,
+     "path": "/Users/scammermike/Downloads/hawking/workspace/ops/local/scratch/t1dngen"
+    },
+    {
+     "exists": false,
+     "is_dir": false,
+     "path": "/Users/scammermike/Downloads/hawking/workspace/ops/local/scratch/t1dngen"
+    }
+   ],
+   "status": "NOT_LANDED"
+  },
+  "economics": {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 350.0,
+    "bandwidth_gb_s_range": [
+     223.4,
+     497.4
+    ],
+    "bandwidth_is_assumption": true,
+    "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+    "bandwidth_regime": "unknown_new_representation",
+    "cited_token_ms": 28.722,
+    "dispatch_class": "deltanet_ba",
+    "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 2.884,
+    "dispatch_us_range": [
+     2.884,
+     2.884
+    ],
+    "flop_model": "extra FLOPs scored as extra_flops * n_output_elements / EFFECTIVE_FLOP_S, the MLP GEMV-dressed rate (2.202 TFLOP/s). ASSUMPTION: same cost-per-FLOP as the incumbent MAC (mostly wait-on-memory). Range [0, 4.0x] covers hidden-under-bandwidth to decode-ALU-like.",
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "host_gap_floor_ms": 0.989,
+    "incremental_byte_rate_gb_s": 1827.21,
+    "organ_average_gb_s": 360.0,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true,
+    "stream_rate_source": "ECONOMICS_CALIBRATION.json"
+   },
+   "bytes_added": {
+    "embeddings": 49152,
+    "generator": 2924624,
+    "metadata": 1920,
+    "other": 0,
+    "residuals": 1572864,
+    "state": 0,
+    "total": 4548560
+   },
+   "bytes_added_supplied": true,
+   "bytes_removed": 2139096960,
+   "consuming_primitive": "TiledProjection",
+   "dispatch_delta": 48.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "generated_transition_coefficients",
+   "lane_material": {
+    "bar": "MATERIAL means >= 1 ms of cited token time, or >= 5% of model bytes, or a reusable family, or a decisive falsifier. Cited token time is 28.722 ms; 5% of 9878901136 bytes is 493945056. This is not a hardware measurement.",
+    "clears": true,
+    "decisive_falsifier": true,
+    "five_percent_bytes": true,
+    "one_ms": true,
+    "reusable_family": true
+   },
+   "live": true,
+   "n_output_elements": 1036800,
+   "net_bytes": -2134548400,
+   "ok": true,
+   "organ": "deltanet",
+   "predicted_ms_delta": -1.029768918339983,
+   "predicted_ms_delta_range": [
+    -1.0536868461645863,
+    -0.6917988413359625
+   ],
+   "predicted_ms_saved": 1.029768918339983,
+   "predicted_token_ms": 27.69223108166002,
+   "predicted_token_ms_range": [
+    27.668313153835413,
+    28.03020115866404
+   ],
+   "predicted_tps": 36.111211012617865,
+   "predicted_tps_range": [
+    35.67580533366609,
+    36.14242742013273
+   ],
+   "retime_organ": false,
+   "s020_section_20": {
+    "bar_frac": 0.01,
+    "bar_ms": 0.28722000000000003,
+    "clears_time_bar": true,
+    "high_information_falsifier": true,
+    "plausible_ms_saved": 1.0536868461645863,
+    "reusable_family": true
+   },
+   "status": "OPEN",
+   "stream_class": "weight_codes",
+   "terms": {
+    "byte_added_ms": 0.0024893471467428486,
+    "byte_ms_delta": -1.1682009183399829,
+    "byte_removed_ms": -1.1706902654867255,
+    "dispatch_ms_delta": 0.138432,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "MATERIAL",
+   "verdict_reasons": [
+    "clears_s020_section_20_time_bar",
+    "reusable_representation_family",
+    "high_information_falsifier"
+   ]
+  },
+  "id": "generated_transition_coefficients",
+  "landed": false,
+  "note": "Sibling t1dngen had not landed a fitted program when this receipt was written. The byte claim is scored so it is comparable the moment a program arrives; the curve is NOT_LANDED, not a one-step proxy. Re-run this module against the fitted program; do not promote on a one-step number from that lane.",
+  "one_step_only_admissible": false,
+  "status": "NOT_LANDED"
+ },
+ "gpu_authority": false,
+ "input": {
+  "coefficients": "seeded STATIC map of X, shader L2 on q/k; not W_qkvz",
+  "corpus_error": null,
+  "dim": 128,
+  "kind": "held_out_prompt_teacher_corpus_L38_post_attn_norm",
+  "layer": 38,
+  "n_heads": 8,
+  "n_sequences": 2,
+  "n_tokens": [
+   526,
+   496
+  ],
+  "prompt_ids": [
+   "code:14",
+   "code:15"
+  ],
+  "report_as": "held_out",
+  "trained_qkv_trajectory": "UNMEASURED",
+  "x_is_mixer_input": false,
+  "x_is_post_attn_norm": true
+ },
+ "landed_candidates": {
+  "candidate_id": "generated_transition_coefficients",
+  "landed": false,
+  "note": "A generated-transition candidate is only evaluable when a fitted program (T1/T2 or equivalent) is on disk. A byte claim without a program is not a curve.",
+  "receipts_probed": [
+   {
+    "has_program": false,
+    "landed": true,
+    "rel": "receipts/future/DELTANET_GENERATED_TRANSITION.json",
+    "source": "disk"
+   },
+   {
+    "has_program": false,
+    "landed": false,
+    "rel": "receipts/future/GENERATED_TRANSITION.json",
+    "source": "missing"
+   },
+   {
+    "has_program": false,
+    "landed": false,
+    "rel": "receipts/future/T1DNGEN.json",
+    "source": "missing"
+   },
+   {
+    "has_program": false,
+    "landed": false,
+    "rel": "receipts/future/DELTANET_GENERATED_TRANSITION_FIT.json",
+    "source": "missing"
+   }
+  ],
+  "scratch_probed": [
+   {
+    "exists": false,
+    "is_dir": false,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/ops/local/scratch/t1dngen"
+   },
+   {
+    "exists": false,
+    "is_dir": false,
+    "path": "/Users/scammermike/Downloads/hawking/workspace/ops/local/scratch/t1dngen"
+   }
+  ],
+  "status": "NOT_LANDED"
+ },
+ "negative_findings": [
+  "one-step accuracy is not a recurrent claim",
+  "a candidate that drifts in logit space while preserving argmax is not validated",
+  "the capability-information-map 0.28% is a residual budget, not a DeltaNet byte win",
+  "ordinary entropy coding of MLP codes is a different organ and is not this school",
+  "COMPOSITE_MLP_SIMPLE_LINEAR_LOW_RANK is a different organ and is already refuted"
+ ],
+ "nomenclature": {
+  "compounding": "COMPOUNDING",
+  "control": "CONTROL",
+  "fitted_heldout": "FITTED_HELDOUT",
+  "flat_zero": "FLAT_ZERO",
+  "incomplete": "INCOMPLETE",
+  "measured_negative": "MEASURED_NEGATIVE",
+  "not_landed": "NOT_LANDED",
+  "onset_then_plateau": "ONSET_THEN_PLATEAU",
+  "plateau": "PLATEAU",
+  "run": "RUN",
+  "series": [
+   "state_error",
+   "output_error",
+   "logit_effect"
+  ],
+  "skipped_for_cost": "SKIPPED_FOR_COST",
+  "skipped_insufficient_sequence": "SKIPPED_INSUFFICIENT_SEQUENCE",
+  "static_only": "this sidecar. Models propose; protected deterministic evidence decides."
+ },
+ "predecessor": [
+  "receipts/future/DELTANET_STATE_FUNCTION.json",
+  "receipts/future/DELTANET_REPRESENTATION.json",
+  "receipts/future/DELTANET_QKVZ_PRECISION.json"
+ ],
+ "purpose": "Build the multi-step evaluation authority for DeltaNet candidates and apply it. A recurrent claim validated at one step is not a claim. State, output and logit errors are three series. The divergence curve's shape is the finding.",
+ "recovered_implementation": {
+  "authority": "tools/future/deltanet_multistep.py",
+  "gated_delta": "S := (I - beta k k^T)(decay S) + beta k v^T; h := S^T q",
+  "horizons": [
+   1,
+   4,
+   16,
+   64,
+   128,
+   256,
+   512,
+   1024
+  ],
+  "kernel": "qwen38_gated_delta_decode_vi_simd"
+ },
+ "s020_families": {
+  "blocked": {
+   "conditional_recurrence": {
+    "blocked_by": "NEEDS_A_FITTED_PROGRAM",
+    "unblocks_when": "a fitted router plus per-regime recurrence exists on disk"
+   },
+   "fused_update_and_consume": {
+    "blocked_by": "NOT_A_TRAJECTORY_QUESTION",
+    "unblocks_when": "never through this judge"
+   },
+   "generated_coefficients": {
+    "blocked_by": "NEEDS_A_FITTED_PROGRAM",
+    "unblocks_when": "a fitted T1/T2-class program lands at one of LANDING_RECEIPT_RELS"
+   },
+   "learned_recurrence": {
+    "blocked_by": "NEEDS_A_FITTED_PROGRAM",
+    "unblocks_when": "a fitted recurrence program exists on disk to run through this judge"
+   }
+  },
+  "families": [
+   {
+    "candidate_id": "truncated_state_rank16",
+    "family": "smaller_state",
+    "how": "state, output and logit curves over 7 horizons",
+    "judged": true
+   },
+   {
+    "candidate_id": "lower_rank_transition_rank8",
+    "family": "structured_transitions",
+    "how": "state, output and logit curves over 7 horizons",
+    "judged": true
+   },
+   {
+    "blocked_by": "NEEDS_A_FITTED_PROGRAM",
+    "candidate_id": "generated_transition_coefficients",
+    "family": "generated_coefficients",
+    "how": "a byte claim without a program is not a curve",
+    "judged": false,
+    "unblocks_when": "a fitted T1/T2-class program lands at one of LANDING_RECEIPT_RELS"
+   },
+   {
+    "blocked_by": "NEEDS_A_FITTED_PROGRAM",
+    "candidate_id": null,
+    "family": "learned_recurrence",
+    "how": "no program, no trajectory",
+    "judged": false,
+    "unblocks_when": "a fitted recurrence program exists on disk to run through this judge"
+   },
+   {
+    "blocked_by": "NEEDS_A_FITTED_PROGRAM",
+    "candidate_id": null,
+    "family": "conditional_recurrence",
+    "how": "no program, no trajectory",
+    "judged": false,
+    "unblocks_when": "a fitted router plus per-regime recurrence exists on disk"
+   },
+   {
+    "blocked_by": "NOT_A_TRAJECTORY_QUESTION",
+    "candidate_id": null,
+    "family": "fused_update_and_consume",
+    "how": "execution change, bit-identical recurrence; this judge would return FLAT_ZERO like the identity control and that would not be evidence. Score it on bytes, launches and bit-identity.",
+    "judged": false,
+    "unblocks_when": "never through this judge"
+   }
+  ],
+  "judged": [
+   "smaller_state",
+   "structured_transitions"
+  ],
+  "n_families": 6,
+  "n_judged_on_trajectory": 2
+ },
+ "schema": "hawking.future.deltanet_multistep.v1",
+ "seal_sha256": "d5b0f32f68669e7cb5e6beedeee77d84c7020dc9ed5a2f1d9e72b436d84aae38",
+ "version": 1,
+ "what_this_does_not_prove": [
+  "capability or generate identity of any candidate",
+  "that the STATIC coefficient map is W_qkvz @ x",
+  "that post_attn_norm X is the mixer input",
+  "physical EBPW or a protected TPS number",
+  "that t1dngen's byte claim holds: it had not landed a program, or the curve is UNMEASURED"
+ ]
+}

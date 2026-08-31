@@ -1,0 +1,335 @@
+{
+ "703_max_gb_s": 703.6072736347875,
+ "703_median_gb_s": 699.5736545106142,
+ "703_min_gb_s": 693.1508595217028,
+ "703_statistic": "max of q4_single_gemv_addr_probe gemv_payload_13p612gb",
+ "703_without_input_vector_load": true,
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T10:39:18Z",
+  "recorded_by": "tools/future/addressing_attribution.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "bit_identical_is_non_negotiable": true,
+ "claim_boundary": "Static sidecar assembled from committed receipts. No new GPU probe. Every GB/s is copied from a named prior receipt with its statistic and provenance caveat. The 703 GB/s addr-probe loads scales + packed codes and sinks them; NO NIBBLE UNPACK, NO INPUT-VECTOR LOAD, NO FMA \u2014 it never loads the activation and is NOT comparable to any kernel that does. 819 is the datasheet peak; DeltaNet ARM A 943.2 exceeds it by 1.15x and is residency, not a DRAM streaming target. evidence_class SELF_MEASURED_DIRTY on a contaminated host qualifies nothing. A TPS figure here is never labelled QUALIFIED; a protected window is still required. Bit-identical output is non-negotiable.",
+ "dirty_token_ms": [
+  {
+   "evidence_class": "SELF_MEASURED_DIRTY",
+   "name": "organ_bandwidth_token_gpu_ms",
+   "note": "pre-widen_f4 complete-token GPU ms; stale as a baseline",
+   "qualification": "NOT_QUALIFIED",
+   "qualified": false,
+   "source_receipt": "receipts/future/ORGAN_BANDWIDTH.json",
+   "value_ms": 27.828
+  },
+  {
+   "evidence_class": "SELF_MEASURED_DIRTY",
+   "name": "widen_f4_incumbent_ms",
+   "note": "unfused vi-SIMD arm of the widen_f4 A/B; superseded by the f4 arm",
+   "qualification": "NOT_QUALIFIED",
+   "qualified": false,
+   "source_receipt": "receipts/future/DELTANET_WIDEN_AB.json",
+   "value_ms": 27.406541
+  },
+  {
+   "evidence_class": "SELF_MEASURED_DIRTY",
+   "name": "widen_f4_candidate_ms",
+   "note": "landed widen_f4 complete-token ms; incumbent of fold_addqx A/B must re-measure this",
+   "qualification": "NOT_QUALIFIED",
+   "qualified": false,
+   "source_receipt": "receipts/future/DELTANET_WIDEN_AB.json",
+   "value_ms": 26.382083
+  }
+ ],
+ "evidence_class": "SELF_MEASURED_DIRTY",
+ "finding": "703.6 is an addr-probe without an input-vector load (median 699.57). First target is production_catalog_401_gemvs 530.7 (max 539.0, min 509.3). Honest MLP ceiling WITH activation is ARM A 497.4. Production affine2-q2 is 329.6. fold_addqx is the demonstrated removable 1.127x bit-identical decode cheapen (370.9). production_effective is 337.3 across the token. 819 is datasheet; 943.2 DeltaNet ARM A is residency, not DRAM. Granularity, catalog addressing, dispatch count, decode fusion, stream count, dependency chains, register pressure, and occupancy are REFUTED. A protected window is still required; no TPS is QUALIFIED.",
+ "first_target": {
+  "gb_s": 530.6544688491846,
+  "id": "production_catalog_401_gemvs",
+  "why": "already-measured floor of what this machine does through the catalog; obligation names this as the first target"
+ },
+ "fold_addqx_probe_projection_is_not_a_resident_measurement": true,
+ "fold_addqx_probe_projection_token_ms": -1.745,
+ "gpu_authority": false,
+ "known_removable_decode_arithmetic_gb_s": 370.9,
+ "known_removable_decode_arithmetic_ratio": 1.1265,
+ "obligation": "RECOVER THE WEIGHT-ADDRESSING BANDWIDTH. Attribute where 703 GB/s becomes 337, separate REMOVABLE cost from STRUCTURAL cost, and ACTUALLY REMOVE WHAT IS REMOVABLE. Target the 530 GB/s production-catalog ceiling first, then the 703 clean-addressing figure. BIT-IDENTICAL OUTPUT IS NON-NEGOTIABLE.",
+ "occupancy_1024_threads_gb_s": 236.09670091208082,
+ "organ_mlp_gpu_ms_cited": 15.541,
+ "payload_bytes_13p612gb": 13611663360,
+ "post_widen_f4_cited_is_stale_until_fold_addqx_ab_remeasures_incumbent": true,
+ "post_widen_f4_complete_token_ms_cited": 26.382083,
+ "post_widen_f4_source": "receipts/future/DELTANET_WIDEN_AB.json",
+ "recorded_by": "tools/future/addressing_attribution.py",
+ "refuted": [
+  {
+   "claim": "fragmented regions / packing granularity is why MLP sits at ~330 GB/s",
+   "id": "region_granularity",
+   "kind": "refuted",
+   "refutation_or_demonstration": "GRANULARITY_REFUTED: One layer's MLP, packed into one staging buffer and executed in one serial compute region, stayed near the ~350 GB/s cluster. The granularity / fragmentation hypothesis is DEAD. Do not rescue it with more packing variants.",
+   "source_receipt": "receipts/future/MLP_REGION_FALSIFIER.json",
+   "span": null,
+   "status": "REFUTED"
+  },
+  {
+   "claim": "host catalog indirection / unhoisted addressing is the 703\u2192530 tax",
+   "id": "catalog_addressing_as_main_mechanism",
+   "kind": "refuted",
+   "refutation_or_demonstration": "CATALOG_ADDRESSING falsified_as=host catalog indirection on the GPU addr-probe timestamp. FALSIFIED as catalog-indirection / unhoisted host addressing on the GPU timestamp. 401 production-shaped GEMVs cost ~15 us/dispatch against one 13.6 GB GEMV; tiled identical large gates sit in between (591 GB/s). Device addressing is already a direct load. The crate change hoists getenv / groups_per_row / last-hit pipeline lookup off the token loop (DSV4F scar). That does not close 703\u2192530.",
+   "source_receipt": "receipts/future/CATALOG_ADDRESSING.json",
+   "span": null,
+   "status": "REFUTED"
+  },
+  {
+   "claim": "raw dispatch count is the main 703\u2192530 / 530\u2192337 mechanism",
+   "id": "raw_dispatch_count",
+   "kind": "refuted",
+   "refutation_or_demonstration": "Same 13.612 GB, 1 vs 401 vs 287 tiled gates: extra dispatch is ~12\u201316 \u00b5s. Encoder collapse (serial vs noop) left GPU_NS overlapping. KERNEL_GEOMETRY: weight-free dispatches at most 0.586 ms of the token. Dispatch count is not the named loss.",
+   "source_receipt": "receipts/future/CATALOG_ADDRESSING.json",
+   "span": null,
+   "status": "REFUTED"
+  },
+  {
+   "claim": "fusing decode launches (encoder collapse / more fusion) recovers the band",
+   "id": "decode_fusion",
+   "kind": "refuted",
+   "refutation_or_demonstration": "CATALOG_ADDRESSING encoder_collapse: serial encoder is token-identical and does not separate GPU_NS. Production already runs GateUpSwiglu + GQA-QKV + DN-inproj + add-RMSNorm on the 580-graph (DELTANET_WIDEN_AB). Fusion is not the remaining lever.",
+   "source_receipt": "receipts/future/CATALOG_ADDRESSING.json",
+   "span": null,
+   "status": "REFUTED"
+  },
+  {
+   "claim": "MLP is stream-count bound; merging 2+2+2 into 4+2 then 6 recovers GB/s",
+   "id": "stream_count_at_fixed_bytes_per_thread",
+   "kind": "refuted",
+   "refutation_or_demonstration": "MLP_STREAM_COUNT: 4+2 shape dn_4_2_32=377.1 GB/s is only 1.2232x the 2+2+2 shape mlp_2_2_2_32=308.3; merging further HURTS (pack_6_32=218.7 GB/s, pack_38=45.6). Verdict MIXED; do not force STREAM_COUNT_BOUND.",
+   "source_receipt": "receipts/future/MLP_STREAM_COUNT.json",
+   "span": 1.2232,
+   "status": "REFUTED"
+  },
+  {
+   "claim": "MLP is dependency-bound; more accumulator chains recover the ARM A gap",
+   "id": "dependency_chains",
+   "kind": "refuted",
+   "refutation_or_demonstration": "MLP_ISSUE_RATE_LADDER ILP: 1-to-8 accumulator chains span 1.062 (jumped=False, bar 1.12). Not DEPENDENCY_BOUND.",
+   "source_receipt": "receipts/future/MLP_ISSUE_RATE_LADDER.json",
+   "span": 1.062,
+   "status": "REFUTED"
+  },
+  {
+   "claim": "register pressure is why production sits at 330 GB/s",
+   "id": "register_pressure",
+   "kind": "refuted",
+   "refutation_or_demonstration": "MLP_ISSUE_RATE_LADDER register_pressure: ws0 308.3 vs ws32 332.4 GB/s, span 1.0782, occupancy_span 1.0, dropped=False. Span 1.078 does not explain 1.51x ARM A.",
+   "source_receipt": "receipts/future/MLP_ISSUE_RATE_LADDER.json",
+   "span": 1.0782,
+   "status": "REFUTED"
+  },
+  {
+   "claim": "raising occupancy (more threads per threadgroup) recovers the band",
+   "id": "occupancy",
+   "kind": "refuted",
+   "refutation_or_demonstration": "Raising occupancy makes things WORSE. issue-ladder tg1024 (1024 threads/threadgroup) is 236.09670091208082 GB/s against production-occupancy 128 threads at ~308\u2013330 GB/s. KERNEL_GEOMETRY: tpr64 already covers every production organ except BA with dozens to thousands of threadgroups per core; occupancy/tails are not the 530\u2192337 drop.",
+   "source_receipt": "receipts/future/_MLP_ISSUE_RATE_LADDER_raw.json",
+   "span": 236.09670091208082,
+   "status": "REFUTED"
+  }
+ ],
+ "refuted_count": 8,
+ "removable": [
+  {
+   "claim": "production affine2-q2 decode arithmetic (8 dequant FMA + 8 MAC per 6 B)",
+   "id": "decode_arithmetic_fold_addqx",
+   "kind": "removable",
+   "refutation_or_demonstration": "fold_addqx is bit-identical by byte comparison of output buffers, 370.9 GB/s vs this-run production 329.2 (1.1265x, obligation's 1.127x). Closes 0.2477 of the ARM A 497.4 gap on the one-layer probe. DIRTY_DIAGNOSTIC until the complete-token A/B. A faster resident that answers differently is not the same resident.",
+   "source_receipt": "receipts/future/MLP_DECODE_CHEAPEN.json",
+   "span": 1.1265,
+   "status": "REMOVABLE_DEMONSTRATED"
+  }
+ ],
+ "removable_count": 1,
+ "rungs": [
+  {
+   "as_dram_roof": false,
+   "comparable_to_production_decode": false,
+   "gb_s": 819.0,
+   "gb_s_full": 819.0,
+   "id": "datasheet_peak",
+   "json_path": "cited.published_peak_gb_s_datasheet",
+   "loads_activation": false,
+   "nibble_unpack": false,
+   "provenance": "A paper peak, not a streaming measurement. DeltaNet ARM A 943.2 GB/s exceeds it by 1.15x and therefore cannot be a DRAM streaming rate \u2014 treat 943.2 as residency, not a target.",
+   "source_receipt": "receipts/future/CATALOG_ADDRESSING.json",
+   "statistic": "datasheet",
+   "target_order": null,
+   "what": "machine datasheet peak (819 GB/s)"
+  },
+  {
+   "as_dram_roof": false,
+   "comparable_to_production_decode": false,
+   "gb_s": 703.6073,
+   "gb_s_full": 703.6072736347875,
+   "id": "catalog_addressing_single_gemv_addr",
+   "json_path": "cited.single_gemv_addr.max_gb_s",
+   "loads_activation": false,
+   "nibble_unpack": false,
+   "provenance": "CRITICAL: qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe same launch geometry; loads scales + packed codes and sinks them; no nibble unpack, no input-vector load, no FMA. It never loads the activation, so it is NOT comparable to any kernel that does (ARM A, production affine2-q2, fold_addqx, production_effective). Median of the same probe is 699.574 GB/s; min 693.151. 703.6 is the max.",
+   "source_receipt": "receipts/future/CATALOG_ADDRESSING.json",
+   "statistic": "max",
+   "target_order": 2,
+   "what": "CATALOG_ADDRESSING cited.single_gemv_addr, 1 dispatch, 13611663360 bytes (13.612 GB)"
+  },
+  {
+   "as_dram_roof": false,
+   "comparable_to_production_decode": false,
+   "gb_s": 530.6545,
+   "gb_s_full": 530.6544688491846,
+   "id": "production_catalog_401_gemvs",
+   "json_path": "cited.production_catalog_addr.median_gb_s",
+   "loads_activation": false,
+   "nibble_unpack": false,
+   "provenance": "Same addr-probe kernel as the 703 figure, 401 production-shaped GEMVs, 13.612 GB payload. Still no activation load. This is the obligation's already-measured floor of what this machine does through the catalog, and the first target. CATALOG_ADDRESSING falsified host catalog indirection as the 703\u2192530 mechanism; the drop is dispatch topology + mixed organ sizes.",
+   "source_receipt": "receipts/future/CATALOG_ADDRESSING.json",
+   "statistic": "median",
+   "target_order": 1,
+   "what": "production_catalog_401_gemvs median (max 539.0, min 509.3)"
+  },
+  {
+   "as_dram_roof": true,
+   "comparable_to_production_decode": true,
+   "gb_s": 497.4,
+   "gb_s_full": 497.4,
+   "id": "mlp_alu_roofline_arm_a",
+   "json_path": "mlp.arm_a_stripped.effective_gb_s",
+   "loads_activation": true,
+   "nibble_unpack": true,
+   "provenance": "A real streaming rate WITH the activation load. Honest ceiling for the MLP shape. Not occupancy-limited. ARM A jumped 1.51x vs production 329.6; ARM B tracked bytes so the conjunction stayed MIXED, but surviving loads + ARM A near the LM-head rate (497.4) is the ceiling fold_addqx is climbing toward.",
+   "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+   "statistic": "median",
+   "target_order": null,
+   "what": "MLP_ALU_ROOFLINE ARM A: same 83.56 MB, arithmetic stripped, loads proven live"
+  },
+  {
+   "as_dram_roof": true,
+   "comparable_to_production_decode": true,
+   "gb_s": 370.9,
+   "gb_s_full": 370.9,
+   "id": "fold_addqx",
+   "json_path": "best_exact.effective_gb_s",
+   "loads_activation": true,
+   "nibble_unpack": true,
+   "provenance": "Byte comparison of output buffers against the production kernel after the timed command buffer (n_mismatch_bytes=0). Ratio to this-run production 1.1265x (~1.127x). Declared approx_candidate (fold is a different f32 association) and empirically error_class=bit_identical. DIRTY_DIAGNOSTIC on ONE LAYER as a probe until the complete-token A/B. Projection -1.745 ms is arithmetic over that probe, not a resident measurement.",
+   "source_receipt": "receipts/future/MLP_DECODE_CHEAPEN.json",
+   "statistic": "median",
+   "target_order": null,
+   "what": "MLP_DECODE_CHEAPEN fold_addqx, BIT-IDENTICAL"
+  },
+  {
+   "as_dram_roof": true,
+   "comparable_to_production_decode": true,
+   "gb_s": 329.6,
+   "gb_s_full": 329.6,
+   "id": "production_affine2_q2",
+   "json_path": "mlp.production.effective_gb_s",
+   "loads_activation": true,
+   "nibble_unpack": true,
+   "provenance": "geo_tpr64_tg128, one MLP layer gate+up+down, 83.56 MB, loads live. MLP_REGION_FALSIFIER packed the same organ into one staging buffer / one serial region and stayed in the ~350 GB/s cluster; granularity is dead. This is the MLP production rate fold_addqx is measured against.",
+   "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+   "statistic": "median",
+   "target_order": null,
+   "what": "production affine2-q2, reproducing the granularity falsifier's ~331.6 on the same layer"
+  },
+  {
+   "as_dram_roof": true,
+   "comparable_to_production_decode": true,
+   "gb_s": 337.26568478304,
+   "gb_s_full": 337.26568478304,
+   "id": "production_effective",
+   "json_path": "cited.production_effective_gb_s",
+   "loads_activation": true,
+   "nibble_unpack": true,
+   "provenance": "Active-weight bytes per token / complete-token GPU ns, from the token-bytes atlas cited by CATALOG_ADDRESSING. KERNEL_GEOMETRY falsified occupancy/tpr64 as the 530\u2192337 drop: the catalog probe moved 13.612 GB of synthetic Q4 at 530.7; production moves 9.879 GB of mixed affine+q4. Bytes drop 27.4%, time rises 14.2%, GB/s falls 36.4%. Geometry/occupancy/tails are not the 193 GB/s.",
+   "source_receipt": "receipts/future/CATALOG_ADDRESSING.json",
+   "statistic": "derived_effective",
+   "target_order": null,
+   "what": "production_effective across the token"
+  },
+  {
+   "as_dram_roof": false,
+   "comparable_to_production_decode": false,
+   "gb_s": 943.2,
+   "gb_s_full": 943.2,
+   "id": "deltanet_arm_a_residency",
+   "json_path": "deltanet.arm_a_stripped.effective_gb_s",
+   "loads_activation": true,
+   "nibble_unpack": true,
+   "provenance": "Exceeds datasheet peak 819.0 by 1.15x on a 44564480-byte payload. Cannot be a DRAM streaming rate. Treat as residency (cache reuse / working set fitting), not as a target for the weight-addressing band.",
+   "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+   "statistic": "median",
+   "target_order": null,
+   "what": "DeltaNet ARM A (stripped arithmetic)"
+  }
+ ],
+ "schema": "hawking.future.addressing_attribution.v1",
+ "seal_sha256": "70e0f39ae41a435923ad3cd01a9163137b0fd7dcc6a74d4a9c39b1cf2967aecd",
+ "second_target": {
+  "caveat": "addr-probe without activation load; not a production-decode comparable",
+  "gb_s": 703.6072736347875,
+  "id": "catalog_addressing_single_gemv_addr"
+ },
+ "self_timing": {
+  "class": "SELF_MEASURED_DIRTY",
+  "elapsed_ms": 1.756667043082416,
+  "qualifies": "nothing",
+  "what": "python wall of static attribution in this process"
+ },
+ "structural": [
+  {
+   "claim": "703 addr-probe is the production decode ceiling",
+   "id": "addr_probe_without_activation",
+   "kind": "structural",
+   "refutation_or_demonstration": "The probe does not load the activation and does not FMA. ARM A at 497.4 WITH the activation load is the honest MLP ceiling. Comparing 703 to 337 is comparing different work.",
+   "source_receipt": "receipts/future/ADDRESSING_GAP.json",
+   "span": null,
+   "status": "STRUCTURAL"
+  },
+  {
+   "claim": "401 mixed production-shaped GEMVs vs one 13.612 GB GEMV",
+   "id": "catalog_topology_703_to_530",
+   "kind": "structural",
+   "refutation_or_demonstration": "Falsified as catalog-indirection. Remaining named cost is dispatch topology + mixed organ sizes (single max 703.6 \u2192 catalog median 530.7). Not host addressing. First target is still the 530 catalog floor, then 703.",
+   "source_receipt": "receipts/future/CATALOG_ADDRESSING.json",
+   "span": null,
+   "status": "STRUCTURAL"
+  },
+  {
+   "claim": "kernel geometry / occupancy / coalescing is the 530\u2192337 drop",
+   "id": "byte_numerator_and_non_gemv_530_to_337",
+   "kind": "structural",
+   "refutation_or_demonstration": "tpr64 covers every production organ with dropped=0 and, except BA, dozens to thousands of threadgroups per core. The 530->337 GB/s drop is the byte numerator (affine MLP vs all-q4 catalog of the same shapes) plus a few milliseconds of non-GEMV work. Catalog addressing already used this occupancy class. Affine MLP is denser than the all-q4 catalog of the same shapes; production also pays non-GEMV work (DeltaNet, GQA, rmsnorm, swiglu). That is not removable decode arithmetic.",
+   "source_receipt": "receipts/future/KERNEL_GEOMETRY.json",
+   "span": null,
+   "status": "STRUCTURAL"
+  },
+  {
+   "claim": "819 datasheet or 943 DeltaNet ARM A is the streaming target",
+   "id": "datasheet_and_deltanet_arm_a_not_dram_targets",
+   "kind": "structural",
+   "refutation_or_demonstration": "DeltaNet ARM A 943.2 exceeds datasheet 819.0 by 1.15x; that cannot be DRAM streaming. 819 is a paper peak. Neither is a target for recovering the weight-addressing band.",
+   "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+   "span": null,
+   "status": "NOT_A_DRAM_ROOF"
+  }
+ ],
+ "token_gpu_ms_cited_pre_widen": 27.828,
+ "took_gpu_lease": false,
+ "tps_qualification": {
+  "any_tps_labelled_qualified": false,
+  "protected_window_required": true,
+  "reason": "SELF_MEASURED_DIRTY on a contaminated host qualifies nothing. A real TPS claim still needs a protected window."
+ },
+ "version": 1
+}

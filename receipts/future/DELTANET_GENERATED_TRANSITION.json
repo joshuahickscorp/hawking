@@ -1,0 +1,379 @@
+{
+ "anti_fabrication": {
+  "detectors": [
+   "HELD_OUT_PROMPT_LEAK",
+   "SYNTHETIC_ROW",
+   "DUPLICATE_ROWS_ABOVE_THRESHOLD",
+   "PROMPT_NOT_IN_SPLIT",
+   "VERDICT_WITHOUT_64_STEPS",
+   "TRAIN_FIGURE_AS_HELD_OUT"
+  ],
+  "guards_module": "tools.future.mlp_teacher_corpus",
+  "loud_exceptions": [
+   "CorpusRefused",
+   "VerdictRefuse",
+   "HeldOutRefuse",
+   "DenseRematRefuse"
+  ]
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host; CPU operator fit / rollout, no GPU lease",
+  "measurement_state": "DIAGNOSTIC_RELATIVE",
+  "recorded_at": "2026-08-31T07:36:10Z",
+  "recorded_by": "tools/future/deltanet_generated_transition.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "bytes": {
+  "byte_model": "Remove 48 qkvz 2139096960. Add T1 696360 + T2 2228264 + 48 f16 diagonals 1572864 + 48 layer embeddings 49152 + headers 1920.",
+  "bytes_added": {
+   "embeddings": 49152,
+   "generator": 2924624,
+   "metadata": 1920,
+   "residuals": 1572864,
+   "state": 0,
+   "total": 4548560
+  },
+  "bytes_removed": {
+   "catalog_weights": 2139096960,
+   "other": 0,
+   "state": 0,
+   "total": 2139096960
+  },
+  "id": "generated_transition_coefficients",
+  "net_bytes": 2134548400,
+  "note": "Every billed byte is counted once, at model scope. T1 and T2 are shared; diagonals and embeddings are per-layer; headers are 40 B per DN layer.",
+  "source": "receipts/future/DELTANET_STATE_FUNCTION.json"
+ },
+ "candidate_id": "generated_transition_coefficients",
+ "capture": {
+  "note": "Fingerprint and guards are in this receipt. Activation payloads are written by deltanet_teacher_corpus --capture into the gitignored payload_dir. pytest does not run the GEMM.",
+  "payload_dir": "workspace/ops/local/scratch/deltanet_teacher_corpus",
+  "status": "not_run"
+ },
+ "claim_boundary": "DIAGNOSTIC_RELATIVE sidecar. No generate gate and no GPU lease. The byte model is the recorded generated_transition_coefficients candidate scored through executable_economics; it is not re-derived. The generator is y = diag_l T2 (T1 x + e_l) consumed as two skinny GEMVs (TiledProjection). Materializing W and running ordinary GEMV is REJECTED_DENSE_REMAT (removed == added). Multi-step S/h divergence is the authority; a one-step cosine is not a verdict. Held-out is by prompt_id. q/k/v/z bit-descent is not retried (DELTANET_QKVZ_PRECISION). X is capture_diverse2 post_attn_norm, not claimed to be sealed mixer input.",
+ "dense_rematerialization": {
+  "emit_w_economics_removed_equals_added": true,
+  "emit_w_score": {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 360.0,
+    "bandwidth_gb_s_range": [
+     360.0,
+     497.4
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "nominal is the production DeltaNet organ rate (Q4). The high end is the LM head's demonstrated 497.4, also Q4, which DeltaNet has not been shown to reach. Including 497.4 in the range is an ASSUMPTION, not a prediction.",
+    "bandwidth_regime": "production_deltanet",
+    "cited_token_ms": 28.722,
+    "dispatch_class": "deltanet_ba",
+    "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 2.884,
+    "dispatch_us_range": [
+     2.884,
+     2.884
+    ],
+    "flop_model": "extra FLOPs scored as extra_flops * n_output_elements / EFFECTIVE_FLOP_S, the MLP GEMV-dressed rate (2.202 TFLOP/s). ASSUMPTION: same cost-per-FLOP as the incumbent MAC (mostly wait-on-memory). Range [0, 4.0x] covers hidden-under-bandwidth to decode-ALU-like.",
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "host_gap_floor_ms": 0.989,
+    "incremental_byte_rate_gb_s": 360.0
+   },
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 2139096960,
+    "metadata": 0,
+    "residuals": 0,
+    "state": 0,
+    "total": 2139096960
+   },
+   "bytes_added_supplied": true,
+   "bytes_removed": 2139096960,
+   "consuming_primitive": "FusedDecodeCompute",
+   "dense_rematerialization": "REJECTED_DENSE_REMAT",
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "emit_w_then_ordinary_gemv",
+   "live": false,
+   "n_output_elements": 1036800,
+   "net_bytes": 0,
+   "ok": true,
+   "organ": "deltanet",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": -0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.816516955643756,
+   "predicted_tps_range": [
+    34.816516955643756,
+    34.816516955643756
+   ],
+   "retime_organ": false,
+   "s020_section_20": {
+    "bar_frac": 0.01,
+    "bar_ms": 0.28722000000000003,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": false
+   },
+   "status": "REJECTED_DENSE_REMAT",
+   "terms": {
+    "byte_added_ms": 5.941936,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": -5.941936,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "IMMATERIAL",
+   "verdict_reasons": [
+    "not_live:REJECTED_DENSE_REMAT"
+   ]
+  },
+  "emit_w_then_ordinary_gemv": "REJECTED_DENSE_REMAT",
+  "native": "DIRECT_CONSUME"
+ },
+ "economics": {
+  "assumptions": {
+   "bandwidth_gb_s_nominal": 350.0,
+   "bandwidth_gb_s_range": [
+    223.4,
+    497.4
+   ],
+   "bandwidth_is_assumption": true,
+   "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
+   "bandwidth_regime": "unknown_new_representation",
+   "cited_token_ms": 28.722,
+   "dispatch_class": "deltanet_ba",
+   "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
+   "dispatch_us_nominal": 2.884,
+   "dispatch_us_range": [
+    2.884,
+    2.884
+   ],
+   "flop_model": "extra FLOPs scored as extra_flops * n_output_elements / EFFECTIVE_FLOP_S, the MLP GEMV-dressed rate (2.202 TFLOP/s). ASSUMPTION: same cost-per-FLOP as the incumbent MAC (mostly wait-on-memory). Range [0, 4.0x] covers hidden-under-bandwidth to decode-ALU-like.",
+   "flop_ms_range": [
+    0.0,
+    0.0
+   ],
+   "host_gap_floor_ms": 0.989,
+   "incremental_byte_rate_gb_s": 360.0
+  },
+  "bytes_added": {
+   "embeddings": 49152,
+   "generator": 2924624,
+   "metadata": 1920,
+   "residuals": 1572864,
+   "state": 0,
+   "total": 4548560
+  },
+  "bytes_added_supplied": true,
+  "bytes_removed": 2139096960,
+  "consuming_primitive": "TiledProjection",
+  "dense_rematerialization": "DIRECT_CONSUME",
+  "dispatch_change": {
+   "candidate": 96,
+   "delta": 48,
+   "incumbent": 48,
+   "surface": "two skinny GEMVs per DN layer unless FusedDecodeCompute folds them; +48 launches if split"
+  },
+  "dispatch_delta": 48.0,
+  "extra_flops_formula": "48*(GEMV 256x5120 + GEMV 16384x256 + 16384 diagonal) - qkvz GEMV",
+  "extra_flops_per_output_element": 0.0,
+  "extra_flops_per_token_recorded": -7523794944,
+  "id": "generated_transition_coefficients",
+  "live": true,
+  "n_output_elements": 1036800,
+  "net_bytes": -2134548400,
+  "ok": true,
+  "organ": "deltanet",
+  "physical_primitive": "TiledProjection",
+  "predicted_ms_delta": -5.790869111111111,
+  "predicted_ms_delta_range": [
+   -9.41639521575649,
+   -4.15298014314435
+  ],
+  "predicted_ms_saved": 5.790869111111111,
+  "predicted_token_ms": 22.93113088888889,
+  "predicted_token_ms_range": [
+   19.305604784243513,
+   24.56901985685565
+  ],
+  "predicted_tps": 43.608839217107366,
+  "predicted_tps_range": [
+   40.701664365376125,
+   51.79842906636944
+  ],
+  "retime_organ": false,
+  "s020_section_20": {
+   "bar_frac": 0.01,
+   "bar_ms": 0.28722000000000003,
+   "clears_time_bar": true,
+   "high_information_falsifier": false,
+   "plausible_ms_saved": 9.41639521575649,
+   "reusable_family": true
+  },
+  "state_update": {
+   "candidate_kernel": "qwen38_gated_delta_decode_vi_simd",
+   "incumbent_kernel": "qwen38_gated_delta_decode_vi_simd",
+   "latency_delta": 0,
+   "note": "S geometry is unchanged. The generator replaces the qkvz GEMV; gated-delta still consumes generated q,k,v in-register."
+  },
+  "status": "OPEN",
+  "terms": {
+   "byte_added_ms": 0.012634888888888888,
+   "byte_ms_delta": -5.929301111111111,
+   "byte_removed_ms": -5.941936,
+   "dispatch_ms_delta": 0.138432,
+   "flop_ms_delta": 0.0
+  },
+  "verdict": "MATERIAL",
+  "verdict_reasons": [
+   "clears_s020_section_20_time_bar",
+   "reusable_representation_family"
+  ]
+ },
+ "era_vocabulary": {
+  "bench_state": "UNKNOWN",
+  "evidence_class": "DIAGNOSTIC_RELATIVE"
+ },
+ "evidence_class": "DIAGNOSTIC_RELATIVE",
+ "fit": null,
+ "fusion_env": {
+  "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+  "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+  "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+  "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+ },
+ "gaps_closed": [
+  "DeltaNet functional corpus reuses the MLP leak/synthetic/dup guards.",
+  "Generator billed at the recorded 4,548,560 bytes, once, at model scope.",
+  "Native consume is two skinny GEMVs; emit-W is REJECTED_DENSE_REMAT.",
+  "Verdict refused without multi-step results at 64 steps or more.",
+  "Train figures cannot be reported as held-out.",
+  "q/k/v/z bit-descent is cited as at its floor and is not retried."
+ ],
+ "gpu_authority": false,
+ "multistep_authority": {
+  "checkpoints": [
+   1,
+   4,
+   16,
+   64,
+   256
+  ],
+  "min_verdict_steps": 64,
+  "one_step_cosine_bar": 0.99,
+  "rule": "A replacement with excellent one-step regression that drifts over 128 tokens is a FAILURE. Verdicts without a 64-step held-out series are refused.",
+  "state_cross_bars": [
+   0.01,
+   0.03,
+   0.1
+  ]
+ },
+ "organ": {
+  "bottleneck": 256,
+  "embeddings": "per-layer f32 bottleneck identity, 256 wide",
+  "function": "y = diag_l T2 (T1 x + e_l); then incumbent rearrange + gated-delta",
+  "hidden": 5120,
+  "n_deltanet_layers": 48,
+  "native_primitive": "TiledProjection",
+  "packing_T1_T2": "hq30uq4_uniform_q4_group64_signed_nibble_f16_scale",
+  "qkvz_rows": 16384,
+  "residuals": "per-layer f16 diagonal on 16384 fused rows"
+ },
+ "predecessor": "receipts/future/DELTANET_STATE_FUNCTION.json",
+ "purpose": "Fit generated_transition_coefficients on a real DeltaNet teacher corpus and judge it on multi-step state stability.",
+ "qkvz_precision": {
+  "bits": {
+   "k": 4,
+   "q": 4,
+   "v": 4,
+   "z": 4
+  },
+  "not_worth_touching": [
+   "q",
+   "k",
+   "v",
+   "z"
+  ],
+  "receipt": "receipts/future/DELTANET_QKVZ_PRECISION.json",
+  "retried": false,
+  "total_bytes_eliminated": 0
+ },
+ "schema": "hawking.future.deltanet_generated_transition.v1",
+ "seal_sha256": "6954e9e7644b8311c2572907d97d03cddf079f6eaf4cfa7c2cf1c110818eb7c9",
+ "selftest": {
+  "bytes_added_total": 4548560,
+  "bytes_removed_total": 2139096960,
+  "corpus": {
+   "chosen_layers": [
+    0,
+    21,
+    42
+   ],
+   "diverse_accepted": true,
+   "diverse_n": 60,
+   "guards_module": "tools.future.mlp_teacher_corpus",
+   "held_out_leak_codes": [
+    "HELD_OUT_PROMPT_LEAK"
+   ],
+   "held_out_leak_refused": true,
+   "layer0_typical": false,
+   "synthetic_codes": [
+    "SYNTHETIC_ROW"
+   ],
+   "synthetic_refused": true
+  },
+  "dense_remat": "REJECTED_DENSE_REMAT",
+  "dense_remat_removed_equals_added": true,
+  "fixture_verdict": "FAIL",
+  "held_out_leak_refused": true,
+  "native_consume": "DIRECT_CONSUME",
+  "qkvz_coding_retried": false,
+  "synthetic_refused": true,
+  "train_as_held_out_refused": true,
+  "verdict_without_64_refused": true
+ },
+ "specimen": {
+  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "fusion_env": {
+   "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+   "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+   "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+   "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+  },
+  "geometry": {
+   "hidden_size": 5120,
+   "n_deltanet_layers": 48,
+   "num_hidden_layers": 64,
+   "qkvz_rows": 16384
+  },
+  "model_id": "qwen3.8-27b-sealed-3.14",
+  "organ": "attention.linear_qkvz",
+  "pinned_revision": "99bb52631c1fe2e9a496f5cf255cb2cd7b0f0743",
+  "protocol": "hawking.qwen38.resident.v1",
+  "require_fusion_env": true,
+  "resident_binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release/examples/ascension_qwen38_resident",
+  "resident_binary_sha256": "39f3f28c0bf695f2f5c2e436bdb82a88f8406fb3f7a4b6f2588899350ebd78f8",
+  "resident_identity": "sealed-3.14",
+  "seal_source": "hcli/hawking-native.sealed-3.14.json",
+  "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json"
+ },
+ "verdict": null,
+ "version": 1,
+ "what_this_does_not_prove": [
+  "A generate-identity gate on the sealed residual stream.",
+  "That X equals the sealed mixer input (capture_diverse2 is post_attn_norm).",
+  "A protected complete-token or TPS number."
+ ]
+}

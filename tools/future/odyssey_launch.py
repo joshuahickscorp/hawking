@@ -37,6 +37,16 @@ from tools.future import flash_nx_audit as nx_audit
 from tools.future import odyssey2_law_store as ols
 from tools.future import odyssey3_adversary as o3
 from tools.future import repro_science as rs
+from tools.future import status_causality as sc
+from tools.future.specimen_curriculum import (  # noqa: F401 - re-export; this file is not a second authority
+    CURRICULUM_ROLES,
+    propose_specimen_curriculum,
+    _ready,
+    _independently_verified,
+    _specimen_dirs_on_disk,
+    _lake_index,
+    _odyssey_i_patients,
+)
 from tools.future import workunit_species as wus
 
 
@@ -154,13 +164,8 @@ GPU_STAGES = frozenset(
 )
 COMPILE_STAGES = frozenset({"nr", "nx"})
 
-CURRICULUM_ROLES: tuple[tuple[str, str], ...] = (
-    ("very_small_dense_procedural_speed", "very small dense for procedural speed"),
-    ("small_dense_alternate_architecture_transfer", "small dense alternate architecture for transfer"),
-    ("mid_size_dense_compiler", "mid-size dense for compiler"),
-    ("qwen27_mature_physical", "Qwen27 for mature physical"),
-    ("flash_heterogeneous_frontier", "Flash for heterogeneous frontier"),
-)
+# CURRICULUM_ROLES and propose_specimen_curriculum live in
+# tools/future/specimen_curriculum.py (single authority). Re-exported above.
 
 EVIDENCE_LATTICE = (
     "STATIC_ONLY",
@@ -191,6 +196,132 @@ INTEGRATION_POINTS: dict[str, str] = {
     "super_resident": "tools/future/super_resident.py — HCLI super-resident operating the orchestrator sandbox",
     "resident_api": "tools/future/resident_api.py — discover/invoke surface HCLI uses instead of a human CLI",
 }
+
+
+# Five fields every consequential criterion must record at emit time.
+# Prefer the sibling's tuple when present so the consumer and the routine
+# cannot drift on the contract.
+FIVE_RECORDED_FIELDS: tuple[str, ...] = getattr(
+    sc,
+    "FIVE_RECORDED_FIELDS",
+    (
+        "probe_performed",
+        "direct_observation",
+        "interpretation",
+        "confidence",
+        "alternatives",
+    ),
+)
+
+
+def _bind_emit() -> None:
+    """This lane consumes emit(); a sibling owns that module.
+
+    If this checkout still has the pre-emit blob, bind a catalog-free
+    trampoline so the call site is `sc.emit(` either way. emit() must not
+    touch disk and must not look up the historical catalog for a bare name.
+    """
+    if hasattr(sc, "emit"):
+        return
+
+    def emit(
+        status: str,
+        *,
+        probe_performed: str = "",
+        direct_observation: Any = "",
+        interpretation: str = "",
+        probe_kind: str = "",
+        claim_kind: str | None = None,
+        falsifier: str = "",
+        source: str = "",
+    ) -> dict[str, Any]:
+        row: dict[str, Any] = {
+            "status": status,
+            "probe_performed": probe_performed,
+            "direct_observation": direct_observation,
+            "interpretation": interpretation or status,
+            "probe_kind": probe_kind,
+            "use_catalog": False,
+            "source": source or "<emit>",
+        }
+        if claim_kind:
+            row["claim_kind"] = claim_kind
+        if falsifier:
+            row["falsifier"] = falsifier
+        out = sc.challenge(row)
+        out["entry"] = "emit"
+        return out
+
+    sc.emit = emit  # type: ignore[attr-defined]
+
+
+_bind_emit()
+
+
+def records_five_fields(node: Any) -> bool:
+    """True iff this mapping itself carries the five recorded fields."""
+    fn = getattr(sc, "records_five_fields", None)
+    if callable(fn):
+        return bool(fn(node))
+    if not isinstance(node, Mapping):
+        return False
+    if not all(k in node for k in FIVE_RECORDED_FIELDS):
+        return False
+    if not str(node.get("probe_performed") or "").strip():
+        return False
+    if node.get("direct_observation") in (None, "", [], {}):
+        return False
+    if not str(node.get("interpretation") or "").strip():
+        return False
+    conf = node.get("confidence")
+    if not isinstance(conf, Mapping):
+        return False
+    if not {"would_raise", "would_lower", "level", "about"} <= set(conf):
+        return False
+    alts = node.get("alternatives")
+    return isinstance(alts, list) and bool(alts)
+
+
+def record_criterion_causality(
+    row: dict[str, Any],
+    *,
+    probe_performed: str = "",
+    direct_observation: Any = "",
+    probe_kind: str = "",
+    claim_kind: str | None = None,
+    interpretation: str | None = None,
+    source: str = "",
+) -> dict[str, Any]:
+    """Stamp the five causality fields. Does not change met/unmet.
+
+    An unsupplied observation is UNTESTED, never a restatement of the status
+    or the reason. OVERREACHING is recorded beside the verdict; it does not
+    override met.
+    """
+    met_before = row.get("met")
+    status = str(row.get("id") or row.get("status") or "")
+    interp = interpretation if interpretation is not None else str(row.get("reason") or status)
+    unsupplied = direct_observation in (None, "", [], {})
+    rec = sc.emit(
+        status,
+        probe_performed=str(probe_performed or ""),
+        direct_observation="" if unsupplied else direct_observation,
+        interpretation=interp,
+        probe_kind="" if unsupplied else probe_kind,
+        claim_kind=None if unsupplied else claim_kind,
+        source=source or f"tools/future/odyssey_launch.py::{status}",
+    )
+    for key in FIVE_RECORDED_FIELDS:
+        row[key] = rec[key]
+    row["causality_verdict"] = rec["verdict"]
+    row["falsifier"] = rec.get("falsifier")
+    if rec.get("probe_kind"):
+        row["probe_kind"] = rec["probe_kind"]
+    if rec.get("claim_kind") is not None:
+        row["claim_kind"] = rec["claim_kind"]
+    if row.get("met") != met_before:
+        raise RuntimeError("status_causality.emit mutated met/unmet")
+    return rec
 
 
 # ---------------------------------------------------------------------------
@@ -387,6 +518,10 @@ def _criterion(
     evidence: Sequence[Mapping[str, Any]] | None = None,
     operational: Mapping[str, Any] | None = None,
     extra: Mapping[str, Any] | None = None,
+    probe_performed: str = "",
+    direct_observation: Any = "",
+    probe_kind: str = "",
+    claim_kind: str | None = None,
 ) -> dict[str, Any]:
     row: dict[str, Any] = {
         "id": cid,
@@ -397,6 +532,23 @@ def _criterion(
     }
     if extra:
         row.update(dict(extra))
+    # Default claim is the measured flags themselves, not a world-absence.
+    # OVERREACHING stays information; met/unmet is already on the row.
+    if probe_kind == "":
+        probe_kind = sc.PROBE_MEASURED_FLAGS
+    if claim_kind is None and (
+        str(probe_performed or "").strip()
+        and direct_observation not in (None, "", [], {})
+    ):
+        claim_kind = sc.CLAIM_MEASURED_UNMET if not met else sc.CLAIM_FIELD_VALUE
+    record_criterion_causality(
+        row,
+        probe_performed=probe_performed,
+        direct_observation=direct_observation,
+        probe_kind=probe_kind,
+        claim_kind=claim_kind,
+        interpretation=reason,
+    )
     return row
 
 
@@ -431,456 +583,6 @@ def operational_bar(
 # ---------------------------------------------------------------------------
 # Curriculum roles recovered from ModelLake seals + Odyssey I + law-store schools.
 # Do not propose exhaustively optimizing every downloaded model.
-# ---------------------------------------------------------------------------
-
-
-def _specimen_dirs_on_disk() -> set[str]:
-    """Specimen directory names actually present in ModelLake. Read-only."""
-    root = Path("/Volumes/corpdrive/hawking-modellake/specimens")
-    try:
-        return {p.name for p in root.iterdir() if p.is_dir()}
-    except OSError:
-        return set()  # the lake may not be mounted; that is not an error here
-
-
-def _independently_verified() -> dict[str, dict[str, Any]]:
-    """Specimens whose every published digest was RECOMPUTED and matched.
-
-    ModelLake's own seals say MANIFEST_ONLY because it verified most files by
-    size. That is not verification and the gate is right to refuse it. But the
-    digests were never missing -- HuggingFace writes a .metadata sidecar per
-    file -- so whole-tree verification can be EARNED offline, and this reads the
-    receipt where it was earned.
-
-    Strict on purpose: a row counts only if it hashed real bytes, matched every
-    file, and had no file it could not check. Anything softer would turn a
-    correct refusal into a false readiness, which is the exact failure this
-    gate exists to prevent.
-    """
-    rec = probe_json("receipts/future/SPECIMEN_VERIFICATION.json")
-    doc = rec.get("doc") if isinstance(rec.get("doc"), Mapping) else None
-    out: dict[str, dict[str, Any]] = {}
-    for row in (doc or {}).get("results") or []:
-        if not isinstance(row, Mapping):
-            continue
-        if row.get("status") != "WHOLE_TREE_VERIFIED":
-            continue
-        if not (isinstance(row.get("bytes_hashed"), int) and row["bytes_hashed"] > 0):
-            continue
-        if row.get("mismatched") or row.get("no_remote_digest"):
-            continue
-        if row.get("verified") != row.get("n_files"):
-            continue
-        out[str(row.get("specimen") or "")] = dict(row)
-    return out
-
-
-def _ready(identity: Mapping[str, Any], *, require_lake_verified: bool) -> tuple[bool, str]:
-    if require_lake_verified and not identity.get("whole_tree_verified"):
-        if identity.get("published_as_verified") is False:
-            return False, "ModelLake pin exists but the specimen is not published as verified"
-        if identity.get("in_specimens_listing") and not identity.get("whole_tree_verified"):
-            n_sha = identity.get("n_sha256_verified")
-            n_files = identity.get("n_files")
-            return False, (
-                f"ModelLake manifest is partial "
-                f"(n_sha256_verified={n_sha} n_files={n_files}); not a sealed specimen"
-            )
-        if not identity.get("in_specimens_listing"):
-            return False, "identity known but specimen is not in the ModelLake specimens listing"
-        return False, "ModelLake publication is not whole-tree verified"
-    if identity.get("patient_state") == "RETIRED":
-        # The odysseys are recurrent phases and the first canonical completion
-        # is historical, so a patient retired from that first wave is a
-        # specimen with a PROVEN role, not a disqualified one. It counts only
-        # when both halves hold: the prior seal exists, and the specimen has
-        # been independently whole-tree verified NOW. Retirement alone would
-        # be a pass on a stale seal; verification alone would lose the prior
-        # work. Recurrence is recorded so nothing downstream reads a repeat
-        # phase as a first-wave result.
-        if identity.get("whole_tree_verified") and identity.get("patient_seal"):
-            return True, (
-                "RECURRENT_PATIENT: retired from the historical first wave, prior "
-                "seal intact, and whole-tree verified again now"
-            )
-        return False, (
-            "prior Odyssey I patient is RETIRED and has not been whole-tree "
-            "verified again; a stale seal is not a live first-wave specimen"
-        )
-    if identity.get("physical_status") == "metadata_only_weights_not_present":
-        # A declared status does not outrank a measurement. This field says the
-        # weights are not present; for Flash that is 335GB and 131 safetensors
-        # shards, whole-tree verified 144 of 144 by recomputing every published
-        # digest. The declaration was true when the law store was written and is
-        # false now, and deferring to it would refuse a specimen on the strength
-        # of a stale string -- the same failure as the moved Doctor parent, the
-        # absent-but-present GPU, and the specimen filed under partial/.
-        #
-        # Measurement wins only when it is REAL: whole-tree verified AND bytes
-        # actually hashed. A status flip on anything less would be exactly the
-        # laundering this refuses.
-        if not (identity.get("whole_tree_verified") and (identity.get("bytes_hashed") or 0) > 0):
-            return False, "school identity is metadata-only; weights are not present"
-    if not identity.get("revision") and not identity.get("resolved_sha") and not identity.get("patient_seal"):
-        # A local directory has no repository revision. The external specimen
-        # seal is that identity; lake specimens cannot take this branch.
-        try:
-            from tools.future.external_specimen_seal import accept_as_sealed_identity
-        except ImportError:
-            return False, "no sealed revision or patient seal"
-        ok, why = accept_as_sealed_identity(identity)
-        if ok:
-            return True, why
-        return False, "no sealed revision or patient seal"
-    if identity.get("whole_tree_verified"):
-        return True, "ModelLake whole-tree sha256 verification"
-    return False, "sealed identity is not enough; live first-wave specimen is not published"
-
-
-def _lake_index(census: Mapping[str, Any] | None) -> dict[str, dict[str, Any]]:
-    """Index ModelLake census manifests and specimen dirs by repo / slug."""
-    out: dict[str, dict[str, Any]] = {}
-    if not isinstance(census, Mapping):
-        return out
-    verified = census.get("verified_receipts") if isinstance(census.get("verified_receipts"), Mapping) else {}
-    for row in verified.get("receipts") or []:
-        if not isinstance(row, Mapping):
-            continue
-        repo = str(row.get("repo") or "")
-        if not repo:
-            continue
-        out[repo] = {
-            "repo": repo,
-            "revision": row.get("revision") or row.get("resolved_sha"),
-            "resolved_sha": row.get("resolved_sha"),
-            "manifest_path": row.get("path"),
-            "specimen_path": row.get("specimen_path"),
-            "n_files": row.get("n_files"),
-            "n_sha256_verified": row.get("n_sha256_verified"),
-            "n_size_only_verified": row.get("n_size_only_verified"),
-            "whole_tree_verified": False,
-            "in_specimens_listing": False,
-            "source": "modellake_manifest",
-        }
-    specimens = census.get("specimens") if isinstance(census.get("specimens"), Mapping) else {}
-    names = {str(e.get("name")) for e in (specimens.get("entries") or []) if isinstance(e, Mapping)}
-    # DISK STATE IS AUTHORITY. The census is a cache of it, and a specimen the
-    # census never recorded still exists. Reading only the census reported
-    # Mistral-Small-24B as "not in the ModelLake specimens listing" while its
-    # directory was sitting in that listing -- a wrong reason attached to a
-    # correct refusal, which is the kind of error that sends work to the wrong
-    # place. ModelLake is read, never written.
-    names |= _specimen_dirs_on_disk()
-    for repo, row in out.items():
-        slug = (row.get("specimen_path") or "").rstrip("/").split("/")[-1]
-        row["in_specimens_listing"] = slug in names
-        n_files = row.get("n_files")
-        n_sha = row.get("n_sha256_verified")
-        row["whole_tree_verified"] = bool(
-            row["in_specimens_listing"]
-            and isinstance(n_files, int)
-            and isinstance(n_sha, int)
-            and n_files > 0
-            and n_sha == n_files
-        )
-    # A specimen present on disk but absent from the census needs a row of its
-    # own, or the disk fallback above can only correct rows the cache already
-    # had -- which is how Mistral-Small-24B stayed invisible.
-    for name in sorted(_specimen_dirs_on_disk()):
-        slug, _, rev = name.partition("@")
-        repo = slug.replace("--", "/", 1)
-        if repo in out:
-            continue
-        out[repo] = {
-            "repo": repo,
-            "revision": rev or None,
-            "resolved_sha": rev or None,
-            "manifest_path": None,
-            "specimen_path": f"/Volumes/corpdrive/hawking-modellake/specimens/{name}",
-            "n_files": None,
-            "n_sha256_verified": None,
-            "n_size_only_verified": None,
-            "whole_tree_verified": False,
-            "in_specimens_listing": True,
-            "source": "modellake_specimens_dir",
-        }
-
-    flash = census.get("source") if isinstance(census.get("source"), Mapping) else {}
-    if flash.get("repo"):
-        repo = str(flash.get("repo"))
-        checks = census.get("checks") if isinstance(census.get("checks"), Mapping) else {}
-        manifest = census.get("flash_target_manifest") if isinstance(census.get("flash_target_manifest"), Mapping) else {}
-        out[repo] = {
-            "repo": repo,
-            "revision": flash.get("requested_revision") or flash.get("revision"),
-            "resolved_sha": flash.get("requested_revision"),
-            "manifest_path": None,
-            "specimen_path": manifest.get("final_root"),
-            "n_files": None,
-            "n_sha256_verified": manifest.get("verified_file_count"),
-            "n_size_only_verified": None,
-            "whole_tree_verified": bool(manifest.get("whole_tree_verified")),
-            "in_specimens_listing": bool(manifest.get("final_present")),
-            "published_as_verified": not bool(checks.get("target_not_published_as_verified", True)),
-            "source": "flash_pinned_census",
-            "census_qualification": census.get("qualification"),
-        }
-    # Earned verification is applied LAST, after every row exists. It used to run
-    # before the pinned-Flash census branch appended its row, so Flash was the one
-    # specimen that could never inherit its own whole-tree result -- 144 of 144
-    # files recomputed and the role still refused. An overlay that runs before the
-    # rows it overlays is a silent no-op for whatever comes after it.
-    earned = _independently_verified()
-    for row in out.values():
-        slug = (row.get("specimen_path") or "").rstrip("/").split("/")[-1]
-        hit = earned.get(slug)
-        if not hit:
-            continue
-        row["whole_tree_verified"] = True
-        row["verification_source"] = "tools/future/specimen_verify.py (offline recomputation)"
-        row["bytes_hashed"] = hit.get("bytes_hashed")
-        row["in_specimens_listing"] = True
-        row["published_as_verified"] = True
-
-    return out
-
-
-def _odyssey_i_patients() -> list[dict[str, Any]]:
-    root = REPO / "receipts" / "odyssey-i"
-    rows: list[dict[str, Any]] = []
-    if not root.is_dir():
-        return rows
-    for seal in sorted(root.glob("*_PATIENT_SEAL.json")):
-        try:
-            doc = load_json(seal)
-        except (OSError, json.JSONDecodeError):
-            continue
-        oxx = doc.get("oxx") or seal.name.split("_", 1)[0]
-        ext_path = root / f"{oxx}_EXTERNAL.json"
-        weights = None
-        if ext_path.is_file():
-            try:
-                ext = load_json(ext_path)
-                weights = ext.get("weights_canonical")
-            except (OSError, json.JSONDecodeError):
-                weights = None
-        rows.append(
-            {
-                "oxx": oxx,
-                "status": doc.get("status"),
-                "state": doc.get("state"),
-                "seal": str(seal.relative_to(REPO)),
-                "weights_canonical": weights,
-                "sealed_mechanisms": list(doc.get("sealed_mechanisms") or []),
-            }
-        )
-    return rows
-
-
-def propose_specimen_curriculum(census_doc: Mapping[str, Any] | None = None) -> dict[str, Any]:
-    """First specimen set by curriculum role. Not 'every model in the lake'."""
-    if census_doc is None:
-        probe = probe_json(
-            "receipts/future/evidence/HCLI_MODELLAKE_FLASH_CENSUS.json",
-            "receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json",
-            "receipts/headless/MODELLAKE_FLASH_NEXT_CENSUS.json",
-        )
-        census_doc = probe.get("doc")
-        census_probe = probe
-    else:
-        census_probe = {"found": True, "path_taken": "caller", "rel": None, "resolved": None}
-
-    lake = _lake_index(census_doc if isinstance(census_doc, Mapping) else None)
-    patients = _odyssey_i_patients()
-    schools = {k: dict(v) for k, v in ols.SCHOOLS.items()}
-
-    def _patient_for(*needles: str) -> dict[str, Any] | None:
-        for p in patients:
-            blob = " ".join(
-                str(x) for x in (p.get("oxx"), p.get("weights_canonical"), p.get("seal"))
-            ).lower()
-            if any(n.lower() in blob for n in needles):
-                return p
-        return None
-
-    roles: list[dict[str, Any]] = []
-
-    q06 = dict(lake.get("Qwen/Qwen3-0.6B") or {})
-    # The gate reported this specimen as absent from the ModelLake specimens
-    # listing, which was true and was read as "the model is not here". It is
-    # here -- complete, inside ModelLake, under partial/ rather than specimens/.
-    # Ten files, ten published digests, all recomputed and matched. Location was
-    # the only thing partial about it. ModelLake still owns it and nothing here
-    # moves or writes to it.
-    q06_partial = _independently_verified().get("Qwen--Qwen3-0.6B@c1899de289a0#partial") or {}
-    if q06_partial:
-        q06.update({
-            "whole_tree_verified": True,
-            "in_specimens_listing": True,
-            "specimen_owner": "modellake_partial",
-            "specimen_path": q06_partial.get("specimen_path"),
-            "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
-        })
-        q06.setdefault("revision", "c1899de289a0")
-    roles.append(
-        {
-            "role": CURRICULUM_ROLES[0][0],
-            "purpose": CURRICULUM_ROLES[0][1],
-            "repo": q06.get("repo") or "Qwen/Qwen3-0.6B",
-            "revision": q06.get("revision"),
-            "architecture_family": "dense_transformer",
-            "identity_source": q06.get("source") or "modellake_manifest",
-            "modellake": q06,
-            "located_under_partial": bool(q06_partial),
-            **dict(zip(("ready", "ready_reason"), _ready(q06, require_lake_verified=True))),
-        }
-    )
-
-    falcon = lake.get("tiiuae/Falcon-H1-7B-Instruct") or {}
-    p001 = _patient_for("falcon-h1", "O001")
-    falcon_id = dict(falcon)
-    if p001:
-        falcon_id["patient_seal"] = p001.get("seal")
-        falcon_id["patient_state"] = p001.get("state")
-        falcon_id["patient_status"] = p001.get("status")
-    roles.append(
-        {
-            "role": CURRICULUM_ROLES[1][0],
-            "purpose": CURRICULUM_ROLES[1][1],
-            "repo": falcon.get("repo") or "tiiuae/Falcon-H1-7B-Instruct",
-            "revision": falcon.get("revision"),
-            "architecture_family": "falcon_h1",
-            "identity_source": "modellake_manifest+odyssey_i_O001",
-            "modellake": falcon,
-            "prior_odyssey_i": p001,
-            **dict(zip(("ready", "ready_reason"), _ready(falcon_id, require_lake_verified=True))),
-        }
-    )
-
-    mistral_partial = None
-    stale = []
-    if isinstance(census_doc, Mapping):
-        stale = list(census_doc.get("stale_partial_candidates") or [])
-    for row in stale:
-        path = str(row.get("path") or "")
-        if "Mistral-Small" in path:
-            mistral_partial = row
-            break
-    p004 = _patient_for("mistral-small", "O004", "24B")
-    # Consult the index rather than asserting absence. This role hardcoded
-    # in_specimens_listing=False and so reported "not in the ModelLake specimens
-    # listing" for a specimen whose 89GB directory was sitting in that listing --
-    # a wrong reason on a correct refusal, which sends the next worker to fix
-    # the wrong thing.
-    mistral_lake = lake.get("mistralai/Mistral-Small-3.1-24B-Instruct-2503") or {}
-    mistral_id = {
-        **mistral_lake,
-        "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
-        "revision": mistral_lake.get("revision")
-        or "68faf511d618ef198fef186659617cfd2eb8e33a",
-        "stale_partial": mistral_partial,
-        "patient_seal": None if not p004 else p004.get("seal"),
-        "patient_state": None if not p004 else p004.get("state"),
-        "source": "odyssey_i_O004+modellake_partial",
-    }
-    roles.append(
-        {
-            "role": CURRICULUM_ROLES[2][0],
-            "purpose": CURRICULUM_ROLES[2][1],
-            "repo": mistral_id["repo"],
-            "revision": mistral_id["revision"],
-            "architecture_family": "dense_transformer",
-            "identity_source": mistral_id["source"],
-            "modellake": {"stale_partial": mistral_partial},
-            "prior_odyssey_i": p004,
-            **dict(zip(("ready", "ready_reason"), _ready(mistral_id, require_lake_verified=True))),
-        }
-    )
-
-    q27 = dict(schools.get("Qwen27") or {})
-    # The Qwen27 parent is not a ModelLake specimen and never was. It is the
-    # 52GB directory the Doctor and Gravity tools read, it carries the same
-    # HuggingFace .metadata digests, and it is verified by exactly the same rule.
-    # It is labelled local_directory so it is never mistaken for a sealed lake
-    # specimen, and ModelLake's ownership of the lake is untouched.
-    q27_local = _independently_verified().get("qwen3.8-27b-abliterated-bf16@local") or {}
-    q27_id = {
-        "repo": q27.get("source_model") or "Qwen3.8-27B",
-        "revision": None,
-        "architecture_family": q27.get("architecture_family"),
-        "in_specimens_listing": (
-            "Qwen3.8-27B" in lake or "Qwen/Qwen3.8-27B" in lake or bool(q27_local)
-        ),
-        "whole_tree_verified": bool(q27_local),
-        "specimen_owner": q27_local.get("owner") or "modellake",
-        "specimen_path": q27_local.get("specimen_path"),
-        "physical_status": q27.get("physical_status"),
-        "source": "odyssey2_law_store.SCHOOLS.Qwen27",
-    }
-    roles.append(
-        {
-            "role": CURRICULUM_ROLES[3][0],
-            "purpose": CURRICULUM_ROLES[3][1],
-            "repo": q27_id["repo"],
-            "revision": q27_id["revision"],
-            "architecture_family": q27_id["architecture_family"],
-            "identity_source": q27_id["source"],
-            "school": q27,
-            "modellake": lake.get("Qwen3.8-27B") or lake.get("Qwen/Qwen3.8-27B") or {},
-            "local_specimen": q27_local or None,
-            **dict(zip(("ready", "ready_reason"), _ready(q27_id, require_lake_verified=True))),
-        }
-    )
-
-    flash_school = dict(schools.get("Flash") or {})
-    flash_lake = lake.get("Qwen/Qwen3.8-Flash-Next") or {}
-    flash_id = dict(flash_lake)
-    flash_id["physical_status"] = flash_school.get("physical_status") or flash_id.get("physical_status")
-    roles.append(
-        {
-            "role": CURRICULUM_ROLES[4][0],
-            "purpose": CURRICULUM_ROLES[4][1],
-            "repo": flash_lake.get("repo") or flash_school.get("source_model") or "Qwen/Qwen3.8-Flash-Next",
-            "revision": flash_lake.get("revision") or flash_school.get("pinned_revision"),
-            "architecture_family": flash_school.get("architecture_family") or "qwen4_exp",
-            "identity_source": "hcli.flash_next pin + modellake census + odyssey2 school",
-            "school": flash_school,
-            "modellake": flash_lake,
-            **dict(zip(("ready", "ready_reason"), _ready(flash_id, require_lake_verified=True))),
-        }
-    )
-
-    first_wave_repos = {r["repo"] for r in roles}
-    lake_extras = [
-        {"repo": repo, "revision": row.get("revision"), "reason": "present in ModelLake, not a first-wave curriculum role"}
-        for repo, row in sorted(lake.items())
-        if repo not in first_wave_repos
-    ]
-
-    n_ready = sum(1 for r in roles if r.get("ready"))
-    return {
-        "schema": "hawking.future.odyssey_i.specimen_curriculum.v1",
-        "n_roles": len(CURRICULUM_ROLES),
-        "n_ready": n_ready,
-        "ready": n_ready == len(CURRICULUM_ROLES) and len(CURRICULUM_ROLES) > 0,
-        "roles": roles,
-        "not_proposed": lake_extras,
-        "not_proposed_rule": (
-            "Do not exhaustively optimize every downloaded model. First-wave "
-            "curriculum is the five roles above; other lake entries are recorded "
-            "and deferred."
-        ),
-        "census_probe": {
-            "found": bool(census_probe.get("found")),
-            "path_taken": census_probe.get("path_taken"),
-            "resolved": census_probe.get("resolved"),
-        },
-        "prior_odyssey_i_patients": patients,
-    }
-
-
-# ---------------------------------------------------------------------------
-# First WorkGraphs — real WorkUnits, not prose. Phase II/III listen concurrently.
 # ---------------------------------------------------------------------------
 
 
@@ -1462,6 +1164,23 @@ def _eval_autonomy() -> dict[str, Any]:
             "persisted_trial": trial_id,
         },
         operational=bar,
+        probe_performed=(
+            "probe_json receipts/future/AUTONOMY_TRIALS.json (plural); "
+            "autonomy_trial.launch_candidate_from_receipt; "
+            "verify_timeline_digest(timeline_path, timeline_seal_digest); "
+            "probe_json receipts/future/AUTONOMY_TRIAL.json recorded as not-authority; "
+            "HCLI AgentOS autonomy all_requested_stages_passed recorded as not this criterion"
+        ),
+        direct_observation=(
+            f"AUTONOMY_TRIALS found={trials.get('found')} path_taken={trials.get('path_taken')} "
+            f"candidate_is_mapping={isinstance(candidate, Mapping)} trial={trial_id!r} "
+            f"verdict={verdict_label!r} eligible={eligible} "
+            f"resident_orchestration={orch!r} timeline_seal_verifies={seal.get('verifies')!r} "
+            f"seal_why={seal.get('why')!r} cognition_recorded={cognition_recorded} "
+            f"cognition={cognition!r} AUTONOMY_TRIAL.json found={singular.get('found')} "
+            f"not_authority=True hcli_all_requested_stages_passed={hcli_passed} "
+            f"not_this_criterion=True met={met}"
+        ),
     )
 
 
@@ -1493,6 +1212,14 @@ def _eval_curriculum() -> dict[str, Any]:
             persist=False,
             refill=False,
             notes={"proposal_emitted": "true", "specimens_not_all_published": str(not met)},
+        ),
+        probe_performed=(
+            "propose_specimen_curriculum(): ModelLake specimens/ listing, "
+            "independent digest recomputation, lake census, Odyssey I patient "
+            "seals, law-store schools; a proposal is not a ready specimen set"
+        ),
+        direct_observation=(
+            f"n_roles={n_roles} n_ready={n_ready} ready={met} unready={unmet_roles}"
         ),
     )
 
@@ -1544,6 +1271,15 @@ def _eval_modellake() -> dict[str, Any]:
             persist=bool(probe.get("found")),
             refill=False,
             notes={"identity_is_not_acquisition": "true"},
+        ),
+        probe_performed=(
+            "import hcli.agentos.modellake_receipts; probe_json census receipts "
+            f"{rels} for schema starting hcli.agentos.modellake"
+        ),
+        direct_observation=(
+            f"import_ok={imp.get('ok')} census_found={probe.get('found')} "
+            f"path_taken={probe.get('path_taken')} schema_ok={schema_ok} "
+            f"schema={None if not doc else doc.get('schema')!r} status={status!r}"
         ),
     )
 
@@ -1770,6 +1506,22 @@ def _eval_callable_tool(*, cid: str, owned: Sequence[str], prior_glob: str, titl
                    "stale_declared_paths": stale_inputs, "absent_inputs": absent_inputs,
                    "resident_schedulable": sched}],
         operational=bar,
+        probe_performed=(
+            f"_module_file on {list(owned)}; glob prior seals {prior_glob} across "
+            "checkout roots; ast-parse Path('/abs/...') literals and Path.exists(); "
+            "_resolve_stale_input under MODEL_ROOTS; _resident_schedulable via "
+            "orchestration.BINDINGS (Call nodes only; this gate cannot self-certify)"
+        ),
+        direct_observation=(
+            f"present={present} invocable={invocable} n_prior={len(prior)} "
+            f"missing_inputs={[i['path'] for i in missing_inputs]} "
+            "stale_declared_paths="
+            + str([f"{i['path']}->{i.get('resolved_elsewhere')}" for i in stale_inputs])
+            + f" absent_inputs={[i['path'] for i in absent_inputs]} "
+            f"schedule={sched.get('schedule')} frontier={sched.get('frontier')} "
+            f"refill={sched.get('refill')} driver={sched.get('driver_module')} "
+            f"flags={bar['flags']} resident_operational={bar['resident_operational']}"
+        ),
     )
 
 
@@ -1935,6 +1687,21 @@ def _eval_nr_nx() -> dict[str, Any]:
             "facts_are_independent": True,
         },
         operational=bar,
+        probe_performed=(
+            "import nr_nx_generic; invoke flash_nx_ready() and "
+            "generic_pipeline_callable(stages); probe_json "
+            "receipts/future/NR_NX_GENERIC.json; live function wins over a "
+            "receipt declaration"
+        ),
+        direct_observation=(
+            f"invoked={invoked} import_ok={bool(state.get('import', {}).get('ok'))} "
+            f"GENERIC_NR_NX_PIPELINE_CALLABLE={generic} "
+            f"GENERIC_FROM_RECEIPT={state.get('GENERIC_FROM_RECEIPT')!r} "
+            f"FLASH_NX_READY={flash_ready} "
+            f"FLASH_FROM_RECEIPT={state.get('FLASH_FROM_RECEIPT')!r} "
+            f"first_failing_stage={first_why!r} n_stages={state.get('n_stages')} "
+            f"receipt_path_taken={state.get('receipt_path_taken')}"
+        ),
     )
 
 
@@ -1975,6 +1742,19 @@ def _eval_evidence_hierarchy() -> dict[str, Any]:
         ),
         evidence=[{"lattice": list(C.MEASUREMENT_CLASSES), "snapshot_captured": n_captured, "dag": dag}],
         operational=bar,
+        probe_performed=(
+            "probe_json receipts/future/EVIDENCE_SNAPSHOT.json; compare "
+            "contamination.MEASUREMENT_CLASSES to EVIDENCE_LATTICE; "
+            "_module_file tools/future/evidence_dag.py; "
+            "_exercise tools.future.evidence_dag.selftest"
+        ),
+        direct_observation=(
+            f"lattice={list(C.MEASUREMENT_CLASSES)} lattice_ok={lattice_ok} "
+            f"snapshot_captured={n_captured} path_taken={snap.get('path_taken')} "
+            f"dag_present={dag.get('present')} dag_path_taken={dag.get('path_taken')} "
+            f"selftest_ok={live_dag.get('ok')} selftest_why={live_dag.get('why')} "
+            f"flags={bar['flags']}"
+        ),
     )
 
 
@@ -2007,6 +1787,16 @@ def _eval_negative_science() -> dict[str, Any]:
         ),
         evidence=[{"import_ok": imp.get("ok"), "path_taken": rec.get("path_taken"), "n_scars": n_scars}],
         operational=bar,
+        probe_performed=(
+            "import tools.future.negative_index; hasattr query; "
+            "probe_json receipts/future/NEGATIVE_SCIENCE_INDEX.json; "
+            "read coverage.n_scars"
+        ),
+        direct_observation=(
+            f"import_ok={imp.get('ok')} has_query={has_api} "
+            f"path_taken={rec.get('path_taken')} found={rec.get('found')} "
+            f"n_scars={n_scars} sealed={_receipt_sealed(doc)} flags={bar['flags']}"
+        ),
     )
 
 
@@ -2068,6 +1858,15 @@ def _eval_workgraphs() -> dict[str, Any]:
         evidence=[{"runtime": runtime, "workunit_species_import": species.get("ok"),
                    "exercised": live}],
         operational=bar,
+        probe_performed=(
+            "_module_file tools/future/workgraph.py; import tools.future.workunit_species; "
+            "_exercise tools.future.workgraph.selftest"
+        ),
+        direct_observation=(
+            f"runtime_present={runtime.get('present')} path_taken={runtime.get('path_taken')} "
+            f"species_ok={species.get('ok')} selftest_ok={live.get('ok')} "
+            f"selftest_why={live.get('why')} flags={bar['flags']}"
+        ),
     )
 
 
@@ -2108,6 +1907,18 @@ def _eval_self_refill() -> dict[str, Any]:
         ),
         evidence=[{"frontier": {"path_taken": frontier.get("path_taken"), "found": frontier.get("found")}, "frontiers": fronts, "succession": succ}],
         operational=bar,
+        probe_performed=(
+            "probe_json receipts/future/CLAUDE_GLOBAL_FRONTIER.json; "
+            "_module_file frontiers.py and succession.py; "
+            "_exercise tools.future.frontiers.refill and tools.future.frontiers.is_idle"
+        ),
+        direct_observation=(
+            f"frontier_found={frontier.get('found')} path_taken={frontier.get('path_taken')} "
+            f"frontiers_present={fronts.get('present')} succession_present={succ.get('present')} "
+            f"refill_ok={live_refill.get('ok')} is_idle_ok={live_idle.get('ok')} "
+            f"refill_why={live_refill.get('why')} idle_why={live_idle.get('why')} "
+            f"flags={bar['flags']}"
+        ),
     )
 
 
@@ -2145,6 +1956,17 @@ def _eval_dirty_measurement() -> dict[str, Any]:
         ),
         evidence=[{"contamination_class": klass, "path_taken": cont.get("path_taken"), "dirty_measure": dirty}],
         operational=bar,
+        probe_performed=(
+            "_module_file tools/future/dirty_measure.py; "
+            "_exercise tools.future.dirty_measure.build; "
+            "probe_json receipts/future/CONTAMINATION_SCIENCE.json; "
+            "read contamination_class"
+        ),
+        direct_observation=(
+            f"contamination_class={klass!r} path_taken={cont.get('path_taken')} "
+            f"dirty_present={dirty.get('present')} build_ok={live_dirty.get('ok')} "
+            f"build_why={live_dirty.get('why')} flags={bar['flags']}"
+        ),
     )
 
 
@@ -2307,6 +2129,22 @@ def _eval_protected_scheduling() -> dict[str, Any]:
             },
         },
         operational=bar,
+        probe_performed=(
+            "import protected_scheduler; invoke capability_report(); "
+            "probe_json receipts/future/PROTECTED_SCHEDULER.json; "
+            "_module_file protected_window.py; do not flock a bench lock; "
+            "do not fabricate a lease"
+        ),
+        direct_observation=(
+            f"invoked={cap.get('invoked')} why={cap.get('why')!r} "
+            f"PROTECTED_SCHEDULER_CAPABLE={capable} "
+            f"PROTECTED_WINDOW_AVAILABLE={available} contamination_class={klass!r} "
+            f"live_verdict={cap.get('live_verdict')!r} "
+            f"lease_present={cap.get('lease_present')!r} "
+            f"did_not_flock={cap.get('did_not_flock')} "
+            f"did_not_fabricate_lease={cap.get('did_not_fabricate_lease')} "
+            f"receipt_path_taken={cap.get('receipt_path_taken')}"
+        ),
     )
 
 
@@ -2341,6 +2179,16 @@ def _eval_transfer() -> dict[str, Any]:
         ),
         evidence=[{"n_laws": n_laws, "path_taken": rec.get("path_taken"), "schema": None if not doc else doc.get("schema")}],
         operational=bar,
+        probe_performed=(
+            "import tools.future.odyssey2_law_store; hasattr promote and "
+            "transfer_candidates; probe_json receipts/future/ODYSSEY2_LAW_STORE.json; "
+            "count n_laws"
+        ),
+        direct_observation=(
+            f"import_ok={imp.get('ok')} has_promote={has_promote} "
+            f"path_taken={rec.get('path_taken')} found={rec.get('found')} "
+            f"n_laws={n_laws} sealed={_receipt_sealed(doc)} flags={bar['flags']}"
+        ),
     )
 
 
@@ -2371,6 +2219,15 @@ def _eval_adversary() -> dict[str, Any]:
         ),
         evidence=[{"n_attack_families": len(families), "path_taken": rec.get("path_taken"), "schema": None if not doc else doc.get("schema")}],
         operational=bar,
+        probe_performed=(
+            "import tools.future.odyssey3_adversary; hasattr p_refutation; "
+            "probe_json receipts/future/ODYSSEY3_ADVERSARY.json; read attack_families"
+        ),
+        direct_observation=(
+            f"import_ok={imp.get('ok')} has_p_refutation={has_api} "
+            f"path_taken={rec.get('path_taken')} found={rec.get('found')} "
+            f"n_attack_families={len(families)} flags={bar['flags']}"
+        ),
     )
 
 
@@ -2420,6 +2277,20 @@ def _eval_crash_recovery() -> dict[str, Any]:
             }
         ],
         operational=bar,
+        probe_performed=(
+            "import tools.future.repro_science; hasattr admit; "
+            "probe_json receipts/future/REPRO_SCIENCE.json read "
+            "fault_injection.all_detected; probe_json "
+            "HCLI_AGENTOS_RECOVERY_GATE.json; import hcli.agentos.recovery; "
+            "probe_json receipts/future/GIT_LOCK_DURABILITY_REPORT.json"
+        ),
+        direct_observation=(
+            f"repro_ok={imp.get('ok')} faults_ok={faults_ok} "
+            f"hcli_recovery={hcli_imp.get('ok')} "
+            f"recovery_gate_found={recov.get('found')} "
+            f"recovery_gate_path={recov.get('path_taken')} "
+            f"git_lock_found={git_lock.get('found')} flags={bar['flags']}"
+        ),
     )
 
 
@@ -2450,6 +2321,13 @@ def _eval_receipts() -> dict[str, Any]:
         ),
         evidence=[{"receipts_future": str(future), "n_json": n}],
         operational=bar,
+        probe_performed=(
+            "Path.is_dir() and glob('*.json') on receipts/future; "
+            "write_receipt seals STATIC_ONLY and raises on hardware fields"
+        ),
+        direct_observation=(
+            f"dir_present={present} n_json={n} path={future} flags={bar['flags']}"
+        ),
     )
 
 
@@ -2516,33 +2394,159 @@ def launch_verdict(results: Sequence[Mapping[str, Any]] | None = None) -> dict[s
 # ---------------------------------------------------------------------------
 
 
-def _identity_stub(kind: str, integration: str) -> dict[str, Any]:
-    rels = {
-        "resident": (
-            "receipts/future/RESIDENT_IDENTITY.json",
-            "receipts/headless/HCLI_AGENTOS_RESIDENT_GATE.json",
-        ),
-        "sandbox": (
-            "receipts/future/SANDBOX.json",
-            "receipts/headless/HCLI_AGENTOS_CHECKPOINT.json",
-        ),
-    }[kind]
-    probe = probe_json(*rels)
+SANDBOX_RECEIPT = "receipts/future/RESIDENT_SANDBOX.json"
+SANDBOX_SCHEMA = "hawking.future.sandbox.v1"
+
+
+def _sha256_ok(value: Any) -> bool:
+    if not isinstance(value, str) or len(value) != 64:
+        return False
+    try:
+        int(value, 16)
+    except ValueError:
+        return False
+    return True
+
+
+def bind_resident_identity(integration: str) -> dict[str, Any]:
+    """Bind the launch receipt to the resident the identity document pins.
+
+    Finding RESIDENT_IDENTITY.json is not binding it. bound is true only
+    when the document pins nx_id, sealed_model_id, executable_hash,
+    artifact_root, tokenizer, and qualification, and sealed_model_id
+    agrees with the succession incumbent.
+    """
+    probe = probe_json("receipts/future/RESIDENT_IDENTITY.json")
+    loaded = _load_future_module("resident_identity")
+    if not loaded.get("ok"):
+        doc = probe.get("doc") if isinstance(probe.get("doc"), Mapping) else None
+        return {
+            "kind": "resident",
+            "found": bool(probe.get("found") and doc is not None),
+            "path_taken": probe.get("path_taken"),
+            "resolved": probe.get("resolved"),
+            "schema": None if not doc else doc.get("schema"),
+            "status": None
+            if not doc
+            else (
+                doc.get("status")
+                or (doc.get("identity_validation") or {}).get("status")
+                or doc.get("residency_status")
+            ),
+            "bound": False,
+            "pins": {},
+            "pins_named": [],
+            "missing": ["resident_identity_module"],
+            "unbound_reason": (
+                "found but resident_identity module is not importable: "
+                f"{loaded.get('why')}"
+            ),
+            "integration_point": integration,
+            "note": (
+                "Identity is not invented. A missing this-wave receipt stays unbound."
+            ),
+        }
+    fn = getattr(loaded["module"], "launch_binding", None)
+    if not callable(fn):
+        return {
+            "kind": "resident",
+            "found": bool(probe.get("found")),
+            "path_taken": probe.get("path_taken"),
+            "resolved": probe.get("resolved"),
+            "schema": None,
+            "status": None,
+            "bound": False,
+            "pins": {},
+            "pins_named": [],
+            "missing": ["launch_binding"],
+            "unbound_reason": "found but tools.future.resident_identity.launch_binding is not callable",
+            "integration_point": integration,
+            "note": (
+                "Identity is not invented. A missing this-wave receipt stays unbound."
+            ),
+        }
+    return fn(probe=probe, integration=integration)
+
+
+def bind_sandbox_identity(integration: str) -> dict[str, Any]:
+    """Bind the launch receipt to the orchestrator sandbox identity.
+
+    RESIDENT_SANDBOX.json is the this-wave receipt. HCLI AgentOS checkpoint
+    is a prior gate and is not this identity. bound is true only when the
+    document pins identity_sha256 and reentry_same_identity.
+    """
+    probe = probe_json(SANDBOX_RECEIPT)
     doc = probe.get("doc") if isinstance(probe.get("doc"), Mapping) else None
-    return {
-        "kind": kind,
-        "found": bool(probe.get("found")),
+    note = (
+        "Identity is not invented. A missing this-wave receipt stays unbound. "
+        "Bound only when RESIDENT_SANDBOX.json pins identity_sha256 and "
+        "reentry_same_identity. HCLI prior gates are not this identity."
+    )
+    base: dict[str, Any] = {
+        "kind": "sandbox",
+        "found": bool(probe.get("found") and doc is not None),
         "path_taken": probe.get("path_taken"),
         "resolved": probe.get("resolved"),
         "schema": None if not doc else doc.get("schema"),
-        "status": None if not doc else doc.get("status") or doc.get("qualification"),
-        "bound": False,
         "integration_point": integration,
-        "note": (
-            "Identity is not invented. A missing this-wave receipt stays unbound. "
-            "HCLI prior gates, if found, are cited and are not this identity."
-        ),
+        "note": note,
     }
+    if not base["found"]:
+        return {
+            **base,
+            "bound": False,
+            "status": None,
+            "pins": {},
+            "pins_named": [],
+            "missing": ["receipt"],
+            "unbound_reason": "sandbox receipt is missing; identity is not invented",
+        }
+    longevity = doc.get("longevity") if isinstance(doc.get("longevity"), Mapping) else {}
+    identity_sha256 = longevity.get("identity_sha256")
+    if not _sha256_ok(identity_sha256):
+        identity_sha256 = doc.get("identity_sha256")
+    reentry = longevity.get("reentry_same_identity")
+    if reentry is None:
+        reentry = doc.get("reentry_same_identity")
+    status = doc.get("status")
+    missing: list[str] = []
+    if doc.get("schema") != SANDBOX_SCHEMA:
+        missing.append("schema")
+    if not _sha256_ok(identity_sha256):
+        missing.append("identity_sha256")
+    if reentry is not True:
+        missing.append("reentry_same_identity")
+    provision = doc.get("provision") if isinstance(doc.get("provision"), Mapping) else {}
+    pins = {
+        "identity_sha256": identity_sha256 if _sha256_ok(identity_sha256) else None,
+        "reentry_same_identity": reentry,
+        "sandbox_id": provision.get("default_sandbox_id"),
+    }
+    bound = not missing
+    pins_named = [
+        name
+        for name in ("identity_sha256", "reentry_same_identity")
+        if name not in missing
+    ]
+    unbound_reason = None
+    if not bound:
+        unbound_reason = "found but does not pin " + ", ".join(missing)
+    return {
+        **base,
+        "bound": bound,
+        "status": status,
+        "pins": pins,
+        "pins_named": pins_named,
+        "missing": missing,
+        "unbound_reason": unbound_reason,
+    }
+
+
+def _identity_stub(kind: str, integration: str) -> dict[str, Any]:
+    """Backward-compatible name. Binding is real; this is not a stub anymore."""
+    if kind == "sandbox":
+        return bind_sandbox_identity(integration)
+    return bind_resident_identity(integration)
 
 
 def _machine_genome_pin() -> dict[str, Any]:
@@ -2630,7 +2634,11 @@ def write_launch_if_passed(
     allowed: bool,
     writer: Callable[[str, dict[str, Any], str], Path] | None = None,
 ) -> dict[str, Any]:
-    """Write ODYSSEY_I_LAUNCH.json only when the gate passes. Fail closed otherwise."""
+    """Write ODYSSEY_I_LAUNCH.json only when the gate passes AND the resident is bound.
+
+    A phase-transition receipt that cannot name its resident is not a phase
+    transition. This does not change can_launch() / the sixteen criteria.
+    """
     write = writer or write_receipt
     if not allowed:
         return {
@@ -2640,6 +2648,31 @@ def write_launch_if_passed(
             "reason": (
                 "gate REFUSED; ODYSSEY_I_LAUNCH.json is a phase-transition receipt "
                 "and is not written while any criterion is unmet"
+            ),
+        }
+    resident = payload.get("resident_identity") if isinstance(payload, Mapping) else None
+    if not (isinstance(resident, Mapping) and resident.get("bound") is True):
+        detail = "resident_identity is missing from the launch payload"
+        missing = None
+        if isinstance(resident, Mapping):
+            named = resident.get("unbound_reason")
+            missing = resident.get("missing")
+            if named:
+                detail = str(named)
+            elif missing:
+                detail = "found but does not pin " + ", ".join(str(x) for x in missing)
+            else:
+                detail = "resident_identity.bound is false"
+        return {
+            "written": False,
+            "path": None,
+            "name": LAUNCH_RECEIPT,
+            "unbound_identity": True,
+            "missing": list(missing) if isinstance(missing, (list, tuple)) else missing,
+            "reason": (
+                "resident_identity unbound; ODYSSEY_I_LAUNCH.json is a "
+                "phase-transition receipt and is not written while the resident "
+                f"is unbound: {detail}"
             ),
         }
     path = write(LAUNCH_RECEIPT, dict(payload), RECORDED_BY)
@@ -2720,6 +2753,8 @@ def gaps_closed() -> list[str]:
         "Sixteen launch criteria evaluated from evidence; can_launch is False until all pass.",
         "Refuse path names every unmet criterion; it does not stop at the first.",
         "ODYSSEY_I_LAUNCH.json is written only on pass; refuse does not write the phase-transition receipt.",
+        "write_launch_if_passed refuses an unbound resident_identity even if all sixteen criteria are met; a phase-transition receipt must name its resident.",
+        "resident_identity / sandbox_identity bind from RESIDENT_IDENTITY.json and RESIDENT_SANDBOX.json when those documents pin the named fields; a missing pin stays unbound with the field named; status is read from the document, not defaulted to null.",
         "Specimen curriculum proposes five roles from ModelLake seals / Odyssey I / law-store schools; other lake entries are recorded and not first-wave.",
         "First WorkGraphs emitted as real HCLI WorkUnits with dependencies and resource lanes.",
         "Phase II transfer and Phase III attack both depend on Phase I laws and not on each other — no global barrier.",
@@ -2769,7 +2804,8 @@ def resident_callable_block(verdict: Mapping[str, Any]) -> dict[str, Any]:
         "fail_closed": (
             "can_launch() is False while any criterion is unmet; unmet_criteria() names "
             "every unmet id; write_launch_if_passed() does not call write_receipt for "
-            f"{LAUNCH_RECEIPT} on refuse; --launch exits 1; HardwareClaimError on numeric "
+            f"{LAUNCH_RECEIPT} on refuse; write_launch_if_passed() also refuses when "
+            "resident_identity.bound is false; --launch exits 1; HardwareClaimError on numeric "
             "hardware fields; GPU units stay SLEEPING rather than inventing a result."
         ),
         "verdict_now": verdict.get("verdict"),
@@ -2920,7 +2956,18 @@ def verify() -> int:
         f"launch_receipt_written={doc['odyssey_i_launch_written']} "
         f"phase_transition={doc['phase_transition']}"
     )
+    draft = doc.get("launch_payload_draft") if isinstance(doc.get("launch_payload_draft"), Mapping) else {}
+    ident = draft.get("resident_identity")
+    print("resident_identity:")
+    print(json.dumps(ident, indent=2, sort_keys=True, default=str))
+    launch_write = doc.get("launch_receipt") if isinstance(doc.get("launch_receipt"), Mapping) else {}
     if verdict["allowed"] and not doc["odyssey_i_launch_written"]:
+        if launch_write.get("unbound_identity"):
+            print(
+                "launch_receipt withheld: resident_identity.bound is false "
+                f"({launch_write.get('reason')})"
+            )
+            return 0
         print("FAIL: gate allowed but ODYSSEY_I_LAUNCH.json was not written", file=sys.stderr)
         return 1
     if (not verdict["allowed"]) and doc["odyssey_i_launch_written"]:

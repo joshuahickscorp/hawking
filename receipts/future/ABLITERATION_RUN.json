@@ -1,0 +1,2322 @@
+{
+ "admitted_candidate": {
+  "admitted": true,
+  "as": "candidate_transformation",
+  "behavioural_outcome": "UNMEASURED",
+  "behavioural_outcome_is_unmeasured_unless_generation_eval_ran": true,
+  "claim_boundary": "Static sidecar artifact. No hardware measurement. No weight write. Abliteration is a candidate transformation generator; it does not guarantee removal of refusals (NousResearch/llm-abliteration README). A result may name a candidate direction, a stated projection, and the completion / harmless / loss evaluations that selected it. It may not report a model as abliterated, uncensored, or refusal-free.",
+  "evidence_class": "STATIC_ONLY",
+  "not_as": "uncensoring_switch"
+ },
+ "admitted_ids": [
+  "L1_p-1",
+  "L2_p-1",
+  "L4_p-1",
+  "L5_p-1",
+  "L6_p-1",
+  "L7_p-1",
+  "L8_p-1",
+  "L9_p-1",
+  "L10_p-1",
+  "L11_p-1",
+  "L12_p-1",
+  "L13_p-1",
+  "L14_p-1",
+  "L15_p-1",
+  "L16_p-1",
+  "L17_p-1",
+  "L18_p-1",
+  "L19_p-1",
+  "L20_p-1",
+  "L21_p-1"
+ ],
+ "after": {
+  "candidate_transformations_per_hour": 816.32900643667,
+  "end_to_end_s": 4.409986625018064,
+  "unit": "selected candidate transformations / hour (not direction-candidates / hour)"
+ },
+ "before": {
+  "candidate_transformations_per_hour": 388.665808506124,
+  "end_to_end_s": 9.26245612866478,
+  "unit": "selected candidate transformations / hour (not direction-candidates / hour)"
+ },
+ "behavioural_outcome": "UNMEASURED",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple M3 Ultra",
+  "measurement_state": "SELF_MEASURED",
+  "mps_used": true,
+  "recorded_at": "2026-08-31T09:58:00Z",
+  "recorded_by": "tools/future/abliteration_run.py",
+  "rule": "wall times are wall_s measured with perf_counter; no tps/wall_ns/gpu_ns field is written",
+  "state": "MEASURED",
+  "took_gpu_lease": true
+ },
+ "bench_state": "MEASURED",
+ "built": true,
+ "candidates": [
+  {
+   "admitted": false,
+   "direction_norm": 0.18912854055683384,
+   "direction_sha256": "aff62b478870a908ea250b44f3f1d2e5c6b74f5fcbe6f8eb4bf33c0cf9408e93",
+   "failspy_score": -1.3399536201251223,
+   "hooked": {
+    "completion_gate": "PASS",
+    "harmless_gate": "FAIL",
+    "how": "hooked last-token residual ablation/act-add; last-token KL on harmless",
+    "kl_harmless": 0.01114495936781168,
+    "loss_gate": "PASS",
+    "refusal_drop_harmful": 0.078125,
+    "steering_induce_harmless": -0.0546875,
+    "would_survive_hooked_gates": false
+   },
+   "id": "L0_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "FAIL",
+     "harmful_energy_fraction": 0.03757115734965883,
+     "hooked_gate": "PASS",
+     "hooked_score": 0.078125,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": -1.3399536201251223
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": -1.5290821606819567,
+     "hooked_gate": "FAIL",
+     "hooked_score": -0.0546875,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 0.18912854055683437
+    },
+    "loss": {
+     "exact_kl_from_logits": true,
+     "gate": "PASS",
+     "hooked_gate": "PASS",
+     "hooked_score": 0.01114495936781168,
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.04843498430371444
+    }
+   },
+   "prune_reason": null,
+   "pruned_as_source": false,
+   "refuse_reason": "completion",
+   "selected": false,
+   "source_layer": 0,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": true,
+   "direction_norm": 0.35894645607636166,
+   "direction_sha256": "418fc1c4664fde1afec849076e3551fd6633dc517b68ade4cad6f44bd5f7bb43",
+   "failspy_score": 1.2324091455266797,
+   "hooked": {
+    "completion_gate": "FAIL",
+    "harmless_gate": "PASS",
+    "how": "hooked last-token residual ablation/act-add; last-token KL on harmless",
+    "kl_harmless": 0.004290549084544182,
+    "loss_gate": "PASS",
+    "refusal_drop_harmful": -0.00390625,
+    "steering_induce_harmless": 0.0546875,
+    "would_survive_hooked_gates": false
+   },
+   "id": "L1_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.018032852733386274,
+     "hooked_gate": "FAIL",
+     "hooked_score": -0.00390625,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 1.2324091455266797
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": 0.8734626894503179,
+     "hooked_gate": "PASS",
+     "hooked_score": 0.0546875,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 0.3589464560763618
+    },
+    "loss": {
+     "exact_kl_from_logits": true,
+     "gate": "PASS",
+     "hooked_gate": "PASS",
+     "hooked_score": 0.004290549084544182,
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.009331653005299406
+    }
+   },
+   "prune_reason": null,
+   "pruned_as_source": false,
+   "refuse_reason": null,
+   "selected": true,
+   "source_layer": 1,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": true,
+   "direction_norm": 0.5022947930276687,
+   "direction_sha256": "b65ab14d6bd84dbc79cf252669ae48971465ee6807d7595fd950c1c393e314cb",
+   "failspy_score": 0.9704831510388101,
+   "hooked": {},
+   "id": "L2_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.009208708999250992,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 0.9704831510388101
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": 0.46818835801114156,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 0.5022947930276686
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.002293726567264996
+    }
+   },
+   "prune_reason": null,
+   "pruned_as_source": false,
+   "refuse_reason": null,
+   "selected": false,
+   "source_layer": 2,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": false,
+   "direction_norm": 1.0811973613794323,
+   "direction_sha256": "96650e691797af510d3cb321f0af3efde705079ded2d435c74afc504d7d3a09e",
+   "failspy_score": -0.32837386380808675,
+   "hooked": {},
+   "id": "L3_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "FAIL",
+     "harmful_energy_fraction": 0.0009461470861263365,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": -0.32837386380808675
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": -1.409571225187519,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 1.0811973613794321
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.00992199087857519
+    }
+   },
+   "prune_reason": null,
+   "pruned_as_source": false,
+   "refuse_reason": "completion",
+   "selected": false,
+   "source_layer": 3,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": true,
+   "direction_norm": 0.9177483032894984,
+   "direction_sha256": "62edacca28808ee63feb439a948e18ebb9b0332eb18ac2f87a58254e72bf0bfc",
+   "failspy_score": 2.527620785502613,
+   "hooked": {},
+   "id": "L4_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.02985688892443753,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 2.527620785502613
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": 1.609872482213114,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 0.9177483032894989
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.012706269716468164
+    }
+   },
+   "prune_reason": null,
+   "pruned_as_source": false,
+   "refuse_reason": null,
+   "selected": false,
+   "source_layer": 4,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": true,
+   "direction_norm": 1.071952899038582,
+   "direction_sha256": "b025865ff9e9c4117a05167e35016ac626dce9a99f6a44b8508c8abc6f806386",
+   "failspy_score": 3.763336411824403,
+   "hooked": {},
+   "id": "L5_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.04914184156790668,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 3.763336411824403
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": 2.691383512785821,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 1.0719528990385818
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.02652022658854575
+    }
+   },
+   "prune_reason": null,
+   "pruned_as_source": false,
+   "refuse_reason": null,
+   "selected": false,
+   "source_layer": 5,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": true,
+   "direction_norm": 1.4697106071175718,
+   "direction_sha256": "3689321c25e8cf5ba348cb0ec1eca2e148a0b1638dc1930f71a97a0f6dee8022",
+   "failspy_score": 4.717665139195743,
+   "hooked": {},
+   "id": "L6_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.06235550765807097,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 4.717665139195743
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": 3.2479545320781704,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 1.4697106071175727
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.03174289431600837
+    }
+   },
+   "prune_reason": null,
+   "pruned_as_source": false,
+   "refuse_reason": null,
+   "selected": false,
+   "source_layer": 6,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": true,
+   "direction_norm": 1.7937420556839139,
+   "direction_sha256": "66bbf487f3a5bcb542455ca95553c1a81f2eeb1b41f958a6c41af0d895059a0b",
+   "failspy_score": 6.431395613682485,
+   "hooked": {},
+   "id": "L7_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.09265214206866927,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 6.431395613682485
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": 4.637653557998571,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 1.7937420556839134
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.051803465917267054
+    }
+   },
+   "prune_reason": null,
+   "pruned_as_source": false,
+   "refuse_reason": null,
+   "selected": false,
+   "source_layer": 7,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": true,
+   "direction_norm": 2.306170033759093,
+   "direction_sha256": "9c95528249fb0db4cbc113c0c804339031004a1a458c4893ee1fc41257413ad5",
+   "failspy_score": 4.650095816412418,
+   "hooked": {},
+   "id": "L8_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.04368835498202713,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 4.650095816412418
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": 2.3439257826533257,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 2.3061700337590922
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.014327187025075518
+    }
+   },
+   "prune_reason": null,
+   "pruned_as_source": false,
+   "refuse_reason": null,
+   "selected": false,
+   "source_layer": 8,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": true,
+   "direction_norm": 3.7713720167946247,
+   "direction_sha256": "70a5af9c4825df43ee68b1f553a3e70124aeea92df25dfece5b79bd1f0406cc0",
+   "failspy_score": 8.514970225932629,
+   "hooked": {},
+   "id": "L9_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.09024498578456339,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 8.514970225932629
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": 4.743598209138005,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 3.771372016794624
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.03581688981894362
+    }
+   },
+   "prune_reason": null,
+   "pruned_as_source": false,
+   "refuse_reason": null,
+   "selected": false,
+   "source_layer": 9,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": true,
+   "direction_norm": 4.620045985242425,
+   "direction_sha256": "8b9a01168071234b8201ed0c4153052e71ff1b8cf81bb0a3883bba9c7b167881",
+   "failspy_score": 10.189550290464043,
+   "hooked": {},
+   "id": "L10_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.07657168045944886,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 10.189550290464043
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": 5.569504305221616,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 4.6200459852424265
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.02923396752669597
+    }
+   },
+   "prune_reason": null,
+   "pruned_as_source": false,
+   "refuse_reason": null,
+   "selected": false,
+   "source_layer": 10,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": true,
+   "direction_norm": 6.547485679339698,
+   "direction_sha256": "25867ee7701c64e2525cd9badfde67ba3858cf15fa4b022dc76b19593526a223",
+   "failspy_score": 6.474944697851913,
+   "hooked": {},
+   "id": "L11_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.02792138213803328,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 6.474944697851913
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": -0.07254098148778526,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 6.547485679339698
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.008324987946173236
+    }
+   },
+   "prune_reason": null,
+   "pruned_as_source": false,
+   "refuse_reason": null,
+   "selected": false,
+   "source_layer": 11,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": true,
+   "direction_norm": 7.773785258138459,
+   "direction_sha256": "f8c4283f519854591c7184f68c85b04704efeb0c63afb020c5d58882d4d59c59",
+   "failspy_score": 6.942547919457034,
+   "hooked": {},
+   "id": "L12_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.027296454561216633,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 6.942547919457034
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": -0.8312373386814237,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 7.773785258138458
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.00857823140834128
+    }
+   },
+   "prune_reason": null,
+   "pruned_as_source": false,
+   "refuse_reason": null,
+   "selected": false,
+   "source_layer": 12,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": true,
+   "direction_norm": 8.416120372154348,
+   "direction_sha256": "e0329e3f7ab542ae2aaf674603906effe617406fd4db8141c77b5f9d2cd7eba3",
+   "failspy_score": 13.460028100759086,
+   "hooked": {},
+   "id": "L13_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.09658926736205262,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 13.460028100759086
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": 5.043907728604738,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 8.416120372154348
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.02369529265128051
+    }
+   },
+   "prune_reason": null,
+   "pruned_as_source": false,
+   "refuse_reason": null,
+   "selected": false,
+   "source_layer": 13,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": true,
+   "direction_norm": 10.287482005774793,
+   "direction_sha256": "62647505ffb347f5e303e3b53e7839a2b0c46403be6511fce171b30c91307ba2",
+   "failspy_score": 10.772353686496764,
+   "hooked": {},
+   "id": "L14_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.06104240717246151,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 10.772353686496764
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": 0.4848716807219696,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 10.287482005774795
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.00898026970322489
+    }
+   },
+   "prune_reason": null,
+   "pruned_as_source": false,
+   "refuse_reason": null,
+   "selected": false,
+   "source_layer": 14,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": true,
+   "direction_norm": 21.072782931130423,
+   "direction_sha256": "8f7e50f0bdf49e0943b4bf813f97aa5fd6faa7943e50025da4faed7c3626bf8b",
+   "failspy_score": 25.81034241161597,
+   "hooked": {},
+   "id": "L15_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.21072006083336045,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 25.81034241161597
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": 4.737559480485551,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 21.07278293113042
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.01377534338409538
+    }
+   },
+   "prune_reason": null,
+   "pruned_as_source": false,
+   "refuse_reason": null,
+   "selected": false,
+   "source_layer": 15,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": true,
+   "direction_norm": 27.028026941935444,
+   "direction_sha256": "34939e541f9f29a91dbaf57e764cb5659c228a4ad205e11ff9711b9b35049313",
+   "failspy_score": 27.303520230182535,
+   "hooked": {},
+   "id": "L16_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.16324456485546002,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 27.303520230182535
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": 0.27549328824708774,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 27.028026941935448
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.006390895943132026
+    }
+   },
+   "prune_reason": null,
+   "pruned_as_source": false,
+   "refuse_reason": null,
+   "selected": false,
+   "source_layer": 16,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": true,
+   "direction_norm": 41.47808669633136,
+   "direction_sha256": "1a58f088c2d6f77edb5f2bc19cf3ca5fc4e645615ee3ad683307da55d02b8b89",
+   "failspy_score": 45.387386670375534,
+   "hooked": {},
+   "id": "L17_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.23506160627375355,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 45.387386670375534
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": 3.909299974044165,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 41.47808669633137
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.007347546632988564
+    }
+   },
+   "prune_reason": null,
+   "pruned_as_source": false,
+   "refuse_reason": null,
+   "selected": false,
+   "source_layer": 17,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": true,
+   "direction_norm": 56.69400274953662,
+   "direction_sha256": "90273562383e71f4e58535b0d52d8f8a9a49fa553a4e96df1c7eca762abf95e2",
+   "failspy_score": 63.13470573342222,
+   "hooked": {},
+   "id": "L18_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.269980070055191,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 63.13470573342222
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": 6.440702983885596,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 56.69400274953663
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.012349300867031761
+    }
+   },
+   "prune_reason": null,
+   "pruned_as_source": false,
+   "refuse_reason": null,
+   "selected": false,
+   "source_layer": 18,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": true,
+   "direction_norm": 74.92182338641376,
+   "direction_sha256": "98816bb6ef1ef9a6106a8336f7987d2024188d2105bec3ea655de3a62dfd23a2",
+   "failspy_score": 82.70542387527564,
+   "hooked": {},
+   "id": "L19_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.27658322482739006,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 82.70542387527564
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": 7.783600488861872,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 74.92182338641376
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.012547955402846867
+    }
+   },
+   "prune_reason": null,
+   "pruned_as_source": false,
+   "refuse_reason": null,
+   "selected": false,
+   "source_layer": 19,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": true,
+   "direction_norm": 94.55009298148076,
+   "direction_sha256": "1daa78b61c53386b132ca3c7979ed6e52e05624273f9817e6e726c5626144ef3",
+   "failspy_score": 102.42540084585129,
+   "hooked": {},
+   "id": "L20_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.29645284827126955,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 102.42540084585129
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": 7.875307864370528,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 94.55009298148076
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.012687704984747876
+    }
+   },
+   "prune_reason": null,
+   "pruned_as_source": false,
+   "refuse_reason": null,
+   "selected": false,
+   "source_layer": 20,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": true,
+   "direction_norm": 117.7475394026184,
+   "direction_sha256": "17bdb130d7917fbbebe0a6c974d57fc3f5f30adf9999af4870d67a6bcbf5058f",
+   "failspy_score": 116.62843986505472,
+   "hooked": {},
+   "id": "L21_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.25998638304957195,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 116.62843986505472
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": -1.119099537563692,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 117.74753940261841
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.009944363619354291
+    }
+   },
+   "prune_reason": null,
+   "pruned_as_source": false,
+   "refuse_reason": null,
+   "selected": false,
+   "source_layer": 21,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": false,
+   "direction_norm": 137.20163251594332,
+   "direction_sha256": "b48fcc985a7d0d8673851852331b7d6f4f5485b5f582eac7c99a8ace1a09719e",
+   "failspy_score": 140.03267214310884,
+   "hooked": {},
+   "id": "L22_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.2577249000597784,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 140.03267214310884
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": 2.831039627165506,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 137.20163251594334
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.015469132478410391
+    }
+   },
+   "prune_reason": "source_layer 22 is in the last 0.2 of 28 layers",
+   "pruned_as_source": true,
+   "refuse_reason": "source_layer_pruned",
+   "selected": false,
+   "source_layer": 22,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": false,
+   "direction_norm": 162.68335481500196,
+   "direction_sha256": "c1671c9ae35b970509d1524c76ba585b97bb19c56e3608211a45f65f167766f4",
+   "failspy_score": 164.81451955675456,
+   "hooked": {},
+   "id": "L23_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.23481817152817835,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 164.81451955675456
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": 2.131164741752576,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 162.683354815002
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.01822546670981681
+    }
+   },
+   "prune_reason": "source_layer 23 is in the last 0.2 of 28 layers",
+   "pruned_as_source": true,
+   "refuse_reason": "source_layer_pruned",
+   "selected": false,
+   "source_layer": 23,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": false,
+   "direction_norm": 187.44318748186302,
+   "direction_sha256": "6440beb5e3cf1937e7f233f1aaa0a41e57e07ce2c3c700f8ddb07c281d78bbad",
+   "failspy_score": 202.86137807926758,
+   "hooked": {},
+   "id": "L24_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.2147120614738107,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 202.86137807926758
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": 15.418190597404534,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 187.44318748186305
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.0150318982926183
+    }
+   },
+   "prune_reason": "source_layer 24 is in the last 0.2 of 28 layers",
+   "pruned_as_source": true,
+   "refuse_reason": "source_layer_pruned",
+   "selected": false,
+   "source_layer": 24,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": false,
+   "direction_norm": 222.89422687278744,
+   "direction_sha256": "fec3b51b4a4a530dc1ccf845fb165c422badf908808715023990a0ac0de9fb37",
+   "failspy_score": 223.91618787539358,
+   "hooked": {},
+   "id": "L25_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.16773194961696952,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 223.91618787539358
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": 1.0219610026060888,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 222.8942268727875
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.008928164657499273
+    }
+   },
+   "prune_reason": "source_layer 25 is in the last 0.2 of 28 layers",
+   "pruned_as_source": true,
+   "refuse_reason": "source_layer_pruned",
+   "selected": false,
+   "source_layer": 25,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": false,
+   "direction_norm": 234.38244244695787,
+   "direction_sha256": "130f65c289ba74796f0194580fc6d46ff08bdec6370c430dfd2f56f2f8b17588",
+   "failspy_score": 226.21065414540527,
+   "hooked": {
+    "completion_gate": "PASS",
+    "harmless_gate": "PASS",
+    "how": "hooked last-token residual ablation/act-add; last-token KL on harmless",
+    "kl_harmless": 0.033536773175001144,
+    "loss_gate": "PASS",
+    "refusal_drop_harmful": 7.3125,
+    "steering_induce_harmless": 0.3203125,
+    "would_survive_hooked_gates": true
+   },
+   "id": "L26_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.1385654124441479,
+     "hooked_gate": "PASS",
+     "hooked_score": 7.3125,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 226.21065414540527
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": -8.171788301552596,
+     "hooked_gate": "PASS",
+     "hooked_score": 0.3203125,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 234.38244244695787
+    },
+    "loss": {
+     "exact_kl_from_logits": true,
+     "gate": "PASS",
+     "hooked_gate": "PASS",
+     "hooked_score": 0.033536773175001144,
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.007896831728786417
+    }
+   },
+   "prune_reason": "source_layer 26 is in the last 0.2 of 28 layers",
+   "pruned_as_source": true,
+   "refuse_reason": "source_layer_pruned",
+   "selected": false,
+   "source_layer": 26,
+   "source_position": -1,
+   "zero_direction": false
+  },
+  {
+   "admitted": false,
+   "direction_norm": 79.7223842092031,
+   "direction_sha256": "b1d93293d7e0531ef8add59fc632357e8f13d8a51857bae84a807446343521a1",
+   "failspy_score": 67.28992379546602,
+   "hooked": {},
+   "id": "L27_p-1",
+   "n_layers": 28,
+   "objectives": {
+    "completion": {
+     "gate": "PASS",
+     "harmful_energy_fraction": 0.20615817163195788,
+     "how": "mean(harmful_resid \u00b7 v); PASS if > 0 (component exists to ablate)",
+     "score": 67.28992379546602
+    },
+    "harmless": {
+     "gate": "PASS",
+     "harmless_alignment": -12.432460413737076,
+     "how": "separation = mean(harmful\u00b7v) - mean(harmless\u00b7v); PASS if > induce_refusal_threshold=0.0 (act-add would induce)",
+     "induce_refusal_threshold": 0.0,
+     "score": 79.7223842092031
+    },
+    "loss": {
+     "exact_kl_from_logits": false,
+     "gate": "PASS",
+     "how": "mean((harmless\u00b7v)^2)/mean(||harmless||^2); PASS if <= kl_threshold=0.1 (activation-energy analogue of Arditi KL)",
+     "kl_threshold": 0.1,
+     "score": 0.019817401270090657
+    }
+   },
+   "prune_reason": "source_layer 27 is in the last 0.2 of 28 layers",
+   "pruned_as_source": true,
+   "refuse_reason": "source_layer_pruned",
+   "selected": false,
+   "source_layer": 27,
+   "source_position": -1,
+   "zero_direction": false
+  }
+ ],
+ "claim_boundary": "Abliteration is a candidate transformation generator, not an uncensoring switch. This receipt records a real run on a whole-tree-verified specimen: direction candidates from real activations, multi-objective selection, an in-memory weight-space projection, per-step wall times, and a repatriation map. It does not write ModelLake. It does not claim the child is abliterated, uncensored, or refusal-free. A behavioural outcome that was not generation-evaluated is UNMEASURED. Upstream (NousResearch/llm-abliteration README) does not guarantee complete removal of refusals.",
+ "concurrent_load": {
+  "note": "absolute wall_s are measured-under-load",
+  "uptime": "5:58  up 5 days,  9:55, 3 users, load averages: 9.05 8.03 6.77"
+ },
+ "confirmation": {
+  "kl_harmful": 1.2847986221313477,
+  "kl_harmless": 0.8283350467681885,
+  "note": "in-memory child; lake not written; KL is not a behavioural eval",
+  "projection": "norm_preserving_biprojected",
+  "ran": true,
+  "restored_parent_weights": true
+ },
+ "dataset": {
+  "baseline_refusal_harmful": [
+   -6.875,
+   -7.09375,
+   -7.375,
+   -7.5625,
+   -4.0625,
+   -4.625,
+   -4.125,
+   -4.28125
+  ],
+  "baseline_refusal_harmless": [
+   -4.125,
+   -15.75,
+   -11.0,
+   -14.4375,
+   -15.625,
+   -8.875,
+   -9.875,
+   -4.5
+  ],
+  "n_harmful_declared": 8,
+  "n_harmless_declared": 8,
+  "position": -1,
+  "prompt_sha256": "f3ac11aa30830f19818343a49b45dc23ca1a4fa78299fd58a04e2a447a464ef1",
+  "texts_not_stored": true
+ },
+ "end_to_end_s": 4.409986625018064,
+ "evidence_class": "SELF_MEASURED",
+ "failspy": {
+  "control": "FailSpy/abliterator find_best_refusal_dir",
+  "failspy_score": 226.21065414540527,
+  "is_method": false,
+  "is_negative_control": true,
+  "ranking": [
+   {
+    "failspy_score": 226.21065414540527,
+    "id": "L26_p-1",
+    "source_layer": 26
+   },
+   {
+    "failspy_score": 223.91618787539358,
+    "id": "L25_p-1",
+    "source_layer": 25
+   },
+   {
+    "failspy_score": 202.86137807926758,
+    "id": "L24_p-1",
+    "source_layer": 24
+   },
+   {
+    "failspy_score": 164.81451955675456,
+    "id": "L23_p-1",
+    "source_layer": 23
+   },
+   {
+    "failspy_score": 140.03267214310884,
+    "id": "L22_p-1",
+    "source_layer": 22
+   },
+   {
+    "failspy_score": 116.62843986505472,
+    "id": "L21_p-1",
+    "source_layer": 21
+   },
+   {
+    "failspy_score": 102.42540084585129,
+    "id": "L20_p-1",
+    "source_layer": 20
+   },
+   {
+    "failspy_score": 82.70542387527564,
+    "id": "L19_p-1",
+    "source_layer": 19
+   },
+   {
+    "failspy_score": 67.28992379546602,
+    "id": "L27_p-1",
+    "source_layer": 27
+   },
+   {
+    "failspy_score": 63.13470573342222,
+    "id": "L18_p-1",
+    "source_layer": 18
+   },
+   {
+    "failspy_score": 45.387386670375534,
+    "id": "L17_p-1",
+    "source_layer": 17
+   },
+   {
+    "failspy_score": 27.303520230182535,
+    "id": "L16_p-1",
+    "source_layer": 16
+   },
+   {
+    "failspy_score": 25.81034241161597,
+    "id": "L15_p-1",
+    "source_layer": 15
+   },
+   {
+    "failspy_score": 13.460028100759086,
+    "id": "L13_p-1",
+    "source_layer": 13
+   },
+   {
+    "failspy_score": 10.772353686496764,
+    "id": "L14_p-1",
+    "source_layer": 14
+   },
+   {
+    "failspy_score": 10.189550290464043,
+    "id": "L10_p-1",
+    "source_layer": 10
+   },
+   {
+    "failspy_score": 8.514970225932629,
+    "id": "L9_p-1",
+    "source_layer": 9
+   },
+   {
+    "failspy_score": 6.942547919457034,
+    "id": "L12_p-1",
+    "source_layer": 12
+   },
+   {
+    "failspy_score": 6.474944697851913,
+    "id": "L11_p-1",
+    "source_layer": 11
+   },
+   {
+    "failspy_score": 6.431395613682485,
+    "id": "L7_p-1",
+    "source_layer": 7
+   },
+   {
+    "failspy_score": 4.717665139195743,
+    "id": "L6_p-1",
+    "source_layer": 6
+   },
+   {
+    "failspy_score": 4.650095816412418,
+    "id": "L8_p-1",
+    "source_layer": 8
+   },
+   {
+    "failspy_score": 3.763336411824403,
+    "id": "L5_p-1",
+    "source_layer": 5
+   },
+   {
+    "failspy_score": 2.527620785502613,
+    "id": "L4_p-1",
+    "source_layer": 4
+   },
+   {
+    "failspy_score": 1.2324091455266797,
+    "id": "L1_p-1",
+    "source_layer": 1
+   },
+   {
+    "failspy_score": 0.9704831510388101,
+    "id": "L2_p-1",
+    "source_layer": 2
+   },
+   {
+    "failspy_score": -0.32837386380808675,
+    "id": "L3_p-1",
+    "source_layer": 3
+   },
+   {
+    "failspy_score": -1.3399536201251223,
+    "id": "L0_p-1",
+    "source_layer": 0
+   }
+  ],
+  "selected_id": "L26_p-1",
+  "selected_layer": 26,
+  "sort": "single score = completion (harmful residual alignment); NOT harmless+loss gates"
+ },
+ "filter_train": {
+  "arditi_filter_train": true,
+  "emptied": true,
+  "keep_harmful_refusal_gt_0": [],
+  "keep_harmless_refusal_lt_0": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "n_harmful_kept": 0,
+  "n_harmless_kept": 8,
+  "rule": "empty after filter is a refusal-direction run refusal; this generator still emits a contrast direction on the declared sets, labelled as such"
+ },
+ "generation_eval": {
+  "ran": false,
+  "reason": "no completion strings were sampled; hooked/activation scores are not a behavioural measurement"
+ },
+ "generator_mode": "contrast_on_declared_sets_filter_would_empty",
+ "git_head": "9d90b5de0bab6ea019717ba42128cd78ff94705f",
+ "gpu_authority": false,
+ "hidden_size": 1024,
+ "lake_fingerprint_after": {
+  "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+  "weight_bytes": 1503300328,
+  "weight_mtime_ns": 1787950304051685710
+ },
+ "lake_fingerprint_before": {
+  "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+  "weight_bytes": 1503300328,
+  "weight_mtime_ns": 1787950304051685710
+ },
+ "lake_manifest": {
+  "bytes": 1519280128,
+  "n_files": 10,
+  "n_sha256_verified": 2,
+  "path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-0.6B@c1899de289a0.json",
+  "repo": "Qwen/Qwen3-0.6B",
+  "resolved_sha": "c1899de289a04d12100db370d81485cdf75e47ca",
+  "revision": "c1899de289a04d12100db370d81485cdf75e47ca"
+ },
+ "lake_untouched": true,
+ "layer_scoping": {
+  "destination": {
+   "blacklist_wins_over_whitelist": true,
+   "blocked": [
+    0,
+    1,
+    26,
+    27
+   ],
+   "n_layers": 28,
+   "reasons": [
+    "FailSpy: blacklist first and last couple destination layers by default"
+   ],
+   "role": "destination",
+   "writable": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25
+   ]
+  },
+  "source": {
+   "blacklist_wins_over_whitelist": true,
+   "blocked": [
+    22,
+    23,
+    24,
+    25,
+    26,
+    27
+   ],
+   "n_layers": 28,
+   "reasons": [
+    "andyrdt: prune last 0.2 of layers as direction SOURCES (cutoff=22)"
+   ],
+   "role": "source",
+   "writable": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21
+   ]
+  }
+ },
+ "lease": {
+  "held": true,
+  "paths": [
+   "/tmp/hawking-gpu-lane.lock",
+   "/Users/scammermike/Downloads/hawking/.hcli/locks/protected-accelerator-bench.lock"
+  ],
+  "pid": 13705,
+  "took_gpu_lease": true,
+  "wall_s": 0.0003897499991580844,
+  "widens_hcli_authority": false
+ },
+ "load_path": "/Users/scammermike/noetic/stage/Qwen--Qwen3-0.6B@c1899de289a0",
+ "metal": {
+  "chipset": "Apple M3 Ultra",
+  "gpu_cores_reported": 60,
+  "metal_device_seen": true,
+  "metal_support": "Metal 4",
+  "mps_available": true,
+  "mps_device_ok": true,
+  "torch_version": "2.13.0",
+  "xcrun_metal": {
+   "found": false,
+   "path": null
+  }
+ },
+ "n_admitted": 20,
+ "n_direction_candidates": 28,
+ "n_layers": 28,
+ "n_steps_repatriate": 9,
+ "n_steps_stay_python": 5,
+ "negative_findings": [
+  "upstream does not guarantee complete removal of refusals; this module will not manufacture that guarantee",
+  "FailSpy's find_best_refusal_dir is a single-score sort and is treated as a negative control, not a method",
+  "a directory named 'abliterated' is a naming fact, not a verified behavioural outcome",
+  "generation-level behavioural effect is UNMEASURED",
+  "ModelLake was not written; the child exists in memory and as this receipt"
+ ],
+ "outer_scorer": {
+  "module": "tools.future.tabula.evaluate",
+  "ran": false,
+  "reason": "no generation-level ScoreVector was measured; independent vector stays UNMEASURED"
+ },
+ "plan": {
+  "kind": {
+   "architecture": "qwen3_dense",
+   "eligible": true,
+   "instruct_in_name": false,
+   "moe_expert_granular_not_in_recovered_method": false,
+   "named_abliterated": false,
+   "specimen": "Qwen--Qwen3-0.6B@c1899de289a0",
+   "weight_space": "full_weight",
+   "why": "smallest recovered residual-stream causal LM on this lake"
+  },
+  "projection_default": "norm_preserving_biprojected",
+  "ran_this_lane": true,
+  "status": "PLAN_ONLY"
+ },
+ "port_not_performed": true,
+ "port_rule": "the obligation asked what repatriates; an honest map is the deliverable",
+ "projection": {
+  "applied_on": "torch.mps",
+  "geometry_sample": {
+   "conventional_left_null": true,
+   "frobenius_out": 37.26772913819626,
+   "frobenius_parent": 37.26772913819626,
+   "frobenius_vs_row_norm_fro_delta": 0.08517162826825206,
+   "norm_preserve_error_frobenius": 2.1316282072803006e-14,
+   "residual_vT_W_out": 0.010556266853313529,
+   "row_norm_and_frobenius_are_distinct": true,
+   "row_norm_max_abs_error": 4.440892098500626e-16
+  },
+  "geometry_sample_key": "model.layers.2.self_attn.o_proj.weight",
+  "in_memory": true,
+  "invert_recipe_sample": {
+   "method": "unscale_then_add_outer(v, vT_W)",
+   "scale": 1.0,
+   "stores": [
+    "v",
+    "vT_W",
+    "scale"
+   ],
+   "vT_W_sha256": "41e4cde658af09e69c1c8c69250506dc8e91bf6af74f06b7d6f214c8eef3f052",
+   "v_sha256": "003c3adbef74576b8fed0251090d66db81f5cedc05c353c6e74bb9f0a8732d7a"
+  },
+  "lake_written": false,
+  "matrices": [
+   {
+    "in_memory": true,
+    "key": "model.layers.2.self_attn.o_proj.weight",
+    "shape": [
+     1024,
+     2048
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.2.mlp.down_proj.weight",
+    "shape": [
+     1024,
+     3072
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.3.self_attn.o_proj.weight",
+    "shape": [
+     1024,
+     2048
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.3.mlp.down_proj.weight",
+    "shape": [
+     1024,
+     3072
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.4.self_attn.o_proj.weight",
+    "shape": [
+     1024,
+     2048
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.4.mlp.down_proj.weight",
+    "shape": [
+     1024,
+     3072
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.5.self_attn.o_proj.weight",
+    "shape": [
+     1024,
+     2048
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.5.mlp.down_proj.weight",
+    "shape": [
+     1024,
+     3072
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.6.self_attn.o_proj.weight",
+    "shape": [
+     1024,
+     2048
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.6.mlp.down_proj.weight",
+    "shape": [
+     1024,
+     3072
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.7.self_attn.o_proj.weight",
+    "shape": [
+     1024,
+     2048
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.7.mlp.down_proj.weight",
+    "shape": [
+     1024,
+     3072
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.8.self_attn.o_proj.weight",
+    "shape": [
+     1024,
+     2048
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.8.mlp.down_proj.weight",
+    "shape": [
+     1024,
+     3072
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.9.self_attn.o_proj.weight",
+    "shape": [
+     1024,
+     2048
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.9.mlp.down_proj.weight",
+    "shape": [
+     1024,
+     3072
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.10.self_attn.o_proj.weight",
+    "shape": [
+     1024,
+     2048
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.10.mlp.down_proj.weight",
+    "shape": [
+     1024,
+     3072
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.11.self_attn.o_proj.weight",
+    "shape": [
+     1024,
+     2048
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.11.mlp.down_proj.weight",
+    "shape": [
+     1024,
+     3072
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.12.self_attn.o_proj.weight",
+    "shape": [
+     1024,
+     2048
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.12.mlp.down_proj.weight",
+    "shape": [
+     1024,
+     3072
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.13.self_attn.o_proj.weight",
+    "shape": [
+     1024,
+     2048
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.13.mlp.down_proj.weight",
+    "shape": [
+     1024,
+     3072
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.14.self_attn.o_proj.weight",
+    "shape": [
+     1024,
+     2048
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.14.mlp.down_proj.weight",
+    "shape": [
+     1024,
+     3072
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.15.self_attn.o_proj.weight",
+    "shape": [
+     1024,
+     2048
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.15.mlp.down_proj.weight",
+    "shape": [
+     1024,
+     3072
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.16.self_attn.o_proj.weight",
+    "shape": [
+     1024,
+     2048
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.16.mlp.down_proj.weight",
+    "shape": [
+     1024,
+     3072
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.17.self_attn.o_proj.weight",
+    "shape": [
+     1024,
+     2048
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.17.mlp.down_proj.weight",
+    "shape": [
+     1024,
+     3072
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.18.self_attn.o_proj.weight",
+    "shape": [
+     1024,
+     2048
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.18.mlp.down_proj.weight",
+    "shape": [
+     1024,
+     3072
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.19.self_attn.o_proj.weight",
+    "shape": [
+     1024,
+     2048
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.19.mlp.down_proj.weight",
+    "shape": [
+     1024,
+     3072
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.20.self_attn.o_proj.weight",
+    "shape": [
+     1024,
+     2048
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.20.mlp.down_proj.weight",
+    "shape": [
+     1024,
+     3072
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.21.self_attn.o_proj.weight",
+    "shape": [
+     1024,
+     2048
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.21.mlp.down_proj.weight",
+    "shape": [
+     1024,
+     3072
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.22.self_attn.o_proj.weight",
+    "shape": [
+     1024,
+     2048
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.22.mlp.down_proj.weight",
+    "shape": [
+     1024,
+     3072
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.23.self_attn.o_proj.weight",
+    "shape": [
+     1024,
+     2048
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.23.mlp.down_proj.weight",
+    "shape": [
+     1024,
+     3072
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.24.self_attn.o_proj.weight",
+    "shape": [
+     1024,
+     2048
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.24.mlp.down_proj.weight",
+    "shape": [
+     1024,
+     3072
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.25.self_attn.o_proj.weight",
+    "shape": [
+     1024,
+     2048
+    ],
+    "skipped": false
+   },
+   {
+    "in_memory": true,
+    "key": "model.layers.25.mlp.down_proj.weight",
+    "shape": [
+     1024,
+     3072
+    ],
+    "skipped": false
+   }
+  ],
+  "n_applied": 48,
+  "n_skipped": 0,
+  "projection": "norm_preserving_biprojected"
+ },
+ "promoted": false,
+ "purpose": "Run abliteration as a first-class Tabula candidate-transformation generator on a whole-tree-verified specimen, measure what it generated, map which steps repatriate to Rust/Metal, and cut the wall so the generator yields more results per unit time.",
+ "recorded_at": "2026-08-31T09:58:00Z",
+ "recorded_by": "tools/future/abliteration_run.py",
+ "refused": [
+  {
+   "id": "L0_p-1",
+   "reason": "completion"
+  },
+  {
+   "id": "L3_p-1",
+   "reason": "completion"
+  },
+  {
+   "id": "L22_p-1",
+   "reason": "source_layer_pruned"
+  },
+  {
+   "id": "L23_p-1",
+   "reason": "source_layer_pruned"
+  },
+  {
+   "id": "L24_p-1",
+   "reason": "source_layer_pruned"
+  },
+  {
+   "id": "L25_p-1",
+   "reason": "source_layer_pruned"
+  },
+  {
+   "id": "L26_p-1",
+   "reason": "source_layer_pruned"
+  },
+  {
+   "id": "L27_p-1",
+   "reason": "source_layer_pruned"
+  }
+ ],
+ "repatriation": [
+  {
+   "is_dominant": false,
+   "measured": true,
+   "reason": "fcntl flock of a lockfile is process coordination, not tensor work",
+   "repatriates_to_rust_metal": false,
+   "step": "lease_acquire",
+   "wall_s": 0.00040075002470985055
+  },
+  {
+   "is_dominant": false,
+   "measured": true,
+   "reason": "JSON row lookup; already a Python sidecar",
+   "repatriates_to_rust_metal": false,
+   "step": "verification",
+   "wall_s": 0.04834354197373614
+  },
+  {
+   "is_dominant": false,
+   "measured": true,
+   "reason": "byte copy USB\u2192SSD; os/cp, not a Metal kernel. Staging is the I/O cut, not a port",
+   "repatriates_to_rust_metal": false,
+   "step": "specimen_stage",
+   "wall_s": 0.0002256670268252492
+  },
+  {
+   "is_dominant": true,
+   "measured": true,
+   "reason": "safetensors \u2192 device. hawking-core already loads Qwen weights onto Metal; transformers+MPS is a stand-in, not the resident loader",
+   "repatriates_to_rust_metal": true,
+   "step": "model_load",
+   "wall_s": 0.7733153330045752
+  },
+  {
+   "is_dominant": false,
+   "measured": true,
+   "reason": "this repo already tokenizes Qwen in Rust; the Python tokenizer is not the bottleneck",
+   "repatriates_to_rust_metal": true,
+   "step": "tokenize",
+   "wall_s": 0.014807375031523407
+  },
+  {
+   "is_dominant": false,
+   "measured": true,
+   "reason": "first-forward shader/pipeline setup on MPS. A resident Metal runtime that already compiled the Qwen graph would not pay this again",
+   "repatriates_to_rust_metal": true,
+   "step": "mps_first_forward",
+   "wall_s": 0.13614454196067527
+  },
+  {
+   "is_dominant": false,
+   "measured": true,
+   "reason": "same forwards, sequential instead of batched; the batch is the Python-side cut, the kernel is still a Metal prefill",
+   "repatriates_to_rust_metal": true,
+   "step": "activation_capture_naive",
+   "wall_s": 0.11977650003973395
+  },
+  {
+   "is_dominant": false,
+   "measured": true,
+   "reason": "batched prefill over residual-stream layers. hawking-core Metal decode/prefill already runs Qwen forwards; this is the wall that repatriates",
+   "repatriates_to_rust_metal": true,
+   "step": "activation_capture",
+   "wall_s": 0.07269104098668322
+  },
+  {
+   "is_dominant": false,
+   "measured": true,
+   "reason": "mean-subtract + normalize per layer. Pure tensor, d_model=1024, microseconds on CPU; Metal would not move the end-to-end wall",
+   "repatriates_to_rust_metal": true,
+   "step": "direction_computation",
+   "wall_s": 0.0018465829780325294
+  },
+  {
+   "is_dominant": false,
+   "measured": true,
+   "reason": "projections, energy fractions, optional hooked prefills and last-token KL. The hooked prefills are the same Metal forwards; the matvecs are lm_head, which hawking-core already issues",
+   "repatriates_to_rust_metal": true,
+   "step": "multi_objective_eval",
+   "wall_s": 0.38697112596128136
+  },
+  {
+   "is_dominant": false,
+   "measured": true,
+   "reason": "a sort of N\u224828 scalars; not tensor work",
+   "repatriates_to_rust_metal": false,
+   "step": "failspy_negative_control",
+   "wall_s": 2.5334011297672987e-05
+  },
+  {
+   "is_dominant": false,
+   "measured": true,
+   "reason": "tools.future.abliteration.select control flow; not tensor work",
+   "repatriates_to_rust_metal": false,
+   "step": "selection",
+   "wall_s": 0.00025937496684491634
+  },
+  {
+   "is_dominant": false,
+   "measured": true,
+   "reason": "W'=(I-vv^T)W plus row-norm restore on o_proj and down_proj. Rank-1 update / GEMM. hawking-core already has Metal matmul and o_proj gemv (crates/hawking-core/src/metal, shaders/matmul.metal)",
+   "repatriates_to_rust_metal": true,
+   "step": "weight_projection",
+   "wall_s": 0.05102491698926315
+  },
+  {
+   "is_dominant": false,
+   "measured": true,
+   "reason": "one batched prefill on the in-memory projected child; same Metal forward as capture",
+   "repatriates_to_rust_metal": true,
+   "step": "confirmation_forward",
+   "wall_s": 0.06308237498160452
+  }
+ ],
+ "resident_callable": {
+  "belongs_to": "tools.future.tabula",
+  "does_not_edit": "tools/future/abliteration.py",
+  "entry_point": "tools.future.abliteration_run.run_specimen()",
+  "receipt": "receipts/future/ABLITERATION_RUN.json",
+  "this_lane_writes_frontier": false
+ },
+ "schema": "hawking.future.abliteration_run.v1",
+ "seal_sha256": "cb8d44248dbc8be6216e5d0cc5fecc24bb4ebfa8bf9cb71f5444eb5f40eb16c2",
+ "selection": {
+  "claim": "candidate direction selected under completion+harmless+loss gates; this is not an uncensoring result",
+  "discarded": [
+   "L0_p-1",
+   "L3_p-1",
+   "L22_p-1",
+   "L23_p-1",
+   "L24_p-1",
+   "L25_p-1",
+   "L26_p-1",
+   "L27_p-1"
+  ],
+  "evidence_class": "STATIC_ONLY",
+  "gates": "activation_space_proxies",
+  "gpu_authority": false,
+  "n_candidates": 28,
+  "n_surviving": 20,
+  "ranking_by_refusal_suppression": false,
+  "selected": {
+   "all_pass": true,
+   "evals": {
+    "completion": {
+     "gate": "PASS"
+    },
+    "harmless": {
+     "gate": "PASS"
+    },
+    "loss": {
+     "gate": "PASS"
+    }
+   },
+   "failed_gates": [],
+   "id": "L1_p-1",
+   "n_layers": 28,
+   "prune_reason": null,
+   "pruned_as_source": false,
+   "source_layer": 1,
+   "source_position": -1
+  },
+  "selected_id": "L1_p-1",
+  "survivors": [
+   "L1_p-1",
+   "L2_p-1",
+   "L4_p-1",
+   "L5_p-1",
+   "L6_p-1",
+   "L7_p-1",
+   "L8_p-1",
+   "L9_p-1",
+   "L10_p-1",
+   "L11_p-1",
+   "L12_p-1",
+   "L13_p-1",
+   "L14_p-1",
+   "L15_p-1",
+   "L16_p-1",
+   "L17_p-1",
+   "L18_p-1",
+   "L19_p-1",
+   "L20_p-1",
+   "L21_p-1"
+  ],
+  "tie_break": "source_layer, source_position, id \u2014 NOT a quality ranking",
+  "tie_break_is_not_measured_quality": true
+ },
+ "selector_comparison": {
+  "control": "failspy_find_best_refusal_dir",
+  "disagree": true,
+  "failspy_selected_id": "L26_p-1",
+  "method": "tools.future.abliteration.select",
+  "multi_objective_selected_id": "L1_p-1",
+  "why_it_matters": "FailSpy's single-score sort is the refusal-suppression-only choice the method makes inexpressible. Disagreement is a result, not a bug."
+ },
+ "specimen": "Qwen--Qwen3-0.6B@c1899de289a0",
+ "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+ "specimen_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+ "speed": {
+  "after": 816.32900643667,
+  "after_end_to_end_s": 4.409986625018064,
+  "before": 388.665808506124,
+  "before_breakdown": {
+   "before_compute_s": 5.428085545543581,
+   "capture_delta_s": 0.40641495917225257,
+   "eval_delta_s": 3.2666654620552436,
+   "io_penalty_s": 0.0,
+   "naive_capture_s_scaled": 0.4791060001589358,
+   "naive_hooked_all_s": 3.653636588016525,
+   "naive_proj_s": 1.2304139994084835,
+   "proj_delta_s": 1.1793890824192204
+  },
+  "before_end_to_end_s": 9.26245612866478,
+  "connects_to": "IMPROVEMENT_VELOCITY \u2014 a generator nobody can afford to run generates nothing",
+  "cuts_applied": [
+   "SSD stage of the 1.5 GiB specimen off USB ModelLake (I/O cut)",
+   "dtype=bfloat16 load (avoid fp32 materialize)",
+   "one padded batched prefill for activation capture instead of per-prompt sequential forwards",
+   "last-token only (not Arditi's full position grid)",
+   "n_harmful=8 n_harmless=8 (not Arditi 128/32)",
+   "no generation-eval loop per candidate (behaviour UNMEASURED rather than 28\u00d7N generate)",
+   "hooked last-token eval sampled (2 candidates) + selected child, not 28\u00d72 prefills",
+   "MPS biprojection of dest o_proj/down_proj; numpy geometry on one sample matrix",
+   "in-memory projection; ModelLake not written"
+  ],
+  "dominant_term": {
+   "fraction_of_named_steps": 0.4633642715480254,
+   "step": "model_load",
+   "wall_s": 0.7733153330045752
+  },
+  "metric": "candidate_transformations_per_hour",
+  "what_cutting_the_rest_requires": "Keeping the model resident across generator calls (amortize model_load / mps_first_forward / verification). A native hawking-core Qwen prefill that is already warm would remove mps_first_forward. Porting the rank-1 biprojection to an existing Metal matmul would cut weight_projection further only after load is amortized."
+ },
+ "staged_from": {
+  "already_staged": true,
+  "bytes_copied": 0,
+  "copied": 0,
+  "dst": "/Users/scammermike/noetic/stage/Qwen--Qwen3-0.6B@c1899de289a0",
+  "skipped_already_present": 10,
+  "src": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+  "wall_s": 0.00019824999617412686
+ },
+ "status": "RAN",
+ "timings": {
+  "activation_capture": 0.07269104098668322,
+  "activation_capture_naive": 0.11977650003973395,
+  "confirmation_forward": 0.06308237498160452,
+  "direction_computation": 0.0018465829780325294,
+  "failspy_negative_control": 2.5334011297672987e-05,
+  "lease_acquire": 0.00040075002470985055,
+  "model_load": 0.7733153330045752,
+  "mps_first_forward": 0.13614454196067527,
+  "multi_objective_eval": 0.38697112596128136,
+  "selection": 0.00025937496684491634,
+  "specimen_stage": 0.0002256670268252492,
+  "tokenize": 0.014807375031523407,
+  "verification": 0.04834354197373614,
+  "weight_projection": 0.05102491698926315
+ },
+ "took_gpu_lease": true,
+ "verification": {
+  "bytes_hashed": 1519209243,
+  "n_files": 10,
+  "owner": "modellake",
+  "path_taken": "/Users/scammermike/Downloads/hawking/receipts/future/SPECIMEN_VERIFICATION.json",
+  "status": "WHOLE_TREE_VERIFIED",
+  "whole_tree_verified": true
+ },
+ "version": 1,
+ "weights_modified": false,
+ "widens_hcli_authority": false
+}

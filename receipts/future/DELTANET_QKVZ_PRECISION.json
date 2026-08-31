@@ -1,0 +1,2295 @@
+{
+ "accounting": {
+  "bias_bytes": 0,
+  "code_bytes": 2013265920,
+  "code_share": 0.9411756258117444,
+  "elements": 4026531840,
+  "group_size": 64,
+  "header_bytes": 1920,
+  "identity": {
+   "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+   "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+   "geometry": {
+    "conv_channels": 10240,
+    "conv_kernel": 4,
+    "hidden_size": 5120,
+    "key_head_dim": 128,
+    "key_heads": 16,
+    "n_deltanet_layers": 48,
+    "qkvz_layout": "per_key_head_Q128_K128_V384_Z384",
+    "qkvz_rows": 16384,
+    "value_head_dim": 128,
+    "value_heads": 48
+   },
+   "model_id": "qwen3.8-27b-sealed-3.14",
+   "resident_identity": "sealed-3.14"
+  },
+  "incumbent_bits": 4,
+  "incumbent_packing": {
+   "alphabet": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+   ],
+   "code_bits": 4,
+   "family": "hq30uq4_uniform_q4_group64_signed_nibble_f16_scale",
+   "layout": "per_key_head_Q128_K128_V384_Z384",
+   "reconstruction": "w = float(nibble - 8) * f16_scale; no bias",
+   "signed_q": "q = nibble - 8, nibble in {0..15}, q in {-8..7}"
+  },
+  "n_layers": 48,
+  "n_tensors": 48,
+  "organ": "attention.linear_qkvz",
+  "qkvz_subblocks": {
+   "header": {
+    "code_bytes": 0,
+    "groups": 0,
+    "header_bytes": 1920,
+    "n_layers": 48,
+    "payload_bytes": 0,
+    "rows": 0,
+    "scale_bytes": 0
+   },
+   "k": {
+    "bytes_per_layer": 5570560,
+    "code_bytes": 251658240,
+    "groups": 7864320,
+    "n_layers": 48,
+    "payload_bytes": 267386880,
+    "row_share_of_qkvz": 0.125,
+    "rows": 2048,
+    "scale_bytes": 15728640
+   },
+   "q": {
+    "bytes_per_layer": 5570560,
+    "code_bytes": 251658240,
+    "groups": 7864320,
+    "n_layers": 48,
+    "payload_bytes": 267386880,
+    "row_share_of_qkvz": 0.125,
+    "rows": 2048,
+    "scale_bytes": 15728640
+   },
+   "v": {
+    "bytes_per_layer": 16711680,
+    "code_bytes": 754974720,
+    "groups": 23592960,
+    "n_layers": 48,
+    "payload_bytes": 802160640,
+    "row_share_of_qkvz": 0.375,
+    "rows": 6144,
+    "scale_bytes": 47185920
+   },
+   "z": {
+    "bytes_per_layer": 16711680,
+    "code_bytes": 754974720,
+    "groups": 23592960,
+    "n_layers": 48,
+    "payload_bytes": 802160640,
+    "row_share_of_qkvz": 0.375,
+    "rows": 6144,
+    "scale_bytes": 47185920
+   }
+  },
+  "reconciled": true,
+  "scale_bytes": 125829120,
+  "share_of_token": 0.2165318723764582,
+  "stored_bytes": 2139096960,
+  "target": 2139096960
+ },
+ "allocation": {
+  "any_supported": false,
+  "by_subblock": {
+   "k": {
+    "H_q_bits": 3.4652345543760426,
+    "bits": 4,
+    "bytes_eliminated": 0,
+    "bytes_eliminated_if_q3": 62914560,
+    "candidate_bits": 3,
+    "code_bytes": 251658240,
+    "consume": {
+     "enters_conv": true,
+     "enters_gated_delta": true,
+     "enters_state_update": true,
+     "physical_primitive": "LocalStateMachine",
+     "role": "rank-1 projector (I - beta k k^T) AND the write key k v^T",
+     "rows": 2048,
+     "sensitivity_implication": "k appears twice in the update. Equal W-space distortion with q/v/z is not a reason to give k equal bits.",
+     "subblock": "k"
+    },
+    "decision": {
+     "H_q_bits": 3.4652345543760426,
+     "candidate_bits": 3,
+     "entropy_gap_bits": 0.5347654456239574,
+     "gated_cosine_min": 0.9069745419188505,
+     "incumbent_bits": 4,
+     "lossless_possible": false,
+     "reason": "REC_STATE_INJURED",
+     "rec_state_relfro_max": 0.24999192937961467,
+     "sensitivity_measured": true,
+     "supported": false
+    },
+    "evidence": {
+     "entropy": {
+      "H_q_bits": 3.4652345543760426,
+      "H_q_given_prev_within_byte": 3.465307936643977,
+      "cross_layer_mi_bits_mean": 5.247642438065727e-05,
+      "independent_fraction": 0.8663086385940107,
+      "mi_within_byte_bits": 0.0010634007571363136
+     },
+     "sensitivity": {
+      "gated_cosine_min": 0.9069745419188505,
+      "gated_relfro_max": 0.432923641526671,
+      "rec_out_h_identical": false,
+      "rec_state_identical": false,
+      "rec_state_relfro_max": 0.24999192937961467,
+      "writes_rec_state": true
+     }
+    },
+    "incumbent_bits": 4,
+    "lossless_q3_impossible": true,
+    "payload_bytes": 267386880,
+    "reason": "REC_STATE_INJURED",
+    "sensitivity_measured": true,
+    "supported": false
+   },
+   "q": {
+    "H_q_bits": 3.471463118861117,
+    "bits": 4,
+    "bytes_eliminated": 0,
+    "bytes_eliminated_if_q3": 62914560,
+    "candidate_bits": 3,
+    "code_bytes": 251658240,
+    "consume": {
+     "enters_conv": true,
+     "enters_gated_delta": true,
+     "enters_state_update": false,
+     "physical_primitive": "LocalStateMachine",
+     "role": "readout: h = S^T q",
+     "rows": 2048,
+     "sensitivity_implication": "Injuring q injures h without rewriting S. Next token still sees an intact S.",
+     "subblock": "q"
+    },
+    "decision": {
+     "H_q_bits": 3.471463118861117,
+     "candidate_bits": 3,
+     "cosine_bar": 0.99,
+     "entropy_gap_bits": 0.5285368811388831,
+     "gated_cosine_min": 0.9723116793340146,
+     "incumbent_bits": 4,
+     "lossless_possible": false,
+     "reason": "GATED_COSINE_BELOW_BAR",
+     "sensitivity_measured": true,
+     "supported": false
+    },
+    "evidence": {
+     "entropy": {
+      "H_q_bits": 3.471463118861117,
+      "H_q_given_prev_within_byte": 3.471289960950134,
+      "cross_layer_mi_bits_mean": 3.784131975232388e-05,
+      "independent_fraction": 0.8678657797152792,
+      "mi_within_byte_bits": 0.0009045174127440302
+     },
+     "sensitivity": {
+      "gated_cosine_min": 0.9723116793340146,
+      "gated_relfro_max": 0.3261050597927135,
+      "rec_out_h_identical": false,
+      "rec_state_identical": true,
+      "rec_state_relfro_max": 0.0,
+      "writes_rec_state": false
+     }
+    },
+    "incumbent_bits": 4,
+    "lossless_q3_impossible": true,
+    "payload_bytes": 267386880,
+    "reason": "GATED_COSINE_BELOW_BAR",
+    "sensitivity_measured": true,
+    "supported": false
+   },
+   "v": {
+    "H_q_bits": 3.4700463156032484,
+    "bits": 4,
+    "bytes_eliminated": 0,
+    "bytes_eliminated_if_q3": 188743680,
+    "candidate_bits": 3,
+    "code_bytes": 754974720,
+    "consume": {
+     "enters_conv": true,
+     "enters_gated_delta": true,
+     "enters_state_update": true,
+     "physical_primitive": "LocalStateMachine",
+     "role": "write value: beta k v^T",
+     "rows": 6144,
+     "sensitivity_implication": "Injuring v writes a wrong column into S.",
+     "subblock": "v"
+    },
+    "decision": {
+     "H_q_bits": 3.4700463156032484,
+     "candidate_bits": 3,
+     "entropy_gap_bits": 0.5299536843967516,
+     "gated_cosine_min": 0.9443607586831942,
+     "incumbent_bits": 4,
+     "lossless_possible": false,
+     "reason": "REC_STATE_INJURED",
+     "rec_state_relfro_max": 0.2860707539962624,
+     "sensitivity_measured": true,
+     "supported": false
+    },
+    "evidence": {
+     "entropy": {
+      "H_q_bits": 3.4700463156032484,
+      "H_q_given_prev_within_byte": 3.469039518775949,
+      "cross_layer_mi_bits_mean": 3.649483475083485e-05,
+      "independent_fraction": 0.8675115789008121,
+      "mi_within_byte_bits": 0.0008228128310514432
+     },
+     "sensitivity": {
+      "gated_cosine_min": 0.9443607586831942,
+      "gated_relfro_max": 0.3294553650419239,
+      "rec_out_h_identical": false,
+      "rec_state_identical": false,
+      "rec_state_relfro_max": 0.2860707539962624,
+      "writes_rec_state": true
+     }
+    },
+    "incumbent_bits": 4,
+    "lossless_q3_impossible": true,
+    "payload_bytes": 802160640,
+    "reason": "REC_STATE_INJURED",
+    "sensitivity_measured": true,
+    "supported": false
+   },
+   "z": {
+    "H_q_bits": 3.479417630024027,
+    "bits": 4,
+    "bytes_eliminated": 0,
+    "bytes_eliminated_if_q3": 188743680,
+    "candidate_bits": 3,
+    "code_bytes": 754974720,
+    "consume": {
+     "enters_conv": false,
+     "enters_gated_delta": false,
+     "enters_state_update": false,
+     "physical_primitive": "FusedDecodeCompute",
+     "role": "output gate after RMSNorm(h); never bound to gated-delta",
+     "rows": 6144,
+     "sensitivity_implication": "Lowering z bits cannot corrupt rec_state. This is source-true, not a measurement. z is 37.5% of linear_qkvz rows.",
+     "subblock": "z"
+    },
+    "decision": {
+     "H_q_bits": 3.479417630024027,
+     "candidate_bits": 3,
+     "cosine_bar": 0.99,
+     "entropy_gap_bits": 0.5205823699759731,
+     "gated_cosine_min": 0.9520951968289889,
+     "incumbent_bits": 4,
+     "lossless_possible": false,
+     "reason": "GATED_COSINE_BELOW_BAR",
+     "sensitivity_measured": true,
+     "supported": false
+    },
+    "evidence": {
+     "entropy": {
+      "H_q_bits": 3.479417630024027,
+      "H_q_given_prev_within_byte": 3.4782273404282344,
+      "cross_layer_mi_bits_mean": 2.336442226471877e-05,
+      "independent_fraction": 0.8698544075060067,
+      "mi_within_byte_bits": 0.0007832398936571839
+     },
+     "sensitivity": {
+      "gated_cosine_min": 0.9520951968289889,
+      "gated_relfro_max": 0.3132909748694052,
+      "rec_out_h_identical": true,
+      "rec_state_identical": true,
+      "rec_state_relfro_max": 0.0,
+      "writes_rec_state": false
+     }
+    },
+    "incumbent_bits": 4,
+    "lossless_q3_impossible": true,
+    "payload_bytes": 802160640,
+    "reason": "GATED_COSINE_BELOW_BAR",
+    "sensitivity_measured": true,
+    "supported": false
+   }
+  },
+  "candidate_bits": 3,
+  "cheapest_relative_win": "z",
+  "cosine_bar": 0.99,
+  "incumbent_bits": 4,
+  "not_worth_touching": [
+   "q",
+   "k",
+   "v",
+   "z"
+  ],
+  "qkvz_bytes_after": 2139096960,
+  "share_of_qkvz_eliminated": 0.0,
+  "share_of_token_eliminated": 0.0,
+  "token_bytes_after": 9878901136,
+  "total_bytes_eliminated": 0,
+  "total_bytes_eliminated_if_all_q3": 503316480,
+  "verdict": "All four keep 4 bits. Heterogeneous allocation is available as a row-range FusedDecodeCompute, but the CPU operator probe does not license a production drop of q, k, v, or z. z is the cheapest relative experiment (Q3 cannot rewrite rec_state or h); q injures the readout, k and v rewrite S at ~0.2 rel-fro. Entropy does not pick a winner (H(q)\u22483.47\u20133.50 of 4 bits on every block) and does not license a drop."
+ },
+ "answers": {
+  "do_the_subblocks_have_different_code_entropy": {
+   "H_q_bits": {
+    "k": 3.4652345543760426,
+    "q": 3.471463118861117,
+    "v": 3.4700463156032484,
+    "z": 3.479417630024027
+   },
+   "answer": "NO at a scale that would change bits. H(q) sits in q=3.47146, k=3.46523, v=3.47005, z=3.47942 of 4 bits. Neighbour MI is millibits. Cross-layer MI is ~0. Nibble 0 (q=-8) is unused on every block \u2014 histogram bias, not a 3-bit island. Lossless Q3 is impossible on all four.",
+   "lossless_q3_impossible": {
+    "k": true,
+    "q": true,
+    "v": true,
+    "z": true
+   },
+   "status": "MEASURED_NEGATIVE"
+  },
+  "does_sensitivity_license_heterogeneous_bits": {
+   "answer": "NO. Q3 with per-group scale refit, 8-token CPU rollout from zero state on layers [0, 21, 42]: no sub-block clears gated cosine 0.99 on every token of every sampled layer. z leaves rec_state and h bit-identical (shader binding holds) but still injures silu(z). k and v rewrite S at ~0.2 rel-fro. q injures the readout. They do not deserve equal precision as a consume-path default, and they also do not deserve a production bit drop.",
+   "cosine_bar": 0.99,
+   "gated_cosine_min": {
+    "k": 0.9069745419188505,
+    "q": 0.9723116793340146,
+    "v": 0.9443607586831942,
+    "z": 0.9520951968289889
+   },
+   "rec_out_h_identical": {
+    "k": false,
+    "q": false,
+    "v": false,
+    "z": true
+   },
+   "rec_state_identical": {
+    "k": false,
+    "q": true,
+    "v": false,
+    "z": true
+   },
+   "rec_state_relfro_max": {
+    "k": 0.24999192937961467,
+    "q": 0.0,
+    "v": 0.2860707539962624,
+    "z": 0.0
+   },
+   "status": "MEASURED_NEGATIVE"
+  },
+  "is_entropy_coding_this_object": {
+   "answer": "A different lever. H(q)/4 = 0.8683 \u2264 0.9, so the NNS-022 reopen analog fires on this nibble stream (265161519 byte i.i.d. gap). Kernel UNMEASURED. Not a q/k/v/z bit map.",
+   "bytes_eliminated_if_true": 265161519,
+   "nns022_reopen_fires": true,
+   "status": "OPEN"
+  },
+  "what_is_the_heterogeneous_allocation": {
+   "answer": "All four keep 4 bits. Heterogeneous allocation is available as a row-range FusedDecodeCompute, but the CPU operator probe does not license a production drop of q, k, v, or z. z is the cheapest relative experiment (Q3 cannot rewrite rec_state or h); q injures the readout, k and v rewrite S at ~0.2 rel-fro. Entropy does not pick a winner (H(q)\u22483.47\u20133.50 of 4 bits on every block) and does not license a drop.",
+   "bits": {
+    "k": 4,
+    "q": 4,
+    "v": 4,
+    "z": 4
+   },
+   "bytes_eliminated": {
+    "k": 0,
+    "q": 0,
+    "v": 0,
+    "z": 0
+   },
+   "qkvz_bytes_after": 2139096960,
+   "share_of_token_eliminated": 0.0,
+   "supported": {
+    "k": false,
+    "q": false,
+    "v": false,
+    "z": false
+   },
+   "token_bytes_after": 9878901136,
+   "total_bytes_eliminated": 0
+  },
+  "which_is_not_worth_touching": {
+   "answer": "k and v: they rewrite S at ~0.2 rel-fro. q: readout injury without z's state-isolation. z: cheapest relative, still not a production drop. Uniform Q3 of the fused tensor is the same no, four times.",
+   "not_worth_touching": [
+    "q",
+    "k",
+    "v",
+    "z"
+   ],
+   "status": "MEASURED_NEGATIVE"
+  },
+  "which_subblock_is_the_cheapest_real_win": {
+   "answer": "z is the cheapest *relative* block (cannot rewrite rec_state or h; smallest consume-path blast radius). It is not a licensed byte win: gated cosine min 0.9520951968289889 fails 0.99, and 48 stacked layers of that residual injury is not quiet. The production answer is that they all keep 4 bits.",
+   "cheapest_relative": "z",
+   "licensed_win": null,
+   "not_worth_touching": [
+    "q",
+    "k",
+    "v",
+    "z"
+   ]
+  }
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T06:13:19Z",
+  "recorded_by": "tools/future/deltanet_qkvz_precision.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "candidate_counts": {
+  "already_falsified": 0,
+  "measured_negative": 6,
+  "n": 7,
+  "open": 1,
+  "rejected_dense_remat": 0,
+  "unmeasured": 0
+ },
+ "candidates": [
+  {
+   "byte_model": "Q3 saves 1/4 of a block's code bytes: q=62914560, k=62914560, v=188743680, z=188743680. Scales stay f16 per group. Header 40 B/tensor is not split. All-four Q3 would save 503316480.",
+   "bytes_eliminated_if_true": 0,
+   "cheapest_falsifier": "STATIC, run here: H(q) is 3.45\u20133.50 bits on every block (lossless Q3 impossible). CPU operator Q3 with per-group scale refit, 8-token rollout, layers [0, 21, 42]: no sub-block clears the 0.99 gated-cosine bar on every token of every sampled layer. k/v rewrite S at ~0.2 rel-fro. z leaves S and h bit-identical but still injures the silu gate. Entropy does not pick a winner. A generate gate would be a new experiment, not a retry of this probe.",
+   "citations": [
+    {
+     "claim_refuted": "That existing Gravity expert families (HGRAVB01 / HGRAVR02 / HGRAVS01, or the Q80 mixed gate/up/down bundle) transfer to attention at Q4-equivalent quality.",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "A NEW attention codec family, scored on real BF16 X, clearing mean-row output cosine \u2265 0.990 vs BF16 AND a multi-prompt generate identity gate. lm_head additionally needs top-1 agreement; cosine 0.99 is not token identity.",
+     "scar_id": "NNS-019",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b and qwen3-80b attention GEMVs Q/K/V/O, DeltaNet in/out, lm_head extra (top-1 \u2260 cosine)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet linear_qkvz HQ30UQ4 q/k/v/z"
+    },
+    {
+     "claim_refuted": "That activation sparsity (~2\u00d7 MLP max) or uniform bit-descent below q3 is a clean path under the Qwen3.8 coherent floor.",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "Sparsity: a Doctor-holding skip pattern that does not compound over 64 layers. Bit-descent: a codec that actually hits the Shannon bound AND a generate gate at that distortion. Neither is a retry of q2 or of unstructured activation skip.",
+     "scar_id": "NNS-029",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b MLP (sparsity); whole artifact (bit-descent)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet linear_qkvz HQ30UQ4 q/k/v/z"
+    }
+   ],
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "A native row-range Q4/Q3 GEMV consumes packed codes in-register. Splitting the fused tensor, writing four dense W, and running ordinary GEMV is REJECTED_DENSE_REMAT.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "heterogeneous_qkvz_bits",
+   "index_refusals": [],
+   "index_slugs": [
+    "uniform_subbit_allocation"
+   ],
+   "measured": {
+    "k": {
+     "H_q_bits": 3.4652345543760426,
+     "gated_cosine_min": 0.9069745419188505,
+     "gated_relfro_max": 0.432923641526671,
+     "reason": "REC_STATE_INJURED",
+     "rec_out_h_identical": false,
+     "rec_state_identical": false,
+     "rec_state_relfro_max": 0.24999192937961467,
+     "supported": false
+    },
+    "q": {
+     "H_q_bits": 3.471463118861117,
+     "gated_cosine_min": 0.9723116793340146,
+     "gated_relfro_max": 0.3261050597927135,
+     "reason": "GATED_COSINE_BELOW_BAR",
+     "rec_out_h_identical": false,
+     "rec_state_identical": true,
+     "rec_state_relfro_max": 0.0,
+     "supported": false
+    },
+    "v": {
+     "H_q_bits": 3.4700463156032484,
+     "gated_cosine_min": 0.9443607586831942,
+     "gated_relfro_max": 0.3294553650419239,
+     "reason": "REC_STATE_INJURED",
+     "rec_out_h_identical": false,
+     "rec_state_identical": false,
+     "rec_state_relfro_max": 0.2860707539962624,
+     "supported": false
+    },
+    "z": {
+     "H_q_bits": 3.479417630024027,
+     "gated_cosine_min": 0.9520951968289889,
+     "gated_relfro_max": 0.3132909748694052,
+     "reason": "GATED_COSINE_BELOW_BAR",
+     "rec_out_h_identical": true,
+     "rec_state_identical": true,
+     "rec_state_relfro_max": 0.0,
+     "supported": false
+    }
+   },
+   "mechanism": "Spend 4-bit HQ30UQ4 codes only on the fused-row ranges the state machine needs, and a 3-bit code on the rest, decoded in-register by a row-range Q4/Q3 matvec. The consume path already splits activations: z never enters gated-delta; q is a readout of S; k is the rank-1 projector and write key; v is the write value.",
+   "name": "heterogeneous bit allocation across q, k, v, z",
+   "note": "Predecessor DELTANET_REPRESENTATION left this OPEN with capability UNMEASURED. W-space Q3 rel-fro ~0.22 on all four was packing uniformity. This lane measured the consume operator.",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "MEASURED_NEGATIVE",
+   "support": "MEASURED"
+  },
+  {
+   "byte_model": "z codes 754974720; Q3 saves 188743680.",
+   "bytes_eliminated_if_true": 0,
+   "cheapest_falsifier": "STATIC, run here: Q3 z leaves rec_state and h bit-identical on every sampled layer and token (shader binding holds). Gated cosine min 0.9520951968289889 is below 0.99. Stacked across 48 layers that residual injury is not a quiet drop. z is the cheapest *relative* follow-up for a generate gate, not a licensed byte lever.",
+   "citations": [
+    {
+     "claim_refuted": "That existing Gravity expert families (HGRAVB01 / HGRAVR02 / HGRAVS01, or the Q80 mixed gate/up/down bundle) transfer to attention at Q4-equivalent quality.",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "A NEW attention codec family, scored on real BF16 X, clearing mean-row output cosine \u2265 0.990 vs BF16 AND a multi-prompt generate identity gate. lm_head additionally needs top-1 agreement; cosine 0.99 is not token identity.",
+     "scar_id": "NNS-019",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b and qwen3-80b attention GEMVs Q/K/V/O, DeltaNet in/out, lm_head extra (top-1 \u2260 cosine)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet linear_qkvz HQ30UQ4 q/k/v/z"
+    }
+   ],
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "A native row-range Q4/Q3 GEMV consumes packed codes in-register. Splitting the fused tensor, writing four dense W, and running ordinary GEMV is REJECTED_DENSE_REMAT.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "z_only_q3",
+   "index_refusals": [],
+   "index_slugs": [
+    "uniform_q3",
+    "uniform_subbit_allocation"
+   ],
+   "measured": {
+    "H_q_bits": 3.479417630024027,
+    "gated_cosine_min": 0.9520951968289889,
+    "gated_relfro_max": 0.3132909748694052,
+    "reason": "GATED_COSINE_BELOW_BAR",
+    "rec_out_h_identical": true,
+    "rec_state_identical": true,
+    "rec_state_relfro_max": 0.0,
+    "supported": false
+   },
+   "mechanism": "Crush only the Z384 rows of each key-head fuse to 3-bit codes. q/k/v stay Q4. rearrange copies z without conv; gated RMSNorm multiplies RMSNorm(h) by silu(z). rec_state cannot change.",
+   "name": "3-bit codes on z only (output gate; never writes S)",
+   "note": "Cheapest relative win. Not worth touching as a production drop.",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "MEASURED_NEGATIVE",
+   "support": "MEASURED"
+  },
+  {
+   "byte_model": "q codes 251658240; Q3 saves 62914560.",
+   "bytes_eliminated_if_true": 0,
+   "cheapest_falsifier": "STATIC, run here: rec_state stays bit-identical (honest readout). Gated cosine min 0.9723116793340146, h rel-fro max 0.30599961384168317. The readout is not the cheap block. Not worth touching.",
+   "citations": [
+    {
+     "claim_refuted": "That existing Gravity expert families (HGRAVB01 / HGRAVR02 / HGRAVS01, or the Q80 mixed gate/up/down bundle) transfer to attention at Q4-equivalent quality.",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "A NEW attention codec family, scored on real BF16 X, clearing mean-row output cosine \u2265 0.990 vs BF16 AND a multi-prompt generate identity gate. lm_head additionally needs top-1 agreement; cosine 0.99 is not token identity.",
+     "scar_id": "NNS-019",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b and qwen3-80b attention GEMVs Q/K/V/O, DeltaNet in/out, lm_head extra (top-1 \u2260 cosine)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet linear_qkvz HQ30UQ4 q/k/v/z"
+    }
+   ],
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "A native row-range Q4/Q3 GEMV consumes packed codes in-register. Splitting the fused tensor, writing four dense W, and running ordinary GEMV is REJECTED_DENSE_REMAT.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "q_readout_q3",
+   "index_refusals": [],
+   "index_slugs": [
+    "uniform_q3"
+   ],
+   "measured": {
+    "H_q_bits": 3.471463118861117,
+    "gated_cosine_min": 0.9723116793340146,
+    "gated_relfro_max": 0.3261050597927135,
+    "reason": "GATED_COSINE_BELOW_BAR",
+    "rec_out_h_identical": false,
+    "rec_state_identical": true,
+    "rec_state_relfro_max": 0.0,
+    "supported": false
+   },
+   "mechanism": "Crush only the Q128 rows. q is L2-normalised after conv and read out as h = S^T q. Injuring q injures h without rewriting S.",
+   "name": "3-bit codes on q only (readout of S; no state write)",
+   "physical_primitive": "LocalStateMachine",
+   "status": "MEASURED_NEGATIVE",
+   "support": "MEASURED"
+  },
+  {
+   "byte_model": "k codes 251658240; Q3 saves 62914560.",
+   "bytes_eliminated_if_true": 0,
+   "cheapest_falsifier": "STATIC, run here: rec_state rel-fro max 0.24999192937961467 (bar 0.01). k rewrites S. Not worth touching.",
+   "citations": [
+    {
+     "claim_refuted": "That existing Gravity expert families (HGRAVB01 / HGRAVR02 / HGRAVS01, or the Q80 mixed gate/up/down bundle) transfer to attention at Q4-equivalent quality.",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "A NEW attention codec family, scored on real BF16 X, clearing mean-row output cosine \u2265 0.990 vs BF16 AND a multi-prompt generate identity gate. lm_head additionally needs top-1 agreement; cosine 0.99 is not token identity.",
+     "scar_id": "NNS-019",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b and qwen3-80b attention GEMVs Q/K/V/O, DeltaNet in/out, lm_head extra (top-1 \u2260 cosine)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet linear_qkvz HQ30UQ4 q/k/v/z"
+    }
+   ],
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "A native row-range Q4/Q3 GEMV consumes packed codes in-register. Splitting the fused tensor, writing four dense W, and running ordinary GEMV is REJECTED_DENSE_REMAT.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "k_state_q3",
+   "index_refusals": [],
+   "index_slugs": [
+    "uniform_q3"
+   ],
+   "measured": {
+    "H_q_bits": 3.4652345543760426,
+    "gated_cosine_min": 0.9069745419188505,
+    "gated_relfro_max": 0.432923641526671,
+    "reason": "REC_STATE_INJURED",
+    "rec_out_h_identical": false,
+    "rec_state_identical": false,
+    "rec_state_relfro_max": 0.24999192937961467,
+    "supported": false
+   },
+   "mechanism": "Crush only the K128 rows. k appears twice in the update: (I - beta k k^T) and the write key of beta k v^T.",
+   "name": "3-bit codes on k only (rank-1 projector and write key)",
+   "physical_primitive": "LocalStateMachine",
+   "status": "MEASURED_NEGATIVE",
+   "support": "MEASURED"
+  },
+  {
+   "byte_model": "v codes 754974720; Q3 saves 188743680.",
+   "bytes_eliminated_if_true": 0,
+   "cheapest_falsifier": "STATIC, run here: rec_state rel-fro max 0.2860707539962624; gated cosine min 0.9443607586831942. First-token injury is large. v is 37.5% of rows \u2014 same byte mass as z \u2014 and unlike z it rewrites S. Not worth touching.",
+   "citations": [
+    {
+     "claim_refuted": "That existing Gravity expert families (HGRAVB01 / HGRAVR02 / HGRAVS01, or the Q80 mixed gate/up/down bundle) transfer to attention at Q4-equivalent quality.",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "A NEW attention codec family, scored on real BF16 X, clearing mean-row output cosine \u2265 0.990 vs BF16 AND a multi-prompt generate identity gate. lm_head additionally needs top-1 agreement; cosine 0.99 is not token identity.",
+     "scar_id": "NNS-019",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b and qwen3-80b attention GEMVs Q/K/V/O, DeltaNet in/out, lm_head extra (top-1 \u2260 cosine)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet linear_qkvz HQ30UQ4 q/k/v/z"
+    }
+   ],
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "A native row-range Q4/Q3 GEMV consumes packed codes in-register. Splitting the fused tensor, writing four dense W, and running ordinary GEMV is REJECTED_DENSE_REMAT.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "v_state_q3",
+   "index_refusals": [],
+   "index_slugs": [
+    "uniform_q3"
+   ],
+   "measured": {
+    "H_q_bits": 3.4700463156032484,
+    "gated_cosine_min": 0.9443607586831942,
+    "gated_relfro_max": 0.3294553650419239,
+    "reason": "REC_STATE_INJURED",
+    "rec_out_h_identical": false,
+    "rec_state_identical": false,
+    "rec_state_relfro_max": 0.2860707539962624,
+    "supported": false
+   },
+   "mechanism": "Crush only the V384 rows. Injuring v writes a wrong column into S.",
+   "name": "3-bit codes on v only (write value into S)",
+   "physical_primitive": "LocalStateMachine",
+   "status": "MEASURED_NEGATIVE",
+   "support": "MEASURED"
+  },
+  {
+   "byte_model": "qkvz codes 2013265920; uniform Q3 saves 503316480.",
+   "bytes_eliminated_if_true": 0,
+   "cheapest_falsifier": "STATIC, run here: the four per-block Q3 injuries do not vanish when applied together; each already fails the cosine bar alone. NNS-029 killed uniform bit-descent below q3 as a clean path on the whole artifact \u2014 a cousin of a whole-body plan, cited so this is not re-proposed as a DN idea. DN-only Q3 is now measured negative on the consume operator, not only as a cousin.",
+   "citations": [
+    {
+     "claim_refuted": "That activation sparsity (~2\u00d7 MLP max) or uniform bit-descent below q3 is a clean path under the Qwen3.8 coherent floor.",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "Sparsity: a Doctor-holding skip pattern that does not compound over 64 layers. Bit-descent: a codec that actually hits the Shannon bound AND a generate gate at that distortion. Neither is a retry of q2 or of unstructured activation skip.",
+     "scar_id": "NNS-029",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b MLP (sparsity); whole artifact (bit-descent)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet linear_qkvz HQ30UQ4 q/k/v/z"
+    },
+    {
+     "claim_refuted": "That existing Gravity expert families (HGRAVB01 / HGRAVR02 / HGRAVS01, or the Q80 mixed gate/up/down bundle) transfer to attention at Q4-equivalent quality.",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "A NEW attention codec family, scored on real BF16 X, clearing mean-row output cosine \u2265 0.990 vs BF16 AND a multi-prompt generate identity gate. lm_head additionally needs top-1 agreement; cosine 0.99 is not token identity.",
+     "scar_id": "NNS-019",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "qwen3.8-27b and qwen3-80b attention GEMVs Q/K/V/O, DeltaNet in/out, lm_head extra (top-1 \u2260 cosine)",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet linear_qkvz HQ30UQ4 q/k/v/z"
+    }
+   ],
+   "cousin_not_this_object": true,
+   "dense_rematerialization": "DIRECT_CONSUME",
+   "dense_rematerialization_reason": "A native row-range Q4/Q3 GEMV consumes packed codes in-register. Splitting the fused tensor, writing four dense W, and running ordinary GEMV is REJECTED_DENSE_REMAT.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "uniform_q3_qkvz",
+   "index_hits_are_cousins": true,
+   "index_refusals": [],
+   "index_slugs": [
+    "uniform_q3",
+    "uniform_q2"
+   ],
+   "measured": {
+    "any_block_supported": false,
+    "save_if_true": 503316480
+   },
+   "mechanism": "Replace HQ30UQ4 on all rows with uniform Q3 of the same W.",
+   "name": "uniform 3-bit recode of the fused 16384-row qkvz",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "MEASURED_NEGATIVE",
+   "support": "MEASURED"
+  },
+  {
+   "byte_model": "stored codes 2013265920; i.i.d. Shannon 1748104401; histogram gap 265161519.",
+   "bytes_eliminated_if_true": 265161519,
+   "cheapest_falsifier": "STATIC: H(q)=3.473171395612939 of 4 bits (0.8683 of uniform). NNS-022 reopen fires at \u2264 0.9 of uniform. A native register-decodable path that changes active bytes/token is UNMEASURED. This is not a heterogeneous-precision licence.",
+   "citations": [
+    {
+     "claim_refuted": "That entropy coding of Lloyd-optimal PQ indices yields a 10\u201325% byte win, or that rANS on Qwen3.8 q3 symbols is an active-byte/TPS lever.",
+     "kind": "PROPERTY_OF_IDEA",
+     "reopen_condition": "A future parent uses NON-Lloyd (biased or stratified) codebooks whose measured index entropy is \u2264 0.9 of uniform. rANS as a TPS lever additionally needs a native register-decodable path that changes active bytes/token.",
+     "scar_id": "NNS-022",
+     "source_path": "receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+     "surface": "gpt-oss-120b:F0 (PQ indices); qwen3.8 (q3 symbols / rANS catalog) codebook indices / q3 body",
+     "this_specimen": "qwen3.8-27b sealed-3.14 DeltaNet linear_qkvz HQ30UQ4 q/k/v/z"
+    }
+   ],
+   "cousin_not_this_object": true,
+   "dense_rematerialization": "DEPENDS_ON_LOWERING",
+   "dense_rematerialization_reason": "In-register entropy decode then the incumbent Q4 matvec can be DIRECT_CONSUME. Expanding to the incumbent 4-bit buffer before the kernel eliminates zero active bytes. Unpack-to-dense-W is REJECTED_DENSE_REMAT.",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "id": "entropy_coded_qkvz_codes",
+   "index_hits_are_cousins": true,
+   "index_refusals": [],
+   "index_slugs": [
+    "entropy_coded_pq"
+   ],
+   "measured": {
+    "H_q_bits": 3.473171395612939,
+    "H_q_over_uniform": 0.8682928489032348,
+    "iid_redundant_bytes_rounded": 265161519,
+    "nns022_reopen_fires": true
+   },
+   "mechanism": "Lossless recode of the stored nibbles (rANS / Huffman fused into decode). Not a bit-width change of q/k/v/z. Recorded because the MLP method reports the Shannon floor on the same parent.",
+   "name": "entropy coding of the 4-bit nibble stream (not heterogeneous bits)",
+   "note": "Not the heterogeneous allocation. Listed so the Shannon floor is comparable to MLP_CODE_INFORMATION and is not mistaken for a q/k/v/z bit map.",
+   "physical_primitive": "FusedDecodeCompute",
+   "status": "OPEN",
+   "support": "SHANNON_GAP_MEASURED_KERNEL_UNMEASURED"
+  }
+ ],
+ "claim_boundary": "Static sidecar artifact. No hardware measurement and no generate gate. Byte totals are HQ38M20 stored bytes of attention.linear_qkvz, split into q/k/v/z row ranges of the fused per-key-head Q128/K128/V384/Z384 layout already measured in DELTANET_REPRESENTATION. Shannon / conditional entropy / mutual information are lossless statements about the stored signed-nibble codes q \u2208 {-8..7}. Sensitivity is a CPU replay of qwen38_qkvz_rearrange_conv_l2_f32 + gated-delta + gated RMSNorm on isotropic Gaussian x (seed 38), S and conv_state starting at 0. It is not capability and not a generate identity gate. A candidate that unpacks to dense W then runs ordinary GEMV is REJECTED_DENSE_REMAT. A bit reduction is never supported on entropy alone.",
+ "entropy": {
+  "H_byte_bits": 6.945496235091956,
+  "H_byte_if_iid_q": 6.946342791225878,
+  "H_q_bits": 3.473171395612939,
+  "H_q_given_prev_within_byte": 3.472334224942718,
+  "H_q_over_uniform": 0.8682928489032348,
+  "alphabet": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15
+  ],
+  "by_subblock": {
+   "k": {
+    "H_byte_bits": 6.929403360028033,
+    "H_byte_if_iid_q": 6.930469108752085,
+    "H_q_bits": 3.4652345543760426,
+    "H_q_given_prev_within_byte": 3.465307936643977,
+    "H_q_over_uniform": 0.8663086385940106,
+    "H_q_per_tensor": {
+     "max": 3.4879978246345993,
+     "mean": 3.4650578146364808,
+     "min": 3.4341675416114734,
+     "n": 48,
+     "std": 0.012264704721091162
+    },
+    "code_bytes": 251658240,
+    "cross_layer": {
+     "independent_match": {
+      "max": 0.10919500890335257,
+      "mean": 0.10582523661643674,
+      "min": 0.10364812214023914,
+      "n": 47,
+      "std": 0.0012909211615065594
+     },
+     "match": {
+      "max": 0.10829877853393555,
+      "mean": 0.10609041376316801,
+      "min": 0.10338125228881836,
+      "n": 47,
+      "std": 0.001252890364452216
+     },
+     "mi_bits": {
+      "max": 0.00019032833092389416,
+      "mean": 5.247642438065727e-05,
+      "min": 1.37553182009225e-05,
+      "n": 47,
+      "std": 3.122808740018213e-05
+     }
+    },
+    "iid_redundant_bytes_rounded": 33644533,
+    "iid_shannon_bytes": 218013707.2853648,
+    "iid_shannon_bytes_rounded": 218013707,
+    "incumbent_bits": 4,
+    "independent_fraction": 0.8663086385940107,
+    "lossless_q3_impossible": true,
+    "mi_within_byte_bits": 0.0010634007571363136,
+    "n_codes": 503316480,
+    "nibble_0_unused": true,
+    "p_q": [
+     0.0,
+     0.01152373751004537,
+     0.01305247942606608,
+     0.025287201007207234,
+     0.045872555176417036,
+     0.07489577929178874,
+     0.11034196615219116,
+     0.14147640069325765,
+     0.1551417609055837,
+     0.14145440061887105,
+     0.11030813256899516,
+     0.0749128003915151,
+     0.04585681557655334,
+     0.02528627316157023,
+     0.013060802221298217,
+     0.011528895298639933
+    ],
+    "q_hist": [
+     0,
+     5800087,
+     6569528,
+     12727465,
+     23088413,
+     37696280,
+     55536930,
+     71207404,
+     78085405,
+     71196331,
+     55519901,
+     37704847,
+     23080491,
+     12726998,
+     6573717,
+     5802683
+    ],
+    "rows": 2048
+   },
+   "q": {
+    "H_byte_bits": 6.942020634974671,
+    "H_byte_if_iid_q": 6.942926237722234,
+    "H_q_bits": 3.471463118861117,
+    "H_q_given_prev_within_byte": 3.471289960950134,
+    "H_q_over_uniform": 0.8678657797152792,
+    "H_q_per_tensor": {
+     "max": 3.4885625197689634,
+     "mean": 3.471309097450858,
+     "min": 3.444134018411011,
+     "n": 48,
+     "std": 0.011167499504558724
+    },
+    "code_bytes": 251658240,
+    "cross_layer": {
+     "independent_match": {
+      "max": 0.10818399435038373,
+      "mean": 0.10516748489070876,
+      "min": 0.1033367387118051,
+      "n": 47,
+      "std": 0.0012001503960219237
+     },
+     "match": {
+      "max": 0.10820112228393555,
+      "mean": 0.10542193067834733,
+      "min": 0.10358047485351562,
+      "n": 47,
+      "std": 0.0011771776032565994
+     },
+     "mi_bits": {
+      "max": 0.00017031661438691092,
+      "mean": 3.784131975232388e-05,
+      "min": 1.4298225484864393e-05,
+      "n": 47,
+      "std": 3.267698624548524e-05
+     }
+    },
+    "iid_redundant_bytes_rounded": 33252665,
+    "iid_shannon_bytes": 218405574.67937487,
+    "iid_shannon_bytes_rounded": 218405575,
+    "incumbent_bits": 4,
+    "independent_fraction": 0.8678657797152792,
+    "lossless_q3_impossible": true,
+    "mi_within_byte_bits": 0.0009045174127440302,
+    "n_codes": 503316480,
+    "nibble_0_unused": true,
+    "p_q": [
+     0.0,
+     0.011580534776051839,
+     0.013274810711542765,
+     0.025667621692021688,
+     0.04636219143867493,
+     0.07533052563667297,
+     0.11028466423352559,
+     0.14061511953671774,
+     0.1537952423095703,
+     0.14061261216799417,
+     0.11028987367947897,
+     0.07532289028167724,
+     0.04636420210202535,
+     0.025651119152704873,
+     0.013260809580485027,
+     0.011587782700856527
+    ],
+    "q_hist": [
+     0,
+     5828674,
+     6681431,
+     12918937,
+     23334855,
+     37915095,
+     55508089,
+     70773907,
+     77407680,
+     70772645,
+     55510711,
+     37911252,
+     23335867,
+     12910631,
+     6674384,
+     5832322
+    ],
+    "rows": 2048
+   },
+   "v": {
+    "H_byte_bits": 6.939269493140263,
+    "H_byte_if_iid_q": 6.940092631206497,
+    "H_q_bits": 3.4700463156032484,
+    "H_q_given_prev_within_byte": 3.469039518775949,
+    "H_q_over_uniform": 0.8675115789008121,
+    "H_q_per_tensor": {
+     "max": 3.4956943523273076,
+     "mean": 3.469816611287046,
+     "min": 3.4418193501993524,
+     "n": 48,
+     "std": 0.013556528297335129
+    },
+    "code_bytes": 754974720,
+    "cross_layer": {
+     "independent_match": {
+      "max": 0.10845619562857085,
+      "mean": 0.1054201168727219,
+      "min": 0.10344163840915725,
+      "n": 47,
+      "std": 0.0014556627055718973
+     },
+     "match": {
+      "max": 0.10993623733520508,
+      "mean": 0.1059149424235026,
+      "min": 0.1033146858215332,
+      "n": 47,
+      "std": 0.00176562472530286
+     },
+     "mi_bits": {
+      "max": 0.0002280299865973447,
+      "mean": 3.649483475083485e-05,
+      "min": 4.117121209210137e-06,
+      "n": 47,
+      "std": 4.855162282419097e-05
+     }
+    },
+    "iid_redundant_bytes_rounded": 100025409,
+    "iid_shannon_bytes": 654949311.3773985,
+    "iid_shannon_bytes_rounded": 654949311,
+    "incumbent_bits": 4,
+    "independent_fraction": 0.8675115789008121,
+    "lossless_q3_impossible": true,
+    "mi_within_byte_bits": 0.0008228128310514432,
+    "n_codes": 1509949440,
+    "nibble_0_unused": true,
+    "p_q": [
+     0.0,
+     0.01160331302218967,
+     0.013297583659489949,
+     0.025633117225435046,
+     0.04618250992563036,
+     0.0749552779727512,
+     0.10996826224856907,
+     0.14094202518463134,
+     0.15483120613627963,
+     0.14095649719238282,
+     0.1099705610010359,
+     0.07494927048683167,
+     0.046177923017077974,
+     0.02562780976295471,
+     0.013302114937040541,
+     0.011602528227700127
+    ],
+    "q_hist": [
+     0,
+     17520416,
+     20078679,
+     38704711,
+     69733255,
+     113178680,
+     166046516,
+     212815332,
+     233787293,
+     212837184,
+     166049987,
+     113169609,
+     69726329,
+     38696697,
+     20085521,
+     17519231
+    ],
+    "rows": 6144
+   },
+   "z": {
+    "H_byte_bits": 6.958050530409876,
+    "H_byte_if_iid_q": 6.958835260048054,
+    "H_q_bits": 3.479417630024027,
+    "H_q_given_prev_within_byte": 3.4782273404282344,
+    "H_q_over_uniform": 0.8698544075060067,
+    "H_q_per_tensor": {
+     "max": 3.490054941875247,
+     "mean": 3.47936084251822,
+     "min": 3.4649875034042648,
+     "n": 48,
+     "std": 0.006907924830657994
+    },
+    "code_bytes": 754974720,
+    "cross_layer": {
+     "independent_match": {
+      "max": 0.1058059539424236,
+      "mean": 0.10426471766518271,
+      "min": 0.10312809438450335,
+      "n": 47,
+      "std": 0.0007397760183135247
+     },
+     "match": {
+      "max": 0.10591001510620117,
+      "mean": 0.10457411624015646,
+      "min": 0.10348504384358724,
+      "n": 47,
+      "std": 0.000741030807993027
+     },
+     "mi_bits": {
+      "max": 0.00011094482174802377,
+      "mean": 2.336442226471877e-05,
+      "min": 4.8456458399246125e-06,
+      "n": 47,
+      "std": 2.071492712932663e-05
+     }
+    },
+    "iid_redundant_bytes_rounded": 98256632,
+    "iid_shannon_bytes": 656718087.7476133,
+    "iid_shannon_bytes_rounded": 656718088,
+    "incumbent_bits": 4,
+    "independent_fraction": 0.8698544075060067,
+    "lossless_q3_impossible": true,
+    "mi_within_byte_bits": 0.0007832398936571839,
+    "n_codes": 1509949440,
+    "nibble_0_unused": true,
+    "p_q": [
+     0.0,
+     0.011688260899649725,
+     0.013520329528384738,
+     0.026118813620673285,
+     0.04704781969388326,
+     0.07599473396937052,
+     0.11039680110083686,
+     0.13947794172498915,
+     0.15165128774113126,
+     0.1394668956597646,
+     0.11040196551216973,
+     0.07600455482800801,
+     0.047028883298238115,
+     0.026097681125005087,
+     0.013494698868857489,
+     0.011609332429038154
+    ],
+    "q_hist": [
+     0,
+     17648683,
+     20415014,
+     39438088,
+     71039829,
+     114748206,
+     166693588,
+     210604640,
+     228985777,
+     210587961,
+     166701386,
+     114763035,
+     71011236,
+     39406179,
+     20376313,
+     17529505
+    ],
+    "rows": 6144
+   }
+  },
+  "code_bytes_read": 2013265920,
+  "iid_redundant_bytes_rounded": 265161519,
+  "iid_shannon_bytes": 1748104401.276592,
+  "iid_shannon_bytes_rounded": 1748104401,
+  "independent_fraction": 0.8682928489032348,
+  "lossless_q3_impossible": true,
+  "method": "MLP_CODE_INFORMATION._shannon / _mi / _cond_h on the 16-ary nibble alphabet of HQ30UQ4 (even local \u2192 low nibble, odd \u2192 high). Neighbour is the other nibble of the same packed byte. Cross-layer MI is of aligned nibbles of the same sub-block between consecutive DeltaNet layers. Unique groups are 32-byte (64-nibble) Q4 groups.",
+  "mi_within_byte_bits": 0.0008463124501185619,
+  "n_parameters": 4026531840,
+  "n_tensors_measured": 48,
+  "nns022_reopen_fires": true,
+  "nns022_reopen_uniform_frac": 0.9,
+  "note": "H(q) is Shannon entropy of the 16-ary nibble over every linear_qkvz code of that sub-block. It is not capability. H>3 bits makes a lossless 3-bit recode of the stored q information-theoretically impossible; a lossy Q3 is a sensitivity question, not an entropy one.",
+  "p_q": [
+   0.0,
+   0.011622374256451925,
+   0.013347628712654113,
+   0.02577632690469424,
+   0.046490716934204104,
+   0.07538454259435336,
+   0.11021522755424182,
+   0.1404189276198546,
+   0.15354806060592333,
+   0.14041714891791343,
+   0.11021444822351138,
+   0.07538714582721392,
+   0.04648017957806587,
+   0.025764233122269314,
+   0.013339006652434668,
+   0.011594032496213913
+  ],
+  "q_hist": [
+   0,
+   46797860,
+   53744652,
+   103789201,
+   187196352,
+   303538261,
+   443785123,
+   565401283,
+   618266155,
+   565394121,
+   443781985,
+   303548743,
+   187153923,
+   103740505,
+   53709935,
+   46683741
+  ],
+  "sample_H_q": {
+   "max": 3.4956943523273076,
+   "mean": 3.4758215883621357,
+   "min": 3.4556633733956192,
+   "n": 12,
+   "std": 0.011533231159092711
+  },
+  "sample_block_and_row": [
+   {
+    "H_byte": 6.976414742071802,
+    "H_q": 3.4885625197689634,
+    "H_q_given_prev_within_byte": 3.4865636729005356,
+    "layer": 0,
+    "n_groups": 163840,
+    "subblock": "q",
+    "unique_frac": 1.0,
+    "unique_groups": 163840,
+    "zlib_bytes": 4669859,
+    "zlib_ratio": 0.8907049179077149
+   },
+   {
+    "H_byte": 6.9752467888983904,
+    "H_q": 3.4879978246345993,
+    "H_q_given_prev_within_byte": 3.4869193651159303,
+    "layer": 0,
+    "n_groups": 163840,
+    "subblock": "k",
+    "unique_frac": 1.0,
+    "unique_groups": 163840,
+    "zlib_bytes": 4669373,
+    "zlib_ratio": 0.8906122207641601
+   },
+   {
+    "H_byte": 6.990701405835505,
+    "H_q": 3.4956943523273076,
+    "H_q_given_prev_within_byte": 3.49625559284872,
+    "layer": 0,
+    "n_groups": 491520,
+    "subblock": "v",
+    "unique_frac": 1.0,
+    "unique_groups": 491520,
+    "zlib_bytes": 14030628,
+    "zlib_ratio": 0.8920433044433593
+   },
+   {
+    "H_byte": 6.959372694557165,
+    "H_q": 3.480064119981789,
+    "H_q_given_prev_within_byte": 3.4792941530863013,
+    "layer": 0,
+    "n_groups": 491520,
+    "subblock": "z",
+    "unique_frac": 1.0,
+    "unique_groups": 491520,
+    "zlib_bytes": 13985839,
+    "zlib_ratio": 0.8891956965128581
+   },
+   {
+    "H_byte": 6.9562282579606265,
+    "H_q": 3.4785404074403576,
+    "H_q_given_prev_within_byte": 3.4785371388777064,
+    "layer": 21,
+    "n_groups": 163840,
+    "subblock": "q",
+    "unique_frac": 1.0,
+    "unique_groups": 163840,
+    "zlib_bytes": 4661208,
+    "zlib_ratio": 0.8890548706054687
+   },
+   {
+    "H_byte": 6.93943279359873,
+    "H_q": 3.4702329665539327,
+    "H_q_given_prev_within_byte": 3.4698927022884805,
+    "layer": 21,
+    "n_groups": 163840,
+    "subblock": "k",
+    "unique_frac": 1.0,
+    "unique_groups": 163840,
+    "zlib_bytes": 4653355,
+    "zlib_ratio": 0.8875570297241211
+   },
+   {
+    "H_byte": 6.941928948351215,
+    "H_q": 3.4714041873192945,
+    "H_q_given_prev_within_byte": 3.4705377344431207,
+    "layer": 21,
+    "n_groups": 491520,
+    "subblock": "v",
+    "unique_frac": 1.0,
+    "unique_groups": 491520,
+    "zlib_bytes": 13960360,
+    "zlib_ratio": 0.8875757853190104
+   },
+   {
+    "H_byte": 6.964043175409877,
+    "H_q": 3.4824055462516985,
+    "H_q_given_prev_within_byte": 3.4813124961672304,
+    "layer": 21,
+    "n_groups": 491520,
+    "subblock": "z",
+    "unique_frac": 1.0,
+    "unique_groups": 491520,
+    "zlib_bytes": 13993159,
+    "zlib_ratio": 0.8896610895792644
+   },
+   {
+    "H_byte": 6.929266888059868,
+    "H_q": 3.465088577802327,
+    "H_q_given_prev_within_byte": 3.464640624716048,
+    "layer": 42,
+    "n_groups": 163840,
+    "subblock": "q",
+    "unique_frac": 1.0,
+    "unique_groups": 163840,
+    "zlib_bytes": 4648015,
+    "zlib_ratio": 0.8865385055541992
+   },
+   {
+    "H_byte": 6.910193814268966,
+    "H_q": 3.4556633733956192,
+    "H_q_given_prev_within_byte": 3.4557575491720653,
+    "layer": 42,
+    "n_groups": 163840,
+    "subblock": "k",
+    "unique_frac": 1.0,
+    "unique_groups": 163840,
+    "zlib_bytes": 4639859,
+    "zlib_ratio": 0.8849828720092774
+   },
+   {
+    "H_byte": 6.9192483720748585,
+    "H_q": 3.460117335247028,
+    "H_q_given_prev_within_byte": 3.4593538744074466,
+    "layer": 42,
+    "n_groups": 491520,
+    "subblock": "v",
+    "unique_frac": 1.0,
+    "unique_groups": 491520,
+    "zlib_bytes": 13931910,
+    "zlib_ratio": 0.8857669830322266
+   },
+   {
+    "H_byte": 6.947373007664831,
+    "H_q": 3.474087849622712,
+    "H_q_given_prev_within_byte": 3.4728390195404844,
+    "layer": 42,
+    "n_groups": 491520,
+    "subblock": "z",
+    "unique_frac": 1.0,
+    "unique_groups": 491520,
+    "zlib_bytes": 13969724,
+    "zlib_ratio": 0.888171132405599
+   }
+  ],
+  "sample_layers": [
+   0,
+   21,
+   42
+  ],
+  "sample_unique_frac": {
+   "max": 1.0,
+   "mean": 1.0,
+   "min": 1.0,
+   "n": 12,
+   "std": 0.0
+  },
+  "sample_zlib_ratio": {
+   "max": 0.8920433044433593,
+   "mean": 0.8884887006547717,
+   "min": 0.8849828720092774,
+   "n": 12,
+   "std": 0.0020321410911619533
+  }
+ },
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "linear_qkvz bytes re-measured from 48 HQ30UQ4 headers and refused unless they sum to 2,139,096,960",
+  "q/k/v/z payload + headers reconcile to the same total",
+  "i.i.d. Shannon, neighbour conditional entropy, and cross-layer MI measured per sub-block on the real codes",
+  "CPU operator sensitivity of a 3-bit drop measured per sub-block on rec_state, rec_out (h), and the silu gate",
+  "z-only Q3 leaves rec_state and h bit-identical (shader binding holds)",
+  "a bit reduction is never reported as supported on entropy alone",
+  "negative_index queried; NNS-019 / NNS-029 / NNS-022 cited as cousins or reopen analogs, not laundered"
+ ],
+ "gpu_authority": false,
+ "independent_information": {
+  "equal_precision_default": {
+   "heterogeneous_allocation_available": true,
+   "incumbent_does": "one HQ30UQ4 GEMV over the fused 16384-row tensor",
+   "justified_by_consume": false,
+   "justified_by_weight_space_relfro": "weight-space Q3/Q2 rel-fro is similar across q/k/v/z; that is packing uniformity, not operator sensitivity",
+   "physical_primitive": "FusedDecodeCompute",
+   "why_available": "qwen38_qkvz_rearrange_conv_l2_f32 already splits the GEMV output into q, k, v, z buffers. A row-range bit-width Q4 matvec (or a split decode that does not write dense W) can spend bits differently per range. Four independent tensors without a fused kernel would add dispatches and is a different candidate."
+  },
+  "operator": "S_t = (I - beta k k^T) (decay * S_{t-1}) + beta k v^T; h_t = S_t^T q; gated = RMSNorm(h) * silu(z). decay, beta come from in_proj_ba + A_log + dt_bias.",
+  "roles": {
+   "k": {
+    "enters_conv": true,
+    "enters_gated_delta": true,
+    "enters_state_update": true,
+    "role": "rank-1 projector (I - beta k k^T) AND the write key k v^T",
+    "rows": 2048,
+    "sensitivity_implication": "k appears twice in the update. Equal W-space distortion with q/v/z is not a reason to give k equal bits."
+   },
+   "q": {
+    "enters_conv": true,
+    "enters_gated_delta": true,
+    "enters_state_update": false,
+    "role": "readout: h = S^T q",
+    "rows": 2048,
+    "sensitivity_implication": "Injuring q injures h without rewriting S. Next token still sees an intact S."
+   },
+   "v": {
+    "enters_conv": true,
+    "enters_gated_delta": true,
+    "enters_state_update": true,
+    "role": "write value: beta k v^T",
+    "rows": 6144,
+    "sensitivity_implication": "Injuring v writes a wrong column into S."
+   },
+   "z": {
+    "enters_conv": false,
+    "enters_gated_delta": false,
+    "enters_state_update": false,
+    "role": "output gate after RMSNorm(h); never bound to gated-delta",
+    "rows": 6144,
+    "sensitivity_implication": "Lowering z bits cannot corrupt rec_state. This is source-true, not a measurement. z is 37.5% of linear_qkvz rows."
+   }
+  },
+  "source": "crates/hawking-core/shaders/qwen38_device_activations.metal qwen38_gated_delta_decode_vi / qwen38_gated_delta_decode_vi_simd",
+  "state_rank_growth": "The update is rank-1 per token after a scalar decay. S is a 128x128 matrix per value head (48 heads). It is not a diagonal SSM. 786432 f32 cells per layer are independently addressed."
+ },
+ "negative_findings": [
+  "H(q) \u2248 3.47\u20133.50 of 4 bits on q, k, v and z; lossless Q3 is impossible; entropy does not pick a winner",
+  "neighbour MI is millibits; cross-layer nibble MI is ~0",
+  "Q3 operator injury fails the 0.990 gated-cosine bar on every sub-block across sampled layers",
+  "k and v rewrite rec_state at ~0.2 rel-fro; they are not cheap",
+  "z cannot corrupt rec_state and is the cheapest relative experiment, still not a licensed byte win",
+  "all four keep 4 bits; 0 bytes eliminated from the token"
+ ],
+ "nomenclature": {
+  "already_falsified": "ALREADY_FALSIFIED",
+  "depends_on_lowering": "DEPENDS_ON_LOWERING",
+  "direct_consume": "DIRECT_CONSUME",
+  "entropy_alone_insufficient": "ENTROPY_ALONE_INSUFFICIENT",
+  "measured_negative": "MEASURED_NEGATIVE",
+  "open": "OPEN",
+  "rejected_dense_remat": "REJECTED_DENSE_REMAT",
+  "static_only": "this sidecar. Models propose; protected deterministic evidence decides.",
+  "unmeasured": "UNMEASURED"
+ },
+ "open_byte_levers": [
+  {
+   "bytes_eliminated_if_true": 265161519,
+   "id": "entropy_coded_qkvz_codes",
+   "status": "OPEN",
+   "support": "SHANNON_GAP_MEASURED_KERNEL_UNMEASURED"
+  }
+ ],
+ "predecessor": "receipts/future/DELTANET_REPRESENTATION.json",
+ "purpose": "Split attention.linear_qkvz into q/k/v/z on the real catalog, measure per-sub-block Shannon entropy of the HQ30UQ4 codes (MLP_CODE_INFORMATION method) and STATIC operator sensitivity of a 3-bit drop, and allocate bits. A measured NO that they all keep 4 bits closes the last large open byte lever.",
+ "recovered_implementation": {
+  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "catalog_format": "HQ38M20 + HQ30UQ4 group-64 signed nibble",
+  "entropy_method": "tools/future/mlp_code_information.py _shannon/_mi/_cond_h on 16-ary nibbles",
+  "gated_delta": "S := (I - beta k k^T)(decay S) + beta k v^T; h := S^T q",
+  "qkvz_layout": "per_key_head_Q128_K128_V384_Z384",
+  "z_binding": "gated RMSNorm only; not gated-delta; not conv"
+ },
+ "schema": "hawking.future.deltanet_qkvz_precision.v1",
+ "seal_sha256": "9326b23b2eb3cfa956a7abd33ffabbcc744a58f8bc1f38754769313b30671c1a",
+ "sensitivity": {
+  "by_subblock": {
+   "k": {
+    "candidate_bits": 3,
+    "enters_conv": true,
+    "enters_gated_delta": true,
+    "gated_cosine": {
+     "max": 0.9858914082809573,
+     "mean": 0.9580020304160385,
+     "min": 0.9069745419188505,
+     "n": 3,
+     "std": 0.036133982821595106
+    },
+    "gated_cosine_min": 0.9069745419188505,
+    "gated_relfro": {
+     "max": 0.432923641526671,
+     "mean": 0.26850784913619224,
+     "min": 0.17312185467811317,
+     "n": 3,
+     "std": 0.11675637559855657
+    },
+    "gated_relfro_max": 0.432923641526671,
+    "measured": true,
+    "physical_primitive": "LocalStateMachine",
+    "rec_out_h_identical": false,
+    "rec_out_h_relfro_max": 0.48366719727998414,
+    "rec_state_identical": false,
+    "rec_state_relfro": {
+     "max": 0.24999192937961467,
+     "mean": 0.2277011282448663,
+     "min": 0.20361231613531347,
+     "n": 3,
+     "std": 0.018977034608035712
+    },
+    "rec_state_relfro_max": 0.24999192937961467,
+    "writes_rec_state": true
+   },
+   "q": {
+    "candidate_bits": 3,
+    "enters_conv": true,
+    "enters_gated_delta": true,
+    "gated_cosine": {
+     "max": 0.9820052171491337,
+     "mean": 0.9756505329271811,
+     "min": 0.9723116793340146,
+     "n": 3,
+     "std": 0.004495375003224916
+    },
+    "gated_cosine_min": 0.9723116793340146,
+    "gated_relfro": {
+     "max": 0.3261050597927135,
+     "mean": 0.25079803553636787,
+     "min": 0.18948040087325635,
+     "n": 3,
+     "std": 0.05664716304816429
+    },
+    "gated_relfro_max": 0.3261050597927135,
+    "measured": true,
+    "physical_primitive": "LocalStateMachine",
+    "rec_out_h_identical": false,
+    "rec_out_h_relfro_max": 0.30599961384168317,
+    "rec_state_identical": true,
+    "rec_state_relfro": {
+     "max": 0.0,
+     "mean": 0.0,
+     "min": 0.0,
+     "n": 3,
+     "std": 0.0
+    },
+    "rec_state_relfro_max": 0.0,
+    "writes_rec_state": false
+   },
+   "v": {
+    "candidate_bits": 3,
+    "enters_conv": true,
+    "enters_gated_delta": true,
+    "gated_cosine": {
+     "max": 0.9814307155022831,
+     "mean": 0.9621726009466358,
+     "min": 0.9443607586831942,
+     "n": 3,
+     "std": 0.015168260772628263
+    },
+    "gated_cosine_min": 0.9443607586831942,
+    "gated_relfro": {
+     "max": 0.3294553650419239,
+     "mean": 0.2681798706001756,
+     "min": 0.19602526622961935,
+     "n": 3,
+     "std": 0.055013114145008826
+    },
+    "gated_relfro_max": 0.3294553650419239,
+    "measured": true,
+    "physical_primitive": "LocalStateMachine",
+    "rec_out_h_identical": false,
+    "rec_out_h_relfro_max": 0.4048182166857011,
+    "rec_state_identical": false,
+    "rec_state_relfro": {
+     "max": 0.2860707539962624,
+     "mean": 0.23501878606669127,
+     "min": 0.18928294519211591,
+     "n": 3,
+     "std": 0.039691862208985594
+    },
+    "rec_state_relfro_max": 0.2860707539962624,
+    "writes_rec_state": true
+   },
+   "z": {
+    "candidate_bits": 3,
+    "enters_conv": false,
+    "enters_gated_delta": false,
+    "gated_cosine": {
+     "max": 0.9773996949550514,
+     "mean": 0.9684481192257081,
+     "min": 0.9520951968289889,
+     "n": 3,
+     "std": 0.0115805686596408
+    },
+    "gated_cosine_min": 0.9520951968289889,
+    "gated_relfro": {
+     "max": 0.3132909748694052,
+     "mean": 0.24776458441180474,
+     "min": 0.2115446544462761,
+     "n": 3,
+     "std": 0.04642003805715471
+    },
+    "gated_relfro_max": 0.3132909748694052,
+    "measured": true,
+    "physical_primitive": "FusedDecodeCompute",
+    "rec_out_h_identical": true,
+    "rec_out_h_relfro_max": 0.0,
+    "rec_state_identical": true,
+    "rec_state_relfro": {
+     "max": 0.0,
+     "mean": 0.0,
+     "min": 0.0,
+     "n": 3,
+     "std": 0.0
+    },
+    "rec_state_relfro_max": 0.0,
+    "writes_rec_state": false
+   }
+  },
+  "candidate_bits": 3,
+  "cosine_bar": 0.99,
+  "cosine_bar_source": "NNS-019 mean-row cosine \u2265 0.990 vs BF16, applied here as a STATIC operator-output cousin, not a generate identity gate",
+  "evidence_class": "STATIC_ONLY",
+  "gpu_authority": false,
+  "layers": [
+   0,
+   21,
+   42
+  ],
+  "measured": true,
+  "n_layers": 3,
+  "n_tokens": 8,
+  "note": "z-only Q3 must leave rec_state and rec_out (h) bit-identical if the shader binding is honest. q-only Q3 must leave rec_state bit-identical (readout, no write). k and v rewrite S.",
+  "per_layer": [
+   {
+    "by_subblock": {
+     "k": {
+      "consumed_by": "qwen38_gated_delta_decode_vi_simd (write key)",
+      "enters_conv": true,
+      "enters_gated_delta": true,
+      "gated_cosine": {
+       "max": 0.9947527920320487,
+       "mean": 0.9795028970183326,
+       "min": 0.9069745419188505,
+       "n": 8,
+       "std": 0.02777149338125956
+      },
+      "gated_cosine_min": 0.9069745419188505,
+      "gated_relfro": {
+       "max": 0.432923641526671,
+       "mean": 0.19980492240658182,
+       "min": 0.1056008954015384,
+       "n": 8,
+       "std": 0.0977993315178433
+      },
+      "gated_relfro_max": 0.432923641526671,
+      "n_tokens": 8,
+      "physical_primitive": "LocalStateMachine",
+      "rec_out_h_cosine": {
+       "max": 0.9946691871829898,
+       "mean": 0.9754835615335655,
+       "min": 0.8822663778353422,
+       "n": 8,
+       "std": 0.03548999588852764
+      },
+      "rec_out_h_identical_every_token": false,
+      "rec_out_h_relfro": {
+       "max": 0.48366719727998414,
+       "mean": 0.20564701471405128,
+       "min": 0.10621119068359862,
+       "n": 8,
+       "std": 0.1112416836921721
+      },
+      "rec_state_identical_every_token": false,
+      "rec_state_relfro": {
+       "max": 0.2294991392196707,
+       "mean": 0.20283560194699063,
+       "min": 0.1805362060384511,
+       "n": 8,
+       "std": 0.014381133976045533
+      },
+      "rec_state_relfro_max": 0.2294991392196707,
+      "token0_gated_cosine": 0.9930494235384109,
+      "token0_gated_relfro": 0.24442678528013145,
+      "token_last_gated_cosine": 0.9860687734884754,
+      "token_last_gated_relfro": 0.19203820644003344,
+      "writes_rec_state": true
+     },
+     "q": {
+      "consumed_by": "qwen38_gated_delta_decode_vi_simd (readout h=S^T q)",
+      "enters_conv": true,
+      "enters_gated_delta": true,
+      "gated_cosine": {
+       "max": 0.9923627699183468,
+       "mean": 0.984925478229769,
+       "min": 0.972634702298395,
+       "n": 8,
+       "std": 0.007273056542134585
+      },
+      "gated_cosine_min": 0.972634702298395,
+      "gated_relfro": {
+       "max": 0.3261050597927135,
+       "mean": 0.18957238553790834,
+       "min": 0.1239319910651536,
+       "n": 8,
+       "std": 0.06327713100569796
+      },
+      "gated_relfro_max": 0.3261050597927135,
+      "n_tokens": 8,
+      "physical_primitive": "LocalStateMachine",
+      "rec_out_h_cosine": {
+       "max": 0.9943864678728873,
+       "mean": 0.9841198457606256,
+       "min": 0.9627403308621134,
+       "n": 8,
+       "std": 0.00962557407992485
+      },
+      "rec_out_h_identical_every_token": false,
+      "rec_out_h_relfro": {
+       "max": 0.30599961384168317,
+       "mean": 0.18254574835472026,
+       "min": 0.1069333985943407,
+       "n": 8,
+       "std": 0.0600723491237084
+      },
+      "rec_state_identical_every_token": true,
+      "rec_state_relfro": {
+       "max": 0.0,
+       "mean": 0.0,
+       "min": 0.0,
+       "n": 8,
+       "std": 0.0
+      },
+      "rec_state_relfro_max": 0.0,
+      "token0_gated_cosine": 0.972634702298395,
+      "token0_gated_relfro": 0.3261050597927135,
+      "token_last_gated_cosine": 0.9749778976561654,
+      "token_last_gated_relfro": 0.2499998467988533,
+      "writes_rec_state": false
+     },
+     "v": {
+      "consumed_by": "qwen38_gated_delta_decode_vi_simd (write value)",
+      "enters_conv": true,
+      "enters_gated_delta": true,
+      "gated_cosine": {
+       "max": 0.9953765624083135,
+       "mean": 0.9757323678639147,
+       "min": 0.9443607586831942,
+       "n": 8,
+       "std": 0.016206139680756102
+      },
+      "gated_cosine_min": 0.9443607586831942,
+      "gated_relfro": {
+       "max": 0.3294553650419239,
+       "mean": 0.20730590161465057,
+       "min": 0.10037165628611446,
+       "n": 8,
+       "std": 0.0766292472891508
+      },
+      "gated_relfro_max": 0.3294553650419239,
+      "n_tokens": 8,
+      "physical_primitive": "LocalStateMachine",
+      "rec_out_h_cosine": {
+       "max": 0.9942607051993965,
+       "mean": 0.9659074646686849,
+       "min": 0.9158701922935667,
+       "n": 8,
+       "std": 0.028422980794713375
+      },
+      "rec_out_h_identical_every_token": false,
+      "rec_out_h_relfro": {
+       "max": 0.4048182166857011,
+       "mean": 0.23739921464817137,
+       "min": 0.11029864846004496,
+       "n": 8,
+       "std": 0.10787288853544783
+      },
+      "rec_state_identical_every_token": false,
+      "rec_state_relfro": {
+       "max": 0.2860707539962624,
+       "mean": 0.2169076273535897,
+       "min": 0.13005179762443117,
+       "n": 8,
+       "std": 0.06470141429812622
+      },
+      "rec_state_relfro_max": 0.2860707539962624,
+      "token0_gated_cosine": 0.9443607586831942,
+      "token0_gated_relfro": 0.3294553650419239,
+      "token_last_gated_cosine": 0.9899920819691442,
+      "token_last_gated_relfro": 0.14354712174002185,
+      "writes_rec_state": true
+     },
+     "z": {
+      "consumed_by": "qwen80_deltanet_gated_rmsnorm (silu gate; z never bound to gated-delta)",
+      "enters_conv": false,
+      "enters_gated_delta": false,
+      "gated_cosine": {
+       "max": 0.9974417484551,
+       "mean": 0.9793818994305535,
+       "min": 0.9520951968289889,
+       "n": 8,
+       "std": 0.01866547163505206
+      },
+      "gated_cosine_min": 0.9520951968289889,
+      "gated_relfro": {
+       "max": 0.3132909748694052,
+       "mean": 0.19320422115861519,
+       "min": 0.07329230128917462,
+       "n": 8,
+       "std": 0.09978308295109187
+      },
+      "gated_relfro_max": 0.3132909748694052,
+      "n_tokens": 8,
+      "physical_primitive": "FusedDecodeCompute",
+      "rec_out_h_cosine": {
+       "max": 1.0,
+       "mean": 1.0,
+       "min": 1.0,
+       "n": 8,
+       "std": 0.0
+      },
+      "rec_out_h_identical_every_token": true,
+      "rec_out_h_relfro": {
+       "max": 0.0,
+       "mean": 0.0,
+       "min": 0.0,
+       "n": 8,
+       "std": 0.0
+      },
+      "rec_state_identical_every_token": true,
+      "rec_state_relfro": {
+       "max": 0.0,
+       "mean": 0.0,
+       "min": 0.0,
+       "n": 8,
+       "std": 0.0
+      },
+      "rec_state_relfro_max": 0.0,
+      "token0_gated_cosine": 0.9905179691502314,
+      "token0_gated_relfro": 0.2155953754561213,
+      "token_last_gated_cosine": 0.9969261187889242,
+      "token_last_gated_relfro": 0.07837952865872572,
+      "writes_rec_state": false
+     }
+    },
+    "layer": 0
+   },
+   {
+    "by_subblock": {
+     "k": {
+      "consumed_by": "qwen38_gated_delta_decode_vi_simd (write key)",
+      "enters_conv": true,
+      "enters_gated_delta": true,
+      "gated_cosine": {
+       "max": 0.9955855270427529,
+       "mean": 0.9882378492655213,
+       "min": 0.9858914082809573,
+       "n": 8,
+       "std": 0.0028708332879595977
+      },
+      "gated_cosine_min": 0.9858914082809573,
+      "gated_relfro": {
+       "max": 0.17312185467811317,
+       "mean": 0.15462119896698112,
+       "min": 0.09399422753585883,
+       "n": 8,
+       "std": 0.02334218678209168
+      },
+      "gated_relfro_max": 0.17312185467811317,
+      "n_tokens": 8,
+      "physical_primitive": "LocalStateMachine",
+      "rec_out_h_cosine": {
+       "max": 0.996689131733208,
+       "mean": 0.9867061319874112,
+       "min": 0.9806366950062863,
+       "n": 8,
+       "std": 0.00501583992524002
+      },
+      "rec_out_h_identical_every_token": false,
+      "rec_out_h_relfro": {
+       "max": 0.19774176205869404,
+       "mean": 0.16271931154269842,
+       "min": 0.08142668988435717,
+       "n": 8,
+       "std": 0.034758840797106005
+      },
+      "rec_state_identical_every_token": false,
+      "rec_state_relfro": {
+       "max": 0.24999192937961467,
+       "mean": 0.23144950678294263,
+       "min": 0.20550577326056046,
+       "n": 8,
+       "std": 0.016909149879640015
+      },
+      "rec_state_relfro_max": 0.24999192937961467,
+      "token0_gated_cosine": 0.9881397602284268,
+      "token0_gated_relfro": 0.1609610651791342,
+      "token_last_gated_cosine": 0.9867739195481364,
+      "token_last_gated_relfro": 0.1621224735381427,
+      "writes_rec_state": true
+     },
+     "q": {
+      "consumed_by": "qwen38_gated_delta_decode_vi_simd (readout h=S^T q)",
+      "enters_conv": true,
+      "enters_gated_delta": true,
+      "gated_cosine": {
+       "max": 0.9943558643410344,
+       "mean": 0.9883956976670396,
+       "min": 0.9820052171491337,
+       "n": 8,
+       "std": 0.004124098489157699
+      },
+      "gated_cosine_min": 0.9820052171491337,
+      "gated_relfro": {
+       "max": 0.18948040087325635,
+       "mean": 0.15377373664621488,
+       "min": 0.10611373233072824,
+       "n": 8,
+       "std": 0.02808700773109002
+      },
+      "gated_relfro_max": 0.18948040087325635,
+      "n_tokens": 8,
+      "physical_primitive": "LocalStateMachine",
+      "rec_out_h_cosine": {
+       "max": 0.9960179452866154,
+       "mean": 0.9890224010134283,
+       "min": 0.9822674337286319,
+       "n": 8,
+       "std": 0.003790907020715677
+      },
+      "rec_out_h_identical_every_token": false,
+      "rec_out_h_relfro": {
+       "max": 0.1891769289618133,
+       "mean": 0.1485231124922731,
+       "min": 0.09024792404965494,
+       "n": 8,
+       "std": 0.02780034522827547
+      },
+      "rec_state_identical_every_token": true,
+      "rec_state_relfro": {
+       "max": 0.0,
+       "mean": 0.0,
+       "min": 0.0,
+       "n": 8,
+       "std": 0.0
+      },
+      "rec_state_relfro_max": 0.0,
+      "token0_gated_cosine": 0.9915469220454469,
+      "token0_gated_relfro": 0.13006286443458484,
+      "token_last_gated_cosine": 0.9880459065103778,
+      "token_last_gated_relfro": 0.1644709649860271,
+      "writes_rec_state": false
+     },
+     "v": {
+      "consumed_by": "qwen38_gated_delta_decode_vi_simd (write value)",
+      "enters_conv": true,
+      "enters_gated_delta": true,
+      "gated_cosine": {
+       "max": 0.9914771527764737,
+       "mean": 0.9861270212897559,
+       "min": 0.9814307155022831,
+       "n": 8,
+       "std": 0.0029762928202135743
+      },
+      "gated_cosine_min": 0.9814307155022831,
+      "gated_relfro": {
+       "max": 0.19602526622961935,
+       "mean": 0.1661843010712151,
+       "min": 0.13040167193119576,
+       "n": 8,
+       "std": 0.018786921404326796
+      },
+      "gated_relfro_max": 0.19602526622961935,
+      "n_tokens": 8,
+      "physical_primitive": "LocalStateMachine",
+      "rec_out_h_cosine": {
+       "max": 0.9863101211753648,
+       "mean": 0.9837939625955849,
+       "min": 0.9800140754659339,
+       "n": 8,
+       "std": 0.0018106797479709928
+      },
+      "rec_out_h_identical_every_token": false,
+      "rec_out_h_relfro": {
+       "max": 0.19893060865015655,
+       "mean": 0.18006482324276135,
+       "min": 0.1649309426797824,
+       "n": 8,
+       "std": 0.009280008344213496
+      },
+      "rec_state_identical_every_token": false,
+      "rec_state_relfro": {
+       "max": 0.18928294519211591,
+       "mean": 0.18313796274323196,
+       "min": 0.17670201553964382,
+       "n": 8,
+       "std": 0.004214464652302131
+      },
+      "rec_state_relfro_max": 0.18928294519211591,
+      "token0_gated_cosine": 0.9836480546933661,
+      "token0_gated_relfro": 0.1808020196125042,
+      "token_last_gated_cosine": 0.9874202403130413,
+      "token_last_gated_relfro": 0.15847083553291935,
+      "writes_rec_state": true
+     },
+     "z": {
+      "consumed_by": "qwen80_deltanet_gated_rmsnorm (silu gate; z never bound to gated-delta)",
+      "enters_conv": false,
+      "enters_gated_delta": false,
+      "gated_cosine": {
+       "max": 0.990770290805531,
+       "mean": 0.9847820621657508,
+       "min": 0.9773996949550514,
+       "n": 8,
+       "std": 0.0037518640281739035
+      },
+      "gated_cosine_min": 0.9773996949550514,
+      "gated_relfro": {
+       "max": 0.2115446544462761,
+       "mean": 0.17367684409812537,
+       "min": 0.13916772654054588,
+       "n": 8,
+       "std": 0.020355384970740343
+      },
+      "gated_relfro_max": 0.2115446544462761,
+      "n_tokens": 8,
+      "physical_primitive": "FusedDecodeCompute",
+      "rec_out_h_cosine": {
+       "max": 1.0,
+       "mean": 1.0,
+       "min": 1.0,
+       "n": 8,
+       "std": 0.0
+      },
+      "rec_out_h_identical_every_token": true,
+      "rec_out_h_relfro": {
+       "max": 0.0,
+       "mean": 0.0,
+       "min": 0.0,
+       "n": 8,
+       "std": 0.0
+      },
+      "rec_state_identical_every_token": true,
+      "rec_state_relfro": {
+       "max": 0.0,
+       "mean": 0.0,
+       "min": 0.0,
+       "n": 8,
+       "std": 0.0
+      },
+      "rec_state_relfro_max": 0.0,
+      "token0_gated_cosine": 0.9857650175814211,
+      "token0_gated_relfro": 0.17056796307979932,
+      "token_last_gated_cosine": 0.9878073910859909,
+      "token_last_gated_relfro": 0.15696351314821638,
+      "writes_rec_state": false
+     }
+    },
+    "layer": 21
+   },
+   {
+    "by_subblock": {
+     "k": {
+      "consumed_by": "qwen38_gated_delta_decode_vi_simd (write key)",
+      "enters_conv": true,
+      "enters_gated_delta": true,
+      "gated_cosine": {
+       "max": 0.9971650738792275,
+       "mean": 0.9893778455839136,
+       "min": 0.9811401410483074,
+       "n": 8,
+       "std": 0.005191499241915159
+      },
+      "gated_cosine_min": 0.9811401410483074,
+      "gated_relfro": {
+       "max": 0.19947805120379247,
+       "mean": 0.14355549540908397,
+       "min": 0.07898560619987453,
+       "n": 8,
+       "std": 0.03647076265337915
+      },
+      "gated_relfro_max": 0.19947805120379247,
+      "n_tokens": 8,
+      "physical_primitive": "LocalStateMachine",
+      "rec_out_h_cosine": {
+       "max": 0.9976134203548909,
+       "mean": 0.9887306877556299,
+       "min": 0.9792322909451507,
+       "n": 8,
+       "std": 0.0055669465608947834
+      },
+      "rec_out_h_identical_every_token": false,
+      "rec_out_h_relfro": {
+       "max": 0.20543390576597573,
+       "mean": 0.14914695583263665,
+       "min": 0.07492452548382042,
+       "n": 8,
+       "std": 0.039841682323499404
+      },
+      "rec_state_identical_every_token": false,
+      "rec_state_relfro": {
+       "max": 0.20361231613531347,
+       "mean": 0.19276018454487634,
+       "min": 0.18437940720414417,
+       "n": 8,
+       "std": 0.005484199358939827
+      },
+      "rec_state_relfro_max": 0.20361231613531347,
+      "token0_gated_cosine": 0.9971650738792275,
+      "token0_gated_relfro": 0.07898560619987453,
+      "token_last_gated_cosine": 0.9811401410483074,
+      "token_last_gated_relfro": 0.19947805120379247,
+      "writes_rec_state": true
+     },
+     "q": {
+      "consumed_by": "qwen38_gated_delta_decode_vi_simd (readout h=S^T q)",
+      "enters_conv": true,
+      "enters_gated_delta": true,
+      "gated_cosine": {
+       "max": 0.998927991939398,
+       "mean": 0.9899638883336901,
+       "min": 0.9723116793340146,
+       "n": 8,
+       "std": 0.007556672293971411
+      },
+      "gated_cosine_min": 0.9723116793340146,
+      "gated_relfro": {
+       "max": 0.23680864594313375,
+       "mean": 0.13532139950847244,
+       "min": 0.05655085609155213,
+       "n": 8,
+       "std": 0.04879389642401062
+      },
+      "gated_relfro_max": 0.23680864594313375,
+      "n_tokens": 8,
+      "physical_primitive": "LocalStateMachine",
+      "rec_out_h_cosine": {
+       "max": 0.9990835550752222,
+       "mean": 0.9901618727486008,
+       "min": 0.9741359211516891,
+       "n": 8,
+       "std": 0.007033164737178531
+      },
+      "rec_out_h_identical_every_token": false,
+      "rec_out_h_relfro": {
+       "max": 0.2298670382723215,
+       "mean": 0.13457755332514115,
+       "min": 0.05457979517919714,
+       "n": 8,
+       "std": 0.04722124581419809
+      },
+      "rec_state_identical_every_token": true,
+      "rec_state_relfro": {
+       "max": 0.0,
+       "mean": 0.0,
+       "min": 0.0,
+       "n": 8,
+       "std": 0.0
+      },
+      "rec_state_relfro_max": 0.0,
+      "token0_gated_cosine": 0.998927991939398,
+      "token0_gated_relfro": 0.05655085609155213,
+      "token_last_gated_cosine": 0.9723116793340146,
+      "token_last_gated_relfro": 0.23680864594313375,
+      "writes_rec_state": false
+     },
+     "v": {
+      "consumed_by": "qwen38_gated_delta_decode_vi_simd (write value)",
+      "enters_conv": true,
+      "enters_gated_delta": true,
+      "gated_cosine": {
+       "max": 0.9835469933499726,
+       "mean": 0.9782174907069914,
+       "min": 0.96072632865443,
+       "n": 8,
+       "std": 0.00681290225382834
+      },
+      "gated_cosine_min": 0.96072632865443,
+      "gated_relfro": {
+       "max": 0.2790589805289836,
+       "mean": 0.20695264451048853,
+       "min": 0.18067059952820194,
+       "n": 8,
+       "std": 0.028557274568720505
+      },
+      "gated_relfro_max": 0.2790589805289836,
+      "n_tokens": 8,
+      "physical_primitive": "LocalStateMachine",
+      "rec_out_h_cosine": {
+       "max": 0.9837975856883554,
+       "mean": 0.977855194910912,
+       "min": 0.9557954912001895,
+       "n": 8,
+       "std": 0.008570486208065527
+      },
+      "rec_out_h_identical_every_token": false,
+      "rec_out_h_relfro": {
+       "max": 0.2946758628685025,
+       "mean": 0.20770397162927845,
+       "min": 0.17991489009306402,
+       "n": 8,
+       "std": 0.03421318470425687
+      },
+      "rec_state_identical_every_token": false,
+      "rec_state_relfro": {
+       "max": 0.22970265901169554,
+       "mean": 0.201268047110697,
+       "min": 0.1939546468556084,
+       "n": 8,
+       "std": 0.01099526281859488
+      },
+      "rec_state_relfro_max": 0.22970265901169554,
+      "token0_gated_cosine": 0.96072632865443,
+      "token0_gated_relfro": 0.2790589805289836,
+      "token_last_gated_cosine": 0.9835469933499726,
+      "token_last_gated_relfro": 0.18067059952820194,
+      "writes_rec_state": true
+     },
+     "z": {
+      "consumed_by": "qwen80_deltanet_gated_rmsnorm (silu gate; z never bound to gated-delta)",
+      "enters_conv": false,
+      "enters_gated_delta": false,
+      "gated_cosine": {
+       "max": 0.9854780886812045,
+       "mean": 0.9826182612010426,
+       "min": 0.975849465893084,
+       "n": 8,
+       "std": 0.002805920220862485
+      },
+      "gated_cosine_min": 0.975849465893084,
+      "gated_relfro": {
+       "max": 0.21845812391973302,
+       "mean": 0.1858709832445804,
+       "min": 0.16982933582341753,
+       "n": 8,
+       "std": 0.013722173599882885
+      },
+      "gated_relfro_max": 0.21845812391973302,
+      "n_tokens": 8,
+      "physical_primitive": "FusedDecodeCompute",
+      "rec_out_h_cosine": {
+       "max": 1.0,
+       "mean": 1.0,
+       "min": 1.0,
+       "n": 8,
+       "std": 0.0
+      },
+      "rec_out_h_identical_every_token": true,
+      "rec_out_h_relfro": {
+       "max": 0.0,
+       "mean": 0.0,
+       "min": 0.0,
+       "n": 8,
+       "std": 0.0
+      },
+      "rec_state_identical_every_token": true,
+      "rec_state_relfro": {
+       "max": 0.0,
+       "mean": 0.0,
+       "min": 0.0,
+       "n": 8,
+       "std": 0.0
+      },
+      "rec_state_relfro_max": 0.0,
+      "token0_gated_cosine": 0.975849465893084,
+      "token0_gated_relfro": 0.21845812391973302,
+      "token_last_gated_cosine": 0.9833269922189312,
+      "token_last_gated_relfro": 0.18276929063921693,
+      "writes_rec_state": false
+     }
+    },
+    "layer": 42
+   }
+  ],
+  "probe": {
+   "generate_gate": false,
+   "kernels": "qwen38_qkvz_rearrange_conv_l2_f32 + qwen38_gated_delta_decode_vi + qwen80_deltanet_gated_rmsnorm",
+   "kind": "cpu_operator_rollout",
+   "not_capability": true,
+   "real_post_norm_x": false,
+   "requant": "per-group least-squares scale refit after nibble drop to 8 levels on [-8, 7]; scales of unperturbed blocks are untouched",
+   "rms_eps": 1e-06,
+   "state_init": "S=0 and conv_state=0 (sequence start)",
+   "x": "isotropic gaussian N(0, 1/sqrt(hidden)), seed 38"
+  },
+  "state_relfro_bar": 0.01
+ },
+ "version": 1,
+ "what_this_does_not_prove": [
+  "capability or generate identity of Q3 on any qkvz range",
+  "that isotropic Gaussian x is the real post-norm hidden",
+  "physical EBPW of a different packing",
+  "actual_read_bytes_per_token (cache, contention)",
+  "a fused rANS kernel for the nibble-histogram gap"
+ ]
+}

@@ -1,0 +1,805 @@
+{
+ "attacks": [
+  {
+   "apply_result": {
+    "attack_id": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD::law_scope",
+    "bench_state": "UNKNOWN",
+    "direction": "DOWN",
+    "evidence_class": "STATIC_ONLY",
+    "family": "law_scope",
+    "law_after": {
+     "architecture_family": "dense_hybrid_transformer",
+     "backend": "Metal",
+     "counterexample_requirement": "a third production-shaped organ on this parent that loads the activation and whose cited GB/s disagrees with 497.4 by more than the catalog-full sibling (~2%), or a second specimen's same-shape measurement that disagrees. 703.5 without an activation load is not a counterexample \u2014 the law already names it as the wrong shape.",
+     "evidence_refs": [
+      "receipts/future/MLP_ALU_ROOFLINE.json",
+      "receipts/future/ROOF_ANCHOR.json"
+     ],
+     "evidence_strength": "DIAGNOSTIC_RELATIVE",
+     "law_id": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD",
+     "organ_class": "production_shaped_activation_load",
+     "scope": "ORGAN_LOCAL",
+     "source_device": "APPLE_GPU_0",
+     "source_model": "Qwen3.8-27B",
+     "statement": "The production-shaped roof WITH the activation load is 497.4 GB/s on two independent legs (MLP ARM A stripped and LM head production); 703.5 is a probe that never loads the activation (ROOF_ANCHOR, MLP_ALU_ROOFLINE).",
+     "transfer_candidates": [
+      "tiiuae/Falcon-H1-7B-Instruct",
+      "Qwen/Qwen3-0.6B",
+      "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+      "Qwen/Qwen3.8-Flash-Next"
+     ],
+     "transfer_confidence": 0.45
+    },
+    "law_id": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD",
+    "moved": true,
+    "reason": "A GENERIC reading of 'the production-shaped roof WITH activation load is 497.4' is broken by deltanet ARM A stripped at 943.2 GB/s (copied from receipts/future/MLP_ALU_ROOFLINE.json deltanet.arm_a_stripped.effective_gb_s; activation is loaded on that arm). MLP ARM A and LM head still agree at 497.4. Scope moves to ORGAN_LOCAL: mlp affine-q2 + lm_head, not deltanet, not a machine-wide roof. The law is not deleted.",
+    "scope_after": "ORGAN_LOCAL",
+    "scope_before": "MODEL_LOCAL",
+    "synthetic": false,
+    "verdict": "REFUTED"
+   },
+   "attack_id": "L5-LAYER-COUNTEREXAMPLE-DELTANET-943P2",
+   "bench_state": "UNKNOWN",
+   "broke_what": "the GENERIC reading of 497.4 as the unique production-shaped activation-loaded roof",
+   "citations": {
+    "deltanet_arm_a_gb_s": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "deltanet.arm_a_stripped.effective_gb_s",
+     "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+     "value": 943.2,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "lm_head_gb_s": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "lm_head_gb_s",
+     "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+     "value": 497.4,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "mlp_arm_a_gb_s": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "mlp.arm_a_stripped.effective_gb_s",
+     "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+     "value": 497.4,
+     "why": "copied; this sidecar did not measure it"
+    }
+   },
+   "evidence_class": "STATIC_ONLY",
+   "family": "law_scope",
+   "gpu_authority": false,
+   "kind": "layer_counterexample",
+   "law_deleted": false,
+   "moved": true,
+   "named_law": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD",
+   "o3_spec_attack_id": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD::law_scope",
+   "odyssey_i_barrier": null,
+   "roof_anchor_note": "ROOF_ANCHOR already rejects deltanet 943.2 as a DRAM streaming roof (exceeds published peak 819). It remains a layer/organ disagreement with a unique 497.4, which is the attack.",
+   "scope_after": "ORGAN_LOCAL",
+   "scope_before": "MODEL_LOCAL",
+   "specimen_display": "qwen3.8-27b sealed-3.14",
+   "specimen_used": "qwen3.8-27b-abliterated-bf16@local",
+   "statement": "The production-shaped roof WITH the activation load is 497.4 GB/s on two independent legs (MLP ARM A stripped and LM head production); 703.5 is a probe that never loads the activation (ROOF_ANCHOR, MLP_ALU_ROOFLINE).",
+   "survived_what": "MLP ARM A stripped and LM head production still cite 497.4 on sealed-3.14; law kept at ORGAN_LOCAL",
+   "verdict": "BROKE"
+  },
+  {
+   "adversary_named": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "adversary_role": "\u00a766 natural adversary is available; this fidelity attack is on the source legs",
+   "apply_result": {
+    "attack_id": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD::measurement_trap",
+    "bench_state": "UNKNOWN",
+    "direction": "NONE",
+    "evidence_class": "STATIC_ONLY",
+    "family": "measurement_trap",
+    "law_after": {
+     "architecture_family": "dense_hybrid_transformer",
+     "backend": "Metal",
+     "counterexample_requirement": "a third production-shaped organ on this parent that loads the activation and whose cited GB/s disagrees with 497.4 by more than the catalog-full sibling (~2%), or a second specimen's same-shape measurement that disagrees. 703.5 without an activation load is not a counterexample \u2014 the law already names it as the wrong shape.",
+     "evidence_refs": [
+      "receipts/future/MLP_ALU_ROOFLINE.json",
+      "receipts/future/ROOF_ANCHOR.json"
+     ],
+     "evidence_strength": "DIAGNOSTIC_RELATIVE",
+     "law_id": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD",
+     "organ_class": "production_shaped_activation_load",
+     "scope": "MODEL_LOCAL",
+     "source_device": "APPLE_GPU_0",
+     "source_model": "Qwen3.8-27B",
+     "statement": "The production-shaped roof WITH the activation load is 497.4 GB/s on two independent legs (MLP ARM A stripped and LM head production); 703.5 is a probe that never loads the activation (ROOF_ANCHOR, MLP_ALU_ROOFLINE).",
+     "transfer_candidates": [
+      "tiiuae/Falcon-H1-7B-Instruct",
+      "Qwen/Qwen3-0.6B",
+      "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+      "Qwen/Qwen3.8-Flash-Next"
+     ],
+     "transfer_confidence": 0.45
+    },
+    "law_id": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD",
+    "moved": false,
+    "reason": "703.5 is the addr_probe that never loads the activation (copied activation_loaded=False from receipts/future/ROOF_ANCHOR.json; usable_as_production_streaming_roof=False). L5 already distinguishes that probe from the 497.4 production-shaped legs. The fidelity counterexample fails to break the law.",
+    "scope_after": "MODEL_LOCAL",
+    "scope_before": "MODEL_LOCAL",
+    "synthetic": false,
+    "verdict": "HOLDS"
+   },
+   "attack_id": "L5-FIDELITY-703P5-ADDR-PROBE",
+   "bench_state": "UNKNOWN",
+   "citations": {
+    "addr_probe_activation_loaded": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "registry[id=q4_single_gemv_addr_13p6gb_max].what_was_measured.activation_loaded",
+     "source_receipt": "receipts/future/ROOF_ANCHOR.json",
+     "value": false,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "addr_probe_usable": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "registry[id=q4_single_gemv_addr_13p6gb_max].usable_as_production_streaming_roof",
+     "source_receipt": "receipts/future/ROOF_ANCHOR.json",
+     "value": false,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "clean_gemv_gb_s": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "clean_gemv_gb_s",
+     "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+     "value": 703.5,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "lm_head_activation_loaded": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "registry[id=lm_head_production_497p4].what_was_measured.activation_loaded",
+     "source_receipt": "receipts/future/ROOF_ANCHOR.json",
+     "value": true,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "lm_head_gb_s": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "lm_head_gb_s",
+     "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+     "value": 497.4,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "mlp_arm_a_activation_loaded": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "registry[id=mlp_arm_a_stripped_497p4].what_was_measured.activation_loaded",
+     "source_receipt": "receipts/future/ROOF_ANCHOR.json",
+     "value": true,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "mlp_arm_a_gb_s": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "mlp.arm_a_stripped.effective_gb_s",
+     "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+     "value": 497.4,
+     "why": "copied; this sidecar did not measure it"
+    }
+   },
+   "evidence_class": "STATIC_ONLY",
+   "family": "measurement_trap",
+   "gpu_authority": false,
+   "kind": "fidelity_counterexample",
+   "moved": false,
+   "named_law": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD",
+   "o3_spec_attack_id": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD::measurement_trap",
+   "odyssey_i_barrier": null,
+   "scope_after": "MODEL_LOCAL",
+   "scope_before": "MODEL_LOCAL",
+   "specimen_display": "qwen3.8-27b sealed-3.14",
+   "specimen_used": "qwen3.8-27b-abliterated-bf16@local",
+   "statement": "The production-shaped roof WITH the activation load is 497.4 GB/s on two independent legs (MLP ARM A stripped and LM head production); 703.5 is a probe that never loads the activation (ROOF_ANCHOR, MLP_ALU_ROOFLINE).",
+   "strengthened": true,
+   "verdict": "SURVIVED"
+  },
+  {
+   "apply_result": {
+    "attack_id": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD::law_scope",
+    "bench_state": "UNKNOWN",
+    "direction": "NONE",
+    "evidence_class": "STATIC_ONLY",
+    "family": "law_scope",
+    "law_after": {
+     "architecture_family": "dense_hybrid_transformer",
+     "backend": "Metal",
+     "counterexample_requirement": "a third production-shaped organ on this parent that loads the activation and whose cited GB/s disagrees with 497.4 by more than the catalog-full sibling (~2%), or a second specimen's same-shape measurement that disagrees. 703.5 without an activation load is not a counterexample \u2014 the law already names it as the wrong shape.",
+     "evidence_refs": [
+      "receipts/future/MLP_ALU_ROOFLINE.json",
+      "receipts/future/ROOF_ANCHOR.json"
+     ],
+     "evidence_strength": "DIAGNOSTIC_RELATIVE",
+     "law_id": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD",
+     "organ_class": "production_shaped_activation_load",
+     "scope": "MODEL_LOCAL",
+     "source_device": "APPLE_GPU_0",
+     "source_model": "Qwen3.8-27B",
+     "statement": "The production-shaped roof WITH the activation load is 497.4 GB/s on two independent legs (MLP ARM A stripped and LM head production); 703.5 is a probe that never loads the activation (ROOF_ANCHOR, MLP_ALU_ROOFLINE).",
+     "transfer_candidates": [
+      "tiiuae/Falcon-H1-7B-Instruct",
+      "Qwen/Qwen3-0.6B",
+      "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+      "Qwen/Qwen3.8-Flash-Next"
+     ],
+     "transfer_confidence": 0.45
+    },
+    "law_id": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD",
+    "moved": false,
+    "reason": "Both cited legs still agree: MLP ARM A stripped 497.4 GB/s (activation_loaded=True) and LM head production 497.4 GB/s (activation_loaded=True). n_legs=2 on one parent is a measurement weakness against widening, not a refutation of the two legs.",
+    "scope_after": "MODEL_LOCAL",
+    "scope_before": "MODEL_LOCAL",
+    "synthetic": false,
+    "verdict": "HOLDS"
+   },
+   "attack_id": "L5-MEASUREMENT-WEAKNESS-TWO-LEGS",
+   "bench_state": "UNKNOWN",
+   "cannot_widen_without_replicating_specimen": true,
+   "citations": {
+    "lm_head_activation_loaded": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "registry[id=lm_head_production_497p4].what_was_measured.activation_loaded",
+     "source_receipt": "receipts/future/ROOF_ANCHOR.json",
+     "value": true,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "lm_head_gb_s": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "lm_head_gb_s",
+     "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+     "value": 497.4,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "mlp_arm_a_activation_loaded": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "registry[id=mlp_arm_a_stripped_497p4].what_was_measured.activation_loaded",
+     "source_receipt": "receipts/future/ROOF_ANCHOR.json",
+     "value": true,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "mlp_arm_a_gb_s": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "mlp.arm_a_stripped.effective_gb_s",
+     "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+     "value": 497.4,
+     "why": "copied; this sidecar did not measure it"
+    }
+   },
+   "evidence_class": "STATIC_ONLY",
+   "family": "law_scope",
+   "gpu_authority": false,
+   "kind": "measurement_weakness",
+   "moved": false,
+   "n_legs": 2,
+   "named_law": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD",
+   "o3_spec_attack_id": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD::law_scope",
+   "odyssey_i_barrier": null,
+   "scope_after": "MODEL_LOCAL",
+   "scope_before": "MODEL_LOCAL",
+   "specimen_display": "qwen3.8-27b sealed-3.14",
+   "specimen_used": "qwen3.8-27b-abliterated-bf16@local",
+   "statement": "The production-shaped roof WITH the activation load is 497.4 GB/s on two independent legs (MLP ARM A stripped and LM head production); 703.5 is a probe that never loads the activation (ROOF_ANCHOR, MLP_ALU_ROOFLINE).",
+   "verdict": "SURVIVED"
+  },
+  {
+   "apply_result": {
+    "attack_id": "LAW-L4-PROBE-UNDERSELLS-TOKEN::measurement_trap",
+    "bench_state": "UNKNOWN",
+    "direction": "NONE",
+    "evidence_class": "STATIC_ONLY",
+    "family": "measurement_trap",
+    "law_after": {
+     "architecture_family": "dense_hybrid_transformer",
+     "backend": "Metal",
+     "counterexample_requirement": "a probe vs complete-token pair on this parent where the probe over-sells the saving (probe_ms > complete_token_ms) by more than the materiality bar, or a third independent pair that fails to undersell",
+     "evidence_refs": [
+      "receipts/future/DELTANET_WIDEN_AB.json",
+      "receipts/future/FOLD_ADDQX_AB.json"
+     ],
+     "evidence_strength": "DIAGNOSTIC_RELATIVE",
+     "law_id": "LAW-L4-PROBE-UNDERSELLS-TOKEN",
+     "organ_class": "complete_token",
+     "scope": "MODEL_LOCAL",
+     "source_device": "APPLE_GPU_0",
+     "source_model": "Qwen3.8-27B",
+     "statement": "A probe undersells the token on this parent: widen_f4 isolated fair-cut 0.7046 ms became 1.0245 ms on the complete token (DELTANET_WIDEN_AB); fold_addqx 1.745 ms projected became 3.9833 ms measured (FOLD_ADDQX_AB).",
+     "transfer_candidates": [
+      "tiiuae/Falcon-H1-7B-Instruct",
+      "Qwen/Qwen3-0.6B",
+      "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+      "Qwen/Qwen3.8-Flash-Next"
+     ],
+     "transfer_confidence": 0.45
+    },
+    "law_id": "LAW-L4-PROBE-UNDERSELLS-TOKEN",
+    "moved": false,
+    "reason": "Directional undersell still holds on the widen_f4 isolated-vs-token pair (0.7046 -> 1.0245) and on the fold isolated-organ pair (saving 3.945209 -> 3.9833339999999993). The 1.745 figure (copied from receipts/future/FOLD_ADDQX_AB.json cited_diagnostic.projection_token_ms) is a 3-GEMV projection, not a second isolated-vs-token instance. Framing 'two equivalent instances' is broken; the directional law survived.",
+    "scope_after": "MODEL_LOCAL",
+    "scope_before": "MODEL_LOCAL",
+    "synthetic": false,
+    "verdict": "HOLDS"
+   },
+   "attack_id": "L4-MEASUREMENT-WEAKNESS-PROBE-CLASSES",
+   "bench_state": "UNKNOWN",
+   "citations": {
+    "fold_addqx_ms": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "complete_token.fold_addqx_ms",
+     "source_receipt": "receipts/future/FOLD_ADDQX_AB.json",
+     "value": 22.319249,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "fold_incumbent_ms": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "complete_token.incumbent_ms",
+     "source_receipt": "receipts/future/FOLD_ADDQX_AB.json",
+     "value": 26.302583,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "fold_isolated_addqx_ms": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "isolated_mlp.mlp_full_fold_addqx_ms",
+     "source_receipt": "receipts/future/FOLD_ADDQX_AB.json",
+     "value": 11.309291,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "fold_isolated_incumbent_ms": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "isolated_mlp.mlp_full_incumbent_ms",
+     "source_receipt": "receipts/future/FOLD_ADDQX_AB.json",
+     "value": 15.2545,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "fold_projection_ms": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "cited_diagnostic.projection_token_ms",
+     "source_receipt": "receipts/future/FOLD_ADDQX_AB.json",
+     "value": 1.745,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "widen_complete_ms": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "saving.complete_token_saving_ms",
+     "source_receipt": "receipts/future/DELTANET_WIDEN_AB.json",
+     "value": 1.0245,
+     "why": "copied; this sidecar did not measure it"
+    },
+    "widen_isolated_ms": {
+     "copied": true,
+     "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+     "source_field": "saving.isolated_fair_cut_ms",
+     "source_receipt": "receipts/future/DELTANET_WIDEN_AB.json",
+     "value": 0.7046,
+     "why": "copied; this sidecar did not measure it"
+    }
+   },
+   "complete_fold_saving_ms": 3.9833339999999993,
+   "evidence_class": "STATIC_ONLY",
+   "family": "measurement_trap",
+   "gpu_authority": false,
+   "isolated_fold_saving_ms": 3.945209,
+   "kind": "measurement_weakness",
+   "moved": false,
+   "named_law": "LAW-L4-PROBE-UNDERSELLS-TOKEN",
+   "o3_spec_attack_id": "LAW-L4-PROBE-UNDERSELLS-TOKEN::measurement_trap",
+   "odyssey_i_barrier": null,
+   "scope_after": "MODEL_LOCAL",
+   "scope_before": "MODEL_LOCAL",
+   "specimen_display": "qwen3.8-27b sealed-3.14",
+   "specimen_used": "qwen3.8-27b-abliterated-bf16@local",
+   "statement": "A probe undersells the token on this parent: widen_f4 isolated fair-cut 0.7046 ms became 1.0245 ms on the complete token (DELTANET_WIDEN_AB); fold_addqx 1.745 ms projected became 3.9833 ms measured (FOLD_ADDQX_AB).",
+   "verdict": "SURVIVED",
+   "where_it_breaks": "the 'two instances' framing: 1.745 ms is a projection (MLP_DECODE_CHEAPEN via FOLD_ADDQX_AB.cited_diagnostic), not an isolated-organ A/B like widen_f4",
+   "where_it_survives": "direction: both honest isolated-vs-token pairs undersell, they do not oversell"
+  },
+  {
+   "apply_result": {
+    "attack_id": "LAW-L1-MLP-ARITHMETIC-SENSITIVE::negative_transfer",
+    "bench_state": "UNKNOWN",
+    "direction": "NONE",
+    "evidence_class": "STATIC_ONLY",
+    "family": "negative_transfer",
+    "law_after": {
+     "architecture_family": "dense_hybrid_transformer",
+     "backend": "Metal",
+     "counterexample_requirement": "ARM A vs production on a second specimen's MLP, loads live, same unique payload in both arms, where ARM A does not jump relative to production. Copying 497.4 GB/s is not a counterexample and is not a transfer.",
+     "evidence_refs": [
+      "receipts/future/MLP_ALU_ROOFLINE.json",
+      "receipts/future/MLP_STREAM_COUNT.json",
+      "receipts/future/MLP_ISSUE_RATE_LADDER.json"
+     ],
+     "evidence_strength": "DIAGNOSTIC_RELATIVE",
+     "law_id": "LAW-L1-MLP-ARITHMETIC-SENSITIVE",
+     "organ_class": "mlp",
+     "scope": "MODEL_LOCAL",
+     "source_device": "APPLE_GPU_0",
+     "source_model": "Qwen3.8-27B",
+     "statement": "On qwen3.8-27b sealed-3.14 the MLP is arithmetic-sensitive, not addressing-limited. ARM A (stripped) at 497.4 GB/s against production 329.6 on the SAME 83.56 MB with loads proven live (MLP_ALU_ROOFLINE). Stream count is MIXED at fixed bytes/thread (MLP_STREAM_COUNT). Not a dependency chain (ILP 8/1 = 1.062), not register pressure (ws32/ws0 = 1.078), not occupancy \u2014 raising it is worse (MLP_ISSUE_RATE_LADDER).",
+     "transfer_candidates": [
+      "tiiuae/Falcon-H1-7B-Instruct",
+      "Qwen/Qwen3-0.6B",
+      "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+      "Qwen/Qwen3.8-Flash-Next"
+     ],
+     "transfer_confidence": 0.45
+    },
+    "law_id": "LAW-L1-MLP-ARITHMETIC-SENSITIVE",
+    "moved": false,
+    "reason": "\u00a766 adversary tiiuae--Falcon-H1-7B-Instruct@41e72f27effb family='falcon_h1' layout='NO EXPERT TENSORS AT ALL'. classify_attack reason_code=vacuous. execute_attack verdict=INCONCLUSIVE (physical_arm=not_run). ARM A vs production on Falcon MLP is UNMEASURED. Experiment: crates/hawking-core/examples/alu_roofline_organs.rs ARM A (production access pattern and byte count, decode+dequant+FMA replaced by XOR/add sink) vs production on the target specimen's MLP, same process, loads proven live (stripped time above the zero-load floor and stripped-half time dropping with bytes). Settle: ARM A jumps vs production on the same unique payload. Do not copy 497.4 / 329.6 / 83.56 MB.",
+    "scope_after": "MODEL_LOCAL",
+    "scope_before": "MODEL_LOCAL",
+    "synthetic": true,
+    "verdict": "INCONCLUSIVE"
+   },
+   "attack_id": "L1-MODEL-COUNTEREXAMPLE-FALCON-H1",
+   "bench_state": "UNKNOWN",
+   "evidence_class": "STATIC_ONLY",
+   "execute_attack": {
+    "attack_id": "LAW-L1-MLP-ARITHMETIC-SENSITIVE::negative_transfer",
+    "bench_state": "UNKNOWN",
+    "evidence_class": "STATIC_ONLY",
+    "family": "negative_transfer",
+    "physical_arm": "not_run",
+    "reason": "negative_transfer requires a physical experiment this sidecar cannot run (no GPU lease; STATIC_ONLY)",
+    "synthetic": true,
+    "verdict": "INCONCLUSIVE"
+   },
+   "experiment_that_would_settle": "crates/hawking-core/examples/alu_roofline_organs.rs ARM A (production access pattern and byte count, decode+dequant+FMA replaced by XOR/add sink) vs production on the target specimen's MLP, same process, loads proven live (stripped time above the zero-load floor and stripped-half time dropping with bytes). Settle: ARM A jumps vs production on the same unique payload. Do not copy 497.4 / 329.6 / 83.56 MB.",
+   "falcon_layout": {
+    "copied": true,
+    "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+    "msl_matches_model2_from_disk": false,
+    "probe_tensor": null,
+    "source_field": "result.layout_survey.Falcon-H1-7B",
+    "source_receipt": "receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json",
+    "storage": "NO EXPERT TENSORS AT ALL"
+   },
+   "family": "negative_transfer",
+   "gpu_authority": false,
+   "kind": "model_counterexample",
+   "measurement_state": "UNMEASURED",
+   "moved": false,
+   "named_law": "LAW-L1-MLP-ARITHMETIC-SENSITIVE",
+   "not_a_null_run": true,
+   "o3_spec_attack_id": "LAW-L1-MLP-ARITHMETIC-SENSITIVE::negative_transfer",
+   "odyssey_i_barrier": null,
+   "scope_after": "MODEL_LOCAL",
+   "scope_before": "MODEL_LOCAL",
+   "section_66": "a sealed specimen whose architecture differs substantially IS an adversary; Falcon-H1 is that specimen",
+   "specimen_display": "Falcon-H1-7B-Instruct",
+   "specimen_family": "falcon_h1",
+   "specimen_repo": "tiiuae/Falcon-H1-7B-Instruct",
+   "specimen_used": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "specimen_whole_tree_verified": true,
+   "statement": "On qwen3.8-27b sealed-3.14 the MLP is arithmetic-sensitive, not addressing-limited. ARM A (stripped) at 497.4 GB/s against production 329.6 on the SAME 83.56 MB with loads proven live (MLP_ALU_ROOFLINE). Stream count is MIXED at fixed bytes/thread (MLP_STREAM_COUNT). Not a dependency chain (ILP 8/1 = 1.062), not register pressure (ws32/ws0 = 1.078), not occupancy \u2014 raising it is worse (MLP_ISSUE_RATE_LADDER).",
+   "vacuity": {
+    "decision": "REFUSED",
+    "in_domain": false,
+    "law_id": "LAW-L1-MLP-ARITHMETIC-SENSITIVE",
+    "preconditions": [
+     {
+      "axis": "source_model",
+      "value": "Qwen3.8-27B"
+     },
+     {
+      "axis": "organ_class",
+      "value": "mlp"
+     }
+    ],
+    "reason": "LAW-L1-MLP-ARITHMETIC-SENSITIVE: attack is vacuous; input falls outside the law's preconditions [{'axis': 'source_model', 'claimed': 'Qwen3.8-27B', 'attack_input': 'tiiuae/Falcon-H1-7B-Instruct'}]. A miss outside the claimed domain proves nothing \u2014 the law already excluded that case.",
+    "reason_code": "vacuous",
+    "underspecified": false,
+    "vacuous": true,
+    "violations": [
+     {
+      "attack_input": "tiiuae/Falcon-H1-7B-Instruct",
+      "axis": "source_model",
+      "claimed": "Qwen3.8-27B"
+     }
+    ]
+   },
+   "verdict": "UNMEASURED"
+  }
+ ],
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T12:08:04Z",
+  "recorded_by": "tools/future/odyssey3_attack.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "campaign_o3_laws": [
+  {
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "Metal",
+   "counterexample_requirement": "ARM A vs production on a second specimen's MLP, loads live, same unique payload in both arms, where ARM A does not jump relative to production. Copying 497.4 GB/s is not a counterexample and is not a transfer.",
+   "evidence_refs": [
+    "receipts/future/MLP_ALU_ROOFLINE.json",
+    "receipts/future/MLP_STREAM_COUNT.json",
+    "receipts/future/MLP_ISSUE_RATE_LADDER.json"
+   ],
+   "evidence_strength": "DIAGNOSTIC_RELATIVE",
+   "law_id": "LAW-L1-MLP-ARITHMETIC-SENSITIVE",
+   "organ_class": "mlp",
+   "scope": "MODEL_LOCAL",
+   "source_device": "APPLE_GPU_0",
+   "source_model": "Qwen3.8-27B",
+   "statement": "On qwen3.8-27b sealed-3.14 the MLP is arithmetic-sensitive, not addressing-limited. ARM A (stripped) at 497.4 GB/s against production 329.6 on the SAME 83.56 MB with loads proven live (MLP_ALU_ROOFLINE). Stream count is MIXED at fixed bytes/thread (MLP_STREAM_COUNT). Not a dependency chain (ILP 8/1 = 1.062), not register pressure (ws32/ws0 = 1.078), not occupancy \u2014 raising it is worse (MLP_ISSUE_RATE_LADDER).",
+   "transfer_candidates": [
+    "tiiuae/Falcon-H1-7B-Instruct",
+    "Qwen/Qwen3-0.6B",
+    "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+    "Qwen/Qwen3.8-Flash-Next"
+   ],
+   "transfer_confidence": 0.45
+  },
+  {
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "Metal",
+   "counterexample_requirement": "a specimen whose broadcast-aux (or equivalent scale/bias stream) drop of the same unique bytes is billed on the critical path outside the calibration noise floor",
+   "evidence_refs": [
+    "receipts/future/AUX_U8_NATIVE.json",
+    "receipts/future/AUX_U8_LUT.json",
+    "receipts/future/ECONOMICS_CALIBRATION.json"
+   ],
+   "evidence_strength": "DIAGNOSTIC_RELATIVE",
+   "law_id": "LAW-L2-BROADCAST-AUX-NOT-CRITICAL-PATH",
+   "organ_class": "mlp.broadcast_aux",
+   "scope": "MODEL_LOCAL",
+   "source_device": "APPLE_GPU_0",
+   "source_model": "Qwen3.8-27B",
+   "statement": "On qwen3.8-27b sealed-3.14 broadcast-aux bytes are not on the critical path: shrinking the aux stream made the kernel SLOWER, and the calibrated economics now prices them at ~0 (AUX_U8_NATIVE, AUX_U8_LUT, ECONOMICS_CALIBRATION).",
+   "transfer_candidates": [
+    "tiiuae/Falcon-H1-7B-Instruct",
+    "Qwen/Qwen3-0.6B",
+    "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+    "Qwen/Qwen3.8-Flash-Next"
+   ],
+   "transfer_confidence": 0.45
+  },
+  {
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "Metal",
+   "counterexample_requirement": "an under-incumbent full-width operator on this parent whose held-out relative L2 is <= 0.25 (the kill). Beating the mean predictor is not function replacement.",
+   "evidence_refs": [
+    "receipts/future/MLP_STRUCTURED_OPERATOR.json"
+   ],
+   "evidence_strength": "DIAGNOSTIC_RELATIVE",
+   "law_id": "LAW-L3-MLP-FUNCTION-REPLACEMENT-CLOSED",
+   "organ_class": "mlp",
+   "scope": "MODEL_LOCAL",
+   "source_device": "APPLE_GPU_0",
+   "source_model": "Qwen3.8-27B",
+   "statement": "MLP function replacement is closed for this parent: the distilled control beats the mean predictor (0.442 vs 0.859) and still cannot carry F under 5,347,795,776 bytes (MLP_STRUCTURED_OPERATOR).",
+   "transfer_candidates": [
+    "tiiuae/Falcon-H1-7B-Instruct",
+    "Qwen/Qwen3-0.6B",
+    "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+    "Qwen/Qwen3.8-Flash-Next"
+   ],
+   "transfer_confidence": 0.45
+  },
+  {
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "Metal",
+   "counterexample_requirement": "a probe vs complete-token pair on this parent where the probe over-sells the saving (probe_ms > complete_token_ms) by more than the materiality bar, or a third independent pair that fails to undersell",
+   "evidence_refs": [
+    "receipts/future/DELTANET_WIDEN_AB.json",
+    "receipts/future/FOLD_ADDQX_AB.json"
+   ],
+   "evidence_strength": "DIAGNOSTIC_RELATIVE",
+   "law_id": "LAW-L4-PROBE-UNDERSELLS-TOKEN",
+   "organ_class": "complete_token",
+   "scope": "MODEL_LOCAL",
+   "source_device": "APPLE_GPU_0",
+   "source_model": "Qwen3.8-27B",
+   "statement": "A probe undersells the token on this parent: widen_f4 isolated fair-cut 0.7046 ms became 1.0245 ms on the complete token (DELTANET_WIDEN_AB); fold_addqx 1.745 ms projected became 3.9833 ms measured (FOLD_ADDQX_AB).",
+   "transfer_candidates": [
+    "tiiuae/Falcon-H1-7B-Instruct",
+    "Qwen/Qwen3-0.6B",
+    "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+    "Qwen/Qwen3.8-Flash-Next"
+   ],
+   "transfer_confidence": 0.45
+  },
+  {
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "Metal",
+   "counterexample_requirement": "a third production-shaped organ on this parent that loads the activation and whose cited GB/s disagrees with 497.4 by more than the catalog-full sibling (~2%), or a second specimen's same-shape measurement that disagrees. 703.5 without an activation load is not a counterexample \u2014 the law already names it as the wrong shape.",
+   "evidence_refs": [
+    "receipts/future/MLP_ALU_ROOFLINE.json",
+    "receipts/future/ROOF_ANCHOR.json"
+   ],
+   "evidence_strength": "DIAGNOSTIC_RELATIVE",
+   "law_id": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD",
+   "organ_class": "production_shaped_activation_load",
+   "scope": "MODEL_LOCAL",
+   "source_device": "APPLE_GPU_0",
+   "source_model": "Qwen3.8-27B",
+   "statement": "The production-shaped roof WITH the activation load is 497.4 GB/s on two independent legs (MLP ARM A stripped and LM head production); 703.5 is a probe that never loads the activation (ROOF_ANCHOR, MLP_ALU_ROOFLINE).",
+   "transfer_candidates": [
+    "tiiuae/Falcon-H1-7B-Instruct",
+    "Qwen/Qwen3-0.6B",
+    "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+    "Qwen/Qwen3.8-Flash-Next"
+   ],
+   "transfer_confidence": 0.45
+  }
+ ],
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "claim_boundary_reminder": "STATIC_ONLY. Copied GB/s figures are citations. A SURVIVED attack is a result. UNMEASURED stays UNMEASURED.",
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "Named campaign law L5 attacked; GENERIC unique-roof reading BROKE (deltanet 943.2); honest 497.4 legs survived at ORGAN_LOCAL.",
+  "L5 fidelity attack with 703.5 SURVIVED and strengthened the law (wrong shape already named).",
+  "L4 measurement weakness recorded: framing broke, directional law SURVIVED.",
+  "Falcon-H1 used as \u00a766 model counterexample against L1; UNMEASURED recorded as a result.",
+  "widen_scope raises ReplicatingSpecimenRequired.",
+  "No Odyssey I completion barrier."
+ ],
+ "gpu_authority": false,
+ "headline": {
+  "apply_result": {
+   "attack_id": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD::law_scope",
+   "bench_state": "UNKNOWN",
+   "direction": "DOWN",
+   "evidence_class": "STATIC_ONLY",
+   "family": "law_scope",
+   "law_after": {
+    "architecture_family": "dense_hybrid_transformer",
+    "backend": "Metal",
+    "counterexample_requirement": "a third production-shaped organ on this parent that loads the activation and whose cited GB/s disagrees with 497.4 by more than the catalog-full sibling (~2%), or a second specimen's same-shape measurement that disagrees. 703.5 without an activation load is not a counterexample \u2014 the law already names it as the wrong shape.",
+    "evidence_refs": [
+     "receipts/future/MLP_ALU_ROOFLINE.json",
+     "receipts/future/ROOF_ANCHOR.json"
+    ],
+    "evidence_strength": "DIAGNOSTIC_RELATIVE",
+    "law_id": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD",
+    "organ_class": "production_shaped_activation_load",
+    "scope": "ORGAN_LOCAL",
+    "source_device": "APPLE_GPU_0",
+    "source_model": "Qwen3.8-27B",
+    "statement": "The production-shaped roof WITH the activation load is 497.4 GB/s on two independent legs (MLP ARM A stripped and LM head production); 703.5 is a probe that never loads the activation (ROOF_ANCHOR, MLP_ALU_ROOFLINE).",
+    "transfer_candidates": [
+     "tiiuae/Falcon-H1-7B-Instruct",
+     "Qwen/Qwen3-0.6B",
+     "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+     "Qwen/Qwen3.8-Flash-Next"
+    ],
+    "transfer_confidence": 0.45
+   },
+   "law_id": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD",
+   "moved": true,
+   "reason": "A GENERIC reading of 'the production-shaped roof WITH activation load is 497.4' is broken by deltanet ARM A stripped at 943.2 GB/s (copied from receipts/future/MLP_ALU_ROOFLINE.json deltanet.arm_a_stripped.effective_gb_s; activation is loaded on that arm). MLP ARM A and LM head still agree at 497.4. Scope moves to ORGAN_LOCAL: mlp affine-q2 + lm_head, not deltanet, not a machine-wide roof. The law is not deleted.",
+   "scope_after": "ORGAN_LOCAL",
+   "scope_before": "MODEL_LOCAL",
+   "synthetic": false,
+   "verdict": "REFUTED"
+  },
+  "attack_id": "L5-LAYER-COUNTEREXAMPLE-DELTANET-943P2",
+  "bench_state": "UNKNOWN",
+  "broke_what": "the GENERIC reading of 497.4 as the unique production-shaped activation-loaded roof",
+  "citations": {
+   "deltanet_arm_a_gb_s": {
+    "copied": true,
+    "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+    "source_field": "deltanet.arm_a_stripped.effective_gb_s",
+    "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+    "value": 943.2,
+    "why": "copied; this sidecar did not measure it"
+   },
+   "lm_head_gb_s": {
+    "copied": true,
+    "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+    "source_field": "lm_head_gb_s",
+    "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+    "value": 497.4,
+    "why": "copied; this sidecar did not measure it"
+   },
+   "mlp_arm_a_gb_s": {
+    "copied": true,
+    "measurement_state": "COPIED_FROM_NAMED_RECEIPT",
+    "source_field": "mlp.arm_a_stripped.effective_gb_s",
+    "source_receipt": "receipts/future/MLP_ALU_ROOFLINE.json",
+    "value": 497.4,
+    "why": "copied; this sidecar did not measure it"
+   }
+  },
+  "evidence_class": "STATIC_ONLY",
+  "family": "law_scope",
+  "gpu_authority": false,
+  "kind": "layer_counterexample",
+  "law_deleted": false,
+  "moved": true,
+  "named_law": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD",
+  "o3_spec_attack_id": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD::law_scope",
+  "odyssey_i_barrier": null,
+  "roof_anchor_note": "ROOF_ANCHOR already rejects deltanet 943.2 as a DRAM streaming roof (exceeds published peak 819). It remains a layer/organ disagreement with a unique 497.4, which is the attack.",
+  "scope_after": "ORGAN_LOCAL",
+  "scope_before": "MODEL_LOCAL",
+  "specimen_display": "qwen3.8-27b sealed-3.14",
+  "specimen_used": "qwen3.8-27b-abliterated-bf16@local",
+  "statement": "The production-shaped roof WITH the activation load is 497.4 GB/s on two independent legs (MLP ARM A stripped and LM head production); 703.5 is a probe that never loads the activation (ROOF_ANCHOR, MLP_ALU_ROOFLINE).",
+  "survived_what": "MLP ARM A stripped and LM head production still cite 497.4 on sealed-3.14; law kept at ORGAN_LOCAL",
+  "verdict": "BROKE"
+ },
+ "law_authority": {
+  "not_a_fork": true,
+  "odyssey2_law_store": "Law field set / sequential lattice via o2t",
+  "odyssey2_transfer": "campaign L1\u2013L5, sealed specimens, replicating-specimen guard",
+  "odyssey3_adversary": "generate_attacks, apply_result, SCOPE_LADDER, execute_attack"
+ },
+ "listen_rule": "once Phase I emits a law, Phase II may transfer it and Phase III may attack it. There is no global barrier between II and III.",
+ "n_broke": 1,
+ "n_survived": 3,
+ "n_unmeasured": 1,
+ "named_law": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD",
+ "negative_findings": [
+  "No GPU lease: Falcon ARM A is UNMEASURED, not a fabricated GB/s.",
+  "execute_attack on measurement_trap would fire the cosine harness; that trap is the wrong shape for these laws and was not used as the verdict.",
+  "ROOF_ANCHOR already rejects 943.2 as a DRAM roof; the attack uses it as an organ disagreement, not as a replacement roof.",
+  "Independence limitation: the same operator wrote the campaign citations and the attacks."
+ ],
+ "odyssey": "III WHERE IS HAWKING WRONG?",
+ "odyssey_i_barrier": null,
+ "phase_iii_waits_for_odyssey_i_complete": false,
+ "purpose": "Odyssey III attack: consume a named campaign law, attack it deliberately, report where it breaks or that it survived. Concurrent with Odyssey I and II; no Phase-I barrier.",
+ "recovered_implementation": {
+  "odyssey2_transfer": "named campaign laws and Falcon sealed identity \u2014 consumed",
+  "odyssey3_adversary": "nine families, ranking, apply_result DOWN, emitter refusal \u2014 consumed",
+  "phase_listeners": "vacuity classifier, LISTEN_RULE \u2014 consumed",
+  "roof_anchor": "703.5 no-activation, 497.4 two legs \u2014 cited, not re-measured"
+ },
+ "schema": "hawking.future.odyssey3_attack.v1",
+ "seal_sha256": "f73a0671348dc9b706268f2d7f28cc924565ed4c1ef86895bb21ab3e9daeec86",
+ "section_66_adversary": {
+  "architecture_family": "falcon_h1",
+  "repo": "tiiuae/Falcon-H1-7B-Instruct",
+  "role": "natural counterexample; not a bespoke synthetic",
+  "specimen": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+  "whole_tree_verified": true
+ },
+ "selftest": {
+  "bench_state": "UNKNOWN",
+  "evidence_class": "STATIC_ONLY",
+  "holds_does_not_move_scope": true,
+  "listen_rule": "once Phase I emits a law, Phase II may transfer it and Phase III may attack it. There is no global barrier between II and III.",
+  "n_broke": 1,
+  "n_survived": 3,
+  "n_unmeasured": 1,
+  "named_law": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD",
+  "odyssey_i_barrier": null,
+  "ok": true,
+  "specimen_used": "qwen3.8-27b-abliterated-bf16@local",
+  "verdict": "BROKE",
+  "widen_without_replicating_specimen_raised": {
+   "law_id": "LAW-L5-PRODUCTION-ROOF-WITH-ACTIVATION-LOAD",
+   "raised": true,
+   "reason": "need_replicating_specimen"
+  }
+ },
+ "specimen_used": "qwen3.8-27b-abliterated-bf16@local",
+ "survived_is_a_result": true,
+ "unmeasured_is_a_result": true,
+ "verdict": "BROKE",
+ "version": 1
+}

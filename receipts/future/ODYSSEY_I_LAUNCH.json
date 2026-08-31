@@ -1,0 +1,1850 @@
+{
+ "autonomy_status": {
+  "alternatives": [
+   {
+    "consistent_with_claim": true,
+    "consistent_with_observation": true,
+    "hypothetical": "the named flags were measured and have these values"
+   }
+  ],
+  "causality_verdict": "SUPPORTED",
+  "claim_kind": "field_value",
+  "confidence": {
+   "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+   "level": "HIGH",
+   "would_lower": "a demonstration that the observation is consistent with the claim being false",
+   "would_raise": "independent replication of the same probe"
+  },
+  "direct_observation": "AUTONOMY_TRIALS found=True path_taken=worktree candidate_is_mapping=True trial='1h' verdict='PASS' eligible=True resident_orchestration=True timeline_seal_verifies=True seal_why='timeline file digest matches the persisted seal' cognition_recorded=True cognition='UNAVAILABLE' AUTONOMY_TRIAL.json found=False not_authority=True hcli_all_requested_stages_passed=True not_this_criterion=True met=True",
+  "evidence": [
+   {
+    "found": true,
+    "frozen_build_manifest_digest": "032f6aa1496bfc69a7d6427c9df754742fbd08bf670084b8e4ab1abdf019dc43",
+    "kind": "persisted_odyssey_trial",
+    "launch_eligible": true,
+    "path_taken": "worktree",
+    "resident_model_cognition": "UNAVAILABLE",
+    "resident_model_cognition_reason": "measured: Apple M3 Ultra GPU is present; the offline Metal shader compiler is absent (developer dir is /Library/Developer/CommandLineTools, full Xcode not installed), so no .metallib can be built ahead of time here; runtime shader compilation from source is AVAILABLE (exercised with the crate the runtime uses), so the missing offline compiler is a cold-start cost, not a wall; the loop under test is HCLI orchestration, not model cognition",
+    "resident_orchestration": true,
+    "schema": "hawking.future.autonomy_trial.v1",
+    "timeline_path": "receipts/future/AUTONOMY_TIMELINE_1h.json",
+    "timeline_seal_digest": "72f00ec20f958aa83f30e2346839ddbeb4e5e31679f91235eb8775952bd7f011",
+    "timeline_seal_verifies": true,
+    "timeline_seal_why": "timeline file digest matches the persisted seal",
+    "trial": "1h",
+    "verdict": "PASS"
+   },
+   {
+    "found": false,
+    "kind": "wrong_receipt_name",
+    "not_authority": true,
+    "path_taken": "not_found",
+    "rel": "receipts/future/AUTONOMY_TRIAL.json"
+   },
+   {
+    "all_requested_stages_passed": true,
+    "found": true,
+    "kind": "hcli_agentos_autonomy",
+    "not_this_criterion": true,
+    "path_taken": "worktree",
+    "schema": "hcli.agentos.autonomy_gate.v1"
+   }
+  ],
+  "falsifier": "an independent probe of the same object the status names, not a reread of the status",
+  "id": "resident_autonomy_trial_pass",
+  "interpretation": "Odyssey I resident-orchestration autonomy trial 1h persisted PASS in AUTONOMY_TRIALS.json; timeline seal verifies; resident_orchestration=true; resident_model_cognition='UNAVAILABLE'",
+  "met": true,
+  "operational": {
+   "cli_is_not_enough": true,
+   "flags": {
+    "discover": true,
+    "frontier": true,
+    "invoke": true,
+    "persist": true,
+    "refill": true,
+    "schedule": true,
+    "verify": true
+   },
+   "notes": {
+    "does_not_read": "receipts/future/AUTONOMY_TRIAL.json",
+    "hcli_control_plane_is_not_odyssey_i": "true",
+    "orchestration_is_not_cognition": "true",
+    "reads": "receipts/future/AUTONOMY_TRIALS.json"
+   },
+   "resident_operational": true
+  },
+  "persisted_trial": "1h",
+  "persisted_verdict": "PASS",
+  "probe_kind": "measured_flags",
+  "probe_performed": "probe_json receipts/future/AUTONOMY_TRIALS.json (plural); autonomy_trial.launch_candidate_from_receipt; verify_timeline_digest(timeline_path, timeline_seal_digest); probe_json receipts/future/AUTONOMY_TRIAL.json recorded as not-authority; HCLI AgentOS autonomy all_requested_stages_passed recorded as not this criterion",
+  "reason": "Odyssey I resident-orchestration autonomy trial 1h persisted PASS in AUTONOMY_TRIALS.json; timeline seal verifies; resident_orchestration=true; resident_model_cognition='UNAVAILABLE'",
+  "resident_model_cognition": "UNAVAILABLE",
+  "resident_model_cognition_reason": "measured: Apple M3 Ultra GPU is present; the offline Metal shader compiler is absent (developer dir is /Library/Developer/CommandLineTools, full Xcode not installed), so no .metallib can be built ahead of time here; runtime shader compilation from source is AVAILABLE (exercised with the crate the runtime uses), so the missing offline compiler is a cold-start cost, not a wall; the loop under test is HCLI orchestration, not model cognition",
+  "resident_orchestration": true,
+  "timeline_seal_verifies": true
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T10:13:39Z",
+  "recorded_by": "tools/future/odyssey_launch.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. A launch-gate REFUSED receipt is not Odyssey started. ODYSSEY_I_LAUNCH.json is the only phase-transition receipt and is written only when every criterion is met.",
+ "eras": [
+  "I Genesis of the Laboratory",
+  "II Compounding Civilization",
+  "III Autonomous Science Civilization",
+  "IV Synthetic Machine Civilization",
+  "V Released Hawking Civilization"
+ ],
+ "evidence_hierarchy": {
+  "bench": "UNKNOWN",
+  "lattice": [
+   "STATIC_ONLY",
+   "DIAGNOSTIC_RELATIVE",
+   "PROTECTED_ABSOLUTE"
+  ],
+  "measurement_state": "STATIC_ONLY",
+  "rule": "DIAGNOSTIC_RELATIVE guides and never promotes; PROTECTED_ABSOLUTE decides; this module produces neither"
+ },
+ "first_specimen_set": {
+  "authority": "tools/future/specimen_curriculum.py owns first-wave readiness. odyssey_launch._eval_curriculum reads this; it does not re-derive the roles.",
+  "census_probe": {
+   "found": true,
+   "path_taken": "worktree",
+   "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/HCLI_MODELLAKE_FLASH_CENSUS.json"
+  },
+  "n_ready": 5,
+  "n_roles": 5,
+  "not_proposed": [
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "Dream-org/Dream-v0-Instruct-7B",
+    "revision": "05334cb9faaf"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "GSAI-ML/iLLaDA-8B-Base",
+    "revision": "a1b5b5f8a31a"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "HuggingFaceTB/SmolVLM2-2.2B-Instruct",
+    "revision": "482adb537c02"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "LiquidAI/LFM2-24B-A2B",
+    "revision": "a3bbacd91a67"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "LiquidAI/LFM2.5-2.6B-Base",
+    "revision": "c57bdaed1ef1"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "Qwen/Qwen3-30B-A3B",
+    "revision": "ad44e777bcd18fa416d9da3bd8f70d33ebb85d39"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "Qwen/Qwen3-Embedding-0.6B",
+    "revision": "97b0c614be4d"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "Qwen/Qwen3-VL-30B-A3B-Instruct",
+    "revision": "9c4b90e1e4ba969fd3b5378b57d966d725f1b86c"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "RWKV/RWKV7-13.3B-20260805",
+    "revision": "64ffe5934178"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "Wan-AI/Wan2.2-T2V-A14B",
+    "revision": "c8c270b13ee0"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "ai21labs/AI21-Jamba2-3B",
+    "revision": "525c6c8e1d9f"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "allenai/Olmo-3-1025-7B",
+    "revision": "a81bae42db39"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "answerdotai/ModernBERT-large",
+    "revision": "45bb4654a4d5"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "arcinstitute/evo2_40b",
+    "revision": "d529aa57c307"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "arcinstitute/evo2_7b",
+    "revision": "bda0089f9258"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "bigcode/starcoder2-7b",
+    "revision": "bb9afde76d79"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "boltz-community/boltz-2",
+    "revision": "6fdef46d763f"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "deepseek-ai/DeepSeek-V4-Flash",
+    "revision": "60d8d70770c6776ff598c94bb586a859a38244f1"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "depth-anything/Depth-Anything-V2-Large-hf",
+    "revision": "7581137eff8d"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "facebook/musicgen-large",
+    "revision": "15ccdc920998"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "facebook/sam2.1-hiera-large",
+    "revision": "665f8e2ad61c"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "facebook/vjepa2-vitg-fpc64-256",
+    "revision": "875c192b7b70"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "google/flan-t5-large",
+    "revision": "0613663d0d48"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "google/timesfm-2.0-500m-pytorch",
+    "revision": "dc2443792ce5"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "ibm-granite/granite-4.0-h-micro",
+    "revision": "d5f01a3ea75f"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "kyutai/moshika-pytorch-bf16",
+    "revision": "a49141e28b3d"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "lerobot/pi0_base",
+    "revision": "25c379b52ba2"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "microsoft/Phi-4-multimodal-instruct",
+    "revision": "93f923e1a772"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "microsoft/Phi-4-reasoning-plus",
+    "revision": "69baf8528e1b"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "microsoft/bitnet-b1.58-2B-4T",
+    "revision": "04c3b9ad9361"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "microsoft/bitnet-b1.58-2B-4T-bf16",
+    "revision": "276681394656"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "moonshotai/Kimi-K3",
+    "revision": "9f62e4e9fffbd0a83ddd60e1c209d828994b3569"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "moonshotai/Kimi-VL-A3B-Instruct",
+    "revision": "398eede0903cd983a2bfa0cc634e9ac1d843f375"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "nvidia/audio-flamingo-3",
+    "revision": "ee26c5842398"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "openai/whisper-large-v3-turbo",
+    "revision": "41f01f3fe87f"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "state-spaces/mamba3-mimo-1.5b",
+    "revision": "bc6b5d0f7994"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "state-spaces/mamba3-siso-1.5b",
+    "revision": "5cfc721542ec"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "tencent/HunyuanVideo",
+    "revision": "6204ad6aea1a"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "zai-org/GLM-4.5",
+    "revision": "cbb2c7cfb52fa128a9660cb1a7a78e017899e115"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "zai-org/GLM-4.5-Air",
+    "revision": "a24ceef6ce4f3536971efe9b778bdaa1bab18daa"
+   }
+  ],
+  "not_proposed_rule": "Do not exhaustively optimize every downloaded model. First-wave curriculum is the five roles above; other lake entries are recorded and deferred.",
+  "prior_odyssey_i_patients": [
+   {
+    "oxx": "O001",
+    "seal": "receipts/odyssey-i/O001_PATIENT_SEAL.json",
+    "sealed_mechanisms": [
+     "external-science",
+     "ssm-accounting",
+     "sensitivity-map",
+     "gravity-hybrid",
+     "gravity-aggressive-hybrid",
+     "nx-state-hybrid"
+    ],
+    "state": "RETIRED",
+    "status": "VERIFIED",
+    "weights_canonical": "/Users/scammermike/.cache/huggingface/hub/models--tiiuae--Falcon-H1-7B-Instruct/snapshots/41e72f27effbab80cd45b6e884688452253a3686"
+   },
+   {
+    "oxx": "O003",
+    "seal": "receipts/odyssey-i/O003_PATIENT_SEAL.json",
+    "sealed_mechanisms": [
+     "external-science",
+     "route-map",
+     "sensitivity-map",
+     "gravity-moe",
+     "gravity-aggressive-moe",
+     "nx-gather-moe"
+    ],
+    "state": "RETIRED",
+    "status": "VERIFIED",
+    "weights_canonical": "/Users/scammermike/.cache/huggingface/hub/models--moonshotai--Kimi-VL-A3B-Instruct/snapshots/398eede0903cd983a2bfa0cc634e9ac1d843f375"
+   },
+   {
+    "oxx": "O004",
+    "seal": "receipts/odyssey-i/O004_PATIENT_SEAL.json",
+    "sealed_mechanisms": [
+     "external-science",
+     "sensitivity-map",
+     "gravity-dense",
+     "gravity-aggressive-dense",
+     "nx-dense"
+    ],
+    "state": "RETIRED",
+    "status": "VERIFIED",
+    "weights_canonical": "/Users/scammermike/.cache/huggingface/hub/models--mistralai--Mistral-Small-3.1-24B-Instruct-2503/snapshots/68faf511d618ef198fef186659617cfd2eb8e33a"
+   },
+   {
+    "oxx": "O005",
+    "seal": "receipts/odyssey-i/O005_PATIENT_SEAL.json",
+    "sealed_mechanisms": [
+     "external-science",
+     "route-map",
+     "sensitivity-map",
+     "gravity-moe",
+     "nx-gather-moe"
+    ],
+    "state": "RETIRED",
+    "status": "VERIFIED",
+    "weights_canonical": "/Users/scammermike/.cache/huggingface/hub/models--Qwen--Qwen3-30B-A3B/snapshots/ad44e777bcd18fa416d9da3bd8f70d33ebb85d39"
+   }
+  ],
+  "ready": true,
+  "roles": [
+   {
+    "architecture_family": "dense_transformer",
+    "blocked": null,
+    "gap_class": null,
+    "identity_source": "modellake_manifest",
+    "located_under_partial": false,
+    "modellake": {
+     "bytes_hashed": 1519209243,
+     "in_specimens_listing": true,
+     "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-0.6B@c1899de289a0.json",
+     "n_files": 10,
+     "n_files_matched": 10,
+     "n_files_verified": 10,
+     "n_sha256_verified": 2,
+     "n_size_only_verified": 8,
+     "published_as_verified": true,
+     "repo": "Qwen/Qwen3-0.6B",
+     "resolved_sha": "c1899de289a04d12100db370d81485cdf75e47ca",
+     "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+     "source": "modellake_manifest",
+     "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+     "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+     "whole_tree_verified": true
+    },
+    "purpose": "very small dense for procedural speed",
+    "ready": true,
+    "ready_reason": "ModelLake whole-tree sha256 verification",
+    "repo": "Qwen/Qwen3-0.6B",
+    "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "role": "very_small_dense_procedural_speed",
+    "verified_specimen": {
+     "bytes_hashed": 1519209243,
+     "identity_kind": "modellake_sha",
+     "in_specimens_listing": true,
+     "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-0.6B@c1899de289a0.json",
+     "n_files": 10,
+     "n_sha256_verified": 10,
+     "n_size_only_verified": 0,
+     "published_as_verified": true,
+     "repo": "Qwen/Qwen3-0.6B",
+     "resolved_sha": "c1899de289a04d12100db370d81485cdf75e47ca",
+     "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+     "specimen_owner": null,
+     "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+     "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+     "whole_tree_verified": true
+    }
+   },
+   {
+    "architecture_family": "falcon_h1",
+    "blocked": null,
+    "gap_class": null,
+    "identity_source": "modellake_manifest+odyssey_i_O001",
+    "modellake": {
+     "bytes_hashed": 15182220635,
+     "in_specimens_listing": true,
+     "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb.json",
+     "n_files": 13,
+     "n_files_matched": 13,
+     "n_files_verified": 13,
+     "n_sha256_verified": 5,
+     "n_size_only_verified": 8,
+     "published_as_verified": true,
+     "repo": "tiiuae/Falcon-H1-7B-Instruct",
+     "resolved_sha": "41e72f27effbab80cd45b6e884688452253a3686",
+     "revision": "41e72f27effbab80cd45b6e884688452253a3686",
+     "source": "modellake_manifest",
+     "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+     "whole_tree_verified": true
+    },
+    "prior_odyssey_i": {
+     "oxx": "O001",
+     "seal": "receipts/odyssey-i/O001_PATIENT_SEAL.json",
+     "sealed_mechanisms": [
+      "external-science",
+      "ssm-accounting",
+      "sensitivity-map",
+      "gravity-hybrid",
+      "gravity-aggressive-hybrid",
+      "nx-state-hybrid"
+     ],
+     "state": "RETIRED",
+     "status": "VERIFIED",
+     "weights_canonical": "/Users/scammermike/.cache/huggingface/hub/models--tiiuae--Falcon-H1-7B-Instruct/snapshots/41e72f27effbab80cd45b6e884688452253a3686"
+    },
+    "purpose": "small dense alternate architecture for transfer",
+    "ready": true,
+    "ready_reason": "RECURRENT_PATIENT: retired from the historical first wave, prior seal intact, and whole-tree verified again now",
+    "repo": "tiiuae/Falcon-H1-7B-Instruct",
+    "revision": "41e72f27effbab80cd45b6e884688452253a3686",
+    "role": "small_dense_alternate_architecture_transfer",
+    "verified_specimen": {
+     "bytes_hashed": 15182220635,
+     "identity_kind": "modellake_sha",
+     "in_specimens_listing": true,
+     "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb.json",
+     "n_files": 13,
+     "n_sha256_verified": 13,
+     "n_size_only_verified": 0,
+     "published_as_verified": true,
+     "repo": "tiiuae/Falcon-H1-7B-Instruct",
+     "resolved_sha": "41e72f27effbab80cd45b6e884688452253a3686",
+     "revision": "41e72f27effbab80cd45b6e884688452253a3686",
+     "specimen_owner": null,
+     "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+     "whole_tree_verified": true
+    }
+   },
+   {
+    "architecture_family": "dense_transformer",
+    "blocked": null,
+    "gap_class": null,
+    "identity_source": "modellake_manifest",
+    "modellake": {
+     "bytes_hashed": 96077777512,
+     "in_specimens_listing": true,
+     "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618.json",
+     "n_files": 25,
+     "n_files_matched": 25,
+     "n_files_verified": 25,
+     "n_sha256_verified": 13,
+     "n_size_only_verified": 12,
+     "published_as_verified": true,
+     "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+     "resolved_sha": "68faf511d618ef198fef186659617cfd2eb8e33a",
+     "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
+     "source": "modellake_manifest",
+     "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+     "stale_partial": {
+      "action": "REPORT_ONLY_NO_DELETE",
+      "active_process_evidence": false,
+      "age_s": 129994.4,
+      "candidate_stale": true,
+      "path": "/Volumes/corpdrive/hawking-modellake/partial/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618"
+     },
+     "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+     "whole_tree_verified": true
+    },
+    "prior_odyssey_i": {
+     "oxx": "O004",
+     "seal": "receipts/odyssey-i/O004_PATIENT_SEAL.json",
+     "sealed_mechanisms": [
+      "external-science",
+      "sensitivity-map",
+      "gravity-dense",
+      "gravity-aggressive-dense",
+      "nx-dense"
+     ],
+     "state": "RETIRED",
+     "status": "VERIFIED",
+     "weights_canonical": "/Users/scammermike/.cache/huggingface/hub/models--mistralai--Mistral-Small-3.1-24B-Instruct-2503/snapshots/68faf511d618ef198fef186659617cfd2eb8e33a"
+    },
+    "purpose": "mid-size dense for compiler",
+    "ready": true,
+    "ready_reason": "RECURRENT_PATIENT: retired from the historical first wave, prior seal intact, and whole-tree verified again now",
+    "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+    "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
+    "role": "mid_size_dense_compiler",
+    "verified_specimen": {
+     "bytes_hashed": 96077777512,
+     "identity_kind": "modellake_sha",
+     "in_specimens_listing": true,
+     "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618.json",
+     "n_files": 25,
+     "n_sha256_verified": 25,
+     "n_size_only_verified": 0,
+     "published_as_verified": true,
+     "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+     "resolved_sha": "68faf511d618ef198fef186659617cfd2eb8e33a",
+     "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
+     "specimen_owner": null,
+     "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+     "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+     "whole_tree_verified": true
+    }
+   },
+   {
+    "architecture_family": "dense_hybrid_transformer",
+    "blocked": null,
+    "gap_class": null,
+    "identity_source": "odyssey2_law_store.SCHOOLS.Qwen27",
+    "local_specimen": {
+     "bytes_hashed": 55586059240,
+     "files": [
+      {
+       "actual": "52373fe24473b1aa44333d318f578ae6bf04b49b",
+       "bytes": 1570,
+       "digest_kind": "git_blob_sha1",
+       "expected": "52373fe24473b1aa44333d318f578ae6bf04b49b",
+       "file": ".gitattributes",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "f938136e3adacfd92be087f6e113b5d6d97f678f",
+       "bytes": 11544,
+       "digest_kind": "git_blob_sha1",
+       "expected": "f938136e3adacfd92be087f6e113b5d6d97f678f",
+       "file": "LICENSE",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "2a3a3cf74b48e3fae0fc59794bff0da379bb4c9c",
+       "bytes": 10187,
+       "digest_kind": "git_blob_sha1",
+       "expected": "2a3a3cf74b48e3fae0fc59794bff0da379bb4c9c",
+       "file": "README.md",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "c0c686f9c38d70d179fb7b5f5aa7530bc913dda3",
+       "bytes": 8952,
+       "digest_kind": "git_blob_sha1",
+       "expected": "c0c686f9c38d70d179fb7b5f5aa7530bc913dda3",
+       "file": "chat_template.jinja",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "706cebd746c4b6f2b1d1f892630867acfdfd3df8",
+       "bytes": 4312,
+       "digest_kind": "git_blob_sha1",
+       "expected": "706cebd746c4b6f2b1d1f892630867acfdfd3df8",
+       "file": "config.json",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "023756cfadf88e5bf69eefeee3e172f38c448d64",
+       "bytes": 202,
+       "digest_kind": "git_blob_sha1",
+       "expected": "023756cfadf88e5bf69eefeee3e172f38c448d64",
+       "file": "generation_config.json",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "a494e019ca1502219fd0128658b979e5f05ae8e8",
+       "bytes": 3353259,
+       "digest_kind": "git_blob_sha1",
+       "expected": "a494e019ca1502219fd0128658b979e5f05ae8e8",
+       "file": "merges.txt",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "746142a26219375775e31233a25b9d06bb50cc36a45b833dfad58d45bbeb68ac",
+       "bytes": 3966730520,
+       "digest_kind": "sha256",
+       "expected": "746142a26219375775e31233a25b9d06bb50cc36a45b833dfad58d45bbeb68ac",
+       "file": "model-00001-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "32e1fcb17fea75306e94eb0adfacf7e4069226f938582920df5962dc11c3becb",
+       "bytes": 3043080296,
+       "digest_kind": "sha256",
+       "expected": "32e1fcb17fea75306e94eb0adfacf7e4069226f938582920df5962dc11c3becb",
+       "file": "model-00002-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "1e22bff91476ac31fd41fa6c5b6772286cacb458fcb0b13cd0d401d15504cf42",
+       "bytes": 2542796928,
+       "digest_kind": "sha256",
+       "expected": "1e22bff91476ac31fd41fa6c5b6772286cacb458fcb0b13cd0d401d15504cf42",
+       "file": "model-00003-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "955da8a0ee55a8864617fd26e845a340bdbb4467087a223af0ef36caeb772397",
+       "bytes": 3988973120,
+       "digest_kind": "sha256",
+       "expected": "955da8a0ee55a8864617fd26e845a340bdbb4467087a223af0ef36caeb772397",
+       "file": "model-00004-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "b1abd9cf4146923b9bdc2a943a3a3cf6600c0d622ff902626185377fc1b0e18a",
+       "bytes": 2099339832,
+       "digest_kind": "sha256",
+       "expected": "b1abd9cf4146923b9bdc2a943a3a3cf6600c0d622ff902626185377fc1b0e18a",
+       "file": "model-00005-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "f69e98460c36b5c2b53b52de139bd1473c9ac872c7fe5575a0aac7ab6a823aef",
+       "bytes": 3979553664,
+       "digest_kind": "sha256",
+       "expected": "f69e98460c36b5c2b53b52de139bd1473c9ac872c7fe5575a0aac7ab6a823aef",
+       "file": "model-00006-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "fa7adc386e8f88b5c68b26303bbe65c7a578797c66219f204699290427e91277",
+       "bytes": 2108759312,
+       "digest_kind": "sha256",
+       "expected": "fa7adc386e8f88b5c68b26303bbe65c7a578797c66219f204699290427e91277",
+       "file": "model-00007-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "4aafde533aa91b53df84b58bc6a7b61cd6b547878ae975f0250fde88203e288c",
+       "bytes": 3979553664,
+       "digest_kind": "sha256",
+       "expected": "4aafde533aa91b53df84b58bc6a7b61cd6b547878ae975f0250fde88203e288c",
+       "file": "model-00008-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "75eedafc64705770e1a88132095cb848616c73a38689f33ec3802f3fada44a03",
+       "bytes": 2108759312,
+       "digest_kind": "sha256",
+       "expected": "75eedafc64705770e1a88132095cb848616c73a38689f33ec3802f3fada44a03",
+       "file": "model-00009-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "79e1151f7868618544645443228956ca3c47734ce7f5ff57e701399d593d37cf",
+       "bytes": 3979553664,
+       "digest_kind": "sha256",
+       "expected": "79e1151f7868618544645443228956ca3c47734ce7f5ff57e701399d593d37cf",
+       "file": "model-00010-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "545a750b0b0ef3e4a9fdec1f14177472c0d5c3c8028b52de3419098a1b90a0fa",
+       "bytes": 2108759312,
+       "digest_kind": "sha256",
+       "expected": "545a750b0b0ef3e4a9fdec1f14177472c0d5c3c8028b52de3419098a1b90a0fa",
+       "file": "model-00011-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "71fce00e3a7a171c0938685a63405d8266ea7697ec243553a38e94c6f69add60",
+       "bytes": 3979553664,
+       "digest_kind": "sha256",
+       "expected": "71fce00e3a7a171c0938685a63405d8266ea7697ec243553a38e94c6f69add60",
+       "file": "model-00012-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "74cb96b32e845358f1db196134fb51fa60b288bfbf050e40a33abbe14ebce5d6",
+       "bytes": 2108759312,
+       "digest_kind": "sha256",
+       "expected": "74cb96b32e845358f1db196134fb51fa60b288bfbf050e40a33abbe14ebce5d6",
+       "file": "model-00013-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "0aec080a2c075370573a87a5f3baabe7969d0dd3b304c77feb5d24349bc91d7e",
+       "bytes": 3979553664,
+       "digest_kind": "sha256",
+       "expected": "0aec080a2c075370573a87a5f3baabe7969d0dd3b304c77feb5d24349bc91d7e",
+       "file": "model-00014-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "fd49765c104b7db242f1e0e58866fc378e89fc435022bba5004d81cb94f4944f",
+       "bytes": 2108759312,
+       "digest_kind": "sha256",
+       "expected": "fd49765c104b7db242f1e0e58866fc378e89fc435022bba5004d81cb94f4944f",
+       "file": "model-00015-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "08dbb33dd635e396782a1f604b0de40f16721ee0f7ad0b19fccffc4888c28531",
+       "bytes": 3979564008,
+       "digest_kind": "sha256",
+       "expected": "08dbb33dd635e396782a1f604b0de40f16721ee0f7ad0b19fccffc4888c28531",
+       "file": "model-00016-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "fa2aec9367b5878d5694f819fc3d192cfaa941a18ac344330785a9f37d4e9e11",
+       "bytes": 2108759312,
+       "digest_kind": "sha256",
+       "expected": "fa2aec9367b5878d5694f819fc3d192cfaa941a18ac344330785a9f37d4e9e11",
+       "file": "model-00017-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "fe72369eebdd81b26cb9c22ea63aec33f003ddcbb5cf08e4e7165f7cbcc5628b",
+       "bytes": 3392197320,
+       "digest_kind": "sha256",
+       "expected": "fe72369eebdd81b26cb9c22ea63aec33f003ddcbb5cf08e4e7165f7cbcc5628b",
+       "file": "model-00018-of-00018.safetensors",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "da35e3c564457dface7d138f0b6cac284ff8958c",
+       "bytes": 112216,
+       "digest_kind": "git_blob_sha1",
+       "expected": "da35e3c564457dface7d138f0b6cac284ff8958c",
+       "file": "model.safetensors.index.json",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "2ea84a437d448ff71b08df68fdd949d5cc4ebb64",
+       "bytes": 390,
+       "digest_kind": "git_blob_sha1",
+       "expected": "2ea84a437d448ff71b08df68fdd949d5cc4ebb64",
+       "file": "preprocessor_config.json",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+       "bytes": 12809320,
+       "digest_kind": "sha256",
+       "expected": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+       "file": "tokenizer.json",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "5de744b3fca2129d7186979ae47c06be33903243",
+       "bytes": 17928,
+       "digest_kind": "git_blob_sha1",
+       "expected": "5de744b3fca2129d7186979ae47c06be33903243",
+       "file": "tokenizer_config.json",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "3ba673a5ad7d4d13f54155ecd38b2a94a6dac8fe",
+       "bytes": 385,
+       "digest_kind": "git_blob_sha1",
+       "expected": "3ba673a5ad7d4d13f54155ecd38b2a94a6dac8fe",
+       "file": "video_preprocessor_config.json",
+       "verdict": "VERIFIED"
+      },
+      {
+       "actual": "0aa0ce0658d60ac4a5d609f4eadb0e8e43514176",
+       "bytes": 6722759,
+       "digest_kind": "git_blob_sha1",
+       "expected": "0aa0ce0658d60ac4a5d609f4eadb0e8e43514176",
+       "file": "vocab.json",
+       "verdict": "VERIFIED"
+      }
+     ],
+     "mismatched": 0,
+     "modellake_mutated": false,
+     "n_files": 31,
+     "no_remote_digest": 0,
+     "owner": "local_directory",
+     "skipped_time_budget": 0,
+     "source_mutated": false,
+     "specimen": "qwen3.8-27b-abliterated-bf16@local",
+     "specimen_path": "/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
+     "status": "WHOLE_TREE_VERIFIED",
+     "unrecognized_digest": 0,
+     "verified": 31,
+     "wall_seconds": 882.72,
+     "whole_tree_verified": true
+    },
+    "modellake": {},
+    "purpose": "Qwen27 for mature physical",
+    "ready": true,
+    "ready_reason": "authorized external specimen; tree digest is sealed identity (c7c81652283f\u2026)",
+    "repo": "Qwen3.8-27B",
+    "revision": null,
+    "role": "qwen27_mature_physical",
+    "school": {
+     "aliases": [
+      "qwen3.8-27b-abliterated",
+      "Qwen3.8-27B",
+      "Qwen3.8-27B sealed resident / NOETIC_PARENT_A",
+      "NOETIC_PARENT_A"
+     ],
+     "architecture_family": "dense_hybrid_transformer",
+     "map_label": "Qwen3.8-27B sealed resident / NOETIC_PARENT_A",
+     "role_in_map": "model_a",
+     "school": "Qwen27",
+     "source_model": "Qwen3.8-27B"
+    },
+    "verified_specimen": {
+     "bytes_hashed": 55586059240,
+     "identity_kind": "external_tree_digest",
+     "in_specimens_listing": false,
+     "manifest_path": "/Users/scammermike/Downloads/hawking/receipts/future/EXTERNAL_SPECIMEN_SEAL.json",
+     "n_files": 31,
+     "n_sha256_verified": 31,
+     "n_size_only_verified": 0,
+     "published_as_verified": null,
+     "repo": "Qwen3.8-27B",
+     "resolved_sha": "c7c81652283f9324994e0e1a60e52b0a8bf92f9a0d2167d2af2ab341d3073750",
+     "revision": null,
+     "specimen_owner": "local_directory",
+     "specimen_path": "/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
+     "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+     "whole_tree_verified": true
+    }
+   },
+   {
+    "architecture_family": "qwen4_exp",
+    "blocked": null,
+    "gap_class": null,
+    "identity_source": "hcli.flash_next pin + modellake census + odyssey2 school",
+    "modellake": {
+     "bytes_hashed": 360023286454,
+     "census_qualification": "MODELLAKE_CENSUS_PINNED_FLASH_IDENTITY_NO_ACQUISITION",
+     "in_specimens_listing": true,
+     "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+     "n_files": 144,
+     "n_files_matched": 144,
+     "n_files_verified": 144,
+     "n_sha256_verified": 132,
+     "n_size_only_verified": 12,
+     "published_as_verified": true,
+     "repo": "Qwen/Qwen3.8-Flash-Next",
+     "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+     "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+     "source": "modellake_manifest",
+     "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+     "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+     "whole_tree_verified": true
+    },
+    "purpose": "Flash for heterogeneous frontier",
+    "ready": true,
+    "ready_reason": "ModelLake whole-tree sha256 verification",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "role": "flash_heterogeneous_frontier",
+    "school": {
+     "aliases": [
+      "Flash",
+      "Qwen/Qwen3.8-Flash-Next",
+      "Qwen3.8-Flash-Next",
+      "qwen4_exp"
+     ],
+     "architecture_family": "qwen4_exp",
+     "map_label": "Qwen/Qwen3.8-Flash-Next pinned ModelLake source",
+     "physical_status": "metadata_only_weights_not_present",
+     "role_in_map": "model_b",
+     "school": "Flash",
+     "source_model": "Qwen/Qwen3.8-Flash-Next"
+    },
+    "verified_specimen": {
+     "bytes_hashed": 360023286454,
+     "identity_kind": "modellake_sha",
+     "in_specimens_listing": true,
+     "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+     "n_files": 144,
+     "n_sha256_verified": 144,
+     "n_size_only_verified": 0,
+     "published_as_verified": true,
+     "repo": "Qwen/Qwen3.8-Flash-Next",
+     "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+     "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+     "specimen_owner": null,
+     "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+     "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
+     "whole_tree_verified": true
+    }
+   }
+  ],
+  "schema": "hawking.future.odyssey_i.specimen_curriculum.v1"
+ },
+ "first_workgraphs": {
+  "listen_stages": [
+   "phase_ii_transfer",
+   "phase_iii_attack"
+  ],
+  "n_units": 15,
+  "phase_listen": {
+   "barrier": null,
+   "global_barrier": false,
+   "no_era_vi": true,
+   "no_odyssey_iv": true,
+   "odysseys": [
+    "I WHAT IS TRUE?",
+    "II WHAT DID HAWKING ALREADY LEARN?",
+    "III WHERE IS HAWKING WRONG?"
+   ],
+   "phase_ii_depends_on": [
+    "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws"
+   ],
+   "phase_ii_depends_on_phase_iii": false,
+   "phase_iii_depends_on": [
+    "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws"
+   ],
+   "phase_iii_depends_on_phase_ii": false,
+   "rule": "once Phase I emits a law, Phase II may transfer it and Phase III may attack it. There is no global barrier between II and III."
+  },
+  "specimen": {
+   "repo": "Qwen/Qwen3-0.6B",
+   "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+   "slug": "qwen3-0-6b@c1899de289a0"
+  },
+  "stages": [
+   "specimen_verification",
+   "architecture_fingerprint",
+   "doctor",
+   "gravity",
+   "representation_search",
+   "physical_profiling",
+   "nr",
+   "nx",
+   "native_execution",
+   "capability",
+   "pareto",
+   "laws",
+   "scars"
+  ],
+  "units": [
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "blocked_reason": null,
+    "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+    "classification": "STATIC_ONLY",
+    "content_hash": "ec74958097a5f4d807ce0a72503c78384695fc3977b176f73fe75965dd3828a7",
+    "dependencies": [
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.specimen_verification"
+    ],
+    "description": "Odyssey I first WorkGraph stage architecture_fingerprint for Qwen/Qwen3-0.6B@c1899de289a04d12100db370d81485cdf75e47ca",
+    "effect_class": "READ_ONLY",
+    "era": "I",
+    "failure_context": null,
+    "finished_at": null,
+    "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.architecture_fingerprint",
+    "odyssey": "I",
+    "output_receipt_path": "receipts/future/ODYSSEY_I_ARCHITECTURE_FINGERPRINT_qwen3-0-6b@c1899de289a0.json",
+    "preferred_backend": null,
+    "provider": "future.odyssey_launch",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": false,
+    "resource_class": "STATIC_ANALYSIS",
+    "role": "science",
+    "running_at": null,
+    "sleeping": false,
+    "species": "odyssey_i_first_workgraph",
+    "specimen_repo": "Qwen/Qwen3-0.6B",
+    "specimen_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "stage": "architecture_fingerprint",
+    "status": "pending",
+    "verification": null,
+    "verifier": "future.odyssey_launch.workgraph.architecture_fingerprint:qwen3-0-6b@c1899de289a0",
+    "workspace": "repo-root"
+   },
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+    "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+    "classification": "SLEEPING",
+    "content_hash": "cb26c44079cc656422b12e29cc87f0b97857e6736e9de16c7cb14f2700c82430",
+    "dependencies": [
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.native_execution"
+    ],
+    "description": "Odyssey I first WorkGraph stage capability for Qwen/Qwen3-0.6B@c1899de289a04d12100db370d81485cdf75e47ca",
+    "effect_class": "READ_ONLY",
+    "era": "I",
+    "failure_context": null,
+    "finished_at": null,
+    "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.capability",
+    "odyssey": "I",
+    "output_receipt_path": "receipts/future/ODYSSEY_I_CAPABILITY_qwen3-0-6b@c1899de289a0.json",
+    "preferred_backend": null,
+    "provider": "future.odyssey_launch",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": true,
+    "resource_class": "GPU_EXCLUSIVE",
+    "role": "science",
+    "running_at": null,
+    "sleeping": true,
+    "species": "odyssey_i_first_workgraph",
+    "specimen_repo": "Qwen/Qwen3-0.6B",
+    "specimen_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "stage": "capability",
+    "status": "sleeping",
+    "verification": null,
+    "verifier": "future.odyssey_launch.workgraph.capability:qwen3-0-6b@c1899de289a0",
+    "workspace": "repo-root"
+   },
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "blocked_reason": null,
+    "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+    "classification": "STATIC_ONLY",
+    "content_hash": "a025205c5c4d090137be46301531ff7564b17e16033f27d4e889688c2ef93547",
+    "dependencies": [
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.architecture_fingerprint"
+    ],
+    "description": "Odyssey I first WorkGraph stage doctor for Qwen/Qwen3-0.6B@c1899de289a04d12100db370d81485cdf75e47ca",
+    "effect_class": "READ_ONLY",
+    "era": "I",
+    "failure_context": null,
+    "finished_at": null,
+    "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.doctor",
+    "odyssey": "I",
+    "output_receipt_path": "receipts/future/ODYSSEY_I_DOCTOR_qwen3-0-6b@c1899de289a0.json",
+    "preferred_backend": null,
+    "provider": "future.odyssey_launch",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": false,
+    "resource_class": "STATIC_ANALYSIS",
+    "role": "science",
+    "running_at": null,
+    "sleeping": false,
+    "species": "odyssey_i_first_workgraph",
+    "specimen_repo": "Qwen/Qwen3-0.6B",
+    "specimen_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "stage": "doctor",
+    "status": "pending",
+    "verification": null,
+    "verifier": "future.odyssey_launch.workgraph.doctor:qwen3-0-6b@c1899de289a0",
+    "workspace": "repo-root"
+   },
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "blocked_reason": null,
+    "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+    "classification": "STATIC_ONLY",
+    "content_hash": "ae7371584b15e647d99b2b87dbc9f4c59b218be3c2128f50115d15e1cbf4df41",
+    "dependencies": [
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.doctor"
+    ],
+    "description": "Odyssey I first WorkGraph stage gravity for Qwen/Qwen3-0.6B@c1899de289a04d12100db370d81485cdf75e47ca",
+    "effect_class": "READ_ONLY",
+    "era": "I",
+    "failure_context": null,
+    "finished_at": null,
+    "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.gravity",
+    "odyssey": "I",
+    "output_receipt_path": "receipts/future/ODYSSEY_I_GRAVITY_qwen3-0-6b@c1899de289a0.json",
+    "preferred_backend": null,
+    "provider": "future.odyssey_launch",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": false,
+    "resource_class": "STATIC_ANALYSIS",
+    "role": "science",
+    "running_at": null,
+    "sleeping": false,
+    "species": "odyssey_i_first_workgraph",
+    "specimen_repo": "Qwen/Qwen3-0.6B",
+    "specimen_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "stage": "gravity",
+    "status": "pending",
+    "verification": null,
+    "verifier": "future.odyssey_launch.workgraph.gravity:qwen3-0-6b@c1899de289a0",
+    "workspace": "repo-root"
+   },
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "blocked_reason": null,
+    "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+    "classification": "STATIC_ONLY",
+    "content_hash": "f03e99589c4e01a090c5d8ec77c1598ee4f873e3826dfb06672fd68460abc17b",
+    "dependencies": [
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.pareto"
+    ],
+    "description": "Odyssey I first WorkGraph stage laws for Qwen/Qwen3-0.6B@c1899de289a04d12100db370d81485cdf75e47ca",
+    "effect_class": "READ_ONLY",
+    "era": "I",
+    "failure_context": null,
+    "finished_at": null,
+    "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws",
+    "odyssey": "I",
+    "output_receipt_path": "receipts/future/ODYSSEY_I_LAWS_qwen3-0-6b@c1899de289a0.json",
+    "preferred_backend": null,
+    "provider": "future.odyssey_launch",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": false,
+    "resource_class": "STATIC_ANALYSIS",
+    "role": "science",
+    "running_at": null,
+    "sleeping": false,
+    "species": "odyssey_i_first_workgraph",
+    "specimen_repo": "Qwen/Qwen3-0.6B",
+    "specimen_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "stage": "laws",
+    "status": "pending",
+    "verification": null,
+    "verifier": "future.odyssey_launch.workgraph.laws:qwen3-0-6b@c1899de289a0",
+    "workspace": "repo-root"
+   },
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+    "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+    "classification": "SLEEPING",
+    "content_hash": "c5ccefbaab7e1a13b3bfe1356d94b6d18bde2ed64944aead40702a797e0ca4c4",
+    "dependencies": [
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.nx"
+    ],
+    "description": "Odyssey I first WorkGraph stage native_execution for Qwen/Qwen3-0.6B@c1899de289a04d12100db370d81485cdf75e47ca",
+    "effect_class": "READ_ONLY",
+    "era": "I",
+    "failure_context": null,
+    "finished_at": null,
+    "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.native_execution",
+    "odyssey": "I",
+    "output_receipt_path": "receipts/future/ODYSSEY_I_NATIVE_EXECUTION_qwen3-0-6b@c1899de289a0.json",
+    "preferred_backend": null,
+    "provider": "future.odyssey_launch",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": true,
+    "resource_class": "GPU_EXCLUSIVE",
+    "role": "science",
+    "running_at": null,
+    "sleeping": true,
+    "species": "odyssey_i_first_workgraph",
+    "specimen_repo": "Qwen/Qwen3-0.6B",
+    "specimen_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "stage": "native_execution",
+    "status": "sleeping",
+    "verification": null,
+    "verifier": "future.odyssey_launch.workgraph.native_execution:qwen3-0-6b@c1899de289a0",
+    "workspace": "repo-root"
+   },
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "blocked_reason": null,
+    "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+    "classification": "STATIC_ONLY",
+    "content_hash": "d423025d0da17dedc0ab7f3f03243a8b0f2ef835d4dfbcff52f30971da6cdd69",
+    "dependencies": [
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.physical_profiling"
+    ],
+    "description": "Odyssey I first WorkGraph stage nr for Qwen/Qwen3-0.6B@c1899de289a04d12100db370d81485cdf75e47ca",
+    "effect_class": "READ_ONLY",
+    "era": "I",
+    "failure_context": null,
+    "finished_at": null,
+    "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.nr",
+    "odyssey": "I",
+    "output_receipt_path": "receipts/future/ODYSSEY_I_NR_qwen3-0-6b@c1899de289a0.json",
+    "preferred_backend": null,
+    "provider": "future.odyssey_launch",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": false,
+    "resource_class": "COMPILE",
+    "role": "science",
+    "running_at": null,
+    "sleeping": false,
+    "species": "odyssey_i_first_workgraph",
+    "specimen_repo": "Qwen/Qwen3-0.6B",
+    "specimen_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "stage": "nr",
+    "status": "pending",
+    "verification": null,
+    "verifier": "future.odyssey_launch.workgraph.nr:qwen3-0-6b@c1899de289a0",
+    "workspace": "repo-root"
+   },
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+    "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+    "classification": "SLEEPING",
+    "content_hash": "fddfbb510ee5645011cae7214deea135cee93681b8e977819fbe8d7643933200",
+    "dependencies": [
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.nr"
+    ],
+    "description": "Odyssey I first WorkGraph stage nx for Qwen/Qwen3-0.6B@c1899de289a04d12100db370d81485cdf75e47ca",
+    "effect_class": "READ_ONLY",
+    "era": "I",
+    "failure_context": null,
+    "finished_at": null,
+    "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.nx",
+    "odyssey": "I",
+    "output_receipt_path": "receipts/future/ODYSSEY_I_NX_qwen3-0-6b@c1899de289a0.json",
+    "preferred_backend": null,
+    "provider": "future.odyssey_launch",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": true,
+    "resource_class": "GPU_EXCLUSIVE",
+    "role": "science",
+    "running_at": null,
+    "sleeping": true,
+    "species": "odyssey_i_first_workgraph",
+    "specimen_repo": "Qwen/Qwen3-0.6B",
+    "specimen_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "stage": "nx",
+    "status": "sleeping",
+    "verification": null,
+    "verifier": "future.odyssey_launch.workgraph.nx:qwen3-0-6b@c1899de289a0",
+    "workspace": "repo-root"
+   },
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "blocked_reason": null,
+    "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+    "classification": "STATIC_ONLY",
+    "content_hash": "9773b9e8e106e65d5d5cb551628930db516a73fc53c8f48ff413c9b08ce6c982",
+    "dependencies": [
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.capability"
+    ],
+    "description": "Odyssey I first WorkGraph stage pareto for Qwen/Qwen3-0.6B@c1899de289a04d12100db370d81485cdf75e47ca",
+    "effect_class": "READ_ONLY",
+    "era": "I",
+    "failure_context": null,
+    "finished_at": null,
+    "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.pareto",
+    "odyssey": "I",
+    "output_receipt_path": "receipts/future/ODYSSEY_I_PARETO_qwen3-0-6b@c1899de289a0.json",
+    "preferred_backend": null,
+    "provider": "future.odyssey_launch",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": false,
+    "resource_class": "STATIC_ANALYSIS",
+    "role": "science",
+    "running_at": null,
+    "sleeping": false,
+    "species": "odyssey_i_first_workgraph",
+    "specimen_repo": "Qwen/Qwen3-0.6B",
+    "specimen_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "stage": "pareto",
+    "status": "pending",
+    "verification": null,
+    "verifier": "future.odyssey_launch.workgraph.pareto:qwen3-0-6b@c1899de289a0",
+    "workspace": "repo-root"
+   },
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "blocked_reason": null,
+    "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+    "classification": "STATIC_ONLY",
+    "content_hash": "374a42e60cec6bb0da57dfdddd9343d2ffd8f80b57c91b44f440dcb7bd0a078c",
+    "dependencies": [
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws"
+    ],
+    "description": "Odyssey II listens concurrently: once Phase I emits a law, this unit may run. No global barrier. Specimen Qwen/Qwen3-0.6B.",
+    "effect_class": "READ_ONLY",
+    "era": "III",
+    "failure_context": null,
+    "finished_at": null,
+    "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_ii_transfer",
+    "listens_on": "phase_i_law_emission",
+    "odyssey": "II",
+    "preferred_backend": null,
+    "provider": "future.odyssey_launch",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": false,
+    "resource_class": "STATIC_ANALYSIS",
+    "role": "science",
+    "running_at": null,
+    "species": "odyssey_ii_transfer_experiment",
+    "specimen_repo": "Qwen/Qwen3-0.6B",
+    "specimen_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "stage": "phase_ii_transfer",
+    "status": "pending",
+    "verification": null,
+    "verifier": "future.odyssey_launch.workgraph.phase_ii_transfer:qwen3-0-6b@c1899de289a0",
+    "workspace": "repo-root"
+   },
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "blocked_reason": null,
+    "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+    "classification": "STATIC_ONLY",
+    "content_hash": "4cd726be2123f3dc26a75d2dfe55c55b2af294aced456b7bd04cd027e86f3672",
+    "dependencies": [
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws"
+    ],
+    "description": "Odyssey III listens concurrently: once Phase I emits a law, this unit may run. No global barrier. Specimen Qwen/Qwen3-0.6B.",
+    "effect_class": "READ_ONLY",
+    "era": "III",
+    "failure_context": null,
+    "finished_at": null,
+    "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_iii_attack",
+    "listens_on": "phase_i_law_emission",
+    "odyssey": "III",
+    "preferred_backend": null,
+    "provider": "future.odyssey_launch",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": false,
+    "resource_class": "STATIC_ANALYSIS",
+    "role": "science",
+    "running_at": null,
+    "species": "odyssey_iii_adversarial_experiment",
+    "specimen_repo": "Qwen/Qwen3-0.6B",
+    "specimen_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "stage": "phase_iii_attack",
+    "status": "pending",
+    "verification": null,
+    "verifier": "future.odyssey_launch.workgraph.phase_iii_attack:qwen3-0-6b@c1899de289a0",
+    "workspace": "repo-root"
+   },
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+    "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+    "classification": "SLEEPING",
+    "content_hash": "2644abca1a21faf9c2c77c437312fb265e7d894e30254eb381f07b5ac2e1aa15",
+    "dependencies": [
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.representation_search"
+    ],
+    "description": "Odyssey I first WorkGraph stage physical_profiling for Qwen/Qwen3-0.6B@c1899de289a04d12100db370d81485cdf75e47ca",
+    "effect_class": "READ_ONLY",
+    "era": "I",
+    "failure_context": null,
+    "finished_at": null,
+    "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.physical_profiling",
+    "odyssey": "I",
+    "output_receipt_path": "receipts/future/ODYSSEY_I_PHYSICAL_PROFILING_qwen3-0-6b@c1899de289a0.json",
+    "preferred_backend": null,
+    "provider": "future.odyssey_launch",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": true,
+    "resource_class": "GPU_EXCLUSIVE",
+    "role": "science",
+    "running_at": null,
+    "sleeping": true,
+    "species": "odyssey_i_first_workgraph",
+    "specimen_repo": "Qwen/Qwen3-0.6B",
+    "specimen_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "stage": "physical_profiling",
+    "status": "sleeping",
+    "verification": null,
+    "verifier": "future.odyssey_launch.workgraph.physical_profiling:qwen3-0-6b@c1899de289a0",
+    "workspace": "repo-root"
+   },
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "blocked_reason": null,
+    "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+    "classification": "STATIC_ONLY",
+    "content_hash": "652dffa2e0bc33837570980ab58777b4b770b58964ca2dc9fe0962310149a6f9",
+    "dependencies": [
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.gravity"
+    ],
+    "description": "Odyssey I first WorkGraph stage representation_search for Qwen/Qwen3-0.6B@c1899de289a04d12100db370d81485cdf75e47ca",
+    "effect_class": "READ_ONLY",
+    "era": "I",
+    "failure_context": null,
+    "finished_at": null,
+    "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.representation_search",
+    "odyssey": "I",
+    "output_receipt_path": "receipts/future/ODYSSEY_I_REPRESENTATION_SEARCH_qwen3-0-6b@c1899de289a0.json",
+    "preferred_backend": null,
+    "provider": "future.odyssey_launch",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": false,
+    "resource_class": "STATIC_ANALYSIS",
+    "role": "science",
+    "running_at": null,
+    "sleeping": false,
+    "species": "odyssey_i_first_workgraph",
+    "specimen_repo": "Qwen/Qwen3-0.6B",
+    "specimen_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "stage": "representation_search",
+    "status": "pending",
+    "verification": null,
+    "verifier": "future.odyssey_launch.workgraph.representation_search:qwen3-0-6b@c1899de289a0",
+    "workspace": "repo-root"
+   },
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "blocked_reason": null,
+    "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+    "classification": "STATIC_ONLY",
+    "content_hash": "d93ba757ce779acdaad780a889af95aae40fb601dc383e05a5bbf3230b9b6475",
+    "dependencies": [
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws"
+    ],
+    "description": "Odyssey I first WorkGraph stage scars for Qwen/Qwen3-0.6B@c1899de289a04d12100db370d81485cdf75e47ca",
+    "effect_class": "READ_ONLY",
+    "era": "I",
+    "failure_context": null,
+    "finished_at": null,
+    "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.scars",
+    "odyssey": "I",
+    "output_receipt_path": "receipts/future/ODYSSEY_I_SCARS_qwen3-0-6b@c1899de289a0.json",
+    "preferred_backend": null,
+    "provider": "future.odyssey_launch",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": false,
+    "resource_class": "STATIC_ANALYSIS",
+    "role": "science",
+    "running_at": null,
+    "sleeping": false,
+    "species": "odyssey_i_first_workgraph",
+    "specimen_repo": "Qwen/Qwen3-0.6B",
+    "specimen_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "stage": "scars",
+    "status": "pending",
+    "verification": null,
+    "verifier": "future.odyssey_launch.workgraph.scars:qwen3-0-6b@c1899de289a0",
+    "workspace": "repo-root"
+   },
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "blocked_reason": null,
+    "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+    "classification": "STATIC_ONLY",
+    "content_hash": "06272da12b7206185a93b26a14008c6dab8a3a29b4a4d6a474316069ba7b35e4",
+    "dependencies": [],
+    "description": "Odyssey I first WorkGraph stage specimen_verification for Qwen/Qwen3-0.6B@c1899de289a04d12100db370d81485cdf75e47ca",
+    "effect_class": "READ_ONLY",
+    "era": "I",
+    "failure_context": null,
+    "finished_at": null,
+    "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.specimen_verification",
+    "odyssey": "I",
+    "output_receipt_path": "receipts/future/ODYSSEY_I_SPECIMEN_VERIFICATION_qwen3-0-6b@c1899de289a0.json",
+    "preferred_backend": null,
+    "provider": "future.odyssey_launch",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": false,
+    "resource_class": "STATIC_ANALYSIS",
+    "role": "science",
+    "running_at": null,
+    "sleeping": false,
+    "species": "odyssey_i_first_workgraph",
+    "specimen_repo": "Qwen/Qwen3-0.6B",
+    "specimen_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "stage": "specimen_verification",
+    "status": "pending",
+    "verification": null,
+    "verifier": "future.odyssey_launch.workgraph.specimen_verification:qwen3-0-6b@c1899de289a0",
+    "workspace": "repo-root"
+   }
+  ]
+ },
+ "gpu_authority": false,
+ "known_blockers": [
+  {
+   "holds": true,
+   "id": "sleep.no-gpu-authority",
+   "reason": "Sidecar has no GPU authority and does not invoke MetalContext. Handoff blockers record no protected GPU authority on this campaign.",
+   "sleeping": true
+  },
+  {
+   "holds": true,
+   "id": "sleep.metal-compiler",
+   "reason": "xcrun -f metal did not locate the Metal compiler",
+   "sleeping": true
+  },
+  {
+   "holds": true,
+   "id": "sleep.protected-bench-lock",
+   "reason": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
+   "sleeping": true
+  },
+  {
+   "holds": true,
+   "id": "sleep.machine-heavy",
+   "reason": "contamination_class='HEAVY'; sidecar will not SIGSTOP standing workers. HEAVY (or unknown) is not a protected window.",
+   "sleeping": true
+  },
+  {
+   "holds": true,
+   "id": "sleep.flash-nx-scaffold",
+   "reason": "FLASH_NX_COMPLETENESS_AUDIT seven_all_met=False nx_status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION' nr_v2.status='COMPLETE_HETEROGENEOUS_CANDIDATE_NOT_FOR_PROMOTION'. SCAFFOLD_ONLY / metadata seals are not a callable NX path.",
+   "sleeping": true
+  },
+  {
+   "holds": true,
+   "id": "sleep.teacher-capture",
+   "reason": "teacher capture executed=0/12 workunits; target_row_counts=[256]. Unrun capture is not a synthetic corpus.",
+   "sleeping": true
+  }
+ ],
+ "machine_genome": {
+  "arch": "arm64",
+  "genome_digest": "c2aa9de99036e68c98647d9b96ce43dcf2c0f816e3d41a1fe4d83e082d6b1e18",
+  "gpu_authority": false,
+  "knowledge_level": "PIN_ONLY",
+  "note": "digest cited; core counts and bytes from the NX seal are not copied (not a measurement claim)",
+  "os_family": "darwin",
+  "path_taken": "worktree",
+  "schema": "hawking.future.machine_genome_pin.v1",
+  "source": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json"
+ },
+ "next_refill_trigger": {
+  "does_not_refill_on": "a refused launch-gate re-run with the same unmet set",
+  "integration": "tools/future/frontiers.py \u2014 frontier objects a result must change, and the refill that follows",
+  "when": "a criterion flips from unmet to met, or a SLEEPING unit is woken because hardware qualified"
+ },
+ "no_era_vi": true,
+ "no_odyssey_iv": true,
+ "odyssey": "I WHAT IS TRUE?",
+ "phase_transition": "STARTED",
+ "resident_identity": {
+  "agrees_with_incumbent": true,
+  "bound": true,
+  "found": true,
+  "incumbent": {
+   "artifact_path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+   "id": "qwen3.8-27b-sealed-3.14",
+   "load": "ON_DISK",
+   "residency_status": "CURRENT_NONFINAL_HCLI_WORKER",
+   "role": "CURRENT_NONFINAL_HCLI_WORKER",
+   "source": "receipts/future/SUCCESSION_TRIAL.json"
+  },
+  "integration_point": "tools/future/resident_identity.py \u2014 canonical resident declaration the launch receipt binds",
+  "kind": "resident",
+  "missing": [],
+  "note": "Identity is not invented. A missing this-wave receipt stays unbound. Bound only when the document pins nx_id, sealed_model_id, executable_hash, artifact_root, tokenizer, and qualification, and sealed_model_id agrees with the incumbent. HCLI prior gates, if found, are cited and are not this identity.",
+  "path_taken": "worktree",
+  "pins": {
+   "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+   "executable_hash": {
+    "by_role": {
+     "binary": "d34044cffae8f32055cca40aae27ec62beb44f043df081293126da89e51b8e76",
+     "resident_binary": "2d5fd0f157fb7987f307782d3a12abf2efadd6a0e14a787740e51adb101ac3f8"
+    },
+    "seal_declared_sha256_16": "d34044cffae8f320",
+    "seal_matching_role": "binary"
+   },
+   "nx_id": {
+    "model_id": "qwen3.8-27b-sealed-3.14",
+    "protocol": "hawking.qwen38.resident.v1",
+    "resident_identity": "sealed-3.14"
+   },
+   "qualification": {
+    "identity_sufficient": false,
+    "identity_validation": "ACCEPTED",
+    "label": "noetic-sealed-3.14",
+    "path": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+    "residency_status": "CURRENT_NONFINAL_HCLI_WORKER",
+    "role": "CONTROL_HISTORICAL_NOT_CURRENT_PROOF"
+   },
+   "sealed_model_id": "qwen3.8-27b-sealed-3.14",
+   "tokenizer": {
+    "declared_prefix_match": true,
+    "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+    "sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3"
+   }
+  },
+  "pins_named": [
+   "nx_id",
+   "sealed_model_id",
+   "executable_hash",
+   "artifact_root",
+   "tokenizer",
+   "qualification"
+  ],
+  "residency_status": "CURRENT_NONFINAL_HCLI_WORKER",
+  "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/RESIDENT_IDENTITY.json",
+  "schema": "hawking.future.resident_identity.v1",
+  "status": "ACCEPTED",
+  "unbound_reason": null
+ },
+ "resource_schedule": {
+  "by_resource_class": {
+   "COMPILE": {
+    "ids": [
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.nr"
+    ],
+    "n": 1
+   },
+   "GPU_EXCLUSIVE": {
+    "ids": [
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.capability",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.native_execution",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.nx",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.physical_profiling"
+    ],
+    "n": 4
+   },
+   "STATIC_ANALYSIS": {
+    "ids": [
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.architecture_fingerprint",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.doctor",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.gravity",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.pareto",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_ii_transfer",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_iii_attack",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.representation_search",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.scars",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.specimen_verification"
+    ],
+    "n": 10
+   }
+  },
+  "by_status": {
+   "pending": {
+    "ids": [
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.architecture_fingerprint",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.doctor",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.gravity",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.nr",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.pareto",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_ii_transfer",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_iii_attack",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.representation_search",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.scars",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.specimen_verification"
+    ],
+    "n": 11
+   },
+   "sleeping": {
+    "ids": [
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.capability",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.native_execution",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.nx",
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.physical_profiling"
+    ],
+    "n": 4
+   }
+  },
+  "gpu_authority": false,
+  "sleeping_are_not_results": true
+ },
+ "sandbox_identity": {
+  "bound": true,
+  "found": true,
+  "integration_point": "tools/future/sandbox.py \u2014 orchestrator sandbox identity the resident operates",
+  "kind": "sandbox",
+  "missing": [],
+  "note": "Identity is not invented. A missing this-wave receipt stays unbound. Bound only when RESIDENT_SANDBOX.json pins identity_sha256 and reentry_same_identity. HCLI prior gates are not this identity.",
+  "path_taken": "worktree",
+  "pins": {
+   "identity_sha256": "01d52b60766cb97f00b0e43e4c90e4cf4ec1171525973780d03cff46265cc134",
+   "reentry_same_identity": true,
+   "sandbox_id": "resident"
+  },
+  "pins_named": [
+   "identity_sha256",
+   "reentry_same_identity"
+  ],
+  "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/RESIDENT_SANDBOX.json",
+  "schema": "hawking.future.sandbox.v1",
+  "status": "BUILT_NOT_PROMOTED",
+  "unbound_reason": null
+ },
+ "schema": "hawking.future.odyssey_i_launch.v1",
+ "seal_sha256": "93fc95b7112fc8f2f02ee8f194a1d90bb761bfe7f3ad20500e2b1ae82a121d13",
+ "verdict": {
+  "allowed": true,
+  "met": [
+   "resident_autonomy_trial_pass",
+   "specimen_curriculum_ready",
+   "modellake_identity",
+   "doctor_callable",
+   "gravity_callable",
+   "nr_nx_path_callable",
+   "evidence_hierarchy",
+   "negative_science",
+   "workgraphs",
+   "self_refill",
+   "dirty_measurement",
+   "protected_scheduling",
+   "transfer_substrate",
+   "adversary_substrate",
+   "crash_recovery",
+   "receipts"
+  ],
+  "n_criteria": 16,
+  "n_met": 16,
+  "n_unmet": 0,
+  "rule": "every unmet criterion is named; the first failure does not hide the rest",
+  "unmet": [],
+  "verdict": "LAUNCH"
+ },
+ "version": 1
+}

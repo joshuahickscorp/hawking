@@ -1,0 +1,1320 @@
+{
+ "argmax_alone_is_not_parity": true,
+ "auxiliary_bytes_target": 1069605696,
+ "bars": {
+  "note": "Task stated KL 0.003 / cosine 0.998 as the screened numbers. The receipt's exact screened fit is KL 0.0033654539143456084 / cosine 0.998450457881851. Native is judged against both; a gap vs the fit is reported.",
+  "screened_argmax_agreement": 1.0,
+  "screened_logit_kl_nats": 0.0033654539143456084,
+  "screened_organ_cosine": 0.998450457881851,
+  "task_argmax_agreement": 1.0,
+  "task_logit_kl_nats": 0.003,
+  "task_organ_cosine": 0.998
+ },
+ "claim_boundary": "Native consumer of the screened u8 aux: in-register log-scale exp + linear bias, 2-bit codes kept. GPU A/B is one representative MLP layer of sealed-3.14, incumbent f16-aux kernel vs native u8-aux kernel, back-to-back in one process, MTLCommandBuffer GPUStartTime/GPUEndTime. Absolute GB/s is measured-under-load (loadavg recorded); it is not a clean roof. Token-level ms/TPS from the probe is ARITHMETIC over the measured layer (x64), labelled a projection, not a resident measurement. CPU organ/logit numbers are native in-register consume vs the incumbent on the teacher-corpus hold split; the screened fit is cited beside them. A path that expands u8 aux to an f16 aux buffer and then calls the ordinary kernel is refused. Production shaders are not edited. FMA/byte is the inner-loop tax before and after; extra decode arithmetic is billed through executable_economics.py.",
+ "dense_rematerialization": "DIRECT_CONSUME",
+ "economics": {
+  "bytes_only_screen_style": {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "cited_token_ms": 28.722,
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "dispatch_us_range": [
+     6.25,
+     6.25
+    ],
+    "flop_model": "extra FLOPs scored as extra_flops * n_output_elements / EFFECTIVE_FLOP_S, the MLP GEMV-dressed rate (2.202 TFLOP/s). ASSUMPTION: same cost-per-FLOP as the incumbent MAC (mostly wait-on-memory). Range [0, 4.0x] covers hidden-under-bandwidth to decode-ALU-like.",
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "host_gap_floor_ms": 0.989,
+    "incremental_byte_rate_gb_s": 0.0,
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 0.0,
+    "stream_class": "broadcast_aux",
+    "stream_on_critical_path": false,
+    "stream_rate_source": "ECONOMICS_CALIBRATION.json"
+   },
+   "byte_model": {
+    "bytes_added_metadata": 1536,
+    "bytes_removed": 534773760,
+    "candidate_aux_scale_bias_bytes": 534775296,
+    "endpoint_bytes": 1536,
+    "incumbent_scale_bias_bytes": 1069547520,
+    "u8_payload_bytes": 534773760
+   },
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 1536,
+    "residuals": 0,
+    "state": 0,
+    "total": 1536
+   },
+   "bytes_added_supplied": true,
+   "bytes_removed": 534773760,
+   "consuming_primitive": "FusedDecodeCompute",
+   "count_exp_as": null,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 0.0,
+   "id": "quantize_aux_u8",
+   "live": true,
+   "n_output_elements": 2555904,
+   "net_bytes": -534772224,
+   "ok": true,
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": -0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.816516955643756,
+   "predicted_tps_range": [
+    34.816516955643756,
+    34.816516955643756
+   ],
+   "retime_organ": false,
+   "s020_section_20": {
+    "bar_frac": 0.01,
+    "bar_ms": 0.28722000000000003,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": true
+   },
+   "status": "OPEN",
+   "stream_class": "broadcast_aux",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "MATERIAL",
+   "verdict_reasons": [
+    "reusable_representation_family"
+   ]
+  },
+  "extra_flops_per_output_element_fma_only": 1673.8461538461538,
+  "extra_flops_per_output_element_fma_plus_exp1": 2510.769230769231,
+  "note": "The capability screen billed extra_flops_per_output_element=0. Native consume adds 2 FMA + 1 exp per 8 weights. u1alu showed the MLP is near its arithmetic ceiling (1.33 dequant-FMA per weight-byte vs 0.88 to reach 497 GB/s). If flop_ms_delta eats byte_removed_ms, the lever is worth less than 1.554 ms and possibly nothing. The GPU A/B is the physical number.",
+  "with_aux_decode_fma": {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "cited_token_ms": 28.722,
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "dispatch_us_range": [
+     6.25,
+     6.25
+    ],
+    "flop_model": "extra FLOPs scored as extra_flops * n_output_elements / EFFECTIVE_FLOP_S, the MLP GEMV-dressed rate (2.202 TFLOP/s). ASSUMPTION: same cost-per-FLOP as the incumbent MAC (mostly wait-on-memory). Range [0, 4.0x] covers hidden-under-bandwidth to decode-ALU-like.",
+    "flop_ms_range": [
+     0.0,
+     7.7705
+    ],
+    "host_gap_floor_ms": 0.989,
+    "incremental_byte_rate_gb_s": 0.0,
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 0.0,
+    "stream_class": "broadcast_aux",
+    "stream_on_critical_path": false,
+    "stream_rate_source": "ECONOMICS_CALIBRATION.json"
+   },
+   "byte_model": {
+    "bytes_added_metadata": 1536,
+    "bytes_removed": 534773760,
+    "candidate_aux_scale_bias_bytes": 534775296,
+    "endpoint_bytes": 1536,
+    "incumbent_scale_bias_bytes": 1069547520,
+    "u8_payload_bytes": 534773760
+   },
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 1536,
+    "residuals": 0,
+    "state": 0,
+    "total": 1536
+   },
+   "bytes_added_supplied": true,
+   "bytes_removed": 534773760,
+   "consuming_primitive": "FusedDecodeCompute",
+   "count_exp_as": 0.0,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 1673.8461538461538,
+   "id": "quantize_aux_u8",
+   "live": true,
+   "n_output_elements": 2555904,
+   "net_bytes": -534772224,
+   "ok": true,
+   "organ": "mlp",
+   "predicted_ms_delta": 1.942625,
+   "predicted_ms_delta_range": [
+    0.0,
+    7.7705
+   ],
+   "predicted_ms_saved": -1.942625,
+   "predicted_token_ms": 30.664625,
+   "predicted_token_ms_range": [
+    28.722,
+    36.4925
+   ],
+   "predicted_tps": 32.61086675607479,
+   "predicted_tps_range": [
+    27.402891005001027,
+    34.816516955643756
+   ],
+   "retime_organ": false,
+   "s020_section_20": {
+    "bar_frac": 0.01,
+    "bar_ms": 0.28722000000000003,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": true
+   },
+   "status": "OPEN",
+   "stream_class": "broadcast_aux",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 1.942625
+   },
+   "verdict": "MATERIAL",
+   "verdict_reasons": [
+    "reusable_representation_family"
+   ]
+  },
+  "with_aux_decode_fma_and_exp_as_1": {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "cited_token_ms": 28.722,
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "dispatch_us_range": [
+     6.25,
+     6.25
+    ],
+    "flop_model": "extra FLOPs scored as extra_flops * n_output_elements / EFFECTIVE_FLOP_S, the MLP GEMV-dressed rate (2.202 TFLOP/s). ASSUMPTION: same cost-per-FLOP as the incumbent MAC (mostly wait-on-memory). Range [0, 4.0x] covers hidden-under-bandwidth to decode-ALU-like.",
+    "flop_ms_range": [
+     0.0,
+     11.655750000000001
+    ],
+    "host_gap_floor_ms": 0.989,
+    "incremental_byte_rate_gb_s": 0.0,
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 0.0,
+    "stream_class": "broadcast_aux",
+    "stream_on_critical_path": false,
+    "stream_rate_source": "ECONOMICS_CALIBRATION.json"
+   },
+   "byte_model": {
+    "bytes_added_metadata": 1536,
+    "bytes_removed": 534773760,
+    "candidate_aux_scale_bias_bytes": 534775296,
+    "endpoint_bytes": 1536,
+    "incumbent_scale_bias_bytes": 1069547520,
+    "u8_payload_bytes": 534773760
+   },
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 1536,
+    "residuals": 0,
+    "state": 0,
+    "total": 1536
+   },
+   "bytes_added_supplied": true,
+   "bytes_removed": 534773760,
+   "consuming_primitive": "FusedDecodeCompute",
+   "count_exp_as": 1.0,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 2510.769230769231,
+   "id": "quantize_aux_u8",
+   "live": true,
+   "n_output_elements": 2555904,
+   "net_bytes": -534772224,
+   "ok": true,
+   "organ": "mlp",
+   "predicted_ms_delta": 2.9139375000000003,
+   "predicted_ms_delta_range": [
+    0.0,
+    11.655750000000001
+   ],
+   "predicted_ms_saved": -2.9139375000000003,
+   "predicted_token_ms": 31.6359375,
+   "predicted_token_ms_range": [
+    28.722,
+    40.377750000000006
+   ],
+   "predicted_tps": 31.60962117844619,
+   "predicted_tps_range": [
+    24.766115001455006,
+    34.816516955643756
+   ],
+   "retime_organ": false,
+   "s020_section_20": {
+    "bar_frac": 0.01,
+    "bar_ms": 0.28722000000000003,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": true
+   },
+   "status": "OPEN",
+   "stream_class": "broadcast_aux",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 2.9139375000000003
+   },
+   "verdict": "MATERIAL",
+   "verdict_reasons": [
+    "reusable_representation_family"
+   ]
+  }
+ },
+ "evidence_class": "SELF_MEASURED_DIRTY",
+ "finding": "Native u8-aux consumer binds uchar scale/bias and decodes them in-register (log-scale exp + linear bias). It does not expand the compact aux back to f16. Inner-loop tax: incumbent 1.3333 decode-FMA/weight-byte at 6 B/iter; native 2.5 at 4 B/iter (4.5 FMA/byte vs 2.6667 before). executable_economics bytes-only: -0.0000 ms saved (the screen's +1.554 ms). With aux-decode FMA billed: -1.9426 ms (flop_ms 1.9426, byte_ms 0.0000). GPU A/B layer 3: incumbent 334.5682 GB/s in 249.75 us, native 269.7453 GB/s in 278.791 us, delta 29.041 us / -8355840 bytes. Token projection 1.858624 ms (PROJECTION_ARITHMETIC_OVER_PROBE).",
+ "fma_per_byte": {
+  "exp_counted_as_1": {
+   "after": {
+    "aux_decode_fma": 2,
+    "aux_decode_fma_per_weight_byte": 0.75,
+    "bitops": 16,
+    "counted_exp_as_fma": 1.0,
+    "decode_fma_per_weight_byte": 2.75,
+    "dequant_fma": 8,
+    "dequant_fma_per_weight_byte": 2.0,
+    "exp": 1,
+    "fma_per_weight_byte": 4.75,
+    "int_to_float": 10,
+    "mac_fma": 8,
+    "mac_fma_per_weight_byte": 2.0,
+    "weight_bytes_per_iteration": 4,
+    "weights_per_iteration": 8,
+    "x_bytes_per_iteration": 32
+   },
+   "before": {
+    "aux_decode_fma": 0,
+    "aux_decode_fma_per_weight_byte": 0.0,
+    "bitops": 16,
+    "counted_exp_as_fma": 0.0,
+    "decode_fma_per_weight_byte": 1.3333,
+    "dequant_fma": 8,
+    "dequant_fma_per_weight_byte": 1.3333,
+    "exp": 0,
+    "fma_per_weight_byte": 2.6667,
+    "int_to_float": 8,
+    "mac_fma": 8,
+    "mac_fma_per_weight_byte": 1.3333,
+    "weight_bytes_per_iteration": 6,
+    "weights_per_iteration": 8,
+    "x_bytes_per_iteration": 32
+   },
+   "convention": "One geo_tpr64 inner iteration = 8 weights. Incumbent loads 2 B codes + 2 B f16 scale + 2 B f16 bias. Native loads 2 B codes + 1 B u8 scale + 1 B u8 bias and decodes scale/bias in register (1 FMA + 1 exp for log-scale, 1 FMA for linear bias) before the same dequant-FMA. exp is counted only when count_exp_as > 0; the default table counts FMA only so the exp tax is visible as its own column.",
+   "delta": {
+    "decode_fma_per_weight_byte": 1.4167,
+    "fma_per_weight_byte": 2.0833,
+    "note": "Fewer bytes, more FMA per remaining byte. u1alu put the MLP at 1.33 dequant-FMA per weight-byte against 0.88 needed to reach 497 GB/s; this lever moves the other way.",
+    "weight_bytes_per_iteration": -2
+   }
+  },
+  "fma_only": {
+   "after": {
+    "aux_decode_fma": 2,
+    "aux_decode_fma_per_weight_byte": 0.5,
+    "bitops": 16,
+    "counted_exp_as_fma": 0.0,
+    "decode_fma_per_weight_byte": 2.5,
+    "dequant_fma": 8,
+    "dequant_fma_per_weight_byte": 2.0,
+    "exp": 1,
+    "fma_per_weight_byte": 4.5,
+    "int_to_float": 10,
+    "mac_fma": 8,
+    "mac_fma_per_weight_byte": 2.0,
+    "weight_bytes_per_iteration": 4,
+    "weights_per_iteration": 8,
+    "x_bytes_per_iteration": 32
+   },
+   "before": {
+    "aux_decode_fma": 0,
+    "aux_decode_fma_per_weight_byte": 0.0,
+    "bitops": 16,
+    "counted_exp_as_fma": 0.0,
+    "decode_fma_per_weight_byte": 1.3333,
+    "dequant_fma": 8,
+    "dequant_fma_per_weight_byte": 1.3333,
+    "exp": 0,
+    "fma_per_weight_byte": 2.6667,
+    "int_to_float": 8,
+    "mac_fma": 8,
+    "mac_fma_per_weight_byte": 1.3333,
+    "weight_bytes_per_iteration": 6,
+    "weights_per_iteration": 8,
+    "x_bytes_per_iteration": 32
+   },
+   "convention": "One geo_tpr64 inner iteration = 8 weights. Incumbent loads 2 B codes + 2 B f16 scale + 2 B f16 bias. Native loads 2 B codes + 1 B u8 scale + 1 B u8 bias and decodes scale/bias in register (1 FMA + 1 exp for log-scale, 1 FMA for linear bias) before the same dequant-FMA. exp is counted only when count_exp_as > 0; the default table counts FMA only so the exp tax is visible as its own column.",
+   "delta": {
+    "decode_fma_per_weight_byte": 1.1667,
+    "fma_per_weight_byte": 1.8333,
+    "note": "Fewer bytes, more FMA per remaining byte. u1alu put the MLP at 1.33 dequant-FMA per weight-byte against 0.88 needed to reach 497 GB/s; this lever moves the other way.",
+    "weight_bytes_per_iteration": -2
+   }
+  }
+ },
+ "forbidden_shape": "MATERIALIZE_F16_AUX",
+ "gpu_ab": {
+  "absolute_gb_s_are_measured_under_load": true,
+  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "bytes_removed_this_layer": 8355840,
+  "concurrent_load": {
+   "loadavg": "{ 6.85 7.12 7.44 }",
+   "note": "absolute GB/s is measured-under-load; A/B is back-to-back in one process",
+   "top_cpu": [
+    {
+     "comm": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+     "cpu_pct": 99.5,
+     "pid": 72724,
+     "rss_kib": 48272
+    },
+    {
+     "comm": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+     "cpu_pct": 99.1,
+     "pid": 76582,
+     "rss_kib": 47104
+    },
+    {
+     "comm": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+     "cpu_pct": 98.8,
+     "pid": 76546,
+     "rss_kib": 42368
+    },
+    {
+     "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+     "cpu_pct": 19.5,
+     "pid": 180,
+     "rss_kib": 56464
+    },
+    {
+     "comm": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+     "cpu_pct": 18.0,
+     "pid": 76305,
+     "rss_kib": 2572496
+    },
+    {
+     "comm": "/Applications/Claude.app/Contents/Frameworks/Claude Helper (Renderer).app/Contents/MacOS/Claude Helper (Renderer)",
+     "cpu_pct": 12.9,
+     "pid": 85935,
+     "rss_kib": 519344
+    },
+    {
+     "comm": "/Users/scammermike/Library/Application Support/Claude/claude-code/2.1.247/claude.app/Contents/MacOS/claude",
+     "cpu_pct": 11.5,
+     "pid": 977,
+     "rss_kib": 453552
+    },
+    {
+     "comm": "/usr/libexec/syspolicyd",
+     "cpu_pct": 9.4,
+     "pid": 272,
+     "rss_kib": 27824
+    },
+    {
+     "comm": "/System/Library/ExtensionKit/Extensions/WallpaperAerialsExtension.appex/Contents/MacOS/WallpaperAerialsExtension",
+     "cpu_pct": 9.4,
+     "pid": 624,
+     "rss_kib": 30016
+    },
+    {
+     "comm": "powermetrics",
+     "cpu_pct": 9.2,
+     "pid": 25867,
+     "rss_kib": 2512
+    },
+    {
+     "comm": "/usr/libexec/trustd",
+     "cpu_pct": 7.0,
+     "pid": 211,
+     "rss_kib": 13792
+    },
+    {
+     "comm": "/System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService",
+     "cpu_pct": 3.4,
+     "pid": 72077,
+     "rss_kib": 22928
+    }
+   ],
+   "uptime": "4:48  up 5 days,  8:45, 3 users, load averages: 6.85 7.12 7.44"
+  },
+  "concurrent_load_end": {
+   "loadavg": "{ 6.85 7.12 7.44 }",
+   "note": "absolute GB/s is measured-under-load; A/B is back-to-back in one process",
+   "top_cpu": [
+    {
+     "comm": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+     "cpu_pct": 100.0,
+     "pid": 72724,
+     "rss_kib": 48272
+    },
+    {
+     "comm": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+     "cpu_pct": 99.4,
+     "pid": 76582,
+     "rss_kib": 47104
+    },
+    {
+     "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+     "cpu_pct": 20.7,
+     "pid": 180,
+     "rss_kib": 56464
+    },
+    {
+     "comm": "/System/Library/Frameworks/Metal.framework/Versions/A/XPCServices/MTLCompilerService.xpc/Contents/MacOS/MTLCompilerService",
+     "cpu_pct": 19.4,
+     "pid": 76671,
+     "rss_kib": 34192
+    },
+    {
+     "comm": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+     "cpu_pct": 18.0,
+     "pid": 76672,
+     "rss_kib": 30496
+    },
+    {
+     "comm": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+     "cpu_pct": 11.3,
+     "pid": 76305,
+     "rss_kib": 2572496
+    },
+    {
+     "comm": "/System/Library/ExtensionKit/Extensions/WallpaperAerialsExtension.appex/Contents/MacOS/WallpaperAerialsExtension",
+     "cpu_pct": 10.2,
+     "pid": 624,
+     "rss_kib": 30016
+    },
+    {
+     "comm": "/Applications/Claude.app/Contents/Frameworks/Claude Helper (Renderer).app/Contents/MacOS/Claude Helper (Renderer)",
+     "cpu_pct": 8.0,
+     "pid": 85935,
+     "rss_kib": 519344
+    },
+    {
+     "comm": "/Users/scammermike/Library/Application Support/Claude/claude-code/2.1.247/claude.app/Contents/MacOS/claude",
+     "cpu_pct": 7.3,
+     "pid": 977,
+     "rss_kib": 453552
+    },
+    {
+     "comm": "/usr/libexec/syspolicyd",
+     "cpu_pct": 5.9,
+     "pid": 272,
+     "rss_kib": 27824
+    },
+    {
+     "comm": "powermetrics",
+     "cpu_pct": 5.7,
+     "pid": 25867,
+     "rss_kib": 2512
+    },
+    {
+     "comm": "workspace/ops/build/rust/release-fast/examples/aux_u8_ab",
+     "cpu_pct": 4.4,
+     "pid": 76630,
+     "rss_kib": 187904
+    }
+   ],
+   "uptime": "4:48  up 5 days,  8:45, 3 users, load averages: 6.85 7.12 7.44"
+  },
+  "delta": {
+   "byte_ratio_native_over_incumbent": 0.9,
+   "effective_gb_s": -64.8229,
+   "gpu_ns": 29041,
+   "gpu_us": 29.041,
+   "time_ratio_native_over_incumbent": 1.11628,
+   "weight_bytes": -8355840
+  },
+  "git_head": "71e1869098a2258fe459b39d160c3add6f9cfeb5",
+  "incumbent": {
+   "aux_bytes": 16711680,
+   "aux_dtype": "f16 scale + f16 bias",
+   "code_bytes": 66846720,
+   "command_buffers": 1,
+   "dispatches": 3,
+   "effective_gb_s": 334.5682,
+   "encoders": 1,
+   "gpu_ns_median": 249750,
+   "gpu_ns_reps": [
+    249999,
+    251375,
+    249625,
+    249625,
+    250749,
+    249666,
+    249208,
+    250083,
+    249750,
+    262000,
+    249583
+   ],
+   "gpu_us_median": 249.75,
+   "kernel": "aux_u8_incumbent_affine_q2_geo_tpr64_tg128",
+   "label": "incumbent_f16_aux",
+   "weight_bytes": 83558400
+  },
+  "layer": 3,
+  "native_consumer": {
+   "bias_buffer": "u8",
+   "codes": "incumbent 2-bit kept",
+   "decode": "in-register log-scale exp + linear bias",
+   "forbidden_shape": "expand u8 aux to f16 then feed the ordinary kernel",
+   "kernel": "aux_u8_native_affine_q2_geo_tpr64_tg128",
+   "materializes_f16_aux": false,
+   "scale_buffer": "u8"
+  },
+  "native_u8": {
+   "aux_bytes": 8355840,
+   "aux_dtype": "u8 log-scale + u8 linear bias",
+   "code_bytes": 66846720,
+   "command_buffers": 1,
+   "dispatches": 3,
+   "effective_gb_s": 269.7453,
+   "encoders": 1,
+   "endpoint_bytes": 48,
+   "endpoint_note": "4 f32 constants per tensor, not a streamed aux array",
+   "gpu_ns_median": 278791,
+   "gpu_ns_reps": [
+    278791,
+    279333,
+    279375,
+    277624,
+    278916,
+    278749,
+    278541,
+    278041,
+    278249,
+    279000,
+    279250
+   ],
+   "gpu_us_median": 278.791,
+   "kernel": "aux_u8_native_affine_q2_geo_tpr64_tg128",
+   "label": "native_u8_aux",
+   "materializes_f16_aux": false,
+   "weight_bytes": 75202560
+  },
+  "occupancy": {
+   "gpu_cores": 60,
+   "max_total_threads_per_threadgroup": 1024,
+   "occupancy_of_max_threads": 0.125,
+   "registers_note": "Metal pipeline state does not report register count on this toolchain",
+   "registers_per_thread": null,
+   "thread_execution_width": 32,
+   "threadgroups": 8704,
+   "threadgroups_per_core": 145.06666666666666,
+   "threads_per_threadgroup": 128
+  },
+  "output_cosine_mean": 0.9998673733400754,
+  "paired_reps": [
+   {
+    "delta_gpu_ns": 28792,
+    "incumbent_gpu_ns": 249999,
+    "native_gpu_ns": 278791
+   },
+   {
+    "delta_gpu_ns": 27958,
+    "incumbent_gpu_ns": 251375,
+    "native_gpu_ns": 279333
+   },
+   {
+    "delta_gpu_ns": 29750,
+    "incumbent_gpu_ns": 249625,
+    "native_gpu_ns": 279375
+   },
+   {
+    "delta_gpu_ns": 27999,
+    "incumbent_gpu_ns": 249625,
+    "native_gpu_ns": 277624
+   },
+   {
+    "delta_gpu_ns": 28167,
+    "incumbent_gpu_ns": 250749,
+    "native_gpu_ns": 278916
+   },
+   {
+    "delta_gpu_ns": 29083,
+    "incumbent_gpu_ns": 249666,
+    "native_gpu_ns": 278749
+   },
+   {
+    "delta_gpu_ns": 29333,
+    "incumbent_gpu_ns": 249208,
+    "native_gpu_ns": 278541
+   },
+   {
+    "delta_gpu_ns": 27958,
+    "incumbent_gpu_ns": 250083,
+    "native_gpu_ns": 278041
+   },
+   {
+    "delta_gpu_ns": 28499,
+    "incumbent_gpu_ns": 249750,
+    "native_gpu_ns": 278249
+   },
+   {
+    "delta_gpu_ns": 17000,
+    "incumbent_gpu_ns": 262000,
+    "native_gpu_ns": 279000
+   },
+   {
+    "delta_gpu_ns": 29667,
+    "incumbent_gpu_ns": 249583,
+    "native_gpu_ns": 279250
+   }
+  ],
+  "projections": [
+   {
+    "bias_max": -0.0010957717895507812,
+    "bias_min": -0.1705322265625,
+    "code_bytes": 22282240,
+    "cols": 5120,
+    "endpoint_bytes": 16,
+    "group_size": 64,
+    "groups": 1392640,
+    "incumbent_aux_bytes": 5570560,
+    "incumbent_weight_bytes": 27852800,
+    "name": "language_model.model.layers.3.mlp.gate_proj.weight",
+    "native_aux_bytes": 2785280,
+    "native_binds": "device const uchar* scales_u8 / biases_u8",
+    "native_materializes_f16_aux": false,
+    "native_weight_bytes": 25067520,
+    "output_cosine_vs_incumbent": 0.9999697607043455,
+    "output_relfro_vs_incumbent": 0.007776788276791196,
+    "rows": 17408,
+    "scale_lmax": -2.474221749687984,
+    "scale_lmin": -5.050100177681711
+   },
+   {
+    "bias_max": 0.00138092041015625,
+    "bias_min": -0.13671875,
+    "code_bytes": 22282240,
+    "cols": 5120,
+    "endpoint_bytes": 16,
+    "group_size": 64,
+    "groups": 1392640,
+    "incumbent_aux_bytes": 5570560,
+    "incumbent_weight_bytes": 27852800,
+    "name": "language_model.model.layers.3.mlp.up_proj.weight",
+    "native_aux_bytes": 2785280,
+    "native_binds": "device const uchar* scales_u8 / biases_u8",
+    "native_materializes_f16_aux": false,
+    "native_weight_bytes": 25067520,
+    "output_cosine_vs_incumbent": 0.9999780261536382,
+    "output_relfro_vs_incumbent": 0.0066293657007670675,
+    "rows": 17408,
+    "scale_lmax": -2.9011103632232236,
+    "scale_lmin": -5.128061719151423
+   },
+   {
+    "bias_max": 0.0014429092407226562,
+    "bias_min": -0.6044921875,
+    "code_bytes": 22282240,
+    "cols": 17408,
+    "endpoint_bytes": 16,
+    "group_size": 64,
+    "groups": 1392640,
+    "incumbent_aux_bytes": 5570560,
+    "incumbent_weight_bytes": 27852800,
+    "name": "language_model.model.layers.3.mlp.down_proj.weight",
+    "native_aux_bytes": 2785280,
+    "native_binds": "device const uchar* scales_u8 / biases_u8",
+    "native_materializes_f16_aux": false,
+    "native_weight_bytes": 25067520,
+    "output_cosine_vs_incumbent": 0.9996543331622423,
+    "output_relfro_vs_incumbent": 0.02629999837482214,
+    "rows": 5120,
+    "scale_lmax": -1.1973217943268557,
+    "scale_lmin": -5.264354781578675
+   }
+  ],
+  "reps": 11,
+  "shader": "crates/hawking-core/examples/aux_u8_ab.metal",
+  "timing": "MTLCommandBuffer GPUStartTime/GPUEndTime",
+  "token_projection": {
+   "formula": "measured_layer_delta_ns * 64",
+   "kind": "PROJECTION_ARITHMETIC_OVER_PROBE",
+   "layers": 64,
+   "not_a_resident_measurement": true,
+   "note": "64 identical MLP layers assumed. Not a protected generate gate and not a host+GPU complete-token measurement.",
+   "probe_delta_gpu_us": 29.041,
+   "probe_layer": 3,
+   "projected_mlp_delta_ms": 1.858624,
+   "projected_mlp_delta_us": 1858.624
+  },
+  "warmup": 5
+ },
+ "gpu_authority": false,
+ "lever_id": "quantize_aux_u8",
+ "measurement_provenance": {
+  "absolutes_are_measured_under_load": true,
+  "gpu_lane_lock_held": null,
+  "lane": "aux_u8_native",
+  "loadavg": "{ 8.19 6.61 6.17 }",
+  "measured_at": null,
+  "measured_at_source": "RETROFIT_UNKNOWN",
+  "receipt_regenerated_at": "2026-08-31T10:31:56Z",
+  "why": "this receipt predates measurement provenance; the raw capture carries no timestamp, so the measurement time is genuinely unknown and is recorded as unknown rather than invented"
+ },
+ "native_prove": null,
+ "recorded_by": "tools/future/aux_u8_native.py",
+ "schema": "hawking.future.aux_u8_native.v1",
+ "screened_fit": {
+  "bytes_added": {
+   "metadata": 1536
+  },
+  "bytes_removed": 534773760,
+  "evidence_tier": "FITTED_HELDOUT",
+  "logit_space": {
+   "argmax_agreement": 1.0,
+   "argmax_is_not_parity": true,
+   "failed": false,
+   "kind": "lm_head_on_last_layer_organ_output",
+   "kl_bar": 0.1,
+   "kl_nats": 0.0033654539143456084,
+   "layer": 63,
+   "n_hold_available": 2511,
+   "n_rows": 16,
+   "not_full_stack_generate": true,
+   "note": "LM head is the sealed HQ30UQ4 table. Inputs are last-layer organ outputs on prompt-split hold rows, not the residual stream. Full-stack generate identity is UNMEASURED (no GPU lease). Argmax is not parity.",
+   "parity_quantities": [
+    "kl_nats",
+    "top_k_agreement"
+   ],
+   "skipped": false,
+   "split": "hold",
+   "split_unit": "prompt_id",
+   "top_k": 5,
+   "top_k_agreement": 0.95,
+   "top_k_bar": 0.8
+  },
+  "organ_space": {
+   "cosine_mean": 0.998450457881851,
+   "failed": false,
+   "per_layer": [
+    {
+     "cosine": 0.9981680122708242,
+     "failed": false,
+     "layer": 3,
+     "n_hold_available": 2511,
+     "n_hold_prompts": 1,
+     "n_hold_used": 83,
+     "relfro": 0.06057541463154903,
+     "split": "hold",
+     "split_unit": "prompt_id"
+    },
+    {
+     "cosine": 0.9979150610606163,
+     "failed": false,
+     "layer": 31,
+     "n_hold_available": 2511,
+     "n_hold_prompts": 1,
+     "n_hold_used": 526,
+     "relfro": 0.06467233589472214,
+     "split": "hold",
+     "split_unit": "prompt_id"
+    },
+    {
+     "cosine": 0.9983246947873072,
+     "failed": false,
+     "layer": 38,
+     "n_hold_available": 2511,
+     "n_hold_prompts": 1,
+     "n_hold_used": 71,
+     "relfro": 0.05798899302220819,
+     "split": "hold",
+     "split_unit": "prompt_id"
+    },
+    {
+     "cosine": 0.9993940634086566,
+     "failed": false,
+     "layer": 63,
+     "n_hold_available": 2511,
+     "n_hold_prompts": 3,
+     "n_hold_used": 192,
+     "relfro": 0.034872798303535686,
+     "split": "hold",
+     "split_unit": "prompt_id"
+    }
+   ],
+   "relfro_mean": 0.05452738546300376
+  },
+  "weight_space": {
+   "bar": 0.05,
+   "early_stop_bar": 0.2,
+   "failed": false,
+   "n_layers": 4,
+   "note": "Rel-fro of reconstructed W vs incumbent affine-Q2 G=64. Group-size levers are a real LS refit at the new G, not an analytic bound. u8 keeps the 2-bit codes and requants aux.",
+   "per_layer": [
+    {
+     "failed": false,
+     "layer": 3,
+     "organs": {
+      "mlp.down": {
+       "failed": true,
+       "fit": {
+        "bias_max": 0.0014429092407226562,
+        "bias_min": -0.6044921875,
+        "endpoint_bytes": 8,
+        "kind": "u8",
+        "n_u8_bias": 1392640,
+        "n_u8_scale": 1392640,
+        "scale_lmax": -1.1973217943268557,
+        "scale_lmin": -5.264354781578675
+       },
+       "relfro": 0.06688257316763825,
+       "sensitivity": {
+        "concentrates_in_sensitive": false,
+        "could_take_relfro_mean": null,
+        "must_keep_relfro_mean": null,
+        "n_could_take": 0,
+        "n_must_keep": 0,
+        "why": "no paired must-keep / could-take W-space measurements"
+       },
+       "shape": [
+        5120,
+        17408
+       ],
+       "slices": []
+      },
+      "mlp.gate": {
+       "failed": false,
+       "fit": {
+        "bias_max": -0.0010957717895507812,
+        "bias_min": -0.1705322265625,
+        "endpoint_bytes": 8,
+        "kind": "u8",
+        "n_u8_bias": 1392640,
+        "n_u8_scale": 1392640,
+        "scale_lmax": -2.474221749687984,
+        "scale_lmin": -5.050100177681711
+       },
+       "relfro": 0.019323855232326534,
+       "sensitivity": {
+        "concentrates_in_sensitive": false,
+        "could_take_relfro_mean": null,
+        "must_keep_relfro_mean": null,
+        "n_could_take": 0,
+        "n_must_keep": 0,
+        "why": "no paired must-keep / could-take W-space measurements"
+       },
+       "shape": [
+        17408,
+        5120
+       ],
+       "slices": []
+      },
+      "mlp.up": {
+       "failed": false,
+       "fit": {
+        "bias_max": 0.00138092041015625,
+        "bias_min": -0.13671875,
+        "endpoint_bytes": 8,
+        "kind": "u8",
+        "n_u8_bias": 1392640,
+        "n_u8_scale": 1392640,
+        "scale_lmax": -2.9011103632232236,
+        "scale_lmin": -5.128061719151423
+       },
+       "relfro": 0.01610786672148858,
+       "sensitivity": {
+        "concentrates_in_sensitive": false,
+        "could_take_relfro_mean": null,
+        "must_keep_relfro_mean": null,
+        "n_could_take": 0,
+        "n_must_keep": 0,
+        "why": "no paired must-keep / could-take W-space measurements"
+       },
+       "shape": [
+        17408,
+        5120
+       ],
+       "slices": []
+      }
+     },
+     "relfro_down": 0.06688257316763825,
+     "relfro_gate": 0.019323855232326534,
+     "relfro_mean": 0.03410476504048445,
+     "relfro_up": 0.01610786672148858
+    },
+    {
+     "failed": false,
+     "layer": 31,
+     "organs": {
+      "mlp.down": {
+       "failed": true,
+       "fit": {
+        "bias_max": 0.0014286041259765625,
+        "bias_min": -0.63671875,
+        "endpoint_bytes": 8,
+        "kind": "u8",
+        "n_u8_bias": 1392640,
+        "n_u8_scale": 1392640,
+        "scale_lmax": -1.5452580371452325,
+        "scale_lmin": -6.09737453010159
+       },
+       "relfro": 0.06786393430813067,
+       "sensitivity": {
+        "concentrates_in_sensitive": false,
+        "could_take_relfro_mean": null,
+        "must_keep_relfro_mean": null,
+        "n_could_take": 0,
+        "n_must_keep": 0,
+        "why": "no paired must-keep / could-take W-space measurements"
+       },
+       "shape": [
+        5120,
+        17408
+       ],
+       "slices": []
+      },
+      "mlp.gate": {
+       "failed": false,
+       "fit": {
+        "bias_max": 0.0004591941833496094,
+        "bias_min": -0.197265625,
+        "endpoint_bytes": 8,
+        "kind": "u8",
+        "n_u8_bias": 1392640,
+        "n_u8_scale": 1392640,
+        "scale_lmax": -2.342049976579501,
+        "scale_lmin": -5.301159536454794
+       },
+       "relfro": 0.02283634782895225,
+       "sensitivity": {
+        "concentrates_in_sensitive": false,
+        "could_take_relfro_mean": null,
+        "must_keep_relfro_mean": null,
+        "n_could_take": 0,
+        "n_must_keep": 0,
+        "why": "no paired must-keep / could-take W-space measurements"
+       },
+       "shape": [
+        17408,
+        5120
+       ],
+       "slices": []
+      },
+      "mlp.up": {
+       "failed": false,
+       "fit": {
+        "bias_max": -0.00038170814514160156,
+        "bias_min": -0.1287841796875,
+        "endpoint_bytes": 8,
+        "kind": "u8",
+        "n_u8_bias": 1392640,
+        "n_u8_scale": 1392640,
+        "scale_lmax": -2.743712798737927,
+        "scale_lmin": -5.126775545340679
+       },
+       "relfro": 0.014354236736481042,
+       "sensitivity": {
+        "concentrates_in_sensitive": false,
+        "could_take_relfro_mean": null,
+        "must_keep_relfro_mean": null,
+        "n_could_take": 0,
+        "n_must_keep": 0,
+        "why": "no paired must-keep / could-take W-space measurements"
+       },
+       "shape": [
+        17408,
+        5120
+       ],
+       "slices": []
+      }
+     },
+     "relfro_down": 0.06786393430813067,
+     "relfro_gate": 0.02283634782895225,
+     "relfro_mean": 0.03501817295785466,
+     "relfro_up": 0.014354236736481042
+    },
+    {
+     "failed": false,
+     "layer": 38,
+     "organs": {
+      "mlp.down": {
+       "failed": true,
+       "fit": {
+        "bias_max": 0.0020809173583984375,
+        "bias_min": -0.515625,
+        "endpoint_bytes": 8,
+        "kind": "u8",
+        "n_u8_bias": 1392640,
+        "n_u8_scale": 1392640,
+        "scale_lmax": -1.3612207235677747,
+        "scale_lmin": -5.793914282423948
+       },
+       "relfro": 0.057476976666042276,
+       "sensitivity": {
+        "concentrates_in_sensitive": false,
+        "could_take_relfro_mean": null,
+        "must_keep_relfro_mean": null,
+        "n_could_take": 0,
+        "n_must_keep": 0,
+        "why": "no paired must-keep / could-take W-space measurements"
+       },
+       "shape": [
+        5120,
+        17408
+       ],
+       "slices": []
+      },
+      "mlp.gate": {
+       "failed": false,
+       "fit": {
+        "bias_max": 0.0013113021850585938,
+        "bias_min": -0.252197265625,
+        "endpoint_bytes": 8,
+        "kind": "u8",
+        "n_u8_bias": 1392640,
+        "n_u8_scale": 1392640,
+        "scale_lmax": -1.9158489699921584,
+        "scale_lmin": -5.4582474510098145
+       },
+       "relfro": 0.026699494198905833,
+       "sensitivity": {
+        "concentrates_in_sensitive": false,
+        "could_take_relfro_mean": null,
+        "must_keep_relfro_mean": null,
+        "n_could_take": 0,
+        "n_must_keep": 0,
+        "why": "no paired must-keep / could-take W-space measurements"
+       },
+       "shape": [
+        17408,
+        5120
+       ],
+       "slices": []
+      },
+      "mlp.up": {
+       "failed": false,
+       "fit": {
+        "bias_max": 0.0012645721435546875,
+        "bias_min": -0.1591796875,
+        "endpoint_bytes": 8,
+        "kind": "u8",
+        "n_u8_bias": 1392640,
+        "n_u8_scale": 1392640,
+        "scale_lmax": -2.7590094641134004,
+        "scale_lmin": -5.232421734475666
+       },
+       "relfro": 0.018333497556125747,
+       "sensitivity": {
+        "concentrates_in_sensitive": false,
+        "could_take_relfro_mean": null,
+        "must_keep_relfro_mean": null,
+        "n_could_take": 0,
+        "n_must_keep": 0,
+        "why": "no paired must-keep / could-take W-space measurements"
+       },
+       "shape": [
+        17408,
+        5120
+       ],
+       "slices": []
+      }
+     },
+     "relfro_down": 0.057476976666042276,
+     "relfro_gate": 0.026699494198905833,
+     "relfro_mean": 0.034169989473691285,
+     "relfro_up": 0.018333497556125747
+    },
+    {
+     "failed": false,
+     "layer": 63,
+     "organs": {
+      "mlp.down": {
+       "failed": false,
+       "fit": {
+        "bias_max": 0.002521514892578125,
+        "bias_min": -0.418212890625,
+        "endpoint_bytes": 8,
+        "kind": "u8",
+        "n_u8_bias": 1392640,
+        "n_u8_scale": 1392640,
+        "scale_lmax": -1.6194981126039307,
+        "scale_lmin": -5.362693140512981
+       },
+       "relfro": 0.04443043767937101,
+       "sensitivity": {
+        "concentrates_in_sensitive": false,
+        "could_take_relfro_mean": null,
+        "must_keep_relfro_mean": null,
+        "n_could_take": 0,
+        "n_must_keep": 0,
+        "why": "no paired must-keep / could-take W-space measurements"
+       },
+       "shape": [
+        5120,
+        17408
+       ],
+       "slices": []
+      },
+      "mlp.gate": {
+       "failed": false,
+       "fit": {
+        "bias_max": 0.002910614013671875,
+        "bias_min": -0.361328125,
+        "endpoint_bytes": 8,
+        "kind": "u8",
+        "n_u8_bias": 1392640,
+        "n_u8_scale": 1392640,
+        "scale_lmax": -2.1208130035358725,
+        "scale_lmin": -5.469048636127162
+       },
+       "relfro": 0.03290572729777579,
+       "sensitivity": {
+        "concentrates_in_sensitive": false,
+        "could_take_relfro_mean": 0.032139697589130205,
+        "must_keep_relfro_mean": 0.033185868748864124,
+        "n_could_take": 1,
+        "n_must_keep": 3,
+        "why": "must-keep mean rel-fro 0.0331859 vs could-take 0.0321397; injury is not concentrated on the high-sensitivity slices"
+       },
+       "shape": [
+        17408,
+        5120
+       ],
+       "slices": [
+        {
+         "region_id": "L63.mlp.gate.channel.rows_0_4352",
+         "relfro": 0.03388221333696124,
+         "row0": 0,
+         "row1": 4352,
+         "sensitivity": "MUST_KEEP"
+        },
+        {
+         "region_id": "L63.mlp.gate.channel.rows_4352_8704",
+         "relfro": 0.032882668348378497,
+         "row0": 4352,
+         "row1": 8704,
+         "sensitivity": "MUST_KEEP"
+        },
+        {
+         "region_id": "L63.mlp.gate.channel.rows_8704_13056",
+         "relfro": 0.032792724561252644,
+         "row0": 8704,
+         "row1": 13056,
+         "sensitivity": "MUST_KEEP"
+        },
+        {
+         "region_id": "L63.mlp.gate.channel.rows_13056_17408",
+         "relfro": 0.032139697589130205,
+         "row0": 13056,
+         "row1": 17408,
+         "sensitivity": "COULD_TAKE"
+        }
+       ]
+      },
+      "mlp.up": {
+       "failed": false,
+       "fit": {
+        "bias_max": 0.0014142990112304688,
+        "bias_min": -0.2578125,
+        "endpoint_bytes": 8,
+        "kind": "u8",
+        "n_u8_bias": 1392640,
+        "n_u8_scale": 1392640,
+        "scale_lmax": -2.1859963466061565,
+        "scale_lmin": -5.5163015209777075
+       },
+       "relfro": 0.024837724056364908,
+       "sensitivity": {
+        "concentrates_in_sensitive": false,
+        "could_take_relfro_mean": null,
+        "must_keep_relfro_mean": null,
+        "n_could_take": 0,
+        "n_must_keep": 0,
+        "why": "no paired must-keep / could-take W-space measurements"
+       },
+       "shape": [
+        17408,
+        5120
+       ],
+       "slices": []
+      }
+     },
+     "relfro_down": 0.04443043767937101,
+     "relfro_gate": 0.03290572729777579,
+     "relfro_mean": 0.03405796301117057,
+     "relfro_up": 0.024837724056364908
+    }
+   ],
+   "relfro_mean": 0.03433772262080024,
+   "sensitivity": {
+    "concentrates_in_sensitive": false,
+    "could_take_relfro_mean": 0.032139697589130205,
+    "must_keep_relfro_mean": 0.033185868748864124,
+    "n_could_take": 1,
+    "n_must_keep": 3,
+    "why": "must-keep mean rel-fro 0.0331859 vs could-take 0.0321397; injury is not concentrated on the high-sensitivity slices"
+   }
+  }
+ },
+ "seal_sha256": "62f47b9a6de61dc80b4fd1c700aebcd25c4585497938a5d24f51a141715ce5cb",
+ "shader_invariants": {
+  "binds_u8_aux": true,
+  "forbidden_hits": [],
+  "in_register_exp": true,
+  "materializes_f16_aux": false,
+  "missing_required": [],
+  "native_binds_half_aux": false,
+  "ok": true,
+  "shader": "crates/hawking-core/examples/aux_u8_ab.metal"
+ },
+ "sources": [
+  "receipts/future/AUX_CAPABILITY_SCREEN.json",
+  "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+  "receipts/future/MLP_ALU_ROOFLINE.json",
+  "crates/hawking-core/examples/aux_u8_ab.metal",
+  "crates/hawking-core/examples/aux_u8_ab.rs"
+ ],
+ "took_gpu_lease": true,
+ "version": 1
+}

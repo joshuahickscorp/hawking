@@ -301,15 +301,41 @@ fn measure_organs(session: &Qwen38HybridDecodeSession, reps: usize) -> Result<Va
         let mut gpu = Vec::new();
         let mut wait = Vec::new();
         let mut disp = 0u64;
+        let mut no_timestamp = 0usize;
+        // An EMPTY command buffer often returns no GPUEndTime-GPUStartTime on this
+        // device: the observed reps are 41-458 ns, at or below the driver's
+        // timestamp resolution. Aborting the whole organ census because a
+        // ZERO-WORK control sometimes has no timestamp is the wrong failure mode -
+        // this control exists to establish the floor, and "below resolution" is
+        // information about that floor rather than a reason to discard every real
+        // organ measurement behind it. Two protected windows were spent this way,
+        // failing at rep 4 of 7 and then rep 2 of 7.
+        // Refuse only if NO rep produced a timestamp, and record the misses so the
+        // control's own reliability is on the receipt rather than implied.
         for i in 0..reps {
             let t = session
                 .measure_isolated_organ("noop_empty")
                 .map_err(|e| e.to_string())?;
-            let g = t.gpu_ns.ok_or_else(|| "noop_empty: no GPU timestamp".to_string())?;
-            eprintln!("  noop_empty rep{i} gpu={g} wait={} disp={}", t.wait_ns, t.dispatches);
-            gpu.push(g);
-            wait.push(t.wait_ns);
+            match t.gpu_ns {
+                Some(g) => {
+                    eprintln!("  noop_empty rep{i} gpu={g} wait={} disp={}", t.wait_ns, t.dispatches);
+                    gpu.push(g);
+                    wait.push(t.wait_ns);
+                }
+                None => {
+                    no_timestamp += 1;
+                    eprintln!("  noop_empty rep{i} gpu=<below timestamp resolution> wait={}", t.wait_ns);
+                    wait.push(t.wait_ns);
+                }
+            }
             disp = t.dispatches;
+        }
+        if gpu.is_empty() {
+            return Err(
+                "noop_empty: no rep produced a GPU timestamp; the floor control \
+                 measured nothing at all"
+                    .to_string(),
+            );
         }
         json!({
             "organ": "noop_empty",
@@ -321,6 +347,8 @@ fn measure_organs(session: &Qwen38HybridDecodeSession, reps: usize) -> Result<Va
             "wait_ns_median": median_u64(wait),
             "dispatches": disp,
             "n_reps": reps,
+            "n_reps_with_timestamp": gpu.len(),
+            "n_reps_below_timestamp_resolution": no_timestamp,
             "dense_w_materialized": 0,
         })
     };

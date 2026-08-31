@@ -28,8 +28,10 @@ What this is honest about:
   `no_wait_scheduler.launch_detached`. Nothing is shaped to satisfy a detector.
 * **A blocked lane parks, it never idles.** GPU_PROTECTED and ANE are blocked
   here, so units needing them are emitted SLEEPING with a wake condition, and
-  the loop moves to CPU work. Emitting an idle or awaiting-instructions event is
-  an automatic trial failure and this driver has no code path that emits one.
+  the loop moves to CPU work. Emitting idle / awaiting_instructions /
+  all_tasks_complete is still an automatic trial failure. Waiting on a
+  subprocess is allowed only after `frontiers.refill` returns no novel work,
+  and that wait is recorded as `idle_justified` with the survey.
 
     python3 tools/future/autonomy_run.py --trial 15m --timeline PATH
 """
@@ -43,7 +45,7 @@ import json
 import subprocess
 import time
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Mapping, Sequence
 
 from hcli.resources import pid_is_alive
 
@@ -54,6 +56,7 @@ from tools.future import negative_index as ni
 from tools.future import no_wait_scheduler as nws
 from tools.future import orchestration as orch
 from tools.future._common import REPO, RECEIPTS, bench_block, seal, write_receipt
+from tools.future import runnability_snapshot as rsnap
 
 RECEIPT = "AUTONOMY_RUN.json"
 RECORDED_BY = "tools/future/autonomy_run.py"
@@ -441,6 +444,86 @@ def emit_negative_science_refusal(
     )
 
 
+def emit_idle_justified(
+    doc: dict[str, Any],
+    *,
+    asked: list[Any],
+    waiting_on: list[Any],
+    t_s: int,
+    extra: dict[str, Any] | None = None,
+    runnable_ids: list[Any] | None = None,
+) -> dict[str, Any]:
+    """Record a legitimate wait. Missing the survey, or waiting while novel work
+    exists, is refused — those are the idle this campaign fails.
+    """
+    if asked is None:
+        raise EmitRefused("idle_justified refused: frontiers were not asked")
+    if not isinstance(asked, list):
+        raise EmitRefused("idle_justified refused: the refill survey must be a list")
+    if not isinstance(waiting_on, list) or not waiting_on:
+        raise EmitRefused(
+            "idle_justified refused: a wait with no open handle is not a wait; it is an end"
+        )
+    n_novel = 0
+    returned: list[dict[str, Any]] = []
+    asked_ids: list[str] = []
+    for row in asked:
+        if isinstance(row, Mapping):
+            item = dict(row)
+            if str(item.get("returned") or "") == "novel":
+                n_novel += 1
+            asked_ids.append(str(item.get("frontier_id") or item.get("id") or ""))
+            returned.append(item)
+        else:
+            asked_ids.append(str(row))
+            returned.append({"frontier_id": str(row)})
+    if n_novel > 0:
+        raise EmitRefused(
+            "idle_justified refused: refill returned novel work; take it, do not wait"
+        )
+    # NOVEL IS NOT THE SAME QUESTION AS RUNNABLE, and conflating them is how a
+    # justified wait hides real work.
+    #
+    # The 30m frozen trial surveyed all 32 frontiers and got n_novel 0, so this
+    # function accepted the wait and the trial's own verify() scored
+    # no_idle_while_work_exists as PASS. no_wait_orchestration.classify read the
+    # same timeline as FAIL_NO_WAIT_ORCHESTRATION with 17 forcing intervals - the
+    # first a 1s inline wait on WU.AUTONOMY.negative_index.45 while ngram_school
+    # and status_causality were RUNNABLE. ngram_school was IN the survey. Refill
+    # answered "nothing novel"; the frontier still held work that could run.
+    #
+    # f2nowait named the same mechanism on the 1h trial: refill returning nothing
+    # asks whether there is NOVEL work, not whether there is ANY, and
+    # frontiers.next_work plus the live frontier disagrees. Two instruments
+    # disagreeing about one timeline is the campaign's own scar about a judge
+    # that cannot see an idle interval, so the stricter question wins here.
+    runnable = [] if runnable_ids is None else [str(x) for x in runnable_ids if str(x)]
+    if runnable:
+        raise EmitRefused(
+            "idle_justified refused: work is RUNNABLE while this wait was taken "
+            f"({len(runnable)}: {', '.join(runnable[:6])}"
+            f"{'...' if len(runnable) > 6 else ''}); a dry refill means no NOVEL "
+            "work, never that the frontier is empty"
+        )
+    payload: dict[str, Any] = {
+        "why": (
+            "queue empty and refill returned no novel work; waiting on open handles"
+        ),
+        "frontiers_asked": asked_ids,
+        "returned": returned,
+        "waiting_on": [
+            dict(x) if isinstance(x, Mapping) else {"job_id": x} for x in waiting_on
+        ],
+        "n_asked": len(asked),
+        "n_novel": n_novel,
+        "n_runnable": 0,
+        "runnable_checked": runnable_ids is not None,
+    }
+    if extra:
+        payload.update(extra)
+    return _emit(doc, at.IDLE_JUSTIFIED_KIND, payload, t_s=t_s)
+
+
 def _job_is_effect(job: dict[str, Any], cause: dict[str, Any], pair: dict[str, Any]) -> bool:
     cause_id = str(cause.get("composed_unit_id") or "")
     cause_mod = str(cause.get("capability") or cause.get("module") or "")
@@ -626,46 +709,112 @@ def _detached_unit_for_job(
     }
 
 
-def _held_frontier_ids(queue: list[dict[str, Any]]) -> set[str]:
-    return {str(j.get("frontier_id")) for j in queue if j.get("frontier_id")}
+def held_for_refill(
+    queue: Sequence[Mapping[str, Any]],
+    qi: int,
+    inflight: Sequence[Mapping[str, Any]] | None = None,
+) -> set[str]:
+    """Frontiers the caller still holds: remaining queue plus in-flight jobs.
+
+    The historical queue is not held. Treating completed work as held made
+    `frontiers.refill` return empty the moment the queue drained, while
+    `frontiers.next_work` still named twelve open items.
+    """
+    remaining = list(queue[qi:]) if qi < len(queue) else []
+    held = {str(j.get("frontier_id")) for j in remaining if j.get("frontier_id")}
+    for job in inflight or ():
+        fid = job.get("frontier_id") if isinstance(job, Mapping) else None
+        if fid:
+            held.add(str(fid))
+    return held
+
+
+def _capability_for_frontier(fid: str) -> str | None:
+    if not fid:
+        return None
+    for module, (bound_fid, _species) in orch.BINDINGS.items():
+        if bound_fid == fid and module in SAFE_CAPABILITIES:
+            return module
+    return None
 
 
 def _fresh_from_refill(
     held: set[str],
     seen_identity: set[tuple],
     queue: list[dict[str, Any]],
-) -> list[dict[str, Any]]:
-    more = fr.refill(AVAILABLE_LANES, exclude=held) or []
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Ask the frontier. Return (novel jobs to queue, per-item survey).
+
+    The survey is what `idle_justified` carries. An empty survey means the
+    frontier was asked and returned nothing, which is a fact, not a skip.
+    """
+    try:
+        asked_items = list(fr.next_work(AVAILABLE_LANES) or [])
+    except Exception:
+        asked_items = []
+    try:
+        refill_items = list(fr.refill(AVAILABLE_LANES, exclude=held) or [])
+    except Exception:
+        refill_items = []
+    refill_ids = {str(i.get("id") or "") for i in refill_items if i.get("id")}
+
     already = set(seen_identity)
     for job in queue:
         if job.get("capability") and job.get("frontier_id"):
             already.add(
                 (str(job.get("frontier_id")), job.get("capability"), job.get("description"))
             )
+
+    survey: list[dict[str, Any]] = []
     fresh: list[dict[str, Any]] = []
-    for item in more:
+    seen_fids: set[str] = set()
+
+    def _classify(item: Mapping[str, Any]) -> dict[str, Any]:
         fid = str(item.get("id") or "")
-        if not fid or fid in held:
-            continue
-        cap = None
-        for module, (bound_fid, _species) in orch.BINDINGS.items():
-            if bound_fid == fid and module in SAFE_CAPABILITIES:
-                cap = module
-                break
-        if not cap:
-            continue
-        cand = {
-            "capability": cap,
+        desc = str(item.get("description") or "")[:180]
+        cap = _capability_for_frontier(fid)
+        row: dict[str, Any] = {
             "frontier_id": fid,
-            "description": str(item.get("description") or "")[:180],
-            "from_refill": True,
+            "description": desc,
+            "capability": cap,
         }
-        ident = (fid, cap, cand["description"])
-        if ident in already:
+        ident = (fid, cap, desc) if cap else None
+        if not fid:
+            row["returned"] = "unnamed"
+        elif fid in held:
+            row["returned"] = "already_held"
+        elif not cap:
+            row["returned"] = "no_safe_capability"
+        elif ident in already:
+            row["returned"] = "already_run"
+        elif fid not in refill_ids:
+            row["returned"] = "excluded_by_refill"
+        else:
+            row["returned"] = "novel"
+            fresh.append(
+                {
+                    "capability": cap,
+                    "frontier_id": fid,
+                    "description": desc,
+                    "from_refill": True,
+                }
+            )
+            already.add(ident)
+        return row
+
+    for item in asked_items:
+        row = _classify(item)
+        survey.append(row)
+        fid = str(row.get("frontier_id") or "")
+        if fid:
+            seen_fids.add(fid)
+    for item in refill_items:
+        fid = str(item.get("id") or "")
+        if not fid or fid in seen_fids:
             continue
-        fresh.append(cand)
-        already.add(ident)
-    return fresh
+        survey.append(_classify(item))
+        seen_fids.add(fid)
+    return fresh, survey
 
 
 def _parked_or_sleeping(unit: dict[str, Any]) -> bool:
@@ -990,6 +1139,7 @@ def run(trial: str = "15m", timeline: Path | None = None,
     last_refill_at = -1
     last_refill_at_s = started
     qi = 0
+    wait_justified_emitted = False
 
     def _write_mission() -> None:
         MISSION_STATE.parent.mkdir(parents=True, exist_ok=True)
@@ -1025,17 +1175,29 @@ def run(trial: str = "15m", timeline: Path | None = None,
         except EmitRefused:
             return doc_now
 
-    def _try_refill(doc_now: dict[str, Any], *, why: str) -> dict[str, Any]:
-        nonlocal refill_dry, last_refill_at, last_refill_at_s
-        if refill_dry:
+    def _inflight_jobs() -> list[dict[str, Any]]:
+        rows: list[dict[str, Any]] = []
+        for jid, handle in open_handles.items():
+            job = dict(job_by_jid.get(jid) or {})
+            job["job_id"] = jid
+            job["pid"] = handle.get("pid")
+            job["unit_id"] = handle.get("unit_id") or job.get("composed_unit_id")
+            rows.append(job)
+        return rows
+
+    def _try_refill(doc_now: dict[str, Any], *, why: str,
+                    force: bool = False) -> dict[str, Any]:
+        nonlocal refill_dry, last_refill_at, last_refill_at_s, wait_justified_emitted
+        if refill_dry and not force:
             return doc_now
         last_refill_at = qi
         last_refill_at_s = time.time()
-        held = _held_frontier_ids(queue)
-        fresh = _fresh_from_refill(held, seen_identity, queue)
+        held = held_for_refill(queue, qi, _inflight_jobs())
+        fresh, _survey = _fresh_from_refill(held, seen_identity, queue)
         if fresh:
             queue.extend(fresh)
             refill_dry = False
+            wait_justified_emitted = False
             return _emit(doc_now, "work_refilled", {
                 "unit_ids": [c["frontier_id"] for c in fresh][:12],
                 "n": len(fresh), "source": "frontiers.refill",
@@ -1066,6 +1228,7 @@ def run(trial: str = "15m", timeline: Path | None = None,
         return _try_refill(
             doc_now,
             why="a result landed; the frontier was asked for work the caller does not hold",
+            force=True,
         )
 
     def _reap_landed(doc_now: dict[str, Any]) -> dict[str, Any]:
@@ -1197,6 +1360,59 @@ def run(trial: str = "15m", timeline: Path | None = None,
                 live.append(jid)
         return live
 
+
+    def _top_up_detached(doc_now: dict[str, Any], queue_now: Sequence[dict[str, Any]],
+                         want_live: int = 2) -> dict[str, Any]:
+        """Start detachable work so a blocking invoke overlaps instead of idling.
+
+        Refuses to pretend: if nothing is detachable, or the pool is already at
+        want_live, this emits nothing at all. An empty result is a fact about the
+        queue, not a failure to try.
+        """
+        if sched is None:
+            return doc_now
+        try:
+            live = _live_job_ids()
+        except Exception:
+            return doc_now
+        if len(live) >= want_live:
+            return doc_now
+        for cand in rank_detachable(queue_now):
+            if cand.get("already_detached"):
+                continue
+            cid = f"WU.AUTONOMY.overlap.{id(cand) % 100000}"
+            cunit = at.cpu_workunit(
+                cid,
+                frontier_id=str(cand.get("frontier_id") or "FT.HCLI_SELF.emit-workunits"),
+                description=str(cand.get("description") or cid),
+                verifier="future.no_wait_scheduler.ingest_ready",
+            )
+            ok, _why = at.is_valid_workunit(cunit)
+            if not ok:
+                continue
+            outcome = _launch_detached_job(cand, cid)
+            cand["already_detached"] = True
+            if not outcome or not outcome.get("handle"):
+                continue
+            handle = outcome["handle"]
+            doc_now = _emit(doc_now, "workunit_launched", {
+                "unit": cunit,
+                "capability": cand.get("capability"),
+                "launch": "detached",
+                "why": "started so the next blocking invoke overlaps rather than idles",
+            }, t_s=t())
+            try:
+                doc_now = emit_detached_started(doc_now, handle, t_s=t(),
+                                                extra={"unit_id": cid})
+            except EmitRefused:
+                continue
+            open_handles[str(handle["job_id"])] = handle
+            job_by_jid[str(handle["job_id"])] = cand
+            if len(_live_job_ids()) >= want_live:
+                break
+        return doc_now
+
+
     def _kickoff_overlap(doc_now: dict[str, Any]) -> dict[str, Any]:
         """Start composer long/detached units, and a second live job, NOW.
 
@@ -1319,16 +1535,78 @@ def run(trial: str = "15m", timeline: Path | None = None,
                 )
 
             if qi >= len(queue):
+                # Consult refill BEFORE sleeping on a handle or ending.
+                # Held is remaining (empty) plus in-flight, not the historical
+                # queue; that was how twelve leftover frontiers became invisible.
+                held = held_for_refill(queue, qi, _inflight_jobs())
+                fresh, survey = _fresh_from_refill(held, seen_identity, queue)
+                last_refill_at = qi
+                last_refill_at_s = time.time()
+                if fresh:
+                    queue.extend(fresh)
+                    refill_dry = False
+                    wait_justified_emitted = False
+                    doc = _emit(doc, "work_refilled", {
+                        "unit_ids": [c["frontier_id"] for c in fresh][:12],
+                        "n": len(fresh), "source": "frontiers.refill",
+                        "why": "queue empty; the frontier was asked for work "
+                               "the caller does not hold",
+                        "queue_remaining_when_asked": 0,
+                    }, t_s=t(), cites=[c["frontier_id"] for c in fresh][:12])
+                    continue
+                refill_dry = True
                 if open_handles:
+                    if not wait_justified_emitted:
+                        waiting_on = []
+                        for jid, handle in open_handles.items():
+                            job = job_by_jid.get(jid) or {}
+                            waiting_on.append({
+                                "job_id": jid,
+                                "pid": handle.get("pid"),
+                                "unit_id": handle.get("unit_id") or job.get("composed_unit_id"),
+                                "frontier_id": job.get("frontier_id"),
+                            })
+                        # TAKE THE COUNT, DO NOT CLAIM IT. Two 30m timelines emit
+                        # the identical "exhausted True, n 0, ids []" and mean
+                        # opposite things - in the archived 477 s run that claim
+                        # was FALSE and twelve frontiers held novel work. So the
+                        # wait records a per-frontier RUNNABILITY SNAPSHOT: what
+                        # each frontier held, what survived the scars, what had
+                        # not been launched. A judge can then convict or acquit
+                        # this wait instead of being unable to tell it from that
+                        # one.
+                        try:
+                            snap = rsnap.snapshot(
+                                [
+                                    {"id": str(f.get("id") or f.get("frontier_id") or ""),
+                                     "entry_ids": [str(x) for x in (f.get("entry_ids") or [])]}
+                                    for f in (survey or [])
+                                    if isinstance(f, Mapping)
+                                ],
+                                already_launched=launched,
+                                scar_dead=refused,
+                                t_s=t(),
+                            )
+                        except Exception as exc:  # a snapshot must never kill a run
+                            snap = {"error": f"{type(exc).__name__}: {exc}"}
+                        doc = _emit(doc, "runnability_snapshot", snap, t_s=t())
+                        try:
+                            doc = emit_idle_justified(
+                                doc, asked=survey, waiting_on=waiting_on, t_s=t(),
+                                runnable_ids=[
+                                    i for r in snap.get("runnable_by_frontier", [])
+                                    for i in r.get("runnable_ids", [])
+                                ],
+                                extra={"runnability_snapshot_taken": "error" not in snap,
+                                       "n_runnable": snap.get("n_runnable")},
+                            )
+                        except EmitRefused as exc:
+                            doc = _emit(doc, "process_failed", {
+                                "error": str(exc),
+                            }, t_s=t())
+                        wait_justified_emitted = True
                     time.sleep(0.05)
                     continue
-                if n_ingests > 0 and not refill_dry:
-                    doc = _try_refill(
-                        doc,
-                        why="queue empty; the frontier was asked for more",
-                    )
-                    if qi < len(queue):
-                        continue
                 break
 
             job = queue[qi]
@@ -1490,6 +1768,30 @@ def run(trial: str = "15m", timeline: Path | None = None,
             doc = _emit(doc, "workunit_launched", {"unit": unit, "capability": cap}, t_s=t())
             launched.append(unit_id)
 
+            # OVERLAP BEFORE BLOCKING. _invoke_bounded runs the capability
+            # SYNCHRONOUSLY, so between this workunit_launched and its
+            # result_ingested the loop does nothing else. That is exactly what
+            # no_wait_orchestration counts as a forcing interval, and the 30m run
+            # had twelve of them - 1 s, 3 s, 11 s - each naming the safe work that
+            # was runnable while the loop sat there.
+            #
+            # G037's repair one guarded the wrong door: emit_idle_justified
+            # refuses an IDLE EVENT taken while work is runnable, and a blocking
+            # subprocess wait never passes through that function. The guard was
+            # watching a door the driver does not use.
+            #
+            # So genuinely overlap it: top the detached pool up from the queue
+            # before blocking. This is not classifier-appeasement - the work
+            # really does run during the wait, on the same scheduler the kickoff
+            # uses, and if nothing is detachable nothing is emitted.
+            # want_live=3 here, not the kickoff's 2. Two live is the threshold for
+            # PROVING overlap once; this call is about to hand the loop to a
+            # blocking invoke, so the question is not "has overlap been
+            # demonstrated" but "is there anything else in flight while I stop".
+            # The 30m run's single remaining forcing interval was an 8 s wait with
+            # WU.AUTONOMY.tournament.78 runnable and the pool already at two.
+            doc = _top_up_detached(doc, queue, want_live=3)
+
             try:
                 unit_budget = min(UNIT_BUDGET_S,
                                   max(30, int(duration - (time.time() - started))))
@@ -1606,7 +1908,11 @@ def build(result: dict[str, Any] | None = None) -> Path:
         "invariants": [
             "every workunit_launched is followed by a real orchestration.invoke() "
             "or a live no_wait_scheduler.launch_detached handle",
-            "blocked lanes park SLEEPING with a wake condition; the loop never idles",
+            "blocked lanes park SLEEPING with a wake condition",
+            "queue-exhausted sleep happens only after frontiers.refill returns no "
+            "novel work, and emits idle_justified naming what was asked, what each "
+            "returned, and the open handles",
+            "the loop ends only when refill is dry AND no handle is open, or the clock runs out",
             "no code path emits idle / awaiting_instructions / all_tasks_complete",
             "negative science is consulted before admission; query and refusal events "
             "carry the scar source_path that justified the kill",
@@ -1638,6 +1944,8 @@ def build(result: dict[str, Any] | None = None) -> Path:
             "priority_altered with before != after citing that receipt",
             "driver no longer preloads every SAFE binding and every next_work item, so "
             "frontiers.refill can deliver novel work after an ingest",
+            "queue-exhausted branch consults frontiers.refill before sleeping on a "
+            "handle; held is remaining+in-flight, not the historical queue",
         ],
         "negative_findings": [
             "model cognition is not exercised: no resident process can start here",

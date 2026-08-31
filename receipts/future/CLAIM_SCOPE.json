@@ -1,0 +1,854 @@
+{
+ "axes": [
+  "model",
+  "organ",
+  "machine"
+ ],
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T12:09:03Z",
+  "recorded_by": "tools/future/claim_scope.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. Available-set and seal times are read from ModelLake metadata, EXTERNAL_SPECIMEN_SEAL, and SPECIMEN_VERIFICATION. Scope begins MODEL_LOCAL / ORGAN_LOCAL / MACHINE_LOCAL and cannot widen without a named replicating specimen. Cited GB/s, ns, and ms figures are copied from named prior receipts and are not remeasured here.",
+ "evidence_class": "STATIC_ONLY",
+ "experiment_identity": {
+  "code_and_build_identity": {
+   "binary_sha256_pin": "d34044cffae8f320",
+   "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
+   "git_head": "6fc77f1697cc0a68b68bb744e1932c7e94b38d9a",
+   "git_head_short": "6fc77f169",
+   "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
+  },
+  "laws_scars_version": {
+   "digest": "f349f610044ff9fb59e90f8e952e18b4c8c67d38f6ff7d3270d6024f7c697905",
+   "missing": [],
+   "pins": {
+    "receipts/future/CAMPAIGN_SCARS.json": "aae016eaa94f4cfdc5f6724d524125bbb56fb6e317115799c0f70278e1ffc4a6",
+    "receipts/future/MLP_STRUCTURED_OPERATOR.json": "0f03b8e60ad93328d85cda7a95030c6cbf966fc917a19d5bca1cd5ea285ae8d7",
+    "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "f73fd58d632d9ddfbc7d6a24b82d419ab1546ac4963bd56816025ee4e0e3b0db",
+    "receipts/future/ODYSSEY2_LAW_STORE.json": "0f31cd91bfcb7613067cb70e754c5209f55abb8053faa73abd72c2c503485ac3"
+   },
+   "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
+  },
+  "machine_genome": {
+   "arch": "arm64",
+   "cpu_cores": 28,
+   "gpu_cores": 60,
+   "note": "Identity pin of the machine the campaign ran on. Bandwidth figures in that receipt are NOT copied here and are NOT a roof.",
+   "readable": true,
+   "receipt": "receipts/headless/MACHINE_GENOME.json",
+   "remeasured": false,
+   "schema": "hawking.accelerator.machine_genome.v1",
+   "soc": "Apple M3 Ultra"
+  },
+  "model_revision": {
+   "model_id": "qwen3.8-27b-sealed-3.14",
+   "resident_identity": "sealed-3.14",
+   "source": "hcli/hawking-native.sealed-3.14.json (cited; packed parent of the campaign)",
+   "weight_specimen": "qwen3.8-27b-abliterated-bf16@local"
+  },
+  "resident_identity": {
+   "bound": true,
+   "nx_id": {
+    "model_id": "qwen3.8-27b-sealed-3.14",
+    "protocol": "hawking.qwen38.resident.v1",
+    "resident_identity": "sealed-3.14"
+   },
+   "resident_identity": "sealed-3.14",
+   "sealed_model_id": "qwen3.8-27b-sealed-3.14",
+   "source": "receipts/future/RESIDENT_IDENTITY.json"
+  },
+  "specimen_seal": {
+   "kind": "authorized_external_specimen",
+   "n_files": 31,
+   "source": "receipts/future/EXTERNAL_SPECIMEN_SEAL.json",
+   "specimen": "qwen3.8-27b-abliterated-bf16@local",
+   "status": "SEALED",
+   "tree_digest": "c7c81652283f9324994e0e1a60e52b0a8bf92f9a0d2167d2af2ab341d3073750"
+  }
+ },
+ "experiment_identity_fields": [
+  "specimen_seal",
+  "model_revision",
+  "resident_identity",
+  "code_and_build_identity",
+  "machine_genome",
+  "laws_scars_version"
+ ],
+ "gaps_closed": [
+  "laws carry the available-specimen set at as_of and a three-axis scope tier",
+  "widen() raises ScopeViolation without a named replicating specimen",
+  "failed transfer is recorded and does not move a tier",
+  "hindsight contamination (a later-sealed specimen in an earlier available-set) raises",
+  "every experiment binds the six identity fields or is refused",
+  "campaign laws retro-scoped to qwen3.8-27b sealed-3.14; over-broad forms narrowed and recorded",
+  "seal times read from EXTERNAL_SPECIMEN_SEAL / SPECIMEN_VERIFICATION / live HF metadata, not a fixture"
+ ],
+ "gpu_authority": false,
+ "laws": [
+  {
+   "as_of": "2026-08-31T07:51:57Z",
+   "as_of_source": "receipts/future/MLP_ALU_ROOFLINE.json git commit time (landing, not a measurement clock)",
+   "available_specimens": [
+    "qwen3.8-27b-abliterated-bf16@local"
+   ],
+   "evidence_refs": [
+    "receipts/future/MLP_ALU_ROOFLINE.json"
+   ],
+   "evidence_universe": "within currently sealed specimens qwen3.8-27b-abliterated-bf16@local",
+   "experiment_identity": {
+    "code_and_build_identity": {
+     "binary_sha256_pin": "d34044cffae8f320",
+     "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
+     "git_head": "6fc77f1697cc0a68b68bb744e1932c7e94b38d9a",
+     "git_head_short": "6fc77f169",
+     "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
+    },
+    "laws_scars_version": {
+     "digest": "f349f610044ff9fb59e90f8e952e18b4c8c67d38f6ff7d3270d6024f7c697905",
+     "missing": [],
+     "pins": {
+      "receipts/future/CAMPAIGN_SCARS.json": "aae016eaa94f4cfdc5f6724d524125bbb56fb6e317115799c0f70278e1ffc4a6",
+      "receipts/future/MLP_STRUCTURED_OPERATOR.json": "0f03b8e60ad93328d85cda7a95030c6cbf966fc917a19d5bca1cd5ea285ae8d7",
+      "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "f73fd58d632d9ddfbc7d6a24b82d419ab1546ac4963bd56816025ee4e0e3b0db",
+      "receipts/future/ODYSSEY2_LAW_STORE.json": "0f31cd91bfcb7613067cb70e754c5209f55abb8053faa73abd72c2c503485ac3"
+     },
+     "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
+    },
+    "machine_genome": {
+     "arch": "arm64",
+     "cpu_cores": 28,
+     "gpu_cores": 60,
+     "note": "Identity pin of the machine the campaign ran on. Bandwidth figures in that receipt are NOT copied here and are NOT a roof.",
+     "readable": true,
+     "receipt": "receipts/headless/MACHINE_GENOME.json",
+     "remeasured": false,
+     "schema": "hawking.accelerator.machine_genome.v1",
+     "soc": "Apple M3 Ultra"
+    },
+    "model_revision": {
+     "model_id": "qwen3.8-27b-sealed-3.14",
+     "resident_identity": "sealed-3.14",
+     "source": "hcli/hawking-native.sealed-3.14.json (cited; packed parent of the campaign)",
+     "weight_specimen": "qwen3.8-27b-abliterated-bf16@local"
+    },
+    "resident_identity": {
+     "bound": true,
+     "nx_id": {
+      "model_id": "qwen3.8-27b-sealed-3.14",
+      "protocol": "hawking.qwen38.resident.v1",
+      "resident_identity": "sealed-3.14"
+     },
+     "resident_identity": "sealed-3.14",
+     "sealed_model_id": "qwen3.8-27b-sealed-3.14",
+     "source": "receipts/future/RESIDENT_IDENTITY.json"
+    },
+    "specimen_seal": {
+     "kind": "authorized_external_specimen",
+     "n_files": 31,
+     "source": "receipts/future/EXTERNAL_SPECIMEN_SEAL.json",
+     "specimen": "qwen3.8-27b-abliterated-bf16@local",
+     "status": "SEALED",
+     "tree_digest": "c7c81652283f9324994e0e1a60e52b0a8bf92f9a0d2167d2af2ab341d3073750"
+    }
+   },
+   "failed_transfers": [],
+   "law_id": "LAW-MLP-ARITHMETIC-SENSITIVITY",
+   "layers": [
+    0
+   ],
+   "machine": "Apple M3 Ultra (MACHINE_GENOME.json; not remeasured)",
+   "narrowed": true,
+   "narrowing": "The ALU-roofline receipt's own verdict is MIXED, not ALU_BOUND. Quoting ARM A's 1.51x jump as a generic MLP-is-ALU-bound law silently widens ORGAN, MODEL, and MACHINE. Narrowed to the measured organ/parent/machine. Citation, not a new measurement.",
+   "notes": [
+    "retro-scoped: produced against one parent (qwen3.8-27b sealed-3.14); later curriculum roles are NOT silently in tested_specimens"
+   ],
+   "organ": "mlp",
+   "original_scope": {
+    "machine": "MACHINE_LOCAL",
+    "model": "MODEL_LOCAL",
+    "organ": "ORGAN_LOCAL"
+   },
+   "parent": "qwen3.8-27b-abliterated-bf16@local",
+   "replicating_specimens": [],
+   "scope": {
+    "machine": "MACHINE_LOCAL",
+    "model": "MODEL_LOCAL",
+    "organ": "ORGAN_LOCAL"
+   },
+   "scope_kind": "ORIGINAL",
+   "statement": "On qwen3.8-27b sealed-3.14, this machine, one representative MLP layer of affine2 geo_tpr64: ARM A (same bytes, arithmetic stripped) is cited at 497.4 effective GB/s against production 329.6 (receipt receipts/future/MLP_ALU_ROOFLINE.json#mlp.arm_a_stripped.effective_gb_s). Combined verdict MIXED \u2014 ARM B tracked bytes, so the pre-registered rule did not promote ALU_BOUND. Arithmetic-sensitivity of THIS organ on THIS parent on THIS machine. Not 'MLP is ALU-bound'.",
+   "statement_before_narrowing": "MLP is ALU-bound: stripping decode arithmetic is a machine-general way to reach the roof.",
+   "teacher_corpus_rows": null,
+   "tested_specimens": [
+    "qwen3.8-27b-abliterated-bf16@local"
+   ]
+  },
+  {
+   "as_of": "2026-08-31T09:59:43Z",
+   "as_of_source": "receipts/future/ECONOMICS_CALIBRATION.json git commit time (landing, not a measurement clock)",
+   "available_specimens": [
+    "Qwen--Qwen3-0.6B@c1899de289a0",
+    "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+    "qwen3.8-27b-abliterated-bf16@local",
+    "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb"
+   ],
+   "evidence_refs": [
+    "receipts/future/ECONOMICS_CALIBRATION.json",
+    "receipts/future/EXECUTABLE_ECONOMICS.json"
+   ],
+   "evidence_universe": "within currently sealed specimens Qwen--Qwen3-0.6B@c1899de289a0/Qwen--Qwen3.8-Flash-Next@34567a4712bc/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618/qwen3.8-27b-abliterated-bf16@local/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "experiment_identity": {
+    "code_and_build_identity": {
+     "binary_sha256_pin": "d34044cffae8f320",
+     "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
+     "git_head": "6fc77f1697cc0a68b68bb744e1932c7e94b38d9a",
+     "git_head_short": "6fc77f169",
+     "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
+    },
+    "laws_scars_version": {
+     "digest": "f349f610044ff9fb59e90f8e952e18b4c8c67d38f6ff7d3270d6024f7c697905",
+     "missing": [],
+     "pins": {
+      "receipts/future/CAMPAIGN_SCARS.json": "aae016eaa94f4cfdc5f6724d524125bbb56fb6e317115799c0f70278e1ffc4a6",
+      "receipts/future/MLP_STRUCTURED_OPERATOR.json": "0f03b8e60ad93328d85cda7a95030c6cbf966fc917a19d5bca1cd5ea285ae8d7",
+      "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "f73fd58d632d9ddfbc7d6a24b82d419ab1546ac4963bd56816025ee4e0e3b0db",
+      "receipts/future/ODYSSEY2_LAW_STORE.json": "0f31cd91bfcb7613067cb70e754c5209f55abb8053faa73abd72c2c503485ac3"
+     },
+     "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
+    },
+    "machine_genome": {
+     "arch": "arm64",
+     "cpu_cores": 28,
+     "gpu_cores": 60,
+     "note": "Identity pin of the machine the campaign ran on. Bandwidth figures in that receipt are NOT copied here and are NOT a roof.",
+     "readable": true,
+     "receipt": "receipts/headless/MACHINE_GENOME.json",
+     "remeasured": false,
+     "schema": "hawking.accelerator.machine_genome.v1",
+     "soc": "Apple M3 Ultra"
+    },
+    "model_revision": {
+     "model_id": "qwen3.8-27b-sealed-3.14",
+     "resident_identity": "sealed-3.14",
+     "source": "hcli/hawking-native.sealed-3.14.json (cited; packed parent of the campaign)",
+     "weight_specimen": "qwen3.8-27b-abliterated-bf16@local"
+    },
+    "resident_identity": {
+     "bound": true,
+     "nx_id": {
+      "model_id": "qwen3.8-27b-sealed-3.14",
+      "protocol": "hawking.qwen38.resident.v1",
+      "resident_identity": "sealed-3.14"
+     },
+     "resident_identity": "sealed-3.14",
+     "sealed_model_id": "qwen3.8-27b-sealed-3.14",
+     "source": "receipts/future/RESIDENT_IDENTITY.json"
+    },
+    "specimen_seal": {
+     "kind": "authorized_external_specimen",
+     "n_files": 31,
+     "source": "receipts/future/EXTERNAL_SPECIMEN_SEAL.json",
+     "specimen": "qwen3.8-27b-abliterated-bf16@local",
+     "status": "SEALED",
+     "tree_digest": "c7c81652283f9324994e0e1a60e52b0a8bf92f9a0d2167d2af2ab341d3073750"
+    }
+   },
+   "failed_transfers": [],
+   "law_id": "LAW-BROADCAST-AUX-NON-CRITICALITY",
+   "layers": [
+    3
+   ],
+   "machine": "Apple M3 Ultra (MACHINE_GENOME.json; not remeasured)",
+   "narrowed": true,
+   "narrowing": "EXECUTABLE_ECONOMICS applies this calibration as a stream-class rate. The measurement is one layer of one parent on one machine. Billing-by-stream-class is the method; the zero-rate is MODEL_LOCAL / ORGAN_LOCAL / MACHINE_LOCAL until a named specimen replicates it.",
+   "notes": [
+    "retro-scoped: produced against one parent (qwen3.8-27b sealed-3.14); later curriculum roles are NOT silently in tested_specimens"
+   ],
+   "organ": "mlp",
+   "original_scope": {
+    "machine": "MACHINE_LOCAL",
+    "model": "MODEL_LOCAL",
+    "organ": "ORGAN_LOCAL"
+   },
+   "parent": "qwen3.8-27b-abliterated-bf16@local",
+   "replicating_specimens": [],
+   "scope": {
+    "machine": "MACHINE_LOCAL",
+    "model": "MODEL_LOCAL",
+    "organ": "ORGAN_LOCAL"
+   },
+   "scope_kind": "ORIGINAL",
+   "statement": "On qwen3.8-27b sealed-3.14 MLP layer 3, this machine: a 50% drop of broadcast aux was within_noise (cited paired_dt_ns_at_50pct=-126, noise floor 2666 ns, receipts/future/ECONOMICS_CALIBRATION.json#stream_classes.broadcast_aux). catalog_billing measured_or_zero for THAT stream on THAT layer. Not a law that aux is free on other organs, parents, or machines.",
+   "statement_before_narrowing": "Broadcast aux is never on the critical path; aux bytes are free and must not be billed at the organ average.",
+   "teacher_corpus_rows": null,
+   "tested_specimens": [
+    "qwen3.8-27b-abliterated-bf16@local"
+   ]
+  },
+  {
+   "as_of": "2026-08-31T08:25:09Z",
+   "as_of_source": "receipts/future/MLP_STRUCTURED_OPERATOR.json#bench.recorded_at",
+   "available_specimens": [
+    "qwen3.8-27b-abliterated-bf16@local"
+   ],
+   "evidence_refs": [
+    "receipts/future/MLP_STRUCTURED_OPERATOR.json",
+    "receipts/future/MLP_TEACHER_CORPUS.json"
+   ],
+   "evidence_universe": "within currently sealed specimens qwen3.8-27b-abliterated-bf16@local",
+   "experiment_identity": {
+    "code_and_build_identity": {
+     "binary_sha256_pin": "d34044cffae8f320",
+     "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
+     "git_head": "6fc77f1697cc0a68b68bb744e1932c7e94b38d9a",
+     "git_head_short": "6fc77f169",
+     "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
+    },
+    "laws_scars_version": {
+     "digest": "f349f610044ff9fb59e90f8e952e18b4c8c67d38f6ff7d3270d6024f7c697905",
+     "missing": [],
+     "pins": {
+      "receipts/future/CAMPAIGN_SCARS.json": "aae016eaa94f4cfdc5f6724d524125bbb56fb6e317115799c0f70278e1ffc4a6",
+      "receipts/future/MLP_STRUCTURED_OPERATOR.json": "0f03b8e60ad93328d85cda7a95030c6cbf966fc917a19d5bca1cd5ea285ae8d7",
+      "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "f73fd58d632d9ddfbc7d6a24b82d419ab1546ac4963bd56816025ee4e0e3b0db",
+      "receipts/future/ODYSSEY2_LAW_STORE.json": "0f31cd91bfcb7613067cb70e754c5209f55abb8053faa73abd72c2c503485ac3"
+     },
+     "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
+    },
+    "machine_genome": {
+     "arch": "arm64",
+     "cpu_cores": 28,
+     "gpu_cores": 60,
+     "note": "Identity pin of the machine the campaign ran on. Bandwidth figures in that receipt are NOT copied here and are NOT a roof.",
+     "readable": true,
+     "receipt": "receipts/headless/MACHINE_GENOME.json",
+     "remeasured": false,
+     "schema": "hawking.accelerator.machine_genome.v1",
+     "soc": "Apple M3 Ultra"
+    },
+    "model_revision": {
+     "model_id": "qwen3.8-27b-sealed-3.14",
+     "resident_identity": "sealed-3.14",
+     "source": "hcli/hawking-native.sealed-3.14.json (cited; packed parent of the campaign)",
+     "weight_specimen": "qwen3.8-27b-abliterated-bf16@local"
+    },
+    "resident_identity": {
+     "bound": true,
+     "nx_id": {
+      "model_id": "qwen3.8-27b-sealed-3.14",
+      "protocol": "hawking.qwen38.resident.v1",
+      "resident_identity": "sealed-3.14"
+     },
+     "resident_identity": "sealed-3.14",
+     "sealed_model_id": "qwen3.8-27b-sealed-3.14",
+     "source": "receipts/future/RESIDENT_IDENTITY.json"
+    },
+    "specimen_seal": {
+     "kind": "authorized_external_specimen",
+     "n_files": 31,
+     "source": "receipts/future/EXTERNAL_SPECIMEN_SEAL.json",
+     "specimen": "qwen3.8-27b-abliterated-bf16@local",
+     "status": "SEALED",
+     "tree_digest": "c7c81652283f9324994e0e1a60e52b0a8bf92f9a0d2167d2af2ab341d3073750"
+    }
+   },
+   "failed_transfers": [],
+   "law_id": "LAW-MLP-FUNCTION-REPLACEMENT-CLOSED",
+   "layers": [
+    3,
+    31,
+    38,
+    63
+   ],
+   "machine": "Apple M3 Ultra (MACHINE_GENOME.json; not remeasured)",
+   "narrowed": true,
+   "narrowing": "The short form 'is_function_replacement_closed: YES' drops the parent, the organ, the four layers, and the 45,076-row corpus. That is the over-broad statement. Narrowed back to the evidence. The scar remains; the universe is named.",
+   "notes": [
+    "retro-scoped: produced against one parent (qwen3.8-27b sealed-3.14); later curriculum roles are NOT silently in tested_specimens"
+   ],
+   "organ": "mlp",
+   "original_scope": {
+    "machine": "MACHINE_LOCAL",
+    "model": "MODEL_LOCAL",
+    "organ": "ORGAN_LOCAL"
+   },
+   "parent": "qwen3.8-27b-abliterated-bf16@local",
+   "replicating_specimens": [],
+   "scope": {
+    "machine": "MACHINE_LOCAL",
+    "model": "MODEL_LOCAL",
+    "organ": "ORGAN_LOCAL"
+   },
+   "scope_kind": "ORIGINAL",
+   "statement": "Function replacement of F(x)=down(silu(gate(x))*up(x)) is CLOSED for qwen3.8-27b sealed-3.14 MLP on layers [3, 31, 38, 63] with a teacher corpus of 45076 prompt-split rows (scar MLP_FUNCTION_REPLACEMENT_CLOSED in receipts/future/MLP_STRUCTURED_OPERATOR.json). The receipt already labels the scar MODEL_SPECIFIC. A different parent reopens. Not 'MLP function replacement is closed' for Hawking.",
+   "statement_before_narrowing": "MLP function replacement is closed.",
+   "teacher_corpus_rows": 45076,
+   "tested_specimens": [
+    "qwen3.8-27b-abliterated-bf16@local"
+   ]
+  },
+  {
+   "as_of": "2026-08-31T11:21:50Z",
+   "as_of_source": "receipts/future/FOLD_ADDQX_AB.json git commit time (landing, not a measurement clock)",
+   "available_specimens": [
+    "Qwen--Qwen3-0.6B@c1899de289a0",
+    "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+    "qwen3.8-27b-abliterated-bf16@local",
+    "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb"
+   ],
+   "evidence_refs": [
+    "receipts/future/FOLD_ADDQX_AB.json"
+   ],
+   "evidence_universe": "within currently sealed specimens Qwen--Qwen3-0.6B@c1899de289a0/Qwen--Qwen3.8-Flash-Next@34567a4712bc/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618/qwen3.8-27b-abliterated-bf16@local/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "experiment_identity": {
+    "code_and_build_identity": {
+     "binary_sha256_pin": "d34044cffae8f320",
+     "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
+     "git_head": "6fc77f1697cc0a68b68bb744e1932c7e94b38d9a",
+     "git_head_short": "6fc77f169",
+     "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
+    },
+    "laws_scars_version": {
+     "digest": "f349f610044ff9fb59e90f8e952e18b4c8c67d38f6ff7d3270d6024f7c697905",
+     "missing": [],
+     "pins": {
+      "receipts/future/CAMPAIGN_SCARS.json": "aae016eaa94f4cfdc5f6724d524125bbb56fb6e317115799c0f70278e1ffc4a6",
+      "receipts/future/MLP_STRUCTURED_OPERATOR.json": "0f03b8e60ad93328d85cda7a95030c6cbf966fc917a19d5bca1cd5ea285ae8d7",
+      "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "f73fd58d632d9ddfbc7d6a24b82d419ab1546ac4963bd56816025ee4e0e3b0db",
+      "receipts/future/ODYSSEY2_LAW_STORE.json": "0f31cd91bfcb7613067cb70e754c5209f55abb8053faa73abd72c2c503485ac3"
+     },
+     "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
+    },
+    "machine_genome": {
+     "arch": "arm64",
+     "cpu_cores": 28,
+     "gpu_cores": 60,
+     "note": "Identity pin of the machine the campaign ran on. Bandwidth figures in that receipt are NOT copied here and are NOT a roof.",
+     "readable": true,
+     "receipt": "receipts/headless/MACHINE_GENOME.json",
+     "remeasured": false,
+     "schema": "hawking.accelerator.machine_genome.v1",
+     "soc": "Apple M3 Ultra"
+    },
+    "model_revision": {
+     "model_id": "qwen3.8-27b-sealed-3.14",
+     "resident_identity": "sealed-3.14",
+     "source": "hcli/hawking-native.sealed-3.14.json (cited; packed parent of the campaign)",
+     "weight_specimen": "qwen3.8-27b-abliterated-bf16@local"
+    },
+    "resident_identity": {
+     "bound": true,
+     "nx_id": {
+      "model_id": "qwen3.8-27b-sealed-3.14",
+      "protocol": "hawking.qwen38.resident.v1",
+      "resident_identity": "sealed-3.14"
+     },
+     "resident_identity": "sealed-3.14",
+     "sealed_model_id": "qwen3.8-27b-sealed-3.14",
+     "source": "receipts/future/RESIDENT_IDENTITY.json"
+    },
+    "specimen_seal": {
+     "kind": "authorized_external_specimen",
+     "n_files": 31,
+     "source": "receipts/future/EXTERNAL_SPECIMEN_SEAL.json",
+     "specimen": "qwen3.8-27b-abliterated-bf16@local",
+     "status": "SEALED",
+     "tree_digest": "c7c81652283f9324994e0e1a60e52b0a8bf92f9a0d2167d2af2ab341d3073750"
+    }
+   },
+   "failed_transfers": [],
+   "law_id": "LAW-PROBE-UNDERSELLS-TOKEN",
+   "layers": null,
+   "machine": "Apple M3 Ultra (MACHINE_GENOME.json; not remeasured)",
+   "narrowed": true,
+   "narrowing": "Generalising one lever's probe/token disagreement into 'probes undersell tokens' would let a later specimen inherit a magnitude it never earned. Narrowed to fold_addqx / sealed-3.14 / this machine.",
+   "notes": [
+    "retro-scoped: produced against one parent (qwen3.8-27b sealed-3.14); later curriculum roles are NOT silently in tested_specimens"
+   ],
+   "organ": "mlp",
+   "original_scope": {
+    "machine": "MACHINE_LOCAL",
+    "model": "MODEL_LOCAL",
+    "organ": "ORGAN_LOCAL"
+   },
+   "parent": "qwen3.8-27b-abliterated-bf16@local",
+   "replicating_specimens": [],
+   "scope": {
+    "machine": "MACHINE_LOCAL",
+    "model": "MODEL_LOCAL",
+    "organ": "ORGAN_LOCAL"
+   },
+   "scope_kind": "ORIGINAL",
+   "statement": "On qwen3.8-27b sealed-3.14, this machine, fold_addqx: the one-layer probe projected 1.745 ms and the complete-token A/B saved 3.9833 ms and was NOT bit-identical (receipts/future/FOLD_ADDQX_AB.json#finding). Probe \u2260 token for THIS lever on THIS parent on THIS machine. The class is a campaign scar in the making; the quantity is not a generic probe law.",
+   "statement_before_narrowing": "Isolated-organ probes undersell complete-token savings; a probe number is never the token number.",
+   "teacher_corpus_rows": null,
+   "tested_specimens": [
+    "qwen3.8-27b-abliterated-bf16@local"
+   ]
+  },
+  {
+   "as_of": "2026-08-31T07:51:57Z",
+   "as_of_source": "receipts/future/MLP_ALU_ROOFLINE.json git commit time (landing, not a measurement clock)",
+   "available_specimens": [
+    "qwen3.8-27b-abliterated-bf16@local"
+   ],
+   "evidence_refs": [
+    "receipts/future/MLP_ALU_ROOFLINE.json",
+    "receipts/future/ROOF_ANCHOR.json"
+   ],
+   "evidence_universe": "within currently sealed specimens qwen3.8-27b-abliterated-bf16@local",
+   "experiment_identity": {
+    "code_and_build_identity": {
+     "binary_sha256_pin": "d34044cffae8f320",
+     "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
+     "git_head": "6fc77f1697cc0a68b68bb744e1932c7e94b38d9a",
+     "git_head_short": "6fc77f169",
+     "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
+    },
+    "laws_scars_version": {
+     "digest": "f349f610044ff9fb59e90f8e952e18b4c8c67d38f6ff7d3270d6024f7c697905",
+     "missing": [],
+     "pins": {
+      "receipts/future/CAMPAIGN_SCARS.json": "aae016eaa94f4cfdc5f6724d524125bbb56fb6e317115799c0f70278e1ffc4a6",
+      "receipts/future/MLP_STRUCTURED_OPERATOR.json": "0f03b8e60ad93328d85cda7a95030c6cbf966fc917a19d5bca1cd5ea285ae8d7",
+      "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "f73fd58d632d9ddfbc7d6a24b82d419ab1546ac4963bd56816025ee4e0e3b0db",
+      "receipts/future/ODYSSEY2_LAW_STORE.json": "0f31cd91bfcb7613067cb70e754c5209f55abb8053faa73abd72c2c503485ac3"
+     },
+     "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
+    },
+    "machine_genome": {
+     "arch": "arm64",
+     "cpu_cores": 28,
+     "gpu_cores": 60,
+     "note": "Identity pin of the machine the campaign ran on. Bandwidth figures in that receipt are NOT copied here and are NOT a roof.",
+     "readable": true,
+     "receipt": "receipts/headless/MACHINE_GENOME.json",
+     "remeasured": false,
+     "schema": "hawking.accelerator.machine_genome.v1",
+     "soc": "Apple M3 Ultra"
+    },
+    "model_revision": {
+     "model_id": "qwen3.8-27b-sealed-3.14",
+     "resident_identity": "sealed-3.14",
+     "source": "hcli/hawking-native.sealed-3.14.json (cited; packed parent of the campaign)",
+     "weight_specimen": "qwen3.8-27b-abliterated-bf16@local"
+    },
+    "resident_identity": {
+     "bound": true,
+     "nx_id": {
+      "model_id": "qwen3.8-27b-sealed-3.14",
+      "protocol": "hawking.qwen38.resident.v1",
+      "resident_identity": "sealed-3.14"
+     },
+     "resident_identity": "sealed-3.14",
+     "sealed_model_id": "qwen3.8-27b-sealed-3.14",
+     "source": "receipts/future/RESIDENT_IDENTITY.json"
+    },
+    "specimen_seal": {
+     "kind": "authorized_external_specimen",
+     "n_files": 31,
+     "source": "receipts/future/EXTERNAL_SPECIMEN_SEAL.json",
+     "specimen": "qwen3.8-27b-abliterated-bf16@local",
+     "status": "SEALED",
+     "tree_digest": "c7c81652283f9324994e0e1a60e52b0a8bf92f9a0d2167d2af2ab341d3073750"
+    }
+   },
+   "failed_transfers": [],
+   "law_id": "LAW-497P4-ANCHOR",
+   "layers": [
+    0
+   ],
+   "machine": "Apple M3 Ultra (MACHINE_GENOME.json; not remeasured)",
+   "narrowed": true,
+   "narrowing": "roof_anchor correctly named 497.4 and refused 595.9/703.5 as the production roof. 'Every organ at 497.4' still over-reaches ORGAN. Treating 497.4 as the machine's DRAM property over-reaches the f32-triad genome and this parent's MLP/LM-head measurements. Narrowed to MODEL_LOCAL / ORGAN_LOCAL (mlp, with lm_head as a same-parent coincidence not a replication) / MACHINE_LOCAL.",
+   "notes": [
+    "retro-scoped: produced against one parent (qwen3.8-27b sealed-3.14); later curriculum roles are NOT silently in tested_specimens"
+   ],
+   "organ": "mlp",
+   "original_scope": {
+    "machine": "MACHINE_LOCAL",
+    "model": "MODEL_LOCAL",
+    "organ": "ORGAN_LOCAL"
+   },
+   "parent": "qwen3.8-27b-abliterated-bf16@local",
+   "replicating_specimens": [],
+   "scope": {
+    "machine": "MACHINE_LOCAL",
+    "model": "MODEL_LOCAL",
+    "organ": "ORGAN_LOCAL"
+   },
+   "scope_kind": "ORIGINAL",
+   "statement": "497.4 GB/s is the ARM-A-stripped MLP affine2 rate on qwen3.8-27b sealed-3.14, one representative layer, this machine (receipts/future/MLP_ALU_ROOFLINE.json#mlp.arm_a_stripped.effective_gb_s). The production LM head on the same parent/machine is cited at the same figure (receipts/future/ROOF_ANCHOR.json#lm_head_production_497p4). It is not a DRAM roof, not a published-peak substitute, and not a law about other models or other organs. Causal-budget rungs that put 'every organ at 497.4' are hypothetical ladders, not replications.",
+   "statement_before_narrowing": "The roof is 497.4 GB/s. Every organ at the LM head's demonstrated 497.4 is the honest machine ceiling.",
+   "teacher_corpus_rows": null,
+   "tested_specimens": [
+    "qwen3.8-27b-abliterated-bf16@local"
+   ]
+  }
+ ],
+ "measurement_class": "STATIC_ONLY",
+ "n_laws": 5,
+ "n_narrowed": 5,
+ "narrow_tiers": {
+  "machine": "MACHINE_LOCAL",
+  "model": "MODEL_LOCAL",
+  "organ": "ORGAN_LOCAL"
+ },
+ "narrowings": [
+  {
+   "correction_not_downgrade": true,
+   "law_id": "LAW-MLP-ARITHMETIC-SENSITIVITY",
+   "now": "On qwen3.8-27b sealed-3.14, this machine, one representative MLP layer of affine2 geo_tpr64: ARM A (same bytes, arithmetic stripped) is cited at 497.4 effective GB/s against production 329.6 (receipt receipts/future/MLP_ALU_ROOFLINE.json#mlp.arm_a_stripped.effective_gb_s). Combined verdict MIXED \u2014 ARM B tracked bytes, so the pre-registered rule did not promote ALU_BOUND. Arithmetic-sensitivity of THIS organ on THIS parent on THIS machine. Not 'MLP is ALU-bound'.",
+   "was": "MLP is ALU-bound: stripping decode arithmetic is a machine-general way to reach the roof.",
+   "why": "The ALU-roofline receipt's own verdict is MIXED, not ALU_BOUND. Quoting ARM A's 1.51x jump as a generic MLP-is-ALU-bound law silently widens ORGAN, MODEL, and MACHINE. Narrowed to the measured organ/parent/machine. Citation, not a new measurement."
+  },
+  {
+   "correction_not_downgrade": true,
+   "law_id": "LAW-BROADCAST-AUX-NON-CRITICALITY",
+   "now": "On qwen3.8-27b sealed-3.14 MLP layer 3, this machine: a 50% drop of broadcast aux was within_noise (cited paired_dt_ns_at_50pct=-126, noise floor 2666 ns, receipts/future/ECONOMICS_CALIBRATION.json#stream_classes.broadcast_aux). catalog_billing measured_or_zero for THAT stream on THAT layer. Not a law that aux is free on other organs, parents, or machines.",
+   "was": "Broadcast aux is never on the critical path; aux bytes are free and must not be billed at the organ average.",
+   "why": "EXECUTABLE_ECONOMICS applies this calibration as a stream-class rate. The measurement is one layer of one parent on one machine. Billing-by-stream-class is the method; the zero-rate is MODEL_LOCAL / ORGAN_LOCAL / MACHINE_LOCAL until a named specimen replicates it."
+  },
+  {
+   "correction_not_downgrade": true,
+   "law_id": "LAW-MLP-FUNCTION-REPLACEMENT-CLOSED",
+   "now": "Function replacement of F(x)=down(silu(gate(x))*up(x)) is CLOSED for qwen3.8-27b sealed-3.14 MLP on layers [3, 31, 38, 63] with a teacher corpus of 45076 prompt-split rows (scar MLP_FUNCTION_REPLACEMENT_CLOSED in receipts/future/MLP_STRUCTURED_OPERATOR.json). The receipt already labels the scar MODEL_SPECIFIC. A different parent reopens. Not 'MLP function replacement is closed' for Hawking.",
+   "was": "MLP function replacement is closed.",
+   "why": "The short form 'is_function_replacement_closed: YES' drops the parent, the organ, the four layers, and the 45,076-row corpus. That is the over-broad statement. Narrowed back to the evidence. The scar remains; the universe is named."
+  },
+  {
+   "correction_not_downgrade": true,
+   "law_id": "LAW-PROBE-UNDERSELLS-TOKEN",
+   "now": "On qwen3.8-27b sealed-3.14, this machine, fold_addqx: the one-layer probe projected 1.745 ms and the complete-token A/B saved 3.9833 ms and was NOT bit-identical (receipts/future/FOLD_ADDQX_AB.json#finding). Probe \u2260 token for THIS lever on THIS parent on THIS machine. The class is a campaign scar in the making; the quantity is not a generic probe law.",
+   "was": "Isolated-organ probes undersell complete-token savings; a probe number is never the token number.",
+   "why": "Generalising one lever's probe/token disagreement into 'probes undersell tokens' would let a later specimen inherit a magnitude it never earned. Narrowed to fold_addqx / sealed-3.14 / this machine."
+  },
+  {
+   "correction_not_downgrade": true,
+   "law_id": "LAW-497P4-ANCHOR",
+   "now": "497.4 GB/s is the ARM-A-stripped MLP affine2 rate on qwen3.8-27b sealed-3.14, one representative layer, this machine (receipts/future/MLP_ALU_ROOFLINE.json#mlp.arm_a_stripped.effective_gb_s). The production LM head on the same parent/machine is cited at the same figure (receipts/future/ROOF_ANCHOR.json#lm_head_production_497p4). It is not a DRAM roof, not a published-peak substitute, and not a law about other models or other organs. Causal-budget rungs that put 'every organ at 497.4' are hypothetical ladders, not replications.",
+   "was": "The roof is 497.4 GB/s. Every organ at the LM head's demonstrated 497.4 is the honest machine ceiling.",
+   "why": "roof_anchor correctly named 497.4 and refused 595.9/703.5 as the production roof. 'Every organ at 497.4' still over-reaches ORGAN. Treating 497.4 as the machine's DRAM property over-reaches the f32-triad genome and this parent's MLP/LM-head measurements. Narrowed to MODEL_LOCAL / ORGAN_LOCAL (mlp, with lm_head as a same-parent coincidence not a replication) / MACHINE_LOCAL."
+  }
+ ],
+ "negative_findings": [
+  "ModelLake seals on disk are often MANIFEST_ONLY; scientific seal is the independent whole-tree verification",
+  "three (or more) downloads can sit in partial/ while five curriculum roles are sealed \u2014 the available-set is the sealed set, not the lake listing",
+  "LM head landing on 497.4 is a same-parent coincidence, not an organ replication of the MLP ARM A law"
+ ],
+ "parent": {
+  "machine": "Apple M3 Ultra (MACHINE_GENOME.json; not remeasured)",
+  "model_id": "qwen3.8-27b-sealed-3.14",
+  "organ": "mlp",
+  "resident_identity": "sealed-3.14",
+  "specimen": "qwen3.8-27b-abliterated-bf16@local",
+  "teacher_corpus_rows": 45076,
+  "teacher_layers": [
+   3,
+   31,
+   38,
+   63
+  ]
+ },
+ "purpose": "Time-index the scientific universe of Odyssey I so a law cannot silently inherit specimens that were not sealed when it was made. Scope begins MODEL_LOCAL / ORGAN_LOCAL / MACHINE_LOCAL. Widening without a named replicating specimen is impossible.",
+ "refusal_witness": {
+  "universal_conclusion": {
+   "message": "LAW-MLP-ARITHMETIC-SENSITIVITY: refusing 'All Hawking models behave this way' while scope.model is MODEL_LOCAL. Say 'within currently sealed specimens qwen3.8-27b-abliterated-bf16@local', never 'all Hawking models'.",
+   "raised": true,
+   "reason": "universal_claim_on_model_local"
+  },
+  "widen_without_specimen": {
+   "axis": "model",
+   "law_id": "LAW-MLP-ARITHMETIC-SENSITIVITY",
+   "message": "LAW-MLP-ARITHMETIC-SENSITIVITY: widening model without a named replicating specimen (got None). Widening without a replicating specimen is impossible, not discouraged.",
+   "raised": true,
+   "reason": "no_named_replicating_specimen",
+   "type": "ScopeViolation"
+  }
+ },
+ "replicated_tiers": {
+  "machine": "MACHINE_REPLICATED",
+  "model": "MODEL_REPLICATED",
+  "organ": "ORGAN_REPLICATED"
+ },
+ "schema": "hawking.future.claim_scope.v1",
+ "scope_kinds": [
+  "ORIGINAL",
+  "REPLICATION",
+  "FAILED_TRANSFER"
+ ],
+ "seal_sha256": "8ddfd0708e9b3158c9bf1195afa7ee7fa50f10395e0af9ef5feb78c4cc943d4d",
+ "timeline": {
+  "as_of_now": "2026-08-31T12:09:03Z",
+  "available_now": [
+   "Qwen--Qwen3-0.6B@c1899de289a0",
+   "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+   "qwen3.8-27b-abliterated-bf16@local",
+   "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb"
+  ],
+  "available_now_clause": "within currently sealed specimens Qwen--Qwen3-0.6B@c1899de289a0/Qwen--Qwen3.8-Flash-Next@34567a4712bc/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618/qwen3.8-27b-abliterated-bf16@local/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+  "in_flight": [
+   {
+    "age_s": 3511.707872,
+    "in_flight": true,
+    "incomplete_markers": 1,
+    "landed_at": "2026-08-31T11:10:21Z",
+    "landed_at_source": "/Volumes/corpdrive/hawking-modellake/partial/Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8/.cache/huggingface/download/<file>.metadata#line3",
+    "n_hf_metadata": 15,
+    "path": "/Volumes/corpdrive/hawking-modellake/partial/Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
+    "sealed": false,
+    "specimen": "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
+    "why": "ModelLake partial/; not whole-tree sealed. Not in the scientific universe."
+   },
+   {
+    "age_s": 43968.583517,
+    "in_flight": true,
+    "incomplete_markers": 0,
+    "landed_at": "2026-08-30T23:56:06Z",
+    "landed_at_source": "/Volumes/corpdrive/hawking-modellake/partial/ibm-granite--granite-4.0-h-tiny@791e0d3d28c8/.cache/huggingface/download/<file>.metadata#line3",
+    "n_hf_metadata": 15,
+    "path": "/Volumes/corpdrive/hawking-modellake/partial/ibm-granite--granite-4.0-h-tiny@791e0d3d28c8",
+    "sealed": false,
+    "specimen": "ibm-granite--granite-4.0-h-tiny@791e0d3d28c8",
+    "why": "ModelLake partial/; not whole-tree sealed. Not in the scientific universe."
+   },
+   {
+    "age_s": 84592.32836,
+    "in_flight": true,
+    "incomplete_markers": 7,
+    "landed_at": "2026-08-30T12:38:58Z",
+    "landed_at_source": "/Volumes/corpdrive/hawking-modellake/partial/Qwen--Qwen3-14B@40c069824f42/.cache/huggingface/download/<file>.metadata#line3",
+    "n_hf_metadata": 11,
+    "path": "/Volumes/corpdrive/hawking-modellake/partial/Qwen--Qwen3-14B@40c069824f42",
+    "sealed": false,
+    "specimen": "Qwen--Qwen3-14B@40c069824f42",
+    "why": "ModelLake partial/; not whole-tree sealed. Not in the scientific universe."
+   }
+  ],
+  "lake": "/Volumes/corpdrive/hawking-modellake",
+  "lake_mounted": true,
+  "n_in_flight": 3,
+  "n_known": 6,
+  "n_sealed": 5,
+  "n_stale_partials": 8,
+  "rule": "sealed_at is read from EXTERNAL_SPECIMEN_SEAL / SPECIMEN_VERIFICATION / live HuggingFace .metadata timestamps. A fixture list of times is not a timeline. in_flight is ModelLake partial/ and is not available.",
+  "sealed": [
+   {
+    "bytes_hashed": 55586059240,
+    "curriculum_role": null,
+    "landed_at": "2026-08-22T22:57:36Z",
+    "landed_at_source": "/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16/.cache/huggingface/download/<file>.metadata#line3",
+    "n_files": 31,
+    "owner": "local_directory",
+    "sealed": true,
+    "sealed_at": "2026-08-30T15:44:16Z",
+    "sealed_at_source": "receipts/future/EXTERNAL_SPECIMEN_SEAL.json#bench.recorded_at",
+    "specimen": "qwen3.8-27b-abliterated-bf16@local",
+    "tree_digest": "c7c81652283f9324994e0e1a60e52b0a8bf92f9a0d2167d2af2ab341d3073750"
+   },
+   {
+    "bytes_hashed": 1519209243,
+    "curriculum_role": "very_small_dense_procedural_speed",
+    "landed_at": "2026-08-28T20:51:44Z",
+    "landed_at_source": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0/.cache/huggingface/download/<file>.metadata#line3",
+    "n_files": 10,
+    "owner": "modellake",
+    "sealed": true,
+    "sealed_at": "2026-08-31T09:56:23Z",
+    "sealed_at_source": "receipts/future/SPECIMEN_VERIFICATION.json#bench.recorded_at",
+    "specimen": "Qwen--Qwen3-0.6B@c1899de289a0",
+    "tree_digest": null
+   },
+   {
+    "bytes_hashed": 360023286454,
+    "curriculum_role": "flash_heterogeneous_frontier",
+    "landed_at": "2026-08-27T04:04:03Z",
+    "landed_at_source": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/.cache/huggingface/download/<file>.metadata#line3",
+    "n_files": 144,
+    "owner": "modellake",
+    "sealed": true,
+    "sealed_at": "2026-08-31T09:56:23Z",
+    "sealed_at_source": "receipts/future/SPECIMEN_VERIFICATION.json#bench.recorded_at",
+    "specimen": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "tree_digest": null
+   },
+   {
+    "bytes_hashed": 96077777512,
+    "curriculum_role": "mid_size_dense_compiler",
+    "landed_at": "2026-08-27T13:13:41Z",
+    "landed_at_source": "/Volumes/corpdrive/hawking-modellake/specimens/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618/.cache/huggingface/download/<file>.metadata#line3",
+    "n_files": 25,
+    "owner": "modellake",
+    "sealed": true,
+    "sealed_at": "2026-08-31T09:56:23Z",
+    "sealed_at_source": "receipts/future/SPECIMEN_VERIFICATION.json#bench.recorded_at",
+    "specimen": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+    "tree_digest": null
+   },
+   {
+    "bytes_hashed": 15182220635,
+    "curriculum_role": "small_dense_alternate_architecture_transfer",
+    "landed_at": "2026-08-25T00:24:59Z",
+    "landed_at_source": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb/.cache/huggingface/download/<file>.metadata#line3",
+    "n_files": 13,
+    "owner": "modellake",
+    "sealed": true,
+    "sealed_at": "2026-08-31T09:56:23Z",
+    "sealed_at_source": "receipts/future/SPECIMEN_VERIFICATION.json#bench.recorded_at",
+    "specimen": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+    "tree_digest": null
+   }
+  ],
+  "stale_partials": [
+   {
+    "incomplete_markers": 0,
+    "landed_at": "2026-08-25T21:53:48Z",
+    "specimen": "Qwen--Qwen2.5-72B-Instruct@495f39366efe"
+   },
+   {
+    "incomplete_markers": 16,
+    "landed_at": "2026-08-29T21:54:33Z",
+    "specimen": "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b"
+   },
+   {
+    "incomplete_markers": 0,
+    "landed_at": "2026-08-29T02:35:49Z",
+    "specimen": "facebook--blt-7b@b65201dce04b"
+   },
+   {
+    "incomplete_markers": 0,
+    "landed_at": "2026-08-25T11:00:13Z",
+    "specimen": "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471"
+   },
+   {
+    "incomplete_markers": 0,
+    "landed_at": "2026-08-29T02:30:09Z",
+    "specimen": "nvidia--personaplex-7b-v1@fdaf4090a61c"
+   },
+   {
+    "incomplete_markers": 0,
+    "landed_at": "2026-08-29T02:20:34Z",
+    "specimen": "stabilityai--stable-audio-open-1.0@f21265c1e271"
+   },
+   {
+    "incomplete_markers": 16,
+    "landed_at": "2026-08-29T12:35:19Z",
+    "specimen": "thinkingmachines--Inkling-Small@8cc5877b44d3"
+   },
+   {
+    "incomplete_markers": 16,
+    "landed_at": "2026-08-29T13:30:52Z",
+    "specimen": "zai-org--GLM-5.3-Flash@04c4e9e95c5d"
+   }
+  ]
+ },
+ "version": 1
+}

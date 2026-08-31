@@ -1,0 +1,1476 @@
+{
+ "all_layers_structured_bar": 0.03,
+ "argmax_alone_is_not_parity": true,
+ "auxiliary_bytes_target": 1069605696,
+ "claim_boundary": "LUT consumer of the screened u8 aux: two 256-entry tables (log-scale, linear bias) resolved once and indexed by the u8 value. 2-bit codes kept. GPU A/B is one representative MLP layer of sealed-3.14, three-way in one process (incumbent f16-aux, exp-variant u8, LUT-variant u8), MTLCommandBuffer GPUStartTime/GPUEndTime, 11 reps 5 warmup. Table placement (constant / threadgroup / device) is measured; the LUT arm is the fastest placement. Absolute GB/s is measured-under-load (loadavg recorded); it is not a clean roof. Token-level ms from the probe is ARITHMETIC over the measured layer (x64), labelled a projection. A path that expands u8 aux to an f16 aux buffer is refused. A speedup is refused unless a byte comparison proves LUT output is unchanged from the exp-variant. Production shaders are not edited. FMA/byte by class (FMA, integer, conversion, memory) is the inner-loop tax for all three arms; extra decode arithmetic is billed through executable_economics.py both ways (bytes only, and with decode FLOPs).",
+ "dense_rematerialization": "DIRECT_CONSUME",
+ "economics": {
+  "bytes_only": {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "cited_token_ms": 28.722,
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "dispatch_us_range": [
+     6.25,
+     6.25
+    ],
+    "flop_model": "extra FLOPs scored as extra_flops * n_output_elements / EFFECTIVE_FLOP_S, the MLP GEMV-dressed rate (2.202 TFLOP/s). ASSUMPTION: same cost-per-FLOP as the incumbent MAC (mostly wait-on-memory). Range [0, 4.0x] covers hidden-under-bandwidth to decode-ALU-like.",
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "host_gap_floor_ms": 0.989,
+    "incremental_byte_rate_gb_s": 0.0,
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 0.0,
+    "stream_class": "broadcast_aux",
+    "stream_on_critical_path": false,
+    "stream_rate_source": "ECONOMICS_CALIBRATION.json"
+   },
+   "byte_model": {
+    "bytes_added_metadata": 393216,
+    "bytes_removed": 534773760,
+    "candidate_aux_scale_bias_bytes": 534775296,
+    "endpoint_bytes": 1536,
+    "endpoint_bytes_baked_into_lut": 1536,
+    "incumbent_scale_bias_bytes": 1069547520,
+    "lut_table_bytes": 393216,
+    "u8_payload_bytes": 534773760
+   },
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 393216,
+    "residuals": 0,
+    "state": 0,
+    "total": 393216
+   },
+   "bytes_added_supplied": true,
+   "bytes_removed": 534773760,
+   "consuming_primitive": "FusedDecodeCompute",
+   "dispatch_delta": 0.0,
+   "extra_flops_note": "LUT extra decode FMA is 0 (indexed load). Exp-variant billed 2 FMA per 8 weights.",
+   "extra_flops_per_output_element": 0.0,
+   "id": "quantize_aux_u8",
+   "live": true,
+   "n_output_elements": 2555904,
+   "net_bytes": -534380544,
+   "ok": true,
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": -0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.816516955643756,
+   "predicted_tps_range": [
+    34.816516955643756,
+    34.816516955643756
+   ],
+   "retime_organ": false,
+   "s020_section_20": {
+    "bar_frac": 0.01,
+    "bar_ms": 0.28722000000000003,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": true
+   },
+   "status": "OPEN",
+   "stream_class": "broadcast_aux",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "MATERIAL",
+   "verdict_reasons": [
+    "reusable_representation_family"
+   ]
+  },
+  "exp_variant_with_aux_decode_fma": {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "cited_token_ms": 28.722,
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "dispatch_us_range": [
+     6.25,
+     6.25
+    ],
+    "flop_model": "extra FLOPs scored as extra_flops * n_output_elements / EFFECTIVE_FLOP_S, the MLP GEMV-dressed rate (2.202 TFLOP/s). ASSUMPTION: same cost-per-FLOP as the incumbent MAC (mostly wait-on-memory). Range [0, 4.0x] covers hidden-under-bandwidth to decode-ALU-like.",
+    "flop_ms_range": [
+     0.0,
+     7.7705
+    ],
+    "host_gap_floor_ms": 0.989,
+    "incremental_byte_rate_gb_s": 0.0,
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 0.0,
+    "stream_class": "broadcast_aux",
+    "stream_on_critical_path": false,
+    "stream_rate_source": "ECONOMICS_CALIBRATION.json"
+   },
+   "byte_model": {
+    "bytes_added_metadata": 1536,
+    "bytes_removed": 534773760,
+    "candidate_aux_scale_bias_bytes": 534775296,
+    "endpoint_bytes": 1536,
+    "incumbent_scale_bias_bytes": 1069547520,
+    "u8_payload_bytes": 534773760
+   },
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 1536,
+    "residuals": 0,
+    "state": 0,
+    "total": 1536
+   },
+   "bytes_added_supplied": true,
+   "bytes_removed": 534773760,
+   "consuming_primitive": "FusedDecodeCompute",
+   "count_exp_as": 0.0,
+   "dispatch_delta": 0.0,
+   "extra_flops_per_output_element": 1673.8461538461538,
+   "id": "quantize_aux_u8",
+   "live": true,
+   "n_output_elements": 2555904,
+   "net_bytes": -534772224,
+   "ok": true,
+   "organ": "mlp",
+   "predicted_ms_delta": 1.942625,
+   "predicted_ms_delta_range": [
+    0.0,
+    7.7705
+   ],
+   "predicted_ms_saved": -1.942625,
+   "predicted_token_ms": 30.664625,
+   "predicted_token_ms_range": [
+    28.722,
+    36.4925
+   ],
+   "predicted_tps": 32.61086675607479,
+   "predicted_tps_range": [
+    27.402891005001027,
+    34.816516955643756
+   ],
+   "retime_organ": false,
+   "s020_section_20": {
+    "bar_frac": 0.01,
+    "bar_ms": 0.28722000000000003,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": true
+   },
+   "status": "OPEN",
+   "stream_class": "broadcast_aux",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 1.942625
+   },
+   "verdict": "MATERIAL",
+   "verdict_reasons": [
+    "reusable_representation_family"
+   ]
+  },
+  "extra_flops_per_output_element_exp_fma_only": 1673.8461538461538,
+  "extra_flops_per_output_element_lut": 0.0,
+  "net_sign_bytes_only": "ZERO",
+  "net_sign_with_aux_decode_fma": "ZERO",
+  "note": "The capability screen billed extra_flops_per_output_element=0 and got +1.554 ms. The exp-variant's 2 aux-decode FMA per 8 weights flipped the sign (flop_ms 1.9426, net -0.3885 ms). LUT extra FMA is 0, so both billings share the byte-lever sign. The GPU A/B is the physical number: billed-positive can still be wall-negative if the indexed load costs more than the exp.",
+  "with_aux_decode_fma": {
+   "assumptions": {
+    "bandwidth_gb_s_nominal": 344.1,
+    "bandwidth_gb_s_range": [
+     344.1,
+     376.7
+    ],
+    "bandwidth_is_assumption": false,
+    "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
+    "bandwidth_regime": "affine_q2_family",
+    "cited_token_ms": 28.722,
+    "dispatch_class": "mlp_gqa_norm_fusion",
+    "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
+    "dispatch_us_nominal": 6.25,
+    "dispatch_us_range": [
+     6.25,
+     6.25
+    ],
+    "flop_model": "extra FLOPs scored as extra_flops * n_output_elements / EFFECTIVE_FLOP_S, the MLP GEMV-dressed rate (2.202 TFLOP/s). ASSUMPTION: same cost-per-FLOP as the incumbent MAC (mostly wait-on-memory). Range [0, 4.0x] covers hidden-under-bandwidth to decode-ALU-like.",
+    "flop_ms_range": [
+     0.0,
+     0.0
+    ],
+    "host_gap_floor_ms": 0.989,
+    "incremental_byte_rate_gb_s": 0.0,
+    "organ_average_gb_s": 344.1,
+    "stream_billing_gb_s": 0.0,
+    "stream_class": "broadcast_aux",
+    "stream_on_critical_path": false,
+    "stream_rate_source": "ECONOMICS_CALIBRATION.json"
+   },
+   "byte_model": {
+    "bytes_added_metadata": 393216,
+    "bytes_removed": 534773760,
+    "candidate_aux_scale_bias_bytes": 534775296,
+    "endpoint_bytes": 1536,
+    "endpoint_bytes_baked_into_lut": 1536,
+    "incumbent_scale_bias_bytes": 1069547520,
+    "lut_table_bytes": 393216,
+    "u8_payload_bytes": 534773760
+   },
+   "bytes_added": {
+    "embeddings": 0,
+    "generator": 0,
+    "metadata": 393216,
+    "residuals": 0,
+    "state": 0,
+    "total": 393216
+   },
+   "bytes_added_supplied": true,
+   "bytes_removed": 534773760,
+   "consuming_primitive": "FusedDecodeCompute",
+   "dispatch_delta": 0.0,
+   "extra_flops_note": "LUT extra decode FMA is 0 (indexed load). Exp-variant billed 2 FMA per 8 weights.",
+   "extra_flops_per_output_element": 0.0,
+   "id": "quantize_aux_u8",
+   "live": true,
+   "n_output_elements": 2555904,
+   "net_bytes": -534380544,
+   "ok": true,
+   "organ": "mlp",
+   "predicted_ms_delta": 0.0,
+   "predicted_ms_delta_range": [
+    0.0,
+    0.0
+   ],
+   "predicted_ms_saved": -0.0,
+   "predicted_token_ms": 28.722,
+   "predicted_token_ms_range": [
+    28.722,
+    28.722
+   ],
+   "predicted_tps": 34.816516955643756,
+   "predicted_tps_range": [
+    34.816516955643756,
+    34.816516955643756
+   ],
+   "retime_organ": false,
+   "s020_section_20": {
+    "bar_frac": 0.01,
+    "bar_ms": 0.28722000000000003,
+    "clears_time_bar": false,
+    "high_information_falsifier": false,
+    "plausible_ms_saved": 0.0,
+    "reusable_family": true
+   },
+   "status": "OPEN",
+   "stream_class": "broadcast_aux",
+   "terms": {
+    "byte_added_ms": 0.0,
+    "byte_ms_delta": 0.0,
+    "byte_removed_ms": 0.0,
+    "dispatch_ms_delta": 0.0,
+    "flop_ms_delta": 0.0
+   },
+   "verdict": "MATERIAL",
+   "verdict_reasons": [
+    "reusable_representation_family"
+   ]
+  }
+ },
+ "error_did_not_move": {
+  "all_layers_structured_bar": 0.03,
+  "bytes_equal_vs_exp": true,
+  "down_proj_relfro_exp": 0.02629999837482214,
+  "down_proj_relfro_lut": 0.02629999837482214,
+  "moved_vs_exp": false,
+  "moved_vs_native_down_proj": false,
+  "native_receipt_down_proj_relfro": 0.02629999837482214,
+  "note": "down_proj output_relfro lut=0.02629999837482214 exp=0.02629999837482214 native_receipt=0.02629999837482214 all_layers_bar=0.03",
+  "ok": true,
+  "unchanged_from_exp": true
+ },
+ "evidence_class": "SELF_MEASURED_DIRTY",
+ "finding": "LUT u8-aux consumer binds uchar scale/bias and indexes two 256-entry tables (log-scale, linear bias) instead of calling exp. It does not expand the compact aux back to f16. LUT removes the aux-decode arithmetic tax: exp-variant decode 2.5 FMA/weight-byte at 4 B/iter vs LUT 2.0 (dequant only) vs incumbent 1.3333 at 6 B/iter. Remaining LUT-vs-incumbent intensity is the same 8+8 FMA over fewer bytes (4.0 vs 2.6667) plus two indexed loads. executable_economics bytes-only: -0.0000 ms saved (sign ZERO). With aux-decode FMA billed (LUT extra FMA=0): -0.0000 ms (sign ZERO, flop_ms 0.0000, byte_ms 0.0000). Exp-variant billed -1.9426 ms (flop_ms 1.9426). GPU A/B layer 3: incumbent 330.7619 GB/s in 252.624 us, exp-variant 267.269 GB/s in 281.374 us, LUT-threadgroup 288.6855 GB/s in 260.5 us (\u0394inc 7.876 us, \u0394exp -20.874 us). Token projection 0.504064 ms (PROJECTION_ARITHMETIC_OVER_PROBE). Placement rates: constant 288.2705 GB/s 260.875 us; threadgroup 288.6855 GB/s 260.5 us; device 288.5935 GB/s 260.583 us. LUT output is byte-unchanged from the exp-variant (down_proj relfro vs incumbent 0.02629999837482214, native receipt 0.02629999837482214, bar 0.03). LUT variant is faster than the exp variant but still slower than incumbent \u2014 the arithmetic tax is real but not only the exp. loadavg { 7.39 6.74 7.25 }.",
+ "fma_per_byte_by_class": {
+  "exp_counted_as_1": {
+   "claim": "LUT removes the aux-decode arithmetic tax: exp-variant decode 2.75 FMA/weight-byte at 4 B/iter vs LUT 2.0 (dequant only) vs incumbent 1.3333 at 6 B/iter. Remaining LUT-vs-incumbent intensity is the same 8+8 FMA over fewer bytes (4.0 vs 2.6667) plus two indexed loads.",
+   "convention": "One geo_tpr64 inner iteration = 8 weights. Classes are ops per streamed weight-byte. Incumbent: 2 B codes + 2 B f16 scale + 2 B f16 bias; 8 dequant-FMA + 8 MAC; 8 q int_to_float + 2 half_to_float; 16 bitops. Exp-variant: 2 B codes + 1 B u8 scale + 1 B u8 bias; same dequant+MAC plus 2 aux-decode FMA and 1 exp, 10 int_to_float. LUT-variant: same streamed 4 B, same dequant+MAC, 0 aux-decode FMA, 0 exp, 8 int_to_float (u8 is an index), 2 indexed loads from a resident 256-entry table (2 KB, not streamed). exp is counted as FMA only when count_exp_as > 0.",
+   "delta_lut_minus_exp": {
+    "aux_decode_fma": -2,
+    "decode_fma_per_weight_byte": -0.75,
+    "exp": -1,
+    "fma_per_weight_byte": -0.75,
+    "int_to_float": -2,
+    "lut_loads": 2
+   },
+   "delta_lut_minus_incumbent": {
+    "aux_decode_fma": 0,
+    "decode_fma_per_weight_byte": 0.6667,
+    "exp": 0,
+    "fma_per_weight_byte": 1.3333,
+    "lut_loads": 2,
+    "weight_bytes_per_iteration": -2
+   },
+   "exp_variant": {
+    "aux_decode_fma": 2,
+    "aux_decode_fma_per_weight_byte": 0.75,
+    "bitops": 16,
+    "class": {
+     "conversion": 2.5,
+     "fma": 4.75,
+     "integer": 4.0,
+     "memory": {
+      "lut_load_bytes_per_weight_byte": 0.0,
+      "lut_loads_per_weight_byte": 0.0,
+      "streamed_weight_bytes_per_weight_byte": 1.0
+     }
+    },
+    "conversion_count": 10,
+    "counted_exp_as_fma": 1.0,
+    "decode_fma_per_weight_byte": 2.75,
+    "dequant_fma": 8,
+    "dequant_fma_per_weight_byte": 2.0,
+    "exp": 1,
+    "fma_count": 19.0,
+    "fma_per_weight_byte": 4.75,
+    "half_to_float": 0,
+    "int_to_float": 10,
+    "integer_count": 16,
+    "label": "exp_variant_u8_aux",
+    "lut_load_bytes": 0,
+    "lut_loads": 0,
+    "mac_fma": 8,
+    "mac_fma_per_weight_byte": 2.0,
+    "memory_streamed_weight_bytes": 4,
+    "weight_bytes_per_iteration": 4,
+    "weights_per_iteration": 8,
+    "x_bytes_per_iteration": 32
+   },
+   "incumbent": {
+    "aux_decode_fma": 0,
+    "aux_decode_fma_per_weight_byte": 0.0,
+    "bitops": 16,
+    "class": {
+     "conversion": 1.6667,
+     "fma": 2.6667,
+     "integer": 2.6667,
+     "memory": {
+      "lut_load_bytes_per_weight_byte": 0.0,
+      "lut_loads_per_weight_byte": 0.0,
+      "streamed_weight_bytes_per_weight_byte": 1.0
+     }
+    },
+    "conversion_count": 10,
+    "counted_exp_as_fma": 0.0,
+    "decode_fma_per_weight_byte": 1.3333,
+    "dequant_fma": 8,
+    "dequant_fma_per_weight_byte": 1.3333,
+    "exp": 0,
+    "fma_count": 16.0,
+    "fma_per_weight_byte": 2.6667,
+    "half_to_float": 2,
+    "int_to_float": 8,
+    "integer_count": 16,
+    "label": "incumbent_f16_aux",
+    "lut_load_bytes": 0,
+    "lut_loads": 0,
+    "mac_fma": 8,
+    "mac_fma_per_weight_byte": 1.3333,
+    "memory_streamed_weight_bytes": 6,
+    "weight_bytes_per_iteration": 6,
+    "weights_per_iteration": 8,
+    "x_bytes_per_iteration": 32
+   },
+   "lut_variant": {
+    "aux_decode_fma": 0,
+    "aux_decode_fma_per_weight_byte": 0.0,
+    "bitops": 16,
+    "class": {
+     "conversion": 2.0,
+     "fma": 4.0,
+     "integer": 4.0,
+     "memory": {
+      "lut_load_bytes_per_weight_byte": 2.0,
+      "lut_loads_per_weight_byte": 0.5,
+      "streamed_weight_bytes_per_weight_byte": 1.0
+     }
+    },
+    "conversion_count": 8,
+    "counted_exp_as_fma": 0.0,
+    "decode_fma_per_weight_byte": 2.0,
+    "dequant_fma": 8,
+    "dequant_fma_per_weight_byte": 2.0,
+    "exp": 0,
+    "fma_count": 16.0,
+    "fma_per_weight_byte": 4.0,
+    "half_to_float": 0,
+    "int_to_float": 8,
+    "integer_count": 16,
+    "label": "lut_variant_u8_aux",
+    "lut_load_bytes": 8,
+    "lut_loads": 2,
+    "mac_fma": 8,
+    "mac_fma_per_weight_byte": 2.0,
+    "memory_streamed_weight_bytes": 4,
+    "weight_bytes_per_iteration": 4,
+    "weights_per_iteration": 8,
+    "x_bytes_per_iteration": 32
+   }
+  },
+  "fma_only": {
+   "claim": "LUT removes the aux-decode arithmetic tax: exp-variant decode 2.5 FMA/weight-byte at 4 B/iter vs LUT 2.0 (dequant only) vs incumbent 1.3333 at 6 B/iter. Remaining LUT-vs-incumbent intensity is the same 8+8 FMA over fewer bytes (4.0 vs 2.6667) plus two indexed loads.",
+   "convention": "One geo_tpr64 inner iteration = 8 weights. Classes are ops per streamed weight-byte. Incumbent: 2 B codes + 2 B f16 scale + 2 B f16 bias; 8 dequant-FMA + 8 MAC; 8 q int_to_float + 2 half_to_float; 16 bitops. Exp-variant: 2 B codes + 1 B u8 scale + 1 B u8 bias; same dequant+MAC plus 2 aux-decode FMA and 1 exp, 10 int_to_float. LUT-variant: same streamed 4 B, same dequant+MAC, 0 aux-decode FMA, 0 exp, 8 int_to_float (u8 is an index), 2 indexed loads from a resident 256-entry table (2 KB, not streamed). exp is counted as FMA only when count_exp_as > 0.",
+   "delta_lut_minus_exp": {
+    "aux_decode_fma": -2,
+    "decode_fma_per_weight_byte": -0.5,
+    "exp": -1,
+    "fma_per_weight_byte": -0.5,
+    "int_to_float": -2,
+    "lut_loads": 2
+   },
+   "delta_lut_minus_incumbent": {
+    "aux_decode_fma": 0,
+    "decode_fma_per_weight_byte": 0.6667,
+    "exp": 0,
+    "fma_per_weight_byte": 1.3333,
+    "lut_loads": 2,
+    "weight_bytes_per_iteration": -2
+   },
+   "exp_variant": {
+    "aux_decode_fma": 2,
+    "aux_decode_fma_per_weight_byte": 0.5,
+    "bitops": 16,
+    "class": {
+     "conversion": 2.5,
+     "fma": 4.5,
+     "integer": 4.0,
+     "memory": {
+      "lut_load_bytes_per_weight_byte": 0.0,
+      "lut_loads_per_weight_byte": 0.0,
+      "streamed_weight_bytes_per_weight_byte": 1.0
+     }
+    },
+    "conversion_count": 10,
+    "counted_exp_as_fma": 0.0,
+    "decode_fma_per_weight_byte": 2.5,
+    "dequant_fma": 8,
+    "dequant_fma_per_weight_byte": 2.0,
+    "exp": 1,
+    "fma_count": 18.0,
+    "fma_per_weight_byte": 4.5,
+    "half_to_float": 0,
+    "int_to_float": 10,
+    "integer_count": 16,
+    "label": "exp_variant_u8_aux",
+    "lut_load_bytes": 0,
+    "lut_loads": 0,
+    "mac_fma": 8,
+    "mac_fma_per_weight_byte": 2.0,
+    "memory_streamed_weight_bytes": 4,
+    "weight_bytes_per_iteration": 4,
+    "weights_per_iteration": 8,
+    "x_bytes_per_iteration": 32
+   },
+   "incumbent": {
+    "aux_decode_fma": 0,
+    "aux_decode_fma_per_weight_byte": 0.0,
+    "bitops": 16,
+    "class": {
+     "conversion": 1.6667,
+     "fma": 2.6667,
+     "integer": 2.6667,
+     "memory": {
+      "lut_load_bytes_per_weight_byte": 0.0,
+      "lut_loads_per_weight_byte": 0.0,
+      "streamed_weight_bytes_per_weight_byte": 1.0
+     }
+    },
+    "conversion_count": 10,
+    "counted_exp_as_fma": 0.0,
+    "decode_fma_per_weight_byte": 1.3333,
+    "dequant_fma": 8,
+    "dequant_fma_per_weight_byte": 1.3333,
+    "exp": 0,
+    "fma_count": 16.0,
+    "fma_per_weight_byte": 2.6667,
+    "half_to_float": 2,
+    "int_to_float": 8,
+    "integer_count": 16,
+    "label": "incumbent_f16_aux",
+    "lut_load_bytes": 0,
+    "lut_loads": 0,
+    "mac_fma": 8,
+    "mac_fma_per_weight_byte": 1.3333,
+    "memory_streamed_weight_bytes": 6,
+    "weight_bytes_per_iteration": 6,
+    "weights_per_iteration": 8,
+    "x_bytes_per_iteration": 32
+   },
+   "lut_variant": {
+    "aux_decode_fma": 0,
+    "aux_decode_fma_per_weight_byte": 0.0,
+    "bitops": 16,
+    "class": {
+     "conversion": 2.0,
+     "fma": 4.0,
+     "integer": 4.0,
+     "memory": {
+      "lut_load_bytes_per_weight_byte": 2.0,
+      "lut_loads_per_weight_byte": 0.5,
+      "streamed_weight_bytes_per_weight_byte": 1.0
+     }
+    },
+    "conversion_count": 8,
+    "counted_exp_as_fma": 0.0,
+    "decode_fma_per_weight_byte": 2.0,
+    "dequant_fma": 8,
+    "dequant_fma_per_weight_byte": 2.0,
+    "exp": 0,
+    "fma_count": 16.0,
+    "fma_per_weight_byte": 4.0,
+    "half_to_float": 0,
+    "int_to_float": 8,
+    "integer_count": 16,
+    "label": "lut_variant_u8_aux",
+    "lut_load_bytes": 8,
+    "lut_loads": 2,
+    "mac_fma": 8,
+    "mac_fma_per_weight_byte": 2.0,
+    "memory_streamed_weight_bytes": 4,
+    "weight_bytes_per_iteration": 4,
+    "weights_per_iteration": 8,
+    "x_bytes_per_iteration": 32
+   }
+  }
+ },
+ "forbidden_shape": "MATERIALIZE_F16_AUX",
+ "gpu_ab": {
+  "absolute_gb_s_are_measured_under_load": true,
+  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "bytes_removed_this_layer": 8355840,
+  "chosen_placement": "threadgroup",
+  "concurrent_load": {
+   "loadavg": "{ 7.39 6.74 7.25 }",
+   "note": "absolute GB/s is measured-under-load; A/B is back-to-back in one process",
+   "top_cpu": [
+    {
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+     "cpu_pct": 188.2,
+     "pid": 19615,
+     "rss_kib": 217664
+    },
+    {
+     "comm": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+     "cpu_pct": 101.5,
+     "pid": 19384,
+     "rss_kib": 4877440
+    },
+    {
+     "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/corespotlightd",
+     "cpu_pct": 25.0,
+     "pid": 605,
+     "rss_kib": 189600
+    },
+    {
+     "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+     "cpu_pct": 21.7,
+     "pid": 180,
+     "rss_kib": 57680
+    },
+    {
+     "comm": "/usr/libexec/trustd",
+     "cpu_pct": 18.6,
+     "pid": 557,
+     "rss_kib": 17712
+    },
+    {
+     "comm": "powermetrics",
+     "cpu_pct": 15.7,
+     "pid": 25867,
+     "rss_kib": 2512
+    },
+    {
+     "comm": "/System/Library/ExtensionKit/Extensions/WallpaperAerialsExtension.appex/Contents/MacOS/WallpaperAerialsExtension",
+     "cpu_pct": 9.6,
+     "pid": 624,
+     "rss_kib": 29488
+    },
+    {
+     "comm": "/bin/zsh",
+     "cpu_pct": 8.8,
+     "pid": 19639,
+     "rss_kib": 4864
+    },
+    {
+     "comm": "/usr/libexec/syspolicyd",
+     "cpu_pct": 6.8,
+     "pid": 272,
+     "rss_kib": 28288
+    },
+    {
+     "comm": "/usr/sbin/mDNSResponder",
+     "cpu_pct": 6.4,
+     "pid": 235,
+     "rss_kib": 12592
+    },
+    {
+     "comm": "/System/Library/PrivateFrameworks/XprotectFramework.framework/Versions/A/XPCServices/XprotectService.xpc/Contents/MacOS/XprotectService",
+     "cpu_pct": 4.5,
+     "pid": 72077,
+     "rss_kib": 23824
+    },
+    {
+     "comm": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+     "cpu_pct": 3.5,
+     "pid": 19545,
+     "rss_kib": 55024
+    }
+   ],
+   "uptime": "5:11  up 5 days,  9:08, 3 users, load averages: 7.39 6.74 7.25"
+  },
+  "concurrent_load_end": {
+   "loadavg": "{ 7.39 6.74 7.25 }",
+   "note": "absolute GB/s is measured-under-load; A/B is back-to-back in one process",
+   "top_cpu": [
+    {
+     "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+     "cpu_pct": 184.4,
+     "pid": 19615,
+     "rss_kib": 277616
+    },
+    {
+     "comm": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+     "cpu_pct": 102.3,
+     "pid": 19384,
+     "rss_kib": 4878096
+    },
+    {
+     "comm": "workspace/ops/build/rust/release-fast/examples/aux_u8_lut_ab",
+     "cpu_pct": 23.0,
+     "pid": 19645,
+     "rss_kib": 185904
+    },
+    {
+     "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+     "cpu_pct": 20.3,
+     "pid": 180,
+     "rss_kib": 57680
+    },
+    {
+     "comm": "/System/Library/Frameworks/Metal.framework/Versions/A/XPCServices/MTLCompilerService.xpc/Contents/MacOS/MTLCompilerService",
+     "cpu_pct": 18.5,
+     "pid": 19688,
+     "rss_kib": 34400
+    },
+    {
+     "comm": "/System/Library/ExtensionKit/Extensions/WallpaperAerialsExtension.appex/Contents/MacOS/WallpaperAerialsExtension",
+     "cpu_pct": 12.8,
+     "pid": 624,
+     "rss_kib": 27840
+    },
+    {
+     "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/corespotlightd",
+     "cpu_pct": 8.6,
+     "pid": 605,
+     "rss_kib": 189600
+    },
+    {
+     "comm": "/usr/libexec/trustd",
+     "cpu_pct": 7.5,
+     "pid": 557,
+     "rss_kib": 17712
+    },
+    {
+     "comm": "powermetrics",
+     "cpu_pct": 5.8,
+     "pid": 25867,
+     "rss_kib": 2512
+    },
+    {
+     "comm": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+     "cpu_pct": 4.5,
+     "pid": 19545,
+     "rss_kib": 55024
+    },
+    {
+     "comm": "/bin/zsh",
+     "cpu_pct": 3.3,
+     "pid": 19639,
+     "rss_kib": 4864
+    },
+    {
+     "comm": "/System/Library/Frameworks/VideoToolbox.framework/Versions/A/XPCServices/VTDecoderXPCService.xpc/Contents/MacOS/VTDecoderXPCService",
+     "cpu_pct": 3.3,
+     "pid": 94939,
+     "rss_kib": 56000
+    }
+   ],
+   "uptime": "5:11  up 5 days,  9:08, 3 users, load averages: 7.39 6.74 7.25"
+  },
+  "delta": {
+   "exp_minus_incumbent": {
+    "effective_gb_s": -63.4929,
+    "gpu_ns": 28750,
+    "gpu_us": 28.75,
+    "time_ratio": 1.113805,
+    "weight_bytes": -8355840
+   },
+   "lut_minus_exp": {
+    "effective_gb_s": 21.4165,
+    "gpu_ns": -20874,
+    "gpu_us": -20.874,
+    "time_ratio": 0.925814,
+    "weight_bytes": 0
+   },
+   "lut_minus_incumbent": {
+    "effective_gb_s": -42.0764,
+    "gpu_ns": 7876,
+    "gpu_us": 7.876,
+    "time_ratio": 1.031177,
+    "weight_bytes": -8355840
+   }
+  },
+  "exp_variant": {
+   "aux_bytes": 8355840,
+   "aux_dtype": "u8 log-scale + u8 linear bias",
+   "code_bytes": 66846720,
+   "command_buffers": 1,
+   "dispatches": 3,
+   "effective_gb_s": 267.269,
+   "encoders": 1,
+   "endpoint_bytes": 48,
+   "gpu_ns_median": 281374,
+   "gpu_ns_reps": [
+    281375,
+    281875,
+    279875,
+    281374,
+    280458,
+    282041,
+    279416,
+    280499,
+    283500,
+    281041,
+    283416
+   ],
+   "gpu_us_median": 281.374,
+   "kernel": "aux_u8_native_affine_q2_geo_tpr64_tg128",
+   "label": "native_u8_aux_exp",
+   "lut_table_bytes": 6144,
+   "materializes_f16_aux": false,
+   "weight_bytes": 75202560
+  },
+  "git_head": "2d93a4bf8cbe65bd370f12293a7ca0ffe50f36c9",
+  "incumbent": {
+   "aux_bytes": 16711680,
+   "aux_dtype": "f16 scale + f16 bias",
+   "code_bytes": 66846720,
+   "command_buffers": 1,
+   "dispatches": 3,
+   "effective_gb_s": 330.7619,
+   "encoders": 1,
+   "gpu_ns_median": 252624,
+   "gpu_ns_reps": [
+    251583,
+    252374,
+    252791,
+    252458,
+    253166,
+    254624,
+    253000,
+    251500,
+    252624,
+    253916,
+    251499
+   ],
+   "gpu_us_median": 252.624,
+   "kernel": "aux_u8_incumbent_affine_q2_geo_tpr64_tg128",
+   "label": "incumbent_f16_aux",
+   "weight_bytes": 83558400
+  },
+  "layer": 3,
+  "lut_table_bytes_this_layer": 6144,
+  "lut_variant": {
+   "aux_bytes": null,
+   "aux_dtype": null,
+   "chosen_because": "lowest median GPUStartTime/GPUEndTime among constant/threadgroup/device",
+   "code_bytes": null,
+   "command_buffers": 1,
+   "dispatches": 3,
+   "effective_gb_s": 288.6855,
+   "encoders": 1,
+   "gpu_ns_median": 260500,
+   "gpu_ns_reps": [
+    259083,
+    260500,
+    259249,
+    261250,
+    260708,
+    260250,
+    258208,
+    265000,
+    260250,
+    261124,
+    261000
+   ],
+   "gpu_us_median": 260.5,
+   "kernel": "aux_u8_lut_threadgroup_affine_q2_geo_tpr64_tg128",
+   "label": "lut_u8_threadgroup",
+   "lut_table_bytes": 6144,
+   "materializes_f16_aux": false,
+   "output_bytes_equal_vs_exp": true,
+   "placement": "threadgroup",
+   "vs_exp": {
+    "bytes_equal": true,
+    "cosine": 1.0,
+    "first_mismatch_index": null,
+    "max_abs_diff": 0.0,
+    "n_elem": 39936,
+    "n_mismatch": 0,
+    "relfro": 0.0
+   },
+   "weight_bytes": 75202560
+  },
+  "lut_vs_exp_output": {
+   "bytes_equal": true,
+   "chosen": {
+    "bytes_equal": true,
+    "cosine": 1.0,
+    "first_mismatch_index": null,
+    "max_abs_diff": 0.0,
+    "n_elem": 39936,
+    "n_mismatch": 0,
+    "relfro": 0.0
+   },
+   "constant": {
+    "bytes_equal": true,
+    "cosine": 1.0,
+    "first_mismatch_index": null,
+    "max_abs_diff": 0.0,
+    "n_elem": 39936,
+    "n_mismatch": 0,
+    "relfro": 0.0
+   },
+   "device": {
+    "bytes_equal": true,
+    "cosine": 1.0,
+    "first_mismatch_index": null,
+    "max_abs_diff": 0.0,
+    "n_elem": 39936,
+    "n_mismatch": 0,
+    "relfro": 0.0
+   },
+   "note": "LUT is an exact reindexing of the Metal exp used to fill the table. Bit-identity vs the in-loop exp-variant is the proof the table did not move the error.",
+   "threadgroup": {
+    "bytes_equal": true,
+    "cosine": 1.0,
+    "first_mismatch_index": null,
+    "max_abs_diff": 0.0,
+    "n_elem": 39936,
+    "n_mismatch": 0,
+    "relfro": 0.0
+   }
+  },
+  "native_consumer": {
+   "bias_buffer": "u8",
+   "codes": "incumbent 2-bit kept",
+   "decode_exp": "in-register log-scale exp + linear bias",
+   "decode_lut": "256-entry table indexed by u8; tables filled with Metal exp",
+   "forbidden_shape": "expand u8 aux to f16 then feed the ordinary kernel",
+   "materializes_f16_aux": false,
+   "scale_buffer": "u8"
+  },
+  "occupancy": {
+   "exp_variant": {
+    "gpu_cores": 60,
+    "max_total_threads_per_threadgroup": 1024,
+    "occupancy_of_max_threads": 0.125,
+    "registers_note": "Metal pipeline state does not report register count on this toolchain",
+    "registers_per_thread": null,
+    "thread_execution_width": 32,
+    "threadgroups": 8704,
+    "threadgroups_per_core": 145.06666666666666,
+    "threads_per_threadgroup": 128
+   },
+   "incumbent": {
+    "gpu_cores": 60,
+    "max_total_threads_per_threadgroup": 1024,
+    "occupancy_of_max_threads": 0.125,
+    "registers_note": "Metal pipeline state does not report register count on this toolchain",
+    "registers_per_thread": null,
+    "thread_execution_width": 32,
+    "threadgroups": 8704,
+    "threadgroups_per_core": 145.06666666666666,
+    "threads_per_threadgroup": 128
+   },
+   "lut_constant": {
+    "gpu_cores": 60,
+    "max_total_threads_per_threadgroup": 1024,
+    "occupancy_of_max_threads": 0.125,
+    "registers_note": "Metal pipeline state does not report register count on this toolchain",
+    "registers_per_thread": null,
+    "thread_execution_width": 32,
+    "threadgroups": 8704,
+    "threadgroups_per_core": 145.06666666666666,
+    "threads_per_threadgroup": 128
+   },
+   "lut_device": {
+    "gpu_cores": 60,
+    "max_total_threads_per_threadgroup": 1024,
+    "occupancy_of_max_threads": 0.125,
+    "registers_note": "Metal pipeline state does not report register count on this toolchain",
+    "registers_per_thread": null,
+    "thread_execution_width": 32,
+    "threadgroups": 8704,
+    "threadgroups_per_core": 145.06666666666666,
+    "threads_per_threadgroup": 128
+   },
+   "lut_threadgroup": {
+    "gpu_cores": 60,
+    "max_total_threads_per_threadgroup": 1024,
+    "occupancy_of_max_threads": 0.125,
+    "registers_note": "Metal pipeline state does not report register count on this toolchain",
+    "registers_per_thread": null,
+    "thread_execution_width": 32,
+    "threadgroups": 8704,
+    "threadgroups_per_core": 145.06666666666666,
+    "threads_per_threadgroup": 128
+   }
+  },
+  "output_cosine_mean": 0.9998673733400754,
+  "output_unchanged_from_exp": {
+   "bytes_equal": true,
+   "n_mismatch": 0,
+   "unchanged": true
+  },
+  "paired_reps": [
+   {
+    "delta_exp_minus_incumbent_gpu_ns": 29792,
+    "delta_lut_constant_minus_incumbent_gpu_ns": 6833,
+    "delta_lut_device_minus_incumbent_gpu_ns": 8417,
+    "delta_lut_threadgroup_minus_incumbent_gpu_ns": 7500,
+    "exp_gpu_ns": 281375,
+    "incumbent_gpu_ns": 251583,
+    "lut_constant_gpu_ns": 258416,
+    "lut_device_gpu_ns": 260000,
+    "lut_threadgroup_gpu_ns": 259083
+   },
+   {
+    "delta_exp_minus_incumbent_gpu_ns": 29501,
+    "delta_lut_constant_minus_incumbent_gpu_ns": 8376,
+    "delta_lut_device_minus_incumbent_gpu_ns": 9000,
+    "delta_lut_threadgroup_minus_incumbent_gpu_ns": 8126,
+    "exp_gpu_ns": 281875,
+    "incumbent_gpu_ns": 252374,
+    "lut_constant_gpu_ns": 260750,
+    "lut_device_gpu_ns": 261374,
+    "lut_threadgroup_gpu_ns": 260500
+   },
+   {
+    "delta_exp_minus_incumbent_gpu_ns": 27084,
+    "delta_lut_constant_minus_incumbent_gpu_ns": 6458,
+    "delta_lut_device_minus_incumbent_gpu_ns": 7709,
+    "delta_lut_threadgroup_minus_incumbent_gpu_ns": 6458,
+    "exp_gpu_ns": 279875,
+    "incumbent_gpu_ns": 252791,
+    "lut_constant_gpu_ns": 259249,
+    "lut_device_gpu_ns": 260500,
+    "lut_threadgroup_gpu_ns": 259249
+   },
+   {
+    "delta_exp_minus_incumbent_gpu_ns": 28916,
+    "delta_lut_constant_minus_incumbent_gpu_ns": 7250,
+    "delta_lut_device_minus_incumbent_gpu_ns": 8542,
+    "delta_lut_threadgroup_minus_incumbent_gpu_ns": 8792,
+    "exp_gpu_ns": 281374,
+    "incumbent_gpu_ns": 252458,
+    "lut_constant_gpu_ns": 259708,
+    "lut_device_gpu_ns": 261000,
+    "lut_threadgroup_gpu_ns": 261250
+   },
+   {
+    "delta_exp_minus_incumbent_gpu_ns": 27292,
+    "delta_lut_constant_minus_incumbent_gpu_ns": 9584,
+    "delta_lut_device_minus_incumbent_gpu_ns": 7417,
+    "delta_lut_threadgroup_minus_incumbent_gpu_ns": 7542,
+    "exp_gpu_ns": 280458,
+    "incumbent_gpu_ns": 253166,
+    "lut_constant_gpu_ns": 262750,
+    "lut_device_gpu_ns": 260583,
+    "lut_threadgroup_gpu_ns": 260708
+   },
+   {
+    "delta_exp_minus_incumbent_gpu_ns": 27417,
+    "delta_lut_constant_minus_incumbent_gpu_ns": 6251,
+    "delta_lut_device_minus_incumbent_gpu_ns": 2125,
+    "delta_lut_threadgroup_minus_incumbent_gpu_ns": 5626,
+    "exp_gpu_ns": 282041,
+    "incumbent_gpu_ns": 254624,
+    "lut_constant_gpu_ns": 260875,
+    "lut_device_gpu_ns": 256749,
+    "lut_threadgroup_gpu_ns": 260250
+   },
+   {
+    "delta_exp_minus_incumbent_gpu_ns": 26416,
+    "delta_lut_constant_minus_incumbent_gpu_ns": 7291,
+    "delta_lut_device_minus_incumbent_gpu_ns": 6541,
+    "delta_lut_threadgroup_minus_incumbent_gpu_ns": 5208,
+    "exp_gpu_ns": 279416,
+    "incumbent_gpu_ns": 253000,
+    "lut_constant_gpu_ns": 260291,
+    "lut_device_gpu_ns": 259541,
+    "lut_threadgroup_gpu_ns": 258208
+   },
+   {
+    "delta_exp_minus_incumbent_gpu_ns": 28999,
+    "delta_lut_constant_minus_incumbent_gpu_ns": 12458,
+    "delta_lut_device_minus_incumbent_gpu_ns": 10833,
+    "delta_lut_threadgroup_minus_incumbent_gpu_ns": 13500,
+    "exp_gpu_ns": 280499,
+    "incumbent_gpu_ns": 251500,
+    "lut_constant_gpu_ns": 263958,
+    "lut_device_gpu_ns": 262333,
+    "lut_threadgroup_gpu_ns": 265000
+   },
+   {
+    "delta_exp_minus_incumbent_gpu_ns": 30876,
+    "delta_lut_constant_minus_incumbent_gpu_ns": 10750,
+    "delta_lut_device_minus_incumbent_gpu_ns": 7125,
+    "delta_lut_threadgroup_minus_incumbent_gpu_ns": 7626,
+    "exp_gpu_ns": 283500,
+    "incumbent_gpu_ns": 252624,
+    "lut_constant_gpu_ns": 263374,
+    "lut_device_gpu_ns": 259749,
+    "lut_threadgroup_gpu_ns": 260250
+   },
+   {
+    "delta_exp_minus_incumbent_gpu_ns": 27125,
+    "delta_lut_constant_minus_incumbent_gpu_ns": 99625,
+    "delta_lut_device_minus_incumbent_gpu_ns": 7042,
+    "delta_lut_threadgroup_minus_incumbent_gpu_ns": 7208,
+    "exp_gpu_ns": 281041,
+    "incumbent_gpu_ns": 253916,
+    "lut_constant_gpu_ns": 353541,
+    "lut_device_gpu_ns": 260958,
+    "lut_threadgroup_gpu_ns": 261124
+   },
+   {
+    "delta_exp_minus_incumbent_gpu_ns": 31917,
+    "delta_lut_constant_minus_incumbent_gpu_ns": 33875,
+    "delta_lut_device_minus_incumbent_gpu_ns": 11001,
+    "delta_lut_threadgroup_minus_incumbent_gpu_ns": 9501,
+    "exp_gpu_ns": 283416,
+    "incumbent_gpu_ns": 251499,
+    "lut_constant_gpu_ns": 285374,
+    "lut_device_gpu_ns": 262500,
+    "lut_threadgroup_gpu_ns": 261000
+   }
+  ],
+  "placements": {
+   "constant": {
+    "address_space": "constant float[256] via set_bytes",
+    "aux_bytes": null,
+    "aux_dtype": null,
+    "code_bytes": null,
+    "command_buffers": 1,
+    "dispatches": 3,
+    "effective_gb_s": 288.2705,
+    "encoders": 1,
+    "gpu_ns_median": 260875,
+    "gpu_ns_reps": [
+     258416,
+     260750,
+     259249,
+     259708,
+     262750,
+     260875,
+     260291,
+     263958,
+     263374,
+     353541,
+     285374
+    ],
+    "gpu_us_median": 260.875,
+    "kernel": "aux_u8_lut_constant_affine_q2_geo_tpr64_tg128",
+    "label": "lut_u8_constant",
+    "lut_table_bytes": 6144,
+    "materializes_f16_aux": false,
+    "placement": "constant",
+    "vs_exp": {
+     "bytes_equal": true,
+     "cosine": 1.0,
+     "first_mismatch_index": null,
+     "max_abs_diff": 0.0,
+     "n_elem": 39936,
+     "n_mismatch": 0,
+     "relfro": 0.0
+    },
+    "weight_bytes": 75202560
+   },
+   "device": {
+    "address_space": "device const float[256], hardware cache",
+    "aux_bytes": null,
+    "aux_dtype": null,
+    "code_bytes": null,
+    "command_buffers": 1,
+    "dispatches": 3,
+    "effective_gb_s": 288.5935,
+    "encoders": 1,
+    "gpu_ns_median": 260583,
+    "gpu_ns_reps": [
+     260000,
+     261374,
+     260500,
+     261000,
+     260583,
+     256749,
+     259541,
+     262333,
+     259749,
+     260958,
+     262500
+    ],
+    "gpu_us_median": 260.583,
+    "kernel": "aux_u8_lut_device_affine_q2_geo_tpr64_tg128",
+    "label": "lut_u8_device",
+    "lut_table_bytes": 6144,
+    "materializes_f16_aux": false,
+    "placement": "device",
+    "vs_exp": {
+     "bytes_equal": true,
+     "cosine": 1.0,
+     "first_mismatch_index": null,
+     "max_abs_diff": 0.0,
+     "n_elem": 39936,
+     "n_mismatch": 0,
+     "relfro": 0.0
+    },
+    "weight_bytes": 75202560
+   },
+   "threadgroup": {
+    "address_space": "threadgroup float[256] cooperative copy from device",
+    "aux_bytes": null,
+    "aux_dtype": null,
+    "code_bytes": null,
+    "command_buffers": 1,
+    "dispatches": 3,
+    "effective_gb_s": 288.6855,
+    "encoders": 1,
+    "gpu_ns_median": 260500,
+    "gpu_ns_reps": [
+     259083,
+     260500,
+     259249,
+     261250,
+     260708,
+     260250,
+     258208,
+     265000,
+     260250,
+     261124,
+     261000
+    ],
+    "gpu_us_median": 260.5,
+    "kernel": "aux_u8_lut_threadgroup_affine_q2_geo_tpr64_tg128",
+    "label": "lut_u8_threadgroup",
+    "lut_table_bytes": 6144,
+    "materializes_f16_aux": false,
+    "placement": "threadgroup",
+    "vs_exp": {
+     "bytes_equal": true,
+     "cosine": 1.0,
+     "first_mismatch_index": null,
+     "max_abs_diff": 0.0,
+     "n_elem": 39936,
+     "n_mismatch": 0,
+     "relfro": 0.0
+    },
+    "weight_bytes": 75202560
+   }
+  },
+  "projections": [
+   {
+    "bias_max": -0.0010957717895507812,
+    "bias_min": -0.1705322265625,
+    "code_bytes": 22282240,
+    "cols": 5120,
+    "endpoint_bytes": 16,
+    "group_size": 64,
+    "groups": 1392640,
+    "incumbent_aux_bytes": 5570560,
+    "incumbent_weight_bytes": 27852800,
+    "lut_constant_vs_exp": {
+     "bytes_equal": true,
+     "cosine": 1.0000000000000002,
+     "first_mismatch_index": null,
+     "max_abs_diff": 0.0,
+     "n_elem": 17408,
+     "n_mismatch": 0,
+     "relfro": 0.0
+    },
+    "lut_device_vs_exp": {
+     "bytes_equal": true,
+     "cosine": 1.0000000000000002,
+     "first_mismatch_index": null,
+     "max_abs_diff": 0.0,
+     "n_elem": 17408,
+     "n_mismatch": 0,
+     "relfro": 0.0
+    },
+    "lut_materializes_f16_aux": false,
+    "lut_table_bytes": 2048,
+    "lut_threadgroup_vs_exp": {
+     "bytes_equal": true,
+     "cosine": 1.0000000000000002,
+     "first_mismatch_index": null,
+     "max_abs_diff": 0.0,
+     "n_elem": 17408,
+     "n_mismatch": 0,
+     "relfro": 0.0
+    },
+    "name": "language_model.model.layers.3.mlp.gate_proj.weight",
+    "native_aux_bytes": 2785280,
+    "native_binds": "device const uchar* scales_u8 / biases_u8",
+    "native_materializes_f16_aux": false,
+    "native_weight_bytes": 25067520,
+    "output_cosine_exp_vs_incumbent": 0.9999697607043455,
+    "output_cosine_lut_constant_vs_incumbent": 0.9999697607043455,
+    "output_cosine_lut_device_vs_incumbent": 0.9999697607043455,
+    "output_cosine_lut_threadgroup_vs_incumbent": 0.9999697607043455,
+    "output_relfro_exp_vs_incumbent": 0.007776788276791196,
+    "output_relfro_lut_constant_vs_incumbent": 0.007776788276791196,
+    "output_relfro_lut_device_vs_incumbent": 0.007776788276791196,
+    "output_relfro_lut_threadgroup_vs_incumbent": 0.007776788276791196,
+    "rows": 17408,
+    "scale_lmax": -2.474221749687984,
+    "scale_lmin": -5.050100177681711
+   },
+   {
+    "bias_max": 0.00138092041015625,
+    "bias_min": -0.13671875,
+    "code_bytes": 22282240,
+    "cols": 5120,
+    "endpoint_bytes": 16,
+    "group_size": 64,
+    "groups": 1392640,
+    "incumbent_aux_bytes": 5570560,
+    "incumbent_weight_bytes": 27852800,
+    "lut_constant_vs_exp": {
+     "bytes_equal": true,
+     "cosine": 1.0,
+     "first_mismatch_index": null,
+     "max_abs_diff": 0.0,
+     "n_elem": 17408,
+     "n_mismatch": 0,
+     "relfro": 0.0
+    },
+    "lut_device_vs_exp": {
+     "bytes_equal": true,
+     "cosine": 1.0,
+     "first_mismatch_index": null,
+     "max_abs_diff": 0.0,
+     "n_elem": 17408,
+     "n_mismatch": 0,
+     "relfro": 0.0
+    },
+    "lut_materializes_f16_aux": false,
+    "lut_table_bytes": 2048,
+    "lut_threadgroup_vs_exp": {
+     "bytes_equal": true,
+     "cosine": 1.0,
+     "first_mismatch_index": null,
+     "max_abs_diff": 0.0,
+     "n_elem": 17408,
+     "n_mismatch": 0,
+     "relfro": 0.0
+    },
+    "name": "language_model.model.layers.3.mlp.up_proj.weight",
+    "native_aux_bytes": 2785280,
+    "native_binds": "device const uchar* scales_u8 / biases_u8",
+    "native_materializes_f16_aux": false,
+    "native_weight_bytes": 25067520,
+    "output_cosine_exp_vs_incumbent": 0.9999780261536382,
+    "output_cosine_lut_constant_vs_incumbent": 0.9999780261536382,
+    "output_cosine_lut_device_vs_incumbent": 0.9999780261536382,
+    "output_cosine_lut_threadgroup_vs_incumbent": 0.9999780261536382,
+    "output_relfro_exp_vs_incumbent": 0.0066293657007670675,
+    "output_relfro_lut_constant_vs_incumbent": 0.0066293657007670675,
+    "output_relfro_lut_device_vs_incumbent": 0.0066293657007670675,
+    "output_relfro_lut_threadgroup_vs_incumbent": 0.0066293657007670675,
+    "rows": 17408,
+    "scale_lmax": -2.9011103632232236,
+    "scale_lmin": -5.128061719151423
+   },
+   {
+    "bias_max": 0.0014429092407226562,
+    "bias_min": -0.6044921875,
+    "code_bytes": 22282240,
+    "cols": 17408,
+    "endpoint_bytes": 16,
+    "group_size": 64,
+    "groups": 1392640,
+    "incumbent_aux_bytes": 5570560,
+    "incumbent_weight_bytes": 27852800,
+    "lut_constant_vs_exp": {
+     "bytes_equal": true,
+     "cosine": 1.0,
+     "first_mismatch_index": null,
+     "max_abs_diff": 0.0,
+     "n_elem": 5120,
+     "n_mismatch": 0,
+     "relfro": 0.0
+    },
+    "lut_device_vs_exp": {
+     "bytes_equal": true,
+     "cosine": 1.0,
+     "first_mismatch_index": null,
+     "max_abs_diff": 0.0,
+     "n_elem": 5120,
+     "n_mismatch": 0,
+     "relfro": 0.0
+    },
+    "lut_materializes_f16_aux": false,
+    "lut_table_bytes": 2048,
+    "lut_threadgroup_vs_exp": {
+     "bytes_equal": true,
+     "cosine": 1.0,
+     "first_mismatch_index": null,
+     "max_abs_diff": 0.0,
+     "n_elem": 5120,
+     "n_mismatch": 0,
+     "relfro": 0.0
+    },
+    "name": "language_model.model.layers.3.mlp.down_proj.weight",
+    "native_aux_bytes": 2785280,
+    "native_binds": "device const uchar* scales_u8 / biases_u8",
+    "native_materializes_f16_aux": false,
+    "native_weight_bytes": 25067520,
+    "output_cosine_exp_vs_incumbent": 0.9996543331622423,
+    "output_cosine_lut_constant_vs_incumbent": 0.9996543331622423,
+    "output_cosine_lut_device_vs_incumbent": 0.9996543331622423,
+    "output_cosine_lut_threadgroup_vs_incumbent": 0.9996543331622423,
+    "output_relfro_exp_vs_incumbent": 0.02629999837482214,
+    "output_relfro_lut_constant_vs_incumbent": 0.02629999837482214,
+    "output_relfro_lut_device_vs_incumbent": 0.02629999837482214,
+    "output_relfro_lut_threadgroup_vs_incumbent": 0.02629999837482214,
+    "rows": 5120,
+    "scale_lmax": -1.1973217943268557,
+    "scale_lmin": -5.264354781578675
+   }
+  ],
+  "reps": 11,
+  "shader": "crates/hawking-core/examples/aux_u8_lut_ab.metal",
+  "speedup": {
+   "exp_faster_than_incumbent": false,
+   "exp_minus_incumbent_ns": 28750,
+   "lut_faster_than_exp": true,
+   "lut_faster_than_incumbent": false,
+   "lut_minus_exp_ns": -20874,
+   "lut_minus_incumbent_ns": 7876,
+   "time_ratio_lut_over_exp": 0.925814,
+   "time_ratio_lut_over_incumbent": 1.031177,
+   "unchanged_from_exp": true
+  },
+  "speedup_refused": null,
+  "timing": "MTLCommandBuffer GPUStartTime/GPUEndTime",
+  "token_projection": {
+   "formula": "measured_layer_delta_ns * 64",
+   "kind": "PROJECTION_ARITHMETIC_OVER_PROBE",
+   "layers": 64,
+   "not_a_resident_measurement": true,
+   "note": "64 identical MLP layers assumed. Not a protected generate gate and not a host+GPU complete-token measurement. Delta is LUT minus incumbent.",
+   "probe_delta_gpu_us": 7.876,
+   "probe_layer": 3,
+   "projected_mlp_delta_ms": 0.504064,
+   "projected_mlp_delta_us": 504.064
+  },
+  "warmup": 5
+ },
+ "gpu_authority": false,
+ "honest_outcome": {
+  "billed_net_sign": "ZERO",
+  "exp_gpu_us": 281.374,
+  "incumbent_gpu_us": 252.624,
+  "kind": "LUT_BEATS_EXP_STILL_SLOWER_THAN_INCUMBENT",
+  "lut_faster_than_exp": true,
+  "lut_faster_than_incumbent": false,
+  "lut_gpu_us": 260.5,
+  "prose": "LUT variant is faster than the exp variant but still slower than incumbent \u2014 the arithmetic tax is real but not only the exp."
+ },
+ "lever_id": "quantize_aux_u8",
+ "measurement_provenance": {
+  "absolutes_are_measured_under_load": true,
+  "gpu_lane_lock_held": null,
+  "lane": "aux_u8_lut",
+  "loadavg": "{ 8.19 6.61 6.17 }",
+  "measured_at": null,
+  "measured_at_source": "RETROFIT_UNKNOWN",
+  "receipt_regenerated_at": "2026-08-31T10:31:56Z",
+  "why": "this receipt predates measurement provenance; the raw capture carries no timestamp, so the measurement time is genuinely unknown and is recorded as unknown rather than invented"
+ },
+ "native_down_proj_relfro": 0.02629999837482214,
+ "recorded_by": "tools/future/aux_u8_lut.py",
+ "schema": "hawking.future.aux_u8_lut.v1",
+ "seal_sha256": "67b8be7b5055dd12a16e1de8a95ac0a9898883e61e5339155a13903de232a078",
+ "shader_invariants": {
+  "binds_u8_aux": true,
+  "exp_variant_uses_exp": true,
+  "fill_kernel_uses_metal_exp": true,
+  "forbidden_hits": [],
+  "in_register_exp": false,
+  "indexed_lut": true,
+  "lut_kernels_bind_half_aux": [],
+  "lut_kernels_contain_exp": [],
+  "materializes_f16_aux": false,
+  "missing_required": [],
+  "ok": true,
+  "placements": [
+   "constant",
+   "threadgroup",
+   "device"
+  ],
+  "shader": "crates/hawking-core/examples/aux_u8_lut_ab.metal"
+ },
+ "sources": [
+  "receipts/future/AUX_U8_NATIVE.json",
+  "receipts/future/MLP_ERROR_BUDGET.json",
+  "receipts/future/AUX_CAPABILITY_SCREEN.json",
+  "crates/hawking-core/examples/aux_u8_lut_ab.metal",
+  "crates/hawking-core/examples/aux_u8_lut_ab.rs",
+  "tools/future/executable_economics.py"
+ ],
+ "took_gpu_lease": true,
+ "version": 1
+}

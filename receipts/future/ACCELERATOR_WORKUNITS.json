@@ -3,18 +3,19 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T15:37:44Z",
+  "recorded_at": "2026-08-31T12:08:04Z",
   "recorded_by": "tools/future/accelerator_workunits.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. GPU-authority species are emitted SLEEPING; this partition cannot take a lease or write a protected result. A missing input is a named refusal, never a pass. The procedure-species library EMITS HCLI WorkUnits; it does not execute them, take a GPU lease, or write a protected result. Every ms/GB/s figure below is copied from a named prior receipt (cited), never measured here.",
  "contamination": {
   "class": "HEAVY",
   "protected_ab_runnable": false,
   "rule": "PROTECTED_AB is never runnable under LIGHT/HEAVY/UNKNOWN, and is never runnable on this sidecar even if QUIESCENT.",
   "source": "at least one HEAVY probe fired"
  },
+ "does_not_execute": true,
  "emitted": {
   "n_emitted": 22,
   "n_gpu_sleeping": 9,
@@ -383,7 +384,11 @@
   "next_species() answers the Accelerator cursor from real queue state and returns a reason when nothing is runnable (never an empty list)",
   "GPU-authority species are emitted SLEEPING on this sidecar even if the handoff blocker list is empty (codex_behaviors derives sleep from blockers)",
   "a species whose input receipt is absent refuses, naming the receipt",
-  "PROTECTED_AB is never emitted runnable under LIGHT or worse contamination"
+  "PROTECTED_AB is never emitted runnable under LIGHT or worse contamination",
+  "seven procedure species validate through workunit_species.validate_emitted_unit",
+  "scars are raising refusals (unstated roof, addr-probe without activation, stream-merge promotion, sweep without discriminators, ceremony continue after BOUNDED_TOO_SMALL, token-id-only parity, isolated-only reprofile)",
+  "reprofile trigger fires on the live stale-baseline condition (fold_addqx 3.9833 ms; PATH_TO_71 28.722 vs incumbent 26.3026)",
+  "the procedure chain is emitted for the live frontier; emitting is not executing"
  ],
  "gpu_authority": false,
  "gpu_species": [
@@ -503,10 +508,11 @@
   "READY_PROTECTED candidates wait on a GPU window this partition must not seize",
   "contamination_class=HEAVY (at least one HEAVY probe fired); PROTECTED_AB stays SLEEPING",
   "codex_behaviors.UPDATE_SCOREBOARD and ATTACK_LAW remain UNGROUNDED_FROM_HANDOFF; this module still emits them as species with their input-receipt gate",
-  "orchestration.py BINDINGS is not writable from this lane; the module is resident-callable via --build/--next regardless"
+  "orchestration.py BINDINGS is not writable from this lane; the module is resident-callable via --build/--next regardless",
+  "this species library EMITS work units; it does not run them"
  ],
  "next_species": {
-  "claim_boundary": "Static sidecar artifact. No hardware measurement. GPU-authority species are emitted SLEEPING; this partition cannot take a lease or write a protected result. A missing input is a named refusal, never a pass.",
+  "claim_boundary": "Static sidecar artifact. No hardware measurement. GPU-authority species are emitted SLEEPING; this partition cannot take a lease or write a protected result. A missing input is a named refusal, never a pass. The procedure-species library EMITS HCLI WorkUnits; it does not execute them, take a GPU lease, or write a protected result. Every ms/GB/s figure below is copied from a named prior receipt (cited), never measured here.",
   "contamination_class": "HEAVY",
   "contamination_source": "injected",
   "evidence_class": "STATIC_ONLY",
@@ -589,7 +595,461 @@
   "status": "sleeping",
   "wake_condition": "SLEEPING until a distinct HCLI GPU_PROTECTED lane (not this sidecar) holds a proven lease on a Metal-capable GPU with the Metal compiler present. This sidecar partition has no GPU authority and never will. protected_window.acquire_lease raises rather than flock. A synthetic complete-token result is refused."
  },
- "purpose": "Make Codex's profile \u2192 tallest cost \u2192 why \u2192 remove (information / bytes / FLOPs / intermediate / dispatch / sync / copy / ceremony) \u2192 A/B \u2192 integrate \u2192 reprofile loop schedulable by HCLI, so the next latency seam is found without a human asking for it.",
+ "procedure": {
+  "chain": {
+   "n_units": 7,
+   "note": "These are real HCLI WorkUnits. Emitting them is not executing them. GPU-class units are SLEEPING; this sidecar has no GPU and never will. PARITY_PROOF blocks promotion until accepted. COMPLETE_TOKEN_REPROFILE follows any accepted win; the live trigger fires because fold_addqx removed 3.9833 ms and PATH_TO_71 TOKEN_MS 28.722 is stale against incumbent 26.3026.",
+   "units": [
+    {
+     "acceptance": "a ceiling that names roof_id from the registry and loads the activation; two independent legs agree",
+     "blocks_promotion_until_accepted": false,
+     "dependencies": [],
+     "executed": false,
+     "gpu_authority_required": true,
+     "id": "hcli.metabolism.ROOF_PROBE",
+     "input_receipts": [
+      "receipts/future/MLP_ALU_ROOFLINE.json",
+      "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json"
+     ],
+     "output_receipt": "receipts/future/ROOF_ANCHOR.json",
+     "refusals": [
+      "unstated_roof",
+      "ceiling_without_named_roof_id",
+      "promoted_family_scoring_reference_as_machine_roof"
+     ],
+     "resource_class": "GPU_DIRTY_OK",
+     "runnable": false,
+     "scar": "a ceiling with an unstated roof produced 595.9, and 589.73 was a second instance",
+     "species": "ROOF_PROBE",
+     "status": "sleeping",
+     "verifier": "future.accelerator.roof_probe",
+     "wake_condition": "SLEEPING until a distinct HCLI GPU_PROTECTED lane (not this sidecar) holds a proven lease on a Metal-capable GPU with the Metal compiler present. This sidecar partition has no GPU authority and never will. protected_window.acquire_lease raises rather than flock. A synthetic complete-token result is refused."
+    },
+    {
+     "acceptance": "a sourced rung chain; every rung used as a production-decode comparable loads the activation",
+     "blocks_promotion_until_accepted": false,
+     "dependencies": [
+      "hcli.metabolism.ROOF_PROBE"
+     ],
+     "executed": false,
+     "gpu_authority_required": false,
+     "id": "hcli.metabolism.PRODUCTION_GAP_ATTRIBUTION",
+     "input_receipts": [
+      "receipts/future/ROOF_ANCHOR.json",
+      "receipts/future/ADDRESSING_ATTRIBUTION.json"
+     ],
+     "output_receipt": "receipts/future/ADDRESSING_ATTRIBUTION.json",
+     "refusals": [
+      "addr_probe_as_production_ceiling",
+      "rung_without_source_receipt",
+      "activation_not_loaded_compared_as_decode"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "runnable": true,
+     "scar": "703.5 never loads the activation",
+     "species": "PRODUCTION_GAP_ATTRIBUTION",
+     "status": "pending",
+     "verifier": "future.accelerator.production_gap_attribution",
+     "wake_condition": null
+    },
+    {
+     "acceptance": "a stream-count ladder at fixed bytes/thread whose verdict does not promote merging",
+     "blocks_promotion_until_accepted": false,
+     "dependencies": [
+      "hcli.metabolism.PRODUCTION_GAP_ATTRIBUTION"
+     ],
+     "executed": false,
+     "gpu_authority_required": true,
+     "id": "hcli.metabolism.ADDRESSING_AUDIT",
+     "input_receipts": [
+      "receipts/future/ADDRESSING_ATTRIBUTION.json",
+      "receipts/future/MLP_STREAM_COUNT.json"
+     ],
+     "output_receipt": "receipts/future/MLP_STREAM_COUNT.json",
+     "refusals": [
+      "promote_stream_merge",
+      "stream_count_bound_after_merge_hurts",
+      "bytes_per_thread_not_held"
+     ],
+     "resource_class": "GPU_DIRTY_OK",
+     "runnable": false,
+     "scar": "stream count REFUTED at fixed bytes/thread; merging further HURTS",
+     "species": "ADDRESSING_AUDIT",
+     "status": "sleeping",
+     "verifier": "future.accelerator.addressing_audit",
+     "wake_condition": "SLEEPING until a distinct HCLI GPU_PROTECTED lane (not this sidecar) holds a proven lease on a Metal-capable GPU with the Metal compiler present. This sidecar partition has no GPU authority and never will. protected_window.acquire_lease raises rather than flock. A synthetic complete-token result is refused."
+    },
+    {
+     "acceptance": "a geometry sweep that includes dependency, register_pressure, and occupancy discriminators",
+     "blocks_promotion_until_accepted": false,
+     "dependencies": [
+      "hcli.metabolism.ADDRESSING_AUDIT"
+     ],
+     "executed": false,
+     "gpu_authority_required": true,
+     "id": "hcli.metabolism.GEOMETRY_SWEEP",
+     "input_receipts": [
+      "receipts/future/MLP_STREAM_COUNT.json",
+      "receipts/future/MLP_ISSUE_RATE_LADDER.json"
+     ],
+     "output_receipt": "receipts/future/MLP_ISSUE_RATE_LADDER.json",
+     "refusals": [
+      "sweep_without_discriminators",
+      "missing_dependency_discriminator",
+      "missing_register_pressure_discriminator",
+      "missing_occupancy_discriminator"
+     ],
+     "resource_class": "GPU_DIRTY_OK",
+     "runnable": false,
+     "scar": "two slopes with a stall; NOT dependency (1.062), NOT register pressure (1.078), NOT occupancy (raising it is worse)",
+     "species": "GEOMETRY_SWEEP",
+     "status": "sleeping",
+     "verifier": "future.accelerator.geometry_sweep",
+     "wake_condition": "SLEEPING until a distinct HCLI GPU_PROTECTED lane (not this sidecar) holds a proven lease on a Metal-capable GPU with the Metal compiler present. This sidecar partition has no GPU authority and never will. protected_window.acquire_lease raises rather than flock. A synthetic complete-token result is refused."
+    },
+    {
+     "acceptance": "a named host-gap bound; verdict BOUNDED_TOO_SMALL is a legal stop",
+     "blocks_promotion_until_accepted": false,
+     "dependencies": [
+      "hcli.metabolism.ROOF_PROBE"
+     ],
+     "executed": false,
+     "gpu_authority_required": true,
+     "id": "hcli.metabolism.CEREMONY_AUDIT",
+     "input_receipts": [
+      "receipts/future/WALL_GPU_RECONCILIATION.json"
+     ],
+     "output_receipt": "receipts/future/WALL_GPU_RECONCILIATION.json",
+     "refusals": [
+      "continue_after_bounded_too_small",
+      "unnamed_host_gap",
+      "host_ceremony_as_unlock_after_bound"
+     ],
+     "resource_class": "GPU_DIRTY_OK",
+     "runnable": false,
+     "scar": "the whole host class is bounded at 0.9894 ms; deleting all of it is not the unlock",
+     "species": "CEREMONY_AUDIT",
+     "status": "sleeping",
+     "verifier": "future.accelerator.ceremony_audit",
+     "wake_condition": "SLEEPING until a distinct HCLI GPU_PROTECTED lane (not this sidecar) holds a proven lease on a Metal-capable GPU with the Metal compiler present. This sidecar partition has no GPU authority and never will. protected_window.acquire_lease raises rather than flock. A synthetic complete-token result is refused."
+    },
+    {
+     "acceptance": "token_ids_identical AND an intermediate-byte comparison; argmax agreement is not parity",
+     "blocks_promotion_until_accepted": true,
+     "dependencies": [
+      "hcli.metabolism.GEOMETRY_SWEEP",
+      "hcli.metabolism.CEREMONY_AUDIT"
+     ],
+     "executed": false,
+     "gpu_authority_required": true,
+     "id": "hcli.metabolism.PARITY_PROOF",
+     "input_receipts": [
+      "receipts/future/FOLD_ADDQX_AB.json"
+     ],
+     "output_receipt": "receipts/future/FOLD_ADDQX_AB.json",
+     "refusals": [
+      "token_id_equality_alone",
+      "argmax_as_parity",
+      "cited_probe_as_identity_proof"
+     ],
+     "resource_class": "GPU_EXCLUSIVE",
+     "runnable": false,
+     "scar": "token ids identical, 22309 of 69632 intermediate bytes NOT",
+     "species": "PARITY_PROOF",
+     "status": "sleeping",
+     "verifier": "future.accelerator.parity_proof",
+     "wake_condition": "SLEEPING until a distinct HCLI GPU_PROTECTED lane (not this sidecar) holds a proven lease on a Metal-capable GPU with the Metal compiler present. This sidecar partition has no GPU authority and never will. protected_window.acquire_lease raises rather than flock. A synthetic complete-token result is refused."
+    },
+    {
+     "acceptance": "a complete-token measurement of the new incumbent; isolated probes and projections are not this species",
+     "blocks_promotion_until_accepted": false,
+     "dependencies": [
+      "hcli.metabolism.PARITY_PROOF"
+     ],
+     "executed": false,
+     "gpu_authority_required": true,
+     "id": "hcli.metabolism.COMPLETE_TOKEN_REPROFILE",
+     "input_receipts": [
+      "receipts/future/FOLD_ADDQX_AB.json",
+      "receipts/future/PATH_TO_71.json",
+      "receipts/future/DELTANET_WIDEN_AB.json"
+     ],
+     "output_receipt": "receipts/future/FOLD_ADDQX_AB.json",
+     "refusals": [
+      "isolated_measurement_only",
+      "projection_as_token",
+      "probe_as_token",
+      "stale_baseline_after_large_win"
+     ],
+     "resource_class": "GPU_EXCLUSIVE",
+     "runnable": false,
+     "scar": "0.7046 became 1.0245, and 1.745 became 3.9833",
+     "species": "COMPLETE_TOKEN_REPROFILE",
+     "status": "sleeping",
+     "verifier": "future.accelerator.complete_token_reprofile",
+     "wake_condition": "SLEEPING until a distinct HCLI GPU_PROTECTED lane (not this sidecar) holds a proven lease on a Metal-capable GPU with the Metal compiler present. This sidecar partition has no GPU authority and never will. protected_window.acquire_lease raises rather than flock. A synthetic complete-token result is refused."
+    }
+   ]
+  },
+  "dependencies": {
+   "ADDRESSING_AUDIT": [
+    "PRODUCTION_GAP_ATTRIBUTION"
+   ],
+   "CEREMONY_AUDIT": [
+    "ROOF_PROBE"
+   ],
+   "COMPLETE_TOKEN_REPROFILE": [
+    "PARITY_PROOF"
+   ],
+   "GEOMETRY_SWEEP": [
+    "ADDRESSING_AUDIT"
+   ],
+   "PARITY_PROOF": [
+    "GEOMETRY_SWEEP",
+    "CEREMONY_AUDIT"
+   ],
+   "PRODUCTION_GAP_ATTRIBUTION": [
+    "ROOF_PROBE"
+   ],
+   "ROOF_PROBE": []
+  },
+  "does_not_execute": true,
+  "executed": false,
+  "live_frontier": {
+   "baseline_source": {
+    "field": "baseline.token_ms",
+    "receipt": "receipts/future/PATH_TO_71.json"
+   },
+   "baseline_token_ms": 28.722,
+   "cited": true,
+   "does_not_execute": true,
+   "evidence_class": "STATIC_ONLY",
+   "incumbent_source": {
+    "field": "complete_token.incumbent_ms",
+    "receipt": "receipts/future/FOLD_ADDQX_AB.json"
+   },
+   "incumbent_token_ms": 26.3026,
+   "isolated_projection_ms": 1.745,
+   "win_id": "fold_addqx",
+   "win_ms": 3.9833,
+   "win_source": {
+    "field": "saving.complete_token_saving_ms",
+    "receipt": "receipts/future/FOLD_ADDQX_AB.json"
+   }
+  },
+  "reprofile_trigger": {
+   "baseline_token_ms": 28.722,
+   "cited": true,
+   "claim_boundary": "Static sidecar artifact. No hardware measurement. GPU-authority species are emitted SLEEPING; this partition cannot take a lease or write a protected result. A missing input is a named refusal, never a pass. The procedure-species library EMITS HCLI WorkUnits; it does not execute them, take a GPU lease, or write a protected result. Every ms/GB/s figure below is copied from a named prior receipt (cited), never measured here.",
+   "does_not_execute": true,
+   "evidence_class": "STATIC_ONLY",
+   "fires": true,
+   "incumbent_token_ms": 26.3026,
+   "live_frontier": {
+    "baseline_source": {
+     "field": "baseline.token_ms",
+     "receipt": "receipts/future/PATH_TO_71.json"
+    },
+    "baseline_token_ms": 28.722,
+    "cited": true,
+    "does_not_execute": true,
+    "evidence_class": "STATIC_ONLY",
+    "incumbent_source": {
+     "field": "complete_token.incumbent_ms",
+     "receipt": "receipts/future/FOLD_ADDQX_AB.json"
+    },
+    "incumbent_token_ms": 26.3026,
+    "isolated_projection_ms": 1.745,
+    "win_id": "fold_addqx",
+    "win_ms": 3.9833,
+    "win_source": {
+     "field": "saving.complete_token_saving_ms",
+     "receipt": "receipts/future/FOLD_ADDQX_AB.json"
+    }
+   },
+   "old_decomposition_valid": false,
+   "reason": "after a large win the old decomposition is invalid: fold_addqx removed 3.9833 ms; baseline TOKEN_MS 28.722 is stale against incumbent 26.3026",
+   "species_to_emit": "COMPLETE_TOKEN_REPROFILE",
+   "threshold_ms": 1.0,
+   "win_id": "fold_addqx",
+   "win_ms": 3.9833
+  },
+  "rule": "ROOF_PROBE before PRODUCTION_GAP_ATTRIBUTION; PARITY_PROOF before any promotion; COMPLETE_TOKEN_REPROFILE after any accepted win. After any large win, reprofile immediately.",
+  "species": {
+   "ADDRESSING_AUDIT": {
+    "acceptance": "a stream-count ladder at fixed bytes/thread whose verdict does not promote merging",
+    "blocks_promotion_until_accepted": false,
+    "does_not_execute": true,
+    "evidence_class": "STATIC_ONLY",
+    "gpu_authority": false,
+    "gpu_authority_required": true,
+    "id": "ADDRESSING_AUDIT",
+    "input_receipts": [
+     "receipts/future/ADDRESSING_ATTRIBUTION.json",
+     "receipts/future/MLP_STREAM_COUNT.json"
+    ],
+    "output_receipt": "receipts/future/MLP_STREAM_COUNT.json",
+    "refusals": [
+     "promote_stream_merge",
+     "stream_count_bound_after_merge_hurts",
+     "bytes_per_thread_not_held"
+    ],
+    "resource_class": "GPU_DIRTY_OK",
+    "scar": "stream count REFUTED at fixed bytes/thread; merging further HURTS",
+    "title": "Audit stream count at fixed bytes/thread",
+    "verifier": "future.accelerator.addressing_audit"
+   },
+   "CEREMONY_AUDIT": {
+    "acceptance": "a named host-gap bound; verdict BOUNDED_TOO_SMALL is a legal stop",
+    "blocks_promotion_until_accepted": false,
+    "does_not_execute": true,
+    "evidence_class": "STATIC_ONLY",
+    "gpu_authority": false,
+    "gpu_authority_required": true,
+    "id": "CEREMONY_AUDIT",
+    "input_receipts": [
+     "receipts/future/WALL_GPU_RECONCILIATION.json"
+    ],
+    "output_receipt": "receipts/future/WALL_GPU_RECONCILIATION.json",
+    "refusals": [
+     "continue_after_bounded_too_small",
+     "unnamed_host_gap",
+     "host_ceremony_as_unlock_after_bound"
+    ],
+    "resource_class": "GPU_DIRTY_OK",
+    "scar": "the whole host class is bounded at 0.9894 ms; deleting all of it is not the unlock",
+    "title": "Bound the host ceremony class and stop if too small",
+    "verifier": "future.accelerator.ceremony_audit"
+   },
+   "COMPLETE_TOKEN_REPROFILE": {
+    "acceptance": "a complete-token measurement of the new incumbent; isolated probes and projections are not this species",
+    "blocks_promotion_until_accepted": false,
+    "does_not_execute": true,
+    "evidence_class": "STATIC_ONLY",
+    "gpu_authority": false,
+    "gpu_authority_required": true,
+    "id": "COMPLETE_TOKEN_REPROFILE",
+    "input_receipts": [
+     "receipts/future/FOLD_ADDQX_AB.json",
+     "receipts/future/PATH_TO_71.json",
+     "receipts/future/DELTANET_WIDEN_AB.json"
+    ],
+    "output_receipt": "receipts/future/FOLD_ADDQX_AB.json",
+    "refusals": [
+     "isolated_measurement_only",
+     "projection_as_token",
+     "probe_as_token",
+     "stale_baseline_after_large_win"
+    ],
+    "resource_class": "GPU_EXCLUSIVE",
+    "scar": "0.7046 became 1.0245, and 1.745 became 3.9833",
+    "title": "Reprofile the complete token after a win",
+    "verifier": "future.accelerator.complete_token_reprofile"
+   },
+   "GEOMETRY_SWEEP": {
+    "acceptance": "a geometry sweep that includes dependency, register_pressure, and occupancy discriminators",
+    "blocks_promotion_until_accepted": false,
+    "does_not_execute": true,
+    "evidence_class": "STATIC_ONLY",
+    "gpu_authority": false,
+    "gpu_authority_required": true,
+    "id": "GEOMETRY_SWEEP",
+    "input_receipts": [
+     "receipts/future/MLP_STREAM_COUNT.json",
+     "receipts/future/MLP_ISSUE_RATE_LADDER.json"
+    ],
+    "output_receipt": "receipts/future/MLP_ISSUE_RATE_LADDER.json",
+    "refusals": [
+     "sweep_without_discriminators",
+     "missing_dependency_discriminator",
+     "missing_register_pressure_discriminator",
+     "missing_occupancy_discriminator"
+    ],
+    "resource_class": "GPU_DIRTY_OK",
+    "scar": "two slopes with a stall; NOT dependency (1.062), NOT register pressure (1.078), NOT occupancy (raising it is worse)",
+    "title": "Sweep issue-rate geometry and carry its discriminators",
+    "verifier": "future.accelerator.geometry_sweep"
+   },
+   "PARITY_PROOF": {
+    "acceptance": "token_ids_identical AND an intermediate-byte comparison; argmax agreement is not parity",
+    "blocks_promotion_until_accepted": true,
+    "does_not_execute": true,
+    "evidence_class": "STATIC_ONLY",
+    "gpu_authority": false,
+    "gpu_authority_required": true,
+    "id": "PARITY_PROOF",
+    "input_receipts": [
+     "receipts/future/FOLD_ADDQX_AB.json"
+    ],
+    "output_receipt": "receipts/future/FOLD_ADDQX_AB.json",
+    "refusals": [
+     "token_id_equality_alone",
+     "argmax_as_parity",
+     "cited_probe_as_identity_proof"
+    ],
+    "resource_class": "GPU_EXCLUSIVE",
+    "scar": "token ids identical, 22309 of 69632 intermediate bytes NOT",
+    "title": "Prove parity: token ids AND intermediate bytes",
+    "verifier": "future.accelerator.parity_proof"
+   },
+   "PRODUCTION_GAP_ATTRIBUTION": {
+    "acceptance": "a sourced rung chain; every rung used as a production-decode comparable loads the activation",
+    "blocks_promotion_until_accepted": false,
+    "does_not_execute": true,
+    "evidence_class": "STATIC_ONLY",
+    "gpu_authority": false,
+    "gpu_authority_required": false,
+    "id": "PRODUCTION_GAP_ATTRIBUTION",
+    "input_receipts": [
+     "receipts/future/ROOF_ANCHOR.json",
+     "receipts/future/ADDRESSING_ATTRIBUTION.json"
+    ],
+    "output_receipt": "receipts/future/ADDRESSING_ATTRIBUTION.json",
+    "refusals": [
+     "addr_probe_as_production_ceiling",
+     "rung_without_source_receipt",
+     "activation_not_loaded_compared_as_decode"
+    ],
+    "resource_class": "STATIC_ANALYSIS",
+    "scar": "703.5 never loads the activation",
+    "title": "Attribute the production gap, each rung sourced",
+    "verifier": "future.accelerator.production_gap_attribution"
+   },
+   "ROOF_PROBE": {
+    "acceptance": "a ceiling that names roof_id from the registry and loads the activation; two independent legs agree",
+    "blocks_promotion_until_accepted": false,
+    "does_not_execute": true,
+    "evidence_class": "STATIC_ONLY",
+    "gpu_authority": false,
+    "gpu_authority_required": true,
+    "id": "ROOF_PROBE",
+    "input_receipts": [
+     "receipts/future/MLP_ALU_ROOFLINE.json",
+     "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json"
+    ],
+    "output_receipt": "receipts/future/ROOF_ANCHOR.json",
+    "refusals": [
+     "unstated_roof",
+     "ceiling_without_named_roof_id",
+     "promoted_family_scoring_reference_as_machine_roof"
+    ],
+    "resource_class": "GPU_DIRTY_OK",
+    "scar": "a ceiling with an unstated roof produced 595.9, and 589.73 was a second instance",
+    "title": "Probe the production-shaped roof WITH the activation load",
+    "verifier": "future.accelerator.roof_probe"
+   }
+  },
+  "species_ids": [
+   "ROOF_PROBE",
+   "PRODUCTION_GAP_ATTRIBUTION",
+   "ADDRESSING_AUDIT",
+   "GEOMETRY_SWEEP",
+   "CEREMONY_AUDIT",
+   "PARITY_PROOF",
+   "COMPLETE_TOKEN_REPROFILE"
+  ]
+ },
+ "purpose": "Make Codex's profile \u2192 tallest cost \u2192 why \u2192 remove (information / bytes / FLOPs / intermediate / dispatch / sync / copy / ceremony) \u2192 A/B \u2192 integrate \u2192 reprofile loop schedulable by HCLI, so the next latency seam is found without a human asking for it. Freeze today's hand-composed procedure as reusable WorkUnit species so a future Odyssey model receives the treatment without a human composing it.",
  "recovered_implementation": [
   "tools/future/codex_behaviors.py \u2014 thirty grounded species, emit_species_unit, emit_cycle, wake_condition_for; this module does not fork the catalog",
   "tools/future/workunit_species.py \u2014 HCLI field set, define_species, emit_hcli_workunit",
@@ -597,7 +1057,15 @@
   "tools/future/contamination.py \u2014 QUIESCENT/LIGHT/HEAVY/UNKNOWN; assert_promotable",
   "tools/future/protected_window.py \u2014 eviction envelope; acquire_lease raises",
   "tools/future/qwen27_profile_schema.py \u2014 REQUIRED_METRICS columns FIND_TALLEST ranks",
-  "CODEX_ACCELERATOR_HANDOFF.json \u2014 training trace loaded from /Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json"
+  "CODEX_ACCELERATOR_HANDOFF.json \u2014 training trace loaded from /Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json",
+  "receipts/future/ROOF_ANCHOR.json \u2014 named roof 497.4 with activation; unstated-roof scar",
+  "receipts/future/ADDRESSING_ATTRIBUTION.json \u2014 703-to-337 chain; 703.5 never loads the activation",
+  "receipts/future/MLP_STREAM_COUNT.json \u2014 stream count REFUTED at fixed bytes/thread; merging HURTS",
+  "receipts/future/MLP_ISSUE_RATE_LADDER.json \u2014 discriminators, not just the sweep",
+  "receipts/future/WALL_GPU_RECONCILIATION.json \u2014 host class bounded at 0.9894 ms",
+  "receipts/future/FOLD_ADDQX_AB.json \u2014 token ids necessary not sufficient; complete token 3.9833 ms",
+  "receipts/future/DELTANET_WIDEN_AB.json \u2014 isolated 0.7046 became complete 1.0245",
+  "receipts/future/PATH_TO_71.json \u2014 TOKEN_MS 28.722 stale against incumbent 26.3026"
  ],
  "resident_callable": {
   "entry_point": "tools.future.accelerator_workunits.next_species()",
@@ -607,7 +1075,7 @@
   "workunit": "one CPU_ANALYSIS unit for next_species / emit_loop; GPU species are emitted SLEEPING and are not a work source on this host"
  },
  "schema": "hawking.future.accelerator_workunits.v1",
- "seal_sha256": "e73de9c4232c1d8027f1a216ed1b0b8f5b2454c18a95054e095b72c616d05602",
+ "seal_sha256": "f4bb1afc4671aad6f0a00edef62b4698e2bfa80448435ecf7cda7d13f194743b",
  "species": {
   "ATTACK_LAW": {
    "evidence_class": "STATIC_ONLY",

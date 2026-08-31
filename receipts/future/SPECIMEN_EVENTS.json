@@ -1,0 +1,498 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T12:12:47Z",
+  "recorded_by": "tools/future/specimen_events.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "candidate_roles": [
+  {
+   "role": "small_dense_alternate_architecture_transfer",
+   "status": "CANDIDATE",
+   "why": "falcon_h1 is the alternate-architecture first-wave role"
+  }
+ ],
+ "cite_existing_seal": {
+  "action": "CITED_EXISTING_SEAL",
+  "bytes_hashed_cited": 15182220635,
+  "expected_revision": "41e72f27effbab80cd45b6e884688452253a3686",
+  "n_files_cited": 13,
+  "n_sha256_verified_cited": 13,
+  "rehashed": false,
+  "revision_matches": true,
+  "rule": "a sealed source is not re-hashed; the existing whole-tree receipt is the seal",
+  "specimen": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+  "status": "WHOLE_TREE_VERIFIED",
+  "tag_revision_prefix": "41e72f27effb",
+  "verification_source": "receipts/future/SPECIMEN_VERIFICATION.json",
+  "whole_tree_verified": true
+ },
+ "claim_boundary": "Static sidecar artifact. A specimen-seal event ADDS a WorkGraph to the running Odyssey I mission. It does not restart Odyssey, does not rewrite ODYSSEY_I_LAUNCH.json, does not re-hash a sealed source, and does not record a partial-weight experiment as specimen science.",
+ "demonstration_mode": "replay",
+ "demonstration_why": "no live ModelLake completion sealed while this lane ran; replaying the already-sealed transition of tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+ "durable_event": {
+  "in_memory_callback_is_not_this": true,
+  "n_events": 3,
+  "replay_sees_n_events": 3,
+  "survives_restart": true,
+  "transitions": [
+   {
+    "event_id": "5ecb2d102d93b3a0b913c1c02ca5f44166f5c9b1bfeb1546deafadadf5aba7da",
+    "from_state": "DOWNLOADING",
+    "kind": "SPECIMEN_STATE_TRANSITION",
+    "replay": true,
+    "to_state": "COMPLETE_UNSEALED"
+   },
+   {
+    "event_id": "0438409bf09cb7ea1d3bb48adb37256c659977afd1c72e98f41f9f1a428630f9",
+    "from_state": "COMPLETE_UNSEALED",
+    "kind": "SPECIMEN_STATE_TRANSITION",
+    "replay": true,
+    "to_state": "SEALED_SOURCE_SPECIMEN"
+   }
+  ]
+ },
+ "evidence_class": "STATIC_ONLY",
+ "experiments": [
+  {
+   "campaign_phase": "transfer_and_scars",
+   "cost_units": 1,
+   "expected_information_gain": 3,
+   "kind": "transfer_law",
+   "law_id": "LAW-DEVICE-ROOFS",
+   "organ_class": "cross_model",
+   "requires_weights": false,
+   "scope": "MACHINE_LOCAL",
+   "why": "transferable law is cheaper than cold search"
+  },
+  {
+   "campaign_phase": "transfer_and_scars",
+   "cost_units": 1,
+   "expected_information_gain": 3,
+   "kind": "transfer_law",
+   "law_id": "LAW-FITTED-AFFINE-BEATS-RTN",
+   "organ_class": "cross_model",
+   "requires_weights": false,
+   "scope": "GENERIC_CANDIDATE",
+   "why": "transferable law is cheaper than cold search"
+  },
+  {
+   "campaign_phase": "transfer_and_scars",
+   "cost_units": 1,
+   "expected_information_gain": 3,
+   "kind": "transfer_law",
+   "law_id": "LAW-KERNEL-REUSE-FOLLOWS-STORAGE-LAYOUT",
+   "organ_class": "moe_expert_kernel",
+   "requires_weights": false,
+   "scope": "GENERIC_CANDIDATE",
+   "why": "transferable law is cheaper than cold search"
+  },
+  {
+   "campaign_phase": "transfer_and_scars",
+   "cost_units": 1,
+   "expected_information_gain": 3,
+   "kind": "transfer_law",
+   "law_id": "LAW-PER-ORGAN-FLOOR",
+   "organ_class": "cross_model",
+   "requires_weights": false,
+   "scope": "GENERIC_CANDIDATE",
+   "why": "transferable law is cheaper than cold search"
+  },
+  {
+   "campaign_phase": "transfer_and_scars",
+   "closed_families": [
+    "MLP_FUNCTION_REPLACEMENT",
+    "MONARCH",
+    "BUTTERFLY",
+    "FACTORIZE_THE_FACTORS",
+    "PRODUCT_DICTIONARY",
+    "CONDITIONAL_PROGRAM",
+    "GENERATED_BLOCK",
+    "NONLINEAR_GENERATOR"
+   ],
+   "cost_units": 1,
+   "expected_information_gain": 3,
+   "kind": "scar_lookup",
+   "n_closed": 8,
+   "requires_weights": false,
+   "still_visible_gap": [],
+   "why": "a scar the index can see prunes the family before a unit is emitted"
+  },
+  {
+   "campaign_phase": "new_search",
+   "cost_units": 3,
+   "expected_information_gain": 2,
+   "kind": "new_search_where_transfer_inapplicable",
+   "pruned_families": [
+    "MLP_FUNCTION_REPLACEMENT",
+    "MONARCH",
+    "BUTTERFLY",
+    "FACTORIZE_THE_FACTORS",
+    "PRODUCT_DICTIONARY",
+    "CONDITIONAL_PROGRAM",
+    "GENERATED_BLOCK",
+    "NONLINEAR_GENERATOR"
+   ],
+   "requires_weights": false,
+   "why": "open new search only after transfer and scar lookup; this unit depends on both and is skipped if they already cover the organ"
+  }
+ ],
+ "fingerprint": {
+  "architecture_family": "falcon_h1",
+  "architectures": [
+   "FalconH1ForCausalLM"
+  ],
+  "hidden_size": 3072,
+  "model_type": "falcon_h1",
+  "moe": false,
+  "multimodal": false,
+  "n_named_tensors": 751,
+  "num_hidden_layers": 44,
+  "organ_families": [
+   "mlp",
+   "attention",
+   "mamba_ssm",
+   "embed",
+   "lm_head",
+   "norm"
+  ],
+  "size_bytes": 15171309760,
+  "source": "config.json+optional_index",
+  "weights_opened": false
+ },
+ "gaps_closed": [
+  "DOWNLOADING -> COMPLETE_UNSEALED -> SEALED_SOURCE_SPECIMEN is a durable replayable event",
+  "SEALED_SOURCE_SPECIMEN wakes the scheduler with no human reminder",
+  "arrival ADDS a WorkGraph; mission_id and phase_transition are unchanged",
+  "transferable laws and relevant scars are queried and scheduled before new search",
+  "WorkGraphs are prioritized and bounded by size-band economics, not an optimization explosion",
+  "a partial-weight experiment cannot be recorded as specimen science",
+  "already-sealed specimens are cited, not re-hashed"
+ ],
+ "gpu_authority": false,
+ "legal_transitions": [
+  [
+   "COMPLETE_UNSEALED",
+   "SEALED_SOURCE_SPECIMEN"
+  ],
+  [
+   "DOWNLOADING",
+   "COMPLETE_UNSEALED"
+  ],
+  [
+   "DOWNLOADING",
+   "SEALED_SOURCE_SPECIMEN"
+  ]
+ ],
+ "live_arrival": false,
+ "mission": {
+  "identity_after": {
+   "launch_seal_sha256": "d6ae606071fac80dc815ceabfaa63b684154e9d79dfca331e5c161083849c09b",
+   "mission_id": "odyssey-i/d6ae606071fac80dc815ceabfaa63b684154e9d79dfca331e5c161083849c09b",
+   "phase_transition": "STARTED"
+  },
+  "identity_before": {
+   "launch_seal_sha256": "d6ae606071fac80dc815ceabfaa63b684154e9d79dfca331e5c161083849c09b",
+   "mission_id": "odyssey-i/d6ae606071fac80dc815ceabfaa63b684154e9d79dfca331e5c161083849c09b",
+   "phase_transition": "STARTED"
+  },
+  "launch_receipt": "receipts/future/ODYSSEY_I_LAUNCH.json",
+  "launch_untouched": {
+   "mission_id": "odyssey-i/d6ae606071fac80dc815ceabfaa63b684154e9d79dfca331e5c161083849c09b",
+   "mission_id_unchanged": true,
+   "path": "/Users/scammermike/Downloads/hawking/receipts/future/ODYSSEY_I_LAUNCH.json",
+   "phase_transition": "STARTED",
+   "phase_transition_unchanged": true,
+   "seal_sha256": "d6ae606071fac80dc815ceabfaa63b684154e9d79dfca331e5c161083849c09b",
+   "seal_unchanged": true
+  },
+  "mission_id": "odyssey-i/d6ae606071fac80dc815ceabfaa63b684154e9d79dfca331e5c161083849c09b",
+  "phase_transition": "STARTED",
+  "restarts_odyssey": false
+ },
+ "negative_findings": [
+  "this lane did not observe a live ModelLake seal during the run unless demonstration_mode is live_arrival",
+  "tools/odyssey/modellake_watch.py is not edited; it still only logs",
+  "ODYSSEY_I_LAUNCH.json is not rewritten; the gate is not re-run",
+  "GPU stages are omitted from the arrival graph: depth is economics, and this sidecar has no GPU authority"
+ ],
+ "no_era_vi": true,
+ "no_odyssey_iv": true,
+ "proofs": {
+  "cite_did_not_rehash": true,
+  "durable_replayable_event": true,
+  "early_metadata_is_not_science": true,
+  "fingerprint_did_not_open_weights": true,
+  "launch_seal_unchanged": true,
+  "mission_id_unchanged": true,
+  "partial_weight_science_refused": true,
+  "partial_weight_why": "refusing specimen science in state DOWNLOADING: early metadata is not a sealed specimen; a partial-weight experiment cannot be recorded as specimen science",
+  "phase_transition_unchanged": true,
+  "restart_helper_refused": true,
+  "restart_why": "a sealed specimen ADDS a WorkGraph to the running mission; restarting Odyssey is forbidden",
+  "restarts_odyssey": false,
+  "transfer_before_new_search": true,
+  "workgraph_added": true,
+  "workgraph_bounded": true
+ },
+ "purpose": "Durable replayable event for DOWNLOADING -> COMPLETE_UNSEALED -> SEALED_SOURCE_SPECIMEN. On seal, wake the Odyssey scheduler and ADD a bounded WorkGraph to the running mission. Never restart Odyssey.",
+ "recovered_implementation": [
+  "tools/odyssey/modellake_watch.py emits download_started / already_complete / watcher_sample; it does not emit a scientific event",
+  "tools/future/wakeup.py is the receipt-completion bus; this module is the specimen-seal event on that idea, keyed on ModelLake state not a receipt poll",
+  "tools/future/workgraph.py WorkGraph.admit inserts units; identity conflict refuses a silent overwrite",
+  "tools/future/odyssey_launch.py emit_first_workgraphs is the first-wave graph; this module ADDS a later graph and does not call launch()",
+  "tools/future/negative_index.py refuse_if_dead keys MLP_FUNCTION_REPLACEMENT, MONARCH, BUTTERFLY, FACTORIZE_THE_FACTORS, PRODUCT_DICTIONARY, CONDITIONAL_PROGRAM, GENERATED_BLOCK, NONLINEAR_GENERATOR",
+  "tools/future/odyssey2_law_store.py is the transferable-law store; MODEL_LOCAL on another parent is not a transfer",
+  "tools/future/specimen_verify.py already sealed the demonstration specimen; this lane cites that receipt and does not re-hash"
+ ],
+ "replay": true,
+ "resident_callable": {
+  "entry_point": "tools.future.specimen_events.apply_sealed_arrival(event, mission)",
+  "fails_closed": "partial-weight science is refused; restart_odyssey() raises; an illegal state jump raises; an empty WorkGraph is not added",
+  "frontier": "FT.HCLI_SELF.specimen-events",
+  "receipt": "receipts/future/SPECIMEN_EVENTS.json",
+  "workunit": "one CPU_ANALYSIS unit: persist the seal transition and admit the bounded arrival WorkGraph onto the running mission"
+ },
+ "scars": [
+  {
+   "hypothesis_family": "MLP_FUNCTION_REPLACEMENT",
+   "refused": true,
+   "scar": {
+    "level": "MODEL_SPECIFIC",
+    "scar_id": "receipts/future/MLP_STRUCTURED_OPERATOR.json#MLP_FUNCTION_REPLACEMENT",
+    "source_path": "receipts/future/MLP_STRUCTURED_OPERATOR.json",
+    "verdict": "MEASURED_NEGATIVE"
+   }
+  },
+  {
+   "hypothesis_family": "MONARCH",
+   "refused": true,
+   "scar": {
+    "level": "MODEL_SPECIFIC",
+    "scar_id": "receipts/future/MLP_STRUCTURED_OPERATOR.json#MONARCH",
+    "source_path": "receipts/future/MLP_STRUCTURED_OPERATOR.json",
+    "verdict": "MEASURED_NEGATIVE"
+   }
+  },
+  {
+   "hypothesis_family": "BUTTERFLY",
+   "refused": true,
+   "scar": {
+    "level": "MODEL_SPECIFIC",
+    "scar_id": "receipts/future/MLP_STRUCTURED_OPERATOR.json#BUTTERFLY",
+    "source_path": "receipts/future/MLP_STRUCTURED_OPERATOR.json",
+    "verdict": "MEASURED_NEGATIVE"
+   }
+  },
+  {
+   "hypothesis_family": "FACTORIZE_THE_FACTORS",
+   "refused": true,
+   "scar": {
+    "level": "MODEL_SPECIFIC",
+    "scar_id": "receipts/future/MLP_NONLINEAR_PROGRAM.json#FACTORIZE_THE_FACTORS",
+    "source_path": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+    "verdict": "MEASURED_NEGATIVE"
+   }
+  },
+  {
+   "hypothesis_family": "PRODUCT_DICTIONARY",
+   "refused": true,
+   "scar": {
+    "level": "MODEL_SPECIFIC",
+    "scar_id": "receipts/future/MLP_NONLINEAR_PROGRAM.json#PRODUCT_DICTIONARY",
+    "source_path": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+    "verdict": "MEASURED_NEGATIVE"
+   }
+  },
+  {
+   "hypothesis_family": "CONDITIONAL_PROGRAM",
+   "refused": true,
+   "scar": {
+    "level": "MODEL_SPECIFIC",
+    "scar_id": "receipts/future/MLP_NONLINEAR_PROGRAM.json#CONDITIONAL_PROGRAM",
+    "source_path": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+    "verdict": "MEASURED_NEGATIVE"
+   }
+  },
+  {
+   "hypothesis_family": "GENERATED_BLOCK",
+   "refused": true,
+   "scar": {
+    "level": "MODEL_SPECIFIC",
+    "scar_id": "receipts/future/MLP_NONLINEAR_PROGRAM.json#GENERATED_BLOCK",
+    "source_path": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+    "verdict": "MEASURED_NEGATIVE"
+   }
+  },
+  {
+   "hypothesis_family": "NONLINEAR_GENERATOR",
+   "refused": true,
+   "scar": {
+    "level": "MODEL_SPECIFIC",
+    "scar_id": "receipts/future/MLP_NONLINEAR_PROGRAM.json#NONLINEAR_GENERATOR",
+    "source_path": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+    "verdict": "MEASURED_NEGATIVE"
+   }
+  }
+ ],
+ "scheduler_wake": {
+  "event_id": "0438409bf09cb7ea1d3bb48adb37256c659977afd1c72e98f41f9f1a428630f9",
+  "human_reminder": false,
+  "kind": "SCHEDULER_WAKE",
+  "mission_id": "odyssey-i/d6ae606071fac80dc815ceabfaa63b684154e9d79dfca331e5c161083849c09b",
+  "phase_transition": "STARTED",
+  "restarts_odyssey": false,
+  "ts": "2026-08-31T12:12:47Z"
+ },
+ "schema": "hawking.future.specimen_events.v1",
+ "seal_sha256": "27e424d090cbc8cfb021fd52e1993a336d9f9211bb61284ebaef61a0e36d68e2",
+ "specimen": {
+  "architecture_family": "falcon_h1",
+  "bytes_hashed": 15182220635,
+  "n_files": 13,
+  "repo": "tiiuae/Falcon-H1-7B-Instruct",
+  "revision": "41e72f27effbab80cd45b6e884688452253a3686",
+  "role": "small_dense_alternate_architecture_transfer",
+  "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+  "tag": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+  "verification": {
+   "bytes_hashed": 15182220635,
+   "n_files": 13,
+   "status": "WHOLE_TREE_VERIFIED",
+   "whole_tree_verified": true
+  }
+ },
+ "states": [
+  "DOWNLOADING",
+  "COMPLETE_UNSEALED",
+  "SEALED_SOURCE_SPECIMEN"
+ ],
+ "transferable_laws": [
+  {
+   "law_id": "LAW-DEVICE-ROOFS",
+   "organ_class": "cross_model",
+   "scope": "MACHINE_LOCAL"
+  },
+  {
+   "law_id": "LAW-FITTED-AFFINE-BEATS-RTN",
+   "organ_class": "cross_model",
+   "scope": "GENERIC_CANDIDATE"
+  },
+  {
+   "law_id": "LAW-KERNEL-REUSE-FOLLOWS-STORAGE-LAYOUT",
+   "organ_class": "moe_expert_kernel",
+   "scope": "GENERIC_CANDIDATE"
+  },
+  {
+   "law_id": "LAW-PER-ORGAN-FLOOR",
+   "organ_class": "cross_model",
+   "scope": "GENERIC_CANDIDATE"
+  }
+ ],
+ "version": 1,
+ "wave_dead_families": [
+  "MLP_FUNCTION_REPLACEMENT",
+  "MONARCH",
+  "BUTTERFLY",
+  "FACTORIZE_THE_FACTORS",
+  "PRODUCT_DICTIONARY",
+  "CONDITIONAL_PROGRAM",
+  "GENERATED_BLOCK",
+  "NONLINEAR_GENERATOR"
+ ],
+ "workgraph": {
+  "bounded": true,
+  "budget": {
+   "allow_gpu": false,
+   "allow_new_search": true,
+   "band": "mid",
+   "max_units": 6,
+   "size_bytes": 15171309760,
+   "why": "mid-size: transfer/scars first, at most one new-search unit, no GPU depth"
+  },
+  "n_units": 5,
+  "new_search_ids": [
+   "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.new_search"
+  ],
+  "restarts_odyssey": false,
+  "transfer_and_scar_ids": [
+   "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.architecture_fingerprint",
+   "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.cite_existing_seal",
+   "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.relevant_scars",
+   "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.transfer_laws"
+  ],
+  "transfer_before_new_search": true,
+  "transfer_does_not_depend_on_new_search": true,
+  "unit_ids": [
+   "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.architecture_fingerprint",
+   "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.cite_existing_seal",
+   "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.new_search",
+   "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.relevant_scars",
+   "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.transfer_laws"
+  ],
+  "units": [
+   {
+    "campaign_phase": "transfer_and_scars",
+    "cost_units": 1,
+    "dependencies": [
+     "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.cite_existing_seal"
+    ],
+    "expected_information_gain": 3,
+    "id": "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.architecture_fingerprint",
+    "resource_lane": "CPU_ANALYSIS",
+    "role": "science",
+    "status": "pending"
+   },
+   {
+    "campaign_phase": "transfer_and_scars",
+    "cost_units": 1,
+    "dependencies": [],
+    "expected_information_gain": 3,
+    "id": "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.cite_existing_seal",
+    "resource_lane": "CPU_VERIFY",
+    "role": "verify",
+    "status": "pending"
+   },
+   {
+    "campaign_phase": "new_search",
+    "cost_units": 3,
+    "dependencies": [
+     "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.transfer_laws",
+     "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.relevant_scars"
+    ],
+    "expected_information_gain": 2,
+    "id": "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.new_search",
+    "resource_lane": "CPU_ANALYSIS",
+    "role": "science",
+    "status": "pending"
+   },
+   {
+    "campaign_phase": "transfer_and_scars",
+    "cost_units": 1,
+    "dependencies": [
+     "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.architecture_fingerprint"
+    ],
+    "expected_information_gain": 3,
+    "id": "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.relevant_scars",
+    "resource_lane": "CPU_ANALYSIS",
+    "role": "science",
+    "status": "pending"
+   },
+   {
+    "campaign_phase": "transfer_and_scars",
+    "cost_units": 1,
+    "dependencies": [
+     "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.architecture_fingerprint"
+    ],
+    "expected_information_gain": 3,
+    "id": "odyssey-i.arrival.falcon-h1-7b-instruct@41e72f27effb.transfer_laws",
+    "resource_lane": "CPU_ANALYSIS",
+    "role": "science",
+    "status": "pending"
+   }
+  ]
+ }
+}

@@ -516,3 +516,71 @@ def test_alter_priority_from_evidence_reorders_the_remaining_queue(short_loop_ti
         assert isinstance(before, list) and isinstance(after, list)
         assert before != after
         assert event.get("cites")
+
+
+def test_held_for_refill_is_remaining_and_inflight_not_history():
+    """Historical queue items are done, not held. That was the 30m refill-dry lie."""
+    queue = [
+        {"frontier_id": "FT.DONE", "capability": "a.py"},
+        {"frontier_id": "FT.REMAINING", "capability": "b.py"},
+    ]
+    held = ar.held_for_refill(queue, 1, [{"frontier_id": "FT.FLYING"}])
+    assert "FT.DONE" not in held
+    assert "FT.REMAINING" in held
+    assert "FT.FLYING" in held
+    assert ar.held_for_refill(queue, 2, []) == set()
+    assert ar.held_for_refill(queue, 0, []) == {"FT.DONE", "FT.REMAINING"}
+
+
+def test_idle_justified_is_refused_without_a_handle_or_while_novel_work_exists():
+    """NEGATIVE CONTROL: the justification event cannot paper over the defect."""
+    doc = {"events": []}
+    with pytest.raises(ar.EmitRefused, match="no open handle"):
+        ar.emit_idle_justified(doc, asked=[], waiting_on=[], t_s=0)
+    with pytest.raises(ar.EmitRefused, match="novel work"):
+        ar.emit_idle_justified(
+            doc,
+            asked=[{"frontier_id": "FT.X", "returned": "novel"}],
+            waiting_on=[{"job_id": "j1", "pid": 1}],
+            t_s=0,
+        )
+    assert not [e for e in doc.get("events") or [] if e.get("kind") == at.IDLE_JUSTIFIED_KIND]
+
+
+def test_idle_justified_carries_the_refill_survey_and_the_wait():
+    doc = ar.emit_idle_justified(
+        {"events": []},
+        asked=[
+            {"frontier_id": "FT.A", "returned": "already_run", "capability": "freshness.py"},
+            {"frontier_id": "FT.B", "returned": "no_safe_capability"},
+        ],
+        waiting_on=[{"job_id": "spec", "pid": 22827, "unit_id": "WU.TORTURE.NO_WAIT.specimen_verify"}],
+        t_s=88,
+    )
+    event = doc["events"][-1]
+    assert event["kind"] == at.IDLE_JUSTIFIED_KIND
+    payload = event["payload"]
+    assert "refill returned no novel work" in payload["why"]
+    assert payload["frontiers_asked"] == ["FT.A", "FT.B"]
+    assert payload["n_novel"] == 0
+    assert payload["waiting_on"][0]["job_id"] == "spec"
+    assert payload["returned"][0]["returned"] == "already_run"
+
+
+def test_short_loop_passes_no_idle_while_work_exists(short_loop_timeline):
+    """Acceptance: a real 25s driver run must PASS the new evaluator."""
+    doc = short_loop_timeline
+    verdict = at.eval_no_idle_while_work_exists(at.TimelineView(doc, "15m"))
+    assert verdict["met"], verdict.get("detail")
+    kinds = {e["kind"] for e in doc["events"]}
+    assert "idle" not in kinds
+    assert "awaiting_instructions" not in kinds
+    assert "all_tasks_complete" not in kinds
+    for event in doc["events"]:
+        if event["kind"] != at.IDLE_JUSTIFIED_KIND:
+            continue
+        payload = event.get("payload") or {}
+        assert payload.get("why")
+        assert isinstance(payload.get("returned"), list)
+        assert payload.get("waiting_on")
+        assert payload.get("n_novel") == 0

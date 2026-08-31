@@ -1,0 +1,71 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T18:57:27Z",
+  "recorded_by": "tools/future/productive_search.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. The window verdict is computed from launched unit identities in a timeline; it says nothing about whether the questions asked were the RIGHT ones, only whether they were different ones.",
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "identity_rule": "causal_question_id derives from objective, hypothesis family, discriminator and evidence changed - never a prompt hash. health_probe.007 and .008 are ONE question asked twice.",
+ "invariants": {
+  "NO_LOW_INFORMATION_BUSY_LOOP": "the missing complement. The resident must stay busy on useful UNCERTAINTY, not merely busy.",
+  "NO_RUNNABLE_IDLE": "necessary, and already enforced"
+ },
+ "live_window": {
+  "health_probes": {
+   "accepted_justifications": [
+    "changed_state",
+    "elapsed_risk_interval",
+    "new_mutation",
+    "observed_anomaly"
+   ],
+   "n_probes": 44,
+   "n_unjustified_repeats": 43,
+   "policy": "the first probe in a window is free; every repeat needs changed state, an elapsed risk interval, a new mutation or an observed anomaly. Cheap and safe is not a reason to run something again.",
+   "unjustified": [
+    "WU.HAWKING.health_probe.008",
+    "WU.HAWKING.health_probe.009",
+    "WU.HAWKING.health_probe.010",
+    "WU.HAWKING.health_probe.011",
+    "WU.HAWKING.health_probe.012",
+    "WU.HAWKING.health_probe.013",
+    "WU.HAWKING.health_probe.014",
+    "WU.HAWKING.health_probe.015",
+    "WU.HAWKING.health_probe.016",
+    "WU.HAWKING.health_probe.017",
+    "WU.HAWKING.health_probe.018",
+    "WU.HAWKING.health_probe.019"
+   ]
+  },
+  "source": "receipts/future/MODEL_BEARING_TIMELINE.json",
+  "window": {
+   "bar": "a family may hold at most 50% of a window and a window needs at least 3 distinct causal questions. Launches per hour is not the metric.",
+   "dominant_family": "WU.HAWKING.health_probe",
+   "dominant_family_share": 0.8627,
+   "families": {
+    "WU.EXEC.fold_addqx_ab_status": 1,
+    "WU.HAWKING.fusion_env_applied": 1,
+    "WU.HAWKING.health_probe": 44,
+    "WU.HAWKING.no_wait_scheduler": 1,
+    "WU.HAWKING.resident_identity_pin": 1,
+    "WU.HYPB.005.encode": 1,
+    "WU.PROBE.decode_arith_cost": 1,
+    "WU.SUBAGENT.receipt_wait_probe": 1
+   },
+   "n_distinct_causal_questions": 8,
+   "n_launches": 51,
+   "verdict": "DEGENERATE_SEARCH",
+   "why": [
+    "WU.HAWKING.health_probe is 44 of 51 launches (86%), over the 50% bar"
+   ]
+  }
+ },
+ "schema": "hawking.future.productive_search.v1",
+ "seal_sha256": "e15f940a4e24d4c42be984daf33d019953135a047568cfe6f59bbff6f3088fc3",
+ "version": 1
+}

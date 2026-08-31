@@ -795,13 +795,53 @@ def _compact_entries(entries: Sequence[Mapping[str, Any]], *, cap: int = PROMPT_
     return out
 
 
+# CHOICE_JSON_PROBE: the clip used to eat the tail, and the tail is where every
+# ask puts "Return JSON only: {schema}". A control clipped at MAX_PROMPT_CHARS
+# parsed 0 of 2 on sealed-3.14 AND 0 of 2 on Qwen3-0.6B; with the schema in view
+# both went 2 of 2. That is the ask, not the body and not scale. So: never clip
+# the schema off. Prefer dropping whole candidates (_fit_entries) so the JSON
+# stays well-formed; this elision is the backstop for asks that still overrun.
+SCHEMA_TAIL_RESERVE = 400
+
+
+def _clip_keeping_tail(prompt: str) -> str:
+    if len(prompt) <= MAX_PROMPT_CHARS:
+        return prompt
+    tail = prompt[-SCHEMA_TAIL_RESERVE:]
+    head = prompt[: MAX_PROMPT_CHARS - SCHEMA_TAIL_RESERVE - 1]
+    return head + "…" + tail
+
+
+def _fit_entries(
+    head: str,
+    entries: Sequence[Mapping[str, Any]],
+    tail: str,
+    *,
+    cap: int = PROMPT_ENTRY_CAP,
+) -> tuple[list[dict[str, Any]], int]:
+    """Shrink the candidate set until the ask fits. Never truncate the string.
+
+    A clipped JSON array is malformed AND hides the schema; a shorter array is
+    neither. smaller_choice_set was the probe cell that both parsed 2 of 2 and
+    named a live id, so dropping candidates is the measured-good direction.
+    """
+    wanted = _compact_entries(entries, cap=cap)
+    n = len(wanted)
+    while n > 1:
+        body = json.dumps(wanted[:n], sort_keys=True)
+        if len(head) + len(body) + len(tail) <= MAX_PROMPT_CHARS:
+            break
+        n -= 1
+    return wanted[:n], len(wanted) - n
+
+
 def _ask_json(
     provider: Any,
     prompt: str,
     *,
     session: str | None = None,
 ) -> dict[str, Any]:
-    clipped = prompt if len(prompt) <= MAX_PROMPT_CHARS else prompt[: MAX_PROMPT_CHARS - 1] + "…"
+    clipped = _clip_keeping_tail(prompt)
     reply = _call_ask(provider, clipped, session=session)
     text = str(reply.get("text") or "")
     parsed = _extract_json(text)
@@ -873,13 +913,14 @@ def interpret(
         tools["cognition"] = cog
         return _unavailable_record("interpret", cog["why"], tools)
     active, _how = (provider, "argument") if provider is not None else _active_provider()
-    compact = _compact_entries(entries)
-    prompt = (
-        "Live frontier entries (cite only these ids):\n"
-        + json.dumps(compact, sort_keys=True)
-        + "\nReturn JSON only: "
+    _head = "Live frontier entries (cite only these ids):\n"
+    _tail = (
+        "\nReturn JSON only: "
         '{"reading":"one sentence","worth_doing_next":["id",...],"why":"cite those ids"}'
     )
+    compact, n_dropped = _fit_entries(_head, entries, _tail)
+    tools["candidates_dropped_to_fit"] = n_dropped
+    prompt = _head + json.dumps(compact, sort_keys=True) + _tail
     asked, refused = _try_ask("interpret", active, prompt, tools)
     if refused is not None:
         return refused
@@ -978,27 +1019,40 @@ def choose(
         tools["cognition"] = cog
         return _unavailable_record("choose", cog["why"], tools)
     active, _how = (provider, "argument") if provider is not None else _active_provider()
-    compact = _compact_entries(rows, cap=max(PROMPT_ENTRY_CAP, len(rows)))
-    prompt = (
+    _head = (
         "Pick one candidate. The scripted policy would pick "
         + json.dumps(policy.get("id"))
         + ".\nCandidates:\n"
-        + json.dumps(compact, sort_keys=True)
-        + "\nReturn JSON only: "
+    )
+    _tail = (
+        "\nReturn JSON only: "
         '{"choice_id":"id","reason":"why this, citing a real difference","mechanism":"...",'
         '"surface":"...","hypothesis_family":"..."}'
     )
+    # Never advertise what the tools will refuse. fixed_policy_choose already
+    # dropped every scar-dead candidate for its OWN pick, but the model was shown
+    # the raw set - which is how WU.DEAD.mlp_function_replacement stayed on the
+    # menu 45 turns running while the resident kept picking it and the tools kept
+    # refusing it. Same filter, same turn, one source of liveness.
+    _dead_ids = {str(r.get("id")) for r in (policy.get("refusals") or []) if r.get("id")}
+    _live = [r for r in rows if _cid(r) not in _dead_ids]
+    tools["candidates_scar_dead"] = sorted(_dead_ids)
+    compact, n_dropped = _fit_entries(_head, _live, _tail, cap=max(PROMPT_ENTRY_CAP, len(_live)))
+    tools["candidates_dropped_to_fit"] = n_dropped
+    prompt = _head + json.dumps(compact, sort_keys=True) + _tail
     asked, refused = _try_ask("choose", active, prompt, tools)
     if refused is not None:
         return refused
     parsed = asked["parsed"] if asked["parse_ok"] else None
     choice_id = _field(parsed, "choice_id", "id") if parsed else ""
+    choice_id, transcription_repaired = resolve_choice_id(choice_id, by_id)
     reason = _reason_of(parsed, "reason", "why")
     tools.update(
         {
             "prompt_sha256": asked["prompt_sha256"],
             "reply_sha256": asked["reply_sha256"],
             "parse_ok": asked["parse_ok"],
+            "transcription_repaired": transcription_repaired,
         }
     )
     model_decided = {
@@ -1481,6 +1535,62 @@ def run_trajectory(
     }
 
 
+def _normalize_id(text: str) -> str:
+    """Fold the differences a transcription introduces, and nothing else."""
+    return "".join(ch for ch in str(text).lower() if ch.isalnum())
+
+
+def resolve_choice_id(raw: str, by_id: Mapping[str, Any]) -> tuple[str, str | None]:
+    """Exact id, or a UNIQUE transcription match. Never a guess.
+
+    The 30m run's steady state: the model was shown two candidates, picked the
+    right one for the right reason - gain 2 against gain 1, cited correctly - and
+    wrote "WU.PROBE.decode_arith cost". One space where the id has an underscore.
+    The tools refused it as an invented id, nothing launched, the frontier never
+    advanced, and that same question was asked 94 more times.
+
+    Refusing invented ids is correct and stays. But requiring a model to
+    transcribe a long opaque identifier character-perfect, and then calling the
+    typo a judgment failure, measures the ask again rather than the chooser.
+
+    The match must be UNIQUE after folding case and non-alphanumerics. Two
+    candidates that collide under that fold are ambiguous and are refused: better
+    no launch than the wrong one. Every repair is RECORDED so the transcription
+    rate stays visible instead of being absorbed.
+    """
+    raw = str(raw or "").strip()
+    if not raw:
+        return "", None
+    if raw in by_id:
+        return raw, None
+    want = _normalize_id(raw)
+    if not want:
+        return raw, None
+    hits = [cid for cid in by_id if _normalize_id(cid) == want]
+    if len(hits) != 1:
+        return raw, None
+    return hits[0], raw
+
+
+_INDEX_SUFFIX = re.compile(r"[._-]\d+$")
+
+
+def _ask_kind(row: Mapping[str, Any]) -> str | None:
+    """The SEMANTIC identity of a choose ask: its candidate set, de-indexed.
+
+    WU.HAWKING.health_probe.007 and .008 are the same question. Counting them as
+    two is how a frontier that generates its own filler makes a resident look
+    like it answered fifty different things.
+    """
+    tools = row.get("tools_established")
+    if not isinstance(tools, Mapping):
+        return None
+    ids = tools.get("ids")
+    if not isinstance(ids, list) or not ids:
+        return None
+    return "|".join(sorted({_INDEX_SUFFIX.sub("", str(i)) for i in ids}))
+
+
 def materially_participated(log: Sequence[Mapping[str, Any]] | None = None) -> dict[str, Any]:
     """Falsifiable. Emitting text while Python chooses is not participation."""
     rows = list(log) if log is not None else decision_log()
@@ -1491,6 +1601,30 @@ def materially_participated(log: Sequence[Mapping[str, Any]] | None = None) -> d
         r for r in rows
         if r.get("kind") == "choose" and r.get("diverged_from_fixed_policy") and r.get("chose")
     ]
+    # DIVERGENCE HAS A DENOMINATOR, AND IT IS NOT THE NUMBER OF ASKS.
+    # The first honest 30m run asked choose() 56 times and got 56 identical
+    # verdicts, which reads as "the model agreed 56 times" - except only FIVE of
+    # those asks were distinct, one prompt firing 52 times. At temperature 0 a
+    # deterministic body answering a byte-identical question identically is
+    # arithmetic, not a decision, and 5 unique prompts produced 5 unique replies.
+    # Scoring "never diverged" over 56 opportunities overstates the evidence 11x.
+    # The distinct-ask count is the real denominator; the repeat count is a fact
+    # about the frontier, not about the model's judgment.
+    choose_rows = [r for r in rows if r.get("kind") == "choose"]
+    ask_digests = [r.get("prompt_sha256") for r in choose_rows if r.get("prompt_sha256")]
+    distinct_asks = len(set(ask_digests))
+    repeated_asks = len(ask_digests) - distinct_asks
+    # DISTINCT PROMPTS IS A BETTER DENOMINATOR THAN TOTAL ASKS AND STILL NOT THE
+    # RIGHT ONE. The 51-launch run asked 51 byte-distinct questions and 44 of the
+    # units it launched were WU.HAWKING.health_probe.NNN - the frontier refilling
+    # itself with generated filler. Fifty-one distinct PROMPTS, about seven
+    # distinct QUESTIONS. A model agreeing with "highest gain then id" on 44
+    # near-identical probes is evidence about the frontier, not about judgment.
+    # Strip the trailing index and the question kinds fall out.
+    kinds = {
+        _ask_kind(r) for r in choose_rows if r.get("tools_established")
+    } - {None}
+    distinct_kinds = len(kinds)
     different_hyps = [
         r for r in rows
         if r.get("kind") == "next_hypothesis" and r.get("meaningfully_different")
@@ -1525,11 +1659,31 @@ def materially_participated(log: Sequence[Mapping[str, Any]] | None = None) -> d
             "cognition": UNAVAILABLE,
             "n_decisions": len(rows),
         }
+    scope = {
+        "n_choose_asks": len(choose_rows),
+        "n_distinct_choose_asks": distinct_asks,
+        "n_repeated_choose_asks": repeated_asks,
+        "n_distinct_question_kinds": distinct_kinds,
+        "divergence_denominator": "distinct QUESTION KINDS, not distinct prompts and not total asks",
+        "why": (
+            "a deterministic body re-asked a byte-identical question answers it "
+            "identically by construction, so total asks is the wrong denominator. "
+            "So is distinct PROMPTS: a frontier that refills itself with indexed "
+            "probes produces fifty distinct prompts and seven distinct questions. "
+            "The scope of any divergence claim is the question-kind count"
+        ),
+    }
     finding = None
     if not diverged:
         finding = (
-            "model choices never diverged from the fixed policy at this resident; "
-            "that is a finding, not a decorated timeline"
+            "model choices never diverged from the fixed policy across "
+            f"{distinct_kinds} DISTINCT QUESTION KINDS "
+            f"({distinct_asks} distinct prompts, {len(choose_rows)} asks, "
+            f"{repeated_asks} byte-identical repeats). That is a finding about "
+            "this resident on this frontier, not a decorated timeline - and the "
+            "scope is the KIND count, because a deterministic body cannot disagree "
+            "with itself on the same question and an indexed probe series is one "
+            "question asked many times"
         )
     participated = bool(diverged and different_hyps and changed and reasoned)
     why = "model proposed, tools admitted, pick diverged, hyp B differed, and the pick ran"
@@ -1548,6 +1702,7 @@ def materially_participated(log: Sequence[Mapping[str, Any]] | None = None) -> d
         "participated": participated,
         "why": why,
         "divergence_count": len(diverged),
+        "divergence_scope": scope,
         "different_hypothesis_count": len(different_hyps),
         "changed_what_ran_next_count": len(changed),
         "reasoned_decision_count": len(reasoned),

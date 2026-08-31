@@ -153,7 +153,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T01:10:57Z",
+  "recorded_at": "2026-08-31T11:28:58Z",
   "recorded_by": "tools/future/negative_index.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -203,6 +203,10 @@
     "n": 1
    },
    {
+    "family": "adjacency_is_not_overlap",
+    "n": 1
+   },
+   {
     "family": "ane_coreml_ffn",
     "n": 1
    },
@@ -236,6 +240,10 @@
    },
    {
     "family": "blanket_mtldispatchtype_serial_encoder_for_the_whole_decode_token_wave",
+    "n": 1
+   },
+   {
+    "family": "butterfly",
     "n": 1
    },
    {
@@ -280,6 +288,10 @@
    },
    {
     "family": "compression_scored_on_the_wrong_baseline_ranks_the_wrong_trajectory",
+    "n": 1
+   },
+   {
+    "family": "conditional_program",
     "n": 1
    },
    {
@@ -331,7 +343,15 @@
     "n": 1
    },
    {
+    "family": "dictionary_program",
+    "n": 1
+   },
+   {
     "family": "dispatch_count_reduction_as_a_proxy_objective_for_decode_speed",
+    "n": 1
+   },
+   {
+    "family": "distilled",
     "n": 1
    },
    {
@@ -371,6 +391,14 @@
     "n": 1
    },
    {
+    "family": "environment_mismatch_unfused_vs_sealed",
+    "n": 1
+   },
+   {
+    "family": "event_timestamp_unit_mismatch",
+    "n": 1
+   },
+   {
     "family": "expert_merge",
     "n": 3
    },
@@ -388,6 +416,10 @@
    },
    {
     "family": "f16_x_into_predec_gemv",
+    "n": 1
+   },
+   {
+    "family": "factorize_the_factors",
     "n": 1
    },
    {
@@ -412,6 +444,10 @@
    },
    {
     "family": "gemv_kernel_micro_opt_axis_on_qwen3_8",
+    "n": 1
+   },
+   {
+    "family": "generated_block",
     "n": 1
    },
    {
@@ -468,7 +504,7 @@
    },
    {
     "family": "kronecker",
-    "n": 4
+    "n": 5
    },
    {
     "family": "kv_working_set_eviction",
@@ -519,7 +555,15 @@
     "n": 1
    },
    {
+    "family": "mlp_function_replacement",
+    "n": 1
+   },
+   {
     "family": "moe_serial_route_dispatch",
+    "n": 1
+   },
+   {
+    "family": "monarch",
     "n": 1
    },
    {
@@ -596,6 +640,10 @@
    },
    {
     "family": "non_gemm_cpu_offload",
+    "n": 1
+   },
+   {
+    "family": "nonlinear_generator",
     "n": 1
    },
    {
@@ -683,7 +731,19 @@
     "n": 1
    },
    {
+    "family": "prefill_over_generated_token_denominator",
+    "n": 1
+   },
+   {
     "family": "present_an_isolated_organ_product_e_g_192_ms_48_10_gate_up_down_as_a_token_time",
+    "n": 1
+   },
+   {
+    "family": "priority_zero_falsy_or_default",
+    "n": 1
+   },
+   {
+    "family": "product_dictionary",
     "n": 1
    },
    {
@@ -807,6 +867,14 @@
     "n": 1
    },
    {
+    "family": "receipts_future_mlp_issue_rate_ladder_json",
+    "n": 1
+   },
+   {
+    "family": "receipts_future_mlp_stream_count_json",
+    "n": 1
+   },
+   {
     "family": "recompute_immutable_identity_sha_256_st_dev_geometry_parse_manifest_scan_inside_the_token_loop",
     "n": 1
    },
@@ -867,7 +935,15 @@
     "n": 1
    },
    {
+    "family": "shared_index_bare_commit_sweeps_foreign_stage",
+    "n": 1
+   },
+   {
     "family": "single_family_representation_across_gate_proj_up_proj_down_proj",
+    "n": 1
+   },
+   {
+    "family": "source_instrumented_runtime_binary_stale",
     "n": 1
    },
    {
@@ -1038,11 +1114,11 @@
    },
    {
     "model": "qwen3.8-27b",
-    "n": 42
+    "n": 53
    },
    {
     "model": "unrecorded",
-    "n": 78
+    "n": 87
    }
   ],
   "by_source": [
@@ -1094,6 +1170,90 @@
     "n_unparsed": 0,
     "origin": "disk",
     "path": "receipts/ascent-2026-08-18/PHASE_B_HYBRID_REFUTED.json"
+   },
+   {
+    "n_parsed": 0,
+    "n_scars": 1,
+    "n_unparsed": 1,
+    "origin": "disk",
+    "path": "receipts/future/AUX_CAPABILITY_SCREEN.json"
+   },
+   {
+    "n_parsed": 0,
+    "n_scars": 1,
+    "n_unparsed": 1,
+    "origin": "disk",
+    "path": "receipts/future/AUX_U8_LUT.json"
+   },
+   {
+    "n_parsed": 0,
+    "n_scars": 1,
+    "n_unparsed": 1,
+    "origin": "disk",
+    "path": "receipts/future/AUX_U8_NATIVE.json"
+   },
+   {
+    "n_parsed": 7,
+    "n_scars": 7,
+    "n_unparsed": 0,
+    "origin": "disk",
+    "path": "receipts/future/CAMPAIGN_SCARS.json"
+   },
+   {
+    "n_parsed": 0,
+    "n_scars": 1,
+    "n_unparsed": 1,
+    "origin": "disk",
+    "path": "receipts/future/DELTANET_GENERATED_TRANSITION.json"
+   },
+   {
+    "n_parsed": 0,
+    "n_scars": 1,
+    "n_unparsed": 1,
+    "origin": "disk",
+    "path": "receipts/future/MLP_FUNCTIONAL_RANK.json"
+   },
+   {
+    "n_parsed": 1,
+    "n_scars": 1,
+    "n_unparsed": 0,
+    "origin": "disk",
+    "path": "receipts/future/MLP_ISSUE_RATE_LADDER.json"
+   },
+   {
+    "n_parsed": 6,
+    "n_scars": 6,
+    "n_unparsed": 0,
+    "origin": "disk",
+    "path": "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+   },
+   {
+    "n_parsed": 0,
+    "n_scars": 1,
+    "n_unparsed": 1,
+    "origin": "disk",
+    "path": "receipts/future/MLP_SHARED_PROGRAM.json"
+   },
+   {
+    "n_parsed": 0,
+    "n_scars": 1,
+    "n_unparsed": 1,
+    "origin": "disk",
+    "path": "receipts/future/MLP_SPARSE_RESIDUAL.json"
+   },
+   {
+    "n_parsed": 1,
+    "n_scars": 1,
+    "n_unparsed": 0,
+    "origin": "disk",
+    "path": "receipts/future/MLP_STREAM_COUNT.json"
+   },
+   {
+    "n_parsed": 5,
+    "n_scars": 5,
+    "n_unparsed": 0,
+    "origin": "disk",
+    "path": "receipts/future/MLP_STRUCTURED_OPERATOR.json"
    },
    {
     "n_parsed": 3,
@@ -1280,11 +1440,11 @@
    "ramanujan.scaffold.core.stores Graveyard (in-process bury/revive, not a corpus index).",
    "Worktrees and grok/* branches the noetic sweeper walked; this index is HEAD + disk only."
   ],
-  "n_parsed": 649,
-  "n_refuse_eligible": 579,
-  "n_scars": 656,
-  "n_sources": 32,
-  "n_unparsed": 7
+  "n_parsed": 669,
+  "n_refuse_eligible": 597,
+  "n_scars": 683,
+  "n_sources": 44,
+  "n_unparsed": 14
  },
  "evidence_class": "STATIC_ONLY",
  "gaps_closed": [
@@ -1297,7 +1457,7 @@
   "Sparse-checkout ingest via git show HEAD:<path> so missing-on-disk is not treated as missing-in-git."
  ],
  "gpu_authority": false,
- "head": "12a76e3e5b12319ee0ca1c4d8dbfa3856b6d9b7c",
+ "head": "4f32126616f1037bd4d5ab4f8419bae3e6948b81",
  "how_to_use": {
   "proposal_keys": [
    "model",
@@ -3567,6 +3727,708 @@
    "source_path": "receipts/ascent-2026-08-18/PHASE_B_HYBRID_REFUTED.json",
    "unparsed_reason": "",
    "verdict": "MEASURED NEGATIVE for byte reduction. No low-rank + correction split beats q3's density-quality point: q2-base cannot be corrected back to q3 quality cheaply, and q3-base+correction is more bytes for better quality (Matryoshka, not speed). q3 is Pareto-optimal on the MLP density-quality frontier. The hybrid GENERALIZES (unlike pure low-rank) but does not move active bytes below q3 at q3 quality."
+  },
+  {
+   "claim_refuted": "unrecorded",
+   "failure_mechanism": "unrecorded",
+   "hypothesis_family": "unrecorded",
+   "keys_filled": 0,
+   "level": "UNRECORDED",
+   "machine": "unrecorded",
+   "model": "unrecorded",
+   "models": [
+    "unrecorded"
+   ],
+   "organ": "unrecorded",
+   "organs": [
+    "unrecorded"
+   ],
+   "original_id": "receipts/future/AUX_CAPABILITY_SCREEN.json#UNPARSED",
+   "parse_status": "UNPARSED",
+   "refuse_eligible": false,
+   "reopen_condition": "unrecorded",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/AUX_CAPABILITY_SCREEN.json#UNPARSED",
+   "source_origin": "disk",
+   "source_path": "receipts/future/AUX_CAPABILITY_SCREEN.json",
+   "unparsed_reason": "no keyed scar entries recognized",
+   "verdict": "unrecorded"
+  },
+  {
+   "claim_refuted": "unrecorded",
+   "failure_mechanism": "unrecorded",
+   "hypothesis_family": "unrecorded",
+   "keys_filled": 0,
+   "level": "UNRECORDED",
+   "machine": "unrecorded",
+   "model": "unrecorded",
+   "models": [
+    "unrecorded"
+   ],
+   "organ": "unrecorded",
+   "organs": [
+    "unrecorded"
+   ],
+   "original_id": "receipts/future/AUX_U8_LUT.json#UNPARSED",
+   "parse_status": "UNPARSED",
+   "refuse_eligible": false,
+   "reopen_condition": "unrecorded",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/AUX_U8_LUT.json#UNPARSED",
+   "source_origin": "disk",
+   "source_path": "receipts/future/AUX_U8_LUT.json",
+   "unparsed_reason": "no keyed scar entries recognized",
+   "verdict": "unrecorded"
+  },
+  {
+   "claim_refuted": "unrecorded",
+   "failure_mechanism": "unrecorded",
+   "hypothesis_family": "unrecorded",
+   "keys_filled": 0,
+   "level": "UNRECORDED",
+   "machine": "unrecorded",
+   "model": "unrecorded",
+   "models": [
+    "unrecorded"
+   ],
+   "organ": "unrecorded",
+   "organs": [
+    "unrecorded"
+   ],
+   "original_id": "receipts/future/AUX_U8_NATIVE.json#UNPARSED",
+   "parse_status": "UNPARSED",
+   "refuse_eligible": false,
+   "reopen_condition": "unrecorded",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/AUX_U8_NATIVE.json#UNPARSED",
+   "source_origin": "disk",
+   "source_path": "receipts/future/AUX_U8_NATIVE.json",
+   "unparsed_reason": "no keyed scar entries recognized",
+   "verdict": "unrecorded"
+  },
+  {
+   "claim_refuted": "that two detached_started without completions between them proves two jobs were live at once",
+   "failure_mechanism": "ORDERING_IN_A_LOG_IS_NOT_SIMULTANEITY. Adjacency of start events is a statement about the log, not about two processes being live.",
+   "hypothesis_family": "adjacency_is_not_overlap",
+   "keys_filled": 2,
+   "level": "GENERAL_PHYSICAL",
+   "machine": "unrecorded",
+   "model": "unrecorded",
+   "models": [
+    "unrecorded"
+   ],
+   "organ": "unrecorded",
+   "organs": [
+    "unrecorded"
+   ],
+   "original_id": "ADJACENCY_IS_NOT_OVERLAP",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "only if two live pids (or same-unit intervals with positive overlap) are shown. Two starts without a completion between them is never a reopen.",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/CAMPAIGN_SCARS.json#ADJACENCY_IS_NOT_OVERLAP",
+   "source_origin": "disk",
+   "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+   "unparsed_reason": "",
+   "verdict": "FALSIFIED"
+  },
+  {
+   "claim_refuted": "that a probe of the unfused default graph is a production measurement of sealed-3.14",
+   "failure_mechanism": "ENVIRONMENT_IS_PART_OF_EXPERIMENT_IDENTITY. A measurement whose env hash does not match the sealed config is a different experiment, not the incumbent.",
+   "hypothesis_family": "environment_mismatch_unfused_vs_sealed",
+   "keys_filled": 2,
+   "level": "GENERAL_PHYSICAL",
+   "machine": "unrecorded",
+   "model": "unrecorded",
+   "models": [
+    "unrecorded"
+   ],
+   "organ": "unrecorded",
+   "organs": [
+    "unrecorded"
+   ],
+   "original_id": "ENVIRONMENT_MISMATCH_UNFUSED_VS_SEALED",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "a measurement whose env_hash equals the sealed fusion env hash (including serving mode and measurement mode). An unfused probe that is labelled as unfused is not a reopen of this scar.",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/CAMPAIGN_SCARS.json#ENVIRONMENT_MISMATCH_UNFUSED_VS_SEALED",
+   "source_origin": "disk",
+   "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+   "unparsed_reason": "",
+   "verdict": "FALSIFIED"
+  },
+  {
+   "claim_refuted": "that epoch started_at and trial-relative t_s may be used as ends of one interval",
+   "failure_mechanism": "HETEROGENEOUS_UNITS_ARE_NOT_A_TIMELINE. Falling back across clocks is not a missing-value policy; it is a unit error.",
+   "hypothesis_family": "event_timestamp_unit_mismatch",
+   "keys_filled": 2,
+   "level": "GENERAL_PHYSICAL",
+   "machine": "unrecorded",
+   "model": "unrecorded",
+   "models": [
+    "unrecorded"
+   ],
+   "organ": "unrecorded",
+   "organs": [
+    "unrecorded"
+   ],
+   "original_id": "EVENT_TIMESTAMP_UNIT_MISMATCH",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "never for mixed-unit arithmetic. A schema that tags every stamp with its unit and rejects mixed subtraction is the guard, not a reopen of mixing them.",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/CAMPAIGN_SCARS.json#EVENT_TIMESTAMP_UNIT_MISMATCH",
+   "source_origin": "disk",
+   "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+   "unparsed_reason": "",
+   "verdict": "FALSIFIED"
+  },
+  {
+   "claim_refuted": "that dividing prefill+decode totals by generated tokens yields a per-token production cost",
+   "failure_mechanism": "NUMERATOR_AND_DENOMINATOR_COUNT_DIFFERENT_EVENTS. A field named per_X is not per_X unless both sides count the same events.",
+   "hypothesis_family": "prefill_over_generated_token_denominator",
+   "keys_filled": 2,
+   "level": "GENERAL_PHYSICAL",
+   "machine": "unrecorded",
+   "model": "unrecorded",
+   "models": [
+    "unrecorded"
+   ],
+   "organ": "unrecorded",
+   "organs": [
+    "unrecorded"
+   ],
+   "original_id": "PREFILL_OVER_GENERATED_TOKEN_DENOMINATOR",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "a field whose numerator is decode-only (or generated-only) and whose denominator is generated tokens. Renaming the inflated fields to per_generated_token_including_prefill_work is a rename, not a reopen.",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/CAMPAIGN_SCARS.json#PREFILL_OVER_GENERATED_TOKEN_DENOMINATOR",
+   "source_origin": "disk",
+   "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+   "unparsed_reason": "",
+   "verdict": "FALSIFIED"
+  },
+  {
+   "claim_refuted": "that `_detach_priority(j) or 99` ranks priority-0 jobs first",
+   "failure_mechanism": "FALSY_ZERO_IS_A_VALUE. `x or default` is not a missing-check when 0 is a legitimate member of the domain.",
+   "hypothesis_family": "priority_zero_falsy_or_default",
+   "keys_filled": 2,
+   "level": "GENERAL_PHYSICAL",
+   "machine": "unrecorded",
+   "model": "unrecorded",
+   "models": [
+    "unrecorded"
+   ],
+   "organ": "unrecorded",
+   "organs": [
+    "unrecorded"
+   ],
+   "original_id": "PRIORITY_ZERO_FALSY_OR_DEFAULT",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "never for the `prio or 99` form. A language or schema in which 0 is not falsy does not reopen a Python `or`.",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/CAMPAIGN_SCARS.json#PRIORITY_ZERO_FALSY_OR_DEFAULT",
+   "source_origin": "disk",
+   "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+   "unparsed_reason": "",
+   "verdict": "FALSIFIED"
+  },
+  {
+   "claim_refuted": "that `git add <paths> && git commit` commits only those paths when the index already holds a --3way apply",
+   "failure_mechanism": "THE_INDEX_IS_THE_COMMIT_SET_UNLESS_A_PATHSPEC_SAYS_OTHERWISE. Any command that stages as a side effect (apply --3way, apply --index, stash pop on conflict, cherry-pick/merge on conflict) can put someone else's work under your message.",
+   "hypothesis_family": "shared_index_bare_commit_sweeps_foreign_stage",
+   "keys_filled": 2,
+   "level": "GENERAL_PHYSICAL",
+   "machine": "unrecorded",
+   "model": "unrecorded",
+   "models": [
+    "unrecorded"
+   ],
+   "organ": "unrecorded",
+   "organs": [
+    "unrecorded"
+   ],
+   "original_id": "SHARED_INDEX_BARE_COMMIT_SWEEPS_FOREIGN_STAGE",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "never for a bare `git commit`. The pathspec form is the only safe one; an untracked new file must still be `git add`ed first.",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/CAMPAIGN_SCARS.json#SHARED_INDEX_BARE_COMMIT_SWEEPS_FOREIGN_STAGE",
+   "source_origin": "disk",
+   "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+   "unparsed_reason": "",
+   "verdict": "FALSIFIED"
+  },
+  {
+   "claim_refuted": "that instrumentation in source is instrumentation in the serving binary",
+   "failure_mechanism": "SOURCE_REALITY_IS_NOT_ARTIFACT_REALITY. A capability present in source is not a capability present in the running system.",
+   "hypothesis_family": "source_instrumented_runtime_binary_stale",
+   "keys_filled": 2,
+   "level": "GENERAL_PHYSICAL",
+   "machine": "unrecorded",
+   "model": "unrecorded",
+   "models": [
+    "unrecorded"
+   ],
+   "organ": "unrecorded",
+   "organs": [
+    "unrecorded"
+   ],
+   "original_id": "SOURCE_INSTRUMENTED_RUNTIME_BINARY_STALE",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "a binary whose mtime is at or after the introducing commit of every field being read, and whose string table or live probe actually contains those fields. Rebuilding is the reopen, not re-reading the source.",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/CAMPAIGN_SCARS.json#SOURCE_INSTRUMENTED_RUNTIME_BINARY_STALE",
+   "source_origin": "disk",
+   "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+   "unparsed_reason": "",
+   "verdict": "FALSIFIED"
+  },
+  {
+   "claim_refuted": "unrecorded",
+   "failure_mechanism": "unrecorded",
+   "hypothesis_family": "unrecorded",
+   "keys_filled": 0,
+   "level": "UNRECORDED",
+   "machine": "unrecorded",
+   "model": "unrecorded",
+   "models": [
+    "unrecorded"
+   ],
+   "organ": "unrecorded",
+   "organs": [
+    "unrecorded"
+   ],
+   "original_id": "receipts/future/DELTANET_GENERATED_TRANSITION.json#UNPARSED",
+   "parse_status": "UNPARSED",
+   "refuse_eligible": false,
+   "reopen_condition": "unrecorded",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/DELTANET_GENERATED_TRANSITION.json#UNPARSED",
+   "source_origin": "disk",
+   "source_path": "receipts/future/DELTANET_GENERATED_TRANSITION.json",
+   "unparsed_reason": "no keyed scar entries recognized",
+   "verdict": "unrecorded"
+  },
+  {
+   "claim_refuted": "unrecorded",
+   "failure_mechanism": "unrecorded",
+   "hypothesis_family": "unrecorded",
+   "keys_filled": 0,
+   "level": "UNRECORDED",
+   "machine": "unrecorded",
+   "model": "unrecorded",
+   "models": [
+    "unrecorded"
+   ],
+   "organ": "unrecorded",
+   "organs": [
+    "unrecorded"
+   ],
+   "original_id": "receipts/future/MLP_FUNCTIONAL_RANK.json#UNPARSED",
+   "parse_status": "UNPARSED",
+   "refuse_eligible": false,
+   "reopen_condition": "unrecorded",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/MLP_FUNCTIONAL_RANK.json#UNPARSED",
+   "source_origin": "disk",
+   "source_path": "receipts/future/MLP_FUNCTIONAL_RANK.json",
+   "unparsed_reason": "no keyed scar entries recognized",
+   "verdict": "unrecorded"
+  },
+  {
+   "claim_refuted": "One representative MLP layer (gate+up+down) on sealed-3.14, SELF_MEASURED_DIRTY. GPU time is MTLCommandBuffer GPUStartTime/GPUEndTime for an isolated command buffer of three geo_tpr64 dispatches. Bytes are GPU-resident codes+scales+biases of the launched tensors. Bandwidth is those bytes divided by GPU ns (perfect-locality). Absolute GB/s is measured-under-load; the robust number is the back-to-back ratio to the production kernel in the same process. Bit-identity is a byte...",
+   "failure_mechanism": "receipts/future/MLP_ISSUE_RATE_LADDER.json",
+   "hypothesis_family": "receipts_future_mlp_issue_rate_ladder_json",
+   "keys_filled": 3,
+   "level": "MODEL_SPECIFIC",
+   "machine": "unrecorded",
+   "model": "unrecorded",
+   "models": [
+    "unrecorded"
+   ],
+   "organ": "mlp",
+   "organs": [
+    "mlp"
+   ],
+   "original_id": "mlp_issue_rate_ladder",
+   "parse_status": "PARSED",
+   "refuse_eligible": false,
+   "reopen_condition": "unrecorded",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/MLP_ISSUE_RATE_LADDER.json#mlp_issue_rate_ladder",
+   "source_origin": "disk",
+   "source_path": "receipts/future/MLP_ISSUE_RATE_LADDER.json",
+   "unparsed_reason": "",
+   "verdict": "MIXED"
+  },
+  {
+   "claim_refuted": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+   "failure_mechanism": "A condition on x (k-means, E=8) selecting a rank-16 expert (or a mean) has held-out relative L2 0.91666. The condition is cheap and is billed; the programs it selects are still high-rank maps of x. A cheap default plus an exceptional path does not replace F.",
+   "hypothesis_family": "conditional_program",
+   "keys_filled": 4,
+   "level": "MODEL_SPECIFIC",
+   "machine": "unrecorded",
+   "model": "qwen3.8-27b",
+   "models": [
+    "qwen3.8-27b"
+   ],
+   "organ": "mlp",
+   "organs": [
+    "mlp"
+   ],
+   "original_id": "CONDITIONAL_PROGRAM",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "Reopen only for a condition whose exceptional path is a different function, not another small linear map of x. Billing the condition remains mandatory.",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/MLP_NONLINEAR_PROGRAM.json#CONDITIONAL_PROGRAM",
+   "source_origin": "disk",
+   "source_path": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+   "unparsed_reason": "",
+   "verdict": "MEASURED_NEGATIVE"
+  },
+  {
+   "claim_refuted": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+   "failure_mechanism": "F(x) does not cluster on this manifold. X-routed codebook K=16 has held-out relative L2 0.994711; even the Y-assignment oracle is 0.947216 (diagnostic, not authority). A small codebook of F is not a program for F.",
+   "hypothesis_family": "dictionary_program",
+   "keys_filled": 4,
+   "level": "MODEL_SPECIFIC",
+   "machine": "unrecorded",
+   "model": "qwen3.8-27b",
+   "models": [
+    "qwen3.8-27b"
+   ],
+   "organ": "mlp",
+   "organs": [
+    "mlp"
+   ],
+   "original_id": "DICTIONARY_PROGRAM",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "Reopen only if a new source (not frozen W, not this F-manifold) actually clusters. Raw-weight PQ/VQ is a different scar (NNS-017).",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/MLP_NONLINEAR_PROGRAM.json#DICTIONARY_PROGRAM",
+   "source_origin": "disk",
+   "source_path": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+   "unparsed_reason": "",
+   "verdict": "MEASURED_NEGATIVE"
+  },
+  {
+   "claim_refuted": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+   "failure_mechanism": "gate, up and down are individually high-rank. Truncated SVD at rank 32 leaves Frobenius residual energy gate=0.968575 up=0.984304 down=0.980244. Composing the three with exact silu and product has held-out relative L2 0.976845. Even with two factors exact, one rank-64 factor sits at gate=0.878896 up=0.95432 down=0.941705. Gate's image is more compressible (PCA r=64 relative L2 0.514282) than F, but not enough to replace the map. The shared-program 0.9-band result was not a...",
+   "hypothesis_family": "factorize_the_factors",
+   "keys_filled": 4,
+   "level": "MODEL_SPECIFIC",
+   "machine": "unrecorded",
+   "model": "qwen3.8-27b",
+   "models": [
+    "qwen3.8-27b"
+   ],
+   "organ": "mlp",
+   "organs": [
+    "mlp"
+   ],
+   "original_id": "FACTORIZE_THE_FACTORS",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "Do not reopen as another rank sweep of gate/up/down. Reopen only for a full-width structured factorization (Monarch, butterfly, or an exact sparse factor) that is not an r-dimensional bottleneck.",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/MLP_NONLINEAR_PROGRAM.json#FACTORIZE_THE_FACTORS",
+   "source_origin": "disk",
+   "source_path": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+   "unparsed_reason": "",
+   "verdict": "MEASURED_NEGATIVE"
+  },
+  {
+   "claim_refuted": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+   "failure_mechanism": "Unconstrained per-block rank-16 maps on 16 output blocks (the best a lookup generator G(layer, row_block) can emit at this size) have held-out relative L2 0.942662. A smaller MLP of (layer, block) is strictly weaker. Block index does not buy a compact local representation of F.",
+   "hypothesis_family": "generated_block",
+   "keys_filled": 4,
+   "level": "MODEL_SPECIFIC",
+   "machine": "unrecorded",
+   "model": "qwen3.8-27b",
+   "models": [
+    "qwen3.8-27b"
+   ],
+   "organ": "mlp",
+   "organs": [
+    "mlp"
+   ],
+   "original_id": "GENERATED_BLOCK",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "Reopen only if G is the kernel of a block (no dense W) AND held-out F drops below the kill. Generating W then GEMV stays REJECTED_DENSE_REMAT.",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/MLP_NONLINEAR_PROGRAM.json#GENERATED_BLOCK",
+   "source_origin": "disk",
+   "source_path": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+   "unparsed_reason": "",
+   "verdict": "MEASURED_NEGATIVE"
+  },
+  {
+   "claim_refuted": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+   "failure_mechanism": "An MLP-shaped generator (silu_readout, r=128) has held-out relative L2 0.918286. A silu readout of a small latent is still an r-dimensional bottleneck through a high-rank output; it matches the SHARED_INPUT silu readout already killed, not a full-width structured nonlinear.",
+   "hypothesis_family": "nonlinear_generator",
+   "keys_filled": 4,
+   "level": "MODEL_SPECIFIC",
+   "machine": "unrecorded",
+   "model": "qwen3.8-27b",
+   "models": [
+    "qwen3.8-27b"
+   ],
+   "organ": "mlp",
+   "organs": [
+    "mlp"
+   ],
+   "original_id": "NONLINEAR_GENERATOR",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "Reopen only for a full-width structured nonlinear (Monarch / butterfly / distilled operator that is not an r-bottleneck). A wider silu readout of a latent is this family at a larger rank.",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/MLP_NONLINEAR_PROGRAM.json#NONLINEAR_GENERATOR",
+   "source_origin": "disk",
+   "source_path": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+   "unparsed_reason": "",
+   "verdict": "MEASURED_NEGATIVE"
+  },
+  {
+   "claim_refuted": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+   "failure_mechanism": "Product codebooks over 16 sub-blocks of K=16 still sit at held-out relative L2 0.997237 (Y-assignment oracle 0.937674). F is not a product of small block codebooks on this manifold.",
+   "hypothesis_family": "product_dictionary",
+   "keys_filled": 4,
+   "level": "MODEL_SPECIFIC",
+   "machine": "unrecorded",
+   "model": "qwen3.8-27b",
+   "models": [
+    "qwen3.8-27b"
+   ],
+   "organ": "mlp",
+   "organs": [
+    "mlp"
+   ],
+   "original_id": "PRODUCT_DICTIONARY",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "Reopen only if a new source (not frozen W, not this F-manifold) actually clusters. Raw-weight PQ/VQ is a different scar (NNS-017).",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/MLP_NONLINEAR_PROGRAM.json#PRODUCT_DICTIONARY",
+   "source_origin": "disk",
+   "source_path": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+   "unparsed_reason": "",
+   "verdict": "MEASURED_NEGATIVE"
+  },
+  {
+   "claim_refuted": "unrecorded",
+   "failure_mechanism": "unrecorded",
+   "hypothesis_family": "unrecorded",
+   "keys_filled": 0,
+   "level": "UNRECORDED",
+   "machine": "unrecorded",
+   "model": "unrecorded",
+   "models": [
+    "unrecorded"
+   ],
+   "organ": "unrecorded",
+   "organs": [
+    "unrecorded"
+   ],
+   "original_id": "receipts/future/MLP_SHARED_PROGRAM.json#UNPARSED",
+   "parse_status": "UNPARSED",
+   "refuse_eligible": false,
+   "reopen_condition": "unrecorded",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/MLP_SHARED_PROGRAM.json#UNPARSED",
+   "source_origin": "disk",
+   "source_path": "receipts/future/MLP_SHARED_PROGRAM.json",
+   "unparsed_reason": "no keyed scar entries recognized",
+   "verdict": "unrecorded"
+  },
+  {
+   "claim_refuted": "unrecorded",
+   "failure_mechanism": "unrecorded",
+   "hypothesis_family": "unrecorded",
+   "keys_filled": 0,
+   "level": "UNRECORDED",
+   "machine": "unrecorded",
+   "model": "unrecorded",
+   "models": [
+    "unrecorded"
+   ],
+   "organ": "unrecorded",
+   "organs": [
+    "unrecorded"
+   ],
+   "original_id": "receipts/future/MLP_SPARSE_RESIDUAL.json#UNPARSED",
+   "parse_status": "UNPARSED",
+   "refuse_eligible": false,
+   "reopen_condition": "unrecorded",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/MLP_SPARSE_RESIDUAL.json#UNPARSED",
+   "source_origin": "disk",
+   "source_path": "receipts/future/MLP_SPARSE_RESIDUAL.json",
+   "unparsed_reason": "no keyed scar entries recognized",
+   "verdict": "unrecorded"
+  },
+  {
+   "claim_refuted": "One representative MLP layer (gate+up+down) on sealed-3.14, SELF_MEASURED_DIRTY. GPU time is MTLCommandBuffer GPUStartTime/GPUEndTime for an isolated command buffer of three geo_tpr64_tg128 dispatches. Unique payload bytes (codes+scales+biases of the launched tensors) are the GB/s numerator on every rung, so the numerator does not move with packing; counted traffic per thread-iteration is 38 B on every rung. Arithmetic is stripped (XOR/add sink). Absolute GB/s is measured-...",
+   "failure_mechanism": "receipts/future/MLP_STREAM_COUNT.json",
+   "hypothesis_family": "receipts_future_mlp_stream_count_json",
+   "keys_filled": 2,
+   "level": "MODEL_SPECIFIC",
+   "machine": "unrecorded",
+   "model": "unrecorded",
+   "models": [
+    "unrecorded"
+   ],
+   "organ": "unrecorded",
+   "organs": [
+    "unrecorded"
+   ],
+   "original_id": "mlp_stream_count",
+   "parse_status": "PARSED",
+   "refuse_eligible": false,
+   "reopen_condition": "unrecorded",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/MLP_STREAM_COUNT.json#mlp_stream_count",
+   "source_origin": "disk",
+   "source_path": "receipts/future/MLP_STREAM_COUNT.json",
+   "unparsed_reason": "",
+   "verdict": "MIXED"
+  },
+  {
+   "claim_refuted": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+   "failure_mechanism": "Butterfly is full rank at O(n log n) parameters (log n paired 2x2 factors). Not an r-bottleneck. Held-out error still sits at 0.921657 vs mean 0.858742.",
+   "hypothesis_family": "butterfly",
+   "keys_filled": 4,
+   "level": "MODEL_SPECIFIC",
+   "machine": "unrecorded",
+   "model": "qwen3.8-27b",
+   "models": [
+    "qwen3.8-27b"
+   ],
+   "organ": "mlp",
+   "organs": [
+    "mlp"
+   ],
+   "original_id": "BUTTERFLY",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "unrecorded",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/MLP_STRUCTURED_OPERATOR.json#BUTTERFLY",
+   "source_origin": "disk",
+   "source_path": "receipts/future/MLP_STRUCTURED_OPERATOR.json",
+   "unparsed_reason": "",
+   "verdict": "MEASURED_NEGATIVE"
+  },
+  {
+   "claim_refuted": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+   "failure_mechanism": "Distilled operator is a dense net with every hidden width at or above the input width, so it is not a bottleneck in disguise. Held-out error 0.442177 vs mean 0.858742. This is the capacity control.",
+   "hypothesis_family": "distilled",
+   "keys_filled": 4,
+   "level": "MODEL_SPECIFIC",
+   "machine": "unrecorded",
+   "model": "qwen3.8-27b",
+   "models": [
+    "qwen3.8-27b"
+   ],
+   "organ": "mlp",
+   "organs": [
+    "mlp"
+   ],
+   "original_id": "DISTILLED",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "unrecorded",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/MLP_STRUCTURED_OPERATOR.json#DISTILLED",
+   "source_origin": "disk",
+   "source_path": "receipts/future/MLP_STRUCTURED_OPERATOR.json",
+   "unparsed_reason": "",
+   "verdict": "MEASURED_NEGATIVE"
+  },
+  {
+   "claim_refuted": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+   "failure_mechanism": "Kronecker A \u2297 B is full rank when both factors are. Parameter count p^2+q^2. Not an r-bottleneck. Held-out error still sits at 0.883605 vs mean 0.858742.",
+   "hypothesis_family": "kronecker",
+   "keys_filled": 4,
+   "level": "MODEL_SPECIFIC",
+   "machine": "unrecorded",
+   "model": "qwen3.8-27b",
+   "models": [
+    "qwen3.8-27b"
+   ],
+   "organ": "mlp",
+   "organs": [
+    "mlp"
+   ],
+   "original_id": "KRONECKER",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "unrecorded",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/MLP_STRUCTURED_OPERATOR.json#KRONECKER",
+   "source_origin": "disk",
+   "source_path": "receipts/future/MLP_STRUCTURED_OPERATOR.json",
+   "unparsed_reason": "",
+   "verdict": "MEASURED_NEGATIVE"
+  },
+  {
+   "claim_refuted": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+   "failure_mechanism": "the UMBRELLA closure, MLP_FUNCTION_REPLACEMENT_CLOSED. Every bottleneck-shaped family died (rank, dictionary, conditional, generated-block, nonlinear generator, factorwise), and the full-width structured operators died too. The DISTILLED CONTROL is what closes it: with no narrow layer anywhere it BEATS the mean predictor (0.442 vs 0.859 pooled) yet still cannot carry F under the incumbent 5,347,795,776 bytes. A control with more capacity than any structured family and no s...",
+   "hypothesis_family": "mlp_function_replacement",
+   "keys_filled": 4,
+   "level": "MODEL_SPECIFIC",
+   "machine": "unrecorded",
+   "model": "qwen3.8-27b",
+   "models": [
+    "qwen3.8-27b"
+   ],
+   "organ": "mlp",
+   "organs": [
+    "mlp"
+   ],
+   "original_id": "MLP_FUNCTION_REPLACEMENT",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "a materially larger byte budget, a different parent, or an operator class that is neither an r-bottleneck nor a full-width structured transform",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/MLP_STRUCTURED_OPERATOR.json#MLP_FUNCTION_REPLACEMENT",
+   "source_origin": "disk",
+   "source_path": "receipts/future/MLP_STRUCTURED_OPERATOR.json",
+   "unparsed_reason": "",
+   "verdict": "MEASURED_NEGATIVE"
+  },
+  {
+   "claim_refuted": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+   "failure_mechanism": "Monarch is full rank (product of two block-diagonals and a permutation) at O(n^{1.5}) parameters. The bottleneck mechanism of the closed lanes does not apply. Held-out error still sits at 0.688605 vs mean 0.858742.",
+   "hypothesis_family": "monarch",
+   "keys_filled": 4,
+   "level": "MODEL_SPECIFIC",
+   "machine": "unrecorded",
+   "model": "qwen3.8-27b",
+   "models": [
+    "qwen3.8-27b"
+   ],
+   "organ": "mlp",
+   "organs": [
+    "mlp"
+   ],
+   "original_id": "MONARCH",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "unrecorded",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/MLP_STRUCTURED_OPERATOR.json#MONARCH",
+   "source_origin": "disk",
+   "source_path": "receipts/future/MLP_STRUCTURED_OPERATOR.json",
+   "unparsed_reason": "",
+   "verdict": "MEASURED_NEGATIVE"
   },
   {
    "claim_refuted": "The 24% did not follow the catalog indirection. Isolating host catalog lookup off the GPU addr-probe timestamp left the gap in place. What the 24% tracks instead is dispatch topology and mixed organ sizes: the marginal cost of a dispatch (~15us for this host/catalog ceremony class) multiplied by how many the token issues, plus the fact that organs of very different sizes do not amortise a dispatch equally.",
@@ -18550,6 +19412,6 @@
   }
  ],
  "schema": "hawking.future.negative_index.v1",
- "seal_sha256": "3b414ab3a03057325484cc6c17305d9a6e4fae6b733f22010ee5af48be009a7c",
+ "seal_sha256": "f73fd58d632d9ddfbc7d6a24b82d419ab1546ac4963bd56816025ee4e0e3b0db",
  "version": 1
 }

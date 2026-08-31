@@ -1,0 +1,1345 @@
+{
+ "anti_fabrication": {
+  "detectors": [
+   "TOKEN_ID_ALONE_PRESENTED_AS_PASS",
+   "ARGMAX_PRESENTED_AS_PARITY",
+   "COUNT_ONLY_BYTE_DIFF",
+   "UNJUSTIFIED_TOLERANCE",
+   "CAPABILITY_SPOT_CHECK_MISSING"
+  ],
+  "loud_exceptions": [
+   "TokenIdAloneIsNotParity",
+   "ArgmaxIsNotParity",
+   "CountOnlyDiffRefuse",
+   "UnjustifiedTolerance",
+   "CapabilitySpotCheckMissing",
+   "IncompleteLadder"
+  ],
+  "rule": "judge_candidate is the only constructor of a candidate verdict. Token-id equality alone raises TokenIdAloneIsNotParity. Argmax-only logits raise ArgmaxIsNotParity. A byte-mismatch count without max_abs/rel_l2/cause raises CountOnlyDiffRefuse. WITHIN_TOLERANCE without MLP_ERROR_BUDGET numbers raises UnjustifiedTolerance."
+ },
+ "argmax_is_not_parity": true,
+ "candidate_verdicts": [
+  "PASS_BIT_IDENTICAL",
+  "PASS_JUSTIFIED_TOLERANCE",
+  "REFUSE"
+ ],
+ "cited_fold_addqx_ab": {
+  "arithmetic_exact": false,
+  "class": "approx_candidate",
+  "complete_token_fold_addqx_ms": 22.3192,
+  "complete_token_incumbent_ms": 26.3026,
+  "complete_token_saving_ms": 3.9833,
+  "default_off": true,
+  "finding": "Complete-token A/B, post-widen_f4 incumbent vs fold_addqx, token ids match but arithmetic is not byte-identical (approx_candidate). Incumbent (new baseline) 26.3026 ms vs fold_addqx 22.3192 ms (saved 3.9833 ms). Isolated MLP full 15.2545 vs 11.3093 (saved 3.9452 ms; cited projection 1.745 ms). The organ-level decode saving reached the complete token (3.9833 ms vs isolated 3.9452 ms) but did not reproduce the cited 1.745 ms one-layer projection. The complete token saved 3.9833 ms, 2.2383 ms more than the 1.745 ms 3-GEMV unfused one-layer projection. The fused GateUpSwiglu 580-graph is not the probe. That is the result this A/B exists to catch. FASTER-BUT-NOT-EXACT: this saving is a different class and is not blended into the bit-identical verdict. Materiality bar 1.0 ms: clears. SELF_MEASURED_DIRTY; no TPS QUALIFIED.",
+  "layer0_down_n_mismatch_bytes": 6534,
+  "layer0_gate_n_bytes": 69632,
+  "layer0_gate_n_mismatch_bytes": 22309,
+  "layer0_up_n_mismatch_bytes": 22320,
+  "not_rerun": true,
+  "note": "This lane does not re-run the complete-token A/B. The 3.9833 ms saving and the 22309-byte gate mismatch are cited from that receipt; the ladder characterises that mismatch and climbs the rungs the A/B did not.",
+  "parity": false,
+  "present": true,
+  "runs_compared": 14,
+  "source": "receipts/future/FOLD_ADDQX_AB.json",
+  "token_ids_identical": true
+ },
+ "claim_boundary": "Reusable parity ladder, strongest surface first. Token-id equality is necessary and not sufficient; a candidate whose only passing rung is token ids cannot PASS. Argmax agreement is diagnostic and is not parity. BIT_IDENTICAL requires a byte comparison of the named surface. WITHIN_TOLERANCE requires an explicit justification against MLP_ERROR_BUDGET's measured all-layers structured bar (0.03) and the comfortably-usable 0.01, plus route parity (or an explicit dense-model NOT_APPLICABLE), logit KL and top-k (not argmax), and a capability spot-check. fold_addqx is judged from a live Metal probe of intermediates, hidden, logits and a cheap generate; the complete-token 7x32 A/B is cited from FOLD_ADDQX_AB and is not re-run. Timing numbers in this receipt are citations, not new measurements. No TPS is labelled QUALIFIED.",
+ "does_not_edit": [
+  "tools/future/fold_addqx_ab.py",
+  "crates/hawking-core/shaders/q80_mixed_decode.metal"
+ ],
+ "evidence_class": "SELF_MEASURED_DIRTY",
+ "finding": "PARITY MUST BE STRONGER THAN ARGMAX, and token-id equality is not the top of the ladder. fold_addqx remains the case that forced it: FOLD_ADDQX_AB saved 3.9833 ms on the complete token with identical token ids and a layer-0 gate buffer that is not bit-identical (22309 of 69632 bytes). weakest rung is intermediate_buffers=WITHIN_TOLERANCE; token ids match; logit KL/top-k clear the measured usable bars; route parity is reported (or dense NOT_APPLICABLE); capability spot-check passed. Not bit-identical and not left unjudged. Layer-0 gate: 22309 of 69632 bytes differ (17408 floats), max_abs=2.086162567138672e-07, rel_l2=2.353695599754621e-06 (SOURCE_ORDER_FMA_ASSOCIATION; 0.03 all-layers structured bar, 0.01 comfortably usable). ",
+ "fold_addqx": {
+  "cited_gate_mismatch_bytes": 22309,
+  "default_production": "tpr64 unpack8",
+  "judgement": {
+   "candidate": "fold_addqx",
+   "capability": {
+    "all_token_ids_identical": true,
+    "argmax_is_not_parity": true,
+    "domains": [
+     {
+      "argmax_agreement": 1.0,
+      "candidate_text": "<think>\nThe user is asking a simple",
+      "domain": "reasoning",
+      "id": "reasoning_add",
+      "incumbent_text": "<think>\nThe user is asking a simple",
+      "kl_nats": 1.0548418616666618e-16,
+      "token_ids_identical": true,
+      "top_k_agreement": 1.0,
+      "usable": true
+     },
+     {
+      "argmax_agreement": 1.0,
+      "candidate_text": "<think>\nThe user is asking me to",
+      "domain": "code",
+      "id": "code_fib",
+      "incumbent_text": "<think>\nThe user is asking me to",
+      "kl_nats": 1.3867827424356437e-15,
+      "token_ids_identical": true,
+      "top_k_agreement": 1.0,
+      "usable": true
+     },
+     {
+      "argmax_agreement": 1.0,
+      "candidate_text": "<think>\nThe user is asking a simple",
+      "domain": "plain-prose",
+      "id": "prose_capital",
+      "incumbent_text": "<think>\nThe user is asking a simple",
+      "kl_nats": -6.421020514165019e-15,
+      "token_ids_identical": true,
+      "top_k_agreement": 1.0,
+      "usable": true
+     },
+     {
+      "argmax_agreement": 1.0,
+      "candidate_text": "<think>\nThe user wants me to reply",
+      "domain": "tool-calling",
+      "id": "instruction_json",
+      "incumbent_text": "<think>\nThe user wants me to reply",
+      "kl_nats": -4.4150777693859976e-15,
+      "token_ids_identical": true,
+      "top_k_agreement": 1.0,
+      "usable": true
+     }
+    ],
+    "mean_argmax_agreement": 1.0,
+    "mean_kl_nats": 0.0,
+    "mean_top_k_agreement": 1.0,
+    "n_prompts": 4,
+    "pass": true,
+    "ran": true,
+    "reason": "every capability prompt stays inside MLP_ERROR_BUDGET usable bars (KL < 0.10 nats, top-5 >= 0.80)",
+    "surface": "teacher-forced last-token KL and top-5 on short real prompts, plus an 8-token greedy generate that would notice a continuation change; not a full teacher-corpus domain generate",
+    "usable_kl_bar": 0.1,
+    "usable_top5_bar": 0.8
+   },
+   "promote_to_bit_identical": false,
+   "promote_to_default_on": true,
+   "reason": "weakest rung is intermediate_buffers=WITHIN_TOLERANCE; token ids match; logit KL/top-k clear the measured usable bars; route parity is reported (or dense NOT_APPLICABLE); capability spot-check passed. Not bit-identical and not left unjudged.",
+   "rungs": {
+    "final_logits": "BIT_IDENTICAL",
+    "hidden_state": "WITHIN_TOLERANCE",
+    "intermediate_buffers": "WITHIN_TOLERANCE",
+    "route_ids": "NOT_APPLICABLE",
+    "token_ids": "BIT_IDENTICAL"
+   },
+   "tolerance": {
+    "all_layers_structured_tolerated_relative_l2": 0.03,
+    "justification": "fold_addqx is the algebraic rewrite sum_i (s*q_i + b)*x_i = s*sum(q_i*x_i) + b*sum(x_i) with q*x as adds. Exact over reals; f32 association differs. MLP_ERROR_BUDGET measured that a structured per-layer relative L2 of 0.03 on all 64 layers stays USABLE (last-token KL < 0.10 nats, mean top-5 >= 0.80), and that 0.01 is not fatal as an all-layers program. A live rel_l2 at or under 0.01 with cause SOURCE_ORDER_FMA_ASSOCIATION is inside that measured budget, not an assumed 1% bar. Argmax is not this justification.",
+    "kl_bar": 0.1,
+    "permitted_cause": "SOURCE_ORDER_FMA_ASSOCIATION",
+    "rel_l2_bar": 0.01,
+    "rel_l2_bar_source": "MLP_ERROR_BUDGET comfortably-usable 0.01; all-layers structured tolerated 0.03",
+    "source": "receipts/future/MLP_ERROR_BUDGET.json",
+    "source_order_permits": true,
+    "top5_bar": 0.8
+   },
+   "verdict": "PASS_JUSTIFIED_TOLERANCE",
+   "weakest_rung": "intermediate_buffers",
+   "weakest_rung_verdict": "WITHIN_TOLERANCE"
+  },
+  "layer0_gate_characterisation": {
+   "abs_histogram": {
+    "eq0": 0,
+    "gt_1e-1": 0,
+    "le_1e-1": 0,
+    "le_1e-2": 0,
+    "le_1e-3": 0,
+    "le_1e-4": 0,
+    "le_1e-5": 0,
+    "le_1e-6": 904,
+    "le_1e-7": 16504,
+    "le_1e-8": 0
+   },
+   "bit_identical": false,
+   "candidate_fnv1a64": "a20de1f877751619",
+   "cause": "SOURCE_ORDER_FMA_ASSOCIATION",
+   "compared_against": "layer-0 mlp.gate_proj output after named matvec; same synthetic x as FOLD_ADDQX_AB",
+   "cosine": 0.9999999999971967,
+   "first_mismatch_byte": 0,
+   "first_mismatch_float": 0,
+   "float_mismatch_fraction": 1.0,
+   "incumbent_fnv1a64": "042a66aaba16bde2",
+   "incumbent_rms": 0.03549434379637647,
+   "max_abs": 2.086162567138672e-07,
+   "max_ulp": 1343488,
+   "mean_abs": 8.286349384434288e-08,
+   "median_ulp_mismatch": 44,
+   "n_bytes_compared": 69632,
+   "n_float_mismatch": 17408,
+   "n_floats_compared": 17408,
+   "n_inf": 0,
+   "n_mismatch_bytes": 22309,
+   "n_nan": 0,
+   "n_sign_flips": 0,
+   "rel_l2": 2.353695599754621e-06,
+   "rms_diff": 8.354288080970902e-08,
+   "rung_verdict": "WITHIN_TOLERANCE",
+   "samples": [
+    {
+     "abs": 8.940696716308594e-08,
+     "candidate": 0.01283998042345047,
+     "incumbent": 0.012839891016483307,
+     "index": 0,
+     "ulp": 96
+    },
+    {
+     "abs": 8.568167686462402e-08,
+     "candidate": -0.01609976589679718,
+     "incumbent": -0.016099851578474045,
+     "index": 1,
+     "ulp": 46
+    },
+    {
+     "abs": 8.940696716308594e-08,
+     "candidate": 0.04899948835372925,
+     "incumbent": 0.048999398946762085,
+     "index": 2,
+     "ulp": 24
+    },
+    {
+     "abs": 6.705522537231445e-08,
+     "candidate": 0.00616263784468174,
+     "incumbent": 0.0061625707894563675,
+     "index": 3,
+     "ulp": 144
+    },
+    {
+     "abs": 7.078051567077637e-08,
+     "candidate": -0.06147240474820137,
+     "incumbent": -0.06147247552871704,
+     "index": 4,
+     "ulp": 19
+    },
+    {
+     "abs": 8.475035429000854e-08,
+     "candidate": -0.0019823340699076653,
+     "incumbent": -0.0019824188202619553,
+     "index": 5,
+     "ulp": 364
+    },
+    {
+     "abs": 6.705522537231445e-08,
+     "candidate": -0.045713506639003754,
+     "incumbent": -0.045713573694229126,
+     "index": 6,
+     "ulp": 18
+    },
+    {
+     "abs": 8.940696716308594e-08,
+     "candidate": 0.021704569458961487,
+     "incumbent": 0.021704480051994324,
+     "index": 7,
+     "ulp": 48
+    },
+    {
+     "abs": 7.264316082000732e-08,
+     "candidate": -0.022848742082715034,
+     "incumbent": -0.022848814725875854,
+     "index": 8,
+     "ulp": 39
+    },
+    {
+     "abs": 7.82310962677002e-08,
+     "candidate": -0.03917743265628815,
+     "incumbent": -0.039177510887384415,
+     "index": 9,
+     "ulp": 21
+    },
+    {
+     "abs": 8.754432201385498e-08,
+     "candidate": -0.02213912084698677,
+     "incumbent": -0.022139208391308784,
+     "index": 10,
+     "ulp": 47
+    },
+    {
+     "abs": 8.381903171539307e-08,
+     "candidate": 0.023509373888373375,
+     "incumbent": 0.02350929006934166,
+     "index": 11,
+     "ulp": 45
+    }
+   ],
+   "ulp_histogram": {
+    "16_63": 9992,
+    "256_1023": 1154,
+    "2_3": 0,
+    "4_7": 16,
+    "64_255": 4507,
+    "8_15": 1372,
+    "eq0": 0,
+    "eq1": 0,
+    "ge_1024": 367
+   },
+   "ulp_note": "max_ulp is IEEE-754 bit distance, which jumps across exponent boundaries on near-zero values; magnitude authority is max_abs and abs_histogram, not max_ulp"
+  },
+  "lever": "HAWKING_AFFINE2_GEO=fold_addqx / Affine2Geo::FoldAddqx",
+  "not_promoted_to_bit_identical": true,
+  "probe_error": null,
+  "production_stays_default_off_until": "PASS_JUSTIFIED_TOLERANCE with all four supports, or PASS_BIT_IDENTICAL",
+  "reproduced_cited_byte_count": true,
+  "rungs": {
+   "final_logits": {
+    "agreement": {
+     "argmax_agreement": 1.0,
+     "argmax_is_not_parity": true,
+     "clears_usable_kl": true,
+     "clears_usable_top5": true,
+     "kl_nats": 0.0,
+     "n_rows": 4,
+     "parity_quantities": [
+      "kl_nats",
+      "top_k_agreement"
+     ],
+     "top_k": 5,
+     "top_k_agreement": 1.0,
+     "usable_kl_bar": 0.1,
+     "usable_top5_bar": 0.8
+    },
+    "argmax_is_not_parity": true,
+    "available": true,
+    "characterisation": null,
+    "name": "final_logits",
+    "reason": "logits match at KL=0 and top-k=1",
+    "tolerance": null,
+    "verdict": "BIT_IDENTICAL"
+   },
+   "hidden_state": {
+    "argmax_is_not_parity": true,
+    "available": true,
+    "characterisation": {
+     "abs_histogram": {
+      "eq0": 86,
+      "gt_1e-1": 0,
+      "le_1e-1": 0,
+      "le_1e-2": 0,
+      "le_1e-3": 0,
+      "le_1e-4": 1314,
+      "le_1e-5": 3279,
+      "le_1e-6": 440,
+      "le_1e-7": 1,
+      "le_1e-8": 0
+     },
+     "bit_identical": false,
+     "candidate_fnv1a64": "99fa7b23ce4ff1c0",
+     "cause": "SOURCE_ORDER_FMA_ASSOCIATION",
+     "compared_against": "hidden residual after last prompt token, same prefix",
+     "cosine": 0.9999999999981006,
+     "first_mismatch_byte": 0,
+     "first_mismatch_float": 0,
+     "float_mismatch_fraction": 0.983203125,
+     "incumbent_fnv1a64": "de589d8f9384beb8",
+     "incumbent_rms": 4.502046212421497,
+     "max_abs": 4.482269287109375e-05,
+     "max_ulp": 1540096,
+     "mean_abs": 6.940378807485104e-06,
+     "median_ulp_mismatch": 27,
+     "n_bytes_compared": 20480,
+     "n_float_mismatch": 5034,
+     "n_floats_compared": 5120,
+     "n_inf": 0,
+     "n_mismatch_bytes": 6097,
+     "n_nan": 0,
+     "n_sign_flips": 0,
+     "rel_l2": 1.9466659079581802e-06,
+     "rms_diff": 8.76397987777318e-06,
+     "samples": [
+      {
+       "abs": 5.125999450683594e-06,
+       "candidate": 0.67608642578125,
+       "incumbent": 0.6760915517807007,
+       "index": 0,
+       "ulp": 86
+      },
+      {
+       "abs": 1.049041748046875e-05,
+       "candidate": -6.462583541870117,
+       "incumbent": -6.462594032287598,
+       "index": 1,
+       "ulp": 22
+      },
+      {
+       "abs": 4.291534423828125e-06,
+       "candidate": 4.708868980407715,
+       "incumbent": 4.708873271942139,
+       "index": 2,
+       "ulp": 9
+      },
+      {
+       "abs": 1.2636184692382812e-05,
+       "candidate": -0.30203115940093994,
+       "incumbent": -0.3020437955856323,
+       "index": 3,
+       "ulp": 424
+      },
+      {
+       "abs": 2.384185791015625e-06,
+       "candidate": -7.340188026428223,
+       "incumbent": -7.340190410614014,
+       "index": 4,
+       "ulp": 5
+      },
+      {
+       "abs": 6.556510925292969e-06,
+       "candidate": -0.7059650421142578,
+       "incumbent": -0.7059715986251831,
+       "index": 5,
+       "ulp": 110
+      },
+      {
+       "abs": 1.0967254638671875e-05,
+       "candidate": -4.727718353271484,
+       "incumbent": -4.727707386016846,
+       "index": 6,
+       "ulp": 23
+      },
+      {
+       "abs": 4.5299530029296875e-06,
+       "candidate": -2.067566394805908,
+       "incumbent": -2.067570924758911,
+       "index": 7,
+       "ulp": 19
+      },
+      {
+       "abs": 1.049041748046875e-05,
+       "candidate": -1.6974494457244873,
+       "incumbent": -1.6974389553070068,
+       "index": 8,
+       "ulp": 88
+      },
+      {
+       "abs": 5.066394805908203e-07,
+       "candidate": -0.3077129125595093,
+       "incumbent": -0.3077124059200287,
+       "index": 9,
+       "ulp": 17
+      },
+      {
+       "abs": 1.52587890625e-05,
+       "candidate": -2.8224053382873535,
+       "incumbent": -2.822420597076416,
+       "index": 10,
+       "ulp": 64
+      },
+      {
+       "abs": 4.291534423828125e-06,
+       "candidate": -4.156646728515625,
+       "incumbent": -4.156642436981201,
+       "index": 11,
+       "ulp": 9
+      }
+     ],
+     "ulp_histogram": {
+      "16_63": 2079,
+      "256_1023": 254,
+      "2_3": 244,
+      "4_7": 495,
+      "64_255": 907,
+      "8_15": 842,
+      "eq0": 86,
+      "eq1": 109,
+      "ge_1024": 104
+     }
+    },
+    "name": "hidden_state",
+    "reason": "hidden-state diff sits inside the justified tolerance",
+    "tolerance": {
+     "all_layers_structured_tolerated_relative_l2": 0.03,
+     "justification": "fold_addqx is the algebraic rewrite sum_i (s*q_i + b)*x_i = s*sum(q_i*x_i) + b*sum(x_i) with q*x as adds. Exact over reals; f32 association differs. MLP_ERROR_BUDGET measured that a structured per-layer relative L2 of 0.03 on all 64 layers stays USABLE (last-token KL < 0.10 nats, mean top-5 >= 0.80), and that 0.01 is not fatal as an all-layers program. A live rel_l2 at or under 0.01 with cause SOURCE_ORDER_FMA_ASSOCIATION is inside that measured budget, not an assumed 1% bar. Argmax is not this justification.",
+     "kl_bar": 0.1,
+     "permitted_cause": "SOURCE_ORDER_FMA_ASSOCIATION",
+     "rel_l2_bar": 0.01,
+     "rel_l2_bar_source": "MLP_ERROR_BUDGET comfortably-usable 0.01; all-layers structured tolerated 0.03",
+     "source": "receipts/future/MLP_ERROR_BUDGET.json",
+     "source_order_permits": true,
+     "top5_bar": 0.8
+    },
+    "verdict": "WITHIN_TOLERANCE"
+   },
+   "intermediate_buffers": {
+    "argmax_is_not_parity": true,
+    "available": true,
+    "name": "intermediate_buffers",
+    "reason": "intermediates are not bit-identical; diffs sit inside the justified tolerance",
+    "surfaces": {
+     "last_layer_act": {
+      "abs_histogram": {
+       "eq0": 284,
+       "gt_1e-1": 0,
+       "le_1e-1": 0,
+       "le_1e-2": 0,
+       "le_1e-3": 0,
+       "le_1e-4": 212,
+       "le_1e-5": 3102,
+       "le_1e-6": 11076,
+       "le_1e-7": 2590,
+       "le_1e-8": 144
+      },
+      "bit_identical": false,
+      "candidate_fnv1a64": "c649c4d23ee06e50",
+      "cause": "SOURCE_ORDER_FMA_ASSOCIATION",
+      "compared_against": "workspace act (silu(gate)*up) after last prompt token",
+      "cosine": 0.9999999999985236,
+      "first_mismatch_byte": 0,
+      "first_mismatch_float": 0,
+      "float_mismatch_fraction": 0.9836856617647058,
+      "incumbent_fnv1a64": "8f0a453632c1422d",
+      "incumbent_rms": 1.382656270737767,
+      "max_abs": 5.53131103515625e-05,
+      "max_ulp": 105199,
+      "mean_abs": 9.465996208579032e-07,
+      "median_ulp_mismatch": 22,
+      "n_bytes_compared": 69632,
+      "n_float_mismatch": 17124,
+      "n_floats_compared": 17408,
+      "n_inf": 0,
+      "n_mismatch_bytes": 20569,
+      "n_nan": 0,
+      "n_sign_flips": 0,
+      "rel_l2": 1.7172569420062608e-06,
+      "rms_diff": 2.3743760793329185e-06,
+      "rung_verdict": "WITHIN_TOLERANCE",
+      "samples": [
+       {
+        "abs": 7.62939453125e-06,
+        "candidate": 4.514769077301025,
+        "incumbent": 4.514776706695557,
+        "index": 0,
+        "ulp": 16
+       },
+       {
+        "abs": 5.21540641784668e-08,
+        "candidate": -0.06874054670333862,
+        "incumbent": -0.0687405988574028,
+        "index": 1,
+        "ulp": 7
+       },
+       {
+        "abs": 2.9802322387695312e-08,
+        "candidate": -0.2537173926830292,
+        "incumbent": -0.25371742248535156,
+        "index": 2,
+        "ulp": 1
+       },
+       {
+        "abs": 1.1920928955078125e-07,
+        "candidate": -0.3623964786529541,
+        "incumbent": -0.36239635944366455,
+        "index": 4,
+        "ulp": 4
+       },
+       {
+        "abs": 4.470348358154297e-08,
+        "candidate": 0.07003871351480484,
+        "incumbent": 0.07003875821828842,
+        "index": 5,
+        "ulp": 6
+       },
+       {
+        "abs": 1.7583370208740234e-06,
+        "candidate": -0.4896228015422821,
+        "incumbent": -0.489624559879303,
+        "index": 6,
+        "ulp": 59
+       },
+       {
+        "abs": 4.172325134277344e-07,
+        "candidate": -0.1325019747018814,
+        "incumbent": -0.13250239193439484,
+        "index": 7,
+        "ulp": 28
+       },
+       {
+        "abs": 3.725290298461914e-07,
+        "candidate": 0.141942098736763,
+        "incumbent": 0.14194172620773315,
+        "index": 8,
+        "ulp": 25
+       },
+       {
+        "abs": 3.390014171600342e-07,
+        "candidate": 0.056687165051698685,
+        "incumbent": 0.056687504053115845,
+        "index": 10,
+        "ulp": 91
+       },
+       {
+        "abs": 1.1101365089416504e-06,
+        "candidate": -0.03803735226392746,
+        "incumbent": -0.03803624212741852,
+        "index": 11,
+        "ulp": 298
+       },
+       {
+        "abs": 7.71600753068924e-07,
+        "candidate": 0.004631867166608572,
+        "incumbent": 0.004632638767361641,
+        "index": 12,
+        "ulp": 1657
+       },
+       {
+        "abs": 2.76835635304451e-07,
+        "candidate": -0.0020010797306895256,
+        "incumbent": -0.002000802895054221,
+        "index": 13,
+        "ulp": 1189
+       }
+      ],
+      "ulp_histogram": {
+       "16_63": 6568,
+       "256_1023": 774,
+       "2_3": 1101,
+       "4_7": 2024,
+       "64_255": 2844,
+       "8_15": 2963,
+       "eq0": 284,
+       "eq1": 562,
+       "ge_1024": 288
+      }
+     },
+     "last_layer_down": {
+      "abs_histogram": {
+       "eq0": 93,
+       "gt_1e-1": 0,
+       "le_1e-1": 0,
+       "le_1e-2": 0,
+       "le_1e-3": 0,
+       "le_1e-4": 32,
+       "le_1e-5": 3844,
+       "le_1e-6": 1129,
+       "le_1e-7": 22,
+       "le_1e-8": 0
+      },
+      "bit_identical": false,
+      "candidate_fnv1a64": "1fede44c3fea5c7e",
+      "cause": "SOURCE_ORDER_FMA_ASSOCIATION",
+      "compared_against": "workspace down after last prompt token",
+      "cosine": 0.9999999999988616,
+      "first_mismatch_byte": 0,
+      "first_mismatch_float": 0,
+      "float_mismatch_fraction": 0.9818359375,
+      "incumbent_fnv1a64": "46b23215fe126068",
+      "incumbent_rms": 2.307880116348037,
+      "max_abs": 4.57763671875e-05,
+      "max_ulp": 51200,
+      "mean_abs": 2.6817171601578595e-06,
+      "median_ulp_mismatch": 20,
+      "n_bytes_compared": 20480,
+      "n_float_mismatch": 5027,
+      "n_floats_compared": 5120,
+      "n_inf": 0,
+      "n_mismatch_bytes": 5903,
+      "n_nan": 0,
+      "n_sign_flips": 0,
+      "rel_l2": 1.5061302217375744e-06,
+      "rms_diff": 3.4759679913790077e-06,
+      "rung_verdict": "WITHIN_TOLERANCE",
+      "samples": [
+       {
+        "abs": 2.384185791015625e-06,
+        "candidate": 2.6524930000305176,
+        "incumbent": 2.6524906158447266,
+        "index": 0,
+        "ulp": 10
+       },
+       {
+        "abs": 1.1920928955078125e-06,
+        "candidate": 1.2825473546981812,
+        "incumbent": 1.2825461626052856,
+        "index": 2,
+        "ulp": 10
+       },
+       {
+        "abs": 1.6689300537109375e-06,
+        "candidate": -1.2456209659576416,
+        "incumbent": -1.245619297027588,
+        "index": 3,
+        "ulp": 14
+       },
+       {
+        "abs": 4.291534423828125e-06,
+        "candidate": -6.463688373565674,
+        "incumbent": -6.463692665100098,
+        "index": 4,
+        "ulp": 9
+       },
+       {
+        "abs": 4.76837158203125e-07,
+        "candidate": 0.5819822549819946,
+        "incumbent": 0.5819817781448364,
+        "index": 5,
+        "ulp": 8
+       },
+       {
+        "abs": 1.9073486328125e-06,
+        "candidate": -1.3604822158813477,
+        "incumbent": -1.3604803085327148,
+        "index": 6,
+        "ulp": 16
+       },
+       {
+        "abs": 1.3113021850585938e-06,
+        "candidate": -1.195191502571106,
+        "incumbent": -1.195192813873291,
+        "index": 7,
+        "ulp": 11
+       },
+       {
+        "abs": 3.2186508178710938e-06,
+        "candidate": -1.007725477218628,
+        "incumbent": -1.00772225856781,
+        "index": 8,
+        "ulp": 27
+       },
+       {
+        "abs": 7.152557373046875e-06,
+        "candidate": -0.4343338906764984,
+        "incumbent": -0.43432673811912537,
+        "index": 9,
+        "ulp": 240
+       },
+       {
+        "abs": 4.291534423828125e-06,
+        "candidate": -4.489003658294678,
+        "incumbent": -4.489007949829102,
+        "index": 10,
+        "ulp": 9
+       },
+       {
+        "abs": 1.1920928955078125e-06,
+        "candidate": 0.07619869709014893,
+        "incumbent": 0.07619988918304443,
+        "index": 11,
+        "ulp": 160
+       },
+       {
+        "abs": 4.76837158203125e-07,
+        "candidate": -2.0907039642333984,
+        "incumbent": -2.0907044410705566,
+        "index": 12,
+        "ulp": 2
+       }
+      ],
+      "ulp_histogram": {
+       "16_63": 1995,
+       "256_1023": 205,
+       "2_3": 332,
+       "4_7": 584,
+       "64_255": 727,
+       "8_15": 991,
+       "eq0": 93,
+       "eq1": 137,
+       "ge_1024": 56
+      }
+     },
+     "layer0_down": {
+      "abs_histogram": {
+       "eq0": 0,
+       "gt_1e-1": 0,
+       "le_1e-1": 0,
+       "le_1e-2": 0,
+       "le_1e-3": 0,
+       "le_1e-4": 0,
+       "le_1e-5": 1,
+       "le_1e-6": 351,
+       "le_1e-7": 4768,
+       "le_1e-8": 0
+      },
+      "bit_identical": false,
+      "candidate_fnv1a64": "51a5ad48eb3f8827",
+      "cause": "SOURCE_ORDER_FMA_ASSOCIATION",
+      "compared_against": "layer-0 mlp.down_proj output after named matvec; same synthetic x as FOLD_ADDQX_AB",
+      "cosine": 0.9999999999968546,
+      "first_mismatch_byte": 0,
+      "first_mismatch_float": 0,
+      "float_mismatch_fraction": 1.0,
+      "incumbent_fnv1a64": "7e3bfcc809abe5bd",
+      "incumbent_rms": 0.03530541501267859,
+      "max_abs": 1.0579824447631836e-06,
+      "max_ulp": 200704,
+      "mean_abs": 8.695328688190784e-08,
+      "median_ulp_mismatch": 46,
+      "n_bytes_compared": 20480,
+      "n_float_mismatch": 5120,
+      "n_floats_compared": 5120,
+      "n_inf": 0,
+      "n_mismatch_bytes": 6534,
+      "n_nan": 0,
+      "n_sign_flips": 0,
+      "rel_l2": 2.5053103781665975e-06,
+      "rms_diff": 8.845102263674245e-08,
+      "rung_verdict": "WITHIN_TOLERANCE",
+      "samples": [
+       {
+        "abs": 8.195638656616211e-08,
+        "candidate": -0.019583042711019516,
+        "incumbent": -0.019583124667406082,
+        "index": 0,
+        "ulp": 44
+       },
+       {
+        "abs": 7.543712854385376e-08,
+        "candidate": -0.0011016055941581726,
+        "incumbent": -0.0011016810312867165,
+        "index": 1,
+        "ulp": 648
+       },
+       {
+        "abs": 7.636845111846924e-08,
+        "candidate": 0.01725662127137184,
+        "incumbent": 0.017256544902920723,
+        "index": 2,
+        "ulp": 41
+       },
+       {
+        "abs": 8.754432201385498e-08,
+        "candidate": -0.025384198874235153,
+        "incumbent": -0.025384286418557167,
+        "index": 3,
+        "ulp": 47
+       },
+       {
+        "abs": 8.940696716308594e-08,
+        "candidate": 0.03346337378025055,
+        "incumbent": 0.033463284373283386,
+        "index": 4,
+        "ulp": 24
+       },
+       {
+        "abs": 7.450580596923828e-08,
+        "candidate": 0.03904403746128082,
+        "incumbent": 0.039043962955474854,
+        "index": 5,
+        "ulp": 20
+       },
+       {
+        "abs": 8.381903171539307e-08,
+        "candidate": -0.03010360337793827,
+        "incumbent": -0.030103687196969986,
+        "index": 6,
+        "ulp": 45
+       },
+       {
+        "abs": 9.592622518539429e-08,
+        "candidate": -0.015497417189180851,
+        "incumbent": -0.015497513115406036,
+        "index": 7,
+        "ulp": 103
+       },
+       {
+        "abs": 9.499490261077881e-08,
+        "candidate": -0.002450697124004364,
+        "incumbent": -0.002450792118906975,
+        "index": 8,
+        "ulp": 408
+       },
+       {
+        "abs": 9.033828973770142e-08,
+        "candidate": 0.006258712150156498,
+        "incumbent": 0.00625862181186676,
+        "index": 9,
+        "ulp": 194
+       },
+       {
+        "abs": 6.705522537231445e-08,
+        "candidate": 0.03615111857652664,
+        "incumbent": 0.03615105152130127,
+        "index": 10,
+        "ulp": 18
+       },
+       {
+        "abs": 7.450580596923828e-08,
+        "candidate": -0.00028258562088012695,
+        "incumbent": -0.0002826601266860962,
+        "index": 11,
+        "ulp": 2560
+       }
+      ],
+      "ulp_histogram": {
+       "16_63": 3014,
+       "256_1023": 321,
+       "2_3": 0,
+       "4_7": 1,
+       "64_255": 1318,
+       "8_15": 372,
+       "eq0": 0,
+       "eq1": 0,
+       "ge_1024": 94
+      },
+      "ulp_note": "max_ulp is IEEE-754 bit distance, which jumps across exponent boundaries on near-zero values; magnitude authority is max_abs and abs_histogram, not max_ulp"
+     },
+     "layer0_gate": {
+      "abs_histogram": {
+       "eq0": 0,
+       "gt_1e-1": 0,
+       "le_1e-1": 0,
+       "le_1e-2": 0,
+       "le_1e-3": 0,
+       "le_1e-4": 0,
+       "le_1e-5": 0,
+       "le_1e-6": 904,
+       "le_1e-7": 16504,
+       "le_1e-8": 0
+      },
+      "bit_identical": false,
+      "candidate_fnv1a64": "a20de1f877751619",
+      "cause": "SOURCE_ORDER_FMA_ASSOCIATION",
+      "compared_against": "layer-0 mlp.gate_proj output after named matvec; same synthetic x as FOLD_ADDQX_AB",
+      "cosine": 0.9999999999971967,
+      "first_mismatch_byte": 0,
+      "first_mismatch_float": 0,
+      "float_mismatch_fraction": 1.0,
+      "incumbent_fnv1a64": "042a66aaba16bde2",
+      "incumbent_rms": 0.03549434379637647,
+      "max_abs": 2.086162567138672e-07,
+      "max_ulp": 1343488,
+      "mean_abs": 8.286349384434288e-08,
+      "median_ulp_mismatch": 44,
+      "n_bytes_compared": 69632,
+      "n_float_mismatch": 17408,
+      "n_floats_compared": 17408,
+      "n_inf": 0,
+      "n_mismatch_bytes": 22309,
+      "n_nan": 0,
+      "n_sign_flips": 0,
+      "rel_l2": 2.353695599754621e-06,
+      "rms_diff": 8.354288080970902e-08,
+      "rung_verdict": "WITHIN_TOLERANCE",
+      "samples": [
+       {
+        "abs": 8.940696716308594e-08,
+        "candidate": 0.01283998042345047,
+        "incumbent": 0.012839891016483307,
+        "index": 0,
+        "ulp": 96
+       },
+       {
+        "abs": 8.568167686462402e-08,
+        "candidate": -0.01609976589679718,
+        "incumbent": -0.016099851578474045,
+        "index": 1,
+        "ulp": 46
+       },
+       {
+        "abs": 8.940696716308594e-08,
+        "candidate": 0.04899948835372925,
+        "incumbent": 0.048999398946762085,
+        "index": 2,
+        "ulp": 24
+       },
+       {
+        "abs": 6.705522537231445e-08,
+        "candidate": 0.00616263784468174,
+        "incumbent": 0.0061625707894563675,
+        "index": 3,
+        "ulp": 144
+       },
+       {
+        "abs": 7.078051567077637e-08,
+        "candidate": -0.06147240474820137,
+        "incumbent": -0.06147247552871704,
+        "index": 4,
+        "ulp": 19
+       },
+       {
+        "abs": 8.475035429000854e-08,
+        "candidate": -0.0019823340699076653,
+        "incumbent": -0.0019824188202619553,
+        "index": 5,
+        "ulp": 364
+       },
+       {
+        "abs": 6.705522537231445e-08,
+        "candidate": -0.045713506639003754,
+        "incumbent": -0.045713573694229126,
+        "index": 6,
+        "ulp": 18
+       },
+       {
+        "abs": 8.940696716308594e-08,
+        "candidate": 0.021704569458961487,
+        "incumbent": 0.021704480051994324,
+        "index": 7,
+        "ulp": 48
+       },
+       {
+        "abs": 7.264316082000732e-08,
+        "candidate": -0.022848742082715034,
+        "incumbent": -0.022848814725875854,
+        "index": 8,
+        "ulp": 39
+       },
+       {
+        "abs": 7.82310962677002e-08,
+        "candidate": -0.03917743265628815,
+        "incumbent": -0.039177510887384415,
+        "index": 9,
+        "ulp": 21
+       },
+       {
+        "abs": 8.754432201385498e-08,
+        "candidate": -0.02213912084698677,
+        "incumbent": -0.022139208391308784,
+        "index": 10,
+        "ulp": 47
+       },
+       {
+        "abs": 8.381903171539307e-08,
+        "candidate": 0.023509373888373375,
+        "incumbent": 0.02350929006934166,
+        "index": 11,
+        "ulp": 45
+       }
+      ],
+      "ulp_histogram": {
+       "16_63": 9992,
+       "256_1023": 1154,
+       "2_3": 0,
+       "4_7": 16,
+       "64_255": 4507,
+       "8_15": 1372,
+       "eq0": 0,
+       "eq1": 0,
+       "ge_1024": 367
+      },
+      "ulp_note": "max_ulp is IEEE-754 bit distance, which jumps across exponent boundaries on near-zero values; magnitude authority is max_abs and abs_histogram, not max_ulp"
+     },
+     "layer0_up": {
+      "abs_histogram": {
+       "eq0": 0,
+       "gt_1e-1": 0,
+       "le_1e-1": 0,
+       "le_1e-2": 0,
+       "le_1e-3": 0,
+       "le_1e-4": 0,
+       "le_1e-5": 0,
+       "le_1e-6": 324,
+       "le_1e-7": 17084,
+       "le_1e-8": 0
+      },
+      "bit_identical": false,
+      "candidate_fnv1a64": "935234b01026c15f",
+      "cause": "SOURCE_ORDER_FMA_ASSOCIATION",
+      "compared_against": "layer-0 mlp.up_proj output after named matvec; same synthetic x as FOLD_ADDQX_AB",
+      "cosine": 0.9999999999972164,
+      "first_mismatch_byte": 0,
+      "first_mismatch_float": 0,
+      "float_mismatch_fraction": 1.0,
+      "incumbent_fnv1a64": "5832105d3d17136f",
+      "incumbent_rms": 0.034395489328903,
+      "max_abs": 1.3783574104309082e-07,
+      "max_ulp": 1409024,
+      "mean_abs": 8.024703139894615e-08,
+      "median_ulp_mismatch": 43,
+      "n_bytes_compared": 69632,
+      "n_float_mismatch": 17408,
+      "n_floats_compared": 17408,
+      "n_inf": 0,
+      "n_mismatch_bytes": 22320,
+      "n_nan": 0,
+      "n_sign_flips": 0,
+      "rel_l2": 2.346740539557358e-06,
+      "rms_diff": 8.07172891860492e-08,
+      "rung_verdict": "WITHIN_TOLERANCE",
+      "samples": [
+       {
+        "abs": 9.313225746154785e-08,
+        "candidate": 0.008441630750894547,
+        "incumbent": 0.008441537618637085,
+        "index": 0,
+        "ulp": 100
+       },
+       {
+        "abs": 8.66129994392395e-08,
+        "candidate": 0.004138804040849209,
+        "incumbent": 0.00413871742784977,
+        "index": 1,
+        "ulp": 186
+       },
+       {
+        "abs": 1.0244548320770264e-07,
+        "candidate": -0.010354286059737206,
+        "incumbent": -0.010354388505220413,
+        "index": 2,
+        "ulp": 110
+       },
+       {
+        "abs": 6.332993507385254e-08,
+        "candidate": -0.05461028963327408,
+        "incumbent": -0.05461035296320915,
+        "index": 3,
+        "ulp": 17
+       },
+       {
+        "abs": 6.798654794692993e-08,
+        "candidate": 0.01458148192614317,
+        "incumbent": 0.014581413939595222,
+        "index": 4,
+        "ulp": 73
+       },
+       {
+        "abs": 7.078051567077637e-08,
+        "candidate": 0.01911601424217224,
+        "incumbent": 0.01911594346165657,
+        "index": 5,
+        "ulp": 38
+       },
+       {
+        "abs": 8.568167686462402e-08,
+        "candidate": 0.03638936206698418,
+        "incumbent": 0.03638927638530731,
+        "index": 6,
+        "ulp": 23
+       },
+       {
+        "abs": 7.636845111846924e-08,
+        "candidate": -0.021176030859351158,
+        "incumbent": -0.021176107227802277,
+        "index": 7,
+        "ulp": 41
+       },
+       {
+        "abs": 8.009374141693115e-08,
+        "candidate": -0.026354139670729637,
+        "incumbent": -0.026354219764471054,
+        "index": 8,
+        "ulp": 43
+       },
+       {
+        "abs": 5.21540641784668e-08,
+        "candidate": 0.04948873817920685,
+        "incumbent": 0.04948868602514267,
+        "index": 9,
+        "ulp": 14
+       },
+       {
+        "abs": 6.891787052154541e-08,
+        "candidate": 0.023994205519557,
+        "incumbent": 0.023994136601686478,
+        "index": 10,
+        "ulp": 37
+       },
+       {
+        "abs": 7.82310962677002e-08,
+        "candidate": -0.031903985887765884,
+        "incumbent": -0.03190406411886215,
+        "index": 11,
+        "ulp": 21
+       }
+      ],
+      "ulp_histogram": {
+       "16_63": 10108,
+       "256_1023": 1103,
+       "2_3": 0,
+       "4_7": 6,
+       "64_255": 4597,
+       "8_15": 1195,
+       "eq0": 0,
+       "eq1": 0,
+       "ge_1024": 399
+      },
+      "ulp_note": "max_ulp is IEEE-754 bit distance, which jumps across exponent boundaries on near-zero values; magnitude authority is max_abs and abs_histogram, not max_ulp"
+     }
+    },
+    "tolerance": {
+     "all_layers_structured_tolerated_relative_l2": 0.03,
+     "justification": "fold_addqx is the algebraic rewrite sum_i (s*q_i + b)*x_i = s*sum(q_i*x_i) + b*sum(x_i) with q*x as adds. Exact over reals; f32 association differs. MLP_ERROR_BUDGET measured that a structured per-layer relative L2 of 0.03 on all 64 layers stays USABLE (last-token KL < 0.10 nats, mean top-5 >= 0.80), and that 0.01 is not fatal as an all-layers program. A live rel_l2 at or under 0.01 with cause SOURCE_ORDER_FMA_ASSOCIATION is inside that measured budget, not an assumed 1% bar. Argmax is not this justification.",
+     "kl_bar": 0.1,
+     "permitted_cause": "SOURCE_ORDER_FMA_ASSOCIATION",
+     "rel_l2_bar": 0.01,
+     "rel_l2_bar_source": "MLP_ERROR_BUDGET comfortably-usable 0.01; all-layers structured tolerated 0.03",
+     "source": "receipts/future/MLP_ERROR_BUDGET.json",
+     "source_order_permits": true,
+     "top5_bar": 0.8
+    },
+    "verdict": "WITHIN_TOLERANCE",
+    "weakest_surface": "layer0_gate"
+   },
+   "route_ids": {
+    "argmax_is_not_parity": true,
+    "available": false,
+    "name": "route_ids",
+    "reason": "qwen38 is dense Qwen3.5-27B hybrid (Gated DeltaNet + GQA); crates/hawking-core/src/model/qwen38_geometry.rs refuses MoE keys (num_experts / moe_intermediate_size). fold_addqx rewrites the MLP affine2 unpack, which has no router and no selected experts.",
+    "verdict": "NOT_APPLICABLE"
+   },
+   "token_ids": {
+    "argmax_is_not_parity": true,
+    "available": true,
+    "bit_identical": true,
+    "candidate": [
+     248068,
+     198,
+     760,
+     1156,
+     369,
+     9859,
+     264,
+     4145,
+     248068,
+     198,
+     760,
+     1156,
+     369,
+     9859,
+     728,
+     310,
+     248068,
+     198,
+     760,
+     1156,
+     369,
+     9859,
+     264,
+     4145,
+     248068,
+     198,
+     760,
+     1156,
+     6587,
+     728,
+     310,
+     9559
+    ],
+    "fallbacks": 0,
+    "identical": true,
+    "incumbent": [
+     248068,
+     198,
+     760,
+     1156,
+     369,
+     9859,
+     264,
+     4145,
+     248068,
+     198,
+     760,
+     1156,
+     369,
+     9859,
+     728,
+     310,
+     248068,
+     198,
+     760,
+     1156,
+     369,
+     9859,
+     264,
+     4145,
+     248068,
+     198,
+     760,
+     1156,
+     6587,
+     728,
+     310,
+     9559
+    ],
+    "n_bytes_compared": 128,
+    "n_mismatch_bytes": 0,
+    "name": "token_ids",
+    "never_sufficient": true,
+    "reason": "token ids are bit-identical with fallbacks 0; this is necessary and NOT a candidate PASS",
+    "verdict": "BIT_IDENTICAL"
+   }
+  }
+ },
+ "fold_addqx_algebra": {
+  "cause": "SOURCE_ORDER_FMA_ASSOCIATION",
+  "identity": "sum_i (s*q_i + b)*x_i = s*sum(q_i*x_i) + b*sum(x_i)",
+  "note": "q in {0,1,2,3} so q*x is adds (xi or xi+xi) instead of float(q)*x; scale and bias apply once per 8-wide tile. Exact over reals; sequential f32 (q*s+b)*x is a different rounding.",
+  "over_f32": {
+   "counterexample": {
+    "abs_err": 4.76837e-07,
+    "bias": 0.1,
+    "fold_addqx_f32": 5.599999904632568,
+    "packed16": 65535,
+    "production_f32": 5.59999942779541,
+    "scale": 0.3,
+    "x": [
+     0.7,
+     0.7,
+     0.7,
+     0.7,
+     0.7,
+     0.7,
+     0.7,
+     0.7
+    ]
+   },
+   "matches_production": false,
+   "max_abs_err": 5.9605e-08,
+   "n": 256,
+   "n_tiles_differ": 181
+  },
+  "over_reals": {
+   "counterexample_lhs": 5.6,
+   "counterexample_rhs": 5.6,
+   "exact": true,
+   "max_abs_err": 0.0,
+   "n": 256
+  },
+  "source_order_permits": true
+ },
+ "git_head": "4f32126616f1037bd4d5ab4f8419bae3e6948b81",
+ "gpu_authority": true,
+ "measurement_provenance": {
+  "absolutes_are_measured_under_load": true,
+  "gpu_lane_lock_held": true,
+  "lane": "g022parity",
+  "loadavg": "{ 3.96 5.21 5.54 }",
+  "measured_at": "2026-08-31T11:45:58Z",
+  "measured_at_source": "CAPTURED",
+  "why": "a hardware number that cannot be placed in time cannot be audited against a contention window"
+ },
+ "mlp_error_budget": {
+  "all_layers_structured_tolerated_relative_l2": 0.03,
+  "argmax_is_not_parity": true,
+  "comfortably_usable_relative_l2": 0.01,
+  "degrades_at_relative_l2": 0.1,
+  "is_0_01_fatal_as_all_layers": "NO",
+  "isolated_one_layer_tolerated_relative_l2": 0.3,
+  "note": "0.03 is the campaign number (stricter of isotropic/structured, all 64 layers). 0.01 is comfortably usable on the same criterion. A one-layer bar of 0.3 is not the whole-model bar.",
+  "source": "receipts/future/MLP_ERROR_BUDGET.json",
+  "usable_last_token_kl": 0.1,
+  "usable_mean_top5": 0.8,
+  "what_the_model_actually_tolerates": "0.03 per layer on all 64 layers, under the stricter of isotropic and structured, by last-token KL < 0.10 nats and mean top-5 agreement >= 0.80. Argmax agreement is not this number."
+ },
+ "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+ "obligation": "PARITY MUST BE STRONGER THAN ARGMAX. Token-id equality is necessary and NOT SUFFICIENT. Where a change claims unchanged arithmetic, verify the strongest available surface: intermediate buffers, route ids, selected experts, hidden state, final logits, then token ids - BIT_IDENTICAL where source order permits, otherwise an EXPLICITLY JUSTIFIED TOLERANCE plus route parity, logit agreement and a capability spot-check. A kernel that changes the computation and happens to preserve argmax is not a physical-only speedup.",
+ "primitive": "FusedDecodeCompute",
+ "probe": {
+  "example": "crates/hawking-core/examples/parity_ladder_probe.rs",
+  "measured": true,
+  "raw": "/tmp/parity_ladder_probe.json",
+  "schema": "hawking.future.parity_ladder.probe.v1"
+ },
+ "recorded_by": "tools/future/parity_ladder.py",
+ "rung_order": [
+  "intermediate_buffers",
+  "route_ids",
+  "hidden_state",
+  "final_logits",
+  "token_ids"
+ ],
+ "rung_verdicts": [
+  "BIT_IDENTICAL",
+  "WITHIN_TOLERANCE",
+  "DIFFERS",
+  "NOT_APPLICABLE"
+ ],
+ "schema": "hawking.future.parity_ladder.v1",
+ "seal_sha256": "d01f1504864f93b9e0417ec163f036cf351deebf5d83b68fc65a6c3dbe3d4322",
+ "stays_default_off_reason": null,
+ "token_id_equality_alone_cannot_pass": true,
+ "took_gpu_lease": true,
+ "tps_qualification": {
+  "any_tps_labelled_qualified": false,
+  "reason": "this lane judges parity, it does not mint a TPS number"
+ },
+ "version": 1
+}

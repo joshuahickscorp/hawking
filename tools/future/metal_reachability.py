@@ -44,9 +44,122 @@ from pathlib import Path
 from typing import Any
 
 from tools.future._common import REPO, write_receipt
+from tools.future import status_causality as sc
 
 RECEIPT = "METAL_REACHABILITY.json"
 SCHEMA = "hawking.future.metal_reachability.v1"
+
+FIVE_RECORDED_FIELDS: tuple[str, ...] = getattr(
+    sc,
+    "FIVE_RECORDED_FIELDS",
+    (
+        "probe_performed",
+        "direct_observation",
+        "interpretation",
+        "confidence",
+        "alternatives",
+    ),
+)
+
+
+def _bind_emit() -> None:
+    """Consumer-side emit. Sibling owns the routine; this checkout may predate it."""
+    if hasattr(sc, "emit"):
+        return
+
+    def emit(
+        status: str,
+        *,
+        probe_performed: str = "",
+        direct_observation: Any = "",
+        interpretation: str = "",
+        probe_kind: str = "",
+        claim_kind: str | None = None,
+        falsifier: str = "",
+        source: str = "",
+    ) -> dict[str, Any]:
+        row: dict[str, Any] = {
+            "status": status,
+            "probe_performed": probe_performed,
+            "direct_observation": direct_observation,
+            "interpretation": interpretation or status,
+            "probe_kind": probe_kind,
+            "use_catalog": False,
+            "source": source or "<emit>",
+        }
+        if claim_kind:
+            row["claim_kind"] = claim_kind
+        if falsifier:
+            row["falsifier"] = falsifier
+        out = sc.challenge(row)
+        out["entry"] = "emit"
+        return out
+
+    sc.emit = emit  # type: ignore[attr-defined]
+
+
+_bind_emit()
+
+
+def records_five_fields(node: Any) -> bool:
+    fn = getattr(sc, "records_five_fields", None)
+    if callable(fn):
+        return bool(fn(node))
+    if not isinstance(node, dict):
+        return False
+    if not all(k in node for k in FIVE_RECORDED_FIELDS):
+        return False
+    if not str(node.get("probe_performed") or "").strip():
+        return False
+    if node.get("direct_observation") in (None, "", [], {}):
+        return False
+    if not str(node.get("interpretation") or "").strip():
+        return False
+    conf = node.get("confidence")
+    if not isinstance(conf, dict):
+        return False
+    if not {"would_raise", "would_lower", "level", "about"} <= set(conf):
+        return False
+    alts = node.get("alternatives")
+    return isinstance(alts, list) and bool(alts)
+
+
+def record_verdict_causality(
+    result: dict[str, Any],
+    *,
+    probe_performed: str = "",
+    direct_observation: Any = "",
+    interpretation: str | None = None,
+    probe_kind: str = "",
+    claim_kind: str | None = None,
+) -> dict[str, Any]:
+    """Stamp the five causality fields. Does not change the host-claim verdict.
+
+    An unsupplied observation is UNTESTED, never a restatement of the verdict.
+    """
+    verdict_before = result.get("verdict")
+    status = str(result.get("verdict") or "")
+    unsupplied = direct_observation in (None, "", [], {})
+    rec = sc.emit(
+        status,
+        probe_performed=str(probe_performed or ""),
+        direct_observation="" if unsupplied else direct_observation,
+        interpretation=interpretation if interpretation is not None else status,
+        probe_kind="" if unsupplied else probe_kind,
+        claim_kind=None if unsupplied else claim_kind,
+        source="tools/future/metal_reachability.py::verdict",
+    )
+    for key in FIVE_RECORDED_FIELDS:
+        result[key] = rec[key]
+    result["causality_verdict"] = rec["verdict"]
+    result["falsifier"] = rec.get("falsifier")
+    if rec.get("probe_kind"):
+        result["probe_kind"] = rec["probe_kind"]
+    if rec.get("claim_kind") is not None:
+        result["claim_kind"] = rec["claim_kind"]
+    if result.get("verdict") != verdict_before:
+        raise RuntimeError("status_causality.emit mutated the metal-reachability verdict")
+    return rec
 
 # The claim under test, and where it is written down.
 CLAIM = "this host has no Metal-capable GPU"
@@ -184,15 +297,38 @@ def probe_rust() -> dict[str, Any]:
 
 
 def verdict(observed: dict[str, Any] | None, why_unavailable: str = "") -> dict[str, Any]:
+    probe_performed = (
+        "Swift Metal enumeration: MTLCreateSystemDefaultDevice() and "
+        "MTLCopyAllDevices(); no command queue created, no work submitted"
+    )
     if observed is None:
-        return {
+        row = {
             "claim": CLAIM,
             "verdict": "UNTESTED",
             "why": why_unavailable or "the probe could not run on this host",
         }
+        record_verdict_causality(
+            row,
+            probe_performed=probe_performed,
+            direct_observation=(
+                f"probe_ran=False; why={why_unavailable or 'the probe could not run on this host'!r}"
+            ),
+            interpretation=(
+                "the host-has-no-Metal-GPU claim was not tested because the "
+                "enumeration probe did not run"
+            ),
+            probe_kind=sc.PROBE_PROCESS_ERROR,
+            claim_kind=sc.CLAIM_PROCESS_FAILURE,
+        )
+        return row
     device = observed.get("system_default")
+    n_devices = observed.get("n_devices")
+    observation = (
+        f"system_default={device!r}; n_devices={n_devices}; "
+        f"devices={observed.get('devices')}"
+    )
     if device:
-        return {
+        row = {
             "claim": CLAIM,
             "verdict": "FALSIFIED_AS_A_HOST_PROPERTY",
             "why": (
@@ -215,11 +351,35 @@ def verdict(observed: dict[str, Any] | None, why_unavailable: str = "") -> dict[
                 ),
             },
         }
-    return {
+        record_verdict_causality(
+            row,
+            probe_performed=probe_performed,
+            direct_observation=observation,
+            interpretation=(
+                f"this process saw a Metal device ({device!r}); the campaign claim "
+                f"{CLAIM!r} is falsified as a host property"
+            ),
+            probe_kind=sc.PROBE_ENUMERATION,
+            claim_kind=sc.CLAIM_DEVICE_PRESENT,
+        )
+        return row
+    row = {
         "claim": CLAIM,
         "verdict": "CONFIRMED",
         "why": "MTLCreateSystemDefaultDevice() returned nil from an ordinary process here",
     }
+    record_verdict_causality(
+        row,
+        probe_performed=probe_performed,
+        direct_observation=observation,
+        interpretation=(
+            "this ordinary process saw no Metal device; that is a process-side "
+            "observation, not a completed host census"
+        ),
+        probe_kind=sc.PROBE_ENUMERATION,
+        claim_kind=sc.CLAIM_PROCESS_FAILURE,
+    )
+    return row
 
 
 def claim_sites() -> list[dict[str, Any]]:

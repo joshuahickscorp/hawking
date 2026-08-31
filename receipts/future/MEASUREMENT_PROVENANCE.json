@@ -1,0 +1,59 @@
+{
+ "binary": {
+  "path": "workspace/ops/build/rust/release/examples/ascension_qwen38_resident",
+  "sha256": "39f3f28c0bf695f2f5c2e436bdb82a88f8406fb3f7a4b6f2588899350ebd78f8"
+ },
+ "claim_boundary": "A diff stat, a symbol count against HEAD, and a binary digest. It asserts that the source is uncommitted, not that the source is wrong. No measurement recorded elsewhere is retracted.",
+ "collision": {
+  "its_measurement_is_kept": "receipts/future/ORGAN_BANDWIDTH.json \u2014 the region timeline it produced is recorded even though its instrumentation is not landed",
+  "lane": "n1regiontime",
+  "not_applied_because": "it collides with the uncommitted implementation the measurements were taken on",
+  "preserved_at": "receipts/future/patches/n1-region-timing.crate.patch",
+  "what": "built cleanly in a worktree from HEAD and implements the same Metal batching symbols independently"
+ },
+ "defect": {
+  "class": "MEASURED_FROM_UNCOMMITTED_SOURCE",
+  "dirty_crate_files_total": 40,
+  "files": [
+   "crates/hawking-core/src/metal/mod.rs",
+   "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+   "crates/hawking-core/examples/ascension_qwen38_resident.rs"
+  ],
+  "last_commit_touching_metal_mod": "f6b63685a 2026-08-27 feat(flash): close exact layer0 routed shared moe boundary",
+  "uncommitted_lines_added": 2679,
+  "uncommitted_lines_removed": 533,
+  "what": "the binary every measurement in this campaign came from was built from a working tree that is in no commit"
+ },
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "measurements_that_inherit_this": [
+  "receipts/future/RESIDENT_TOKEN_BUDGET.json",
+  "receipts/future/ORGAN_BANDWIDTH.json",
+  "receipts/future/BA_DELTA_AB.json",
+  "receipts/future/RESIDENT_BINARY_DRIFT.json"
+ ],
+ "obligation": "Read, review and commit the uncommitted crate work, or quarantine it explicitly. Committing 2,679 unreviewed lines of Metal code to close a provenance gap would trade one defect for a worse one, so this receipt records the gap rather than papering it.",
+ "recorded_by": "tools/future/measurement_provenance.py",
+ "schema": "hawking.future.measurement_provenance.v1",
+ "severity": "HIGH",
+ "version": 1,
+ "what_is_and_is_not_at_risk": {
+  "at_risk": [
+   "reproducibility: the build exists only in one working directory on one machine",
+   "review: 2,679 lines of Metal batching and decode changes have not been read by anyone",
+   "collision: an independently written lane patch for the same symbols could not be applied, and was preserved unapplied"
+  ],
+  "not_at_risk": [
+   "the numbers themselves: they were measured, repeatedly, on a binary that runs with fallbacks 0 and produces coherent text",
+   "the relative findings: the fusion A/B, the BA_DELTA A/B and the organ table are all paired or ratio measurements"
+  ]
+ },
+ "why_artifact_identity_does_not_catch_it": "artifact_identity.py refuses a binary OLDER than the commit that introduced a field it reads. Here there is no such commit. The check passes because the source was never committed, which is the worse case, not the safe one.",
+ "witness": {
+  "conclusion": "the measurements depend on a symbol that exists only in the working tree",
+  "file": "crates/hawking-core/src/metal/mod.rs",
+  "occurrences_in_HEAD": 0,
+  "occurrences_in_working_tree": 16,
+  "symbol": "TokenPipelineCache"
+ }
+}
